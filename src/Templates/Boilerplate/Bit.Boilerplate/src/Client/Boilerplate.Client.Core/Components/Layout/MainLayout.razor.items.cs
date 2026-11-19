@@ -236,10 +236,11 @@ public partial class MainLayout
     }
 
     /// <summary>
-    /// The items link to the culture-less urls the client-side router navigates to (<c>/about</c>), while a full page
-    /// load serves the same page under its culture (<c>/en-US/about</c>). BitNav marks the current page by comparing
-    /// the url with each item's urls, so without the culture-prefixed forms nothing is marked after a refresh or a deep
-    /// link.
+    /// The items link to the page under the current culture (<c>/en-US/about</c>), the address a full page load serves
+    /// it under, so a search engine that follows one meets no redirect (See <see cref="CultureInfoManager.GetCurrentCultureUrl"/>).
+    /// Every page answers to its culture-less url too (<c>/about</c>), which the app's own code navigates to, and to
+    /// every other culture's. BitNav marks the current page by comparing the url with each item's urls, so it is given
+    /// all of those forms.
     /// </summary>
     private static void AddCultureUrls(List<BitNavItem> items)
     {
@@ -248,7 +249,8 @@ public partial class MainLayout
             if (item.Url is not null)
             {
                 string[] urls = [item.Url, .. item.AdditionalUrls ?? []];
-                item.AdditionalUrls = [.. item.AdditionalUrls ?? [], .. urls.SelectMany(CultureInfoManager.GetCultureUrls)];
+                item.AdditionalUrls = [.. urls, .. urls.SelectMany(CultureInfoManager.GetCultureUrls)];
+                item.Url = CultureInfoManager.GetCurrentCultureUrl(item.Url);
             }
 
             AddCultureUrls(item.ChildItems);

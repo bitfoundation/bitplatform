@@ -2,8 +2,10 @@
 using System.Net;
 using System.Runtime.Loader;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Components.Endpoints;
+using Microsoft.Extensions.Options;
 //#if (api == "Integrated")
 using Hangfire;
 using Scalar.AspNetCore;
@@ -273,6 +275,8 @@ public static partial class Program
 
             app.UseSiteMap();
 
+            app.MapSecurityTxt();
+
             // Handle the rest of requests with blazor
             var blazorApp = app.MapRazorComponents<Components.App>()
                 .CacheOutput("AppResponseCachePolicy")
@@ -293,7 +297,8 @@ public static partial class Program
         /// Prior to the introduction of .NET 8, the Blazor router effectively managed NotFound and NotAuthorized components during pre-rendering.
         /// However, the current behavior has changed, and it now exclusively returns 401, 403, and 404 status codes with an empty body response!
         /// To address this, we've implemented the UseStatusCodePages middleware to handle responses featuring 401, 403, and 404 status codes that lack a body.
-        /// This middleware facilitates redirection to the appropriate not-found and not-authorized pages. Consequently, the status code for these responses becomes 302 (Found).
+        /// This middleware redirects a 401 or 403 to the not-authorized page, so its status code becomes 302 (Found), and serves
+        /// the not-found page with a 404 at the address that was asked for (See ReExecuteNotFoundPage).
         /// To mitigate the challenges posed by this situation, our only recourse is to repurpose the 401, 403, and 404 status codes for
         /// not-found and not-authorized responses, at the very least.
         /// </summary>
@@ -333,39 +338,111 @@ public static partial class Program
                 await next.Invoke(context);
             });
 
-            app.UseStatusCodePages(options: new()
+            app.Use(next =>
             {
-                HandleAsync = async (statusCodeContext) =>
+                // The not-found page's path routed again, then the rest of the pipeline from here, the way ASP.NET Core's
+                // UseStatusCodePagesWithReExecute does it.
+                var reExecuteBuilder = ((IApplicationBuilder)app).New();
+                reExecuteBuilder.Properties[GlobalEndpointRouteBuilderKey] = app;
+                reExecuteBuilder.UseRouting();
+                reExecuteBuilder.Run(next);
+                var reExecute = reExecuteBuilder.Build();
+
+                return new StatusCodePagesMiddleware(next, Options.Create(new StatusCodePagesOptions
                 {
-                    var httpContext = statusCodeContext.HttpContext;
-
-                    if (httpContext.Response.StatusCode is 401 or 403 &&
-                        httpContext.GetEndpoint()?.Metadata.OfType<ComponentTypeMetadata>().Any() is true /* The generation of a 401 or 403 status code is attributed to Blazor. */)
-                    {
-                        bool is403 = httpContext.Response.StatusCode is 403;
-
-                        var qs = AppQueryStringCollection.Parse(httpContext.Request.QueryString.Value ?? string.Empty);
-                        qs.Remove("try_refreshing_token");
-                        var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path,
-                                                                QueryString.Create(qs.Select(kv => KeyValuePair.Create(kv.Key, kv.Value?.ToString()))));
-                        // return-url has to be encoded as a single value: interpolating it raw would let its inner '&'
-                        // separators split into extra outer parameters and truncate the url SignIn navigates back to.
-                        var redirectQuery = QueryString.Create(new KeyValuePair<string, string?>[]
-                        {
-                            new("return-url", returnUrl),
-                            new("isForbidden", is403 ? "true" : "false")
-                        });
-                        httpContext.Response.Redirect($"{PageUrls.NotAuthorized}{redirectQuery}");
-                    }
-                    else if (httpContext.Response.StatusCode is 404 &&
-                        httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */ &&
-                        httpContext.Request.Path.StartsWithSegments("/_framework") is false &&
-                        httpContext.Request.Path.StartsWithSegments("/_content") is false)
-                    {
-                        httpContext.Response.Redirect($"{PageUrls.NotFound}{QueryString.Create("url", httpContext.Request.GetEncodedPathAndQuery())}");
-                    }
-                }
+                    HandleAsync = statusCodeContext => HandleStatusCode(statusCodeContext, reExecute)
+                })).Invoke;
             });
+        }
+    }
+
+    /// <summary>The key WebApplication keeps its endpoints under for UseRouting (See ASP.NET Core's RerouteHelper).</summary>
+    private const string GlobalEndpointRouteBuilderKey = "__GlobalEndpointRouteBuilder";
+
+    private static async Task HandleStatusCode(StatusCodeContext statusCodeContext, RequestDelegate reExecute)
+    {
+        var httpContext = statusCodeContext.HttpContext;
+
+        if (httpContext.Response.StatusCode is 401 or 403 &&
+            httpContext.GetEndpoint()?.Metadata.OfType<ComponentTypeMetadata>().Any() is true /* The generation of a 401 or 403 status code is attributed to Blazor. */)
+        {
+            bool is403 = httpContext.Response.StatusCode is 403;
+
+            var qs = AppQueryStringCollection.Parse(httpContext.Request.QueryString.Value ?? string.Empty);
+            qs.Remove("try_refreshing_token");
+            var returnUrl = UriHelper.BuildRelative(httpContext.Request.PathBase, httpContext.Request.Path,
+                                                    QueryString.Create(qs.Select(kv => KeyValuePair.Create(kv.Key, kv.Value?.ToString()))));
+            // return-url has to be encoded as a single value: interpolating it raw would let its inner '&'
+            // separators split into extra outer parameters and truncate the url SignIn navigates back to.
+            var redirectQuery = QueryString.Create(new KeyValuePair<string, string?>[]
+            {
+                new("return-url", returnUrl),
+                new("isForbidden", is403 ? "true" : "false")
+            });
+            httpContext.Response.Redirect($"{PageUrls.NotAuthorized}{redirectQuery}");
+        }
+        else if (httpContext.Response.StatusCode is 404 &&
+            httpContext.GetEndpoint() is null /* Please be aware that certain endpoints, particularly those associated with web API actions, may intentionally return a 404 error. */ &&
+            httpContext.Request.Path.StartsWithSegments("/_framework") is false &&
+            httpContext.Request.Path.StartsWithSegments("/_content") is false)
+        {
+            if (HttpMethods.IsGet(httpContext.Request.Method) || HttpMethods.IsHead(httpContext.Request.Method))
+            {
+                await ReExecuteNotFoundPage(httpContext, reExecute);
+            }
+            else
+            {
+                httpContext.Response.Redirect($"{PageUrls.NotFound}{QueryString.Create("url", httpContext.Request.GetEncodedPathAndQuery())}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// The not-found page, answered with 404 at the address that was asked for. A redirect to <c>/not-found</c>, which the
+    /// culture redirect then took to <c>/en-US/not-found</c>, made an unknown address three redirects away from its 404,
+    /// and a crawler pays them for every address it tries. The page is in the culture the address names, or else in the
+    /// one the request resolved, so the culture redirect has nothing to do on the way.
+    /// </summary>
+    private static async Task ReExecuteNotFoundPage(HttpContext httpContext, RequestDelegate reExecute)
+    {
+        var request = httpContext.Request;
+        var originalPath = request.Path;
+        var originalQuery = request.QueryString;
+
+        var culture = CultureInfoManager.InvariantGlobalization ? null : (request.GetUri().GetCulture() ?? CultureInfo.CurrentUICulture.Name);
+
+        if (culture is not null)
+        {
+            culture = CultureInfoManager.GetCultureInfo(culture)!.Name;
+            CultureInfoManager.SetCurrentCulture(culture);
+            httpContext.Response.Headers.ContentLanguage = culture;
+        }
+
+        request.Path = culture is null ? PageUrls.NotFound : $"/{culture}{PageUrls.NotFound}";
+        request.QueryString = QueryString.Create("url", $"{originalPath}{originalQuery}");
+        httpContext.SetEndpoint(null);
+        request.RouteValues.Clear();
+
+        // Rendered over a 200 and made a 404 as the response starts, as Handle40XStatusCodes does for the page's own
+        // address: a 404 set before the endpoint runs makes RazorComponentEndpointInvoker drop the page it rendered.
+        httpContext.Response.StatusCode = StatusCodes.Status200OK;
+        httpContext.Response.OnStarting(() =>
+        {
+            if (httpContext.Response.StatusCode is StatusCodes.Status200OK)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+            }
+            return Task.CompletedTask;
+        });
+
+        try
+        {
+            await reExecute(httpContext);
+        }
+        finally
+        {
+            request.Path = originalPath;
+            request.QueryString = originalQuery;
         }
     }
 }

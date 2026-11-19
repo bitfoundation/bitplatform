@@ -1,8 +1,9 @@
 namespace Boilerplate.Tests.Features.ErrorHandling;
 
 /// <summary>
-/// Server.Web's Handle40XStatusCodes redirects Blazor's bodiless 401/404 to NotAuthorizedPage / NotFoundPage and gives
-/// those pages the status code back. It has to do so without taking their body away: a 404 already on the response
+/// Server.Web's Handle40XStatusCodes redirects Blazor's bodiless 401 to NotAuthorizedPage, answers a 404 with NotFoundPage
+/// at the address that was asked for, and gives those pages the status code. It has to do so without taking their body
+/// away: a 404 already on the response
 /// when the component endpoint runs makes RazorComponentEndpointInvoker drop the rendered page, and what a visitor
 /// without WebAssembly - a crawler, a link preview, a cold first visit - then gets is an empty 404.
 /// </summary>
@@ -26,7 +27,7 @@ public partial class ErrorPageStatusCodeTests
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-        Assert.EndsWith(PageUrls.NotFound, response.RequestMessage!.RequestUri!.AbsolutePath, "The 404 is served from NotFoundPage's own url.");
+        Assert.AreEqual("/e2e/route/that-does-not-exist", response.RequestMessage!.RequestUri!.AbsolutePath, "The 404 is answered where it was asked, with no redirect on the way.");
         Assert.Contains(AppStrings.NotFoundText, html, "The 404 carries no NotFoundPage markup - a status code with nothing to show.");
     }
 
