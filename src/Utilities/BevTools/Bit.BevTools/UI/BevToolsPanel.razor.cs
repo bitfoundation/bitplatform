@@ -1214,7 +1214,11 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
     }
 
-    /// <summary>The tab last brought into view, so the call happens once per tab shown, not on every refresh.</summary>
+    /// <summary>
+    /// The tab last brought into view, so the call happens once per tab shown, not on every refresh. A row that cannot
+    /// scroll yet (the wide layout, or hidden while picking) is not forgotten: the hub watches its size and brings the
+    /// active tab into view once it starts to scroll.
+    /// </summary>
     private string? _revealedTab;
 
     /// <summary>
@@ -1244,7 +1248,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
     }
 
-    private string ThemeAttribute =>Ui.Theme.ToString().ToLowerInvariant();
+    private string ThemeAttribute => Ui.Theme.ToString().ToLowerInvariant();
 
     // While picking, the panel shrinks to its header: what it covers of the page has to be reachable.
     private string PanelClass => $"bev-panel bev-dock-{Ui.Dock.ToString().ToLowerInvariant()} bev-size-{Ui.Size.ToString().ToLowerInvariant()}" + (Ui.Picking ? " bev-picking" : "");

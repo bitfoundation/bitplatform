@@ -201,10 +201,12 @@ companion window and the extension list every target. A runtime appears there on
 
 **Small screens and touch.** The panel follows its own size, not the window's: once it is narrower than 640 px (a
 phone, or the panel docked right) its header buttons keep only their symbols, the tabs become one row that scrolls
-sideways, and every list stacks above its details. On a phone each size is taller (Small half the screen, Large all
+sideways, and every list stacks above its details. A screen lower than 500 px (a phone on its side) gets the same
+header. On a phone each size is taller (Small half the screen, Large all
 of it), the panel stays clear of the notch and the home indicator, and on a touch screen buttons and rows grow to a
 finger's size and text fields to 16 px, so iOS does not zoom the page in when one is focused. *Pick* works with a
-tap, and the page still scrolls while picking. The companion window stacks the same way.
+tap, and the page still scrolls while picking: a swipe, a pinch, or the tap that stops a page still scrolling from a
+flick picks nothing. The companion window stacks the same way.
 
 **Performance traces.** *About → Export performance trace* (or `>trace` in the palette, or *⬇ Trace* in the companion)
 downloads the timeline in the Chrome Trace Event format, which [ui.perfetto.dev](https://ui.perfetto.dev) and the

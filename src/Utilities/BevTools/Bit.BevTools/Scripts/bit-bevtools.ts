@@ -1641,9 +1641,14 @@ function rootOf(node: Node | null): Node | null {
     return null;
 }
 
+/** The `.bev-root` element of one runtime's BevTools panel. */
+function panelRoot(targetId: string): Element | null {
+    return document.querySelector(".bev-root[data-bev-target=\"" + String(targetId).replace(/["\\]/g, "") + "\"]");
+}
+
 /** The root container a runtime's BevTools panel renders in: the anchor of every path that runtime calls anchored. */
 function anchorRoot(targetId: string): Node | null {
-    const panel = document.querySelector(".bev-root[data-bev-target=\"" + String(targetId).replace(/["\\]/g, "") + "\"]");
+    const panel = panelRoot(targetId);
     return panel ? rootOf(logicalParent(panel)) : null;
 }
 
@@ -1993,12 +1998,21 @@ const pickListeners: (() => void)[] = [];
 // Not passive: a touch must be able to cancel the click it would become (Chromium makes window touch listeners passive by default).
 const PICK_LISTENER: AddEventListenerOptions = { capture: true, passive: false };
 
+// For listeners that only watch or stop propagation: a passive one never makes the page's scrolling wait for it.
+const PICK_WATCHER: AddEventListenerOptions = { capture: true, passive: true };
+
 /** How far a finger may move between touching and lifting for it to still be a tap (browsers use about 10 px). */
 const TAP_SLOP_PX = 10;
 
-function onPick(type: string, handler: (e: any) => void) {
-    window.addEventListener(type, handler, PICK_LISTENER);
-    pickListeners.push(() => window.removeEventListener(type, handler, PICK_LISTENER));
+/**
+ * A touch this soon after the page last scrolled is the one that stops a scroll still coasting from a flick (iOS keeps
+ * scrolling after the finger lifts): not a tap, and Safari fires no click for it either.
+ */
+const SCROLL_SETTLE_MS = 150;
+
+function onPick(type: string, handler: (e: any) => void, options: AddEventListenerOptions = PICK_LISTENER) {
+    window.addEventListener(type, handler, options);
+    pickListeners.push(() => window.removeEventListener(type, handler, options));
 }
 
 /** The panel's own Pick button: a click on it stops picking through the panel, so the hub lets it through untouched. */
@@ -2038,16 +2052,30 @@ export function startPick(targetId?: string | null, options?: { includeHidden?: 
         e.stopImmediatePropagation();
     };
     for (const type of ["pointerdown", "pointerup", "mousedown", "mouseup", "dblclick", "auxclick", "contextmenu", "submit"]) onPick(type, swallow);
-    // A touch that starts is kept from the application but not cancelled: cancelling it would stop the page from
-    // scrolling, and on a phone the component to pick is often further down. Where it started tells a tap from a swipe.
-    let touchStart: { x: number; y: number } | null = null;
-    onPick("touchstart", (e: TouchEvent) => {
-        const touch = e.touches && e.touches[0];
-        touchStart = touch && e.touches.length === 1 ? { x: touch.clientX, y: touch.clientY } : null;
+    // A touch is kept from the application from its start to its end but not cancelled: cancelling it would stop the
+    // page from scrolling, and on a phone the component to pick is often further down. It is a tap only when one finger
+    // touched while the page was not coasting from a flick, and lifted where it touched; anything else picks nothing.
+    const keepFromApp = (e: Event) => {
         if (inBevTools(e.target as Node)) return;
         e.stopPropagation();
         e.stopImmediatePropagation();
+    };
+    let touchStart: { x: number; y: number; tap: boolean } | null = null;
+    let lastScrollAt = 0;
+    // Capturing on window hears every element's scroll too, though scroll events do not bubble.
+    onPick("scroll", () => { lastScrollAt = Date.now(); }, PICK_WATCHER);
+    onPick("touchstart", (e: TouchEvent) => {
+        const touch = e.touches && e.touches[0];
+        if (touch && e.touches.length === 1) touchStart = { x: touch.clientX, y: touch.clientY, tap: Date.now() - lastScrollAt > SCROLL_SETTLE_MS };
+        // A second finger makes it a pinch or a gesture until every finger has lifted.
+        else if (touchStart) touchStart.tap = false;
+        keepFromApp(e);
     });
+    onPick("touchmove", keepFromApp, PICK_WATCHER);
+    onPick("touchcancel", (e: TouchEvent) => {
+        touchStart = null;
+        keepFromApp(e);
+    }, PICK_WATCHER);
     onPick("mousemove", (e: MouseEvent) => {
         const state = picking;
         const node = e.target as Node;
@@ -2102,9 +2130,14 @@ export function startPick(targetId?: string | null, options?: { includeHidden?: 
         const touch = e.changedTouches && e.changedTouches[0];
         if (!picking || !touch) return;
         const start = touchStart;
-        touchStart = null;
-        // The end of a swipe that scrolled the page, not a tap: picking goes on (no click follows a scroll).
-        if (start && Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > TAP_SLOP_PX) return;
+        const fingersLeft = e.touches ? e.touches.length : 0;
+        if (!fingersLeft) touchStart = null;
+        // A swipe, a pinch, a touch that stopped a coasting scroll, or one that started before picking did: not a tap,
+        // so picking goes on (no click follows any of them). The application, which never saw it start, does not see it end.
+        if (!start || !start.tap || fingersLeft || Math.hypot(touch.clientX - start.x, touch.clientY - start.y) > TAP_SLOP_PX) {
+            keepFromApp(e);
+            return;
+        }
         const node = document.elementFromPoint(touch.clientX, touch.clientY);
         if (isPickToggle(node)) return;
         if (inBevTools(node)) { stopPick("cancelled"); return; }
@@ -2222,6 +2255,9 @@ export function detach(targetId?: string) {
         t.jsToDotNetFolded.clear();
         t.jsToDotNetUnlisted = 0;
         targets.delete(id);
+        const tabRow = tabRows.get(id);
+        if (tabRow && tabRowObserver) tabRowObserver.unobserve(tabRow);
+        tabRows.delete(id);
     }
 
     if (targets.size === 0) {
@@ -2274,7 +2310,7 @@ export function refresh() {
  * closing with the shortcut from the app must leave focus in the app.
  */
 export function focusIn(targetId: string, selector: string, onlyFromPanel?: boolean) {
-    const root = document.querySelector(".bev-root[data-bev-target=\"" + String(targetId).replace(/["\\]/g, "") + "\"]");
+    const root = panelRoot(targetId);
     if (!root) return false;
     // Focus is moved within the panel, or back to it when it was lost (the focused element was re-rendered away); never
     // taken from the app.
@@ -2285,21 +2321,41 @@ export function focusIn(targetId: string, selector: string, onlyFromPanel?: bool
     return true;
 }
 
+let tabRowObserver: ResizeObserver | null = null;
+
+/** The tab row each runtime's panel showed last, watched for size changes: one per runtime, however often it reopens. */
+const tabRows = new Map<string, Element>();
+
+function scrollActiveTabIntoRow(row: Element) {
+    const tab = row.querySelector(".bev-tab.bev-active") as HTMLElement | null;
+    if (!tab || row.scrollWidth <= row.clientWidth) return false;
+    const tabBox = tab.getBoundingClientRect();
+    const rowBox = row.getBoundingClientRect();
+    if (tabBox.left >= rowBox.left && tabBox.right <= rowBox.right) return false;
+    row.scrollLeft += tabBox.left - rowBox.left - (rowBox.width - tabBox.width) / 2;
+    return true;
+}
+
 /**
  * Brings the active tab into view in a tab row that scrolls sideways (a narrow panel shows its tabs in one row), so a
  * tab opened from the palette, a link or the saved preferences is not hidden past the edge. Scrolls only the row: the
  * page and focus stay where they are, which scrollIntoView would not promise.
  */
 export function revealActiveTab(targetId: string) {
-    const root = document.querySelector(".bev-root[data-bev-target=\"" + String(targetId).replace(/["\\]/g, "") + "\"]");
-    const tab = root && root.querySelector(".bev-tab.bev-active") as HTMLElement | null;
-    const row = tab && tab.parentElement;
-    if (!tab || !row || row.scrollWidth <= row.clientWidth) return false;
-    const tabBox = tab.getBoundingClientRect();
-    const rowBox = row.getBoundingClientRect();
-    if (tabBox.left >= rowBox.left && tabBox.right <= rowBox.right) return false;
-    row.scrollLeft += tabBox.left - rowBox.left - (rowBox.width - tabBox.width) / 2;
-    return true;
+    const root = panelRoot(targetId);
+    const row = root && root.querySelector(".bev-tabs");
+    if (!row) return false;
+    // The row scrolls only in the narrow layout and is hidden while picking, so it may start to scroll after the tab was
+    // shown (the phone turned, the panel docked right, picking ended): its size changes then, and the tab is brought
+    // into view at that moment instead.
+    const watched = tabRows.get(targetId);
+    if (watched !== row && typeof ResizeObserver === "function") {
+        if (!tabRowObserver) tabRowObserver = new ResizeObserver(entries => entries.forEach(entry => scrollActiveTabIntoRow(entry.target)));
+        if (watched) tabRowObserver.unobserve(watched);
+        tabRows.set(targetId, row);
+        tabRowObserver.observe(row);
+    }
+    return scrollActiveTabIntoRow(row);
 }
 
 // ----- the protocol for external frontends -----

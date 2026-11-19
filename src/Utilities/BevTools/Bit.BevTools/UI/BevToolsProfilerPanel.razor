@@ -195,7 +195,7 @@
                                 @foreach (var node in _batchTree.Rows)
                                 {
                                     <tr class="bev-row" @onclick="() => OpenBatchNode(node)">
-                                        <td class="bev-mono" style="padding-left:@(node.Depth * 14 + 6)px"><button type="button" class="bev-link bev-mono" title="@(node.Instances > 1 ? "Show these in the profiler, by type" : "Select this component")" @onclick:stopPropagation="true" @onclick="() => OpenBatchNode(node)">@node.Name</button> <span class="bev-muted">@(node.Instances > 1 ? "×" + node.Instances + " instances" : node.Renders > 1 ? node.Renders + " renders" : "")</span></td>
+                                        <td class="bev-mono" style="padding-left:calc(@(node.Depth) * var(--bev-indent) + 6px)"><button type="button" class="bev-link bev-mono" title="@(node.Instances > 1 ? "Show these in the profiler, by type" : "Select this component")" @onclick:stopPropagation="true" @onclick="() => OpenBatchNode(node)">@node.Name</button> <span class="bev-muted">@(node.Instances > 1 ? "×" + node.Instances + " instances" : node.Renders > 1 ? node.Renders + " renders" : "")</span></td>
                                         <td class="bev-num">@BevToolsFmt.Ms(node.SelfMs)</td>
                                         <td class="bev-num">@BevToolsFmt.Ms(node.TotalMs)</td>
                                         <td><span class="bev-bar" style="width:@(Math.Max(1, 110 * node.TotalMs / Math.Max(0.001, _batchTree.TotalMs)))px"></span></td>

@@ -20,7 +20,7 @@
         @if (_showLanes)
         {
             <div class="bev-lanes" title="Last @WindowSeconds seconds; click a bar to select">
-                @* The labels are HTML over the drawing: the drawing stretches to the panel's width, which would squeeze text drawn in it on a narrow panel. *@
+                @* The labels are HTML under the drawing (which paints its bars over them): the drawing stretches to the panel's width, which would squeeze text drawn in it on a narrow panel. *@
                 <div class="bev-lane-labels">
                     @for (var i = 0; i < Lanes.Length; i++)
                     {

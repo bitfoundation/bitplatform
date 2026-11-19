@@ -32,7 +32,7 @@
     line-height: 1.4;
     color: var(--bev-fg);
     box-sizing: border-box;
-    /* One level of the component tree; narrower on a narrow panel, where depth would push the names out of view. */
+    /* One level of a tree; narrower on a narrow panel, where depth would push the names out of view. */
     --bev-indent: 14px;
     /* Phones enlarge text they take for too small to read in landscape; the panel's sizes are deliberate. */
     -webkit-text-size-adjust: 100%;
@@ -150,6 +150,9 @@ body:has(#blazor-error-ui[style*="display: block"]) .bev-root .bev-badge { botto
 }
 /* While picking its size follows its content, which a size container cannot do: it would collapse to nothing. */
 .bev-panel.bev-picking { height: auto !important; bottom: 0; top: auto !important; width: auto !important; left: auto; right: 0; container-type: normal; }
+/* On a phone the picking header spans the screen's width instead, which keeps it a container of its width (its height
+   still follows its content), so it keeps the compact header below rather than wrapping its full labels over the page. */
+@media (max-width: 640px) { .bev-panel.bev-picking { left: 0; container-type: inline-size; } }
 .bev-panel.bev-picking .bev-body, .bev-panel.bev-picking .bev-tabs { display: none; }
 
 .bev-header { display: flex; align-items: center; gap: 4px; padding: 3px 6px; border-bottom: 1px solid var(--bev-border); background: var(--bev-bg2); flex-wrap: wrap; }
@@ -286,7 +289,8 @@ tr.bev-row.bev-sev-warning > td:first-child { box-shadow: inset 3px 0 0 var(--be
 .bev-lanes { position: relative; border-bottom: 1px solid var(--bev-border); background: var(--bev-bg2); }
 .bev-lane-labels { position: absolute; inset: 0; pointer-events: none; }
 .bev-lane-labels > span { position: absolute; left: 2px; line-height: 14px; font-size: 9px; color: var(--bev-fg2); }
-.bev-lanes svg { display: block; width: 100%; height: 96px; }
+/* Positioned, so the bars paint over the labels (which come first) as they did when the labels were drawn in the SVG. */
+.bev-lanes svg { position: relative; display: block; width: 100%; height: 96px; }
 .bev-chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .bev-chips button.bev-chip { border: 1px solid transparent; }
 .bev-chips button.bev-chip.bev-off { opacity: .45; text-decoration: line-through; }
@@ -320,10 +324,22 @@ tr.bev-row.bev-sev-warning > td:first-child { box-shadow: inset 3px 0 0 var(--be
 .bev-stat .bev-stat-label { color: var(--bev-fg2); font-size: 11px; }
 .bev-panel-host { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 
-/* A narrow or short panel: a phone upright or on its side, or a desktop panel docked right. The header takes two rows
-   instead of up to five: the buttons lose their words (each keeps its symbol, title and accessible name) and share
-   the first row with the title, and the tabs become one row that scrolls sideways instead of wrapping. */
-@container bev-panel (max-width: 640px) or (max-height: 420px) {
+/* A narrow panel: a phone upright, or a desktop panel docked right. The header takes two rows instead of up to five:
+   the buttons lose their words (each keeps its symbol, title and accessible name) and share the first row with the
+   title, and the tabs become one row that scrolls sideways instead of wrapping. */
+@container bev-panel (max-width: 640px) {
+    .bev-root .bev-header { gap: 2px 4px; }
+    .bev-root .bev-tools { justify-content: flex-end; }
+    .bev-root .bev-tools button { padding-inline: 7px; }
+    .bev-root .bev-tools label { padding-inline: 4px; }
+    .bev-root .bev-tabs { order: 1; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+    .bev-root .bev-tab { flex: none; }
+    .bev-root .bev-label { display: none; }
+}
+
+/* The same header on a short screen, a phone on its side, where a panel of any size is a few rows high. The screen
+   decides, not the panel's height: a bottom panel on a desktop is as low, but has room for the words. */
+@media (max-height: 500px) {
     .bev-root .bev-header { gap: 2px 4px; }
     .bev-root .bev-tools { justify-content: flex-end; }
     .bev-root .bev-tools button { padding-inline: 7px; }
@@ -352,7 +368,9 @@ tr.bev-row.bev-sev-warning > td:first-child { box-shadow: inset 3px 0 0 var(--be
     .bev-root .bev-palette-item { flex-wrap: wrap; row-gap: 0; }
     .bev-root .bev-palette-item .bev-cat { min-width: 0; }
     .bev-root .bev-notification { max-width: calc(100% - 16px); }
-    .bev-root .bev-tree { --bev-indent: 10px; }
+    /* Every tree's indent (the component tree, value trees, services and the profiler's batch tree): depth would
+       otherwise push the names out of view. */
+    .bev-root .bev-body { --bev-indent: 10px; }
     /* The Timeline's kind filters: one row that scrolls sideways, not three rows above the events. */
     .bev-root .bev-chips { flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
     .bev-root .bev-chips > * { flex: none; }
