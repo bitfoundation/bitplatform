@@ -109,7 +109,7 @@
         image - a photo with sensor grain, a flat-colour screenshot or a transparent graphic - and
         reports the output size, the bytes for every format and quality, whether a byte budget can be
         met, the operations the optimiser really runs, and the timings with and without it. The
-        pipeline is the C# you would write; every <code>ImagePipeline</code> method is accepted.
+        pipeline is the C# you would write; every <code>BmageImagePipeline</code> method is accepted.
     </p>
 
     <div class="bb-demo bb-page-wide">
@@ -296,7 +296,7 @@
     <p>
         <code>CompareBmageMetadataPolicies</code> writes a phone photo - GPS position, serial number,
         owner, camera, lens, ISO, date and copyright - through the real encoder under each
-        <code>MetadataPolicy</code>, then decodes every file again and reports what is really in it.
+        <code>BmageMetadataPolicy</code>, then decodes every file again and reports what is really in it.
         A privacy decision then rests on the exported bytes, not on what a policy's name suggests.
     </p>
 
@@ -368,8 +368,8 @@
     <p>
         <code>ReviewBmageCode</code> is the pass that closes the loop after an agent writes code. Its
         rules look for the mistakes that compile cleanly - a capability probe in
-        <code>OnInitializedAsync</code>, <code>@@inject ImageProcessor</code> in a browser app, a
-        buffer never disposed, <code>MetadataPolicy.Preserve</code>, WebP with no fallback. The sample
+        <code>OnInitializedAsync</code>, <code>@@inject BmageImageProcessor</code> in a browser app, a
+        buffer never disposed, <code>BmageMetadataPolicy.Preserve</code>, WebP with no fallback. The sample
         below has several on purpose.
     </p>
 
@@ -577,7 +577,7 @@
         </li>
         <li>
             <strong>Sizes are measured, not estimated.</strong> The pipeline is built by reflection over
-            <code>ImagePipeline</code>'s own builder methods and run by the same engine a browser runs,
+            <code>BmageImagePipeline</code>'s own builder methods and run by the same engine a browser runs,
             with the managed codecs a headless host has; the budget search is the library's own.
         </li>
         <li>
@@ -635,10 +635,10 @@
             "Quality 0.8 is a habit, not a measurement. The bytes depend on the content, the dimensions and the format - and whether a 100 KB budget is reachable at all is something only an encode can say.",
             "RunBmagePipeline"),
         new("It worked in development, it fails at prerender",
-            "A capability probe in OnInitializedAsync, @inject ImageProcessor in a browser app, a registration in only one of a Web App's two containers. All of them compile.",
+            "A capability probe in OnInitializedAsync, @inject BmageImageProcessor in a browser app, a registration in only one of a Web App's two containers. All of them compile.",
             "ReviewBmageCode"),
         new("Is the location still in the file?",
-            "MetadataPolicy.Preserve keeps the GPS position the phone recorded. Remove is the default, StripSensitive keeps the camera data - the exported bytes are what decide it.",
+            "BmageMetadataPolicy.Preserve keeps the GPS position the phone recorded. Remove is the default, StripSensitive keeps the camera data - the exported bytes are what decide it.",
             "CompareBmageMetadataPolicies"),
     ];
 
@@ -692,13 +692,13 @@
 
     private static readonly Preset[] Presets =
     [
-        new("Upload cap", "ImagePipeline.Create()\n    .AutoOrient()\n    .MaxSize(1920, 1920)\n    .Sharpen(0.3f)", "photo", ["jpeg", "png"], 0),
-        new("Avatar under 40 KB", "ImagePipeline.Create()\n    .SmartCrop(AspectRatio.Square)\n    .Resize(512, 512, ResizeMode.Stretch)\n    .Sharpen(0.25f)", "photo", ["jpeg", "webp"], 40),
-        new("Adjust, then shrink", "ImagePipeline.Create()\n    .Brightness(0.05f)\n    .Contrast(0.1f)\n    .Vibrance(0.2f)\n    .MaxSize(1280, 1280)", "photo", ["jpeg"], 0),
-        new("Screenshot", "ImagePipeline.Create()\n    .MaxSize(1600, 1600)", "screenshot", ["jpeg", "png"], 0),
-        new("Logo with alpha", "ImagePipeline.Create()\n    .Resize(256, 256, ResizeMode.Contain)", "graphic", ["png", "jpeg"], 0),
-        new("Straighten and frame", "ImagePipeline.Create()\n    .MaxSize(1200, 1200)\n    .Straighten(3)\n    .Pad(40, Rgba32.White)", "photo", ["jpeg", "png"], 0),
-        new("Duotone poster", "ImagePipeline.Create()\n    .Cover(1080, 1350)\n    .AutoLevels()\n    .Duotone(new Rgba32(36, 24, 96), new Rgba32(255, 138, 112))", "photo", ["jpeg", "webp"], 0),
+        new("Upload cap", "BmageImagePipeline.Create()\n    .AutoOrient()\n    .MaxSize(1920, 1920)\n    .Sharpen(0.3f)", "photo", ["jpeg", "png"], 0),
+        new("Avatar under 40 KB", "BmageImagePipeline.Create()\n    .SmartCrop(BmageAspectRatio.Square)\n    .Resize(512, 512, BmageResizeMode.Stretch)\n    .Sharpen(0.25f)", "photo", ["jpeg", "webp"], 40),
+        new("Adjust, then shrink", "BmageImagePipeline.Create()\n    .Brightness(0.05f)\n    .Contrast(0.1f)\n    .Vibrance(0.2f)\n    .MaxSize(1280, 1280)", "photo", ["jpeg"], 0),
+        new("Screenshot", "BmageImagePipeline.Create()\n    .MaxSize(1600, 1600)", "screenshot", ["jpeg", "png"], 0),
+        new("Logo with alpha", "BmageImagePipeline.Create()\n    .Resize(256, 256, BmageResizeMode.Contain)", "graphic", ["png", "jpeg"], 0),
+        new("Straighten and frame", "BmageImagePipeline.Create()\n    .MaxSize(1200, 1200)\n    .Straighten(3)\n    .Pad(40, BmageRgba32.White)", "photo", ["jpeg", "png"], 0),
+        new("Duotone poster", "BmageImagePipeline.Create()\n    .Cover(1080, 1350)\n    .AutoLevels()\n    .Duotone(new BmageRgba32(36, 24, 96), new BmageRgba32(255, 138, 112))", "photo", ["jpeg", "webp"], 0),
     ];
 
     private static readonly string[] Sources = ["photo", "screenshot", "graphic"];
@@ -712,48 +712,48 @@
     private const string ArchitectureCode = """
         // Server/Services/BmagePipelineLab.cs - the whole trick, in a few lines.
         //
-        // The pipeline is parsed into the real ImagePipeline by calling its own builder methods
+        // The pipeline is parsed into the real BmageImagePipeline by calling its own builder methods
         // through reflection, so every method and parameter the library has is accepted as written.
         var pipeline = BmagePipelineSpec.Parse(spec).Pipeline;
 
-        using var input = CreateSource("photo", 2400, 1600);   // drawn with ImageCanvas, plus grain
+        using var input = CreateSource("photo", 2400, 1600);   // drawn with BmageImageCanvas, plus grain
 
         var optimized = pipeline.Optimize(input.Size);           // what ExecuteAsync really runs
         using var output = await pipeline.ExecuteAsync(input);
 
-        var processor = new ImageProcessor();                    // the managed codecs a server has
-        var jpeg = await processor.EncodeAsync(output, new ImageExportOptions
+        var processor = new BmageImageProcessor();                    // the managed codecs a server has
+        var jpeg = await processor.EncodeAsync(output, new BmageImageExportOptions
         {
-            Format = ImageFormat.Jpeg,
+            Format = BmageImageFormat.Jpeg,
             Quality = 0.8,
             MaxFileSize = budget,                                // the library's own search
         });
         """;
 
     private const string DefaultReview = """
-        @inject ImageProcessor Processor
-        @inject IImageCapabilityProvider Capabilities
-        @inject ImageExporter Exporter
+        @inject BmageImageProcessor Processor
+        @inject IBmageImageCapabilityProvider Capabilities
+        @inject BmageImageExporter Exporter
 
         @code {
-            private ImageCapabilities? _caps;
+            private BmageImageCapabilities? _caps;
 
             protected override async Task OnInitializedAsync()
             {
                 _caps = await Capabilities.GetAsync();
             }
 
-            private async Task<EncodedImage> SaveAsync(ImageBuffer photo)
+            private async Task<BmageEncodedImage> SaveAsync(BmageImageBuffer photo)
             {
-                var thumb = await ImagePipeline.Create()
+                var thumb = await BmageImagePipeline.Create()
                     .Sharpen(0.3f)
                     .MaxSize(400, 400)
                     .ExecuteAsync(photo);
 
-                return await Exporter.EncodeAsync(thumb, new ImageExportOptions
+                return await Exporter.EncodeAsync(thumb, new BmageImageExportOptions
                 {
-                    Format = ImageFormat.WebP,
-                    Metadata = MetadataPolicy.Preserve,
+                    Format = BmageImageFormat.WebP,
+                    Metadata = BmageMetadataPolicy.Preserve,
                 });
             }
         }

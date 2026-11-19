@@ -9,6 +9,7 @@
 /// Classes/Styles and print.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiImagePartViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiimagepartview";

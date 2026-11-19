@@ -9,7 +9,7 @@ public class EncodingBenchmarks
 {
     private BelemetryBatch _logs = default!;
     private BelemetryBatch _spans = default!;
-    private AzureMonitorEnvelopeSerializer.Context _azure = default!;
+    private BelemetryAzureMonitorEnvelopeSerializer.Context _azure = default!;
 
     [GlobalSetup]
     public void Setup()
@@ -43,18 +43,18 @@ public class EncodingBenchmarks
 
         _logs = new BelemetryBatch(resource, logs: logs);
         _spans = new BelemetryBatch(resource, spans: spans);
-        _azure = new AzureMonitorEnvelopeSerializer.Context("00000000-0000-0000-0000-000000000001", true);
+        _azure = new BelemetryAzureMonitorEnvelopeSerializer.Context("00000000-0000-0000-0000-000000000001", true);
     }
 
     [Benchmark(Description = "OTLP protobuf: 512 logs")]
-    public byte[] OtlpProtobufLogs() => OtlpProtobufSerializer.SerializeLogs(_logs);
+    public byte[] OtlpProtobufLogs() => BelemetryOtlpProtobufSerializer.SerializeLogs(_logs);
 
     [Benchmark(Description = "OTLP JSON: 512 logs")]
-    public byte[] OtlpJsonLogs() => OtlpJsonSerializer.SerializeLogs(_logs);
+    public byte[] OtlpJsonLogs() => BelemetryOtlpJsonSerializer.SerializeLogs(_logs);
 
     [Benchmark(Description = "OTLP protobuf: 512 spans")]
-    public byte[] OtlpProtobufSpans() => OtlpProtobufSerializer.SerializeTraces(_spans);
+    public byte[] OtlpProtobufSpans() => BelemetryOtlpProtobufSerializer.SerializeTraces(_spans);
 
     [Benchmark(Description = "Azure Monitor: 512 logs")]
-    public byte[] AzureLogs() => AzureMonitorEnvelopeSerializer.Serialize(_logs, _azure, out _);
+    public byte[] AzureLogs() => BelemetryAzureMonitorEnvelopeSerializer.Serialize(_logs, _azure, out _);
 }

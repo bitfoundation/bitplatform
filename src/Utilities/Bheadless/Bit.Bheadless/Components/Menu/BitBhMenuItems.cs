@@ -25,7 +25,7 @@ public class BitBhMenuItems : BitBhMenuContentBase
     protected override string? LabelledById => MenuContext?.ButtonId;
 
     private protected override BitBhMenuLevel CreateLevel(Action refresh)
-        => new((IBitBhMenuRoot?)MenuContext?.Menu ?? DetachedMenuRoot.Instance, null, null, ContentId, Interop, refresh);
+        => new((IBitBhMenuRoot?)MenuContext?.Menu ?? BitBhDetachedMenuRoot.Instance, null, null, ContentId, Interop, refresh);
 
     private protected override BitBhMenuFocus ConsumeFocusIntent() => MenuContext?.Menu.ConsumeFocusIntent() ?? BitBhMenuFocus.Container;
 
@@ -75,16 +75,4 @@ public class BitBhMenuItems : BitBhMenuContentBase
         if (MenuContext?.Menu.Items == this) MenuContext.Menu.Items = null;
         return base.DisposeAsync();
     }
-}
-
-/// <summary>Root used when a menu panel is rendered outside of a menu (design-time / tests).</summary>
-internal sealed class DetachedMenuRoot : IBitBhMenuRoot
-{
-    public static readonly DetachedMenuRoot Instance = new();
-    public bool IsOpen => false;
-    public bool Disabled => false;
-    public BitBhDirection Dir => BitBhDirection.Ltr;
-    public string? TriggerId => null;
-    public BitBhMenubarContext? Menubar => null;
-    public Task CloseAsync() => Task.CompletedTask;
 }

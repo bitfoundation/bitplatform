@@ -1,8 +1,8 @@
 ﻿namespace Bit.BevTools.Tests;
 
 /// <summary>
-/// A session export as a CI gate: the findings in it (<see cref="BevSessionCheck"/>), and the <c>bevtools</c> tool that
-/// runs that check and <see cref="BevProfileComparison"/> over files.
+/// A session export as a CI gate: the findings in it (<see cref="BevToolsSessionCheck"/>), and the <c>bevtools</c> tool that
+/// runs that check and <see cref="BevToolsProfileComparison"/> over files.
 /// </summary>
 [TestClass]
 public class SessionCheckTests
@@ -26,11 +26,11 @@ public class SessionCheckTests
             }
 
             // Within the second the rules are throttled to, and nothing shows their results: only the export runs them.
-            var result = BevSessionCheck.Check(BevSessionExporter.ToJson(session));
+            var result = BevToolsSessionCheck.Check(BevToolsSessionExporter.ToJson(session));
 
             Assert.IsTrue(result.Failed);
             var loop = Assert.ContainsSingle(f => f.RuleId == "navigation.loop", result.Findings);
-            Assert.AreEqual(BevDiagnosticSeverity.Error, loop.Severity);
+            Assert.AreEqual(BevToolsDiagnosticSeverity.Error, loop.Severity);
             Assert.IsTrue(loop.Fails);
             StringAssert.Contains(result.ToMarkdown(), "**Failed:** 1 failing finding");
         }
@@ -41,21 +41,21 @@ public class SessionCheckTests
     {
         var json = Export(Finding("render.storm", "Warning"), Finding("http.per-item", "Warning"), Finding("component.hint", "Info"), Finding("navigation.loop", "Error", dismissed: true));
 
-        var byDefault = BevSessionCheck.Check(json);
+        var byDefault = BevToolsSessionCheck.Check(json);
         Assert.IsTrue(byDefault.Failed);
         Assert.AreEqual(3, byDefault.Findings.Count);
         Assert.AreEqual(1, byDefault.DismissedFindings);
         CollectionAssert.AreEquivalent(new[] { "render.storm", "http.per-item" }, byDefault.Findings.Where(f => f.Fails).Select(f => f.RuleId).ToArray());
 
-        var errorsOnly = BevSessionCheck.Check(json, new BevSessionCheckOptions { FailOn = BevDiagnosticSeverity.Error });
+        var errorsOnly = BevToolsSessionCheck.Check(json, new BevToolsSessionCheckOptions { FailOn = BevToolsDiagnosticSeverity.Error });
         Assert.IsFalse(errorsOnly.Failed, "the only error was dismissed");
 
-        var ignoring = new BevSessionCheckOptions();
+        var ignoring = new BevToolsSessionCheckOptions();
         ignoring.IgnoredRules.Add("render.storm");
         ignoring.IgnoredRules.Add("http.per-item");
-        Assert.IsFalse(BevSessionCheck.Check(json, ignoring).Failed);
+        Assert.IsFalse(BevToolsSessionCheck.Check(json, ignoring).Failed);
 
-        var listOnly = BevSessionCheck.Check(json, new BevSessionCheckOptions { FailOn = null });
+        var listOnly = BevToolsSessionCheck.Check(json, new BevToolsSessionCheckOptions { FailOn = null });
         Assert.IsFalse(listOnly.Failed);
         Assert.AreEqual(3, listOnly.Findings.Count);
         StringAssert.Contains(listOnly.ToMarkdown(), "render.storm \\| title", "a pipe in a title stays inside its cell");
@@ -69,14 +69,14 @@ public class SessionCheckTests
         {
             session.Errors.Record(new InvalidOperationException("Order 7001 was not found"), "blazor");
             session.Errors.Record(new InvalidOperationException("Order 9002 was not found"), "blazor");
-            var json = BevSessionExporter.ToJson(session);
+            var json = BevToolsSessionExporter.ToJson(session);
 
-            var result = BevSessionCheck.Check(json);
+            var result = BevToolsSessionCheck.Check(json);
             Assert.AreEqual(2, result.Errors);
             Assert.AreEqual(1, result.ErrorGroups);
             Assert.IsFalse(result.FailedOnErrors);
 
-            var strict = BevSessionCheck.Check(json, new BevSessionCheckOptions { FailOnErrors = true });
+            var strict = BevToolsSessionCheck.Check(json, new BevToolsSessionCheckOptions { FailOnErrors = true });
             Assert.IsTrue(strict.Failed);
             StringAssert.Contains(strict.ToMarkdown(), "recorded errors");
         }
@@ -85,17 +85,17 @@ public class SessionCheckTests
     [TestMethod]
     public void A_file_that_cannot_be_checked_is_refused_rather_than_passed()
     {
-        Assert.ThrowsExactly<FormatException>(() => BevSessionCheck.Check("not json"));
-        Assert.ThrowsExactly<FormatException>(() => BevSessionCheck.Check("""{"format":"something-else"}"""));
-        var withoutDiagnostics = Assert.ThrowsExactly<FormatException>(() => BevSessionCheck.Check("""{"format":"bit-bevtools/1","components":{}}"""));
+        Assert.ThrowsExactly<FormatException>(() => BevToolsSessionCheck.Check("not json"));
+        Assert.ThrowsExactly<FormatException>(() => BevToolsSessionCheck.Check("""{"format":"something-else"}"""));
+        var withoutDiagnostics = Assert.ThrowsExactly<FormatException>(() => BevToolsSessionCheck.Check("""{"format":"bit-bevtools/1","components":{}}"""));
         StringAssert.Contains(withoutDiagnostics.Message, "no diagnostics section");
-        Assert.IsTrue(BevSessionCheck.Check(Export(Finding("x.new", "Critical"))).Failed, "a severity this version does not know is looked at, not passed");
-        Assert.IsTrue(BevSessionCheck.Check(Export(Finding("x.minus", "-1"))).Failed, "a number is not a severity");
-        Assert.IsTrue(BevSessionCheck.Check(Export(Finding("x.flags", "Warning, Error"))).Failed, "nor is a combination");
+        Assert.IsTrue(BevToolsSessionCheck.Check(Export(Finding("x.new", "Critical"))).Failed, "a severity this version does not know is looked at, not passed");
+        Assert.IsTrue(BevToolsSessionCheck.Check(Export(Finding("x.minus", "-1"))).Failed, "a number is not a severity");
+        Assert.IsTrue(BevToolsSessionCheck.Check(Export(Finding("x.flags", "Warning, Error"))).Failed, "nor is a combination");
 
         var withoutErrors = """{"format":"bit-bevtools/1","diagnostics":[]}""";
-        Assert.ThrowsExactly<FormatException>(() => BevSessionCheck.Check(withoutErrors, new BevSessionCheckOptions { FailOnErrors = true }), "errors cannot fail a check that has none to read");
-        var partial = BevSessionCheck.Check(withoutErrors);
+        Assert.ThrowsExactly<FormatException>(() => BevToolsSessionCheck.Check(withoutErrors, new BevToolsSessionCheckOptions { FailOnErrors = true }), "errors cannot fail a check that has none to read");
+        var partial = BevToolsSessionCheck.Check(withoutErrors);
         Assert.IsNull(partial.Errors);
         Assert.IsNull(partial.Requests);
         StringAssert.Contains(partial.ToMarkdown(), "errors not in the export · HTTP requests not in the export");
@@ -109,7 +109,7 @@ public class SessionCheckTests
              "diagnostics":[],"errors":[{"count":2000000000},{"count":2000000000}]}
             """;
 
-        var result = BevSessionCheck.Check(json, new BevSessionCheckOptions { FailOnErrors = true });
+        var result = BevToolsSessionCheck.Check(json, new BevToolsSessionCheckOptions { FailOnErrors = true });
 
         Assert.AreEqual(4_000_000_000L, result.Errors);
         Assert.IsTrue(result.Failed);
@@ -123,7 +123,7 @@ public class SessionCheckTests
         var (session, scope) = TestHelpers.CreateSession(o => o.Diagnostics.EvaluateWhileClosed = true);
         using (scope)
         {
-            Assert.IsEmpty(BevSessionCheck.Check(BevSessionExporter.ToJson(session)).Caveats, "a session that ran its rules throughout, capturing, with every rule on");
+            Assert.IsEmpty(BevToolsSessionCheck.Check(BevToolsSessionExporter.ToJson(session)).Caveats, "a session that ran its rules throughout, capturing, with every rule on");
         }
     }
 

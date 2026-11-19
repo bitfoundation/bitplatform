@@ -67,7 +67,7 @@ public class PushNotificationHealthCheckTests
         Assert.AreEqual(expected, result.Status, result.Description);
         Assert.AreEqual(description, result.Description);
         Assert.AreEqual("fcm.googleapis.com", handler.Requests.Single().Host);
-        Assert.IsTrue(authorization?.StartsWith("WebPush ") is true, "The push is signed with the VAPID private key.");
+        Assert.StartsWith("WebPush ", authorization!, "The push is signed with the VAPID private key.");
     }
 
     [TestMethod]

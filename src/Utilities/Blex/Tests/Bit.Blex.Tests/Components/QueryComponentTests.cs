@@ -1,5 +1,3 @@
-using Bit.Blex.Blazor;
-using Bit.Blex.Query;
 using Bit.Blex.Tests.Query;
 using Bunit;
 using Microsoft.AspNetCore.Components;

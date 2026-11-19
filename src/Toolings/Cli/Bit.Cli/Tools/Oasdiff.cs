@@ -9,15 +9,15 @@ namespace Bit.Cli.Tools;
 
 public static class Oasdiff
 {
-    public const string Version = "1.38.0";
+    public const string Version = "1.39.0";
 
     private static readonly Dictionary<string, string> archiveSha256 = new(StringComparer.Ordinal)
     {
-        ["windows_amd64"] = "4509a5d838849ab39c759b6ed95a0b9193b80a69e55b88c6c9e72d7bde21bbcf",
-        ["windows_arm64"] = "2e562ef56a6447fef0fc35158c390455fff843a4e10e862aded3fb7102bc9b89",
-        ["linux_amd64"] = "613037fd6a1d3362a1b742d6d86c338c0eb5ab3511f4942ce3948e78720ea2da",
-        ["linux_arm64"] = "a5ebb16d90f729f6b436a92d3054c11ba5633ddfb639dfdfb64b0023cd03680c",
-        ["darwin_all"] = "8a85428df3b00e76e7d41c49d222533c9beec813e9cbdc8162f3a6e776604c18"
+        ["windows_amd64"] = "956a73df88e03efdf3fcc5f327446cc176fefe4adcea1978b0fef464a1ee8901",
+        ["windows_arm64"] = "5699ac9dc74b432f78990cd369ff2bec3a79302c58e923c1ec823e47a86ddb82",
+        ["linux_amd64"] = "71a85930728f367a2086077b7ae1411319421549d18473a3e8258b6451520433",
+        ["linux_arm64"] = "481db7d891d916f13df277b2ef8bbb95477702827710e49fe22cef69c359c780",
+        ["darwin_all"] = "fe88d9950324d3b0ebeaf8e0d3a210b64cb099a0f55fce5ee5a22b276df0eac4"
     };
 
     public static string? Platform(CliEnvironment environment) => (environment.Os, environment.Architecture) switch

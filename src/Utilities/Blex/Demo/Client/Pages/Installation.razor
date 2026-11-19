@@ -7,8 +7,8 @@
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Packages</h2>
         <p>
             Reference <code>Bit.Blex</code>. It carries the runtime, the source generator that turns your
-            <code>[BlexStore]</code> classes into reactive stores, and the Blazor integration (the
-            <code>Bit.Blex.Blazor</code> namespace). The generator ships inside the package as an analyzer
+            <code>[BlexStore]</code> classes into reactive stores, and the Blazor integration, all in the
+            <code>Bit.Blex</code> namespace. The generator ships inside the package as an analyzer
             (under <code>analyzers/dotnet/cs</code>), so it adds nothing to your app's output - but NuGet
             does not flow analyzers to projects that only get a package transitively, so reference
             <code>Bit.Blex</code> directly from every project that declares stores. Every runtime package
@@ -131,7 +131,7 @@
         <h2 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Without Blazor</h2>
         <p>
             Stores, the manager and persistence never touch Blazor or JavaScript - only the
-            <code>Bit.Blex.Blazor</code> namespace does. In a console app, worker or test, resolve
+            Blazor integration types do. In a console app, worker or test, resolve
             the stores from DI (which registers them with the manager) and drive them directly. For
             persistence, implement <code>IBlexStorage</code> over a file or database and call
             <code>AddBitBlexPersistence()</code>.
@@ -218,13 +218,12 @@
 
     private const string CsprojSample = """
         <ItemGroup>
-          <PackageReference Include="Bit.Blex" Version="11.0.0-pre-20" />
+          <PackageReference Include="Bit.Blex" Version="11.0.0-pre-22" />
         </ItemGroup>
         """;
 
     private const string ProgramSample = """
         using Bit.Blex;
-        using Bit.Blex.Blazor;
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
         builder.RootComponents.Add<App>("#app");

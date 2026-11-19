@@ -1,0 +1,72 @@
+﻿using System.ComponentModel;
+
+namespace Bit.BlazorUI;
+
+/// <summary>
+/// A part of <see cref="BitFullCalendar"/>, rendered by the calendar alone: it is not meant to be used on its own.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public partial class _BitFcAgendaEvents
+{
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
+
+    private readonly string _resultsId = $"bit-bfc-agenda-results-{Guid.NewGuid():N}";
+    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
+
+    private string _search = "";
+    private bool _showDetails;
+    private BitFullCalendarEvent? _selectedEvent;
+    private ulong _lastAgendaScrollNonce;
+    private readonly string _scrollContainerId = "bit-bfc-agenda-scroll-" + Guid.NewGuid().ToString("N");
+
+    /// <summary>
+    /// The reading order inside an agenda group: an all-day event heads the day it covers, then the
+    /// timed ones in clock order, then by title so two events at the same minute keep a stable place.
+    /// Without this the list would follow whatever order the events were supplied in.
+    /// </summary>
+    private List<BitFullCalendarEvent> SortAgendaItems(IEnumerable<BitFullCalendarEvent> events)
+        => events
+            .OrderByDescending(e => e.IsAllDayOrMultiDay)
+            .ThenBy(e => e.StartDate)
+            .ThenBy(e => e.Title, StringComparer.Create(State.Culture, ignoreCase: true))
+            .ToList();
+
+    protected override void OnInitialized() => State.OnStateChanged += Refresh;
+    private void Refresh() => InvokeAsync(StateHasChanged);
+    public void Dispose() => State.OnStateChanged -= Refresh;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var nonce = State.AgendaScrollToTodayNonce;
+        if (nonce == _lastAgendaScrollNonce)
+            return;
+
+        try
+        {
+            var scrolled = await BitFcAgendaScrollInterop.TryScrollToDateAsync(JS, _scrollContainerId, State.Today);
+            if (scrolled)
+                _lastAgendaScrollNonce = nonce;
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or InvalidOperationException)
+        {
+            // The circuit/render is mid-teardown, the JS side isn't reachable, or interop was issued
+            // during prerender (InvalidOperationException); the scroll is a best-effort convenience,
+            // so swallow the transient failure and retry on a later render (the nonce is intentionally
+            // left unchanged so the scroll is re-attempted).
+        }
+    }
+
+    private async Task ShowDetails(BitFullCalendarEvent ev)
+    {
+        if (OnEventClick.HasDelegate)
+        {
+            await OnEventClick.InvokeAsync(ev);
+            return;
+        }
+        _selectedEvent = ev;
+        _showDetails = true;
+    }
+}

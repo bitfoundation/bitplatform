@@ -8,7 +8,7 @@
 // outside the character set, a wrong check digit, an impossible date - and records BWIPP's verdict and, for a
 // rejection, its error code. Gs1ReferenceTests replays them.
 //
-// The AIs are read from BbGs1Dictionary.cs itself, so a new AI there gets cases the next time this runs. Like the
+// The AIs are read from BbScannerGs1Dictionary.cs itself, so a new AI there gets cases the next time this runs. Like the
 // symbol fixtures, the output is checked in and bwip-js is not a dependency:
 //
 //     npm install --prefix <some scratch folder> bwip-js
@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url';
 const require = createRequire(import.meta.url);
 const bwipjs = require(resolve(process.argv[2]));
 const here = dirname(fileURLToPath(import.meta.url));
-const dictionary = readFileSync(resolve(here, '../../../Bit.BbScanner/Gs1/BbGs1Dictionary.cs'), 'utf8');
+const dictionary = readFileSync(resolve(here, '../../../Bit.BbScanner/Gs1/BbScannerGs1Dictionary.cs'), 'utf8');
 
 // A small deterministic generator, so that regenerating with the same bwip-js writes the same file.
 let seed = 20261111;
@@ -39,7 +39,7 @@ const CSET64 = '-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz
 const CSET32 = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
 const PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83];
 
-/** Every AI of the table with its format string, the ranges and loops of BbGs1Dictionary.Build expanded. */
+/** Every AI of the table with its format string, the ranges and loops of BbScannerGs1Dictionary.Build expanded. */
 function readTable() {
     const table = [];
     for (const [, ai, , format] of dictionary.matchAll(/\bAdd\("(\d+)", "([^"]*)", "([^"]*)"/g)) {

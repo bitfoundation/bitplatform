@@ -100,6 +100,10 @@ param(
     # agents: the models each scenario runs with, as Claude Code names them.
     [string[]] $Model = @('sonnet'),
 
+    # agents: the effort every agent runs at; Claude Code's default for the model when omitted.
+    [ValidateSet('low', 'medium', 'high', 'xhigh', 'max')]
+    [string] $Effort,
+
     # agents: also sends the turns that have the agent build a whole feature, up to an hour each.
     [switch] $Long,
 
@@ -424,6 +428,16 @@ function Install-AndroidApps {
                     Invoke-Adb uninstall $apk.Package | Out-Null
                     $output = Invoke-Adb install $apk.Path
                 }
+
+                if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE|not enough space') {
+                    Write-Host "  $($Matches[0]) even then: uninstalling the Play updates of the Google apps the suite never opens."
+
+                    foreach ($unused in 'com.google.android.youtube', 'com.google.android.apps.youtube.music', 'com.google.android.apps.maps', 'com.google.android.apps.photos', 'com.google.android.apps.docs', 'com.google.android.gm', 'com.google.android.calendar', 'com.google.android.googlequicksearchbox', 'com.google.android.tts') {
+                        Invoke-Adb shell cmd package uninstall-system-updates $unused | Out-Null
+                    }
+
+                    $output = Invoke-Adb install $apk.Path
+                }
             }
             finally {
                 Invoke-Adb shell settings delete global sys_storage_threshold_max_bytes | Out-Null
@@ -603,7 +617,10 @@ function Get-CdpOwner([int] $port) {
 
     if ($listener) {
         $webView = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
-        (Get-Process -Id $webView.ParentProcessId -ErrorAction SilentlyContinue).ProcessName
+
+        if ($webView) {
+            (Get-Process -Id $webView.ParentProcessId -ErrorAction SilentlyContinue).ProcessName
+        }
     }
 }
 
@@ -634,11 +651,20 @@ function Update-WindowsApps {
         $name = [IO.Path]::GetFileNameWithoutExtension($app.Exe)
         $deadline = (Get-Date).AddMinutes(10)
         $tapped = $false
+        $reopened = $false
 
         while (-not (Test-Version (Get-ProductVersion $app.Exe)) -and (Get-Date) -lt $deadline) {
             $owner = Get-CdpOwner 9222
+            $downloaded = Get-Item (Join-Path $app.Root "packages\$($app.Id)-$script:expectedVersion-full.nupkg") -ErrorAction SilentlyContinue
 
-            if (-not $tapped -and $owner -like '*.Client.Windows' -and $owner -ne $name) {
+            if (-not $reopened -and $downloaded -and $downloaded.LastWriteTime -lt (Get-Date).AddMinutes(-1)) {
+                Write-Host "  its release has waited downloaded for a minute without being applied, which the app's next start does. Opening it again."
+                Stop-WindowsApps
+                Start-Process $app.Exe -WindowStyle Minimized
+                $tapped = $true
+                $reopened = $true
+            }
+            elseif (-not $tapped -and $owner -like '*.Client.Windows' -and $owner -ne $name) {
                 Write-Host "  $owner restarted into its update and holds the debugging port. Closing it and opening $($app.Id) again."
                 Stop-WindowsApps
                 Start-Process $app.Exe -WindowStyle Minimized
@@ -1039,7 +1065,7 @@ function Install-BitUnderTest([string] $lab) {
     }
     else {
         Write-Host 'Installing bit from nuget.org...'
-        dotnet tool install Bit.Cli --tool-path $tools --version 11.0.0-pre-20 | Out-Null
+        dotnet tool install Bit.Cli --tool-path $tools --version 11.0.0-pre-22 | Out-Null
     }
 
     if ($LASTEXITCODE -ne 0) {
@@ -1622,7 +1648,8 @@ function ConvertTo-CallInput($value) {
 function Read-AgentTranscript([string] $log) {
     $calls = [Collections.Generic.List[object]]::new()
     $texts = [Collections.Generic.List[string]]::new()
-    $session = $final = $cost = $null
+    $answers = [Collections.Generic.List[string]]::new()
+    $session = $cost = $null
 
     foreach ($line in Get-Content $log -Encoding utf8) {
         if (-not $line.StartsWith('{')) {
@@ -1650,11 +1677,15 @@ function Read-AgentTranscript([string] $log) {
             }
         }
         elseif ($event.type -eq 'result') {
-            $final = $event.result
+            if ($event.num_turns -gt 0 -and $event.result) {
+                $answers.Add($event.result)
+            }
+
             $cost = $event.total_cost_usd
         }
     }
 
+    $final = $answers.Count ? $answers -join "`n`n" : $null
     [pscustomobject]@{ Session = $session; Cost = $cost; Final = $final; Texts = @($texts); Calls = $calls }
 }
 
@@ -1670,17 +1701,128 @@ function Invoke-AgentTurn([string] $folder, [string] $model, [string] $prompt, [
         $arguments += '--resume', $session
     }
 
-    Push-Location $folder
+    if ($Effort) {
+        $arguments += '--effort', $Effort
+    }
+
+    $start = [Diagnostics.ProcessStartInfo]::new((Get-ClaudeCli))
+    $arguments | ForEach-Object { $start.ArgumentList.Add($_) }
+    $start.WorkingDirectory = $folder
+    $start.UseShellExecute = $false
+    $start.RedirectStandardOutput = $true
+    $start.RedirectStandardError = $true
+    $start.RedirectStandardInput = $true
+
+    $output = [IO.FileStream]::new($log, [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite, 1)
+    $errors = [IO.FileStream]::new("$log.err", [IO.FileMode]::Create, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite, 1)
 
     try {
-        & (Get-ClaudeCli) @arguments *> $log
+        $process = [Diagnostics.Process]::Start($start)
+        $process.StandardInput.Close()
+        $copies = @($process.StandardOutput.BaseStream.CopyToAsync($output), $process.StandardError.BaseStream.CopyToAsync($errors))
+        $answers = 0
+        $answeredAt = $waitingAt = $null
+
+        while (-not $process.WaitForExit(5000)) {
+            $turn = Get-AgentTurnState $log
+
+            if ($turn.Answers -ne $answers) {
+                $answers = $turn.Answers
+                $answeredAt = $null
+            }
+
+            $waitingAt = $turn.State -eq 'waiting' ? ($waitingAt ?? (Get-Date)) : $null
+            $answeredAt = $turn.State -eq 'answered' ? ($answeredAt ?? (Get-Date)) : $null
+
+            if (($answeredAt -and ((Get-Date) - $answeredAt).TotalSeconds -gt 60) -or ($waitingAt -and ((Get-Date) - $waitingAt).TotalMinutes -gt 10)) {
+                taskkill /PID $process.Id /T /F 2>&1 | Out-Null
+                break
+            }
+        }
+
+        $process.WaitForExit()
+        [Threading.Tasks.Task]::WaitAll([Threading.Tasks.Task[]]$copies, 10000) | Out-Null
     }
     finally {
-        Pop-Location
+        $output.Dispose()
+        $errors.Dispose()
         Stop-FolderProcesses $folder
     }
 
     Read-AgentTranscript $log
+}
+
+function Get-AgentTurnState([string] $log) {
+    $stream = [IO.File]::Open($log, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+
+    try {
+        $lines = (New-Object IO.StreamReader $stream).ReadToEnd() -split "`n" | Where-Object {
+            $_.StartsWith('{') -and ($_.Contains('"type":"result"') -or $_.Contains('"subtype":"task_started"') -or
+                $_.Contains('"subtype":"task_notification"') -or ($_.Contains('"type":"assistant"') -and $_.Contains('"parent_tool_use_id":null')))
+        }
+
+        $commands = @{}
+        $endless = @{}
+        $ended = [Collections.Generic.HashSet[string]]::new()
+        $woken = [Collections.Generic.List[string]]::new()
+        $answered = $aside = $false
+        $answers = 0
+
+        foreach ($line in $lines) {
+            try {
+                $event = $line | ConvertFrom-Json -Depth 64
+            }
+            catch {
+                continue
+            }
+
+            if ($event.type -eq 'assistant') {
+                $aside = $answered -and $woken.Count -gt 0 -and -not ($woken | Where-Object { -not $endless[$_] })
+
+                if (-not $aside) {
+                    $answered = $false
+                    $woken.Clear()
+                }
+
+                $event.message.content | Where-Object type -eq 'tool_use' | ForEach-Object { $commands[$_.id] = "$($_.input.command)" }
+            }
+            elseif ($event.type -eq 'result') {
+                if ($event.num_turns -gt 0) {
+                    $answers += $aside ? 0 : 1
+                    $answered = $true
+                    $aside = $false
+                    $woken.Clear()
+                }
+            }
+            elseif (-not $event.task_id) {
+                continue
+            }
+            elseif ($event.subtype -eq 'task_started') {
+                $endless[$event.task_id] = Test-EndlessCommand ($event.tool_use_id ? $commands[$event.tool_use_id] : $null)
+            }
+            else {
+                $ended.Add($event.task_id) | Out-Null
+
+                if ($answered) {
+                    $woken.Add($event.task_id)
+                }
+            }
+        }
+
+        $awaited = $endless.Keys | Where-Object { -not $endless[$_] -and -not $ended.Contains($_) }
+        $pending = $woken | Where-Object { $endless.ContainsKey($_) -and -not $endless[$_] }
+        $state = if (-not $answered) { 'working' } elseif ($awaited -or $pending) { 'waiting' } else { 'answered' }
+
+        [pscustomobject]@{ State = $state; Answers = $answers }
+    }
+    finally {
+        $stream.Dispose()
+    }
+}
+
+function Test-EndlessCommand([string] $command) {
+    $command -match '/api/progress/' -or $command -match '\bdotnet watch\b' -or
+        ($command -match '\bdotnet run\b' -and $command -match 'Server\.Web|LandingPage\.Server|Workbench|AppHost|--urls')
 }
 
 function Test-AgentCheck($check, $folder, $turns, $handoff, $states) {
@@ -1781,6 +1923,7 @@ function Invoke-AgentScenario([string] $lab, [string] $id, [string] $model) {
     [pscustomobject]@{
         Scenario = $id
         Model = $model
+        Effort = $(if ($Effort) { $Effort } else { 'default' })
         Minutes = [Math]::Round(([DateTimeOffset]::Now - $started).TotalMinutes, 1)
         Cost = [Math]::Round((@($turns) + @($handoff) | Where-Object { $_ -and $_.Cost } | Measure-Object Cost -Sum).Sum, 2)
         Checks = @($checks)
@@ -1836,7 +1979,7 @@ function Invoke-AgentsTest {
 
             while ($running.Count -lt 3 -and ($run = $pending | Where-Object { -not $_.Heavy -or -not ($running | Where-Object Heavy) } | Select-Object -First 1)) {
                 $pending.Remove($run) | Out-Null
-                $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' }))
+                $arguments = @('-NoProfile', '-File', "`"$PSCommandPath`"", 'agents', '-Worker', '-Lab', "`"$lab`"", '-Scenario', $run.Id, '-Model', $run.Model) + @($(if ($Long) { '-Long' })) + @($(if ($Effort) { '-Effort', $Effort }))
                 $log = Join-Path $lab "worker-$($run.Id)-$($run.Model).log"
                 $process = Start-Process $pwsh -ArgumentList $arguments -PassThru -NoNewWindow -RedirectStandardOutput $log -RedirectStandardError "$log.err"
                 $running.Add(($run | Add-Member -PassThru Process $process | Add-Member -PassThru Started ([DateTimeOffset]::Now)))
@@ -1853,6 +1996,7 @@ function Invoke-AgentsTest {
             [pscustomobject]@{
                 Scenario = $_.Scenario
                 Model = $_.Model
+                Effort = $_.Effort
                 Passed = "$(@($_.Checks | Where-Object Verdict -eq 'pass').Count)/$(@($_.Checks | Where-Object Verdict -ne 'skipped').Count)"
                 Minutes = $_.Minutes
                 Cost = $_.Cost

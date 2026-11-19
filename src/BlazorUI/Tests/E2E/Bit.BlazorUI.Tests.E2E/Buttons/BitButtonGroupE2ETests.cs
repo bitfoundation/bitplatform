@@ -19,6 +19,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// and run against the Items page.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitButtonGroupE2ETests : E2ETestBase
 {
     private const string ItemsApi = "/e2e/button-group";

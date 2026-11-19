@@ -1,5 +1,5 @@
 using System.Net.Sockets;
-using Bit.Bcrdt.Server;
+using Bit.Bcrdt;
 using Boilerplate.Workbench;
 using Microsoft.AspNetCore.Hosting;
 

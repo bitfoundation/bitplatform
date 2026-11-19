@@ -44,13 +44,13 @@ public class ApiCatalogTests
     [TestMethod]
     [DataRow("Bm")]
     [DataRow("Bmotion")]
-    [DataRow("BmSpring")]
-    [DataRow("BmTween")]
-    [DataRow("BmInertia")]
+    [DataRow("BmotionSpring")]
+    [DataRow("BmotionTween")]
+    [DataRow("BmotionInertia")]
     [DataRow("BmotionAnimatePresence")]
-    [DataRow("BmVariants")]
-    [DataRow("BmDrag")]
-    [DataRow("BmScrollTimeline")]
+    [DataRow("BmotionVariants")]
+    [DataRow("BmotionDrag")]
+    [DataRow("BmotionScrollTimeline")]
     [DataRow("BmotionAnimateService")]
     public void Types_IncludeEveryTypeTheToolDescriptionsTellAnAgentToAskFor(string name)
     {
@@ -76,12 +76,12 @@ public class ApiCatalogTests
     [TestMethod]
     public void GetTypeDetails_ResolvesTheNameHoweverItIsWritten()
     {
-        var canonical = BmotionApiCatalog.GetTypeDetails("BmSpring");
+        var canonical = BmotionApiCatalog.GetTypeDetails("BmotionSpring");
 
         Assert.IsNotNull(canonical);
-        Assert.AreSame(canonical, BmotionApiCatalog.GetTypeDetails("bmspring"));
-        Assert.AreSame(canonical, BmotionApiCatalog.GetTypeDetails("  BmSpring  "));
-        Assert.AreSame(canonical, BmotionApiCatalog.GetTypeDetails("Bit.Bmotion.BmSpring"));
+        Assert.AreSame(canonical, BmotionApiCatalog.GetTypeDetails("bmotionspring"));
+        Assert.AreSame(canonical, BmotionApiCatalog.GetTypeDetails("  BmotionSpring  "));
+        Assert.AreSame(canonical, BmotionApiCatalog.GetTypeDetails("Bit.Bmotion.BmotionSpring"));
     }
 
     [TestMethod]
@@ -101,26 +101,26 @@ public class ApiCatalogTests
     [TestMethod]
     public void GetTypeDetails_ReadsDefaultValuesOffARealInstance()
     {
-        var spring = BmotionApiCatalog.GetTypeDetails("BmSpring")!;
+        var spring = BmotionApiCatalog.GetTypeDetails("BmotionSpring")!;
 
-        var actual = new BmSpring();
+        var actual = new BmotionSpring();
 
         foreach (var (name, expected) in new[]
         {
-            (nameof(BmSpring.Stiffness), actual.Stiffness),
-            (nameof(BmSpring.Damping), actual.Damping),
-            (nameof(BmSpring.Mass), actual.Mass),
+            (nameof(BmotionSpring.Stiffness), actual.Stiffness),
+            (nameof(BmotionSpring.Damping), actual.Damping),
+            (nameof(BmotionSpring.Mass), actual.Mass),
         })
         {
             var member = spring.Members.Single(entry => entry.Name == name);
 
             Assert.AreEqual(expected.ToString(System.Globalization.CultureInfo.InvariantCulture), member.Default,
-                            $"BmSpring.{name} is documented as defaulting to '{member.Default}'.");
+                            $"BmotionSpring.{name} is documented as defaulting to '{member.Default}'.");
         }
 
         // A tween's duration is the one number people assume; it has to be the library's own.
-        Assert.AreEqual(new BmTween().Duration.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                        BmotionApiCatalog.GetTypeDetails("BmTween")!.Members.Single(member => member.Name == "Duration").Default);
+        Assert.AreEqual(new BmotionTween().Duration.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                        BmotionApiCatalog.GetTypeDetails("BmotionTween")!.Members.Single(member => member.Name == "Duration").Default);
     }
 
     [TestMethod]
@@ -160,14 +160,14 @@ public class ApiCatalogTests
     [TestMethod]
     public void GetTypeDetails_AnEnum_ListsEveryMemberAsAnEnumValue()
     {
-        var ease = BmotionApiCatalog.GetTypeDetails("BmEase")!;
+        var ease = BmotionApiCatalog.GetTypeDetails("BmotionEase")!;
 
         Assert.AreEqual("Enum", ease.Kind);
         Assert.IsTrue(ease.Members.All(member => member.Kind == "EnumValue"));
 
-        CollectionAssert.AreEquivalent(Enum.GetNames<BmEase>(), ease.Members.Select(member => member.Name).ToArray());
+        CollectionAssert.AreEquivalent(Enum.GetNames<BmotionEase>(), ease.Members.Select(member => member.Name).ToArray());
 
-        // The underlying constant is reported, so BmEase.Linear can be told from BmEase.Out.
+        // The underlying constant is reported, so BmotionEase.Linear can be told from BmotionEase.Out.
         Assert.IsTrue(ease.Members.All(member => member.Default is not null));
     }
 
@@ -204,7 +204,7 @@ public class ApiCatalogTests
         Assert.IsTrue(documented > BmotionApiCatalog.Types.Length / 2,
                       $"Only {documented} of {BmotionApiCatalog.Types.Length} types carry a summary.");
 
-        StringAssert.Contains(BmotionApiCatalog.GetTypeDetails("BmSpring")!.Summary ?? string.Empty, "spring",
+        StringAssert.Contains(BmotionApiCatalog.GetTypeDetails("BmotionSpring")!.Summary ?? string.Empty, "spring",
                               StringComparison.OrdinalIgnoreCase);
     }
 

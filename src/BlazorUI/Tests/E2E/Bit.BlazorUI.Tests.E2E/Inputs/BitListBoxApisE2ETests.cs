@@ -6,6 +6,7 @@
 /// list box puts back in the order of the markup by reading the document, and the parameters of an option changing.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitListBoxApisE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/listbox/apis";

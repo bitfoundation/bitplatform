@@ -30,14 +30,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             Engine = services.GetRequiredService<BmotionAnimationEngine>();
             Interop = services.GetRequiredService<IBmotionInterop>();
             LayoutRegistry = services.GetRequiredService<BmotionLayoutRegistry>();
-            Options = services.GetRequiredService<BitBmotionOptions>();
+            Options = services.GetRequiredService<BmotionOptions>();
             PrerenderState = services.GetRequiredService<BmotionPrerenderState>();
         }
     }
     private BmotionAnimationEngine Engine { get; set; } = null!;
     private IBmotionInterop Interop { get; set; } = null!;
     private BmotionLayoutRegistry LayoutRegistry { get; set; } = null!;
-    private BitBmotionOptions Options { get; set; } = null!;
+    private BmotionOptions Options { get; set; } = null!;
     private BmotionPrerenderState PrerenderState { get; set; } = null!;
     [Inject] private ILogger<Bmotion>? Logger { get; set; }
 
@@ -73,20 +73,20 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     // ── Animation targets ──────────────────────────────────────────────────────
-    [Parameter] public BmTarget? Initial { get; set; }
-    [Parameter] public BmTarget? Animate { get; set; }
-    [Parameter] public BmTarget? Exit { get; set; }
+    [Parameter] public BmotionTarget? Initial { get; set; }
+    [Parameter] public BmotionTarget? Animate { get; set; }
+    [Parameter] public BmotionTarget? Exit { get; set; }
 
     // ── Gesture states ─────────────────────────────────────────────────────────
-    [Parameter] public BmTarget? WhileHover { get; set; }
-    [Parameter] public BmTarget? WhileTap { get; set; }
-    [Parameter] public BmTarget? WhileFocus { get; set; }
-    [Parameter] public BmTarget? WhileDrag { get; set; }
-    [Parameter] public BmTarget? WhileInView { get; set; }
+    [Parameter] public BmotionTarget? WhileHover { get; set; }
+    [Parameter] public BmotionTarget? WhileTap { get; set; }
+    [Parameter] public BmotionTarget? WhileFocus { get; set; }
+    [Parameter] public BmotionTarget? WhileDrag { get; set; }
+    [Parameter] public BmotionTarget? WhileInView { get; set; }
 
     /// <summary>
     /// If <c>true</c>, <see cref="WhileInView"/> fires only once and never deactivates.
-    /// Shorthand for <c>Viewport = new BmViewport { Once = true }</c>.
+    /// Shorthand for <c>Viewport = new BmotionViewport { Once = true }</c>.
     /// </summary>
     [Parameter] public bool Once { get; set; }
 
@@ -94,52 +94,52 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// Advanced viewport options for <see cref="WhileInView"/> (margin, amount, once).
     /// When set, <see cref="Once"/> is ignored in favour of <c>Viewport.Once</c>.
     /// </summary>
-    [Parameter] public BmViewport? Viewport { get; set; }
+    [Parameter] public BmotionViewport? Viewport { get; set; }
 
     // ── Transition ─────────────────────────────────────────────────────────────
-    [Parameter] public BmTransition? Transition { get; set; }
+    [Parameter] public BmotionTransition? Transition { get; set; }
 
     /// <summary>
-    /// A ready-made animation (see <see cref="BmPresets"/>) supplying the targets, viewport options and transition
+    /// A ready-made animation (see <see cref="BmotionPresets"/>) supplying the targets, viewport options and transition
     /// this element doesn't set itself - anything set on the component wins over the preset's:
     /// <code>
-    /// &lt;Bmotion Preset="BmPresets.Slide(BmEdge.Bottom)" Transition="Bm.Spring(bounce: 0.3)"&gt;...&lt;/Bmotion&gt;
+    /// &lt;Bmotion Preset="BmotionPresets.Slide(BmotionEdge.Bottom)" Transition="Bm.Spring(bounce: 0.3)"&gt;...&lt;/Bmotion&gt;
     /// </code>
     /// </summary>
-    [Parameter] public BmPreset? Preset { get; set; }
+    [Parameter] public BmotionPreset? Preset { get; set; }
 
     /// <summary>
-    /// What this element does when motion is reduced (see <see cref="BitBmotionOptions.ReducedMotion"/> and
-    /// <see cref="BmotionConfig"/>): <see cref="BmReducedMotionBehavior.Reduce"/> - the default - lands movement,
+    /// What this element does when motion is reduced (see <see cref="BmotionOptions.ReducedMotion"/> and
+    /// <see cref="BmotionConfig"/>): <see cref="BmotionReducedMotionBehavior.Reduce"/> - the default - lands movement,
     /// scaling, rotation and size changes at once and keeps fades, colours and filters;
-    /// <see cref="BmReducedMotionBehavior.Instant"/> lands everything at once, fades too (decorative motion, a large
-    /// crossfade); <see cref="BmReducedMotionBehavior.Full"/> keeps the whole animation (motion that carries
+    /// <see cref="BmotionReducedMotionBehavior.Instant"/> lands everything at once, fades too (decorative motion, a large
+    /// crossfade); <see cref="BmotionReducedMotionBehavior.Full"/> keeps the whole animation (motion that carries
     /// information: a progress bar filling, an element following a drag). Unset, the <see cref="Preset"/>'s applies.
     /// It decides <em>how</em> motion is reduced here, never <em>whether</em> it is - that stays the user's and the app's.
     /// </summary>
-    [Parameter] public BmReducedMotionBehavior? ReducedMotion { get; set; }
+    [Parameter] public BmotionReducedMotionBehavior? ReducedMotion { get; set; }
 
     /// <summary>
     /// Drives <see cref="Animate"/> from <b>scroll position instead of time</b>, on the browser's
     /// native <c>ScrollTimeline</c>/<c>ViewTimeline</c> where available - so the animation runs off
     /// the main thread with no scroll handler and no per-frame interop:
     /// <code>
-    /// &lt;Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])"&gt;
+    /// &lt;Bmotion Timeline="BmotionScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])"&gt;
     ///     &lt;div class="progress-bar" /&gt;
     /// &lt;/Bmotion&gt;
     /// </code>
     /// Only transform components and <c>opacity</c> can be scroll-driven (they are what the browser
     /// can interpolate for us); a target touching anything else falls back to the ordinary
     /// time-based path. <see cref="Transition"/> is not used while a timeline is attached - scroll
-    /// position <em>is</em> the progress. See <see cref="BmScrollTimeline"/>.
+    /// position <em>is</em> the progress. See <see cref="BmotionScrollTimeline"/>.
     /// </summary>
-    [Parameter] public BmScrollTimeline? Timeline { get; set; }
+    [Parameter] public BmotionScrollTimeline? Timeline { get; set; }
 
     /// <summary>
     /// What this element renders while the page is prerendered or statically rendered on the server,
-    /// overriding <see cref="BitBmotionOptions.Prerender"/> (<c>null</c>, the default, follows it):
-    /// <c>Initial</c>, at rest (<see cref="BmPrerenderMode.Final"/>), or playing its enter animation
-    /// in CSS (<see cref="BmPrerenderMode.Animate"/>).
+    /// overriding <see cref="BmotionOptions.Prerender"/> (<c>null</c>, the default, follows it):
+    /// <c>Initial</c>, at rest (<see cref="BmotionPrerenderMode.Final"/>), or playing its enter animation
+    /// in CSS (<see cref="BmotionPrerenderMode.Animate"/>).
     /// <para>
     /// An element prerendered at rest is also taken over at rest by the interactive runtime, so its
     /// enter animation isn't replayed - and <see cref="OnAnimationStart"/>/<see cref="OnAnimationComplete"/>
@@ -147,10 +147,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// state, so the runtime restarts it. Read when the element mounts.
     /// </para>
     /// </summary>
-    [Parameter] public BmPrerenderMode? Prerender { get; set; }
+    [Parameter] public BmotionPrerenderMode? Prerender { get; set; }
 
     // ── Variants ─────────────────────────────────────────────────────────────
-    [Parameter] public BmVariants? Variants { get; set; }
+    [Parameter] public BmotionVariants? Variants { get; set; }
 
     /// <summary>
     /// Active variant name - the razor-literal-friendly way to drive variants:
@@ -167,7 +167,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Per-component data passed to dynamic variants (entries added via
-    /// <see cref="BmVariants.Add(string, Func{object?, BmProps})"/>).
+    /// <see cref="BmotionVariants.Add(string, Func{object?, BmotionProps})"/>).
     /// </summary>
     [Parameter] public object? Custom { get; set; }
 
@@ -195,7 +195,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// &lt;/Bmotion&gt;
     /// </code>
     /// </summary>
-    [Parameter] public Dictionary<string, BmValue<double>>? Values { get; set; }
+    [Parameter] public Dictionary<string, BmotionValue<double>>? Values { get; set; }
 
     /// <summary>
     /// Binds string motion values - typically <see cref="Bm.Template"/> composites - to CSS
@@ -208,7 +208,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// &lt;/Bmotion&gt;
     /// </code>
     /// </summary>
-    [Parameter] public Dictionary<string, BmValue<string>>? StringValues { get; set; }
+    [Parameter] public Dictionary<string, BmotionValue<string>>? StringValues { get; set; }
 
     /// <summary>
     /// Rewrites the CSS <c>transform</c> string this element's animation composes - motion.dev's
@@ -219,23 +219,23 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </code>
     /// Applied on every path that writes the transform (per-frame loop, initial inline style,
     /// instant <c>Set</c>, and the keyframes handed to the compositor). See
-    /// <see cref="BmTransformTemplate"/>.
+    /// <see cref="BmotionTransformTemplate"/>.
     /// </summary>
-    [Parameter] public BmTransformTemplate? TransformTemplate { get; set; }
+    [Parameter] public BmotionTransformTemplate? TransformTemplate { get; set; }
 
     // ── Drag ─────────────────────────────────────────────────────────────────
-    /// <summary>Enable dragging: <c>Drag="true"</c> (both axes), <c>Drag="BmDrag.X"</c> or <c>Drag="BmDrag.Y"</c>.</summary>
-    [Parameter] public BmDrag Drag { get; set; }
+    /// <summary>Enable dragging: <c>Drag="true"</c> (both axes), <c>Drag="BmotionDrag.X"</c> or <c>Drag="BmotionDrag.Y"</c>.</summary>
+    [Parameter] public BmotionDrag Drag { get; set; }
 
     /// <summary>Constraint bounds in px relative to the element's resting position.</summary>
-    [Parameter] public BmDragConstraints? DragConstraints { get; set; }
+    [Parameter] public BmotionDragConstraints? DragConstraints { get; set; }
 
     /// <summary>
     /// Elasticity when the drag exceeds constraints (0 = rigid, 1 = fully elastic).
     /// Accepts a uniform value (<c>DragElastic="0.5"</c>) or per-edge values via
-    /// <c>BmDragElastic.Edges(right: 0.8, bottom: 0.8)</c>. Default: 0.35 on every edge.
+    /// <c>BmotionDragElastic.Edges(right: 0.8, bottom: 0.8)</c>. Default: 0.35 on every edge.
     /// </summary>
-    [Parameter] public BmDragElastic DragElastic { get; set; } = 0.35;
+    [Parameter] public BmotionDragElastic DragElastic { get; set; } = 0.35;
 
     /// <summary>
     /// CSS selector for a drag handle inside the element: the drag only starts when the
@@ -248,7 +248,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// <c>useDragControls</c>. Pair with <see cref="DragListener"/> = false to make the
     /// controls the only trigger.
     /// </summary>
-    [Parameter] public BmDragControls? DragControls { get; set; }
+    [Parameter] public BmotionDragControls? DragControls { get; set; }
 
     /// <summary>
     /// Whether pressing the element itself starts the drag. Default: true. Set to false when
@@ -293,15 +293,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public bool DragPropagation { get; set; }
 
     /// <summary>Transition used for constraint snap-back / snap-to-origin. Defaults to a spring.</summary>
-    [Parameter] public BmTransition? DragTransition { get; set; }
+    [Parameter] public BmotionTransition? DragTransition { get; set; }
 
     // ── Layout ─────────────────────────────────────────────────────────────────
     /// <summary>
     /// Automatic FLIP layout animation: <c>Layout="true"</c> (position + size, with direct children
     /// counter-scaled and border-radius corrected so nothing distorts) or
-    /// <c>Layout="BmLayout.Position"</c> (position only, the cheapest option).
+    /// <c>Layout="BmotionLayout.Position"</c> (position only, the cheapest option).
     /// </summary>
-    [Parameter] public BmLayout Layout { get; set; }
+    [Parameter] public BmotionLayout Layout { get; set; }
 
     /// <summary>
     /// Shared-element transitions: when this element mounts and another element with the same
@@ -333,10 +333,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// The point of the element a layout animation is projected from - motion.dev's
-    /// <c>layoutAnchor</c>. Defaults to <see cref="BmLayoutAnchor.TopLeft"/>; use
-    /// <see cref="BmLayoutAnchor.Center"/> to make a resizing box grow evenly around its middle.
+    /// <c>layoutAnchor</c>. Defaults to <see cref="BmotionLayoutAnchor.TopLeft"/>; use
+    /// <see cref="BmotionLayoutAnchor.Center"/> to make a resizing box grow evenly around its middle.
     /// </summary>
-    [Parameter] public BmLayoutAnchor LayoutAnchor { get; set; } = BmLayoutAnchor.TopLeft;
+    [Parameter] public BmotionLayoutAnchor LayoutAnchor { get; set; } = BmotionLayoutAnchor.TopLeft;
 
     /// <summary>
     /// Set on an element inside a <b>scrolling container</b> so its layout measurements fold in that
@@ -362,7 +362,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback OnFocusStart { get; set; }
     [Parameter] public EventCallback OnFocusEnd { get; set; }
     [Parameter] public EventCallback OnPanStart { get; set; }
-    [Parameter] public EventCallback<BmPanInfo> OnPan { get; set; }
+    [Parameter] public EventCallback<BmotionPanInfo> OnPan { get; set; }
     [Parameter] public EventCallback OnPanEnd { get; set; }
     [Parameter] public EventCallback OnDragStart { get; set; }
     [Parameter] public EventCallback OnDrag { get; set; }
@@ -370,10 +370,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Fires once per drag when <see cref="DragDirectionLock"/> resolves the dominant axis -
-    /// motion.dev's <c>onDirectionLock</c>. Receives <see cref="BmDragAxis.X"/> or
-    /// <see cref="BmDragAxis.Y"/>.
+    /// motion.dev's <c>onDirectionLock</c>. Receives <see cref="BmotionDragAxis.X"/> or
+    /// <see cref="BmotionDragAxis.Y"/>.
     /// </summary>
-    [Parameter] public EventCallback<BmDragAxis> OnDirectionLock { get; set; }
+    [Parameter] public EventCallback<BmotionDragAxis> OnDirectionLock { get; set; }
     /// <summary>
     /// Fires when a layout (FLIP) animation starts - motion.dev's <c>onLayoutAnimationStart</c>.
     /// Only fires when the element actually moved or resized enough to animate.
@@ -388,10 +388,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [Parameter] public EventCallback OnLayoutAnimationComplete { get; set; }
 
     /// <summary>Fires when an Animate/State-driven animation starts; receives the resolved target props.</summary>
-    [Parameter] public EventCallback<BmProps?> OnAnimationStart { get; set; }
+    [Parameter] public EventCallback<BmotionProps?> OnAnimationStart { get; set; }
 
     /// <summary>Fires when an Animate/State-driven animation completes naturally; receives the resolved target props.</summary>
-    [Parameter] public EventCallback<BmProps?> OnAnimationComplete { get; set; }
+    [Parameter] public EventCallback<BmotionProps?> OnAnimationComplete { get; set; }
 
     /// <summary>
     /// Called on every animation frame with the CSS declarations flushed to the element this
@@ -408,7 +408,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private bool _initialized;
     private bool _idChangeWarned;
     private bool _isExiting;
-    private BmTarget? _prevAnimate;
+    private BmotionTarget? _prevAnimate;
     private BmotionVariantContext? _ownVariantCtx;
     private string? _prevInheritedVariant;
     private int _variantChildIndex = -1;
@@ -433,7 +433,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // prerendered markup (_takenOverAtRest), where the enter animation is skipped.
     // _prerenderSignature/_prerenderOrdinal: the entry the prerendering pass persists for the element.
     // _prerenderedId: the id of the prerendered markup the runtime took the element over from.
-    private BmPrerenderMode _prerenderMode;
+    private BmotionPrerenderMode _prerenderMode;
     private bool _isStaticRender;
     private bool _restsAtMount;
     private BmotionPrerenderPlan? _restPlan;
@@ -450,19 +450,19 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// The animate target: an explicit <see cref="Animate"/> wins over <see cref="State"/>, which wins over the
     /// <see cref="Preset"/>'s.
     /// </summary>
-    private BmTarget? EffectiveAnimate => Animate ?? (BmTarget?)State ?? Preset?.Animate;
+    private BmotionTarget? EffectiveAnimate => Animate ?? (BmotionTarget?)State ?? Preset?.Animate;
 
     /// <summary>The initial target: an explicit <see cref="Initial"/> wins over <see cref="InitialState"/>, then the preset's.</summary>
-    private BmTarget? EffectiveInitial => Initial ?? (BmTarget?)InitialState ?? Preset?.Initial;
+    private BmotionTarget? EffectiveInitial => Initial ?? (BmotionTarget?)InitialState ?? Preset?.Initial;
 
     // Every other target and option the preset can supply: the component's own parameter wins.
-    private BmTarget? EffectiveExit => Exit ?? Preset?.Exit;
-    private BmTarget? EffectiveWhileHover => WhileHover ?? Preset?.WhileHover;
-    private BmTarget? EffectiveWhileTap => WhileTap ?? Preset?.WhileTap;
-    private BmTarget? EffectiveWhileFocus => WhileFocus ?? Preset?.WhileFocus;
-    private BmTarget? EffectiveWhileInView => WhileInView ?? Preset?.WhileInView;
-    private BmTransition? EffectiveTransition => Transition ?? Preset?.Transition;
-    private BmViewport? EffectiveViewport => Viewport ?? Preset?.Viewport;
+    private BmotionTarget? EffectiveExit => Exit ?? Preset?.Exit;
+    private BmotionTarget? EffectiveWhileHover => WhileHover ?? Preset?.WhileHover;
+    private BmotionTarget? EffectiveWhileTap => WhileTap ?? Preset?.WhileTap;
+    private BmotionTarget? EffectiveWhileFocus => WhileFocus ?? Preset?.WhileFocus;
+    private BmotionTarget? EffectiveWhileInView => WhileInView ?? Preset?.WhileInView;
+    private BmotionTransition? EffectiveTransition => Transition ?? Preset?.Transition;
+    private BmotionViewport? EffectiveViewport => Viewport ?? Preset?.Viewport;
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
@@ -500,7 +500,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // played. Expressed as extra child delay so the whole cascade (including the stagger)
             // shifts together, and derived from the transition so it stays correct when the
             // container's duration changes.
-            if (transition is { When: BmWhen.BeforeChildren })
+            if (transition is { When: BmotionWhen.BeforeChildren })
                 delayChildren += transition.ToConfig().EstimatedDurationSeconds();
 
             // A cascaded context whose fields are mutated in place does NOT reliably notify
@@ -514,7 +514,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 !ReferenceEquals(_ownVariantCtx.Variants, Variants) ||
                 _ownVariantCtx.StaggerChildren != stagger ||
                 _ownVariantCtx.DelayChildren != delayChildren ||
-                !BmStagger.AreEquivalent(_ownVariantCtx.ChildStagger, childStagger))
+                !BmotionStagger.AreEquivalent(_ownVariantCtx.ChildStagger, childStagger))
             {
                 var previous = _ownVariantCtx;
                 _ownVariantCtx = new BmotionVariantContext
@@ -596,7 +596,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         {
             style = ResolveInitialProps()?.ToCssStyleString(TransformTemplate) ?? string.Empty;
         }
-        if (_isStaticRender && _prerenderMode != BmPrerenderMode.Initial && EffectiveWhileInView != null) style += BuildNoScriptInView();
+        if (_isStaticRender && _prerenderMode != BmotionPrerenderMode.Initial && EffectiveWhileInView != null) style += BuildNoScriptInView();
         if (!_initialized && WillCrossfadeIn())
         {
             style = style.Length == 0 || style.TrimEnd().EndsWith(';') ? style + CrossfadeHiddenStyle : $"{style};{CrossfadeHiddenStyle}";
@@ -637,7 +637,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>The target the enter animation plays to: the animate target, or the inherited variant.</summary>
-    private BmProps? ResolveEnterProps()
+    private BmotionProps? ResolveEnterProps()
     {
         if (EffectiveAnimate != null) return ResolveProps(EffectiveAnimate);
         if (VariantCtx?.ActiveVariant is string name && (Variants != null || VariantCtx.Variants != null))
@@ -645,7 +645,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         return null;
     }
 
-    private BmProps? ResolveInitialProps()
+    private BmotionProps? ResolveInitialProps()
     {
         var props = ResolveProps(EffectiveInitial);
         if (props == null && EffectiveAnimate == null && VariantCtx?.InitialVariant is string initVariant)
@@ -673,7 +673,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         if (!_isStaticRender) PrerenderState.NoteMount();
 
         // Initial="false" renders at rest on every pass already (see CompileSkippedEnterPlan).
-        if (_prerenderMode == BmPrerenderMode.Initial || SkipsEnter) return;
+        if (_prerenderMode == BmotionPrerenderMode.Initial || SkipsEnter) return;
         if (!_isStaticRender && !PrerenderState.IsHydrating) return;
 
         // A scroll timeline drives the target from scroll position, and its starting point is Initial.
@@ -760,14 +760,14 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// The enter animation InitialiseAsync would play - target and transition - in the form the CSS
     /// compiler takes: the transition as played, and its reduced-motion variant.
     /// </summary>
-    private (BmProps Props, BmotionTransitionConfig? Full, BmotionTransitionConfig? Reduced)? ResolvePrerenderEnter()
+    private (BmotionProps Props, BmotionTransitionConfig? Full, BmotionTransitionConfig? Reduced)? ResolvePrerenderEnter()
     {
         if (EffectiveAnimate != null)
         {
             if (ResolveProps(EffectiveAnimate) is not { } props) return null;
             // An afterChildren wait is measured off children that haven't mounted when this renders,
             // so CSS can't time it: the element just renders at rest.
-            if (EffectiveTransition is { When: BmWhen.AfterChildren } && Variants != null)
+            if (EffectiveTransition is { When: BmotionWhen.AfterChildren } && Variants != null)
                 return (props, InstantTransition(), InstantTransition());
             var normal = BuildNormalTransition(props);
             return (props, normal, ReducedVariant(normal));
@@ -785,7 +785,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             double delay = VariantCtx.GetChildDelay(_variantChildIndex);
             if (delay > 0) full.Delay += delay;
             // Motion that is kept in full keeps its stagger too.
-            var reduced = ReducedMotionBehavior == BmReducedMotionBehavior.Full ? full : ReducedVariant(normal);
+            var reduced = ReducedMotionBehavior == BmotionReducedMotionBehavior.Full ? full : ReducedVariant(normal);
             return (props, full, reduced);
         }
         return null;
@@ -798,7 +798,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     private string BuildPrerenderAnimation(BmotionPrerenderPlan plan)
     {
-        if (_prerenderMode != BmPrerenderMode.Animate) return string.Empty;
+        if (_prerenderMode != BmotionPrerenderMode.Animate) return string.Empty;
 
         double elapsedMs = 0;
         if (_takenOverAtRest)
@@ -834,15 +834,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// </summary>
     private BmotionPrerenderMotionPolicy PrerenderMotionPolicy()
     {
-        if (ReducedMotionBehavior == BmReducedMotionBehavior.Full) return BmotionPrerenderMotionPolicy.Full;
+        if (ReducedMotionBehavior == BmotionReducedMotionBehavior.Full) return BmotionPrerenderMotionPolicy.Full;
         if (ConfigCtx?.ReduceMotion is bool configReduce)
             return configReduce ? BmotionPrerenderMotionPolicy.Reduced : BmotionPrerenderMotionPolicy.Full;
 
         return Options.ReducedMotion switch
         {
-            BmReducedMotionMode.Always => BmotionPrerenderMotionPolicy.Reduced,
-            BmReducedMotionMode.Never => BmotionPrerenderMotionPolicy.Full,
-            BmReducedMotionMode.User => BmotionPrerenderMotionPolicy.FollowOs,
+            BmotionReducedMotionMode.Always => BmotionPrerenderMotionPolicy.Reduced,
+            BmotionReducedMotionMode.Never => BmotionPrerenderMotionPolicy.Full,
+            BmotionReducedMotionMode.User => BmotionPrerenderMotionPolicy.FollowOs,
             _ => ConfigCtx is not null ? BmotionPrerenderMotionPolicy.FollowOs : BmotionPrerenderMotionPolicy.Full,
         };
     }
@@ -872,7 +872,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// How long this element's variant animation takes, for an <see cref="BmWhen.AfterChildren"/>
+    /// How long this element's variant animation takes, for an <see cref="BmotionWhen.AfterChildren"/>
     /// parent's wait. Evaluated lazily (the parent calls it when it is about to animate), so it
     /// reflects the variant that actually resolved rather than whatever was configured at
     /// registration time.
@@ -883,8 +883,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             ? LookupVariant(name)
             : null;
         var transition = props?.Transition ?? EffectiveTransition ?? ConfigCtx?.DefaultTransition;
-        // No transition anywhere means the engine's default tween, whose length is BmTween's default.
-        if (transition is null) return new BmTween().Duration;
+        // No transition anywhere means the engine's default tween, whose length is BmotionTween's default.
+        if (transition is null) return new BmotionTween().Duration;
         var config = transition.ToConfig();
         // An endlessly repeating child would make the parent wait forever; count only one play.
         return config.EstimatedDurationSeconds() + Math.Max(config.Delay, 0);
@@ -1005,7 +1005,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         _layoutHeld = true;
         var anchor = LayoutAnchor.Sanitized();
         return Interop.MeasureAndHoldLayoutAsync(_id, MeasureOptions,
-            translate: Layout.Mode != BmLayoutMode.Size, scale: Layout.Mode != BmLayoutMode.Position, anchor.X, anchor.Y);
+            translate: Layout.Mode != BmotionLayoutMode.Size, scale: Layout.Mode != BmotionLayoutMode.Position, anchor.X, anchor.Y);
     }
 
     private bool _layoutHeld;
@@ -1032,7 +1032,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // element that keeps its full animation (ReducedMotion="Full") ignores reduced motion, a local
         // <BmotionConfig ReduceMotion> wins outright, and Always/Never ignore the OS - so detection
         // there is a wasted interop round-trip (see OsPreferenceMatters).
-        if (ReducedMotionBehavior != BmReducedMotionBehavior.Full
+        if (ReducedMotionBehavior != BmotionReducedMotionBehavior.Full
             && OsPreferenceMatters(Options.ReducedMotion, ConfigCtx?.ReduceMotion, ConfigCtx is not null))
             await Engine.EnsureReducedMotionDetectedAsync();
         // Every await below can resume after the component was disposed - an element unmounted
@@ -1199,7 +1199,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
         await RestorePreExitAsync();
 
-        if (!BmTarget.AreEquivalent(_prevAnimate, EffectiveAnimate))
+        if (!BmotionTarget.AreEquivalent(_prevAnimate, EffectiveAnimate))
         {
             var animateProps = ResolveProps(EffectiveAnimate);
             if (animateProps != null)
@@ -1362,8 +1362,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // ratio-sensitive content (motion.dev's layout="position"); Size mode is the mirror image -
         // the element snaps to its new position and only the box scales (motion.dev's
         // layout="size"), for boxes that grow or shrink in place.
-        bool translateToo = Layout.Mode != BmLayoutMode.Size;
-        bool scaleToo = Layout.Mode != BmLayoutMode.Position;
+        bool translateToo = Layout.Mode != BmotionLayoutMode.Size;
+        bool scaleToo = Layout.Mode != BmotionLayoutMode.Position;
         // The projection anchor is the point that appears to stay still. Measuring the delta from
         // that same point - rather than always from the top-left corner - is what makes a centre
         // anchor grow the box evenly instead of pushing it down and right.
@@ -1384,7 +1384,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         double dur = t?.Type == BmotionTransitionType.Spring ? 600 : (t?.Duration ?? 0.5) * 1000;
         string easing = t?.Type == BmotionTransitionType.Spring
             ? "cubic-bezier(0.14,1,0.34,1)"
-            : BmEaseFunctions.ToCssString(t);
+            : BmotionEaseFunctions.ToCssString(t);
         var flip = new BmotionFlip { Dx = dx, Dy = dy, Sx = sx, Sy = sy, DurationMs = dur, Easing = easing, OriginX = anchor.X, OriginY = anchor.Y };
         if (moves)
         {
@@ -1419,7 +1419,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // Raised by the engine once the animation settles, outside any event the renderer dispatched: a handler that fails
     // reaches the renderer (an ErrorBoundary, the circuit) as a failing event handler's exception does, not dropped
     // with the engine's fire-and-forget continuation.
-    private async Task RaiseAnimationCompleteAsync(BmProps? props)
+    private async Task RaiseAnimationCompleteAsync(BmotionProps? props)
     {
         try { await OnAnimationComplete.InvokeAsync(props); }
         catch (Exception ex) when (!_disposed) { await DispatchExceptionAsync(ex); }
@@ -1517,7 +1517,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // Programmatic API
     // ════════════════════════════════════════════════════════════════════════════
 
-    public async ValueTask AnimateAsync(BmProps props, BmTransition? transition = null, CancellationToken cancellationToken = default)
+    public async ValueTask AnimateAsync(BmotionProps props, BmotionTransition? transition = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(props);
         if (cancellationToken.IsCancellationRequested) return;
@@ -1551,13 +1551,13 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         }
     }
 
-    public void Set(BmProps props)
+    public void Set(BmotionProps props)
     {
         ArgumentNullException.ThrowIfNull(props);
         Engine.SetInstant(_id, GuardCss(props)!.ToJsDictionary());
     }
 
-    public async ValueTask SetAsync(BmProps props, CancellationToken cancellationToken = default)
+    public async ValueTask SetAsync(BmotionProps props, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(props);
         if (cancellationToken.IsCancellationRequested) return;
@@ -1709,7 +1709,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async Task OnDirectionLocked(string axis)
         => await OnDirectionLock.InvokeAsync(
-            string.Equals(axis, "y", StringComparison.OrdinalIgnoreCase) ? BmDragAxis.Y : BmDragAxis.X);
+            string.Equals(axis, "y", StringComparison.OrdinalIgnoreCase) ? BmotionDragAxis.Y : BmotionDragAxis.X);
 
     [JSInvokable]
     public async Task OnPointerUp_Drag(double velX, double velY,
@@ -1738,11 +1738,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // configs (Parent/Within) only exist in resolved form there, so prefer the reported
             // bounds; fall back to the static parameter when none arrived (e.g. no constraints).
             var constraints = boundLeft.HasValue || boundRight.HasValue || boundTop.HasValue || boundBottom.HasValue
-                ? new BmDragConstraints { Left = boundLeft, Right = boundRight, Top = boundTop, Bottom = boundBottom }
+                ? new BmotionDragConstraints { Left = boundLeft, Right = boundRight, Top = boundTop, Bottom = boundBottom }
                 : DragConstraints;
             await Engine.EndDragAsync(
                 _id, velX, velY, DragMomentum, constraints,
-                Drag.Axis == BmDragAxis.Both ? null : Drag.Axis.ToString().ToLowerInvariant(),
+                Drag.Axis == BmotionDragAxis.Both ? null : Drag.Axis.ToString().ToLowerInvariant(),
                 DragTransition?.ToConfig(),
                 reducedMotion: IsMotionReduced());
         }
@@ -1761,12 +1761,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     {
         if (OnPan.HasDelegate)
         {
-            await OnPan.InvokeAsync(new BmPanInfo
+            await OnPan.InvokeAsync(new BmotionPanInfo
             {
-                Point    = new BmPoint { X = pointX,    Y = pointY },
-                Delta    = new BmPoint { X = deltaX,    Y = deltaY },
-                Offset   = new BmPoint { X = offsetX,   Y = offsetY },
-                Velocity = new BmPoint { X = velocityX, Y = velocityY },
+                Point    = new BmotionPoint { X = pointX,    Y = pointY },
+                Delta    = new BmotionPoint { X = deltaX,    Y = deltaY },
+                Offset   = new BmotionPoint { X = offsetX,   Y = offsetY },
+                Velocity = new BmotionPoint { X = velocityX, Y = velocityY },
             });
         }
     }
@@ -1809,10 +1809,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     // Resolve the effective props (direct or variant-referenced) so pathLength is detected
     // whether the target carries Props directly or points at a variant label.
-    private bool HasPathLength(BmTarget? t) =>
+    private bool HasPathLength(BmotionTarget? t) =>
         ResolveProps(t)?.PathLength != null;
 
-    private BmProps? ResolveProps(BmTarget? target)
+    private BmotionProps? ResolveProps(BmotionTarget? target)
     {
         if (target == null || target.IsDisabled) return null;
         if (target.HasProps) return GuardCss(target.Props);
@@ -1825,26 +1825,26 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     }
 
     // The variant called `name`: this element's own, else the one it inherits. Unchecked - for reading it, not playing it.
-    private BmProps? LookupVariant(string name) => Variants?.Get(name, Custom) ?? VariantCtx?.Variants?.Get(name, Custom);
+    private BmotionProps? LookupVariant(string name) => Variants?.Get(name, Custom) ?? VariantCtx?.Variants?.Get(name, Custom);
 
     // The variant called `name`, checked (GuardCss) as every target the element plays is: ResolveProps for its own
     // targets, this for the variants it plays by name, and the imperative API for the rest.
-    private BmProps? ResolveVariant(string name) => GuardCss(LookupVariant(name));
+    private BmotionProps? ResolveVariant(string name) => GuardCss(LookupVariant(name));
 
     // The rejections Warn mode has reported for this element: a target is resolved several times a render, and each
     // rejected declaration is worth one warning, not one per resolve.
     private BmotionCssWarnings? _cssWarned;
 
     /// <summary>
-    /// Opt-in CSS-injection safe mode (<see cref="BitBmotionOptions.CssSafeMode"/>): validates every
+    /// Opt-in CSS-injection safe mode (<see cref="BmotionOptions.CssSafeMode"/>): validates every
     /// string-valued CSS declaration a target carries - name and value - warning (once per declaration)
     /// or throwing on a rejected one. A no-op (returns immediately) when the mode is Off, so the default
     /// path pays nothing. A caller that awaits before writing the props serializes them first, so what is
     /// written is what was checked.
     /// </summary>
-    private BmProps? GuardCss(BmProps? props)
+    private BmotionProps? GuardCss(BmotionProps? props)
     {
-        if (props is null || Options.CssSafeMode == BmCssSafeMode.Off) return props;
+        if (props is null || Options.CssSafeMode == BmotionCssSafeMode.Off) return props;
         BmotionCssValidator.Enforce(props, Options.CssSafeMode, Logger, _id, _cssWarned ??= new());
         return props;
     }
@@ -1867,32 +1867,32 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
-    /// Whether motion is reduced, by <paramref name="mode"/> (<see cref="BitBmotionOptions.ReducedMotion"/>): the one
+    /// Whether motion is reduced, by <paramref name="mode"/> (<see cref="BmotionOptions.ReducedMotion"/>): the one
     /// rule every path that animates follows - this element, a drag's release, a reorder group's siblings and
     /// <see cref="BmotionAnimateService"/>. A local <see cref="BmotionConfig"/>'s <paramref name="configReduce"/> is
-    /// always an explicit override; under the default <see cref="BmReducedMotionMode.IgnoreUnlessConfigured"/> the OS
+    /// always an explicit override; under the default <see cref="BmotionReducedMotionMode.IgnoreUnlessConfigured"/> the OS
     /// preference counts only <paramref name="insideConfig"/>.
     /// </summary>
     internal static bool IsMotionReduced(
-        BmReducedMotionMode mode, bool osPrefersReducedMotion, bool? configReduce = null, bool insideConfig = false)
+        BmotionReducedMotionMode mode, bool osPrefersReducedMotion, bool? configReduce = null, bool insideConfig = false)
     {
         if (configReduce is bool reduce) return reduce;
-        if (mode == BmReducedMotionMode.Always) return true;
+        if (mode == BmotionReducedMotionMode.Always) return true;
         return OsPreferenceMatters(mode, configReduce, insideConfig) && osPrefersReducedMotion;
     }
 
     /// <summary>
-    /// Whether the OS preference can change <see cref="IsMotionReduced(BmReducedMotionMode, bool, bool?, bool)"/>'s
+    /// Whether the OS preference can change <see cref="IsMotionReduced(BmotionReducedMotionMode, bool, bool?, bool)"/>'s
     /// answer - the only case it is worth an interop round trip to read it from the browser. Not under a local
     /// <see cref="BmotionConfig"/>'s <paramref name="configReduce"/> (an explicit override), nor under
-    /// <see cref="BmReducedMotionMode.Always"/>/<see cref="BmReducedMotionMode.Never"/>; under the default
-    /// <see cref="BmReducedMotionMode.IgnoreUnlessConfigured"/> only <paramref name="insideConfig"/>.
+    /// <see cref="BmotionReducedMotionMode.Always"/>/<see cref="BmotionReducedMotionMode.Never"/>; under the default
+    /// <see cref="BmotionReducedMotionMode.IgnoreUnlessConfigured"/> only <paramref name="insideConfig"/>.
     /// </summary>
-    internal static bool OsPreferenceMatters(BmReducedMotionMode mode, bool? configReduce = null, bool insideConfig = false)
+    internal static bool OsPreferenceMatters(BmotionReducedMotionMode mode, bool? configReduce = null, bool insideConfig = false)
         => configReduce is null && mode switch
         {
-            BmReducedMotionMode.User => true,
-            BmReducedMotionMode.Always or BmReducedMotionMode.Never => false,
+            BmotionReducedMotionMode.User => true,
+            BmotionReducedMotionMode.Always or BmotionReducedMotionMode.Never => false,
             // IgnoreUnlessConfigured (back-compat): OS preference matters only inside a config.
             _ => insideConfig,
         };
@@ -1927,7 +1927,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         return reduced;
     }
 
-    private BmotionTransitionConfig? BuildEffectiveTransition(BmProps? props = null, BmTransition? explicitTransition = null)
+    private BmotionTransitionConfig? BuildEffectiveTransition(BmotionProps? props = null, BmotionTransition? explicitTransition = null)
     {
         var normal = BuildNormalTransition(props, explicitTransition);
         // Reduced motion: snap transforms/layout but keep opacity/color animating (or what ReducedMotion says).
@@ -1935,11 +1935,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>How this element reduces its motion: its own <see cref="ReducedMotion"/>, else its preset's.</summary>
-    private BmReducedMotionBehavior ReducedMotionBehavior
-        => ReducedMotion ?? Preset?.ReducedMotion ?? BmReducedMotionBehavior.Reduce;
+    private BmotionReducedMotionBehavior ReducedMotionBehavior
+        => ReducedMotion ?? Preset?.ReducedMotion ?? BmotionReducedMotionBehavior.Reduce;
 
     /// <summary>Whether motion is reduced here, and this element gives any of it up (it isn't kept in full).</summary>
-    private bool IsMotionReduced() => ReducedMotionBehavior != BmReducedMotionBehavior.Full && ShouldReduceMotion();
+    private bool IsMotionReduced() => ReducedMotionBehavior != BmotionReducedMotionBehavior.Full && ShouldReduceMotion();
 
     /// <summary>
     /// <paramref name="normal"/> as this element plays it: reduced when motion is reduced here. For what animates the
@@ -1950,20 +1950,20 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     /// <summary>The transition <paramref name="normal"/> becomes when motion is reduced, by <see cref="ReducedMotionBehavior"/>.</summary>
     private BmotionTransitionConfig? ReducedVariant(BmotionTransitionConfig? normal) => ReducedMotionBehavior switch
     {
-        BmReducedMotionBehavior.Full => normal,
-        BmReducedMotionBehavior.Instant => InstantTransition(),
+        BmotionReducedMotionBehavior.Full => normal,
+        BmotionReducedMotionBehavior.Instant => InstantTransition(),
         _ => BuildReducedTransition(normal),
     };
 
     /// <summary>
-    /// Applies <see cref="BmWhen.AfterChildren"/> to this container's own animation by delaying it
+    /// Applies <see cref="BmotionWhen.AfterChildren"/> to this container's own animation by delaying it
     /// until the child cascade below it has finished. Only meaningful on an element that publishes
     /// a variant context, and skipped under reduced motion (where the cascade is instant anyway, so
     /// waiting for it would just be dead time before the container appears).
     /// </summary>
     private BmotionTransitionConfig? ApplyAfterChildren(BmotionTransitionConfig? config)
     {
-        if (EffectiveTransition is not { When: BmWhen.AfterChildren }) return config;
+        if (EffectiveTransition is not { When: BmotionWhen.AfterChildren }) return config;
         if (_ownVariantCtx is null || IsMotionReduced()) return config;
         double wait = _ownVariantCtx.MaxChildFinishSeconds();
         if (wait <= 0) return config;
@@ -1974,7 +1974,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         return result;
     }
 
-    private BmotionTransitionConfig? BuildNormalTransition(BmProps? props, BmTransition? explicitTransition = null)
+    private BmotionTransitionConfig? BuildNormalTransition(BmotionProps? props, BmotionTransition? explicitTransition = null)
     {
         // Resolution order: an explicit transition (programmatic AnimateAsync) wins, then the one
         // embedded in the target, then the component's Transition, then the <BmotionConfig> default.
@@ -2010,7 +2010,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         return config;
     }
 
-    private BmotionTransitionConfig BuildEffectiveTransitionWithDelay(double extraDelay, BmProps? props = null)
+    private BmotionTransitionConfig BuildEffectiveTransitionWithDelay(double extraDelay, BmotionProps? props = null)
     {
         // Reduced motion: keep opacity/color animating but skip the stagger delay (accessibility).
         if (IsMotionReduced()) return ReducedVariant(BuildNormalTransition(props)) ?? new BmotionTransitionConfig();
@@ -2037,7 +2037,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         if (Drag.Enabled)
         {
             d["drag"] = true;
-            if (Drag.Axis != BmDragAxis.Both) d["dragAxis"] = Drag.Axis.ToString().ToLowerInvariant();
+            if (Drag.Axis != BmotionDragAxis.Both) d["dragAxis"] = Drag.Axis.ToString().ToLowerInvariant();
             // ToJsObject sanitises each edge (finite, clamped to [0, 1]) so the JS elasticity
             // math never receives NaN/±Infinity.
             d["dragElastic"] = DragElastic.ToJsObject();
@@ -2059,9 +2059,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     // ── Drag controls ──────────────────────────────────────────────────────────
 
-    private BmDragControls? _attachedDragControls;
+    private BmotionDragControls? _attachedDragControls;
 
-    /// <summary>Keeps the (single) attached <see cref="BmDragControls"/> current with the parameter.</summary>
+    /// <summary>Keeps the (single) attached <see cref="BmotionDragControls"/> current with the parameter.</summary>
     private void ReconcileDragControls()
     {
         if (ReferenceEquals(_attachedDragControls, DragControls)) return;
@@ -2070,7 +2070,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         _attachedDragControls?.Attach(this);
     }
 
-    /// <summary>Starts this element's drag from an external pointer event (see <see cref="BmDragControls"/>).</summary>
+    /// <summary>Starts this element's drag from an external pointer event (see <see cref="BmotionDragControls"/>).</summary>
     internal ValueTask StartDragAsync(PointerEventArgs e)
         => _initialized
             ? Interop.StartDragAsync(_id, e.PointerId, e.ClientX, e.ClientY)
@@ -2136,8 +2136,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     // ── Scroll-driven timeline ─────────────────────────────────────────────────
 
-    private BmScrollTimeline? _attachedTimeline;
-    private BmTarget? _timelineTarget;
+    private BmotionScrollTimeline? _attachedTimeline;
+    private BmotionTarget? _timelineTarget;
     private int _timelineToken;
 
     /// <summary>
@@ -2156,11 +2156,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // An element that lands everything at once under reduced motion (ReducedMotion="Instant") gives up its
         // scroll-driven animation too, transforms and opacity alike: the time-based path then lands the target.
         // Compared like the timeline itself, so a change of ReducedMotion detaches or re-attaches it.
-        var timeline = ReducedMotionBehavior == BmReducedMotionBehavior.Instant && IsMotionReduced() ? null : Timeline;
+        var timeline = ReducedMotionBehavior == BmotionReducedMotionBehavior.Instant && IsMotionReduced() ? null : Timeline;
         var target = timeline is null ? null : EffectiveAnimate;
 
-        if (BmScrollTimeline.AreEquivalent(_attachedTimeline, timeline) &&
-            BmTarget.AreEquivalent(_timelineTarget, target))
+        if (BmotionScrollTimeline.AreEquivalent(_attachedTimeline, timeline) &&
+            BmotionTarget.AreEquivalent(_timelineTarget, target))
             return _timelineToken != 0;
 
         if (_timelineToken != 0)
@@ -2190,8 +2190,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // ── Motion-value bindings ──────────────────────────────────────────────────
 
     private readonly List<IDisposable> _valueSubscriptions = new();
-    private Dictionary<string, BmValue<double>>? _boundValues;
-    private Dictionary<string, BmValue<string>>? _boundStringValues;
+    private Dictionary<string, BmotionValue<double>>? _boundValues;
+    private Dictionary<string, BmotionValue<string>>? _boundStringValues;
 
     /// <summary>
     /// (Re)subscribes to the bound motion values when the <see cref="Values"/> or

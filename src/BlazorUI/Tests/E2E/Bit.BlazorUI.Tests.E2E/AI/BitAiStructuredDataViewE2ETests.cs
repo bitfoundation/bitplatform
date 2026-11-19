@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// BitAiForm), the theme tokens, RTL and the public variables.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiStructuredDataViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aistructureddataview";

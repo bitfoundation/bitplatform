@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.EntityFrameworkCore;
-
-namespace Bit.Bsqlite.Interop.Tests;
+﻿namespace Bit.Bsqlite.Interop.Tests;
 
 /// <summary>
 /// The version this stub reports is what EF Core gates its SQL translations on in the browser, so

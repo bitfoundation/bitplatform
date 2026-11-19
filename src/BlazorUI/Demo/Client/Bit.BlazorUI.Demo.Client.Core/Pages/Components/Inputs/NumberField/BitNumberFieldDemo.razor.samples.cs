@@ -239,7 +239,7 @@ private readonly CultureInfo germanCulture = CultureInfo.GetCultureInfo(""de-DE"
 
 <BitNumberField Label=""ReadOnly"" ReadOnly Mode=""BitSpinButtonMode.Compact"" @bind-Value=""readOnlyValue"" />
 
-<BitNumberField Label=""IsInputReadOnly"" IsInputReadOnly Mode=""BitSpinButtonMode.Compact"" @bind-Value=""inputReadOnlyValue"" />
+<BitNumberField Label=""InputReadOnly"" InputReadOnly Mode=""BitSpinButtonMode.Compact"" @bind-Value=""inputReadOnlyValue"" />
 
 <BitToggle @bind-Value=""invertMouseWheel"" Text=""Invert Mouse Wheel"" />
 

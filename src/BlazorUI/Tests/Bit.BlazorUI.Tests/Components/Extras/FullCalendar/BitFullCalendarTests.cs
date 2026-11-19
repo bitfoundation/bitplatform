@@ -263,14 +263,14 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
         });
 
-        var block = component.FindComponent<BitFcEventBlock>().Instance;
+        var block = component.FindComponent<_BitFcEventBlock>().Instance;
         await component.InvokeAsync(() => block.OnResizeStart("bottom"));
         await component.InvokeAsync(() => block.OnResizeMove("bottom", 60));
         Assert.AreEqual(1, component.FindAll(".bit-bfc-resize-preview").Count);
 
         // Read-only lands mid-gesture: the preview goes away and the gesture is cancelled outright.
         component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
-        Assert.AreSame(block, component.FindComponent<BitFcEventBlock>().Instance);
+        Assert.AreSame(block, component.FindComponent<_BitFcEventBlock>().Instance);
         await component.InvokeAsync(() => block.OnResizeMove("bottom", 90));
         Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
 
@@ -305,13 +305,13 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
         });
 
-        var block = component.FindComponent<BitFcTimelineEventBlock>().Instance;
+        var block = component.FindComponent<_BitFcTimelineEventBlock>().Instance;
         await component.InvokeAsync(() => block.OnResizeStart("end"));
         await component.InvokeAsync(() => block.OnResizeMove("end", 200));
         Assert.AreEqual(1, component.FindAll(".bit-bfc-resize-preview").Count);
 
         component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
-        Assert.AreSame(block, component.FindComponent<BitFcTimelineEventBlock>().Instance);
+        Assert.AreSame(block, component.FindComponent<_BitFcTimelineEventBlock>().Instance);
         await component.InvokeAsync(() => block.OnResizeMove("end", 240));
         Assert.AreEqual(0, component.FindAll(".bit-bfc-resize-preview").Count);
 

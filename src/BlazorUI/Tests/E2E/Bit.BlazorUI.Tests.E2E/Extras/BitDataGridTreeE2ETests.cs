@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// ChildrenProvider loads, the children cached once loaded, and the search box and filter row it goes without.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridTreeE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/tree";

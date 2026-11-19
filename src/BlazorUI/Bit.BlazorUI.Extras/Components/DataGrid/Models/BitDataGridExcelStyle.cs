@@ -7,7 +7,7 @@
 /// dark mode and custom CSS). Colors are CSS hex strings (<c>#rrggbb</c>); a null color falls back
 /// to Excel's default.
 /// </summary>
-public class BitDataGridExcelStyle
+internal sealed class BitDataGridExcelStyle
 {
     /// <summary>Header row cell background color.</summary>
     public string? HeaderBackground { get; set; }

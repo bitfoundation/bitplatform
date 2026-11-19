@@ -898,7 +898,7 @@ function _attachDrag(
     const velocity = pointerVelocity();
 
     // Shared drag-start body: called by the element's own pointerdown listener and by the
-    // external startDrag entry point (BmDragControls).
+    // external startDrag entry point (BmotionDragControls).
     const begin = (pointerId: number, clientX: number, clientY: number, time?: number) => {
         // A compositor (WAAPI) animation may own the transform; commit its current values inline
         // and cancel it so the drag takes over seamlessly. C# resolves its own state from the
@@ -1226,7 +1226,7 @@ const _dragStarters = new Map<string, (pointerId: number, clientX: number, clien
 
 /**
  * Starts a drag on a drag-enabled element from an external pointer event
- * (BmDragControls.StartAsync). No-op when the element has no drag attached.
+ * (BmotionDragControls.StartAsync). No-op when the element has no drag attached.
  */
 export function startDrag(elementId: string, pointerId: number, clientX: number, clientY: number): void {
     const begin = _dragStarters.get(elementId);

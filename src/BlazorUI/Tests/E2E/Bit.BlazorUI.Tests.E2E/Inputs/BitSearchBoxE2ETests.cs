@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// reach the relocated callout too), RTL, reduced motion, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSearchBoxE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/search-box";

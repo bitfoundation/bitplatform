@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Metadata;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Resolves the <see cref="BlazeDbTableDescriptor{TKey,TRow}"/> for an entity type. Descriptors are
@@ -70,7 +70,7 @@ internal static class BlazeDbTableResolver
         var binding = (IBlazeDbTableBinding)Activator.CreateInstance(bindingType, table, FindKeyMember(entityType, descriptor, arguments[0]))!;
         // Before the binding is handed out, and so before any query of this provider's exposes a row of the
         // table for a context to change in memory.
-        binding.ObserveConcurrencyTokens(Storage.BlazeDbConcurrencyTokens.Of(entityType));
+        binding.ObserveConcurrencyTokens(BlazeDbConcurrencyTokens.Of(entityType));
         return binding;
     }
 

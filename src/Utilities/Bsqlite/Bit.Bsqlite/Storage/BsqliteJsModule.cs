@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Storage;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// Locates the JavaScript half of a storage backend: an ES module the worker imports dynamically,

@@ -14,10 +14,10 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
     private readonly IServiceProvider _services;
     private readonly BevToolsSession _session;
     private readonly IComponentActivator? _inner;
-    private readonly BitBevToolsOptions _options;
+    private readonly BevToolsOptions _options;
 
     // The holder of the activator registered before BevTools is Bit.BevTools.Loader's, which its hook uses too.
-    public BevToolsComponentActivator(IServiceProvider services, BevToolsSession session, BitBevToolsOptions options, BevToolsInnerActivator? inner = null)
+    public BevToolsComponentActivator(IServiceProvider services, BevToolsSession session, BevToolsOptions options, BevToolsInnerActivator? inner = null)
     {
         _services = services;
         _session = session;
@@ -67,7 +67,7 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
         // Component activation is the earliest point that runs on the renderers synchronization context, and
         // parameter-update metrics fire before any component has rendered; map the context here so those
         // measurements can already be attributed to this session.
-        SessionResolver.NoteCurrentContext(_session);
+        BevToolsSessionResolver.NoteCurrentContext(_session);
 
         var flags = _typeFlags.GetOrAdd(componentType, ComputeFlags);
         if (flags.Ignore)
@@ -83,7 +83,7 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
 
         if (existing)
         {
-            record.RenderedBeforeAttach = instance is not ComponentBase component || BlazorReflection.HasRenderedOrQueued(component);
+            record.RenderedBeforeAttach = instance is not ComponentBase component || BevToolsBlazorReflection.HasRenderedOrQueued(component);
         }
 
         _session.RenderTracker.Instrument(record);
@@ -96,7 +96,7 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
                 Title = record.DisplayName + " created",
                 ComponentInstanceId = record.InstanceId,
                 ComponentName = record.DisplayName,
-                ParentEventId = ActivityObserver.CurrentTriggerEvent(_session)?.Id,
+                ParentEventId = BevToolsActivityObserver.CurrentTriggerEvent(_session)?.Id,
             });
         }
     }

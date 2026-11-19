@@ -7,7 +7,7 @@ public class ImagingTests
     [TestMethod]
     public void BitRowFindsRunsAcrossWordBoundaries()
     {
-        var row = new BbBitRow(100);
+        var row = new BbScannerBitRow(100);
         row[31] = true;
         row[32] = true;
         row[64] = true;
@@ -29,7 +29,7 @@ public class ImagingTests
         // syndromes vanish. The Euclidean step then never runs and the locator has degree
         // zero, which used to be reported as a clean block.
         int[] received = [18, 17, 129, 170, 206, 113, 94, 202];
-        var decoder = BbReedSolomonDecoder.DataMatrix;
+        var decoder = BbScannerReedSolomonDecoder.DataMatrix;
 
         Assert.IsFalse(decoder.TryDecode(received, 5, out _));
     }
@@ -39,8 +39,8 @@ public class ImagingTests
     {
         // A random block is almost never a codeword; whatever the algorithm makes of it, the
         // result must either be a codeword or a rejection, never a wrong "correction".
-        var field = BbGenericGF.QrCodeField256;
-        var decoder = BbReedSolomonDecoder.QrCode;
+        var field = BbScannerGenericGF.QrCodeField256;
+        var decoder = BbScannerReedSolomonDecoder.QrCode;
         var random = new Random(4242);
 
         for (var attempt = 0; attempt < 500; attempt++)
@@ -56,7 +56,7 @@ public class ImagingTests
                 continue;
             }
 
-            var poly = new BbGfPoly(field, block);
+            var poly = new BbScannerGfPoly(field, block);
             for (var i = 0; i < 7; i++)
             {
                 Assert.AreEqual(0, poly.EvaluateAt(field.Exp(i)));
@@ -70,7 +70,7 @@ public class ImagingTests
         var random = new Random(11);
         foreach (var size in new[] { 1, 31, 32, 33, 100, 640 })
         {
-            var row = new BbBitRow(size);
+            var row = new BbScannerBitRow(size);
             var expected = new bool[size];
             for (var i = 0; i < size; i++)
             {
@@ -97,7 +97,7 @@ public class ImagingTests
     {
         foreach (var size in new[] { 1, 31, 32, 33, 65 })
         {
-            var row = new BbBitRow(size);
+            var row = new BbScannerBitRow(size);
             for (var i = 0; i < size; i += 2)
             {
                 row[i] = true;
@@ -118,7 +118,7 @@ public class ImagingTests
     [TestMethod]
     public void BitRowResetGrowsAndClears()
     {
-        var row = new BbBitRow(8);
+        var row = new BbScannerBitRow(8);
         row[3] = true;
 
         row.Reset(64);
@@ -135,7 +135,7 @@ public class ImagingTests
             data[i] = (byte)i;
         }
 
-        var view = new BbLuminanceView(data, 10, 10);
+        var view = new BbScannerLuminanceView(data, 10, 10);
         var crop = view.Crop(2, 3, 4, 5);
 
         Assert.AreEqual(4, crop.Width);
@@ -149,9 +149,9 @@ public class ImagingTests
     public void LuminanceViewRejectsAWindowOutsideItsBuffer()
     {
         var data = new byte[16];
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbLuminanceView(data, 0, 4, 4, 5));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbScannerLuminanceView(data, 0, 4, 4, 5));
 
-        var view = new BbLuminanceView(data, 4, 4);
+        var view = new BbScannerLuminanceView(data, 4, 4);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => view.Crop(2, 2, 4, 4));
     }
 
@@ -160,17 +160,17 @@ public class ImagingTests
     {
         // Added up in 32 bits, each of these ends wraps round to a small number that lies inside the buffer.
         var data = new byte[1000];
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbLuminanceView(data, 1, 100, int.MaxValue, 1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbLuminanceView(data, 0, int.MaxValue, 10, 3));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbLuminanceView(data, -10, 100, 10, 1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbLuminanceView(data, 10, -100, 10, 2));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbScannerLuminanceView(data, 1, 100, int.MaxValue, 1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbScannerLuminanceView(data, 0, int.MaxValue, 10, 3));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbScannerLuminanceView(data, -10, 100, 10, 1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BbScannerLuminanceView(data, 10, -100, 10, 2));
 
-        var view = new BbLuminanceView(data, 100, 10);
+        var view = new BbScannerLuminanceView(data, 100, 10);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => view.Crop(1, 0, int.MaxValue, 1));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => view.Crop(0, 1, 1, int.MaxValue));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => view.Crop(0, 0, -1, 1));
 
-        using var image = new BbBitMatrix(100, 10);
+        using var image = new BbScannerBitMatrix(100, 10);
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => image.SetRegion(1, 0, int.MaxValue, 1));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => image.SetRegion(0, 1, 1, int.MaxValue));
     }
@@ -180,13 +180,13 @@ public class ImagingTests
     [DataRow(0.25, 0.25, 0.5, 0.5, false)]
     public void ScanRegionReportsWhetherItCoversTheFrame(double x, double y, double w, double h, bool full)
     {
-        Assert.AreEqual(full, new BbScanRegion(x, y, w, h).IsFull);
+        Assert.AreEqual(full, new BbScannerScanRegion(x, y, w, h).IsFull);
     }
 
     [TestMethod]
     public void ScanRegionNormalizationClampsIntoTheUnitSquare()
     {
-        var region = new BbScanRegion(-0.5, 0.8, 3, 3).Normalized();
+        var region = new BbScannerScanRegion(-0.5, 0.8, 3, 3).Normalized();
 
         Assert.AreEqual(0, region.X);
         Assert.AreEqual(0.8, region.Y, 1e-6);
@@ -197,10 +197,10 @@ public class ImagingTests
     [TestMethod]
     public void CenteredSquareRejectsAnImpossibleFraction()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BbScanRegion.CenteredSquare(0));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BbScanRegion.CenteredSquare(1.5));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BbScannerScanRegion.CenteredSquare(0));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BbScannerScanRegion.CenteredSquare(1.5));
 
-        var region = BbScanRegion.CenteredSquare(0.5);
+        var region = BbScannerScanRegion.CenteredSquare(0.5);
         Assert.AreEqual(0.25, region.X, 1e-6);
         Assert.AreEqual(0.5, region.Width, 1e-6);
         Assert.IsTrue(region.KeepSquare);
@@ -214,7 +214,7 @@ public class ImagingTests
     [DataRow(2560, 480)]
     public void CenteredSquareIsSquareInThePixelsOfAnyFrame(int width, int height)
     {
-        var region = BbScanRegion.CenteredSquare(0.7).ForFrame(width, height);
+        var region = BbScannerScanRegion.CenteredSquare(0.7).ForFrame(width, height);
         var side = 0.7 * Math.Min(width, height);
 
         Assert.AreEqual(side, region.Width * width, 1e-6);
@@ -227,17 +227,17 @@ public class ImagingTests
     [TestMethod]
     public void ARegionThatIsNotSquareIgnoresTheFrameShape()
     {
-        var region = new BbScanRegion(0.1, 0.2, 0.8, 0.6);
+        var region = new BbScannerScanRegion(0.1, 0.2, 0.8, 0.6);
 
         Assert.AreEqual(region, region.ForFrame(1280, 720));
-        Assert.IsTrue(BbScanRegion.CenteredSquare(1).ForFrame(500, 500).IsFull);
+        Assert.IsTrue(BbScannerScanRegion.CenteredSquare(1).ForFrame(500, 500).IsFull);
     }
 
     [TestMethod]
     public void CroppingByASquareRegionYieldsASquareWindow()
     {
-        var view = new BbLuminanceView(new byte[1280 * 720], 1280, 720);
-        var cropped = view.Crop(BbScanRegion.CenteredSquare(0.7));
+        var view = new BbScannerLuminanceView(new byte[1280 * 720], 1280, 720);
+        var cropped = view.Crop(BbScannerScanRegion.CenteredSquare(0.7));
 
         Assert.AreEqual(504, cropped.Width);
         Assert.AreEqual(504, cropped.Height);
@@ -247,13 +247,13 @@ public class ImagingTests
     public void CroppingAViewByARegionNeverLeavesTheBuffer()
     {
         var data = new byte[64 * 48];
-        var view = new BbLuminanceView(data, 64, 48);
+        var view = new BbScannerLuminanceView(data, 64, 48);
 
         foreach (var region in new[]
                  {
-                     new BbScanRegion(0.9, 0.9, 0.5, 0.5),
-                     new BbScanRegion(0, 0, 0.001, 0.001),
-                     new BbScanRegion(0.5, 0.5, 0.5, 0.5),
+                     new BbScannerScanRegion(0.9, 0.9, 0.5, 0.5),
+                     new BbScannerScanRegion(0, 0, 0.001, 0.001),
+                     new BbScannerScanRegion(0.5, 0.5, 0.5, 0.5),
                  })
         {
             var crop = view.Crop(region);
@@ -263,13 +263,13 @@ public class ImagingTests
     }
 
     [TestMethod]
-    [DataRow(BbPixelFormat.Rgba32, 4)]
-    [DataRow(BbPixelFormat.Bgra32, 4)]
-    [DataRow(BbPixelFormat.Rgb24, 3)]
-    [DataRow(BbPixelFormat.Gray8, 1)]
-    public void PixelConverterKnowsEveryLayout(BbPixelFormat format, int bytesPerPixel)
+    [DataRow(BbScannerPixelFormat.Rgba32, 4)]
+    [DataRow(BbScannerPixelFormat.Bgra32, 4)]
+    [DataRow(BbScannerPixelFormat.Rgb24, 3)]
+    [DataRow(BbScannerPixelFormat.Gray8, 1)]
+    public void PixelConverterKnowsEveryLayout(BbScannerPixelFormat format, int bytesPerPixel)
     {
-        Assert.AreEqual(bytesPerPixel, BbPixelConverter.BytesPerPixel(format));
+        Assert.AreEqual(bytesPerPixel, BbScannerPixelConverter.BytesPerPixel(format));
     }
 
     [TestMethod]
@@ -297,9 +297,9 @@ public class ImagingTests
         var fromBgra = new byte[Width * Height];
         var fromRgb = new byte[Width * Height];
 
-        BbPixelConverter.ToGrayscale(rgba, fromRgba, Width, Height, BbPixelFormat.Rgba32);
-        BbPixelConverter.ToGrayscale(bgra, fromBgra, Width, Height, BbPixelFormat.Bgra32);
-        BbPixelConverter.ToGrayscale(rgb, fromRgb, Width, Height, BbPixelFormat.Rgb24);
+        BbScannerPixelConverter.ToGrayscale(rgba, fromRgba, Width, Height, BbScannerPixelFormat.Rgba32);
+        BbScannerPixelConverter.ToGrayscale(bgra, fromBgra, Width, Height, BbScannerPixelFormat.Bgra32);
+        BbScannerPixelConverter.ToGrayscale(rgb, fromRgb, Width, Height, BbScannerPixelFormat.Rgb24);
 
         Assert.AreSequenceEqual(fromRgba, fromBgra);
         Assert.AreSequenceEqual(fromRgba, fromRgb);
@@ -317,7 +317,7 @@ public class ImagingTests
         }
 
         var destination = new byte[(Width / 2) * (Height / 2)];
-        var (w, h) = BbPixelConverter.ToGrayscaleDownsampled(gray, destination, Width, Height, BbPixelFormat.Gray8, 2);
+        var (w, h) = BbScannerPixelConverter.ToGrayscaleDownsampled(gray, destination, Width, Height, BbScannerPixelFormat.Gray8, 2);
 
         Assert.AreEqual(4, w);
         Assert.AreEqual(2, h);
@@ -333,9 +333,9 @@ public class ImagingTests
         var destination = new byte[4];
 
         Assert.ThrowsExactly<ArgumentException>(() =>
-            BbPixelConverter.ToGrayscale(source, destination, 8, 8, BbPixelFormat.Gray8));
+            BbScannerPixelConverter.ToGrayscale(source, destination, 8, 8, BbScannerPixelFormat.Gray8));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
-            BbPixelConverter.ToGrayscale(source, destination, 0, 1, BbPixelFormat.Gray8));
+            BbScannerPixelConverter.ToGrayscale(source, destination, 0, 1, BbScannerPixelFormat.Gray8));
     }
 
     [TestMethod]
@@ -343,7 +343,7 @@ public class ImagingTests
     {
         foreach (var width in new[] { 1, 31, 32, 33, 65 })
         {
-            using var matrix = new BbBitMatrix(width, 3);
+            using var matrix = new BbScannerBitMatrix(width, 3);
             matrix.Invert();
 
             var set = 0;
@@ -374,7 +374,7 @@ public class ImagingTests
     public void BitMatrixRotationsArePureRelabelings()
     {
         var random = new Random(5);
-        using var source = new BbBitMatrix(9, 6);
+        using var source = new BbScannerBitMatrix(9, 6);
         for (var y = 0; y < source.Height; y++)
         {
             for (var x = 0; x < source.Width; x++)
@@ -400,7 +400,7 @@ public class ImagingTests
     [TestMethod]
     public void DarkRegionFinderSeparatesPatchesAndIgnoresSpeckle()
     {
-        using var image = new BbBitMatrix(200, 120);
+        using var image = new BbScannerBitMatrix(200, 120);
         image.SetRegion(10, 10, 40, 40);
         image.SetRegion(140, 60, 40, 40);
 
@@ -411,7 +411,7 @@ public class ImagingTests
             image[random.Next(image.Width), random.Next(image.Height)] = true;
         }
 
-        var regions = new BbDarkRegionFinder().Find(image, minCells: 4);
+        var regions = new BbScannerDarkRegionFinder().Find(image, minCells: 4);
 
         Assert.AreEqual(2, regions.Count);
         Assert.Contains(r => r.Left <= 10 && r.Right >= 49, regions);
@@ -421,19 +421,19 @@ public class ImagingTests
     [TestMethod]
     public void DarkRegionFinderReportsNothingForABlankImage()
     {
-        using var image = new BbBitMatrix(100, 100);
-        Assert.IsEmpty(new BbDarkRegionFinder().Find(image, minCells: 4));
+        using var image = new BbScannerBitMatrix(100, 100);
+        Assert.IsEmpty(new BbScannerDarkRegionFinder().Find(image, minCells: 4));
     }
 
     [TestMethod]
     public void GlobalHistogramBinarizerRejectsAFlatRow()
     {
-        using var buffer = BbLuminanceBuffer.Rent(64, 4);
+        using var buffer = BbScannerLuminanceBuffer.Rent(64, 4);
         buffer.Pixels.Fill(200);
 
-        var row = new BbBitRow(64);
-        Assert.IsFalse(new BbGlobalHistogramBinarizer().TryGetBlackRow(buffer.View, 0, row));
-        Assert.IsFalse(new BbAdaptiveRowBinarizer().TryGetBlackRow(buffer.View, 0, row));
+        var row = new BbScannerBitRow(64);
+        Assert.IsFalse(new BbScannerGlobalHistogramBinarizer().TryGetBlackRow(buffer.View, 0, row));
+        Assert.IsFalse(new BbScannerAdaptiveRowBinarizer().TryGetBlackRow(buffer.View, 0, row));
     }
 
     [TestMethod]
@@ -442,7 +442,7 @@ public class ImagingTests
         // A bar pattern under a strong gradient: the dark end of the paper is darker than the
         // light end's ink, so no single threshold can separate them.
         const int Width = 256;
-        using var buffer = BbLuminanceBuffer.Rent(Width, 1);
+        using var buffer = BbScannerLuminanceBuffer.Rent(Width, 1);
         for (var x = 0; x < Width; x++)
         {
             var bar = (x / 8) % 2 == 0;
@@ -450,8 +450,8 @@ public class ImagingTests
             buffer.Pixels[x] = (byte)((bar ? 20 : 240) * brightness);
         }
 
-        var row = new BbBitRow(Width);
-        Assert.IsTrue(new BbAdaptiveRowBinarizer().TryGetBlackRow(buffer.View, 0, row));
+        var row = new BbScannerBitRow(Width);
+        Assert.IsTrue(new BbScannerAdaptiveRowBinarizer().TryGetBlackRow(buffer.View, 0, row));
 
         var correct = 0;
         for (var x = 4; x < Width - 4; x++)
@@ -468,7 +468,7 @@ public class ImagingTests
     [TestMethod]
     public void LuminanceBufferReturnsItsPooledArrayOnce()
     {
-        var buffer = BbLuminanceBuffer.Rent(32, 32);
+        var buffer = BbScannerLuminanceBuffer.Rent(32, 32);
         buffer.Dispose();
         buffer.Dispose();
 
@@ -479,7 +479,7 @@ public class ImagingTests
     public void WrappedBuffersAreNotPooled()
     {
         var data = new byte[64];
-        var buffer = BbLuminanceBuffer.Wrap(data, 8, 8);
+        var buffer = BbScannerLuminanceBuffer.Wrap(data, 8, 8);
 
         Assert.AreSame(data, buffer.Array);
         buffer.Dispose();
@@ -491,6 +491,6 @@ public class ImagingTests
     [TestMethod]
     public void WrapRejectsAnUndersizedBuffer()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => BbLuminanceBuffer.Wrap(new byte[10], 8, 8));
+        Assert.ThrowsExactly<ArgumentException>(() => BbScannerLuminanceBuffer.Wrap(new byte[10], 8, 8));
     }
 }

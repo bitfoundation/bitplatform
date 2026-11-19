@@ -71,7 +71,7 @@
                             }
                         </div>
                         <div class="bev-tools">
-                            <button type="button" class="@(Session.IsCapturing ? "" : "bev-paused")" title="@(Session.IsCapturing ? "Pause capture: freeze every buffer so what you are reading is not evicted. Errors are still collected." : "Resume capture" + (Session.PausedAt is { } pausedAt ? " (paused " + BevFmt.Ago(pausedAt) + ")" : ""))" aria-label="@(Session.IsCapturing ? "Pause capture" : "Resume capture")" aria-pressed="@(Session.IsCapturing ? "false" : "true")" @onclick="ToggleCapture">@(Session.IsCapturing ? "⏸ Pause" : "▶ Resume")</button>
+                            <button type="button" class="@(Session.IsCapturing ? "" : "bev-paused")" title="@(Session.IsCapturing ? "Pause capture: freeze every buffer so what you are reading is not evicted. Errors are still collected." : "Resume capture" + (Session.PausedAt is { } pausedAt ? " (paused " + BevToolsFmt.Ago(pausedAt) + ")" : ""))" aria-label="@(Session.IsCapturing ? "Pause capture" : "Resume capture")" aria-pressed="@(Session.IsCapturing ? "false" : "true")" @onclick="ToggleCapture">@(Session.IsCapturing ? "⏸ Pause" : "▶ Resume")</button>
                             <label class="@(Ui.LiveUpdates ? "" : "bev-off")" title="When on, the open tab re-reads captured data as it arrives. Turn off on a very busy app and use Refresh.">
                                 <input type="checkbox" checked="@Ui.LiveUpdates" aria-label="Live updates" @onchange="OnLiveChanged" /> live
                             </label>
@@ -97,21 +97,21 @@
                         <div class="bev-panel-host" @key="Ui.ActivePanelId">
                         @switch (Ui.ActivePanelId)
                         {
-                            case "components": <BevComponentsPanel /> break;
-                            case "profiler": <BevProfilerPanel /> break;
-                            case "timeline": <BevTimelinePanel /> break;
-                            case "state": <BevStatePanel /> break;
-                            case "forms": <BevFormsPanel /> break;
-                            case "routing": <BevRoutingPanel /> break;
-                            case "network": <BevNetworkPanel /> break;
-                            case "interop": <BevInteropPanel /> break;
-                            case "errors": <BevErrorsPanel /> break;
-                            case "logs": <BevLogsPanel /> break;
-                            case "services": <BevServicesPanel /> break;
-                            case "diagnostics": <BevDiagnosticsPanel /> break;
-                            case "runtime": <BevRuntimePanel /> break;
-                            case "browser": <BevBrowserPanel /> break;
-                            case "about": <BevAboutPanel /> break;
+                            case "components": <BevToolsComponentsPanel /> break;
+                            case "profiler": <BevToolsProfilerPanel /> break;
+                            case "timeline": <BevToolsTimelinePanel /> break;
+                            case "state": <BevToolsStatePanel /> break;
+                            case "forms": <BevToolsFormsPanel /> break;
+                            case "routing": <BevToolsRoutingPanel /> break;
+                            case "network": <BevToolsNetworkPanel /> break;
+                            case "interop": <BevToolsInteropPanel /> break;
+                            case "errors": <BevToolsErrorsPanel /> break;
+                            case "logs": <BevToolsLogsPanel /> break;
+                            case "services": <BevToolsServicesPanel /> break;
+                            case "diagnostics": <BevToolsDiagnosticsPanel /> break;
+                            case "runtime": <BevToolsRuntimePanel /> break;
+                            case "browser": <BevToolsBrowserPanel /> break;
+                            case "about": <BevToolsAboutPanel /> break;
                             default:
                                 var extension = ExtensionPanels.FirstOrDefault(p => p.Id == Ui.ActivePanelId);
                                 if (extension is not null)
@@ -128,7 +128,7 @@
                         </CascadingValue>
                         @if (Ui.CommandPaletteOpen)
                         {
-                            <BevCommandPalette Initial="@_searchText" />
+                            <BevToolsCommandPalette Initial="@_searchText" />
                         }
                         @* Always rendered, empty when there is nothing to say: a live region inserted together with its text is not announced. *@
                         <div class="bev-notification" role="status" aria-live="polite">@(Ui.Notification is not null && DateTimeOffset.UtcNow - Ui.NotificationAt < BevToolsUiState.NotificationLifetime ? Ui.Notification : null)</div>

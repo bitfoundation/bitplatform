@@ -26,18 +26,18 @@ On a local network this is unremarkable; over a poor mobile connection it is not
 If you are targeting Interactive Server and images are central to your application:
 
 - Constrain the working size aggressively: `options.MaxInteractiveDimension = 1200`.
-- Use `DecodeOptions.MaxSize` so the browser downscales before the pixels are sent at all.
+- Use `BmageDecodeOptions.MaxSize` so the browser downscales before the pixels are sent at all.
 - Prefer the headless API on the server for bulk work, and use the browser only for what needs a browser.
 - Consider whether the client project with WebAssembly is a better fit for the image-heavy pages.
 
-The library does not pretend a browser API works where it does not: `IImageCapabilityProvider` reports
-`ImageEnvironment.BrowserServer` so you can adapt.
+The library does not pretend a browser API works where it does not: `IBmageImageCapabilityProvider` reports
+`BmageImageEnvironment.BrowserServer` so you can adapt.
 
 ### Blazor Hybrid (MAUI, WPF, Windows Forms)
 
 Everything works. The components run in compiled .NET inside the app's own process and render into a WebView, which
-Bmage reaches over JavaScript interop - the same position as Interactive Server, so `IImageCapabilityProvider` reports
-`ImageEnvironment.BrowserServer` and the codecs are chosen the same way. PNG, JPEG, BMP and WebP are decoded and
+Bmage reaches over JavaScript interop - the same position as Interactive Server, so `IBmageImageCapabilityProvider` reports
+`BmageImageEnvironment.BrowserServer` and the codecs are chosen the same way. PNG, JPEG, BMP and WebP are decoded and
 encoded by the managed codecs in the app, and GIF and AVIF decoded; AVIF exports and photos whose colours need colour management go
 through the WebView.
 Nothing crosses a network, but those pixels, and the editor's previews, are copied through the WebView's message
@@ -61,13 +61,13 @@ Setting it up differs from a Web App in three places:
 - **The stylesheet goes in `wwwroot/index.html`**, the page the WebView hosts, as in standalone WebAssembly. Do not add
   a script tag for `bit-bmage.js`: the library imports it on demand, and the codec workers load from the same
   `_content/Bit.Bmage.Blazor/` folder of the app package.
-- **Saving a file is the platform's job on mobile.** `ImageExporter.DownloadAsync` and the editor's download hand the
+- **Saving a file is the platform's job on mobile.** `BmageImageExporter.DownloadAsync` and the editor's download hand the
   file to the WebView. WebView2 on Windows saves it as Edge would; Android's WebView and iOS's WKWebView leave
   downloads to the app, so there encode with `EncodeWithFallbackAsync` (or the editor's `ExportAsync`) and save the
   bytes with the platform's APIs:
 
   ```csharp
-  var encoded = await Exporter.EncodeWithFallbackAsync(image, [ImageFormat.WebP, ImageFormat.Jpeg]);
+  var encoded = await Exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
   var path = Path.Combine(FileSystem.CacheDirectory, "photo" + encoded.Extension);
   await File.WriteAllBytesAsync(path, encoded.Data);
   await Share.Default.RequestAsync(new ShareFileRequest { Title = "Save the image", File = new ShareFile(path) });
@@ -85,7 +85,7 @@ working MAUI app over the same pages as the Web App samples, and the E2E suite d
 ### Prerendering
 
 During prerendering there is no browser, so `IJSRuntime` cannot be used. Rather than throwing,
-`IImageCapabilityProvider.GetAsync` returns the managed capability set with `Environment` set to `Prerendering`, so a
+`IBmageImageCapabilityProvider.GetAsync` returns the managed capability set with `Environment` set to `Prerendering`, so a
 prerendered page renders something sensible and detects properly once interactive.
 
 Move browser work to `OnAfterRenderAsync`:
@@ -99,7 +99,7 @@ protected override async Task OnAfterRenderAsync(bool firstRender)
 }
 ```
 
-If you call a browser feature too early anyway, you get an `ImageCapabilityException` that says so explicitly rather
+If you call a browser feature too early anyway, you get a `BmageImageCapabilityException` that says so explicitly rather
 than an opaque interop error.
 
 ## Browsers
@@ -125,7 +125,7 @@ Safari is the constraint worth designing around:
 - **`OffscreenCanvas` arrived late.** The library falls back to a detached canvas element automatically.
 - **Clipboard reads need a user gesture** and often a permission prompt.
 
-`ImageCapabilities.SuggestedMaxWorkingDimension` derives a cap from the reported device memory and canvas limit, which
+`BmageImageCapabilities.SuggestedMaxWorkingDimension` derives a cap from the reported device memory and canvas limit, which
 is a reasonable default for interactive work.
 
 ## Feature availability
@@ -141,7 +141,7 @@ if (c.SupportsFileSystemAccess) { /* a real save dialog */ } else { /* a downloa
 if (c.SupportsCamera) { /* offer capture */ }
 ```
 
-`ImageExporter.SaveAsAsync` already does the File System Access fallback for you: it uses the save dialog where
+`BmageImageExporter.SaveAsAsync` already does the File System Access fallback for you: it uses the save dialog where
 available and a download where not, and returns false when the user cancels.
 
 ## WebAssembly runtime features

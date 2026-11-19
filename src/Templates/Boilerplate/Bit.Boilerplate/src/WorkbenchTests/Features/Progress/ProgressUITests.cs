@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Boilerplate.WorkbenchTests.Features.Progress;
 
-/// <summary>The Progress page in a browser, with the guide a first visit gets put away.</summary>
+/// <summary>The Progress page in a browser, once it has started.</summary>
 public abstract class ProgressPageTest : WorkbenchPageTest
 {
     protected WorkbenchProgressAgent Agent => Server.Services.GetRequiredService<WorkbenchProgressAgent>();
@@ -19,15 +19,11 @@ public abstract class ProgressPageTest : WorkbenchPageTest
         await Page.GotoAsync(new Uri(Server.Address, path).ToString());
         await WaitUntilInteractive();
 
-        await Press(GuideSkip(culture));
-        await Expect(GuideSkip(culture)).ToBeHiddenAsync();
+        // The page says so once it has opened the review document and the state the browser kept.
+        await Expect(Page.Locator(".progress-page")).ToHaveAttributeAsync("data-guide", "none");
     }
 
-    protected ILocator GuideSkip(string? culture = null) => Page.GetByRole(AriaRole.Button, new()
-    {
-        Name = culture is null ? WorkbenchStrings.TourSkip : WorkbenchStrings.ResourceManager.GetString(nameof(WorkbenchStrings.TourSkip), CultureInfo.GetCultureInfo(culture)),
-        Exact = true
-    });
+    protected ILocator GuideSkip => Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourSkip, Exact = true });
 
     protected ILocator Ask(string id) => Page.Locator($"[data-ask-id='{id}']");
 }
@@ -167,15 +163,16 @@ public class ProgressUITests : ProgressPageTest
     }
 
     [TestMethod, Surfaces(WorkbenchSurface.DesktopWithAgent)]
-    public async Task TheGuide_Should_ShowOnceAndStayAwayAfterAReload(WorkbenchSurface surface)
+    public async Task TheGuide_Should_StartOnlyFromTheHelpButton(WorkbenchSurface surface)
     {
+        // A first visit, as on a Workbench that runs on another port: the browser has kept nothing for it.
         await OpenProgress("progress");
 
-        await Page.ReloadAsync();
+        await Expect(GuideSkip).ToHaveCountAsync(0);
 
-        // The page says what its guide came to once it has asked for it, a moment after it is interactive.
-        await Expect(Page.Locator(".progress-page")).ToHaveAttributeAsync("data-guide", "seen");
-        await Expect(GuideSkip()).ToBeHiddenAsync();
+        await Press(Page.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.TourStart, Exact = true }));
+
+        await Expect(GuideSkip).ToBeVisibleAsync();
     }
 
     [TestMethod, WithAnAgent]
@@ -214,8 +211,8 @@ public class ProgressUITests : ProgressPageTest
     private async Task OpenAPersianTask(string culture)
     {
         // Under half of its letters are Persian, and most of its texts start with an English word.
-        var (id, _) = await Agent.Create("Claude Code", new(null, "ارتقا به template 11.0.0-pre-20 و telemetry صفحه‌ها", "bit Fabric روی template 11.0.0-pre-20 است.", null,
-            [new("ci", "bit ci روی bit Fabric", null, "done", "همه **check**ها روی 11.0.0-pre-20 سبز است.", null)],
+        var (id, _) = await Agent.Create("Claude Code", new(null, "ارتقا به template 1.2.3-pre-04 و telemetry صفحه‌ها", "bit Fabric روی template 1.2.3-pre-04 است.", null,
+            [new("ci", "bit ci روی bit Fabric", null, "done", "همه **check**ها روی 1.2.3-pre-04 سبز است.", null)],
             [new("prod", "warning", "rule تونل Production گذاشته شد.")], null, null, "bit ci passed (exit 0)"), CancellationToken.None);
 
         await OpenProgress($"progress/{id}", culture);
@@ -230,7 +227,7 @@ public class ProgressUITests : ProgressPageTest
 
         if (culture is "fa-IR")
         {
-            // Persian's font draws 0-9 as Persian digits everywhere else, which would turn 11.0.0-pre-20 into ۱۱.۰.۰-pre-۲۰.
+            // Persian's font draws 0-9 as Persian digits everywhere else, which would turn 1.2.3-pre-04 into ۱.۲.۳-pre-۰۴.
             Assert.DoesNotContain("FD Digits", await Page.Locator("[data-step-id='ci'] .step-text").EvaluateAsync<string>("e => getComputedStyle(e).fontFamily"));
             Assert.Contains("FD Digits", await Page.Locator(".overall-text").EvaluateAsync<string>("e => getComputedStyle(e).fontFamily"));
         }

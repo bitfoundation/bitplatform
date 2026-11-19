@@ -13,17 +13,17 @@
 public sealed class BbScannerOptions
 {
     /// <summary>
-    /// The symbologies to look for; <see cref="BbBarcodeFormat.Common"/> unless set. Narrowing this
+    /// The symbologies to look for; <see cref="BbScannerBarcodeFormat.Common"/> unless set. Narrowing this
     /// is the single most effective way to make scanning faster and to avoid misreads between
     /// similar linear symbologies.
     /// </summary>
-    public BbBarcodeFormat Formats { get; set; } = BbBarcodeFormat.Common;
+    public BbScannerBarcodeFormat Formats { get; set; } = BbScannerBarcodeFormat.Common;
 
     /// <summary>
     /// The part of the frame to search, in normalized coordinates. Restricting the region
     /// reduces the work of every stage proportionally and lets the user aim.
     /// </summary>
-    public BbScanRegion Region { get; set; } = BbScanRegion.Full;
+    public BbScannerScanRegion Region { get; set; } = BbScannerScanRegion.Full;
 
     /// <summary>
     /// How many scan lines to try per frame when looking for linear symbologies.
@@ -94,7 +94,7 @@ public sealed class BbScannerOptions
     /// Report an EAN-13, UPC-A, UPC-E or EAN-8 only once its two or five digit add-on has been
     /// read too, for magazines and books whose issue number or price is printed there. Off by
     /// default: an add-on is read whenever it is there, into
-    /// <see cref="BbBarcodeResultMetadata.Extension"/>, but its absence does not hold the main
+    /// <see cref="BbScannerBarcodeResultMetadata.Extension"/>, but its absence does not hold the main
     /// symbol back.
     /// </summary>
     public bool RequireEanExtension { get; set; }

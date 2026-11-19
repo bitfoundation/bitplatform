@@ -1,11 +1,9 @@
 ﻿using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
 using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// An <see cref="IBsqliteTransport"/> that drives the browser worker over Blazor JS interop.

@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Bit.BlazeDb.Generators;
+namespace Bit.BlazeDb;
 
 /// <summary>Maps C# types to scalar kinds and their wire encodings.</summary>
 internal static class BlazeDbTypeMap
@@ -63,11 +63,11 @@ internal static class BlazeDbTypeMap
         switch (kind)
         {
             case BlazeDbScalarKind.Single:
-                return "global::Bit.BlazeDb.Serialization.BlazeDbWireType.Fixed32";
+                return "global::Bit.BlazeDb.BlazeDbWireType.Fixed32";
             case BlazeDbScalarKind.Double:
             case BlazeDbScalarKind.DateTime:
             case BlazeDbScalarKind.TimeSpan:
-                return "global::Bit.BlazeDb.Serialization.BlazeDbWireType.Fixed64";
+                return "global::Bit.BlazeDb.BlazeDbWireType.Fixed64";
             case BlazeDbScalarKind.Decimal:
             case BlazeDbScalarKind.String:
             case BlazeDbScalarKind.ByteArray:
@@ -75,9 +75,9 @@ internal static class BlazeDbTypeMap
             case BlazeDbScalarKind.DateTimeOffset:
             case BlazeDbScalarKind.Int128:
             case BlazeDbScalarKind.UInt128:
-                return "global::Bit.BlazeDb.Serialization.BlazeDbWireType.LengthDelimited";
+                return "global::Bit.BlazeDb.BlazeDbWireType.LengthDelimited";
             default:
-                return "global::Bit.BlazeDb.Serialization.BlazeDbWireType.VarInt";
+                return "global::Bit.BlazeDb.BlazeDbWireType.VarInt";
         }
     }
 

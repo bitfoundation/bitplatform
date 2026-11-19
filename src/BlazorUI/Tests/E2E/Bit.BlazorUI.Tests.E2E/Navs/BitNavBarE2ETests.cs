@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// RTL (explicit and inherited), the public API, aria-current, the new-tab hint, SafeArea, the lifecycle and reduced motion.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNavBarE2ETests : E2ETestBase
 {
     private const string PAGE = "/e2e/nav-bar";

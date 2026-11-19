@@ -13,7 +13,7 @@ namespace Bit.BevTools;
 /// (the request pipeline of a server, a hosted service) are not attributed to one, whichever circuit is connected.
 /// <para>
 /// Filtering by the host's logging configuration applies first, as to every provider; its alias is <c>BevTools</c>, so
-/// <c>Logging:BevTools:LogLevel</c> sets what reaches BevTools alone. <see cref="BitBevToolsOptions.MinimumLogLevel"/>
+/// <c>Logging:BevTools:LogLevel</c> sets what reaches BevTools alone. <see cref="BevToolsOptions.MinimumLogLevel"/>
 /// applies after that.
 /// </para>
 /// </summary>
@@ -41,7 +41,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
 
     private IExternalScopeProvider? _scopes;
 
-    private BitBevToolsOptions Options => registry.Options;
+    private BevToolsOptions Options => registry.Options;
 
     public void SetScopeProvider(IExternalScopeProvider scopeProvider) => _scopes = scopeProvider;
 
@@ -81,7 +81,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
         // A category is code - the name CreateLogger was given, a type's most of the time - and is kept at every value
         // access, like a component's type; credential-shaped text in it is redacted all the same. Classified by the
         // name as given, shown as redacted.
-        private readonly string _shownCategory = BevRedactor.RedactText(category);
+        private readonly string _shownCategory = BevToolsRedactor.RedactText(category);
 
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => provider._scopes?.Push(state);
 
@@ -97,7 +97,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                 return;
             }
 
-            var session = SessionResolver.Resolve();
+            var session = BevToolsSessionResolver.Resolve();
             if (session is null || !session.IsEnabled)
             {
                 return;
@@ -127,7 +127,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
             long errorEventId = 0;
             if (framework && logLevel >= LogLevel.Warning)
             {
-                var message = BevRedactor.RedactText(Formatted());
+                var message = BevToolsRedactor.RedactText(Formatted());
                 var source = category switch
                 {
                     _ when category.Contains("Circuit", StringComparison.Ordinal) => "circuit",
@@ -202,13 +202,13 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
             session.Logs.Add(record);
         }
 
-        private BevLogRecord Read<TState>(BevToolsSession session, LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<string> formatted)
+        private BevToolsLogRecord Read<TState>(BevToolsSession session, LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<string> formatted)
         {
             var inspector = session.Inspector;
             string? template = null;
             List<KeyValuePair<string, string>> properties = [];
-            List<(string Name, object? Value, BevInspectedNode Node)>? values = null;
-            var rebuild = inspector.ValueAccess != BevValueAccess.Full;
+            List<(string Name, object? Value, BevToolsInspectedNode Node)>? values = null;
+            var rebuild = inspector.ValueAccess != BevToolsValueAccess.Full;
             if (state is IReadOnlyList<KeyValuePair<string, object?>> pairs)
             {
                 var count = Math.Min(pairs.Count, MaxPairs);
@@ -232,7 +232,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                     (values ??= []).Add((name, value, node));
                     // A value redacted by its name is in the logger's own text all the same: the message is rebuilt
                     // from what the properties show instead.
-                    rebuild |= node.Kind == BevNodeKind.Redacted;
+                    rebuild |= node.Kind == BevToolsNodeKind.Redacted;
                 }
 
                 if (pairs.Count > count)
@@ -248,10 +248,10 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
 
             // Code most of the time, but an interpolated or concatenated string logged as it is is its own template,
             // values and all: under None a template is kept only with holes, since without any nothing tells the two apart.
-            template = template is null || (inspector.ValueAccess == BevValueAccess.None && values is null) ? null : BevRedactor.RedactText(template);
+            template = template is null || (inspector.ValueAccess == BevToolsValueAccess.None && values is null) ? null : BevToolsRedactor.RedactText(template);
 
             string? message;
-            if (inspector.ValueAccess == BevValueAccess.None)
+            if (inspector.ValueAccess == BevToolsValueAccess.None)
             {
                 message = null;
             }
@@ -261,23 +261,23 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
             }
             else
             {
-                message = BevRedactor.RedactText(formatted());
+                message = BevToolsRedactor.RedactText(formatted());
             }
 
-            var dbCommand = state is IReadOnlyList<KeyValuePair<string, object?>> commandPairs && BevDbCommands.IsCommand(category, eventId.Id)
-                ? BevDbCommands.Read(eventId.Id, commandPairs, inspector.ValueAccess)
+            var dbCommand = state is IReadOnlyList<KeyValuePair<string, object?>> commandPairs && BevToolsDbCommands.IsCommand(category, eventId.Id)
+                ? BevToolsDbCommands.Read(eventId.Id, commandPairs, inspector.ValueAccess)
                 : null;
-            var caller = session.Options.CaptureLogCallers ? BevCallSites.Find(skipFrames: 0) : default;
+            var caller = session.Options.CaptureLogCallers ? BevToolsCallSites.Find(skipFrames: 0) : default;
             var activity = Activity.Current;
             var w3c = activity is { IdFormat: ActivityIdFormat.W3C };
-            return new BevLogRecord
+            return new BevToolsLogRecord
             {
                 Id = session.Logs.NextId(),
                 At = DateTimeOffset.UtcNow,
                 Level = logLevel,
                 Category = _shownCategory,
                 EventId = eventId.Id,
-                EventName = eventId.Name is { } eventName ? BevRedactor.RedactText(eventName) : null,
+                EventName = eventId.Name is { } eventName ? BevToolsRedactor.RedactText(eventName) : null,
                 Message = message is null ? null : Shorten(message, MaxMessageLength),
                 MessageTemplate = template is null ? null : Shorten(template, MaxMessageLength),
                 Properties = properties,
@@ -293,7 +293,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
             };
         }
 
-        private List<string> ReadScopes(BevObjectInspector inspector)
+        private List<string> ReadScopes(BevToolsObjectInspector inspector)
         {
             List<string> scopes = [];
             provider._scopes?.ForEachScope(static (scope, state) =>
@@ -310,10 +310,10 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
 
         /// <summary>
         /// A scope as one line. Key/value scopes (the request scope of ASP.NET Core, a <c>Dictionary</c>) are read pair by
-        /// pair through the inspector, so a sensitive name is redacted and <see cref="BevValueAccess.None"/> shows the keys
+        /// pair through the inspector, so a sensitive name is redacted and <see cref="BevToolsValueAccess.None"/> shows the keys
         /// only; anything else is its text, or its type under None.
         /// </summary>
-        private static string DescribeScope(object scope, BevObjectInspector inspector)
+        private static string DescribeScope(object scope, BevToolsObjectInspector inspector)
         {
             if (scope is IEnumerable<KeyValuePair<string, object?>> pairs)
             {
@@ -331,7 +331,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                     }
 
                     sb.Append(key);
-                    if (inspector.ValueAccess != BevValueAccess.None)
+                    if (inspector.ValueAccess != BevToolsValueAccess.None)
                     {
                         sb.Append('=').Append(Unquoted(inspector.Describe(key, value)));
                     }
@@ -340,23 +340,23 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                 return sb.ToString();
             }
 
-            if (inspector.ValueAccess == BevValueAccess.None)
+            if (inspector.ValueAccess == BevToolsValueAccess.None)
             {
-                return scope is string ? "string" : TypeNames.Short(scope.GetType());
+                return scope is string ? "string" : BevToolsTypeNames.Short(scope.GetType());
             }
 
             return scope is string text
-                ? BevRedactor.RedactText(text)
-                : inspector.ValueAccess == BevValueAccess.Full ? BevRedactor.RedactText(Safe(scope.ToString) ?? "") : TypeNames.Short(scope.GetType());
+                ? BevToolsRedactor.RedactText(text)
+                : inspector.ValueAccess == BevToolsValueAccess.Full ? BevToolsRedactor.RedactText(Safe(scope.ToString) ?? "") : BevToolsTypeNames.Short(scope.GetType());
         }
 
         /// <summary>
         /// The template with each hole filled with what its property shows: a sensitive value redacted, an object under
-        /// <see cref="BevValueAccess.Shallow"/> as its type. The n-th hole takes the n-th value when that one bears its
+        /// <see cref="BevToolsValueAccess.Shallow"/> as its type. The n-th hole takes the n-th value when that one bears its
         /// name, as <c>LoggerMessage.Define</c> and <c>ILogger.Log*</c> fill them, a name repeated included; otherwise the
         /// first value of its name, as the source generator does, which lists each parameter once, in the method's order.
         /// </summary>
-        private static string Render(string template, List<(string Name, object? Value, BevInspectedNode Node)>? values)
+        private static string Render(string template, List<(string Name, object? Value, BevToolsInspectedNode Node)>? values)
         {
             var sb = new StringBuilder(template.Length + 32);
             var hole = 0;
@@ -392,7 +392,7 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                 {
                     var (_, value, node) = values![found];
                     var format = stop >= 0 && text[stop] == ':' ? text[(stop + 1)..].ToString() : null;
-                    sb.Append(node.Kind is BevNodeKind.Primitive && format is not null && value is IFormattable formattable
+                    sb.Append(node.Kind is BevToolsNodeKind.Primitive && format is not null && value is IFormattable formattable
                         ? Safe(() => formattable.ToString(format, CultureInfo.InvariantCulture)) ?? Unquoted(node)
                         : Unquoted(node));
                 }
@@ -400,21 +400,21 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
                 i = end + 1;
             }
 
-            return BevRedactor.RedactText(sb.ToString());
+            return BevToolsRedactor.RedactText(sb.ToString());
         }
 
-        private static string Unquoted(BevInspectedNode node) =>
-            node.Kind == BevNodeKind.String && node.Display.Length >= 2 && node.Display[0] == '"' && node.Display[^1] == '"'
+        private static string Unquoted(BevToolsInspectedNode node) =>
+            node.Kind == BevToolsNodeKind.String && node.Display.Length >= 2 && node.Display[0] == '"' && node.Display[^1] == '"'
                 ? node.Display[1..^1]
                 : node.Display;
 
         private static string DescribeException(Exception exception)
         {
-            var sb = new StringBuilder(BevRedactor.RedactText(exception.Message));
+            var sb = new StringBuilder(BevToolsRedactor.RedactText(exception.Message));
             var inner = exception.InnerException;
             for (var hops = 0; inner is not null && hops < 5; hops++, inner = inner.InnerException)
             {
-                sb.Append('\n').Append(inner.GetType().FullName).Append(": ").Append(BevRedactor.RedactText(inner.Message));
+                sb.Append('\n').Append(inner.GetType().FullName).Append(": ").Append(BevToolsRedactor.RedactText(inner.Message));
             }
 
             return Shorten(sb.ToString(), MaxMessageLength);

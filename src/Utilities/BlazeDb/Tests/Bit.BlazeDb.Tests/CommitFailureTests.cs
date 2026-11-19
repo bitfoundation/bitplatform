@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb.Serialization;
-using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>
 /// A write the log cannot record must not stay in memory: on the next open it would be gone, so

@@ -45,7 +45,7 @@ Most of BevTools' rules look back over a window of 10 to 60 seconds when they ru
 `o.Diagnostics.EvaluateWhileClosed = true` in the app for the run you check, so they run as it is used and not only
 when the session is exported (the report's caveats say when it was not set).
 
-The same checks run in a test without the tool: `BevSessionCheck.Check(json)` and `BevProfileComparison.Compare(baseline,
+The same checks run in a test without the tool: `BevToolsSessionCheck.Check(json)` and `BevToolsProfileComparison.Compare(baseline,
 current)` in `Bit.BevTools`. For a reliable comparison, record both exports the same way: reset the profiler baseline,
 perform the interaction, export.
 

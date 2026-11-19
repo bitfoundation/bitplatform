@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Samples.Core.Data;
+﻿namespace Bit.BlazeDb.Samples.Core.Data;
 
 /// <summary>
 /// The database of the hosts whose .NET runs outside a browser - <c>ServerSampleDatabase</c> in the server process,

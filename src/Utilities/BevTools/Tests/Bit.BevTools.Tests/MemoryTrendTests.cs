@@ -13,7 +13,7 @@ public class MemoryTrendTests
 {
     private const long MB = 1024 * 1024;
 
-    private static BevMemoryReading Reading(long heapMb, int full, long index = 0, long afterMb = 0, double? pause = null, long? linear = null) =>
+    private static BevToolsMemoryReading Reading(long heapMb, int full, long index = 0, long afterMb = 0, double? pause = null, long? linear = null) =>
         new(heapMb * MB, full, pause ?? 0, index, afterMb * MB, pause, linear);
 
     [TestMethod]
@@ -108,7 +108,7 @@ public class MemoryTrendTests
                 session.Memory.Sample(session, t0.AddSeconds(i), () => Reading(40, 1));
             }
 
-            using var json = JsonDocument.Parse(BevSessionExporter.ToJson(session, new BevSessionExportOptions { Sections = new HashSet<string> { "runtime" } }));
+            using var json = JsonDocument.Parse(BevToolsSessionExporter.ToJson(session, new BevToolsSessionExportOptions { Sections = new HashSet<string> { "runtime" } }));
             var count = json.RootElement.GetProperty("memory").GetProperty("samples").GetArrayLength();
             Assert.IsTrue(count is > 0 and <= 120, "readings: " + count);
         }
@@ -161,7 +161,7 @@ public class MemoryTrendTests
             session.Memory.Sample(session, t0, () => Reading(40, 1, linear: 80 * MB));
             session.Memory.Sample(session, t0.AddSeconds(1), () => Reading(30, 2, index: 9, afterMb: 25, pause: 4, linear: 96 * MB));
 
-            using var json = JsonDocument.Parse(BevSessionExporter.ToJson(session, new BevSessionExportOptions { Sections = new HashSet<string> { "runtime" } }));
+            using var json = JsonDocument.Parse(BevToolsSessionExporter.ToJson(session, new BevToolsSessionExportOptions { Sections = new HashSet<string> { "runtime" } }));
             var memory = json.RootElement.GetProperty("memory");
             Assert.AreEqual(2, memory.GetProperty("samples").GetArrayLength());
             Assert.AreEqual(96 * MB, memory.GetProperty("samples")[1].GetProperty("linearMemoryBytes").GetInt64());
@@ -174,7 +174,7 @@ public class MemoryTrendTests
     [TestMethod]
     public void The_runtime_reads_its_own_counters()
     {
-        var reading = BevMemoryReading.Now(null);
+        var reading = BevToolsMemoryReading.Now(null);
         Assert.IsTrue(reading.HeapBytes > 0);
         Assert.IsTrue(reading.FullCollections >= 0);
     }
@@ -200,8 +200,8 @@ public class MemoryTrendPanelTests : BunitContext
     {
         var session = Services.GetRequiredService<BevToolsSession>();
         var t0 = DateTimeOffset.UtcNow.AddSeconds(-30);
-        session.Memory.Sample(session, t0, () => new BevMemoryReading(40L << 20, 1, 0, 0, 0, null, 80L << 20));
-        session.Memory.Sample(session, t0.AddSeconds(10), () => new BevMemoryReading(30L << 20, 2, 3, 2, 25L << 20, 3, 96L << 20));
+        session.Memory.Sample(session, t0, () => new BevToolsMemoryReading(40L << 20, 1, 0, 0, 0, null, 80L << 20));
+        session.Memory.Sample(session, t0.AddSeconds(10), () => new BevToolsMemoryReading(30L << 20, 2, 3, 2, 25L << 20, 3, 96L << 20));
 
         var panel = Render<BevToolsPanel>();
         panel.FindAll(".bev-tab").First(t => t.TextContent.Trim().StartsWith("Runtime", StringComparison.Ordinal)).Click();

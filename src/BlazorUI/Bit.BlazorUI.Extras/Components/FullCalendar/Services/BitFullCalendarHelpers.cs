@@ -2,7 +2,7 @@
 
 namespace Bit.BlazorUI;
 
-public static class BitFullCalendarHelpers
+internal static class BitFullCalendarHelpers
 {
     public const int HourHeightPx = 96;
 

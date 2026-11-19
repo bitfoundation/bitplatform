@@ -10,7 +10,7 @@
    Every animation on it is Bmotion animating itself. That is the whole argument the page has to
    make, so it makes it with the library rather than about it: the hero assembles, and the tiles in
    the window are the sample printed above them, live - they enter on a stagger and answer the
-   pointer. The site prerenders with BmPrerenderMode.Animate, so the entrance plays from the served
+   pointer. The site prerenders with BmotionPrerenderMode.Animate, so the entrance plays from the served
    HTML before the runtime has loaded. *@
 
 <div class="bb-landing">
@@ -162,7 +162,7 @@
                     </p>
                     <a href="presence">AnimatePresence →</a>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BmotionAnimatePresence</span> IsPresent=<span class="s">"@@_show"</span> Mode=<span class="s">"BmPresenceMode.Wait"</span>&gt;
+                <pre class="bb-code">&lt;<span class="k">BmotionAnimatePresence</span> IsPresent=<span class="s">"@@_show"</span> Mode=<span class="s">"BmotionPresenceMode.Wait"</span>&gt;
     &lt;<span class="k">Bmotion</span> Initial=<span class="s">"Bm.To(opacity: 0)"</span>
              Animate=<span class="s">"Bm.To(opacity: 1)"</span>
              Exit=<span class="s">"Bm.To(opacity: 0)"</span>&gt;
@@ -192,7 +192,7 @@
                     <tr><td>What you write</td><td>Element ids, option objects and interop glue</td><td>Razor parameters: <code>Initial</code>, <code>Animate</code>, <code>WhileHover</code>, <code>Exit</code>...</td></tr>
                     <tr><td>Exit animations</td><td>Hand-timed removal after the animation ends</td><td>Presence components hold the element until its exit has played</td></tr>
                     <tr><td>Cheap animations</td><td>Up to the library</td><td>Pre-sampled in C# and handed to the Web Animations API - no per-frame interop</td></tr>
-                    <tr><td>Prerendering</td><td>Nothing moves until the script runs</td><td><code>BmPrerenderMode.Animate</code> plays enter animations in CSS from the served HTML</td></tr>
+                    <tr><td>Prerendering</td><td>Nothing moves until the script runs</td><td><code>BmotionPrerenderMode.Animate</code> plays enter animations in CSS from the served HTML</td></tr>
                     <tr><td>Script to ship</td><td>The library plus its wrapper</td><td>One small module, imported on demand</td></tr>
                 </tbody>
             </table>
@@ -251,14 +251,14 @@
                 <summary>What happens while the page is still prerendered?</summary>
                 <p>
                     By default an element is served at its <code>Initial</code> state and animates once the runtime is
-                    interactive. <code>BmPrerenderMode.Final</code> serves it at rest, and <code>BmPrerenderMode.Animate</code>
+                    interactive. <code>BmotionPrerenderMode.Final</code> serves it at rest, and <code>BmotionPrerenderMode.Animate</code>
                     - what this site uses - plays the enter animation in pure CSS straight from the served HTML.
                 </p>
             </details>
             <details>
                 <summary>Does it respect prefers-reduced-motion?</summary>
                 <p>
-                    Yes, by the policy you choose at registration. With <code>BmReducedMotionMode.User</code> transforms,
+                    Yes, by the policy you choose at registration. With <code>BmotionReducedMotionMode.User</code> transforms,
                     layout and dimension changes snap while opacity and colour still animate - softer than switching
                     everything off. <code>&lt;BmotionConfig ReduceMotion="true"&gt;</code> forces it for a subtree.
                 </p>

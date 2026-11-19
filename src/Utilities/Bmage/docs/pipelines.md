@@ -1,10 +1,10 @@
 ﻿# Pipelines
 
-An `ImagePipeline` is an immutable, ordered list of operations. Building one does no work; it is a description of an
+A `BmageImagePipeline` is an immutable, ordered list of operations. Building one does no work; it is a description of an
 edit that you can inspect, store, reuse across images and threads, and execute when you are ready.
 
 ```csharp
-var pipeline = ImagePipeline.Create()
+var pipeline = BmageImagePipeline.Create()
     .AutoOrient()
     .MaxSize(1920, 1920)
     .Sharpen(0.3f);
@@ -22,7 +22,7 @@ static field and reuse for every upload.
 ## Executing
 
 ```csharp
-using var result = await pipeline.ExecuteAsync(source, new PipelineExecutionOptions
+using var result = await pipeline.ExecuteAsync(source, new BmagePipelineExecutionOptions
 {
     CancellationToken = token,
     Progress = new Progress<double>(p => _percent = p),
@@ -48,7 +48,7 @@ the synchronous form; use it off the UI thread or for small images.
 Failures are wrapped with context rather than surfacing bare:
 
 ```
-ImageException: Operation 'Crop' (step 2 of 4) failed: Crop rectangle {X=900,Y=900,Width=100,Height=100}
+BmageImageException: Operation 'Crop' (step 2 of 4) failed: Crop rectangle {X=900,Y=900,Width=100,Height=100}
 does not intersect the image (800x600).
 ```
 
@@ -59,16 +59,16 @@ does not intersect the image (800x600).
 ```csharp
 pipeline.AutoOrient()                       // apply the EXIF rotation so the image is upright
         .Crop(x, y, width, height)
-        .CropToAspect(AspectRatio.Ratio16x9, Anchor.Center)
+        .CropToAspect(BmageAspectRatio.Ratio16x9, BmageAnchor.Center)
         .Resize(width, height, mode, filter, anchor, background)
         .MaxSize(1920, 1080)                // shrink to fit, never enlarge
-        .Cover(512, 512, Anchor.Top)        // fill exactly, cropping the overflow
+        .Cover(512, 512, BmageAnchor.Top)        // fill exactly, cropping the overflow
         .Rotate(12.5, background)           // arbitrary angle, canvas expands
-        .Orient(Orientation.Rotate90)       // lossless, no resampling
+        .Orient(BmageOrientation.Rotate90)       // lossless, no resampling
         .FlipHorizontal()
         .Straighten(-3.5)                   // level a tilt, cropping to the largest rectangle with no empty corners
-        .CanvasSize(1200, 1200, Anchor.Top, Rgba32.White)  // a square canvas, the image at the top, unscaled
-        .Pad(40, Rgba32.White)              // a 40 pixel border; Pad(left, top, right, bottom) for each side
+        .CanvasSize(1200, 1200, BmageAnchor.Top, BmageRgba32.White)  // a square canvas, the image at the top, unscaled
+        .Pad(40, BmageRgba32.White)              // a 40 pixel border; Pad(left, top, right, bottom) for each side
         .Skew(10, 0);
 ```
 
@@ -80,7 +80,7 @@ Trimming depends on the pixels, so it is an analysis whose result you crop to, r
 size must be known from its input's size alone):
 
 ```csharp
-if (ContentBounds.Find(image, new TrimOptions { Padding = 8 }) is { } content)
+if (BmageContentBounds.Find(image, new BmageTrimOptions { Padding = 8 }) is { } content)
     pipeline = pipeline.Crop(content);       // transparent borders, or a plain one within 4% of the corner's colour
 ```
 
@@ -123,18 +123,18 @@ A fixed anchor is wrong most of the time. Centre-cropping a portrait to a square
 and centre-cropping a product photo can trim the product.
 
 ```csharp
-pipeline.SmartCrop(AspectRatio.Square);
+pipeline.SmartCrop(BmageAspectRatio.Square);
 ```
 
 It scores candidate positions on a small downscaled copy using local detail, colour saturation and skin-like hue, then
 picks the best. It is a heuristic, not face recognition. When you do have a detector, hand it the rectangle:
 
 ```csharp
-var crop = SmartCrop.FindCrop(image, AspectRatio.Square, mustInclude: faceRectangle);
+var crop = BmageSmartCrop.FindCrop(image, BmageAspectRatio.Square, mustInclude: faceRectangle);
 pipeline.Crop(crop.Rectangle);
 ```
 
-Tuning is available through `SmartCropOptions`: the weights for detail, saturation and skin, how strongly to prefer the
+Tuning is available through `BmageSmartCropOptions`: the weights for detail, saturation and skin, how strongly to prefer the
 rule of thirds, how much to penalise cutting through busy pixels, and the search resolution.
 
 ### Automatic adjustments
@@ -151,7 +151,7 @@ leaves a flat histogram alone rather than amplifying it into noise.
 
 ```csharp
 pipeline.AutoWhiteBalance();                         // make the average of the mid-tones grey, 80% of the way
-pipeline.WhiteBalance(ColorSampler.Sample(image, new Point(420, 310), radius: 2));  // a picked grey becomes grey
+pipeline.WhiteBalance(BmageColorSampler.Sample(image, new Point(420, 310), radius: 2));  // a picked grey becomes grey
 ```
 
 `AutoWhiteBalance` leaves clipped highlights, deep shadows and strongly saturated colours out of its average, since they
@@ -170,17 +170,17 @@ pipeline.Brightness(0.1f).Contrast(0.15f).Saturation(-0.2f).Hue(15)
         .ColorMatrix(myMatrix);
 
 pipeline.WhitesBlacks(0.3f, -0.2f)                    // brighten the top of the range, deepen the bottom
-        .Hsl(HueBand.Blues, saturation: 0.3f, lightness: -0.25f)   // a deeper sky, nothing else touched
+        .Hsl(BmageHueBand.Blues, saturation: 0.3f, lightness: -0.25f)   // a deeper sky, nothing else touched
         .ChannelMixer(new(0.9f, 0.1f, 0), new(0, 1, 0), new(0, 0.1f, 0.9f))
         .BlackAndWhite(red: 0.6f, green: 0.3f, blue: 0.1f)          // a red filter: dark skies, light skin
         .Colorize(30, saturation: 0.35f)                 // one warm tint over everything
-        .Duotone(new Rgba32(20, 30, 90), new Rgba32(250, 210, 120))
+        .Duotone(new BmageRgba32(20, 30, 90), new BmageRgba32(250, 210, 120))
         .MotionBlur(24, angle: 15)                       // a 24 pixel streak, rising slightly to the right
         .RadialBlur(0.25f)                               // a zoom burst from the middle, the centre left sharp
-        .RadialBlur(0.4f, RadialBlurMode.Spin, center: new PointF(0.3f, 0.6f))
+        .RadialBlur(0.4f, BmageRadialBlurMode.Spin, center: new PointF(0.3f, 0.6f))
         .HighPass(3)                                     // only detail finer than 3 pixels, around mid grey
         .AdaptiveThreshold(radius: 18)                   // black ink on white paper, whatever the lighting
-        .ColorLut(ColorLookupTable.ParseCube(cubeText), strength: 0.8f);   // a film look from a grading tool
+        .ColorLut(BmageColorLookupTable.ParseCube(cubeText), strength: 0.8f);   // a film look from a grading tool
 ```
 
 `AdaptiveThreshold` compares each pixel with the window of `2 x radius + 1` pixels around it rather than with one level
@@ -195,14 +195,14 @@ centre (at most 95% of it); for `Spin`, of a 45 degree arc. Neither depends on t
 proxy.
 
 `ColorLut` maps every colour through a three-dimensional lookup table, by tetrahedral interpolation. Read one from an
-Adobe or DaVinci Resolve `.cube` file with `ColorLookupTable.ParseCube`, write one with `ToCube`, or build one from any
-function with `ColorLookupTable.Create(size, map)`. Tables take the encoded sRGB values every adjustment sees: one made for
+Adobe or DaVinci Resolve `.cube` file with `BmageColorLookupTable.ParseCube`, write one with `ToCube`, or build one from any
+function with `BmageColorLookupTable.Create(size, map)`. Tables take the encoded sRGB values every adjustment sees: one made for
 log or linear footage needs that transfer applied first, which a `.cube` file does not record. One-dimensional `.cube`
-tables are refused; a `CurveOperation` is their equivalent.
+tables are refused; a `BmageCurveOperation` is their equivalent.
 
-`HslAdjustment` adjusts eight hue bands; a pixel between two bands takes from both in proportion, and greys are left
+`BmageHslAdjustment` adjusts eight hue bands; a pixel between two bands takes from both in proportion, and greys are left
 alone. The HSL model is fast and predictable rather than perceptually uniform, the trade simple editors make.
-`GradientMapOperation` takes any number of stops; `Duotone` is the two-stop case.
+`BmageGradientMapOperation` takes any number of stops; `Duotone` is the two-stop case.
 
 Adjustment amounts are consistently in [-1, 1] with 0 meaning no change, except where a different unit is natural:
 `Exposure` is in stops, `Hue` is in degrees, `Gamma` is a positive multiplier, and `Blur` is a radius in pixels.
@@ -219,9 +219,9 @@ Any operation that keeps the size, or a whole sub-pipeline, can be applied throu
 a graduated sky, a spotlight, highlights only, everything but the red coat.
 
 ```csharp
-pipeline.Masked(Mask.Gradient(new(0, 0), new(0, 0.55f)), sky => sky.Exposure(-0.8f).Saturation(0.35f))
-        .Masked(new LuminanceRangeMask(0f, 0.3f), shadows => shadows.Exposure(0.6f))
-        .ApplyMask(Mask.Ellipse());                      // and cut the result out as a circle
+pipeline.Masked(BmageMask.Gradient(new(0, 0), new(0, 0.55f)), sky => sky.Exposure(-0.8f).Saturation(0.35f))
+        .Masked(new BmageLuminanceRangeMask(0f, 0.3f), shadows => shadows.Exposure(0.6f))
+        .ApplyMask(BmageMask.Ellipse());                      // and cut the result out as a circle
 ```
 
 A run of adjustments through a mask is still one pass, and only over the rows and columns the mask can reach. The
@@ -238,7 +238,7 @@ It runs by default and every rewrite is exact.
 
 ```csharp
 // Three no-ops and two crops.
-var pipeline = ImagePipeline.Create()
+var pipeline = BmageImagePipeline.Create()
     .Brightness(0)
     .Crop(10, 10, 200, 200)
     .Crop(5, 5, 100, 100)
@@ -256,7 +256,7 @@ pipeline.Optimize(new Size(400, 400));
 | Fuse resize with a following crop | One resample that computes only the surviving region, 2.4× faster |
 | Fuse per-pixel runs | One pass over the pixels instead of one per adjustment |
 
-Turn it off with `new PipelineExecutionOptions { Optimize = false }` if you are comparing behaviour, but there is no
+Turn it off with `new BmagePipelineExecutionOptions { Optimize = false }` if you are comparing behaviour, but there is no
 reason to in production.
 
 One subtlety worth knowing: fusing per-pixel operations removes the intermediate 8-bit rounding that separate execution
@@ -277,12 +277,12 @@ path rather than a fast one and an accurate one that drift apart.
 ## Batch processing
 
 ```csharp
-var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
+var result = await processor.ProcessBatchAsync(items, pipeline, new BmageBatchOptions
 {
     MaxConcurrency = 2,
     StopOnFirstError = false,
-    ExportOptions = new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.82 },
-    Progress = new Progress<BatchProgress>(p =>
+    ExportOptions = new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.82 },
+    Progress = new Progress<BmageBatchProgress>(p =>
     {
         _done = p.Completed;
         if (p.Last.Error is { } error) Log(p.Last.FileName, error);
@@ -302,7 +302,7 @@ megapixel photos means roughly 400 MB of live pixels. Two is a safe default on p
 One bad file does not lose the rest. Every item comes back with its own outcome, and `StopOnFirstError` is opt-in.
 
 Stopping a batch does not lose what it finished either. Cancelling the token makes `ProcessBatchAsync` throw a
-`BatchCancelledException` - an `OperationCanceledException`, so a `catch` written for any cancelled call still works -
+`BmageBatchCancelledException` - an `OperationCanceledException`, so a `catch` written for any cancelled call still works -
 whose `Result` is the batch as it stood: every image that completed keeps its output or its error, the ones in flight
 and the ones never started come back with `WasCancelled`, and `result.WasCancelled` says the token stopped it. What was
 done is still there to save:
@@ -313,7 +313,7 @@ try
     var result = await processor.ProcessBatchAsync(items, pipeline, options, stop.Token);
     foreach (var item in result.Succeeded) Save(item.Output!);
 }
-catch (BatchCancelledException stopped)
+catch (BmageBatchCancelledException stopped)
 {
     foreach (var item in stopped.Result.Succeeded) Save(item.Output!);
     Requeue(stopped.Result.Cancelled.Select(item => item.Item));   // never ran
@@ -329,13 +329,13 @@ batch too large for that, read each file only when its turn comes, hand each res
 memory each image needs decide how many run at once:
 
 ```csharp
-var items = files.Select(file => BatchItem.Deferred(ct => ReadAsync(file, ct), file.Name));
+var items = files.Select(file => BmageBatchItem.Deferred(ct => ReadAsync(file, ct), file.Name));
 
-await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BatchOptions
+await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BmageBatchOptions
 {
     MaxConcurrency = 4,
     MaxMemoryBytes = 512L * 1024 * 1024,
-    ExportOptions = new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.82 },
+    ExportOptions = new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.82 },
 }))
 {
     if (result.Output is { } output) await SaveAsync(result.FileName, output.Data);
@@ -345,7 +345,7 @@ await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, 
 `MaxMemoryBytes` admits images by their expected peak, estimated from each file's header before it is decoded: the
 file, its pixels and the pipeline's working buffers. Small photos then run four at a time, a 48 megapixel one runs with
 room to spare, and one larger than the whole budget runs alone rather than never. The source may also be an
-`IAsyncEnumerable<BatchItem>`, such as files arriving from an upload, in which case `BatchProgress.Total` is -1.
+`IAsyncEnumerable<BmageBatchItem>`, such as files arriving from an upload, in which case `BmageBatchProgress.Total` is -1.
 
 A stream has already handed over every result it finished, so cancelling its token simply ends it, with an
 `OperationCanceledException` from the `await foreach`, as cancelling any other async stream does.
@@ -361,13 +361,13 @@ estimate.OutputSize;    // what it produces
 ```
 
 The estimate follows the buffers each step holds, and the working copies the heavier ones take. To enforce a ceiling
-rather than predict one, run with a `BudgetedPixelAllocator`: every buffer and mask comes from the allocator in the
-context, so a run that would exceed the budget fails with `ImageMemoryBudgetExceededException` before allocating, and
+rather than predict one, run with a `BmageBudgetedPixelAllocator`: every buffer and mask comes from the allocator in the
+context, so a run that would exceed the budget fails with `BmageImageMemoryBudgetExceededException` before allocating, and
 `PeakBytes` afterwards says what it really took.
 
 ```csharp
-var budget = new BudgetedPixelAllocator(256L * 1024 * 1024);
-using var result = pipeline.Execute(source, new PipelineExecutionOptions { Allocator = budget });
+var budget = new BmageBudgetedPixelAllocator(256L * 1024 * 1024);
+using var result = pipeline.Execute(source, new BmagePipelineExecutionOptions { Allocator = budget });
 Console.WriteLine($"{budget.PeakBytes / 1048576.0:0.0} MB at the peak");
 ```
 
@@ -379,13 +379,13 @@ built-in operation included, so a preset can live in a database or travel in a r
 
 ## Custom operations
 
-Implement `IImageOperation`, or `PointOperation` if your operation maps each pixel independently and should fuse with
+Implement `IBmageImageOperation`, or `BmagePointOperation` if your operation maps each pixel independently and should fuse with
 its neighbours:
 
 ```csharp
-public sealed class DuotoneOperation : PointOperation
+public sealed class DuotoneOperation : BmagePointOperation
 {
-    public DuotoneOperation(Rgba32 shadow, Rgba32 highlight) { /* ... */ }
+    public DuotoneOperation(BmageRgba32 shadow, BmageRgba32 highlight) { /* ... */ }
 
     public override string Name => "Duotone";
 
@@ -405,5 +405,5 @@ public sealed class DuotoneOperation : PointOperation
 pipeline.Apply(new DuotoneOperation(navy, cream));
 ```
 
-Deriving from `PointOperation` rather than `ImageOperation` means it joins the single-pass run with the adjustments
+Deriving from `BmagePointOperation` rather than `BmageImageOperation` means it joins the single-pass run with the adjustments
 around it for free. See [extending.md](extending.md) for the other extension points.

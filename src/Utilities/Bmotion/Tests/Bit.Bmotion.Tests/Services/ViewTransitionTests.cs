@@ -35,14 +35,14 @@ public class ViewTransitionTests
 
     // ── Reduced motion and types ──────────────────────────────────────────────
 
-    private static BmotionViewTransition WithPolicy(FakeBmotionInterop interop, BmReducedMotionMode mode)
-        => new(interop, new BmotionAnimationEngine(interop), new BitBmotionOptions { ReducedMotion = mode });
+    private static BmotionViewTransition WithPolicy(FakeBmotionInterop interop, BmotionReducedMotionMode mode)
+        => new(interop, new BmotionAnimationEngine(interop), new BmotionOptions { ReducedMotion = mode });
 
     [TestMethod]
     public async Task UnderTheUserPolicy_AnOsPreferenceForLessMotion_SkipsTheTransition()
     {
         var interop = new FakeBmotionInterop { SupportsViewTransitions = true, PrefersReducedMotion = true };
-        await using var vt = WithPolicy(interop, BmReducedMotionMode.User);
+        await using var vt = WithPolicy(interop, BmotionReducedMotionMode.User);
 
         var ran = false;
         var usedNative = await vt.StartAsync(() => ran = true);
@@ -56,7 +56,7 @@ public class ViewTransitionTests
     public async Task UnderTheUserPolicy_WithoutThePreference_TheTransitionPlays()
     {
         var interop = new FakeBmotionInterop { SupportsViewTransitions = true, PrefersReducedMotion = false };
-        await using var vt = WithPolicy(interop, BmReducedMotionMode.User);
+        await using var vt = WithPolicy(interop, BmotionReducedMotionMode.User);
 
         Assert.IsTrue(await vt.StartAsync(() => { }));
     }
@@ -66,7 +66,7 @@ public class ViewTransitionTests
     {
         // A service sits outside every <BmotionConfig>, and IgnoreUnlessConfigured only honours the OS inside one.
         var interop = new FakeBmotionInterop { SupportsViewTransitions = true, PrefersReducedMotion = true };
-        await using var vt = WithPolicy(interop, BmReducedMotionMode.IgnoreUnlessConfigured);
+        await using var vt = WithPolicy(interop, BmotionReducedMotionMode.IgnoreUnlessConfigured);
 
         Assert.IsTrue(await vt.StartAsync(() => { }));
     }
@@ -75,12 +75,12 @@ public class ViewTransitionTests
     public async Task APerCallOverride_WinsOverThePolicy()
     {
         var interop = new FakeBmotionInterop { SupportsViewTransitions = true };
-        await using var vt = WithPolicy(interop, BmReducedMotionMode.Always);
+        await using var vt = WithPolicy(interop, BmotionReducedMotionMode.Always);
 
         Assert.IsFalse(await vt.StartAsync(() => { }), "Always reduces");
-        Assert.IsTrue(await vt.StartAsync(() => { }, new BmViewTransitionOptions { ReduceMotion = false }),
+        Assert.IsTrue(await vt.StartAsync(() => { }, new BmotionViewTransitionOptions { ReduceMotion = false }),
             "a transition whose stylesheet honours the preference itself can opt back in");
-        Assert.IsFalse(await WithPolicy(interop, BmReducedMotionMode.Never).StartAsync(() => { }, new BmViewTransitionOptions { ReduceMotion = true }));
+        Assert.IsFalse(await WithPolicy(interop, BmotionReducedMotionMode.Never).StartAsync(() => { }, new BmotionViewTransitionOptions { ReduceMotion = true }));
     }
 
     [TestMethod]
@@ -89,7 +89,7 @@ public class ViewTransitionTests
         var interop = new FakeBmotionInterop { SupportsViewTransitions = true };
         await using var vt = new BmotionViewTransition(interop);
 
-        await vt.StartAsync(() => { }, new BmViewTransitionOptions { Types = ["forward", "slide"] });
+        await vt.StartAsync(() => { }, new BmotionViewTransitionOptions { Types = ["forward", "slide"] });
 
         CollectionAssert.AreEqual(new[] { "forward", "slide" }, interop.ViewTransitionTypes);
     }

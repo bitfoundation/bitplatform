@@ -116,7 +116,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Pan</h3>
     <p>
         A pan is a pointer drag <em>reported</em> rather than applied: <code>OnPan</code> hands you
-        a <strong>BmPanInfo</strong> - the pointer position, the delta since the last event, the
+        a <strong>BmotionPanInfo</strong> - the pointer position, the delta since the last event, the
         total offset since the gesture began and the current velocity in pixels per second - and
         leaves the element where it is. That is the hook for building your own drag behaviour
         (a custom slider, a swipe-to-dismiss threshold) on top of the same gesture plumbing
@@ -264,12 +264,12 @@
     private string _focusState = "not focused";
 
     // Visibility is measured against the list's own scrollport, and a row counts only once all of it shows.
-    private readonly BmViewport _rowViewport = new() { Root = ".inview-scroller", Amount = "all" };
+    private readonly BmotionViewport _rowViewport = new() { Root = ".inview-scroller", Amount = "all" };
     private readonly HashSet<int> _rowsInView = [];
-    private BmPoint _panOffset = new();
-    private BmPoint _panVelocity = new();
+    private BmotionPoint _panOffset = new();
+    private BmotionPoint _panVelocity = new();
 
-    private void HandlePan(BmPanInfo info)
+    private void HandlePan(BmotionPanInfo info)
     {
         _panOffset = info.Offset;
         _panVelocity = info.Velocity;
@@ -392,7 +392,7 @@
 
         @code {
             // Margin = "0px 0px -40px 0px" would also shrink the area that counts by 40px at the bottom.
-            private readonly BmViewport _rowViewport = new() { Root = ".inview-scroller", Amount = "all" };
+            private readonly BmotionViewport _rowViewport = new() { Root = ".inview-scroller", Amount = "all" };
             private readonly HashSet<int> _inView = [];
         }
         """;
@@ -413,10 +413,10 @@
 
         @code {
             private bool _panning;
-            private BmPoint _offset = new();
-            private BmPoint _velocity = new();
+            private BmotionPoint _offset = new();
+            private BmotionPoint _velocity = new();
 
-            private void HandlePan(BmPanInfo info)
+            private void HandlePan(BmotionPanInfo info)
             {
                 _offset = info.Offset;       // total distance since the pan started
                 _velocity = info.Velocity;   // px/sec - also available: info.Point, info.Delta

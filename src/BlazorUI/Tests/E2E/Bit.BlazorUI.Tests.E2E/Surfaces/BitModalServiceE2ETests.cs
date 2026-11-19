@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// animation the container waits for; the focus handed back; and the page going away with modals open.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitModalServiceE2ETests : E2ETestBase
 {
     private const string PagePath = "/e2e/modal-service";

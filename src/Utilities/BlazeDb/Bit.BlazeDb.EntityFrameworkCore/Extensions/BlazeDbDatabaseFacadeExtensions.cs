@@ -1,9 +1,8 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore;
+namespace Bit.BlazeDb;
 
 /// <summary>Provider-specific members on <see cref="DatabaseFacade"/>, analogous to <c>GetSqliteConnection</c>.</summary>
 public static class BlazeDbDatabaseFacadeExtensions

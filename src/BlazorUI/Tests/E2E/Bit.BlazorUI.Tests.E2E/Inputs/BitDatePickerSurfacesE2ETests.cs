@@ -7,6 +7,7 @@
 /// press. A pick inside the dialog works like anywhere else.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDatePickerSurfacesE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-picker/surfaces";

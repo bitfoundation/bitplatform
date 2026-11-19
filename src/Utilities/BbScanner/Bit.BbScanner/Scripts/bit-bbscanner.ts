@@ -24,13 +24,13 @@ interface MemoryViewLike {
     slice(start?: number, end?: number): Uint8Array;
 }
 
-// camelCase JSON of BbCameraDevice.
+// camelCase JSON of BbScannerCameraDevice.
 interface CameraDeviceDescription {
     deviceId: string;
     label: string;
 }
 
-// camelCase JSON of BbCameraInfo.
+// camelCase JSON of BbScannerCameraInfo.
 interface CameraDescription {
     deviceId: string;
     label: string;
@@ -1139,7 +1139,7 @@ function isEnded(session: Session): boolean {
     return session.trackEnded || (!!session.track && session.track.readyState === 'ended');
 }
 
-/** Kinds of feedback; the values of BbScanFeedback. */
+/** Kinds of feedback; the values of BbScannerScanFeedback. */
 const FEEDBACK_VIBRATE = 1;
 const FEEDBACK_BEEP = 2;
 

@@ -130,7 +130,7 @@ public sealed class AssetSelection
 
     /// <summary>
     /// Whether an owner a piece names is among the types: by its name, or - for an owner ending in * - by the start of
-    /// it, which is how a stylesheet names the parts of a component family (BitFc* of BitFullCalendar).
+    /// it, which is how a stylesheet names the parts of a component family (_BitFc* of BitFullCalendar).
     /// </summary>
     public static bool IsPresent(string owner, ICollection<string> typeNames)
     {

@@ -9,11 +9,11 @@
         <EditForm class="form" Model="contactUs" OnValidSubmit="WrapHandled(DoSubmit)">
             @if (string.IsNullOrWhiteSpace(successMessage) is false)
             {
-                <BitMessage Severity="BitSeverity.Success">@successMessage</BitMessage>
+                <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
             }
             else if (string.IsNullOrWhiteSpace(errorMessage) is false)
             {
-                <BitMessage Severity="BitSeverity.Error">@errorMessage</BitMessage>
+                <BitMessage Color="BitColor.Error">@errorMessage</BitMessage>
             }
 
             <DataAnnotationsValidator />
@@ -32,14 +32,13 @@
             </div>
 
             <div class="text-area-container">
-                <BitTextField Label="Tell us about your project" @bind-Value="contactUs.Information" IsMultiline="true" Rows="3" Class="text-area" />
+                <BitTextField Label="Tell us about your project" @bind-Value="contactUs.Information" Multiline Rows="3" Class="text-area" />
             </div>
 
-            <BitButton IsLoading="isLoading"
+            <BitButton Loading="isLoading"
                        Title="Send"
                        AriaLabel="Send"
                        Class="submit-btn--primary"
-                       ButtonStyle="BitButtonStyle.Primary"
                        ButtonType="BitButtonType.Submit">
                 Send
             </BitButton>

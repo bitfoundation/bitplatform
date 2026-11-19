@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>Savepoints, <see cref="BlazeDbDatabase.RunInTransaction(Action)"/> and how the two nest.</summary>
 [TestClass]

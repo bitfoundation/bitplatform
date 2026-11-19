@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// The contexts currently attached to one engine.

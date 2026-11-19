@@ -50,10 +50,10 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> What moves: position, size or both</h3>
     <p>
         A layout change can move an element, resize it, or both, and <code>Layout</code> chooses which of those
-        animate. <code>Layout="true"</code> (<code>BmLayout.Full</code>) animates both.
-        <code>BmLayout.Position</code> animates only the move: the element takes its new size at once and slides
+        animate. <code>Layout="true"</code> (<code>BmotionLayout.Full</code>) animates both.
+        <code>BmotionLayout.Position</code> animates only the move: the element takes its new size at once and slides
         there, with no scaling at all - the cheapest mode, and the one for anything holding text.
-        <code>BmLayout.Size</code> is the mirror image: the element jumps to its new place and only the resize
+        <code>BmotionLayout.Size</code> is the mirror image: the element jumps to its new place and only the resize
         animates - for a box that grows or shrinks where it stands, like an accordion panel. Each box below
         moves across its track and doubles in size on the same click.
     </p>
@@ -85,7 +85,7 @@
         <strong>LayoutId</strong> connects elements <em>across</em> mounts. When one unmounts and
         another mounts carrying the same id, the new one FLIPs from where the old one was - so a
         single underline appears to slide between tabs even though each tab renders its own.
-        <code>Layout="BmLayout.Position"</code> animates position without scaling, which is what
+        <code>Layout="BmotionLayout.Position"</code> animates position without scaling, which is what
         you want on anything containing text.
     </p>
     <p>
@@ -111,8 +111,8 @@
                             @if (t == _activeTab)
                             {
                                 <Bmotion LayoutId="tab-underline"
-                                        Layout="BmLayout.Position"
-                                        Transition="Bm.Tween(0.3, BmEase.InOut)">
+                                        Layout="BmotionLayout.Position"
+                                        Transition="Bm.Tween(0.3, BmotionEase.InOut)">
                                     <div class="layout-tab-underline" />
                                 </Bmotion>
                             }
@@ -137,8 +137,8 @@
                             @if (t == _activeSetting)
                             {
                                 <Bmotion LayoutId="tab-underline"
-                                        Layout="BmLayout.Position"
-                                        Transition="Bm.Tween(0.3, BmEase.InOut)">
+                                        Layout="BmotionLayout.Position"
+                                        Transition="Bm.Tween(0.3, BmotionEase.InOut)">
                                     <div class="layout-tab-underline" />
                                 </Bmotion>
                             }
@@ -164,9 +164,9 @@
 
     <div class="demo-row">
         <div class="demo-card xfade-stage">
-            <BmotionPresenceSwitch Item="_expanded" Mode="BmPresenceMode.Sync" Context="expanded">
+            <BmotionPresenceSwitch Item="_expanded" Mode="BmotionPresenceMode.Sync" Context="expanded">
                 <Bmotion LayoutId="xfade-card" LayoutCrossfade="_crossfade"
-                         Exit="Bm.To(opacity: 0)" Transition="Bm.Tween(0.5, BmEase.InOut)">
+                         Exit="Bm.To(opacity: 0)" Transition="Bm.Tween(0.5, BmotionEase.InOut)">
                     <button type="button" class="@(expanded ? "xfade-detail" : "xfade-thumb")"
                             aria-label="@(expanded ? "Collapse the card" : "Expand the card")"
                             @onclick="() => _expanded = !_expanded">
@@ -222,19 +222,19 @@
         A FLIP is a comparison between two measurements, and four parameters decide what is being
         compared. <strong>LayoutAnchor</strong> picks the point of the box the animation is projected
         from - the point that appears to stay still while it resizes. It shows when the move and the resize
-        are animated apart, as with <code>BmLayout.Size</code>: the box jumps to its new place and grows out of
+        are animated apart, as with <code>BmotionLayout.Size</code>: the box jumps to its new place and grows out of
         its anchor there. Both boxes below stay centred in their stages, so
-        <code>BmLayoutAnchor.Center</code> grows them evenly about the middle, while the default
+        <code>BmotionLayoutAnchor.Center</code> grows them evenly about the middle, while the default
         <code>TopLeft</code> pins the new top-left corner - the box starts up and to the left of where it was
         and grows down and right, which is what an accordion panel whose top edge stays put should do.
-        <code>new BmLayoutAnchor(1, 0)</code> would pin the top-right corner. (With <code>Layout="true"</code>
+        <code>new BmotionLayoutAnchor(1, 0)</code> would pin the top-right corner. (With <code>Layout="true"</code>
         the move plays along with the resize, so every anchor traces the same path.)
     </p>
 
     <div class="demo-row">
         <div class="demo-card stack resize-stage">
-            <span class="demo-label">BmLayout.Size &middot; anchor TopLeft (default)</span>
-            <Bmotion Layout="BmLayout.Size"
+            <span class="demo-label">BmotionLayout.Size &middot; anchor TopLeft (default)</span>
+            <Bmotion Layout="BmotionLayout.Size"
                      LayoutDependency="_anchored"
                      OnLayoutAnimationStart="@(() => { _layoutStarts++; StateHasChanged(); })"
                      OnLayoutAnimationComplete="@(() => { _layoutCompletions++; StateHasChanged(); })"
@@ -244,9 +244,9 @@
         </div>
 
         <div class="demo-card stack resize-stage">
-            <span class="demo-label">BmLayout.Size &middot; anchor Center</span>
-            <Bmotion Layout="BmLayout.Size"
-                     LayoutAnchor="BmLayoutAnchor.Center"
+            <span class="demo-label">BmotionLayout.Size &middot; anchor Center</span>
+            <Bmotion Layout="BmotionLayout.Size"
+                     LayoutAnchor="BmotionLayoutAnchor.Center"
                      LayoutDependency="_anchored"
                      Transition="Bm.Spring(stiffness: 200, damping: 26)">
                 <div class="@(_anchored ? "anchor-box big" : "anchor-box")" />
@@ -291,13 +291,13 @@
     private string _activeSetting = "General";
 
     /// <summary>One layout-mode stage: its caption and the mode it plays.</summary>
-    private sealed record LayoutModeDemo(string Label, BmLayout Layout);
+    private sealed record LayoutModeDemo(string Label, BmotionLayout Layout);
 
     private readonly LayoutModeDemo[] _layoutModes =
     [
-        new("Layout=\"true\" · moves and grows", BmLayout.Full),
-        new("BmLayout.Position · moves, size jumps", BmLayout.Position),
-        new("BmLayout.Size · grows, place jumps", BmLayout.Size),
+        new("Layout=\"true\" · moves and grows", BmotionLayout.Full),
+        new("BmotionLayout.Position · moves, size jumps", BmotionLayout.Position),
+        new("BmotionLayout.Size · grows, place jumps", BmotionLayout.Size),
     ];
 
     /// <summary>A shuffled tile: its label and which of the palette's five tones it wears.</summary>
@@ -379,16 +379,16 @@
 
         @* The click moves the tile to the other end of its track AND doubles its size. *@
         <div class="@(_moved ? "track moved" : "track")">
-            @* Layout="true" (BmLayout.Full): both animate; children are counter-scaled. *@
+            @* Layout="true" (BmotionLayout.Full): both animate; children are counter-scaled. *@
             <Bmotion Layout="true"><div class="@(_moved ? "tile big" : "tile")">Aa</div></Bmotion>
         </div>
         <div class="@(_moved ? "track moved" : "track")">
             @* Position only: the new size applies at once and the tile slides - no scaling. *@
-            <Bmotion Layout="BmLayout.Position"><div class="@(_moved ? "tile big" : "tile")">Aa</div></Bmotion>
+            <Bmotion Layout="BmotionLayout.Position"><div class="@(_moved ? "tile big" : "tile")">Aa</div></Bmotion>
         </div>
         <div class="@(_moved ? "track moved" : "track")">
             @* Size only: the tile jumps to its new place and only the resize animates. *@
-            <Bmotion Layout="BmLayout.Size"><div class="@(_moved ? "tile big" : "tile")">Aa</div></Bmotion>
+            <Bmotion Layout="BmotionLayout.Size"><div class="@(_moved ? "tile big" : "tile")">Aa</div></Bmotion>
         </div>
 
         <button @onclick="@(() => _moved = !_moved)">Move and grow</button>
@@ -403,8 +403,8 @@
 
         @* Sync: the old card plays its exit while the new one enters, so the two crossfade.
            LayoutCrossfade="false" keeps the shared FLIP but drops the fade between them. *@
-        <BmotionPresenceSwitch Item="_expanded" Mode="BmPresenceMode.Sync" Context="expanded">
-            <Bmotion LayoutId="card" LayoutCrossfade="true" Exit="Bm.To(opacity: 0)" Transition="Bm.Tween(0.5, BmEase.InOut)">
+        <BmotionPresenceSwitch Item="_expanded" Mode="BmotionPresenceMode.Sync" Context="expanded">
+            <Bmotion LayoutId="card" LayoutCrossfade="true" Exit="Bm.To(opacity: 0)" Transition="Bm.Tween(0.5, BmotionEase.InOut)">
                 <button class="@(expanded ? "detail" : "thumb")" @onclick="() => _expanded = !_expanded">
                     @if (expanded) { <strong>Shared element</strong> }
                 </button>
@@ -432,8 +432,8 @@
                     @* Position only: scaling an underline between tabs of different widths
                        would squash it. *@
                     <Bmotion LayoutId="tab-underline"
-                             Layout="BmLayout.Position"
-                             Transition="Bm.Tween(0.3, BmEase.InOut)">
+                             Layout="BmotionLayout.Position"
+                             Transition="Bm.Tween(0.3, BmotionEase.InOut)">
                         <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:#1276C6" />
                     </Bmotion>
                 }
@@ -443,7 +443,7 @@
         @* Ids are global unless namespaced: a second strip that also says "tab-underline" goes in a
            group of its own, and the two underlines never trade places. *@
         <BmotionLayoutGroup Name="settings">
-            ... <Bmotion LayoutId="tab-underline" Layout="BmLayout.Position"><div /></Bmotion> ...
+            ... <Bmotion LayoutId="tab-underline" Layout="BmotionLayout.Position"><div /></Bmotion> ...
         </BmotionLayoutGroup>
 
         @code {
@@ -488,7 +488,7 @@
         @* LayoutAnchor picks the point that appears to stay still while the box resizes. It shows
            when the resize animates apart from the move (Size): TopLeft, the default, pins the new
            top-left corner; Center grows the box evenly about its middle; (1, 0) pins top-right. *@
-        <Bmotion Layout="BmLayout.Size" LayoutAnchor="BmLayoutAnchor.Center" LayoutDependency="_big">
+        <Bmotion Layout="BmotionLayout.Size" LayoutAnchor="BmotionLayoutAnchor.Center" LayoutDependency="_big">
             <div class="@(_big ? "box big" : "box")" />
         </Bmotion>
 

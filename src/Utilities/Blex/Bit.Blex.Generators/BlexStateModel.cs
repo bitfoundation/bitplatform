@@ -1,4 +1,4 @@
-﻿namespace Bit.Blex.Generators;
+﻿namespace Bit.Blex;
 
 /// <param name="FieldName">Name of the [BlexState] backing field.</param>
 /// <param name="PropertyName">Name of the generated reactive property.</param>

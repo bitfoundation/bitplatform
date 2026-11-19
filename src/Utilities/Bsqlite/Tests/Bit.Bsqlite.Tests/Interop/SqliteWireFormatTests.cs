@@ -2,8 +2,6 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Interop;
 
 namespace Bit.Bsqlite.Interop.Tests;
 

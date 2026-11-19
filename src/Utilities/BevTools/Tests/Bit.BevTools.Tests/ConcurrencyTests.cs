@@ -7,7 +7,7 @@ public class ConcurrencyTests
     [TestMethod]
     public void Ring_buffer_survives_parallel_writers_and_readers()
     {
-        var buffer = new RingBuffer<int>(1000);
+        var buffer = new BevToolsRingBuffer<int>(1000);
         var errors = 0;
         Parallel.For(0, 200_000, new ParallelOptions { MaxDegreeOfParallelism = 8 }, i =>
         {

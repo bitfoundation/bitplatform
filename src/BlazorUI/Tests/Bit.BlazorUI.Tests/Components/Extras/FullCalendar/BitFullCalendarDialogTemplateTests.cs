@@ -103,7 +103,7 @@ public class BitFullCalendarDialogTemplateTests : BunitTestContext
 
         component.Find("[data-bit-bfc-event='1']").Click();
 
-        var dialog = component.FindComponent<BitFcEventDetailsDialog>();
+        var dialog = component.FindComponent<_BitFcEventDetailsDialog>();
         dialog.InvokeAsync(() => dialog.Instance._OnEscapeVerdict(true));
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
@@ -121,7 +121,7 @@ public class BitFullCalendarDialogTemplateTests : BunitTestContext
 
         component.Find(".bit-bfc-btn-primary").Click();
 
-        var dialog = component.FindComponent<BitFcAddEditEventDialog>();
+        var dialog = component.FindComponent<_BitFcAddEditEventDialog>();
         dialog.InvokeAsync(() => dialog.Instance._OnEscapeVerdict(true));
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 

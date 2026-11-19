@@ -1,5 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Demo.Server.Dtos;
+﻿using Bit.Bsqlite.Demo.Server.Dtos;
 
 namespace Bit.Bsqlite.Demo.Server.Services;
 

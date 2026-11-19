@@ -3,7 +3,7 @@
 @* An item with a URL stays an anchor even while it is disabled: it only drops its href (so it can be neither
    followed nor focused) and keeps announcing itself as a dimmed link, the way BitButton renders a disabled
    link, instead of turning into a button that a screen reader would report as another kind of control. *@
-@if (IsLink)
+@if (Href.HasValue())
 {
     <a @ref="Element"
        @onclick="OnClick"

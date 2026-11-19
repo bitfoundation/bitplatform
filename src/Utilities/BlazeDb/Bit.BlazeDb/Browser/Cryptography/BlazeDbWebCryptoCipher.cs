@@ -1,8 +1,7 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
-using Bit.BlazeDb.Storage;
 
-namespace Bit.BlazeDb.Browser;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// AES-GCM backed by the browser's WebCrypto implementation, for use with

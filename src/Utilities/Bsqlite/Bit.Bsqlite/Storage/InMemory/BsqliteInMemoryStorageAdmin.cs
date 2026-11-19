@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
-using Bit.Bsqlite.Storage;
 
-namespace Bit.Bsqlite.Storage.InMemory;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Tracks the in-memory backend's databases and their file images.

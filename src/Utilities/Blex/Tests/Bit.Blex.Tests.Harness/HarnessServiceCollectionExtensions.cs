@@ -1,5 +1,4 @@
 ﻿using Bit.Blex;
-using Bit.Blex.Blazor;
 using Bit.Blex.Tests.Harness;
 using Bit.Blex.Tests.Harness.Stores;
 

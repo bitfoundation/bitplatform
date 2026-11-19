@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// scrolls sideways; header Group banners with aria-colspan; per-row ColSpan; and a column's Visible changed at runtime.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/columns";

@@ -77,7 +77,7 @@
 
         <DemoExample Title="Session" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
             <div>
-                With a <b>Session</b>, a user message can be edited (hover it) and the reply marked <b>IsLatest</b> regenerated
+                With a <b>Session</b>, a user message can be edited (hover it) and the reply marked <b>Latest</b> regenerated
                 - only the newest, since regenerating an older one discards everything after it. This transport fails its first
                 answer: the error offers to try again, which the session runs as a retry (<b>RetryAsync</b>). An edit starts a
                 turn of its own, so it waits while a reply is being generated; Escape cancels it.
@@ -92,7 +92,7 @@
                                       Message="message"
                                       Session="session"
                                       Conversation="session.Conversation"
-                                      IsLatest="@(message == session.Conversation.LastMessage)" />
+                                      Latest="@(message == session.Conversation.LastMessage)" />
                 }
             </div>
         </DemoExample>

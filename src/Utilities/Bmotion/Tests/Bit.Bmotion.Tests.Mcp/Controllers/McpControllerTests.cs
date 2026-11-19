@@ -110,11 +110,11 @@ public class McpControllerTests
     [TestMethod]
     public void GetBmotionApiDetails_AKnownType_ReturnsDetailsAndNoMessage()
     {
-        var result = _controller.GetBmotionApiDetails("BmSpring");
+        var result = _controller.GetBmotionApiDetails("BmotionSpring");
 
         Assert.IsNotNull(result.Details);
         Assert.IsNull(result.Message);
-        Assert.AreEqual("BmSpring", result.Details.Name);
+        Assert.AreEqual("BmotionSpring", result.Details.Name);
     }
 
     /// <summary>A near miss is the common case, and the near misses are the useful part of the answer.</summary>
@@ -125,7 +125,7 @@ public class McpControllerTests
 
         Assert.IsNull(result.Details);
         Assert.IsNotNull(result.Message);
-        StringAssert.Contains(result.Message, "BmSpring");
+        StringAssert.Contains(result.Message, "BmotionSpring");
     }
 
     [TestMethod]

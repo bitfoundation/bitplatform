@@ -1,7 +1,6 @@
 ﻿using System.Buffers;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Drawing;
 
 namespace Bit.Bmage.Tests;
 
@@ -16,33 +15,33 @@ public sealed class DrawingFastPathTests
     public void FillsMatchTheStraightforwardRasteriser()
     {
         var random = new Random(17);
-        var colors = new[] { new Rgba32(200, 30, 60), new Rgba32(20, 160, 90, 128), new Rgba32(255, 255, 255, 1), new Rgba32(0, 0, 0, 254) };
+        var colors = new[] { new BmageRgba32(200, 30, 60), new BmageRgba32(20, 160, 90, 128), new BmageRgba32(255, 255, 255, 1), new BmageRgba32(0, 0, 0, 254) };
         for (var round = 0; round < 60; round++)
         {
-            using var canvasImage = round % 2 == 0 ? FastPathEquivalenceTests.Noise(90, 70, seed: round) : ImageBuffer.Create(90, 70, new Rgba32(10, 20, 30));
+            using var canvasImage = round % 2 == 0 ? FastPathEquivalenceTests.Noise(90, 70, seed: round) : BmageImageBuffer.Create(90, 70, new BmageRgba32(10, 20, 30));
             using var expected = canvasImage.Clone();
             var path = RandomPath(random);
             var color = colors[random.Next(colors.Length)];
             var opacity = random.Next(3) == 0 ? 0.6f : 1f;
             Rectangle? clip = random.Next(3) == 0 ? new Rectangle(10, 5, 60, 50) : null;
-            var rule = random.Next(2) == 0 ? FillRule.NonZero : FillRule.EvenOdd;
+            var rule = random.Next(2) == 0 ? BmageFillRule.NonZero : BmageFillRule.EvenOdd;
 
-            Rasterizer.Fill(canvasImage, path, color, rule, clip, opacity);
+            BmageRasterizer.Fill(canvasImage, path, color, rule, clip, opacity);
             ReferenceFill(expected, path, color, rule, clip, opacity);
             FastPathEquivalenceTests.AssertSamePixels(expected, canvasImage, $"round {round}");
         }
     }
 
-    private static VectorPath RandomPath(Random random)
+    private static BmageVectorPath RandomPath(Random random)
     {
-        var builder = new PathBuilder();
+        var builder = new BmagePathBuilder();
         switch (random.Next(4))
         {
             case 0: builder.AddRectangle(new RectangleF(random.Next(-10, 60) + 0.3f, random.Next(-10, 50) + 0.7f, random.Next(1, 70) + 0.4f, random.Next(1, 50) + 0.1f)); break;
             case 1: builder.AddEllipse(new RectangleF(random.Next(0, 50), random.Next(0, 40), random.Next(5, 60), random.Next(5, 40))); break;
             case 2:
                 // A thin diagonal stroke, whose bounding box is mostly empty.
-                return Stroker.CreateStrokeOutline(new PathBuilder().MoveTo(random.Next(0, 20), random.Next(0, 10)).LineTo(random.Next(60, 90), random.Next(50, 70)).Build(), new StrokeStyle { Width = 2.5f });
+                return BmageStroker.CreateStrokeOutline(new BmagePathBuilder().MoveTo(random.Next(0, 20), random.Next(0, 10)).LineTo(random.Next(60, 90), random.Next(50, 70)).Build(), new BmageStrokeStyle { Width = 2.5f });
             default:
                 builder.MoveTo(random.Next(90), random.Next(70));
                 for (var i = 0; i < 6; i++) builder.LineTo(random.Next(-5, 95) + 0.5f, random.Next(-5, 75) + 0.25f);
@@ -52,7 +51,7 @@ public sealed class DrawingFastPathTests
         return builder.Build();
     }
 
-    private static void ReferenceFill(ImageBuffer target, VectorPath path, Rgba32 color, FillRule rule, Rectangle? clip, float opacity)
+    private static void ReferenceFill(BmageImageBuffer target, BmageVectorPath path, BmageRgba32 color, BmageFillRule rule, Rectangle? clip, float opacity)
     {
         var area = clip ?? target.Bounds;
         area.Intersect(target.Bounds);
@@ -65,7 +64,7 @@ public sealed class DrawingFastPathTests
                 if (a > 1f) a = 1f;
                 var x = x0 + i;
                 if (x < area.Left || x >= area.Right) continue;
-                target[x, y] = Compositor.SourceOver(target[x, y], color, a * opacity);
+                target[x, y] = BmageCompositor.SourceOver(target[x, y], color, a * opacity);
             }
         });
     }
@@ -73,7 +72,7 @@ public sealed class DrawingFastPathTests
     /// <summary>The rasteriser as it was, clearing and handing on every row's full width.</summary>
     private static class Reference
     {
-        private const int SubSamples = Rasterizer.SubSamples;
+        private const int SubSamples = BmageRasterizer.SubSamples;
 
     private readonly record struct Edge(float X0, float Y0, float X1, float Y1, int Winding);
 
@@ -81,7 +80,7 @@ public sealed class DrawingFastPathTests
     /// Computes per-pixel coverage in [0,1] for a path over <paramref name="clip"/> and hands each covered span to
     /// <paramref name="blend"/>. Coverage is never allocated for the whole image, only one row at a time.
     /// </summary>
-    public static void Rasterize(VectorPath path, Rectangle clip, FillRule rule, Bit.Bmage.Drawing.CoverageHandler blend)
+    public static void Rasterize(BmageVectorPath path, Rectangle clip, BmageFillRule rule, Bit.Bmage.BmageCoverageHandler blend)
     {
         ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(blend);
@@ -144,7 +143,7 @@ public sealed class DrawingFastPathTests
                     for (var i = 0; i < crossings.Count - 1; i++)
                     {
                         winding += crossings[i].Winding;
-                        var inside = rule == FillRule.NonZero ? winding != 0 : (winding & 1) != 0;
+                        var inside = rule == BmageFillRule.NonZero ? winding != 0 : (winding & 1) != 0;
                         if (!inside) continue;
                         var x0 = crossings[i].X;
                         var x1 = crossings[i + 1].X;
@@ -180,7 +179,7 @@ public sealed class DrawingFastPathTests
         return true;
     }
 
-    private static List<Edge> BuildEdges(VectorPath path)
+    private static List<Edge> BuildEdges(BmageVectorPath path)
     {
         var edges = new List<Edge>();
         for (var c = 0; c < path.Contours.Count; c++)

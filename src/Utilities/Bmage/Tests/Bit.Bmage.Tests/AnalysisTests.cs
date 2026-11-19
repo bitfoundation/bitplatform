@@ -1,7 +1,4 @@
 ﻿using System.Drawing;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Operations;
 
 namespace Bit.Bmage.Tests;
 
@@ -11,14 +8,14 @@ public sealed class HistogramTests
     [TestMethod]
     public void MeasuresASolidColourExactly()
     {
-        using var image = ImageBuffer.Create(64, 64, new Rgba32(100, 150, 200));
-        var stats = ImageStatistics.Measure(image, maxSamples: 0);
+        using var image = BmageImageBuffer.Create(64, 64, new BmageRgba32(100, 150, 200));
+        var stats = BmageImageStatistics.Measure(image, maxSamples: 0);
 
         Assert.AreEqual(100, stats.Red.Minimum);
         Assert.AreEqual(100, stats.Red.Maximum);
         Assert.AreEqual(150, stats.Green.Median);
         Assert.AreEqual(200, stats.Blue.Mean, 0.5e-1);
-        Assert.AreEqual(new Rgba32(100, 150, 200), stats.AverageColor);
+        Assert.AreEqual(new BmageRgba32(100, 150, 200), stats.AverageColor);
         Assert.IsFalse(stats.HasTransparency);
         Assert.IsFalse(stats.IsGrayscale);
     }
@@ -26,28 +23,28 @@ public sealed class HistogramTests
     [TestMethod]
     public void DetectsGrayscale()
     {
-        using var image = ImageBuffer.Create(32, 32, clear: false);
+        using var image = BmageImageBuffer.Create(32, 32, clear: false);
         for (var y = 0; y < 32; y++)
         {
             var row = image.GetRow(y);
             for (var x = 0; x < 32; x++)
             {
                 var v = (byte)(x * 8);
-                row[x] = new Rgba32(v, v, v);
+                row[x] = new BmageRgba32(v, v, v);
             }
         }
-        Assert.IsTrue(ImageStatistics.Measure(image, maxSamples: 0).IsGrayscale);
+        Assert.IsTrue(BmageImageStatistics.Measure(image, maxSamples: 0).IsGrayscale);
     }
 
     [TestMethod]
     public void PercentilesIgnoreOutliers()
     {
         // Almost everything is mid grey, with one white and one black pixel.
-        using var image = ImageBuffer.Create(100, 100, new Rgba32(128, 128, 128));
-        image[0, 0] = Rgba32.Black;
-        image[99, 99] = Rgba32.White;
+        using var image = BmageImageBuffer.Create(100, 100, new BmageRgba32(128, 128, 128));
+        image[0, 0] = BmageRgba32.Black;
+        image[99, 99] = BmageRgba32.White;
 
-        var stats = ImageStatistics.Measure(image, maxSamples: 0);
+        var stats = BmageImageStatistics.Measure(image, maxSamples: 0);
         Assert.AreEqual(0, stats.Luminance.Minimum);
         Assert.AreEqual(255, stats.Luminance.Maximum);
         // Clipping 1% at each end must exclude the two outliers.
@@ -58,10 +55,10 @@ public sealed class HistogramTests
     [TestMethod]
     public void ExcludesFullyTransparentPixelsFromColourStatistics()
     {
-        using var image = ImageBuffer.Create(64, 64, Rgba32.Transparent);
-        image.Fill(new Rectangle(0, 0, 32, 64), new Rgba32(200, 40, 40));
+        using var image = BmageImageBuffer.Create(64, 64, BmageRgba32.Transparent);
+        image.Fill(new Rectangle(0, 0, 32, 64), new BmageRgba32(200, 40, 40));
 
-        var stats = ImageStatistics.Measure(image, maxSamples: 0);
+        var stats = BmageImageStatistics.Measure(image, maxSamples: 0);
         Assert.IsTrue(stats.HasTransparency);
         // The average must be the red, not red diluted with transparent black.
         Assert.IsTrue(stats.AverageColor.R > 190 && stats.AverageColor.G < 60, $"Average was {stats.AverageColor}");
@@ -72,8 +69,8 @@ public sealed class HistogramTests
     public void SamplingAgreesWithAFullPass()
     {
         using var image = TestImages.Gradient(600, 400);
-        var full = ImageStatistics.Measure(image, maxSamples: 0);
-        var sampled = ImageStatistics.Measure(image, maxSamples: 5000);
+        var full = BmageImageStatistics.Measure(image, maxSamples: 0);
+        var sampled = BmageImageStatistics.Measure(image, maxSamples: 5000);
         // Sampling trades a little accuracy for speed; a fraction of a level is plenty for auto adjustments.
         Assert.IsTrue(Math.Abs(full.Luminance.Mean - sampled.Luminance.Mean) < 1.5,
             $"Sampled mean {sampled.Luminance.Mean:0.###} differed too much from {full.Luminance.Mean:0.###}");
@@ -83,13 +80,13 @@ public sealed class HistogramTests
     [TestMethod]
     public void FindsDominantColours()
     {
-        using var image = ImageBuffer.Create(100, 100, clear: false);
+        using var image = BmageImageBuffer.Create(100, 100, clear: false);
         // 60% blue, 30% red, 10% green.
-        image.Fill(new Rectangle(0, 0, 100, 60), new Rgba32(20, 40, 200));
-        image.Fill(new Rectangle(0, 60, 100, 30), new Rgba32(200, 30, 30));
-        image.Fill(new Rectangle(0, 90, 100, 10), new Rgba32(30, 180, 60));
+        image.Fill(new Rectangle(0, 0, 100, 60), new BmageRgba32(20, 40, 200));
+        image.Fill(new Rectangle(0, 60, 100, 30), new BmageRgba32(200, 30, 30));
+        image.Fill(new Rectangle(0, 90, 100, 10), new BmageRgba32(30, 180, 60));
 
-        var colors = ImageStatistics.GetDominantColors(image, count: 3, maxSamples: 0);
+        var colors = BmageImageStatistics.GetDominantColors(image, count: 3, maxSamples: 0);
         Assert.AreEqual(3, colors.Count);
         Assert.IsTrue(colors[0].Color.B > 150, $"Most common should be blue, got {colors[0].Color}");
         Assert.IsInRange(0.5, 0.7, colors[0].Fraction);
@@ -100,13 +97,13 @@ public sealed class HistogramTests
     public void CanIgnoreNearWhiteBackgrounds()
     {
         // A product photo: mostly white, with a small teal subject.
-        using var image = ImageBuffer.Create(100, 100, Rgba32.White);
-        image.Fill(new Rectangle(40, 40, 20, 20), new Rgba32(10, 130, 130));
+        using var image = BmageImageBuffer.Create(100, 100, BmageRgba32.White);
+        image.Fill(new Rectangle(40, 40, 20, 20), new BmageRgba32(10, 130, 130));
 
-        var withWhite = ImageStatistics.GetDominantColors(image, 1, maxSamples: 0);
+        var withWhite = BmageImageStatistics.GetDominantColors(image, 1, maxSamples: 0);
         Assert.IsTrue(withWhite[0].Color.R > 240, "White should dominate when it is included");
 
-        var withoutWhite = ImageStatistics.GetDominantColors(image, 1, maxSamples: 0, ignoreNearWhiteAndBlack: true);
+        var withoutWhite = BmageImageStatistics.GetDominantColors(image, 1, maxSamples: 0, ignoreNearWhiteAndBlack: true);
         Assert.IsTrue(withoutWhite[0].Color.G > 100 && withoutWhite[0].Color.R < 60, $"Expected the teal subject, got {withoutWhite[0].Color}");
     }
 }
@@ -115,16 +112,16 @@ public sealed class HistogramTests
 public sealed class AutoAdjustmentTests
 {
     /// <summary>Builds a low-contrast image occupying only the middle of the tonal range.</summary>
-    private static ImageBuffer LowContrast(int width = 128, int height = 64)
+    private static BmageImageBuffer LowContrast(int width = 128, int height = 64)
     {
-        var image = ImageBuffer.Create(width, height, clear: false);
+        var image = BmageImageBuffer.Create(width, height, clear: false);
         for (var y = 0; y < height; y++)
         {
             var row = image.GetRow(y);
             for (var x = 0; x < width; x++)
             {
                 var v = (byte)(96 + x * 64 / Math.Max(1, width - 1));   // 96..160 only
-                row[x] = new Rgba32(v, v, v);
+                row[x] = new BmageRgba32(v, v, v);
             }
         }
         return image;
@@ -134,11 +131,11 @@ public sealed class AutoAdjustmentTests
     public void AutoLevelsExpandsTheTonalRange()
     {
         using var source = LowContrast();
-        var before = ImageStatistics.Measure(source, maxSamples: 0).Luminance;
+        var before = BmageImageStatistics.Measure(source, maxSamples: 0).Luminance;
         Assert.IsInRange(50, 80, before.Maximum - before.Minimum);
 
-        using var result = new AutoLevelsOperation().Apply(source, OperationContext.Default);
-        var after = ImageStatistics.Measure(result, maxSamples: 0).Luminance;
+        using var result = new BmageAutoLevelsOperation().Apply(source, BmageOperationContext.Default);
+        var after = BmageImageStatistics.Measure(result, maxSamples: 0).Luminance;
 
         Assert.IsTrue(after.Minimum < 12, $"Blacks were not deepened: {after.Minimum}");
         Assert.IsTrue(after.Maximum > 243, $"Whites were not brightened: {after.Maximum}");
@@ -148,12 +145,12 @@ public sealed class AutoAdjustmentTests
     public void AutoLevelsStrengthScalesTheEffect()
     {
         using var source = LowContrast();
-        using var half = new AutoLevelsOperation(strength: 0.5f).Apply(source, OperationContext.Default);
-        using var full = new AutoLevelsOperation(strength: 1f).Apply(source, OperationContext.Default);
+        using var half = new BmageAutoLevelsOperation(strength: 0.5f).Apply(source, BmageOperationContext.Default);
+        using var full = new BmageAutoLevelsOperation(strength: 1f).Apply(source, BmageOperationContext.Default);
 
-        var original = ImageStatistics.Measure(source, maxSamples: 0).Luminance;
-        var halfStats = ImageStatistics.Measure(half, maxSamples: 0).Luminance;
-        var fullStats = ImageStatistics.Measure(full, maxSamples: 0).Luminance;
+        var original = BmageImageStatistics.Measure(source, maxSamples: 0).Luminance;
+        var halfStats = BmageImageStatistics.Measure(half, maxSamples: 0).Luminance;
+        var fullStats = BmageImageStatistics.Measure(full, maxSamples: 0).Luminance;
 
         var originalRange = original.Maximum - original.Minimum;
         var halfRange = halfStats.Maximum - halfStats.Minimum;
@@ -165,7 +162,7 @@ public sealed class AutoAdjustmentTests
     public void AutoLevelsLeavesAFullRangeImageAlone()
     {
         using var source = TestImages.Gradient(128, 64);
-        using var result = new AutoLevelsOperation().Apply(source, OperationContext.Default);
+        using var result = new BmageAutoLevelsOperation().Apply(source, BmageOperationContext.Default);
         // A gradient already spans the range, so the change should be small.
         Assert.IsTrue(TestImages.MeanChannelDifference(source, result) < 6);
     }
@@ -173,11 +170,11 @@ public sealed class AutoAdjustmentTests
     [TestMethod]
     public void AutoLevelsDoesNotExplodeOnAFlatImage()
     {
-        using var source = ImageBuffer.Create(32, 32, new Rgba32(128, 128, 128));
-        using var result = new AutoLevelsOperation().Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(32, 32, new BmageRgba32(128, 128, 128));
+        using var result = new BmageAutoLevelsOperation().Apply(source, BmageOperationContext.Default);
         // A single-valued histogram has no range to stretch; the result must stay sane rather than becoming noise.
         Assert.AreEqual(32, result.Width);
-        var stats = ImageStatistics.Measure(result, maxSamples: 0);
+        var stats = BmageImageStatistics.Measure(result, maxSamples: 0);
         Assert.AreEqual(stats.Luminance.Minimum, stats.Luminance.Maximum);
     }
 
@@ -185,18 +182,18 @@ public sealed class AutoAdjustmentTests
     public void PerChannelAutoLevelsNeutralisesAColourCast()
     {
         // A blue-cast image: the red channel never reaches white.
-        using var source = ImageBuffer.Create(128, 32, clear: false);
+        using var source = BmageImageBuffer.Create(128, 32, clear: false);
         for (var y = 0; y < 32; y++)
         {
             var row = source.GetRow(y);
             for (var x = 0; x < 128; x++)
             {
                 var v = (byte)(x * 2);
-                row[x] = new Rgba32((byte)(v * 0.5), (byte)(v * 0.7), v);
+                row[x] = new BmageRgba32((byte)(v * 0.5), (byte)(v * 0.7), v);
             }
         }
-        using var result = new AutoLevelsOperation(perChannel: true).Apply(source, OperationContext.Default);
-        var stats = ImageStatistics.Measure(result, maxSamples: 0);
+        using var result = new BmageAutoLevelsOperation(perChannel: true).Apply(source, BmageOperationContext.Default);
+        var stats = BmageImageStatistics.Measure(result, maxSamples: 0);
         // After a per-channel stretch every channel should reach near white.
         Assert.IsTrue(stats.Red.Maximum > 240, $"Red only reached {stats.Red.Maximum}");
         Assert.IsTrue(stats.Green.Maximum > 240, $"Green only reached {stats.Green.Maximum}");
@@ -205,42 +202,42 @@ public sealed class AutoAdjustmentTests
     [TestMethod]
     public void AutoContrastBrightensADarkImage()
     {
-        using var source = ImageBuffer.Create(64, 64, new Rgba32(50, 50, 50));
-        using var result = new AutoContrastOperation(targetMean: 0.5f).Apply(source, OperationContext.Default);
-        var after = ImageStatistics.Measure(result, maxSamples: 0).Luminance.Mean;
+        using var source = BmageImageBuffer.Create(64, 64, new BmageRgba32(50, 50, 50));
+        using var result = new BmageAutoContrastOperation(targetMean: 0.5f).Apply(source, BmageOperationContext.Default);
+        var after = BmageImageStatistics.Measure(result, maxSamples: 0).Luminance.Mean;
         Assert.IsTrue(after > 80, $"Mean only reached {after:0}, which is not brighter");
     }
 
     [TestMethod]
     public void AutoContrastDarkensABrightImage()
     {
-        using var source = ImageBuffer.Create(64, 64, new Rgba32(220, 220, 220));
-        using var result = new AutoContrastOperation(targetMean: 0.5f).Apply(source, OperationContext.Default);
-        var after = ImageStatistics.Measure(result, maxSamples: 0).Luminance.Mean;
+        using var source = BmageImageBuffer.Create(64, 64, new BmageRgba32(220, 220, 220));
+        using var result = new BmageAutoContrastOperation(targetMean: 0.5f).Apply(source, BmageOperationContext.Default);
+        var after = BmageImageStatistics.Measure(result, maxSamples: 0).Luminance.Mean;
         Assert.IsTrue(after < 200, $"Mean stayed at {after:0}, which is not darker");
     }
 
     [TestMethod]
     public void AutoContrastReachesTheTargetAtFullStrength()
     {
-        using var source = ImageBuffer.Create(64, 64, new Rgba32(50, 50, 50));
-        using var result = new AutoContrastOperation(targetMean: 0.5f, strength: 1f).Apply(source, OperationContext.Default);
-        var after = ImageStatistics.Measure(result, maxSamples: 0).Luminance.Mean / 255.0;
+        using var source = BmageImageBuffer.Create(64, 64, new BmageRgba32(50, 50, 50));
+        using var result = new BmageAutoContrastOperation(targetMean: 0.5f, strength: 1f).Apply(source, BmageOperationContext.Default);
+        var after = BmageImageStatistics.Measure(result, maxSamples: 0).Luminance.Mean / 255.0;
         Assert.IsTrue(Math.Abs(after - 0.5) < 0.05, $"Mean reached {after:0.###}, expected about 0.5");
     }
 
     [TestMethod]
     public void ZeroStrengthIsIdentity()
     {
-        Assert.IsTrue(new AutoLevelsOperation(strength: 0).IsIdentity);
-        Assert.IsTrue(new AutoContrastOperation(strength: 0).IsIdentity);
+        Assert.IsTrue(new BmageAutoLevelsOperation(strength: 0).IsIdentity);
+        Assert.IsTrue(new BmageAutoContrastOperation(strength: 0).IsIdentity);
     }
 
     [TestMethod]
     public void RejectsInvalidClipFractions()
     {
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new AutoLevelsOperation(clipFraction: -0.1));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new AutoLevelsOperation(clipFraction: 0.5));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageAutoLevelsOperation(clipFraction: -0.1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageAutoLevelsOperation(clipFraction: 0.5));
     }
 }
 
@@ -248,15 +245,15 @@ public sealed class AutoAdjustmentTests
 public sealed class SmartCropTests
 {
     /// <summary>An image that is mostly flat background with one detailed, saturated region.</summary>
-    private static ImageBuffer WithSubjectAt(Rectangle subject, int width = 400, int height = 400)
+    private static BmageImageBuffer WithSubjectAt(Rectangle subject, int width = 400, int height = 400)
     {
-        var image = ImageBuffer.Create(width, height, new Rgba32(210, 210, 208));
+        var image = BmageImageBuffer.Create(width, height, new BmageRgba32(210, 210, 208));
         var rng = new Random(4);
         for (var y = subject.Top; y < subject.Bottom; y++)
         {
             var row = image.GetRow(y);
             for (var x = subject.Left; x < subject.Right; x++)
-                row[x] = new Rgba32((byte)rng.Next(180, 255), (byte)rng.Next(0, 60), (byte)rng.Next(0, 60));
+                row[x] = new BmageRgba32((byte)rng.Next(180, 255), (byte)rng.Next(0, 60), (byte)rng.Next(0, 60));
         }
         return image;
     }
@@ -268,7 +265,7 @@ public sealed class SmartCropTests
         var subject = new Rectangle(20, 20, 120, 120);
         using var image = WithSubjectAt(subject);
 
-        var result = SmartCrop.FindCrop(image, AspectRatio.Square);
+        var result = BmageSmartCrop.FindCrop(image, BmageAspectRatio.Square);
         var centre = new Rectangle((400 - 400) / 2, 0, 400, 400);
         _ = centre;
 
@@ -282,9 +279,9 @@ public sealed class SmartCropTests
     public void ProducesTheRequestedAspectRatio()
     {
         using var image = WithSubjectAt(new Rectangle(150, 150, 100, 100), 800, 400);
-        foreach (var ratio in new[] { AspectRatio.Square, AspectRatio.Ratio16x9, AspectRatio.Ratio3x4 })
+        foreach (var ratio in new[] { BmageAspectRatio.Square, BmageAspectRatio.Ratio16x9, BmageAspectRatio.Ratio3x4 })
         {
-            var result = SmartCrop.FindCrop(image, ratio);
+            var result = BmageSmartCrop.FindCrop(image, ratio);
             var actual = result.Rectangle.Width / (double)result.Rectangle.Height;
             Assert.IsTrue(Math.Abs(actual - ratio.Value) < 0.02, $"Wanted {ratio}, got {actual:0.###}");
             Assert.IsTrue(image.Bounds.Contains(result.Rectangle), $"Crop {result.Rectangle} escaped the image");
@@ -297,8 +294,8 @@ public sealed class SmartCropTests
         using var left = WithSubjectAt(new Rectangle(20, 140, 120, 120), 600, 400);
         using var right = WithSubjectAt(new Rectangle(460, 140, 120, 120), 600, 400);
 
-        var leftCrop = SmartCrop.FindCrop(left, AspectRatio.Square);
-        var rightCrop = SmartCrop.FindCrop(right, AspectRatio.Square);
+        var leftCrop = BmageSmartCrop.FindCrop(left, BmageAspectRatio.Square);
+        var rightCrop = BmageSmartCrop.FindCrop(right, BmageAspectRatio.Square);
 
         Assert.IsTrue(leftCrop.Rectangle.X < rightCrop.Rectangle.X,
             $"Crops did not follow the subject: left={leftCrop.Rectangle.X} right={rightCrop.Rectangle.X}");
@@ -311,7 +308,7 @@ public sealed class SmartCropTests
         using var image = WithSubjectAt(new Rectangle(20, 140, 120, 120), 600, 400);
         var required = new Rectangle(480, 160, 60, 60);
 
-        var result = SmartCrop.FindCrop(image, AspectRatio.Square, required);
+        var result = BmageSmartCrop.FindCrop(image, BmageAspectRatio.Square, required);
         Assert.IsTrue(result.Rectangle.Contains(required), $"Crop {result.Rectangle} did not contain {required}");
     }
 
@@ -319,7 +316,7 @@ public sealed class SmartCropTests
     public void ReturnsTheWholeImageWhenItAlreadyMatches()
     {
         using var image = WithSubjectAt(new Rectangle(100, 100, 50, 50), 300, 300);
-        var result = SmartCrop.FindCrop(image, AspectRatio.Square);
+        var result = BmageSmartCrop.FindCrop(image, BmageAspectRatio.Square);
         Assert.AreEqual(image.Bounds, result.Rectangle);
     }
 
@@ -327,9 +324,9 @@ public sealed class SmartCropTests
     public void OperationCropsAndReportsItsSize()
     {
         using var image = WithSubjectAt(new Rectangle(30, 30, 80, 80), 400, 300);
-        var operation = new SmartCropOperation(AspectRatio.Square);
+        var operation = new BmageSmartCropOperation(BmageAspectRatio.Square);
         var expected = operation.GetOutputSize(image.Size);
-        using var result = operation.Apply(image, OperationContext.Default);
+        using var result = operation.Apply(image, BmageOperationContext.Default);
         Assert.AreEqual(expected, result.Size);
         Assert.AreEqual(300, result.Width);
     }
@@ -346,7 +343,7 @@ public sealed class SmartCropTests
         var subject = new Rectangle(40, 180, 200, 240);
         using var image = WithSubjectAt(subject, 1200, 600);
 
-        var result = SmartCrop.FindCrop(image, AspectRatio.Square);
+        var result = BmageSmartCrop.FindCrop(image, BmageAspectRatio.Square);
         var overlap = Rectangle.Intersect(result.Rectangle, subject);
         var covered = (double)overlap.Width * overlap.Height / (subject.Width * subject.Height);
         Assert.IsTrue(covered > 0.95, $"Only {covered:P0} of the subject survived; crop was {result.Rectangle}");
@@ -360,8 +357,8 @@ public sealed class SmartCropTests
     public void IsDeterministic()
     {
         using var image = WithSubjectAt(new Rectangle(60, 200, 100, 100), 500, 500);
-        var a = SmartCrop.FindCrop(image, AspectRatio.Ratio4x3);
-        var b = SmartCrop.FindCrop(image, AspectRatio.Ratio4x3);
+        var a = BmageSmartCrop.FindCrop(image, BmageAspectRatio.Ratio4x3);
+        var b = BmageSmartCrop.FindCrop(image, BmageAspectRatio.Ratio4x3);
         Assert.AreEqual(a.Rectangle, b.Rectangle);
     }
 }
@@ -372,11 +369,11 @@ public sealed class PlaceholderTests
     [TestMethod]
     public void CapturesTheDominantColours()
     {
-        using var image = ImageBuffer.Create(200, 200, clear: false);
-        image.Fill(new Rectangle(0, 0, 200, 100), new Rgba32(200, 30, 30));
-        image.Fill(new Rectangle(0, 100, 200, 100), new Rgba32(30, 30, 200));
+        using var image = BmageImageBuffer.Create(200, 200, clear: false);
+        image.Fill(new Rectangle(0, 0, 200, 100), new BmageRgba32(200, 30, 30));
+        image.Fill(new Rectangle(0, 100, 200, 100), new BmageRgba32(30, 30, 200));
 
-        var placeholder = ImagePlaceholder.Create(image, 2, 2);
+        var placeholder = BmageImagePlaceholder.Create(image, 2, 2);
         Assert.AreEqual(4, placeholder.Colors.Count);
         Assert.IsTrue(placeholder.Colors[0].R > 180, $"Top-left should be red, got {placeholder.Colors[0]}");
         Assert.IsTrue(placeholder.Colors[3].B > 180, $"Bottom-right should be blue, got {placeholder.Colors[3]}");
@@ -388,13 +385,13 @@ public sealed class PlaceholderTests
     public void RoundTripsThroughItsCompactString()
     {
         using var image = TestImages.Gradient(160, 120);
-        var original = ImagePlaceholder.Create(image, 4, 4);
+        var original = BmageImagePlaceholder.Create(image, 4, 4);
         var text = original.ToCompactString();
 
         // Small enough to inline anywhere.
         Assert.IsTrue(text.Length < 80, $"Placeholder string was {text.Length} characters");
 
-        var restored = ImagePlaceholder.Parse(text, 160, 120);
+        var restored = BmageImagePlaceholder.Parse(text, 160, 120);
         Assert.IsNotNull(restored);
         Assert.AreEqual(original.Columns, restored!.Columns);
         Assert.AreEqual(original.Rows, restored.Rows);
@@ -405,20 +402,20 @@ public sealed class PlaceholderTests
     [TestMethod]
     public void RejectsMalformedStrings()
     {
-        Assert.IsNull(ImagePlaceholder.Parse(null));
-        Assert.IsNull(ImagePlaceholder.Parse(""));
-        Assert.IsNull(ImagePlaceholder.Parse("!!!not base64!!!"));
-        Assert.IsNull(ImagePlaceholder.Parse("AAAA"));
+        Assert.IsNull(BmageImagePlaceholder.Parse(null));
+        Assert.IsNull(BmageImagePlaceholder.Parse(""));
+        Assert.IsNull(BmageImagePlaceholder.Parse("!!!not base64!!!"));
+        Assert.IsNull(BmageImagePlaceholder.Parse("AAAA"));
     }
 
     [TestMethod]
     public void RendersASmoothApproximation()
     {
-        using var image = ImageBuffer.Create(200, 200, clear: false);
-        image.Fill(new Rectangle(0, 0, 200, 100), new Rgba32(220, 20, 20));
-        image.Fill(new Rectangle(0, 100, 200, 100), new Rgba32(20, 20, 220));
+        using var image = BmageImageBuffer.Create(200, 200, clear: false);
+        image.Fill(new Rectangle(0, 0, 200, 100), new BmageRgba32(220, 20, 20));
+        image.Fill(new Rectangle(0, 100, 200, 100), new BmageRgba32(20, 20, 220));
 
-        var placeholder = ImagePlaceholder.Create(image, 4, 4);
+        var placeholder = BmageImagePlaceholder.Create(image, 4, 4);
         using var rendered = placeholder.Render(200, 200);
 
         Assert.AreEqual(200, rendered.Width);
@@ -433,7 +430,7 @@ public sealed class PlaceholderTests
     public void ProducesUsableCss()
     {
         using var image = TestImages.Gradient(64, 64);
-        var css = ImagePlaceholder.Create(image, 3, 3).ToCssBackground();
+        var css = BmageImagePlaceholder.Create(image, 3, 3).ToCssBackground();
         Assert.Contains("background-color:#", css, StringComparison.Ordinal);
         Assert.Contains("radial-gradient", css, StringComparison.Ordinal);
         // Invariant formatting: a comma decimal separator would break the CSS.
@@ -444,7 +441,7 @@ public sealed class PlaceholderTests
     public void RejectsInvalidGridSizes()
     {
         using var image = TestImages.Gradient(32, 32);
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => ImagePlaceholder.Create(image, 0, 4));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => ImagePlaceholder.Create(image, 4, 20));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BmageImagePlaceholder.Create(image, 0, 4));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BmageImagePlaceholder.Create(image, 4, 20));
     }
 }

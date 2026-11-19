@@ -65,7 +65,7 @@ csharp_new_line_before_open_brace = all
 
 **Key Properties**:
 
-- **`version`**: The specific .NET SDK version (currently .NET 10)
+- **`version`**: The specific .NET SDK version
 - **`rollForward`**: Set to `"latestFeature"` - allows using newer feature releases automatically
 
 **Why it matters**: This ensures all team members and CI/CD pipelines use the same SDK version, preventing "works on my machine" issues.
@@ -223,7 +223,7 @@ These namespaces are **automatically imported** in every C# file, eliminating th
 
 Instead of this in each `.csproj`:
 ```xml
-<PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-20" />
+<PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-22" />
 ```
 
 You write this in `.csproj`:
@@ -233,7 +233,7 @@ You write this in `.csproj`:
 
 And the version is defined centrally in `Directory.Packages.props`:
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-20" />
+<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-22" />
 ```
 
 **Benefits**:
@@ -244,8 +244,8 @@ And the version is defined centrally in `Directory.Packages.props`:
 **Example packages included**:
 
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-20" />
-<PackageVersion Include="Bit.Butil" Version="11.0.0-pre-20" />
+<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-22" />
+<PackageVersion Include="Bit.Butil" Version="11.0.0-pre-22" />
 <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
 <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
 <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
@@ -339,7 +339,7 @@ chmod +x Clean.sh  # Make it executable (first time only)
 
 ```bash
 # Run the translator anywhere in the project; dnx fetches the bit CLI, nothing is installed
-dnx Bit.Cli --version 11.0.0-pre-20 -- translate
+dnx Bit.Cli --version 11.0.0-pre-22 -- translate
 ```
 
 **To add a new language**:

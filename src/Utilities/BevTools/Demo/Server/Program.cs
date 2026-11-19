@@ -33,7 +33,7 @@ builder.Services.AddHttpClient("api").ConfigureHttpClient((services, client) => 
 builder.Services.AddBitBevToolsServerServices(o =>
 {
     o.Enabled = true;
-    o.ValueAccess = BevValueAccess.Full;
+    o.ValueAccess = BevToolsValueAccess.Full;
     // Request and response bodies, redacted: the demo's data is made up. Outside Development a process that serves many
     // users does not read them whatever this says; an application would leave it off unless it needs it.
     o.CaptureHttpBodies = true;

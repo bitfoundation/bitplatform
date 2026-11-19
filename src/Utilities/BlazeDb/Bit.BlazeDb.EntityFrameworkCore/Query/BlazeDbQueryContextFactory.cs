@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Query;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Supplies the query context EF expects. The provider's own compiler does the work, so the

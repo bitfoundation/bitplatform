@@ -1,12 +1,12 @@
 ﻿using System.Runtime.Versioning;
 using System.Security.Cryptography;
 
-namespace Bit.BlazeDb.Storage;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// AES-GCM via .NET's managed implementation, for desktop hosts and tests.
 /// Not usable in Blazor WebAssembly: the browser sandbox ships no AES implementation and
-/// <see cref="AesGcm"/> throws there. Use the WebCrypto-backed <see cref="Browser.BlazeDbWebCryptoCipher"/> instead.
+/// <see cref="AesGcm"/> throws there. Use the WebCrypto-backed <see cref="BlazeDbWebCryptoCipher"/> instead.
 /// </summary>
 [UnsupportedOSPlatform("browser")]
 public sealed class BlazeDbAesGcmCipher : IBlazeDbAeadCipher, IDisposable

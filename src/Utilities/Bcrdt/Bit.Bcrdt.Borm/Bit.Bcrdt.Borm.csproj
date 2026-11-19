@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
-        <RootNamespace>Bit.Bcrdt.Borm</RootNamespace>
+        <RootNamespace>Bit.Bcrdt</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- Bit.Borm reads and writes the bound model through property paths resolved at run time, so it is
              neither trimming nor AOT safe, and neither is anything that drives it. Left untrimmed, as Borm is. -->
@@ -28,7 +28,6 @@
     <ItemGroup>
         <Using Include="Bit.Bcrdt" />
         <Using Include="Bit.Borm" />
-        <Using Include="Bit.Bcrdt.Integrations" />
     </ItemGroup>
 
 </Project>

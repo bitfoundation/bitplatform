@@ -26,7 +26,7 @@
             <span class="demo-label">On mount</span>
             <Bmotion Initial="Bm.To(opacity: 0, x: -60)"
                     Animate="Bm.To(opacity: 1, x: 0)"
-                    Transition="Bm.Tween(0.6, BmEase.BackOut)">
+                    Transition="Bm.Tween(0.6, BmotionEase.BackOut)">
                 <div class="box" />
             </Bmotion>
         </div>
@@ -96,7 +96,7 @@
             <Bmotion Animate='@(_rounded
                         ? Bm.To(borderRadius: "50%", backgroundColor: "#FD7F36", scale: 1.1)
                         : Bm.To(borderRadius: "10px", backgroundColor: "#1276C6", scale: 1))'
-                    Transition="Bm.Tween(0.5, BmEase.InOut)"
+                    Transition="Bm.Tween(0.5, BmotionEase.InOut)"
                     OnTap="@(() => _rounded = !_rounded)">
                 <div class="box box-solid" />
             </Bmotion>
@@ -107,7 +107,7 @@
                     Animate='@(_dimmed
                         ? Bm.To(filter: "blur(5px) saturate(0.2)", scale: 0.92)
                         : Bm.To(filter: "blur(0px) saturate(1)", scale: 1))'
-                    Transition="Bm.Tween(0.5, BmEase.InOut)"
+                    Transition="Bm.Tween(0.5, BmotionEase.InOut)"
                     OnTap="@(() => _dimmed = !_dimmed)">
                 <div class="box">filter</div>
             </Bmotion>
@@ -118,7 +118,7 @@
                     Animate='@(_lifted
                         ? Bm.To(boxShadow: "0 24px 40px rgba(0,0,0,.35), 0 0 32px rgba(18,118,198,.55)", y: -10)
                         : Bm.To(boxShadow: "0 2px 4px rgba(0,0,0,.15), 0 0 0 rgba(18,118,198,0)", y: 0))'
-                    Transition="Bm.Tween(0.5, BmEase.InOut)"
+                    Transition="Bm.Tween(0.5, BmotionEase.InOut)"
                     OnTap="@(() => _lifted = !_lifted)">
                 <div class="box" />
             </Bmotion>
@@ -363,7 +363,7 @@
     private readonly List<string> _lifecycle = [];
 
     /// <summary>One transform stage: its caption, and the two targets it moves between.</summary>
-    private sealed record TransformDemo(string Label, BmProps From, BmProps To);
+    private sealed record TransformDemo(string Label, BmotionProps From, BmotionProps To);
 
     private readonly TransformDemo[] _transforms =
     [
@@ -377,11 +377,11 @@
         new("skewY: -20", Bm.To(skewY: 0), Bm.To(skewY: -20)),
     ];
 
-    private static readonly BmProps _timedFrom = Bm.To(x: -50, opacity: 1, backgroundColor: "#1276C6");
-    private static readonly BmProps _timedTo = Bm.To(x: 50, opacity: 0.35, backgroundColor: "#FD7F36");
+    private static readonly BmotionProps _timedFrom = Bm.To(x: -50, opacity: 1, backgroundColor: "#1276C6");
+    private static readonly BmotionProps _timedTo = Bm.To(x: 50, opacity: 0.35, backgroundColor: "#FD7F36");
 
     // Properties: the spring is the base; opacity and backgroundColor each get a transition of their own.
-    private readonly BmTransition _perProperty = new BmSpring
+    private readonly BmotionTransition _perProperty = new BmotionSpring
     {
         Stiffness = 120,
         Damping = 14,
@@ -392,16 +392,16 @@
         },
     };
 
-    private readonly BmTransition _rowSpring = Bm.Spring(stiffness: 300, damping: 15);
+    private readonly BmotionTransition _rowSpring = Bm.Spring(stiffness: 300, damping: 15);
 
     // The building blocks: a resting card, and three layers that each change part of it.
-    private static readonly BmProps _rest = Bm.To(y: 0, rotate: 0, scale: 1, backgroundColor: "#1276C6",
+    private static readonly BmotionProps _rest = Bm.To(y: 0, rotate: 0, scale: 1, backgroundColor: "#1276C6",
                                                   boxShadow: "0 2px 4px rgba(0,0,0,.15)");
-    private static readonly BmProps _raise = Bm.To(y: -14, scale: 1.08, boxShadow: "0 22px 36px rgba(0,0,0,.3)");
-    private static readonly BmProps _tilt = Bm.To(rotate: -8);
-    private static readonly BmProps _warmth = Bm.To(backgroundColor: "#FD7F36");
+    private static readonly BmotionProps _raise = Bm.To(y: -14, scale: 1.08, boxShadow: "0 22px 36px rgba(0,0,0,.3)");
+    private static readonly BmotionProps _tilt = Bm.To(rotate: -8);
+    private static readonly BmotionProps _warmth = Bm.To(backgroundColor: "#FD7F36");
 
-    private BmProps Composed
+    private BmotionProps Composed
     {
         get
         {
@@ -425,7 +425,7 @@
         }
     }
 
-    private void AddLifecycle(string name, BmProps? props)
+    private void AddLifecycle(string name, BmotionProps? props)
     {
         var x = props?.X?.Last ?? 0;
         _lifecycle.Add($"[{DateTime.Now:HH:mm:ss.ff}] {name} → x {x:0}");
@@ -470,7 +470,7 @@
                 <div class="demo-card">
                     <Bmotion Initial="Bm.To(opacity: 0, x: -60)"
                             Animate="Bm.To(opacity: 1, x: 0)"
-                            Transition="Bm.Tween(0.6, BmEase.BackOut)">
+                            Transition="Bm.Tween(0.6, BmotionEase.BackOut)">
                         <div class="box" />
                     </Bmotion>
                 </div>
@@ -530,7 +530,7 @@
                     <Bmotion Animate='@(_rounded
                                 ? Bm.To(borderRadius: "50%", backgroundColor: "#FD7F36", scale: 1.1)
                                 : Bm.To(borderRadius: "10px", backgroundColor: "#1276C6", scale: 1))'
-                            Transition="Bm.Tween(0.5, BmEase.InOut)"
+                            Transition="Bm.Tween(0.5, BmotionEase.InOut)"
                             OnTap="@(() => _rounded = !_rounded)">
                         <div class="box solid" />
                     </Bmotion>
@@ -542,7 +542,7 @@
                             Animate='@(_dimmed
                                 ? Bm.To(filter: "blur(5px) saturate(0.2)", scale: 0.92)
                                 : Bm.To(filter: "blur(0px) saturate(1)", scale: 1))'
-                            Transition="Bm.Tween(0.5, BmEase.InOut)"
+                            Transition="Bm.Tween(0.5, BmotionEase.InOut)"
                             OnTap="@(() => _dimmed = !_dimmed)">
                         <div class="box">filter</div>
                     </Bmotion>
@@ -554,7 +554,7 @@
                             Animate='@(_lifted
                                 ? Bm.To(boxShadow: "0 24px 40px rgba(0,0,0,.35), 0 0 32px rgba(18,118,198,.55)", y: -10)
                                 : Bm.To(boxShadow: "0 2px 4px rgba(0,0,0,.15), 0 0 0 rgba(18,118,198,0)", y: 0))'
-                            Transition="Bm.Tween(0.5, BmEase.InOut)"
+                            Transition="Bm.Tween(0.5, BmotionEase.InOut)"
                             OnTap="@(() => _lifted = !_lifted)">
                         <div class="box" />
                     </Bmotion>
@@ -670,7 +670,7 @@
 
             // x plays the base spring. The map's entries replace it for the properties they name:
             // keys are the engine's camelCase names ("x", "opacity", "backgroundColor", ...).
-            private readonly BmTransition _perProperty = new BmSpring
+            private readonly BmotionTransition _perProperty = new BmotionSpring
             {
                 Stiffness = 120,
                 Damping = 14,
@@ -681,7 +681,7 @@
                 },
             };
 
-            private readonly BmTransition _rowSpring = Bm.Spring(stiffness: 300, damping: 15);
+            private readonly BmotionTransition _rowSpring = Bm.Spring(stiffness: 300, damping: 15);
         }
         """;
 
@@ -699,13 +699,13 @@
             private bool _raised;
             private bool _tilted;
 
-            private static readonly BmProps _rest = Bm.To(y: 0, rotate: 0, scale: 1, boxShadow: "0 2px 4px rgba(0,0,0,.15)");
-            private static readonly BmProps _raise = Bm.To(y: -14, scale: 1.08, boxShadow: "0 22px 36px rgba(0,0,0,.3)");
-            private static readonly BmProps _tilt = Bm.To(rotate: -8);
+            private static readonly BmotionProps _rest = Bm.To(y: 0, rotate: 0, scale: 1, boxShadow: "0 2px 4px rgba(0,0,0,.15)");
+            private static readonly BmotionProps _raise = Bm.To(y: -14, scale: 1.08, boxShadow: "0 22px 36px rgba(0,0,0,.3)");
+            private static readonly BmotionProps _tilt = Bm.To(rotate: -8);
 
             // + layers the right-hand target over the left: what it sets wins, what it leaves unset
             // keeps the left's value. Neither input changes. a.With(b) is the same as a + b.
-            private BmProps Composed
+            private BmotionProps Composed
             {
                 get
                 {
@@ -738,7 +738,7 @@
             private bool _moved;
             private readonly List<string> _log = [];
 
-            private void Log(string name, BmProps? props)
+            private void Log(string name, BmotionProps? props)
                 => _log.Add($"{name} → x {(props?.X?.Last ?? 0):0}");
         }
         """;

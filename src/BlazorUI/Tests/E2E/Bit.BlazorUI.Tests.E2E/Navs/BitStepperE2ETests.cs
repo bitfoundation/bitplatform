@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// vertical layout on a phone by BitStepperMobileE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitStepperE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/stepper";
@@ -92,8 +93,16 @@ public class BitStepperE2ETests : E2ETestBase
         await Expect(Page.StepperSteps("stp-basic").Nth(2)).ToHaveClassAsync(new Regex(@"\bbit-str-cur\b"));
         await Expect(Page.StepperSteps("stp-basic").Nth(1)).ToHaveClassAsync(new Regex(@"\bbit-str-cmp\b"));
 
-        // Every step is a button in the tab order, and Enter goes to it.
-        await Page.StepperButtons("stp-basic").Nth(2).FocusAsync();
+        // Every step is a button in the tab order, either way, and Enter goes to it. The walk starts on a step other than
+        // the one just clicked: on WebKit on Linux a Shift+Tab sent from the clicked step, focus() or not, never reached
+        // the step before it - the click's point, inside that step, is where sequential navigation went on from, which
+        // a focus() of the element the click already focused does not move.
+        await Page.StepperButtons("stp-basic").Nth(0).FocusAsync();
+        await Expect(Page.StepperButtons("stp-basic").Nth(0)).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("Tab");
+        await Expect(Page.StepperButtons("stp-basic").Nth(1)).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("Tab");
+        await Expect(Page.StepperButtons("stp-basic").Nth(2)).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Shift+Tab");
         await Expect(Page.StepperButtons("stp-basic").Nth(1)).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Enter");

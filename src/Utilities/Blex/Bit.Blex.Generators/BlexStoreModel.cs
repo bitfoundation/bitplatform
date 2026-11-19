@@ -1,4 +1,4 @@
-﻿namespace Bit.Blex.Generators;
+﻿namespace Bit.Blex;
 
 /// <param name="Namespace">The store's namespace, or null for the global namespace.</param>
 /// <param name="ClassName">The store class name.</param>

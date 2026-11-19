@@ -10,8 +10,8 @@ namespace Bit.BevTools.Tests;
 public class PagePickingPanelTests : BunitContext
 {
     private readonly List<(string Method, object?[] Arguments)> _calls = [];
-    private DotNetObjectReference<BevJsBridge>? _bridge;
-    private BevHighlightResult _highlightResult = new() { Ok = true, Visible = true };
+    private DotNetObjectReference<BevToolsJsBridge>? _bridge;
+    private BevToolsHighlightResult _highlightResult = new() { Ok = true, Visible = true };
 
     public PagePickingPanelTests()
     {
@@ -29,14 +29,14 @@ public class PagePickingPanelTests : BunitContext
     private IRenderedComponent<BevToolsPanel> RenderPanel(string? prefs = null)
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", invocation =>
+        module.Setup<BevToolsBrowserSnapshot>("attach", invocation =>
         {
-            _bridge = (DotNetObjectReference<BevJsBridge>)invocation.Arguments[0]!;
+            _bridge = (DotNetObjectReference<BevToolsJsBridge>)invocation.Arguments[0]!;
             return true;
-        }).SetResult(new BevBrowserSnapshot { Online = true, TargetId = "t1" });
+        }).SetResult(new BevToolsBrowserSnapshot { Online = true, TargetId = "t1" });
         module.Setup<string?>("loadPrefs", _ => true).SetResult(prefs);
         module.SetupVoid("savePrefs", Record).SetVoidResult();
-        module.Setup<BevHighlightResult>("highlight", Record).SetResult(_highlightResult);
+        module.Setup<BevToolsHighlightResult>("highlight", Record).SetResult(_highlightResult);
         module.SetupVoid("clearHighlight", Record).SetVoidResult();
         module.SetupVoid("flash", Record).SetVoidResult();
         module.SetupVoid("stopPick", Record).SetVoidResult();
@@ -77,7 +77,7 @@ public class PagePickingPanelTests : BunitContext
 
         var (_, arguments) = _calls.Single(c => c.Method == "highlight");
         Assert.AreEqual("t1", arguments[0]);
-        var location = (BevDomLocation)arguments[1]!;
+        var location = (BevToolsDomLocation)arguments[1]!;
         Assert.AreEqual(child.InstanceId, location.InstanceId);
         Assert.AreEqual("#c", location.Path[^1].Kind, "a path ends on the component's container comment");
         Assert.AreEqual(events, Session.Timeline.Snapshot().Length, "BevTools' own keyboard navigation was recorded as application activity");
@@ -132,7 +132,7 @@ public class PagePickingPanelTests : BunitContext
         panel.FindAll(".bev-right button").Single(b => b.TextContent.Contains("Show in page", StringComparison.Ordinal)).Click();
 
         var (_, arguments) = _calls.Single(c => c.Method == "highlight");
-        Assert.AreEqual(child.InstanceId, ((BevDomLocation)arguments[1]!).InstanceId);
+        Assert.AreEqual(child.InstanceId, ((BevToolsDomLocation)arguments[1]!).InstanceId);
         StringAssert.Contains(System.Text.Json.JsonSerializer.Serialize(arguments[2], new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web)), "\"scroll\":true");
         panel.WaitForAssertion(() => Assert.Contains("does not match", panel.Find(".bev-notification").TextContent, StringComparison.Ordinal));
     }

@@ -62,8 +62,11 @@ jobs:
     - name: Setup bit CLI
       uses: ./.github/actions/setup-bit-cli
 
+    # It takes about 5 minutes here, and has a time limit of its own well past that, so a step that gets stuck fails under
+    # its own name instead of running to the job's limit.
     - name: Set up and build Boilerplate with bit setup
       run: bit setup src/Templates/Boilerplate/Bit.Boilerplate --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
+      timeout-minutes: 20
 
     - name: Verify formatting
       run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes

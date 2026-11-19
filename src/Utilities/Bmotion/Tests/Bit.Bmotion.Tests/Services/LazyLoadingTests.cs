@@ -62,7 +62,7 @@ public sealed class LazyLoadingTests
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(opacity: 0, y: 20))
             .Add(p => p.Animate, Bm.To(opacity: 1, y: 0))
-            .Add(p => p.Transition, Bm.Tween(0.5, ease: BmEase.Linear))
+            .Add(p => p.Transition, Bm.Tween(0.5, ease: BmotionEase.Linear))
             .Add(p => p.ChildContent, Div));
 
     [TestMethod]
@@ -83,12 +83,12 @@ public sealed class LazyLoadingTests
         // The default of WebAssemblyHostBuilder and of ASP.NET Core in Development: a scoped service resolved from the
         // root throws. Bmotion's engine is scoped, so telling whether it is registered must not resolve it.
         await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime())
-            .AddBitBmotionServices(o => o.Prerender = BmPrerenderMode.Final)
+            .AddBitBmotionServices(o => o.Prerender = BmotionPrerenderMode.Final)
             .BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true });
 
-        app.ConfigureBmotionServices(o => o.Prerender = BmPrerenderMode.Final);
+        app.ConfigureBmotionServices(o => o.Prerender = BmotionPrerenderMode.Final);
 
-        Assert.AreEqual(BmPrerenderMode.Final, app.GetBmotionService<BitBmotionOptions>().Prerender);
+        Assert.AreEqual(BmotionPrerenderMode.Final, app.GetBmotionService<BmotionOptions>().Prerender);
     }
 
     [TestMethod]
@@ -158,7 +158,7 @@ public sealed class LazyLoadingTests
             var error = Assert.ThrowsExactly<InvalidOperationException>(() => services.GetBmotionService<BmotionAnimateService>());
             Assert.Contains("call builder.Services.AddBitBmotionServices() in Program.cs", error.Message, StringComparison.Ordinal);
 
-            Assert.ThrowsExactly<InvalidOperationException>(() => services.ConfigureBmotionServices(o => o.Prerender = BmPrerenderMode.Final));
+            Assert.ThrowsExactly<InvalidOperationException>(() => services.ConfigureBmotionServices(o => o.Prerender = BmotionPrerenderMode.Final));
         }
     }
 
@@ -200,37 +200,37 @@ public sealed class LazyLoadingTests
     {
         await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime()).BuildServiceProvider();
         await using var registered = new ServiceCollection().AddSingleton<IJSRuntime>(new WebAssemblyJSRuntime())
-            .AddBitBmotionServices(o => o.Prerender = BmPrerenderMode.Animate).BuildServiceProvider();
+            .AddBitBmotionServices(o => o.Prerender = BmotionPrerenderMode.Animate).BuildServiceProvider();
 
-        app.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
+        app.ConfigureBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.User);
         // the same options again - every layout that holds animated elements calls it
-        app.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
-        registered.ConfigureBmotionServices(o => o.Prerender = BmPrerenderMode.Animate);
+        app.ConfigureBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.User);
+        registered.ConfigureBmotionServices(o => o.Prerender = BmotionPrerenderMode.Animate);
 
         // a settings page that changes them, or a browser that disagrees with its prerendering server, fails the same
         // way whether the services were created here or registered
-        var changed = Assert.ThrowsExactly<InvalidOperationException>(() => app.ConfigureBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.Always));
-        var disagreed = Assert.ThrowsExactly<InvalidOperationException>(() => registered.ConfigureBmotionServices(o => o.Prerender = BmPrerenderMode.Final));
+        var changed = Assert.ThrowsExactly<InvalidOperationException>(() => app.ConfigureBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.Always));
+        var disagreed = Assert.ThrowsExactly<InvalidOperationException>(() => registered.ConfigureBmotionServices(o => o.Prerender = BmotionPrerenderMode.Final));
 
         Assert.Contains("sets ReducedMotion differently", changed.Message, StringComparison.Ordinal);
         Assert.Contains("sets Prerender differently", disagreed.Message, StringComparison.Ordinal);
-        Assert.AreEqual(BmReducedMotionMode.User, app.GetBmotionService<BitBmotionOptions>().ReducedMotion);
-        Assert.AreEqual(BmPrerenderMode.Animate, registered.GetBmotionService<BitBmotionOptions>().Prerender);
+        Assert.AreEqual(BmotionReducedMotionMode.User, app.GetBmotionService<BmotionOptions>().ReducedMotion);
+        Assert.AreEqual(BmotionPrerenderMode.Animate, registered.GetBmotionService<BmotionOptions>().Prerender);
     }
 
     [TestMethod]
     public void EveryOptionIsComparedWhenTheyMustAgree()
     {
         // An option left out of the comparison could be set one way on the server and another in the browser unnoticed.
-        foreach (var property in typeof(BitBmotionOptions).GetProperties())
+        foreach (var property in typeof(BmotionOptions).GetProperties())
         {
-            var other = new BitBmotionOptions();
+            var other = new BmotionOptions();
             var value = property.GetValue(other)!;
             property.SetValue(other, value is bool flag
                 ? !flag
                 : Enum.GetValues(property.PropertyType).Cast<object>().First(candidate => candidate.Equals(value) is false));
 
-            CollectionAssert.AreEqual(new[] { property.Name }, new BitBmotionOptions().DifferencesFrom(other).ToArray(), property.Name);
+            CollectionAssert.AreEqual(new[] { property.Name }, new BmotionOptions().DifferencesFrom(other).ToArray(), property.Name);
         }
     }
 
@@ -309,16 +309,16 @@ public sealed class LazyLoadingTests
     [TestMethod]
     public void ConfiguredOptionsLetTheRuntimeTakeOverAnElementPrerenderedAtRest()
     {
-        // A Blazor Web App whose server prerenders with BmPrerenderMode.Final, and whose browser lazy loads Bit.Bmotion:
+        // A Blazor Web App whose server prerenders with BmotionPrerenderMode.Final, and whose browser lazy loads Bit.Bmotion:
         // the browser has to agree on the mode to take the element over at rest instead of replaying its entrance.
         using var ctx = CreateUnregisteredContext();
         var state = ctx.AddBunitPersistentComponentState();
-        var signature = BmotionPrerenderState.Signature(BmPrerenderMode.Final, "opacity:1;");
+        var signature = BmotionPrerenderState.Signature(BmotionPrerenderMode.Final, "opacity:1;");
         state.Persist(BmotionPrerenderState.EntryKey(signature, 0), "box");
         state.Persist(BmotionPrerenderState.CountKey(signature), 1);
         ctx.SetRendererInfo(new RendererInfo("WebAssembly", isInteractive: true));
 
-        ctx.Services.ConfigureBmotionServices(o => o.Prerender = BmPrerenderMode.Final);
+        ctx.Services.ConfigureBmotionServices(o => o.Prerender = BmotionPrerenderMode.Final);
         var cut = RenderFadeUp(ctx);
 
         Assert.AreEqual("opacity:1;", cut.Find("div").GetAttribute("style"));

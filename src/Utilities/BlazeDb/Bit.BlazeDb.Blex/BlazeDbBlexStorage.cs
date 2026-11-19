@@ -1,6 +1,6 @@
 using Bit.Blex;
 
-namespace Bit.BlazeDb.Blex;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// An <see cref="IBlexStorage"/> that keeps Blex's persisted state in a BlazeDb table (<see cref="BlazeDbBlexEntry"/>), so

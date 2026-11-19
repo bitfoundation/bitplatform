@@ -22,8 +22,8 @@ public static class BmageServerInstructions
     /// dropped: it identifies nothing a caller could act on.
     /// </summary>
     public static readonly string BmageVersion = (
-        typeof(ImageBuffer).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-        ?? typeof(ImageBuffer).Assembly.GetName().Version?.ToString()
+        typeof(BmageImageBuffer).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+        ?? typeof(BmageImageBuffer).Assembly.GetName().Version?.ToString()
         ?? "unknown").Split('+')[0];
 
     public static readonly string Text = $"""
@@ -32,9 +32,9 @@ public static class BmageServerInstructions
         the engine (pixels, pipelines, masks, layers, managed PNG/JPEG/BMP/GIF/WebP codecs and AVIF decoder, metadata,
         drawing, JSON edits) with no dependency on Blazor - all a server, console app or worker installs.
         Bit.Bmage.Blazor, which brings Bit.Bmage along, is what a browser app installs: the browser integration
-        (ImageLoader, ImageExporter, the browser's codecs in Web Workers, AVIF encoding among them, capability probing)
-        and the BmageEditor component (namespace Bit.Bmage.Editor.Components, styled by the opt-in
-        _content/Bit.Bmage.Blazor/bit-bmage-editor.css). Namespaces do not follow the packages: both use Bit.Bmage.*.
+        (BmageImageLoader, BmageImageExporter, the browser's codecs in Web Workers, AVIF encoding among them, capability probing)
+        and the BmageEditor component (styled by the opt-in _content/Bit.Bmage.Blazor/bit-bmage-editor.css). Namespaces
+        do not follow the packages: every type of both is in the one Bit.Bmage namespace.
 
         Every answer here is read out of Bit.Bmage and Bit.Bmage.Blazor {BmageVersion} as loaded in this server - the XML
         documentation of the assemblies, the README and docs/ guides, the demo's sources - or measured by running its
@@ -49,16 +49,16 @@ public static class BmageServerInstructions
           as JSON to replay on a server, and batches in bounded memory).
         - Call `GetBmageSetupGuide` before writing any wiring. Browser apps register `AddBitBmageServices` - in BOTH
           containers of a Blazor Web App, because prerendering instantiates components on the server. Servers, console
-          apps and workers register `AddBitBmageHeadlessServices` instead; it registers `ImageProcessor` and none of the
-          browser services. A browser app gets a processor from `ImageProcessorFactory.GetAsync()`, never by injecting
-          `ImageProcessor`.
-        - Browser features (capabilities, ImageExporter downloads and object URLs, clipboard, paste, remote URLs) run in
+          apps and workers register `AddBitBmageHeadlessServices` instead; it registers `BmageImageProcessor` and none of the
+          browser services. A browser app gets a processor from `BmageImageProcessorFactory.GetAsync()`, never by injecting
+          `BmageImageProcessor`.
+        - Browser features (capabilities, BmageImageExporter downloads and object URLs, clipboard, paste, remote URLs) run in
           event handlers or `OnAfterRenderAsync`, never `OnInitialized(Async)`: there is no browser during prerendering.
-        - Dispose every `ImageBuffer` you are handed (`using var`): they are pooled, and large.
+        - Dispose every `BmageImageBuffer` you are handed (`using var`): they are pooled, and large.
         - AVIF is encoded only by browsers: export it with `EncodeWithFallbackAsync`, and never on a server. WebP, lossy
           or lossless, encodes everywhere when named; in WebAssembly a fallback list passes it over where the browser
           cannot write it, as Bmage's own encoder would hold the UI thread.
-        - Metadata is removed by default. `MetadataPolicy.Preserve` keeps GPS; use `StripSensitive` to keep camera data.
+        - Metadata is removed by default. `BmageMetadataPolicy.Preserve` keeps GPS; use `StripSensitive` to keep camera data.
         - Look up a type with `GetBmageApiDetails` before using it - its types are spread over a dozen namespaces.
         - Choose formats, qualities and size budgets with `RunBmagePipeline`, which measures them on the real engine,
           and run `ReviewBmageCode` on what you wrote: its rules catch the mistakes that compile cleanly.

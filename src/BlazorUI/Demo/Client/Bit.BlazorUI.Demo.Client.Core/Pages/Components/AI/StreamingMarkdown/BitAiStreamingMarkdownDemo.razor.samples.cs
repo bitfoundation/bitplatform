@@ -28,7 +28,7 @@ private const string basicMarkdown = """"""
     </div>
     <div>
         <div class=""stream-title"">Rendered</div>
-        <BitAiStreamingMarkdown Text=""@streamedText"" IsStreaming=""isStreaming"" />
+        <BitAiStreamingMarkdown Text=""@streamedText"" Streaming=""isStreaming"" />
     </div>
 </div>";
     private readonly string example2CsharpCode = @"
@@ -162,7 +162,7 @@ private string? clickedSource;";
 <BitAiOptionsProvider UiOptions=""markdownOptions"">
     <BitAiStreamingMarkdown Text=""@lineBreakMarkdown"" />
 
-    <BitAiStreamingMarkdown Text=""@danglingMarkdown"" IsStreaming />
+    <BitAiStreamingMarkdown Text=""@danglingMarkdown"" Streaming />
 </BitAiOptionsProvider>";
     private readonly string example4CsharpCode = @"
 private const string lineBreakMarkdown = """"""
@@ -248,7 +248,7 @@ private const string styleMarkdown = """"""
     """""";";
 
     private readonly string example7RazorCode = @"
-<BitAiStreamingMarkdown Dir=""BitDir.Rtl"" Text=""@rtlMarkdown"" IsStreaming />";
+<BitAiStreamingMarkdown Dir=""BitDir.Rtl"" Text=""@rtlMarkdown"" Streaming />";
     private readonly string example7CsharpCode = @"
 private const string rtlMarkdown = """"""
     #### دو حالت رندر

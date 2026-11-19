@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using Bit.Bcrdt.Server;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;

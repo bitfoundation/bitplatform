@@ -112,9 +112,9 @@ public partial class BrowserPlaybackTests
         engine.RegisterElement("el");
         interop.WaapiPlayhead = (_, _) => (browserPlayedMs, false);
 
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmotionEase.Linear).ToConfig());
         await Task.Delay(400);   // by the engine's clock: 40px along
-        await engine.AnimateToAsync("el", Values(("x", -100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", -100.0)), Bm.Tween(1, BmotionEase.Linear).ToConfig());
 
         Assert.AreEqual(expectedX, WebAnimationKeyframes.TranslateX(Keyframes(interop)[0]), 0.5,
             "the retarget starts from what the element shows");
@@ -130,7 +130,7 @@ public partial class BrowserPlaybackTests
         engine.RegisterElement("el");
         bool final = false;
         interop.WaapiPlayhead = (_, _) => (100, final);
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmotionEase.Linear).ToConfig());
         var state = engine.GetState("el")!;
         int reads = interop.WaapiPlayheadReads;
 
@@ -153,7 +153,7 @@ public partial class BrowserPlaybackTests
         engine.RegisterElement("el");
         interop.WaapiPlayhead = (_, _) => (0, false);
         await engine.AnimateToAsync("el", Values(("opacity", 0.5)), Bm.Tween(1).ToConfig());
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmotionEase.Linear).ToConfig());
         Assert.AreEqual(2, interop.ArgsOf("playWaapiAnimation").Count, "two animations in the browser");
         int reads = interop.WaapiPlayheadReads;
 
@@ -169,8 +169,8 @@ public partial class BrowserPlaybackTests
         await using var _ = engine;
         engine.RegisterElement("el", Values(("opacity", 1.0)));
         interop.WaapiPlayhead = (_, _) => (500, false);
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
-        await engine.AnimateToAsync("el", Values(("opacity", 0.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmotionEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("opacity", 0.0)), Bm.Tween(1, BmotionEase.Linear).ToConfig());
         int reads = interop.WaapiPlayheadReads;
 
         engine.ResetForSeek("el", Values(("x", 0.0)));
@@ -187,9 +187,9 @@ public partial class BrowserPlaybackTests
         await using var _ = engine;
         engine.RegisterElement("el");
 
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmotionEase.Linear).ToConfig());
         await Task.Delay(400);
-        await engine.AnimateToAsync("el", Values(("x", -100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", -100.0)), Bm.Tween(1, BmotionEase.Linear).ToConfig());
 
         Assert.IsTrue(WebAnimationKeyframes.TranslateX(Keyframes(interop)[0]) > 30, "the plan's own clock, as before");
     }
@@ -257,7 +257,7 @@ public partial class BrowserPlaybackTests
         engine.RegisterElement("el");
 
         // ease-out out and ease-out back: the browser's alternate direction would play the way back eased in.
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0.5, BmEase.Out, repeat: BmRepeat.Mirror()).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0.5, BmotionEase.Out, repeat: BmotionRepeat.Mirror()).ToConfig());
 
         var kf = Keyframes(interop);
         Assert.AreEqual(-1, (int)Timing(interop)["iterations"]!, "the out-and-back cycle loops forever");
@@ -276,7 +276,7 @@ public partial class BrowserPlaybackTests
         await using var _ = engine;
         engine.RegisterElement("el");
 
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0.5, repeat: BmRepeat.Reverse()).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(0.5, repeat: BmotionRepeat.Reverse()).ToConfig());
 
         Assert.AreEqual(0, interop.CountOf("playWaapiAnimation"));
         Assert.IsTrue(State(engine).ActiveProperties.Contains("x"));
@@ -312,7 +312,7 @@ public partial class BrowserPlaybackTests
     [TestMethod]
     public async Task OklabColours_PlayInOklab_OrAreRecordedWithout()
     {
-        var oklab = Bm.Tween(0.4, colorSpace: BmColorSpace.Oklab).ToConfig();
+        var oklab = Bm.Tween(0.4, colorSpace: BmotionColorSpace.Oklab).ToConfig();
 
         var (engine, interop) = NewEngine();
         await using var _ = engine;
@@ -340,7 +340,7 @@ public partial class BrowserPlaybackTests
         engine.RegisterElement("el", Values(("x", 0.0)));
 
         var clock = System.Diagnostics.Stopwatch.StartNew();
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(1, BmotionEase.Linear).ToConfig());
         await Task.Delay(20);
         // A rejection is only told apart from a cancellation within the engine's 50 ms never-started window; a
         // machine too loaded to answer inside it can't judge this either way.
@@ -416,7 +416,7 @@ public partial class BrowserPlaybackTests
         engine.RegisterElement("el", Values(("rotate", 0.0)));
 
         await engine.AnimateToAsync("el", Values(("rotate", new double[] { 0, 360 })),
-            Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever).ToConfig());
+            Bm.Tween(1, BmotionEase.Linear, repeat: BmotionRepeat.Forever).ToConfig());
         var token = (int)interop.ArgsOf("playWaapiAnimation").Single()[1]!;
         await WaitUntilAsync(() => interop.WasCalled("cancelWaapiAnimation"));
 
@@ -434,8 +434,8 @@ public partial class BrowserPlaybackTests
         await using var _ = engine;
         engine.RegisterElement("el", Values(("x", 0.0), ("opacity", 0.0)));
 
-        await engine.AnimateToAsync("el", Values(("opacity", 1.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("opacity", 1.0)), Bm.Tween(4, BmotionEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(4, BmotionEase.Linear).ToConfig());
         CollectionAssert.AreEquivalent(new[] { "opacity", "x" }, State(engine).BrowserProperties.ToArray());
 
         engine.GetCurrentXY("el");
@@ -451,7 +451,7 @@ public partial class BrowserPlaybackTests
         var (engine, interop) = NewEngine(inProcess: false);
         await using var _ = engine;
         engine.RegisterElement("el", Values(("x", 0.0), ("opacity", 0.0)));
-        await engine.AnimateToAsync("el", Values(("x", 100.0), ("opacity", 1.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0), ("opacity", 1.0)), Bm.Tween(4, BmotionEase.Linear).ToConfig());
         await Task.Delay(100);
 
         engine.GetCurrentXY("el");
@@ -500,8 +500,8 @@ public partial class BrowserPlaybackTests
         await using var _ = engine;
         engine.RegisterElement("el", Values(("x", 0.0), ("opacity", 0.0)));
 
-        await engine.AnimateToAsync("el", Values(("opacity", 1.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
-        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(4, BmEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("opacity", 1.0)), Bm.Tween(4, BmotionEase.Linear).ToConfig());
+        await engine.AnimateToAsync("el", Values(("x", 100.0)), Bm.Tween(4, BmotionEase.Linear).ToConfig());
         await Task.Delay(100);
 
         var (x, _) = engine.PeekCurrentXY("el");
@@ -711,7 +711,7 @@ public partial class BrowserPlaybackTests
 
         // x coasts on momentum; y was dragged past its bound and springs back to it.
         await engine.EndDragAsync("el", velX: 2, velY: 0, momentum: true,
-            new BmDragConstraints { Top = 0, Bottom = 200 }, axis: null, snapTransition: null);
+            new BmotionDragConstraints { Top = 0, Bottom = 200 }, axis: null, snapTransition: null);
 
         Assert.AreEqual(1, interop.CountOf("playWaapiAnimation"), "two animations of one transform would cancel each other");
         var last = (string)Keyframes(interop)[^1]["transform"];

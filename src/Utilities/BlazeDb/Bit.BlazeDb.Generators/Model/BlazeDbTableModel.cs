@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bit.BlazeDb.Generators;
+namespace Bit.BlazeDb;
 
 internal sealed class BlazeDbTableModel
 {

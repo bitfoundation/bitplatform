@@ -234,7 +234,7 @@ only ("All other 4xx or 5xx response status codes MUST NOT be retried"); Belemet
 `transport.ts isRetryableFor`); Azure Monitor keeps its own list. The browser also recognized only its own
 `azureMonitor` name for 206 handling, not .NET's `azuremonitor{n}` requests resent through the page; fixed.
 
-**G-11 partial success - done.** `OtlpPartialSuccess` reads `partial_success` from protobuf, JSON (int64 as string or
+**G-11 partial success - done.** `BelemetryOtlpPartialSuccess` reads `partial_success` from protobuf, JSON (int64 as string or
 number) and uncompressed gRPC responses; the sender logs "N rejected: message" as a warning and does not retry.
 Rejected (non-retryable) requests are warnings too now - data loss with a fixable cause (a key, an endpoint). Tested
 with responses built from the official generated protobuf types, for all three protocols.

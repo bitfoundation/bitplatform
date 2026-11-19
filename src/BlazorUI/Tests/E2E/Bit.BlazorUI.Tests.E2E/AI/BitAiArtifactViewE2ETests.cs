@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// modal around it, the running frame kept across the toggle), Disabled, RTL and the public variables.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiArtifactViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiartifactview";

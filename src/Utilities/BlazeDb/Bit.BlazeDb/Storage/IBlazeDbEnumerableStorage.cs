@@ -1,4 +1,4 @@
-﻿namespace Bit.BlazeDb.Storage;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// Implemented by backends that can list what they hold. It lets the engine remove a database

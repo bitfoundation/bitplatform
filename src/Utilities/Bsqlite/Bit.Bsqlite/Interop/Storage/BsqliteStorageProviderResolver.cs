@@ -1,10 +1,8 @@
 ﻿using System.Collections.Concurrent;
-using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.FileSystem;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Decides which storage backend serves a database, honouring configured preference but never at the

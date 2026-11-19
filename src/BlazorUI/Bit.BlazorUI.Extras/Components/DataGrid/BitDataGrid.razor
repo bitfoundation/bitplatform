@@ -378,7 +378,7 @@
             <div class="bit-dtg-body" role="@(UseVirtualization || UseGroupedVirtualization || UseServerVirtualization ? null : "rowgroup")">
                 @if (PendingNewItem is not null)
                 {
-                    <BitDataGridRow TItem="TItem" Grid="this" Item="PendingNewItem" />
+                    <_BitDataGridRow TItem="TItem" Grid="this" Item="PendingNewItem" />
                 }
                 @if (Loading)
                 {
@@ -431,7 +431,7 @@
                         {
                             @foreach (var item in InfiniteItems)
                             {
-                                <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
+                                <_BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
                             }
                         }
                         @if (InfiniteLoading)
@@ -464,7 +464,7 @@
                     }
                     <Virtualize @ref="_serverVirtualize" TItem="TItem" ItemsProvider="ProvideVirtualizedRowsAsync" ItemSize="RowHeight" Context="item">
                         <ItemContent>
-                            <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
+                            <_BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
                         </ItemContent>
                         <Placeholder>
                             @PlaceholderRow
@@ -483,7 +483,7 @@
                         {
                             @foreach (var item in head.Items)
                             {
-                                <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
+                                <_BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
                             }
                             <div style="height: @(SpacerHeight(head.TotalCount - head.Items.Count))px; flex-shrink: 0;" aria-hidden="true"></div>
                         }
@@ -504,7 +504,7 @@
                 {
                     @foreach (var item in _pageItems)
                     {
-                        <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
+                        <_BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
                     }
                 }
             </div>
@@ -593,13 +593,13 @@
         for (var i = 0; i < head; i++)
         {
             var item = rows[i];
-            <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
+            <_BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
         }
         @* Virtualize's own leading spacer comes next: this one evens it out, so the stripes run on unbroken across
            the seam between these rows and Virtualize's. *@
         <div style="height: 0px; flex-shrink: 0;" aria-hidden="true"></div>
         <Virtualize Items="GetRowsAfter(rows, head)" ItemSize="RowHeight" Context="item" TItem="TItem">
-            <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
+            <_BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
         </Virtualize>
         if (rows.Count > head)
         {
@@ -647,7 +647,7 @@
         }
         else
         {
-            <BitDataGridRow TItem="TItem" Grid="this" Item="entry.Item!" @key="entry.Key" />
+            <_BitDataGridRow TItem="TItem" Grid="this" Item="entry.Item!" @key="entry.Key" />
         }
     }
 
@@ -785,7 +785,7 @@
             {
                 foreach (var item in group.Items)
                 {
-                    <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
+                    <_BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
                 }
             }
         }

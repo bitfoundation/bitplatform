@@ -13,7 +13,7 @@
         <Bmotion Initial="Bm.To(opacity: 0)"
                  Animate="Bm.To(opacity: 1)"
                  Exit="Bm.To(opacity: 0, x: 60)"
-                 Transition="Bm.Tween(0.4, BmEase.Linear)"
+                 Transition="Bm.Tween(0.4, BmotionEase.Linear)"
                  OnAnimationComplete='_ => Log("sync:entered")'>
             <div id="sync" class="small"></div>
         </Bmotion>
@@ -23,10 +23,10 @@
 <section class="row">
     <button id="pop-toggle" @onclick="() => Change(() => _pop = !_pop)">toggle</button>
     <div style="position: relative; display: flex; flex-direction: column; gap: 4px">
-        <BmotionAnimatePresence IsPresent="_pop" Mode="BmPresenceMode.PopLayout" OnExitComplete='() => Log("pop:exited")'>
+        <BmotionAnimatePresence IsPresent="_pop" Mode="BmotionPresenceMode.PopLayout" OnExitComplete='() => Log("pop:exited")'>
             <Bmotion Animate="Bm.To(opacity: 1)"
                      Exit="Bm.To(opacity: 0)"
-                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     Transition="Bm.Tween(0.4, BmotionEase.Linear)"
                      OnAnimationStart='_ => Armed("pop")'>
                 <div id="pop" class="small"></div>
             </Bmotion>
@@ -42,7 +42,7 @@
         <Bmotion Initial="Bm.To(opacity: 0)"
                  Animate="Bm.To(opacity: 1)"
                  Exit="Bm.To(opacity: 0)"
-                 Transition="Bm.Tween(0.8, BmEase.Linear)"
+                 Transition="Bm.Tween(0.8, BmotionEase.Linear)"
                  OnAnimationComplete='_ => Log(_dialog ? "dialog:entered" : "dialog:left")'>
             <div id="dialog" class="small">
                 <button id="dialog-ok" @onclick='() => Log("dialog:ok")'>ok</button>
@@ -59,18 +59,18 @@
             <Bmotion Initial="Bm.To(opacity: 0)"
                      Animate="Bm.To(opacity: 1)"
                      Exit="Bm.To(opacity: 0)"
-                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     Transition="Bm.Tween(0.4, BmotionEase.Linear)"
                      OnAnimationStart='_ => Armed($"wait{p}")'>
                 <div class="page small" id="wait-@p">@p</div>
             </Bmotion>
         </BmotionPresenceSwitch>
     </div>
     <div id="switch-sync">
-        <BmotionPresenceSwitch Item="_page" Context="p" Mode="BmPresenceMode.Sync">
+        <BmotionPresenceSwitch Item="_page" Context="p" Mode="BmotionPresenceMode.Sync">
             <Bmotion Initial="Bm.To(opacity: 0)"
                      Animate="Bm.To(opacity: 1)"
                      Exit="Bm.To(opacity: 0)"
-                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     Transition="Bm.Tween(0.4, BmotionEase.Linear)"
                      OnAnimationStart='_ => Armed($"sync{p}")'>
                 <div class="page small" id="sync-@p">@p</div>
             </Bmotion>
@@ -88,7 +88,7 @@
             <Bmotion Initial="Bm.To(opacity: 0, x: -20)"
                      Animate="Bm.To(opacity: 1, x: 0)"
                      Exit="Bm.To(opacity: 0, x: 40)"
-                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     Transition="Bm.Tween(0.4, BmotionEase.Linear)"
                      OnAnimationComplete='_ => Log($"group:entered:{item}")'>
                 <div class="item" id="g-@item">@item</div>
             </Bmotion>
@@ -99,10 +99,10 @@
 <section>
     <button id="popgroup-remove-first" @onclick="() => Change(() => { if (_popItems.Count > 0) _popItems.RemoveAt(0); })">remove first</button>
     <div class="list" id="popgroup">
-        <BmotionPresenceGroup Items="_popItems" Context="item" Mode="BmPresenceMode.PopLayout" OnExitComplete='() => Log("popgroup:exited")'>
+        <BmotionPresenceGroup Items="_popItems" Context="item" Mode="BmotionPresenceMode.PopLayout" OnExitComplete='() => Log("popgroup:exited")'>
             <Bmotion Animate="Bm.To(opacity: 1)"
                      Exit="Bm.To(opacity: 0)"
-                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     Transition="Bm.Tween(0.4, BmotionEase.Linear)"
                      OnAnimationStart='_ => Armed($"pg{item}")'>
                 <div class="item" id="pg-@item">@item</div>
             </Bmotion>

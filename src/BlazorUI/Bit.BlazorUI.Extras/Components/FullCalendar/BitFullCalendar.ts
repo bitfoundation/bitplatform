@@ -265,7 +265,7 @@
             if ((el as any)[boundKey]) return;
             (el as any)[boundKey] = true;
 
-            // A resize is serialized per event (per dotNetRef), not per handle: BitFcTimelineEventBlock
+            // A resize is serialized per event (per dotNetRef), not per handle: _BitFcTimelineEventBlock
             // wires both resize handles (start/end) to the same dotNetRef, so this shared flag ensures
             // only one resize runs at a time across both handles. Cleared on end/cancel/abort.
             const activeKey = "__bitFcResizeActive";
@@ -606,7 +606,7 @@
          * element: the teardown runs as the dialog is disposed, once its element has already left the DOM, where an
          * element reference no longer resolves - keyed by the element, the focus was never given back.
          */
-        private static dialogFocusState = new Map<string, { root: HTMLElement | null; stored: boolean; previous: Element | null }>();
+        private static dialogFocusState = new Map<string, { root: HTMLElement | null; stored: boolean; previous: Element | null; enteredFirst: boolean }>();
 
         public static setupDialog(id: string): void {
             if (!id || FullCalendar.dialogFocusState.has(id)) return;
@@ -614,14 +614,25 @@
             const container = document.getElementById(id);
             if (!container) return;
 
+            // The setup runs once the dialog has rendered, a round trip after it shows on a server circuit, and the user
+            // can be in it by then - a click or a Tab into one of its fields, the typing under way. The focus is left
+            // where they put it rather than taken back to the first control, which would take the keys typed next, and
+            // an Escape that clears the field would close the dialog instead. Nothing inside the dialog is stored as
+            // the element to hand the focus back to, as it leaves with the dialog: closing it recovers the focus the
+            // way it does for an opener that is gone (see teardownDialog).
+            const active = document.activeElement;
+            const enteredFirst = !!active && active !== container && container.contains(active);
+
             // Nothing is stored when the focus was on nothing (the body): there is nothing to hand it back to then.
             // The element itself is kept here as well, for the event it tells the calendar about once it has left
             // the page (see teardownDialog).
-            const previous = document.activeElement;
-            const stored = Utils.storeFocus(id, id);
+            const previous = enteredFirst ? null : active;
+            const stored = enteredFirst ? false : Utils.storeFocus(id, id);
 
             Utils.setupFocusTrap(id);
-            FullCalendar.dialogFocusState.set(id, { root: container.closest<HTMLElement>('.bit-bfc'), stored, previous });
+            FullCalendar.dialogFocusState.set(id, { root: container.closest<HTMLElement>('.bit-bfc'), stored, previous, enteredFirst });
+
+            if (enteredFirst) return;
 
             (Utils.firstFocusable(container) ?? container).focus();
         }
@@ -634,9 +645,11 @@
             Utils.disposeFocusTrap(id);
             FullCalendar.dialogFocusState.delete(id);
 
-            if (!state.stored) return;
+            // A dialog the user was in before its setup ran stored no opener (see setupDialog), and recovers the focus
+            // below all the same, rather than leaving it on the body.
+            if (!state.stored && !state.enteredFirst) return;
 
-            if (Utils.restoreFocus(id, false)) return;
+            if (state.stored && Utils.restoreFocus(id, false)) return;
 
             const previous = state.previous;
 

@@ -16,7 +16,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Characters, words, lines</h3>
     <p>
-        One parameter picks the unit. <code>By="BmSplitBy.Chars"</code> is the headline treatment;
+        One parameter picks the unit. <code>By="BmotionSplitBy.Chars"</code> is the headline treatment;
         <code>Words</code> keeps the count sane on longer copy; <code>Lines</code> splits on the
         newlines you authored, which is what you want for a stanza or an address block. Every unit
         gets the same <code>Initial</code> / <code>Animate</code> pair, offset by the stagger.
@@ -27,7 +27,7 @@
             <span class="demo-label">By: Chars</span>
             <BmotionSplitText @key="_runId" Class="split-headline"
                               Text="Every character"
-                              By="BmSplitBy.Chars"
+                              By="BmotionSplitBy.Chars"
                               Initial="Bm.To(opacity: 0, y: 24, rotate: -12)"
                               Animate="Bm.To(opacity: 1, y: 0, rotate: 0)"
                               Stagger="Bm.Stagger(0.03)"
@@ -38,7 +38,7 @@
             <span class="demo-label">By: Words</span>
             <BmotionSplitText @key="_runId" Class="split-headline"
                               Text="One word at a time"
-                              By="BmSplitBy.Words"
+                              By="BmotionSplitBy.Words"
                               Initial="Bm.To(opacity: 0, y: 20)"
                               Animate="Bm.To(opacity: 1, y: 0)"
                               Stagger="Bm.Stagger(0.08)"
@@ -49,11 +49,11 @@
             <span class="demo-label">By: Lines</span>
             <BmotionSplitText @key="_runId" Class="split-lines"
                               Text="@_stanza"
-                              By="BmSplitBy.Lines"
+                              By="BmotionSplitBy.Lines"
                               Initial='Bm.To(opacity: 0, x: -30, filter: "blur(6px)")'
                               Animate='Bm.To(opacity: 1, x: 0, filter: "blur(0px)")'
                               Stagger="Bm.Stagger(0.12)"
-                              Transition="Bm.Tween(0.6, BmEase.Out)" />
+                              Transition="Bm.Tween(0.6, BmotionEase.Out)" />
         </div>
     </div>
 
@@ -118,7 +118,7 @@
             <span class="demo-label">WhileInView + Once &middot; scroll it into view</span>
             <BmotionSplitText Class="split-headline"
                               Text="Reveal on scroll"
-                              By="BmSplitBy.Words"
+                              By="BmotionSplitBy.Words"
                               Initial="Bm.To(opacity: 0, y: 28)"
                               WhileInView="Bm.To(opacity: 1, y: 0)"
                               Once="true"
@@ -149,7 +149,7 @@
             <BmotionAnimatePresence IsPresent="_splitShown">
                 <BmotionSplitText As="p" Class="split-pills" UnitClass="split-pill"
                                   Text="Tap a word, or take them all away"
-                                  By="BmSplitBy.Words"
+                                  By="BmotionSplitBy.Words"
                                   Initial="Bm.To(opacity: 0, y: 16)"
                                   Animate="Bm.To(opacity: 1, y: 0)"
                                   Exit="Bm.To(opacity: 0, y: -16)"
@@ -222,13 +222,13 @@
         the browser happened to pick.
         """;
 
-    private sealed record StaggerMode(string Label, BmStagger Stagger);
+    private sealed record StaggerMode(string Label, BmotionStagger Stagger);
 
     private readonly StaggerMode[] _staggerModes =
     [
         new("from: First", Bm.Stagger(0.05)),
-        new("from: Center", Bm.Stagger(0.05, from: BmStaggerFrom.Center)),
-        new("from: Last", Bm.Stagger(0.05, from: BmStaggerFrom.Last)),
+        new("from: Center", Bm.Stagger(0.05, from: BmotionStaggerFrom.Center)),
+        new("from: Last", Bm.Stagger(0.05, from: BmotionStaggerFrom.Last)),
         new("custom (i, total)", Bm.Stagger((i, total) => (i % 2 == 0 ? i : total - i) * 0.05)),
     ];
 
@@ -244,7 +244,7 @@
         @* Characters: the headline treatment. Each letter is its own animated element. *@
         <BmotionSplitText Class="split-headline"
                           Text="Every character"
-                          By="BmSplitBy.Chars"
+                          By="BmotionSplitBy.Chars"
                           Initial="Bm.To(opacity: 0, y: 24, rotate: -12)"
                           Animate="Bm.To(opacity: 1, y: 0, rotate: 0)"
                           Stagger="Bm.Stagger(0.03)"
@@ -253,7 +253,7 @@
         @* Words: the same animation, a tenth of the elements. Use this for body copy. *@
         <BmotionSplitText Class="split-headline"
                           Text="One word at a time"
-                          By="BmSplitBy.Words"
+                          By="BmotionSplitBy.Words"
                           Initial="Bm.To(opacity: 0, y: 20)"
                           Animate="Bm.To(opacity: 1, y: 0)"
                           Stagger="Bm.Stagger(0.08)"
@@ -262,11 +262,11 @@
         @* Lines: splits on the newlines in the string, so the units survive any re-flow. *@
         <BmotionSplitText Class="split-lines"
                           Text="@_stanza"
-                          By="BmSplitBy.Lines"
+                          By="BmotionSplitBy.Lines"
                           Initial='Bm.To(opacity: 0, x: -30, filter: "blur(6px)")'
                           Animate='Bm.To(opacity: 1, x: 0, filter: "blur(0px)")'
                           Stagger="Bm.Stagger(0.12)"
-                          Transition="Bm.Tween(0.6, BmEase.Out)" />
+                          Transition="Bm.Tween(0.6, BmotionEase.Out)" />
 
         @code {
             private const string _stanza = """
@@ -285,7 +285,7 @@
         <BmotionSplitText Text="Cascade"
                           Initial="Bm.To(opacity: 0, scale: 0.4, y: 18)"
                           Animate="Bm.To(opacity: 1, scale: 1, y: 0)"
-                          Stagger="Bm.Stagger(0.05, from: BmStaggerFrom.Center)"
+                          Stagger="Bm.Stagger(0.05, from: BmotionStaggerFrom.Center)"
                           Transition="Bm.Spring(bounce: 0.4, duration: 0.6)" />
 
         @* …and a custom (index, total) function covers anything the presets do not. *@
@@ -308,7 +308,7 @@
         @* The reveal-on-scroll headline: no Animate at all, just an in-view overlay that
            plays once. Note Initial is what the text is painted in before it scrolls in. *@
         <BmotionSplitText Text="Reveal on scroll"
-                          By="BmSplitBy.Words"
+                          By="BmotionSplitBy.Words"
                           Initial="Bm.To(opacity: 0, y: 28)"
                           WhileInView="Bm.To(opacity: 1, y: 0)"
                           Once="true"
@@ -328,7 +328,7 @@
         <BmotionAnimatePresence IsPresent="_shown">
             <BmotionSplitText As="p" UnitClass="pill"
                               Text="Tap a word, or take them all away"
-                              By="BmSplitBy.Words"
+                              By="BmotionSplitBy.Words"
                               Initial="Bm.To(opacity: 0, y: 16)"
                               Animate="Bm.To(opacity: 1, y: 0)"
                               Exit="Bm.To(opacity: 0, y: -16)"

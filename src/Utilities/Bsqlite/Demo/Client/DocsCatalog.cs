@@ -115,7 +115,7 @@ public static class DocsCatalog
                 "The generated SQL, ef_compare on decimals, REGEXP, live queries and plain ADO.NET on the same connection.",
                 "live query AsLiveQuery ToQueryString ef_compare EF_DECIMAL regexp ado.net command reader transaction sqlite_version",
                 typeof(Queries)),
-            // Qualified: in this namespace a bare "Storage" is the library's Bit.Bsqlite.Storage namespace.
+            // Qualified, so the page is never mistaken for a Storage type or namespace.
             new("/storage", "Storage backends",
                 "How a backend is chosen and remembered, what each one can do, quota probes and the persistent-storage permission.",
                 "opfs indexeddb cache storage in-memory selection prefer fallback resolution capabilities probe quota persist binding",

@@ -1,8 +1,8 @@
 ﻿@page "/optimize"
 @implements IDisposable
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
-@inject IImageCapabilityProvider Capabilities
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
+@inject IBmageImageCapabilityProvider Capabilities
 
 @* The upload pipeline most applications actually need, run before anything is sent: cap the
    dimensions, re-encode, strip the metadata, report the bytes. Files are decoded one at a time so a
@@ -143,9 +143,9 @@
                 <div class="demo-field">
                     <label class="demo-field-label" for="metadata">Metadata</label>
                     <select id="metadata" @onchange="OnMetadataChanged">
-                        <option value="Remove" selected="@(_metadata == MetadataPolicy.Remove)">Remove everything</option>
-                        <option value="StripSensitive" selected="@(_metadata == MetadataPolicy.StripSensitive)">Keep camera, drop location</option>
-                        <option value="Preserve" selected="@(_metadata == MetadataPolicy.Preserve)">Keep everything</option>
+                        <option value="Remove" selected="@(_metadata == BmageMetadataPolicy.Remove)">Remove everything</option>
+                        <option value="StripSensitive" selected="@(_metadata == BmageMetadataPolicy.StripSensitive)">Keep camera, drop location</option>
+                        <option value="Preserve" selected="@(_metadata == BmageMetadataPolicy.Preserve)">Keep everything</option>
                     </select>
                 </div>
 
@@ -186,22 +186,22 @@
         <li><strong>1920 on the long edge</strong> covers a full-width hero on most screens; product thumbnails and avatars want far less.</li>
         <li><strong>WebP at 0.8</strong> is typically 25 to 35% smaller than JPEG at similar quality. Where this browser cannot write it, the format list above simply does not offer it - the list is the capability probe's answer.</li>
         <li><strong>Re-encoding can grow a file.</strong> A small or already heavily compressed upload may come out larger; the table says so in red rather than claiming a saving. A real pipeline would keep the original in that case.</li>
-        <li><strong>Decode smaller to begin with.</strong> <code>DecodeOptions.MaxSize</code> lets a decoder that can do it cheaply - the browser's, or the JPEG decoder's DCT scaling - hand back a smaller image straight away, which saves memory and time on a 48 megapixel photo; the pipeline's <code>MaxSize</code> still makes the result exact.</li>
-        <li><strong>Check before decoding on a server.</strong> <code>ImageProcessor.Identify</code> reads the dimensions from the header, so an oversized upload is refused before a byte of pixels is allocated - see <a href="/headless">the headless API</a>.</li>
+        <li><strong>Decode smaller to begin with.</strong> <code>BmageDecodeOptions.MaxSize</code> lets a decoder that can do it cheaply - the browser's, or the JPEG decoder's DCT scaling - hand back a smaller image straight away, which saves memory and time on a 48 megapixel photo; the pipeline's <code>MaxSize</code> still makes the result exact.</li>
+        <li><strong>Check before decoding on a server.</strong> <code>BmageImageProcessor.Identify</code> reads the dimensions from the header, so an oversized upload is refused before a byte of pixels is allocated - see <a href="/headless">the headless API</a>.</li>
     </ul>
 </div>
 
 @code {
-    private sealed record Result(string Name, string Dimensions, long OriginalBytes, long NewBytes, EncodedImage Encoded);
+    private sealed record Result(string Name, string Dimensions, long OriginalBytes, long NewBytes, BmageEncodedImage Encoded);
 
     private sealed record Failure(string Name, string Message);
 
     private readonly List<Result> _results = [];
     private readonly List<Failure> _failures = [];
     private int _maxDimension = 1920;
-    private ImageFormat _format = ImageFormat.WebP;
+    private BmageImageFormat _format = BmageImageFormat.WebP;
     private double _quality = 0.82;
-    private MetadataPolicy _metadata = MetadataPolicy.Remove;
+    private BmageMetadataPolicy _metadata = BmageMetadataPolicy.Remove;
     private bool _sharpen = true;
     private bool _running;
     private int _completed;
@@ -209,38 +209,38 @@
     private double _progress;
     private string? _error;
     private CancellationTokenSource? _cts;
-    private ImageCapabilities? _capabilities;
+    private BmageImageCapabilities? _capabilities;
 
     private long TotalBefore => _results.Sum(r => r.OriginalBytes);
     private long TotalAfter => _results.Sum(r => r.NewBytes);
 
     // Until the probe has run, only the current choice is listed (and the list is disabled), so the select never shows
     // one format while the page would use another.
-    private IEnumerable<ImageFormat> AvailableFormats => _capabilities is null
+    private IEnumerable<BmageImageFormat> AvailableFormats => _capabilities is null
         ? [_format]
-        : new[] { ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Jpeg, ImageFormat.Png }.Where(_capabilities.CanEncode);
+        : new[] { BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Jpeg, BmageImageFormat.Png }.Where(_capabilities.CanEncode);
 
     private const string Snippet = """
         // One pipeline, reused for every file. Nothing runs until it is executed.
-        var pipeline = ImagePipeline.Create()
+        var pipeline = BmageImagePipeline.Create()
             .AutoOrient()                       // honour the phone's rotation sensor
             .MaxSize(maxEdge, maxEdge)          // never enlarge, only cap
             .Sharpen(0.3f);                     // recover the bite lost to downscaling
 
         foreach (var file in files)
         {
-            using var source = await loader.LoadAsync(file, new DecodeOptions
+            using var source = await loader.LoadAsync(file, new BmageDecodeOptions
             {
                 FileName = file.Name,
                 MaxSize  = new Size(maxEdge, maxEdge),   // a hint: decode smaller where that is cheap
             });
             using var processed = await pipeline.ExecuteAsync(source);
 
-            var encoded = await exporter.EncodeAsync(processed, new ImageExportOptions
+            var encoded = await exporter.EncodeAsync(processed, new BmageImageExportOptions
             {
-                Format   = ImageFormat.WebP,             // offered only where the probe found it
+                Format   = BmageImageFormat.WebP,             // offered only where the probe found it
                 Quality  = 0.82,
-                Metadata = MetadataPolicy.Remove,
+                Metadata = BmageMetadataPolicy.Remove,
             });
             if (encoded.Length < file.Size) await UploadAsync(file.Name, encoded.Data);
             else await UploadOriginalAsync(file);        // re-encoding did not help: keep the original
@@ -249,15 +249,15 @@
 
     private const string BatchSnippet = """
         var processor = await processorFactory.GetAsync();
-        var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
+        var result = await processor.ProcessBatchAsync(items, pipeline, new BmageBatchOptions
         {
             MaxConcurrency = 2,
             Progress       = progress,
-            ExportOptions  = new ImageExportOptions
+            ExportOptions  = new BmageImageExportOptions
             {
-                Format   = ImageFormat.WebP,
+                Format   = BmageImageFormat.WebP,
                 Quality  = 0.82,
-                Metadata = MetadataPolicy.Remove,
+                Metadata = BmageMetadataPolicy.Remove,
             },
         });
         """;
@@ -266,7 +266,7 @@
     {
         if (!firstRender || RendererInfo.IsInteractive is false) return;
         _capabilities = await Capabilities.GetAsync();
-        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Jpeg]);
+        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([BmageImageFormat.WebP, BmageImageFormat.Jpeg]);
         StateHasChanged();
     }
 
@@ -283,12 +283,12 @@
 
     private void OnFormatChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format)) _format = format;
+        if (e.Value is string value && Enum.TryParse<BmageImageFormat>(value, out var format)) _format = format;
     }
 
     private void OnMetadataChanged(ChangeEventArgs e)
     {
-        if (e.Value is string value && Enum.TryParse<MetadataPolicy>(value, out var policy)) _metadata = policy;
+        if (e.Value is string value && Enum.TryParse<BmageMetadataPolicy>(value, out var policy)) _metadata = policy;
     }
 
     private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
@@ -302,17 +302,17 @@
         _cts = new CancellationTokenSource();
         StateHasChanged();
 
-        var pipeline = ImagePipeline.Create()
+        var pipeline = BmageImagePipeline.Create()
             .AutoOrient()
             .MaxSize(_maxDimension, _maxDimension);
         if (_sharpen) pipeline = pipeline.Sharpen(0.3f);
 
-        var exportOptions = new ImageExportOptions
+        var exportOptions = new BmageImageExportOptions
         {
             Format = _format,
             Quality = _quality,
             Metadata = _metadata,
-            Background = Rgba32.White,
+            Background = BmageRgba32.White,
         };
 
         try
@@ -323,9 +323,9 @@
                 _cts.Token.ThrowIfCancellationRequested();
                 try
                 {
-                    using var source = await Loader.LoadAsync(file, new DecodeOptions { FileName = file.Name }, _cts.Token);
+                    using var source = await Loader.LoadAsync(file, new BmageDecodeOptions { FileName = file.Name }, _cts.Token);
                     var dimensions = $"{source.Width}×{source.Height}";
-                    using var processed = await pipeline.ExecuteAsync(source, new PipelineExecutionOptions { CancellationToken = _cts.Token });
+                    using var processed = await pipeline.ExecuteAsync(source, new BmagePipelineExecutionOptions { CancellationToken = _cts.Token });
                     var encoded = await Exporter.EncodeAsync(processed, exportOptions, _cts.Token);
                     _results.Add(new Result(file.Name, $"{dimensions} → {processed.Width}×{processed.Height}", file.Size, encoded.Length, encoded));
                 }
@@ -394,9 +394,9 @@
 
     private static string Describe(Exception ex) => ex switch
     {
-        ImageLimitExceededException => "Too large to process here.",
-        ImageDecodeException => "Not a readable image.",
-        ImageCapabilityException c => c.Message,
+        BmageImageLimitExceededException => "Too large to process here.",
+        BmageImageDecodeException => "Not a readable image.",
+        BmageImageCapabilityException c => c.Message,
         _ => ex.Message,
     };
 

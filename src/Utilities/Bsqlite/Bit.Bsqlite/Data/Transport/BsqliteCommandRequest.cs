@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>A single statement plus its parameters.</summary>
 public sealed record BsqliteCommandRequest

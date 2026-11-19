@@ -17,7 +17,7 @@ namespace Bit.Bmotion;
 /// </code>
 /// The reorder preview is transform-based: the list itself only re-renders once, on release,
 /// so item state is preserved and the drag stays smooth. Works for vertical (default) and
-/// horizontal lists, and wrapping grids (<see cref="Axis"/> = <see cref="BmDragAxis.Both"/>), where the dragged item
+/// horizontal lists, and wrapping grids (<see cref="Axis"/> = <see cref="BmotionDragAxis.Both"/>), where the dragged item
 /// takes the cell nearest its centre.
 /// <para>
 /// Keyboard users reorder too (<see cref="Keyboard"/>): Space or Enter on a focused item picks it up, the arrow keys
@@ -55,17 +55,17 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     [Parameter] public Func<TItem, object>? ItemKey { get; set; }
 
     /// <summary>
-    /// How the items are laid out, and dragged: <see cref="BmDragAxis.Y"/> (a column, the default),
-    /// <see cref="BmDragAxis.X"/> (a row), or <see cref="BmDragAxis.Both"/> - a wrapping grid, where an item is dragged
+    /// How the items are laid out, and dragged: <see cref="BmotionDragAxis.Y"/> (a column, the default),
+    /// <see cref="BmotionDragAxis.X"/> (a row), or <see cref="BmotionDragAxis.Both"/> - a wrapping grid, where an item is dragged
     /// freely and takes the cell nearest its centre, and the arrow keys move it a cell at a time (up and down, a row).
     /// </summary>
-    [Parameter] public BmDragAxis Axis { get; set; } = BmDragAxis.Y;
+    [Parameter] public BmotionDragAxis Axis { get; set; } = BmotionDragAxis.Y;
 
     /// <summary>Template for each item. Its first root element becomes the draggable row.</summary>
     [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
 
     /// <summary>Gesture overlay while an item is dragged. Default: a slight scale-up.</summary>
-    [Parameter] public BmTarget? WhileDrag { get; set; }
+    [Parameter] public BmotionTarget? WhileDrag { get; set; }
 
     /// <summary>
     /// CSS selector of a drag handle inside each item (e.g. <c>".grip"</c>): the drag only
@@ -74,7 +74,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     [Parameter] public string? HandleSelector { get; set; }
 
     /// <summary>Spring used for sibling displacement and the release settle. Default: a snappy spring.</summary>
-    [Parameter] public BmTransition? Transition { get; set; }
+    [Parameter] public BmotionTransition? Transition { get; set; }
 
     /// <summary>Fires after a reorder is committed to <see cref="Items"/>.</summary>
     [Parameter] public EventCallback OnReorder { get; set; }
@@ -93,9 +93,9 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
 
     /// <summary>
     /// What screen readers hear at each keyboard reorder step - picked up, moved, dropped, cancelled - e.g. to name
-    /// the item or speak another language. Default: <see cref="BmReorderAnnouncement{TItem}.DefaultText"/>.
+    /// the item or speak another language. Default: <see cref="BmotionReorderAnnouncement{TItem}.DefaultText"/>.
     /// </summary>
-    [Parameter] public Func<BmReorderAnnouncement<TItem>, string>? Announce { get; set; }
+    [Parameter] public Func<BmotionReorderAnnouncement<TItem>, string>? Announce { get; set; }
 
     private sealed class Entry
     {
@@ -125,8 +125,8 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     private double _gap;
     private bool _pendingTransformClear;
 
-    private bool Horizontal => Axis == BmDragAxis.X;
-    private bool Grid => Axis == BmDragAxis.Both;
+    private bool Horizontal => Axis == BmotionDragAxis.X;
+    private bool Grid => Axis == BmotionDragAxis.Both;
 
     protected override void OnParametersSet()
     {
@@ -182,9 +182,9 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             builder.OpenComponent<Bmotion>(0);
             builder.SetKey(captured.Key);
             builder.AddComponentParameter(1, "Id", captured.Id);
-            builder.AddComponentParameter(2, "Drag", Grid ? BmDrag.Both : Horizontal ? BmDrag.X : BmDrag.Y);
+            builder.AddComponentParameter(2, "Drag", Grid ? BmotionDrag.Both : Horizontal ? BmotionDrag.X : BmotionDrag.Y);
             builder.AddComponentParameter(3, "DragMomentum", false);
-            builder.AddComponentParameter(4, "WhileDrag", WhileDrag ?? (BmTarget?)Bm.To(scale: 1.03));
+            builder.AddComponentParameter(4, "WhileDrag", WhileDrag ?? (BmotionTarget?)Bm.To(scale: 1.03));
             builder.AddComponentParameter(5, "OnDragStart",
                 EventCallback.Factory.Create(this, () => HandleDragStartAsync(captured)));
             // With no receiver: a move only reorders the items in the engine (nothing rendered changes), and an
@@ -198,7 +198,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
                 (RenderFragment)(b => b.AddContent(0, ChildContent, captured.Item)));
             // Measured for a layout animation only when the order changes from outside (see OnParametersSet), and
             // position only: a reordered item moves, it doesn't resize.
-            builder.AddComponentParameter(11, "Layout", BmLayout.Position);
+            builder.AddComponentParameter(11, "Layout", BmotionLayout.Position);
             builder.AddComponentParameter(12, "LayoutDependency", _externalOrder);
             builder.AddComponentReferenceCapture(13, o => captured.Ref = (Bmotion)o);
             builder.CloseComponent();
@@ -484,7 +484,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             return false;
         }
         if (entry.Ref is { } row) await row.ShowDragOverlayAsync(true);
-        await AnnounceAsync(BmReorderEvent.PickedUp, entry);
+        await AnnounceAsync(BmotionReorderEvent.PickedUp, entry);
         return true;
     }
 
@@ -499,7 +499,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         // The others make way exactly as for a drag; the held item moves into its new slot itself.
         AnimateDisplacements();
         _ = Engine.AnimateToAsync(entry.Id, DisplacementValues(entry, to), DisplacementConfig(entry));
-        await AnnounceAsync(BmReorderEvent.Moved, entry);
+        await AnnounceAsync(BmotionReorderEvent.Moved, entry);
     }
 
     private async Task DropHeldAsync(string elementId)
@@ -512,7 +512,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
         int position = _visualOrder.IndexOf(entry) + 1;
         _refocus = entry.Id;
         await CommitAsync(entry);
-        await AnnounceAsync(BmReorderEvent.Dropped, entry, position);
+        await AnnounceAsync(BmotionReorderEvent.Dropped, entry, position);
     }
 
     private async Task CancelHeldAsync(Entry entry)
@@ -530,13 +530,13 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
             catch { /* cosmetic only */ }
         }
         _orderBeforeHold = null;
-        await AnnounceAsync(BmReorderEvent.Cancelled, entry);
+        await AnnounceAsync(BmotionReorderEvent.Cancelled, entry);
     }
 
-    private async Task AnnounceAsync(BmReorderEvent kind, Entry entry, int? position = null)
+    private async Task AnnounceAsync(BmotionReorderEvent kind, Entry entry, int? position = null)
     {
         var order = _dragged == entry ? _visualOrder : _entries;
-        var announcement = new BmReorderAnnouncement<TItem>(kind, entry.Item, position ?? order.IndexOf(entry) + 1, _entries.Count);
+        var announcement = new BmotionReorderAnnouncement<TItem>(kind, entry.Item, position ?? order.IndexOf(entry) + 1, _entries.Count);
         var text = Announce?.Invoke(announcement) ?? announcement.DefaultText;
         if (string.IsNullOrEmpty(text)) return;
         try { await Interop.AnnounceAsync(text); } catch { /* the circuit is going */ }
@@ -612,7 +612,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase, IDisposable
     // How an item moves to its place - as the item plays it, so reduced motion lands it there at once.
     private BmotionTransitionConfig? DisplacementConfig(Entry e)
     {
-        var normal = (Transition ?? new BmSpring { Stiffness = 550, Damping = 40 }).ToConfig();
+        var normal = (Transition ?? new BmotionSpring { Stiffness = 550, Damping = 40 }).ToConfig();
         return e.Ref is { } item ? item.AsPlayedHere(normal) : normal;
     }
 }

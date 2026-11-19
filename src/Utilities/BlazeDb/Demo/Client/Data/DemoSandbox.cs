@@ -1,7 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Demo.Client.Data;
+﻿namespace Bit.BlazeDb.Demo.Client.Data;
 
 /// <summary>
 /// Helpers for the throwaway databases individual pages open so they can crash,

@@ -9,7 +9,7 @@ namespace Bit.Bmotion.Demo.Server.Services;
 /// Every property Bit.Bmotion can animate, and the one thing about each that an agent cannot read
 /// off the API: how the engine plays it, and what that costs.
 /// <para>
-/// The list itself comes from reflecting over <see cref="BmProps"/>, so a property added to the
+/// The list itself comes from reflecting over <see cref="BmotionProps"/>, so a property added to the
 /// library appears here without anyone remembering to add it. The expensive claim - whether the
 /// browser plays the animation, as a two-keyframe timeline or as a recording, and therefore whether
 /// it survives on Blazor Server - is <b>measured</b>: each property is animated once through the real
@@ -33,12 +33,12 @@ public static partial class BmotionPropertyCatalog
     private const double RecordingLimitSeconds = 10;
 
     private static readonly Lazy<FrozenDictionary<string, PropertyInfo>> _bmPropsByName = new(() =>
-        typeof(BmProps).GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                       .Where(property => property.CanWrite && property.Name != nameof(BmProps.Transition))
+        typeof(BmotionProps).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                       .Where(property => property.CanWrite && property.Name != nameof(BmotionProps.Transition))
                        .ToFrozenDictionary(property => CamelCase(property.Name), StringComparer.OrdinalIgnoreCase));
 
     // What each property is for, in the terms someone writing an animation thinks in. Only the
-    // prose is here; the names come from BmProps and the playback verdict from the engine.
+    // prose is here; the names come from BmotionProps and the playback verdict from the engine.
     private static readonly FrozenDictionary<string, Facts> _facts = new Dictionary<string, Facts>(StringComparer.OrdinalIgnoreCase)
     {
         ["x"] = new("Transform", "transform: translateX()", "x: 100", "Pixels by default. The cheapest thing to animate, along with y and opacity."),
@@ -58,7 +58,7 @@ public static partial class BmotionPropertyCatalog
         ["originY"] = new("Transform", "transform-origin", "originY: 1", "0-1 down the element. Set both to move the pivot, e.g. originY: 1 to grow upward."),
 
         ["opacity"] = new("Visual", "opacity", "opacity: 0", "The other compositor-cheap property. Prefer it to visibility or display, which cannot be animated at all."),
-        ["backgroundColor"] = new("Visual", "background-color", "backgroundColor: \"#FD7F36\"", "Mixed in sRGB, or in OKLab with BmColorSpace.Oklab. It repaints on every frame, where an opacity cross-fade of two stacked elements does not."),
+        ["backgroundColor"] = new("Visual", "background-color", "backgroundColor: \"#FD7F36\"", "Mixed in sRGB, or in OKLab with BmotionColorSpace.Oklab. It repaints on every frame, where an opacity cross-fade of two stacked elements does not."),
         ["color"] = new("Visual", "color", "color: \"#1276C6\""),
         ["borderColor"] = new("Visual", "border-color", "borderColor: \"tomato\""),
         ["outlineColor"] = new("Visual", "outline-color", "outlineColor: \"#0B72E7\""),
@@ -94,7 +94,7 @@ public static partial class BmotionPropertyCatalog
         ["pathOffset"] = new("SVG", "stroke-dashoffset", "pathOffset: 0.5"),
         ["pathSpacing"] = new("SVG", "stroke-dasharray", "pathSpacing: 0.2"),
 
-        ["cssVars"] = new("Custom", "--custom-property", "cssVars: new() { [\"--glow\"] = \"18px\" }", "Written verbatim into inline style. See BmCssSafeMode before binding untrusted input."),
+        ["cssVars"] = new("Custom", "--custom-property", "cssVars: new() { [\"--glow\"] = \"18px\" }", "Written verbatim into inline style. See BmotionCssSafeMode before binding untrusted input."),
         ["css"] = new("Custom", "any CSS property", "css: new() { [\"backdropFilter\"] = \"blur(8px)\" }", "The escape hatch for a property with no dedicated argument."),
     }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
@@ -105,13 +105,13 @@ public static partial class BmotionPropertyCatalog
     public static string Normalize(string name) => name.Trim().Trim('"');
 
     /// <summary>
-    /// Builds a <see cref="BmProps"/> that animates exactly <paramref name="names"/>, using a
+    /// Builds a <see cref="BmotionProps"/> that animates exactly <paramref name="names"/>, using a
     /// representative value for each. The values are placeholders - what the engine decides depends
     /// on which properties are animated and their value shape, not on the numbers themselves.
     /// </summary>
-    public static BmProps BuildTarget(IReadOnlyCollection<string> names, out string[] unknown)
+    public static BmotionProps BuildTarget(IReadOnlyCollection<string> names, out string[] unknown)
     {
-        var props = new BmProps();
+        var props = new BmotionProps();
         var missing = new List<string>();
 
         foreach (var name in names)
@@ -136,7 +136,7 @@ public static partial class BmotionPropertyCatalog
     }
 
     /// <summary>
-    /// The engine key a <see cref="BmProps"/> argument animates: its own name, except for the two
+    /// The engine key a <see cref="BmotionProps"/> argument animates: its own name, except for the two
     /// origin fractions, which the engine animates together as one <c>transformOrigin</c>.
     /// </summary>
     public static string EngineKeyOf(string name)
@@ -171,7 +171,7 @@ public static partial class BmotionPropertyCatalog
 
             switch (SampleValueFor(property, key))
             {
-                case BmStringKeyframes target:
+                case BmotionStringKeyframes target:
                     styles[EngineKeyOf(key)] = SameShapeAtZero(target.First);
                     break;
 
@@ -200,7 +200,7 @@ public static partial class BmotionPropertyCatalog
     /// rather than to the transition.
     /// </param>
     public static (string Reason, string[] Remedies) ExplainPlayback(
-        IReadOnlyCollection<string> properties, BmTransition transition, BmotionPlaybackPath measured,
+        IReadOnlyCollection<string> properties, BmotionTransition transition, BmotionPlaybackPath measured,
         IReadOnlyCollection<string>? recordedOnTheirOwn = null)
     {
         var names = properties.Select(Normalize).ToArray();
@@ -214,9 +214,9 @@ public static partial class BmotionPropertyCatalog
         };
     }
 
-    private static (string Reason, string[] Remedies) ExplainTimeline(string[] names, BmTransition transition)
+    private static (string Reason, string[] Remedies) ExplainTimeline(string[] names, BmotionTransition transition)
     {
-        var curve = transition is BmSpring ? "spring" : "tween";
+        var curve = transition is BmotionSpring ? "spring" : "tween";
 
         var reason = $"Every animated property shares one {curve} curve, and every value is one the browser interpolates " +
                      "exactly as the engine does, so the engine hands the browser a timeline: a Web Animation of two " +
@@ -228,7 +228,7 @@ public static partial class BmotionPropertyCatalog
     }
 
     private static (string Reason, string[] Remedies) ExplainRecording(
-        string[] names, BmTransition transition, IReadOnlyCollection<string> recordedOnTheirOwn)
+        string[] names, BmotionTransition transition, IReadOnlyCollection<string> recordedOnTheirOwn)
     {
         // The engine has already given its verdict; these are the reasons it could have had, named so
         // the caller learns which lever to pull rather than only that a lever exists.
@@ -252,13 +252,13 @@ public static partial class BmotionPropertyCatalog
                          "one call per transition.");
         }
 
-        if (transition is BmInertia)
+        if (transition is BmotionInertia)
         {
             why.Add("inertia has no target until it has decelerated, so its glide is recorded rather than described by a curve");
             remedies.Add("A spring or a tween to a known target plays as a timeline.");
         }
 
-        if (transition is BmSpring { Velocity: not 0 })
+        if (transition is BmotionSpring { Velocity: not 0 })
         {
             why.Add("the spring starts with an initial velocity, which bends its curve by the distance travelled - no one " +
                     "easing describes it");
@@ -266,13 +266,13 @@ public static partial class BmotionPropertyCatalog
                          "inherits its velocity anyway, and is recorded then.");
         }
 
-        if (transition is BmTween { Eases: not null })
+        if (transition is BmotionTween { Eases: not null })
         {
             why.Add("the tween eases each keyframe segment separately");
             remedies.Add("One ease for the whole tween lets it play as a timeline.");
         }
 
-        if (transition is BmTween { Duration: <= 0 })
+        if (transition is BmotionTween { Duration: <= 0 })
         {
             why.Add("the tween has no duration, so what plays is a delayed jump");
             remedies.Add("Give the tween a duration greater than zero.");
@@ -294,17 +294,17 @@ public static partial class BmotionPropertyCatalog
                 remedies.Add("Remove the repeat delay.");
             }
 
-            if (repeat.Type == BmRepeatType.Mirror)
+            if (repeat.Type == BmotionRepeatType.Mirror)
             {
                 why.Add("a mirrored repeat plays its way back with the curve the way out has, which the browser's " +
                         "alternate direction would run backwards instead");
-                remedies.Add("Use BmRepeat.Loop when the way back does not have to retrace the way out.");
+                remedies.Add("Use BmotionRepeat.Loop when the way back does not have to retrace the way out.");
             }
 
-            if (repeat.Type == BmRepeatType.Reverse)
+            if (repeat.Type == BmotionRepeatType.Reverse)
             {
-                why.Add("BmRepeat.Reverse plays forwards once and backwards after that - two different animations");
-                remedies.Add("Use BmRepeat.Loop for a timeline.");
+                why.Add("BmotionRepeat.Reverse plays forwards once and backwards after that - two different animations");
+                remedies.Add("Use BmotionRepeat.Loop for a timeline.");
             }
         }
 
@@ -328,7 +328,7 @@ public static partial class BmotionPropertyCatalog
         return (reason + CostOf(names), [.. remedies]);
     }
 
-    private static (string Reason, string[] Remedies) ExplainFrameLoop(string[] names, BmTransition transition)
+    private static (string Reason, string[] Remedies) ExplainFrameLoop(string[] names, BmotionTransition transition)
     {
         var why = new List<string>();
         var remedies = new List<string>();
@@ -351,11 +351,11 @@ public static partial class BmotionPropertyCatalog
                          "runtime. Read the end state once the animation completes instead.");
         }
 
-        if (transition.Repeat is { IsForever: true, Type: BmRepeatType.Reverse })
+        if (transition.Repeat is { IsForever: true, Type: BmotionRepeatType.Reverse })
         {
-            why.Add("an endless BmRepeat.Reverse plays its first cycle forwards and every one after it backwards, which no " +
+            why.Add("an endless BmotionRepeat.Reverse plays its first cycle forwards and every one after it backwards, which no " +
                     "single repeating recording reproduces");
-            remedies.Add("Use BmRepeat.Mirror, which the browser plays as one recorded cycle there and back on a loop, or give " +
+            remedies.Add("Use BmotionRepeat.Mirror, which the browser plays as one recorded cycle there and back on a loop, or give " +
                          "the Reverse a count.");
         }
 
@@ -371,10 +371,10 @@ public static partial class BmotionPropertyCatalog
         {
             why.Add($"only a recording reproduces it, and it would take {seconds:0.#} seconds to record - past the " +
                     $"{RecordingLimitSeconds:0} seconds the engine records");
-            remedies.Add("Shorten it, or repeat it forever rather than a fixed number of times: an endless BmRepeat.Loop or " +
-                         "BmRepeat.Mirror records one cycle, and the browser repeats it.");
+            remedies.Add("Shorten it, or repeat it forever rather than a fixed number of times: an endless BmotionRepeat.Loop or " +
+                         "BmotionRepeat.Mirror records one cycle, and the browser repeats it.");
         }
-        else if (why.Count == 0 && transition is BmSpring or BmInertia)
+        else if (why.Count == 0 && transition is BmotionSpring or BmotionInertia)
         {
             // Nothing else keeps a spring or an inertia off the browser, so what is left is its length,
             // which falls out of the physics rather than being configured anywhere it could be read.
@@ -389,25 +389,25 @@ public static partial class BmotionPropertyCatalog
               "animates frame by frame; on Blazor Server there is no frame loop, so it becomes an instant state change."
             : "The engine kept this on the C# frame loop, so on Blazor Server it becomes an instant state change. None of " +
               "the reasons the engine has for that apply - a per-frame OnUpdate, an SVG d or points morph, an endless " +
-              "BmRepeat.Reverse, per-property transitions with an endless repeat, a recording past " +
+              "BmotionRepeat.Reverse, per-property transitions with an endless repeat, a recording past " +
               $"{RecordingLimitSeconds:0} seconds - so this combination is worth reporting.";
 
         if (remedies.Count == 0)
         {
             remedies.Add("Leave out what only the frame loop plays - a per-frame OnUpdate, a d or points morph, an endless " +
-                         "BmRepeat.Reverse - and keep a recording under " +
+                         "BmotionRepeat.Reverse - and keep a recording under " +
                          $"{RecordingLimitSeconds:0} seconds; the browser then plays the animation on every runtime.");
         }
 
         return (reason, [.. remedies]);
     }
 
-    private static (string Reason, string[] Remedies) ExplainInstant(BmTransition transition)
+    private static (string Reason, string[] Remedies) ExplainInstant(BmotionTransition transition)
     {
         var reason = "The transition has no length - a tween with no duration, delay or repeat - so the engine sets the " +
                      "values at once, on every runtime alike. Nothing is animated, on Blazor Server or anywhere else.";
 
-        string[] remedies = transition is BmTween { Duration: <= 0 }
+        string[] remedies = transition is BmotionTween { Duration: <= 0 }
             ? ["Give the tween a duration greater than zero for it to animate."]
             : [];
 
@@ -419,15 +419,15 @@ public static partial class BmotionPropertyCatalog
     /// unrolls, with the delays between them, or one cycle of an endless one (the way out and back for
     /// a mirror). Null when the transition is not a tween, whose length falls out of its physics.
     /// </summary>
-    private static double? RecordedSeconds(BmTransition transition)
+    private static double? RecordedSeconds(BmotionTransition transition)
     {
-        if (transition is not BmTween { Duration: > 0 } tween) return null;
+        if (transition is not BmotionTween { Duration: > 0 } tween) return null;
 
         if (tween.Repeat is not { Count: not 0 } repeat) return tween.Duration;
 
         if (repeat.IsForever)
         {
-            return (tween.Duration * (repeat.Type == BmRepeatType.Mirror ? 2 : 1)) + repeat.Delay;
+            return (tween.Duration * (repeat.Type == BmotionRepeatType.Mirror ? 2 : 1)) + repeat.Delay;
         }
 
         return (tween.Duration * (repeat.Count + 1)) + (repeat.Delay * repeat.Count);
@@ -446,7 +446,7 @@ public static partial class BmotionPropertyCatalog
         {
             var hint = name switch
             {
-                "width" or "height" => $"{name} runs layout on every frame, where a scale (with Layout=\"BmLayout.Size\" " +
+                "width" or "height" => $"{name} runs layout on every frame, where a scale (with Layout=\"BmotionLayout.Size\" " +
                                        "when the content must not stretch) moves on the compositor",
                 "top" or "left" or "right" or "bottom" => $"{name} runs layout on every frame, where x/y move the element on " +
                                                           "the compositor",
@@ -533,7 +533,7 @@ public static partial class BmotionPropertyCatalog
         {
             var (target, starts) = ProbeTargetFor(name);
 
-            var observed = await BmotionMotionLab.ObserveAsync(target, new BmTween { Duration = 0.3 }, starts, onWebAssembly: false);
+            var observed = await BmotionMotionLab.ObserveAsync(target, new BmotionTween { Duration = 0.3 }, starts, onWebAssembly: false);
 
             return observed.Browser switch
             {
@@ -558,17 +558,17 @@ public static partial class BmotionPropertyCatalog
     /// probed with the entry its example shows: a custom property, and a CSS property with no
     /// dedicated argument.
     /// </summary>
-    private static (BmProps Target, Dictionary<string, string> Starts) ProbeTargetFor(string name)
+    private static (BmotionProps Target, Dictionary<string, string> Starts) ProbeTargetFor(string name)
     {
         if (name.Equals("cssVars", StringComparison.OrdinalIgnoreCase))
         {
-            return (new BmProps { CssVars = new() { ["--glow"] = "18px" } },
+            return (new BmotionProps { CssVars = new() { ["--glow"] = "18px" } },
                     new Dictionary<string, string>(StringComparer.Ordinal) { ["--glow"] = "0px" });
         }
 
         if (name.Equals("css", StringComparison.OrdinalIgnoreCase))
         {
-            return (new BmProps { Css = new() { ["backdropFilter"] = (BmStringKeyframes)"blur(8px)" } },
+            return (new BmotionProps { Css = new() { ["backdropFilter"] = (BmotionStringKeyframes)"blur(8px)" } },
                     new Dictionary<string, string>(StringComparer.Ordinal) { ["backdropFilter"] = "blur(0px)" });
         }
 
@@ -582,16 +582,16 @@ public static partial class BmotionPropertyCatalog
     /// </summary>
     private static object? SampleValueFor(PropertyInfo property, string name)
     {
-        if (property.PropertyType == typeof(BmKeyframes))
+        if (property.PropertyType == typeof(BmotionKeyframes))
         {
             // Scale and opacity rest at 1, so animating them to 0 is a real change of state; for
             // everything else any non-zero target moves the element.
-            return (BmKeyframes)(name.StartsWith("scale", StringComparison.OrdinalIgnoreCase) || name is "opacity" ? 0d : 40d);
+            return (BmotionKeyframes)(name.StartsWith("scale", StringComparison.OrdinalIgnoreCase) || name is "opacity" ? 0d : 40d);
         }
 
-        if (property.PropertyType == typeof(BmStringKeyframes))
+        if (property.PropertyType == typeof(BmotionStringKeyframes))
         {
-            return (BmStringKeyframes)(_facts.GetValueOrDefault(name)?.Category switch
+            return (BmotionStringKeyframes)(_facts.GetValueOrDefault(name)?.Category switch
             {
                 "SVG" when name is "d" => "M 0 0 L 100 0",
                 "Motion path" when name is "offsetPath" => "path('M 0 0 L 100 0')",
@@ -629,11 +629,11 @@ public static partial class BmotionPropertyCatalog
     {
         var underlying = Nullable.GetUnderlyingType(type) ?? type;
 
-        if (underlying == typeof(BmKeyframes)) return "BmKeyframes (number or number[])";
-        if (underlying == typeof(BmStringKeyframes)) return "BmStringKeyframes (CSS value or CSS value[])";
+        if (underlying == typeof(BmotionKeyframes)) return "BmotionKeyframes (number or number[])";
+        if (underlying == typeof(BmotionStringKeyframes)) return "BmotionStringKeyframes (CSS value or CSS value[])";
         if (underlying == typeof(double)) return "double";
         if (underlying == typeof(Dictionary<string, string>)) return "Dictionary<string, string>";
-        if (underlying == typeof(Dictionary<string, BmStringKeyframes>)) return "Dictionary<string, BmStringKeyframes>";
+        if (underlying == typeof(Dictionary<string, BmotionStringKeyframes>)) return "Dictionary<string, BmotionStringKeyframes>";
 
         return underlying.Name;
     }

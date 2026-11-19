@@ -8,15 +8,15 @@ No server round trips. No base64. No JavaScript image library.
 ```csharp
 var result = await processor.ProcessAsync(
     uploadedFile,
-    ImagePipeline.Create()
+    BmageImagePipeline.Create()
         .AutoOrient()
         .Cover(512, 512)
         .Sharpen(0.3f),
-    new ImageExportOptions
+    new BmageImageExportOptions
     {
-        Format      = ImageFormat.WebP,
+        Format      = BmageImageFormat.WebP,
         Quality     = 0.82,
-        Metadata    = MetadataPolicy.StripSensitive,
+        Metadata    = BmageMetadataPolicy.StripSensitive,
         MaxFileSize = 120 * 1024,
     });
 ```
@@ -44,6 +44,7 @@ Bmage's documentation website lives in [`Demo`](https://github.com/bitfoundation
 - [What is in the box](#what-is-in-the-box)
 - [Performance](#performance)
 - [Where it runs](#where-it-runs)
+- [Upgrading](#upgrading)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
 - [Tests](#tests)
 - [Documentation](#documentation)
@@ -134,8 +135,8 @@ faster compiled ahead of time:
 ## The simple path
 
 ```razor
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
 
 <InputFile OnChange="OnChange" accept="image/*" />
 
@@ -143,13 +144,13 @@ faster compiled ahead of time:
     async Task OnChange(InputFileChangeEventArgs e)
     {
         using var image = await Loader.LoadAsync(e.File);
-        using var thumb = await ImagePipeline.Create()
+        using var thumb = await BmageImagePipeline.Create()
             .AutoOrient()
             .MaxSize(400, 400)
             .ExecuteAsync(image);
 
         await Exporter.DownloadAsync(thumb, "thumbnail",
-            new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.85 });
+            new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.85 });
     }
 }
 ```
@@ -157,7 +158,7 @@ faster compiled ahead of time:
 ## The full editor
 
 ```razor
-@using Bit.Bmage.Editor.Components
+@using Bit.Bmage
 
 <BmageEditor @ref="editor" />
 <button @onclick="() => editor.DownloadAsync(&quot;edited&quot;)">Save</button>
@@ -172,7 +173,7 @@ Every part of its UI can be replaced while keeping the engine:
 ```razor
 <BmageEditor Strings="german" Direction="rtl" Class="bmg-theme-dark">
     <Toolbar Context="editor">
-        <button @onclick="() => editor.SetTool(EditorToolKind.Crop)">Crop</button>
+        <button @onclick="() => editor.SetTool(BmageEditorToolKind.Crop)">Crop</button>
         <button disabled="@(!editor.CanUndo)" @onclick="editor.Undo">Undo</button>
     </Toolbar>
 </BmageEditor>
@@ -243,6 +244,21 @@ a Blazor Hybrid app for Android, iOS, macOS and Windows. Each host is also a min
 platform needs. [Lazy](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Samples/Lazy/)
 stands apart: a Blazor Web App of its own whose browser half downloads `Bit.Bmage.wasm` and `Bit.Bmage.Blazor.wasm`
 only when its editor opens (see [lazy loading](docs/getting-started.md#lazy-loading-bmage-on-webassembly)).
+
+## Upgrading
+
+- **Every Bmage type is in the `Bit.Bmage` namespace.** The types of `Bit.Bmage.Codecs.*`, `Bit.Bmage.Drawing`,
+  `Bit.Bmage.Editing`, `Bit.Bmage.Editor.*`, `Bit.Bmage.Geometry`, `Bit.Bmage.Input`, `Bit.Bmage.Layers`,
+  `Bit.Bmage.Metadata`, `Bit.Bmage.Operations.*`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Text` and the library's other
+  namespaces moved into it, those of `Bit.Bmage.Bink` and `Bit.Bmage.BbScanner` too. Replace every import of them
+  with `using Bit.Bmage;` / `@using Bit.Bmage`; the old ones fail with CS0246.
+- **Types whose names .NET MAUI or Windows Forms also use carry the `Bmage` prefix**, so that `using Bit.Bmage;`
+  next to a Blazor Hybrid app's implicit usings never makes a name ambiguous (CS0104): `ImageSource`, `ImageFormat`,
+  `BlendMode`, `TextAlignment`, `LineCap`, `LineJoin`, `PathBuilder`, `SolidPaint`, `LinearGradientPaint`,
+  `RadialGradientPaint`, `FontFile`, `ResizeMode` and `Orientation` are now `BmageImageSource`, `BmageImageFormat`,
+  `BmageBlendMode`, `BmageTextAlignment`, `BmageLineCap`, `BmageLineJoin`, `BmagePathBuilder`, `BmageSolidPaint`,
+  `BmageLinearGradientPaint`, `BmageRadialGradientPaint`, `BmageFontFile`, `BmageResizeMode` and `BmageOrientation`.
+  Members keep their names (`BmageLayer.BlendMode`, `BmageImageMetadata.Orientation`, `BmageImageExportOptions.Format`, ...).
 
 ## MCP server (for AI agents)
 

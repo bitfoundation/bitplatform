@@ -1,8 +1,7 @@
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
-using Bit.BlazeDb.Storage;
 
-namespace Bit.BlazeDb.Browser;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Turns the browser's own refusal of a write for lack of space into <see cref="BlazeDbStorageQuotaExceededException"/>.

@@ -20,7 +20,7 @@
     <p>
         <code>WhileHover</code>, <code>WhileTap</code> and <code>WhileFocus</code> are overlays: they play while the
         gesture lasts and revert when it ends. This button takes the first two from presets
-        (<code>BmPresets.HoverLift() + BmPresets.Press()</code>). <kbd>Tab</kbd> to it for the focus ring, which follows
+        (<code>BmotionPresets.HoverLift() + BmotionPresets.Press()</code>). <kbd>Tab</kbd> to it for the focus ring, which follows
         keyboard focus only, and <kbd>Enter</kbd> or <kbd>Space</kbd> presses it as a pointer would.
     </p>
 
@@ -38,7 +38,7 @@
 <section>
     <h2>A drag kept inside its box</h2>
     <p>
-        <code>BmDragConstraints.Parent()</code> measures the box at each drag start, so it stays right however the page
+        <code>BmotionDragConstraints.Parent()</code> measures the box at each drag start, so it stays right however the page
         reflows. Past an edge <code>DragElastic</code> lets the puck stretch a little, and a release springs it back.
         Throw it: the momentum carries it on and it bounces off the wall it reaches. The count is how many
         <code>OnDrag</code> calls reached .NET during the last drag.
@@ -72,7 +72,7 @@
             {
                 <span class="tick" style="left: @(ThumbSize / 2 + i * StopSpacing)px"></span>
             }
-            <Bmotion Drag="BmDrag.X"
+            <Bmotion Drag="BmotionDrag.X"
                      DragConstraints="InParent"
                      DragElastic="0"
                      DragTransition="_snap"

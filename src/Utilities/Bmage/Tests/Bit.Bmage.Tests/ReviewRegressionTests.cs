@@ -1,21 +1,6 @@
 ﻿using System.Buffers.Binary;
 using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Analysis;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Codecs.Bmp;
-using Bit.Bmage.Codecs.Jpeg;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
-using Bit.Bmage.Text;
 
 namespace Bit.Bmage.Tests;
 
@@ -28,9 +13,9 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void RoundJoinsLeaveNoHoleWhereTheyOverlapOneSegment()
     {
-        using var canvas = ImageCanvas.Create(100, 100);
-        canvas.DrawPolyline([new Vector2(10, 50), new Vector2(50, 50), new Vector2(50, 90)], Rgba32.Black,
-            new StrokeStyle { Width = 20, Join = LineJoin.Round });
+        using var canvas = BmageImageCanvas.Create(100, 100);
+        canvas.DrawPolyline([new Vector2(10, 50), new Vector2(50, 50), new Vector2(50, 90)], BmageRgba32.Black,
+            new BmageStrokeStyle { Width = 20, Join = BmageLineJoin.Round });
         // Inside the second segment and the join circle, but not the first segment.
         Assert.AreEqual(255, canvas.Buffer[52, 52].A);
     }
@@ -38,20 +23,20 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void AnOpenPolylineThatReturnsToItsStartDrawsItsLastSegment()
     {
-        using var canvas = ImageCanvas.Create(100, 100);
-        canvas.DrawPolyline([new Vector2(10, 10), new Vector2(90, 10), new Vector2(90, 90), new Vector2(10, 10)], Rgba32.Black,
-            new StrokeStyle { Width = 4 });
+        using var canvas = BmageImageCanvas.Create(100, 100);
+        canvas.DrawPolyline([new Vector2(10, 10), new Vector2(90, 10), new Vector2(90, 90), new Vector2(10, 10)], BmageRgba32.Black,
+            new BmageStrokeStyle { Width = 4 });
         Assert.IsTrue(canvas.Buffer[50, 50].A > 0, "the diagonal back to the start was not drawn");
     }
 
     [TestMethod]
     public void ANegativeDashOffsetShiftsThePattern()
     {
-        static ImageBuffer Draw(float offset)
+        static BmageImageBuffer Draw(float offset)
         {
-            var canvas = ImageCanvas.Create(100, 10);
-            canvas.DrawLine(new Vector2(0, 5), new Vector2(100, 5), Rgba32.Black,
-                new StrokeStyle { Width = 4, Cap = LineCap.Butt, DashPattern = [10f, 10f], DashOffset = offset });
+            var canvas = BmageImageCanvas.Create(100, 10);
+            canvas.DrawLine(new Vector2(0, 5), new Vector2(100, 5), BmageRgba32.Black,
+                new BmageStrokeStyle { Width = 4, Cap = BmageLineCap.Butt, DashPattern = [10f, 10f], DashOffset = offset });
             return canvas.Snapshot();
         }
         using var zero = Draw(0);
@@ -62,20 +47,20 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void NonFiniteCoordinatesDoNotCrashOrBlankTheRestOfThePath()
     {
-        using var canvas = ImageCanvas.Create(100, 100);
-        var path = new PathBuilder()
+        using var canvas = BmageImageCanvas.Create(100, 100);
+        var path = new BmagePathBuilder()
             .AddRectangle(new RectangleF(10, 10, 50, 50))
             .AddPolygon([new Vector2(0, 0), new Vector2(float.NaN, 20), new Vector2(30, float.NaN)])
             .Build();
-        canvas.FillPath(path, Rgba32.Black);
+        canvas.FillPath(path, BmageRgba32.Black);
         Assert.AreEqual(255, canvas.Buffer[30, 30].A);
     }
 
     [TestMethod]
     public void HugeCoordinatesStillPaintTheVisiblePart()
     {
-        using var canvas = ImageCanvas.Create(100, 100);
-        canvas.FillPolygon([new Vector2(0, 0), new Vector2(100, 0), new Vector2(100, 3e9f), new Vector2(0, 3e9f)], Rgba32.Black);
+        using var canvas = BmageImageCanvas.Create(100, 100);
+        canvas.FillPolygon([new Vector2(0, 0), new Vector2(100, 0), new Vector2(100, 3e9f), new Vector2(0, 3e9f)], BmageRgba32.Black);
         Assert.AreEqual(255, canvas.Buffer[50, 50].A);
     }
 
@@ -84,7 +69,7 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void RotatedLinesAreHitWhereTheyAreDrawn()
     {
-        var line = new LineAnnotation { Start = new Vector2(0, 50), End = new Vector2(100, 50), Rotation = 90 };
+        var line = new BmageLineAnnotation { Start = new Vector2(0, 50), End = new Vector2(100, 50), Rotation = 90 };
         Assert.IsTrue(line.HitTest(new Vector2(50, 5)));
         Assert.IsFalse(line.HitTest(new Vector2(10, 50)));
     }
@@ -94,15 +79,15 @@ public sealed class ReviewRegressionTests
     {
         using var image = TestImages.Gradient(200, 200);
         using var original = image.Clone();
-        var redaction = new RedactionAnnotation
+        var redaction = new BmageRedactionAnnotation
         {
             Rectangle = new RectangleF(50, 90, 100, 20),
-            Mode = RedactionMode.Pixelate,
+            Mode = BmageRedactionMode.Pixelate,
             Strength = 8,
             Rotation = 90,
         };
-        using var canvas = ImageCanvas.FromBuffer(image);
-        redaction.RenderWithTransform(canvas, new AnnotationRenderContext());
+        using var canvas = BmageImageCanvas.FromBuffer(image);
+        redaction.RenderWithTransform(canvas, new BmageAnnotationRenderContext());
 
         // Rotated a quarter turn the strip runs vertically through the centre: the top of it must have changed, and a
         // point on the unrotated strip's far end, now outside it, must not.
@@ -116,9 +101,9 @@ public sealed class ReviewRegressionTests
     public void MergingACropWithANegativeOriginKeepsTheOutputSize()
     {
         using var source = TestImages.Gradient(200, 200);
-        var pipeline = ImagePipeline.Create().Crop(-10, -10, 100, 100).Crop(0, 0, 50, 50);
-        using var plain = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = false });
-        using var optimised = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true });
+        var pipeline = BmageImagePipeline.Create().Crop(-10, -10, 100, 100).Crop(0, 0, 50, 50);
+        using var plain = pipeline.Execute(source, new BmagePipelineExecutionOptions { Optimize = false });
+        using var optimised = pipeline.Execute(source, new BmagePipelineExecutionOptions { Optimize = true });
         Assert.AreEqual(plain.Size, optimised.Size);
         Assert.IsTrue(plain.Bytes.SequenceEqual(optimised.Bytes));
     }
@@ -127,10 +112,10 @@ public sealed class ReviewRegressionTests
     public void ResizeCropFusionIsNotPlannedPastAutoOrient()
     {
         using var source = TestImages.Gradient(400, 300);
-        source.Metadata = new ImageMetadata(ExifData.FromOrientation(Orientation.Rotate90));
-        var pipeline = ImagePipeline.Create().AutoOrient().Resize(100, 100, ResizeMode.Fit).Crop(0, 0, 50, 100);
-        using var plain = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = false });
-        using var optimised = pipeline.Execute(source, new PipelineExecutionOptions { Optimize = true });
+        source.Metadata = new BmageImageMetadata(BmageExifData.FromOrientation(BmageOrientation.Rotate90));
+        var pipeline = BmageImagePipeline.Create().AutoOrient().Resize(100, 100, BmageResizeMode.Fit).Crop(0, 0, 50, 100);
+        using var plain = pipeline.Execute(source, new BmagePipelineExecutionOptions { Optimize = false });
+        using var optimised = pipeline.Execute(source, new BmagePipelineExecutionOptions { Optimize = true });
         Assert.AreEqual(new Size(50, 100), plain.Size);
         Assert.AreEqual(plain.Size, optimised.Size);
     }
@@ -139,16 +124,16 @@ public sealed class ReviewRegressionTests
     public void AQuarterTurnWithoutExpandingKeepsTheCanvasSize()
     {
         using var source = TestImages.Gradient(400, 300);
-        using var rotated = new RotateOperation(90, expandCanvas: false).Apply(source, OperationContext.Default);
+        using var rotated = new BmageRotateOperation(90, expandCanvas: false).Apply(source, BmageOperationContext.Default);
         Assert.AreEqual(source.Size, rotated.Size);
     }
 
     [TestMethod]
     public void TheZerothPercentileIsTheDarkestLevelPresent()
     {
-        using var image = ImageBuffer.Create(120, 1);
-        for (var x = 0; x < 120; x++) image[x, 0] = new Rgba32((byte)(60 + x), (byte)(60 + x), (byte)(60 + x));
-        var stats = ImageStatistics.Measure(image, maxSamples: 0);
+        using var image = BmageImageBuffer.Create(120, 1);
+        for (var x = 0; x < 120; x++) image[x, 0] = new BmageRgba32((byte)(60 + x), (byte)(60 + x), (byte)(60 + x));
+        var stats = BmageImageStatistics.Measure(image, maxSamples: 0);
         Assert.AreEqual(stats.Red.Minimum, stats.Red.GetPercentile(0));
     }
 
@@ -157,14 +142,14 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void UndoAfterADragReturnsToTheStateBeforeIt()
     {
-        using var session = new ImageEditSession(TestImages.Gradient(64, 64));
-        session.AddOperation(new CropOperation(0, 0, 32, 32), "Crop");
+        using var session = new BmageImageEditSession(TestImages.Gradient(64, 64));
+        session.AddOperation(new BmageCropOperation(0, 0, 32, 32), "Crop");
         var beforeDrag = session.Document;
 
         for (var i = 1; i <= 3; i++)
         {
             var amount = i / 10f;
-            session.ApplyTransient(d => d.AddOperation(new BrightnessAdjustment(amount)));
+            session.ApplyTransient(d => d.AddOperation(new BmageBrightnessAdjustment(amount)));
         }
         session.Commit("Brightness");
 
@@ -177,10 +162,10 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void ApplyingTheFinalValueOfADragAddsNoSecondEntry()
     {
-        using var session = new ImageEditSession(TestImages.Gradient(64, 64));
-        session.ApplyTransient(d => d.AddOperation(new BrightnessAdjustment(0.1f)));
-        session.ApplyTransient(d => d.WithPipeline(d.Pipeline.Replace(0, new BrightnessAdjustment(0.2f))));
-        session.Apply(d => d.WithPipeline(d.Pipeline.Replace(0, new BrightnessAdjustment(0.2f))), "Brightness");
+        using var session = new BmageImageEditSession(TestImages.Gradient(64, 64));
+        session.ApplyTransient(d => d.AddOperation(new BmageBrightnessAdjustment(0.1f)));
+        session.ApplyTransient(d => d.WithPipeline(d.Pipeline.Replace(0, new BmageBrightnessAdjustment(0.2f))));
+        session.Apply(d => d.WithPipeline(d.Pipeline.Replace(0, new BmageBrightnessAdjustment(0.2f))), "Brightness");
 
         Assert.AreEqual(2, session.History.Entries.Count);
         Assert.AreEqual("Brightness", session.History.CurrentEntry.Label);
@@ -189,8 +174,8 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void CommittingWithoutADragAddsNothing()
     {
-        using var session = new ImageEditSession(TestImages.Gradient(64, 64));
-        session.AddOperation(new BrightnessAdjustment(0.2f));
+        using var session = new BmageImageEditSession(TestImages.Gradient(64, 64));
+        session.AddOperation(new BmageBrightnessAdjustment(0.2f));
         session.Undo();
         session.Commit("Select");
         Assert.IsTrue(session.History.CanRedo, "a click that changed nothing discarded the redo trail");
@@ -199,9 +184,9 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void AHistoryDepthOfOneStillKeepsTheLatestEdit()
     {
-        var original = ImageDocument.Create(new Size(10, 10));
-        var history = new EditHistory(original, maxDepth: 1);
-        var edited = original.AddOperation(new BrightnessAdjustment(0.5f));
+        var original = BmageImageDocument.Create(new Size(10, 10));
+        var history = new BmageEditHistory(original, maxDepth: 1);
+        var edited = original.AddOperation(new BmageBrightnessAdjustment(0.5f));
         history.Push(edited, "edit");
         Assert.AreSame(edited, history.Current);
     }
@@ -209,9 +194,9 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public async Task APreviewRenderedBeforeAnEditIsStillStale()
     {
-        using var session = new ImageEditSession(TestImages.Gradient(64, 64));
+        using var session = new BmageImageEditSession(TestImages.Gradient(64, 64));
         var render = session.RenderPreviewAsync();
-        session.AddOperation(new BrightnessAdjustment(0.4f));
+        session.AddOperation(new BmageBrightnessAdjustment(0.4f));
         await render;
         Assert.IsTrue(session.IsPreviewStale);
     }
@@ -219,8 +204,8 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public async Task DisposingDuringARenderDoesNotFaultIt()
     {
-        var session = new ImageEditSession(TestImages.Gradient(512, 512));
-        session.AddOperation(new BlurFilter(8));
+        var session = new BmageImageEditSession(TestImages.Gradient(512, 512));
+        session.AddOperation(new BmageBlurFilter(8));
         var render = session.RenderPreviewAsync().AsTask();
         session.Dispose();
         var error = await Capture.ExceptionAsync(() => render);
@@ -228,7 +213,7 @@ public sealed class ReviewRegressionTests
     }
 
     /// <summary>Holds a render at its first row until released, and says when it got there.</summary>
-    private sealed class GateOperation : PointOperation
+    private sealed class GateOperation : BmagePointOperation
     {
         public ManualResetEventSlim Reached { get; } = new();
 
@@ -247,7 +232,7 @@ public sealed class ReviewRegressionTests
     public async Task DisposingDuringAnExportKeepsTheOriginalUntilTheExportIsDone()
     {
         var gate = new GateOperation();
-        var session = new ImageEditSession(TestImages.Gradient(64, 64));
+        var session = new BmageImageEditSession(TestImages.Gradient(64, 64));
         session.AddOperation(gate);
         var original = session.Original;
         var export = Task.Run(async () => await session.RenderFullAsync());
@@ -267,9 +252,9 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void JpegDecodesNeutralGreyWithoutAGreenCast()
     {
-        using var source = ImageBuffer.Create(32, 32, new Rgba32(100, 100, 100));
-        var encoded = JpegEncoder.Encode(source, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 1.0 });
-        using var decoded = JpegDecoder.Decode(encoded.Data);
+        using var source = BmageImageBuffer.Create(32, 32, new BmageRgba32(100, 100, 100));
+        var encoded = BmageJpegEncoder.Encode(source, new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 1.0 });
+        using var decoded = BmageJpegDecoder.Decode(encoded.Data);
         var pixel = decoded[16, 16];
         Assert.AreEqual(pixel.R, pixel.G);
         Assert.AreEqual(pixel.B, pixel.G);
@@ -285,7 +270,7 @@ public sealed class ReviewRegressionTests
         BinaryPrimitives.WriteInt32LittleEndian(bmp.AsSpan(18), 1);
         BinaryPrimitives.WriteInt32LittleEndian(bmp.AsSpan(22), int.MinValue);
         BinaryPrimitives.WriteUInt16LittleEndian(bmp.AsSpan(28), 24);
-        Assert.ThrowsExactly<ImageDecodeException>(() => BmpDecoder.Decode(bmp));
+        Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageBmpDecoder.Decode(bmp));
     }
 
     [TestMethod]
@@ -294,24 +279,24 @@ public sealed class ReviewRegressionTests
         var bmp = new byte[64];
         bmp[0] = (byte)'B'; bmp[1] = (byte)'M';
         BinaryPrimitives.WriteInt32LittleEndian(bmp.AsSpan(14), int.MaxValue - 5);
-        Assert.ThrowsExactly<ImageDecodeException>(() => BmpDecoder.Decode(bmp));
+        Assert.ThrowsExactly<BmageImageDecodeException>(() => BmageBmpDecoder.Decode(bmp));
     }
 
     [TestMethod]
     public void PngChunkLengthsThatWouldOverflowAreIgnored()
     {
         using var source = TestImages.Gradient(8, 8);
-        var png = Codecs.Png.PngEncoder.Encode(source).Data.ToArray();
+        var png = BmagePngEncoder.Encode(source).Data.ToArray();
         // Corrupt the IHDR length to just below int.MaxValue.
         BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(8), 0x7FFFFFF3);
-        var error = Capture.Exception(() => Codecs.Png.PngDecoder.Decode(png));
-        Assert.IsTrue(error is null or ImageException, $"unexpected {error?.GetType().Name}");
+        var error = Capture.Exception(() => BmagePngDecoder.Decode(png));
+        Assert.IsTrue(error is null or BmageImageException, $"unexpected {error?.GetType().Name}");
     }
 
     [TestMethod]
     public void CloningIgnoresTheDefaultLimitsTheSourceWasAllowedPast()
     {
-        using var wide = ImageBuffer.Create(40_000, 2, limits: ImageLimits.Unrestricted);
+        using var wide = BmageImageBuffer.Create(40_000, 2, limits: BmageImageLimits.Unrestricted);
         using var copy = wide.Clone();
         Assert.AreEqual(wide.Size, copy.Size);
     }
@@ -319,8 +304,8 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void JpegRefusesDimensionsItCannotStore()
     {
-        using var wide = ImageBuffer.Create(70_000, 1, limits: ImageLimits.Unrestricted);
-        Assert.ThrowsExactly<ImageEncodeException>(() => JpegEncoder.Encode(wide, new ImageExportOptions { Format = ImageFormat.Jpeg }));
+        using var wide = BmageImageBuffer.Create(70_000, 1, limits: BmageImageLimits.Unrestricted);
+        Assert.ThrowsExactly<BmageImageEncodeException>(() => BmageJpegEncoder.Encode(wide, new BmageImageExportOptions { Format = BmageImageFormat.Jpeg }));
     }
 
     // ---------------------------------------------------------------- text
@@ -328,9 +313,9 @@ public sealed class ReviewRegressionTests
     [TestMethod]
     public void ALongWordAfterTheFirstIsStillBrokenToFit()
     {
-        var font = FontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
-        var rasterizer = new FontTextRasterizer().Register("Test", font);
-        var metrics = rasterizer.Measure("AB AAAAAAAAAAAA", new TextStyle { FontFamily = "Test", FontSize = 10, MaxWidth = 40 });
+        var font = BmageFontFile.Load(File.ReadAllBytes("Assets/BmageTest.ttf"));
+        var rasterizer = new BmageFontTextRasterizer().Register("Test", font);
+        var metrics = rasterizer.Measure("AB AAAAAAAAAAAA", new BmageTextStyle { FontFamily = "Test", FontSize = 10, MaxWidth = 40 });
         Assert.IsTrue(metrics.Width <= 40.5f, $"a line is {metrics.Width}px wide, past the 40px limit");
     }
 }

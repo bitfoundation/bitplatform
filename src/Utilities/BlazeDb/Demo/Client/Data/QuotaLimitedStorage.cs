@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Demo.Client.Data;
+﻿namespace Bit.BlazeDb.Demo.Client.Data;
 
 /// <summary>
 /// In-memory storage with an allowance, reported and enforced the way a browser backend's origin quota

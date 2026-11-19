@@ -1,18 +1,5 @@
 ﻿namespace Bit.Bheadless;
 
-/// <summary>How items of a <see cref="BitBhTree{TValue}"/> can be selected.</summary>
-public enum BitBhTreeSelectionMode
-{
-    /// <summary>No selection; items can only be focused and activated.</summary>
-    None,
-
-    /// <summary>One selected item (<c>aria-selected</c>).</summary>
-    Single,
-
-    /// <summary>Many selected items (<c>aria-multiselectable</c>); Ctrl / Shift extend the selection.</summary>
-    Multiple,
-}
-
 /// <summary>
 /// The state of a <see cref="BitBhTree{TValue}"/>, cascaded (fixed) to its items:
 /// registered items and their hierarchy, expansion, selection and focus.
@@ -108,39 +95,4 @@ public sealed class BitBhTreeContext<TValue>
         var checkedCount = leaves.Count(l => IsSelected(l.Value));
         return checkedCount == 0 ? false : checkedCount == leaves.Count ? true : null;
     }
-}
-
-/// <summary>Render-fragment context exposed by <see cref="BitBhTreeItem{TValue}"/>.</summary>
-/// <typeparam name="TValue">The item value type.</typeparam>
-public sealed record BitBhTreeItemRenderContext<TValue>
-{
-    /// <summary>The item's value.</summary>
-    public required TValue Value { get; init; }
-
-    /// <summary>Depth, starting at 1.</summary>
-    public required int Level { get; init; }
-
-    /// <summary>Whether the item has (or may lazily load) children.</summary>
-    public required bool IsExpandable { get; init; }
-
-    /// <summary>Whether the item is expanded.</summary>
-    public required bool IsExpanded { get; init; }
-
-    /// <summary>Whether the item is selected.</summary>
-    public required bool IsSelected { get; init; }
-
-    /// <summary>Checkbox state: true, false or null (mixed). Only meaningful with checkboxes.</summary>
-    public required bool? Checked { get; init; }
-
-    /// <summary>Whether the item has keyboard focus (tab stop).</summary>
-    public required bool IsFocused { get; init; }
-
-    /// <summary>Whether the item is disabled.</summary>
-    public required bool Disabled { get; init; }
-
-    /// <summary>Whether children are being loaded.</summary>
-    public required bool IsLoading { get; init; }
-
-    /// <summary>Toggles expansion.</summary>
-    public required Func<Task> ToggleExpanded { get; init; }
 }

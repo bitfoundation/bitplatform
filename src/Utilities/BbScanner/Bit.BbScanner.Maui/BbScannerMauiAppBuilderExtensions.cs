@@ -6,7 +6,7 @@ namespace Bit.BbScanner;
 public static class BbScannerMauiAppBuilderExtensions
 {
     /// <summary>
-    /// Registers the device's camera as the scanners' <see cref="IBbCameraSource"/>, and the preview that draws it in a
+    /// Registers the device's camera as the scanners' <see cref="IBbScannerCameraSource"/>, and the preview that draws it in a
     /// <see cref="BbScannerHost"/>. Wrap the app's BlazorWebView in a BbScannerHost, and declare the camera permission on
     /// each platform: <c>android.permission.CAMERA</c> on Android, <c>NSCameraUsageDescription</c> on iOS and Mac
     /// Catalyst (and the <c>com.apple.security.device.camera</c> entitlement in a sandboxed Mac app), and the
@@ -18,8 +18,8 @@ public static class BbScannerMauiAppBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<BbCameraPreview, BbCameraPreviewHandler>());
-        builder.Services.AddSingleton<IBbCameraSource, BbNativeCameraSource>();
+        builder.ConfigureMauiHandlers(handlers => handlers.AddHandler<BbScannerCameraPreview, BbScannerCameraPreviewHandler>());
+        builder.Services.AddSingleton<IBbScannerCameraSource, BbScannerNativeCameraSource>();
         return builder;
     }
 }

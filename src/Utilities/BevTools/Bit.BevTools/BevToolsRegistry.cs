@@ -9,14 +9,14 @@ namespace Bit.BevTools;
 /// </summary>
 public sealed class BevToolsRegistry
 {
-    private readonly Lazy<BevServiceGraph?> _serviceGraph;
+    private readonly Lazy<BevToolsServiceGraph?> _serviceGraph;
 
-    internal BevToolsRegistry(BitBevToolsOptions options, bool isEnabled, string enabledReason, IServiceCollection? services)
+    internal BevToolsRegistry(BevToolsOptions options, bool isEnabled, string enabledReason, IServiceCollection? services)
         : this(options, isEnabled, enabledReason, CreateGraph(services))
     {
     }
 
-    internal BevToolsRegistry(BitBevToolsOptions options, bool isEnabled, string enabledReason, Lazy<BevServiceGraph?> serviceGraph)
+    internal BevToolsRegistry(BevToolsOptions options, bool isEnabled, string enabledReason, Lazy<BevToolsServiceGraph?> serviceGraph)
     {
         Options = options;
         IsEnabled = isEnabled;
@@ -32,7 +32,7 @@ public sealed class BevToolsRegistry
             }
             catch (Exception ex)
             {
-                ExtensionErrors.Add(extension.Name + ": " + BevRedactor.RedactText(ex.Message));
+                ExtensionErrors.Add(extension.Name + ": " + BevToolsRedactor.RedactText(ex.Message));
             }
         }
 
@@ -46,12 +46,12 @@ public sealed class BevToolsRegistry
 
         if (isEnabled)
         {
-            ActivityObserver.EnsureStarted();
-            BevUnobservedTasks.EnsureSubscribed();
+            BevToolsActivityObserver.EnsureStarted();
+            BevToolsUnobservedTasks.EnsureSubscribed();
         }
     }
 
-    public BitBevToolsOptions Options { get; }
+    public BevToolsOptions Options { get; }
 
     public bool IsEnabled { get; }
 
@@ -62,11 +62,11 @@ public sealed class BevToolsRegistry
 
     public IReadOnlyList<BevToolsPanelDescriptor> Panels { get; }
 
-    public IReadOnlyList<IBevDiagnosticRule> Rules { get; }
+    public IReadOnlyList<IBevToolsDiagnosticRule> Rules { get; }
 
     public IReadOnlyList<IBevToolsCommand> Commands { get; }
 
-    public IReadOnlyList<Func<IServiceProvider, IBevStateProvider>> StateProviderFactories { get; }
+    public IReadOnlyList<Func<IServiceProvider, IBevToolsStateProvider>> StateProviderFactories { get; }
 
     public IReadOnlyDictionary<Type, BevToolsValueFormatter> Formatters { get; }
 
@@ -77,21 +77,21 @@ public sealed class BevToolsRegistry
     public List<string> ExtensionErrors { get; } = [];
 
     /// <summary>Snapshot of the DI registrations captured at <c>AddBitBevToolsServices</c> time (built lazily on first use).</summary>
-    public BevServiceGraph? ServiceGraph => _serviceGraph.Value;
+    public BevToolsServiceGraph? ServiceGraph => _serviceGraph.Value;
 
     /// <summary>Built on first use, once: it analyzes every constructor in the collection.</summary>
-    internal static Lazy<BevServiceGraph?> CreateGraph(IServiceCollection? services) =>
-        new(() => services is null ? null : BevServiceGraph.Build(services), LazyThreadSafetyMode.ExecutionAndPublication);
+    internal static Lazy<BevToolsServiceGraph?> CreateGraph(IServiceCollection? services) =>
+        new(() => services is null ? null : BevToolsServiceGraph.Build(services), LazyThreadSafetyMode.ExecutionAndPublication);
 
     private sealed class ExtensionBuilder : IBevToolsExtensionBuilder
     {
         public List<BevToolsPanelDescriptor> Panels { get; } = [];
 
-        public List<IBevDiagnosticRule> Rules { get; } = [];
+        public List<IBevToolsDiagnosticRule> Rules { get; } = [];
 
         public List<IBevToolsCommand> Commands { get; } = [];
 
-        public List<Func<IServiceProvider, IBevStateProvider>> StateProviderFactories { get; } = [];
+        public List<Func<IServiceProvider, IBevToolsStateProvider>> StateProviderFactories { get; } = [];
 
         public Dictionary<Type, BevToolsValueFormatter> Formatters { get; } = [];
 
@@ -110,7 +110,7 @@ public sealed class BevToolsRegistry
             return this;
         }
 
-        public IBevToolsExtensionBuilder AddDiagnosticRule(IBevDiagnosticRule rule)
+        public IBevToolsExtensionBuilder AddDiagnosticRule(IBevToolsDiagnosticRule rule)
         {
             ArgumentNullException.ThrowIfNull(rule);
             Rules.Add(rule);
@@ -124,7 +124,7 @@ public sealed class BevToolsRegistry
             return this;
         }
 
-        public IBevToolsExtensionBuilder AddStateProvider(Func<IServiceProvider, IBevStateProvider> factory)
+        public IBevToolsExtensionBuilder AddStateProvider(Func<IServiceProvider, IBevToolsStateProvider> factory)
         {
             ArgumentNullException.ThrowIfNull(factory);
             StateProviderFactories.Add(factory);

@@ -68,7 +68,7 @@ public partial class BitAiChatMessage : BitAiComponentBase
     /// <br />
     /// The default value is <strong>true</strong>.
     /// </summary>
-    [Parameter] public bool IsLatest { get; set; } = true;
+    [Parameter] public bool Latest { get; set; } = true;
 
     /// <summary>
     /// The message to render.
@@ -141,7 +141,7 @@ public partial class BitAiChatMessage : BitAiComponentBase
 
         // A user message offers its edit, and the newest reply its follow-ups, only while the session is free, so they hear
         // the session start and end its turns.
-        var session = Message.Role.IsUser || (Message.Role.IsAssistant && IsLatest) ? Session : null;
+        var session = Message.Role.IsUser || (Message.Role.IsAssistant && Latest) ? Session : null;
 
         if (ReferenceEquals(_subscribedSession, session) is false)
         {
@@ -179,7 +179,7 @@ public partial class BitAiChatMessage : BitAiComponentBase
     // The follow-ups of the newest reply, once it has finished and while no turn is in flight - a transport may keep the
     // stream open after the reply - and only where picking one goes somewhere; null when there are none to show. Read
     // once per render, since the transport's thread may take them away in the meantime.
-    private IReadOnlyList<string>? _FollowUps => IsLatest
+    private IReadOnlyList<string>? _FollowUps => Latest
                                                  && Message.Role.IsAssistant
                                                  && Message.IsBusy is false
                                                  && Session is not { IsGenerating: true }

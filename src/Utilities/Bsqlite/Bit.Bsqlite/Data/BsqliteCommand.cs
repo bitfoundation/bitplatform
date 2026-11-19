@@ -2,7 +2,7 @@
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>A command executed through the connection's transport.</summary>
 public sealed class BsqliteCommand : DbCommand

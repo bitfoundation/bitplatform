@@ -13,11 +13,11 @@ namespace Bit.BbScanner.Tests;
 [TestClass]
 public class MicroPdf417Tests
 {
-    private static BbBarcodeResult? Decode(BbLuminanceBuffer image, bool still, BbBarcodeFormat formats = BbBarcodeFormat.MicroPdf417)
+    private static BbScannerBarcodeResult? Decode(BbScannerLuminanceBuffer image, bool still, BbScannerBarcodeFormat formats = BbScannerBarcodeFormat.MicroPdf417)
     {
         var options = still ? BbScannerOptions.ForStillImages() : new BbScannerOptions();
         options.Formats = formats;
-        using var decoder = new BbBarcodeDecoder(options);
+        using var decoder = new BbScannerBarcodeDecoder(options);
         return decoder.Decode(image.View, suppressDuplicates: false);
     }
 
@@ -28,7 +28,7 @@ public class MicroPdf417Tests
         // patterns of three bars like many a character of another symbology. Every other fixture is searched for it
         // with the exhaustive still image settings.
         var misreads = new List<string>();
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat != BbBarcodeFormat.MicroPdf417))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat != BbScannerBarcodeFormat.MicroPdf417))
         {
             using var image = symbol.Render(scale: symbol.IsLinear ? 3 : 4);
             if (Decode(image, still: true) is { } result)
@@ -43,12 +43,12 @@ public class MicroPdf417Tests
     [TestMethod]
     public void EveryMicroPdf417SymbolIsReportedAsItselfWithEverySymbologyEnabled()
     {
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.MicroPdf417))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbScannerBarcodeFormat.MicroPdf417))
         {
             using var image = symbol.Render(scale: 3);
-            var result = Decode(image, still: false, BbBarcodeFormat.All);
+            var result = Decode(image, still: false, BbScannerBarcodeFormat.All);
 
-            Assert.AreEqual(BbBarcodeFormat.MicroPdf417, result?.Format, symbol.Id);
+            Assert.AreEqual(BbScannerBarcodeFormat.MicroPdf417, result?.Format, symbol.Id);
         }
     }
 
@@ -87,7 +87,7 @@ public class MicroPdf417Tests
             using var rotated = ImageTransforms.Rotate(rendered, degrees);
 
             // A live frame tries upright and sideways, and two of the angles near them in turn: within four frames.
-            using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.MicroPdf417 });
+            using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.MicroPdf417 });
             string? text = null;
             for (var frame = 0; frame < 4 && text is null; frame++)
             {
@@ -131,8 +131,8 @@ public class MicroPdf417Tests
             ImageTransforms.Paste(second, canvas, sideBySide ? first.Width + 30 : 10, sideBySide ? 10 : first.Height + 30);
 
             var options = BbScannerOptions.ForStillImages();
-            options.Formats = BbBarcodeFormat.MicroPdf417;
-            using var decoder = new BbBarcodeDecoder(options);
+            options.Formats = BbScannerBarcodeFormat.MicroPdf417;
+            using var decoder = new BbScannerBarcodeDecoder(options);
             var texts = decoder.DecodeAll(canvas.View, maxSymbols: 4, suppressDuplicates: false).Select(r => r.Text).Order(StringComparer.Ordinal);
 
             Assert.AreEqual("FIRST LABEL | SECOND ONE", string.Join(" | ", texts), sideBySide ? "side by side" : "stacked");
@@ -201,7 +201,7 @@ public class MicroPdf417Tests
         // The test kit's encoder is what the demo and the decode lab draw samples with; where it compacts the data as
         // BWIPP does - BWIPP chooses its compaction more cleverly for most texts - the symbols must be identical, module
         // for module. A symbol of more columns it writes is checked by reading it, with a reader checked against BWIPP.
-        var symbol = ReferenceSymbols.All.Single(s => s.BarcodeFormat == BbBarcodeFormat.MicroPdf417 && s.Expected == content);
+        var symbol = ReferenceSymbols.All.Single(s => s.BarcodeFormat == BbScannerBarcodeFormat.MicroPdf417 && s.Expected == content);
         using var reference = symbol.ToMatrix();
         using var encoded = MicroPdf417Encoder.Encode(content, columns, minimumRows: reference.Height / 2);
 
@@ -250,7 +250,7 @@ public class MicroPdf417Tests
         Assert.IsTrue(result.TryGetGs1(out var elements));
         Assert.AreEqual("(01)09501101530003(17)260101", elements.ToBracketedString());
 
-        var mixed = BbPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Mixed.Length, 903, .. Gs1Mixed], 8, 2, 0);
+        var mixed = BbScannerPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Mixed.Length, 903, .. Gs1Mixed], 8, 2, 0);
         Assert.IsNotNull(mixed);
         Assert.AreEqual("0109501101530003", mixed.Text);
         Assert.IsTrue(mixed.IsGs1);
@@ -261,7 +261,7 @@ public class MicroPdf417Tests
     [DataRow(910)]
     public void ACode128EmulationCodewordWithoutFnc1InFirstPositionIsNotGs1(int flag)
     {
-        var result = BbPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Mixed.Length, flag, .. Gs1Mixed], 8, 2, 0);
+        var result = BbScannerPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Mixed.Length, flag, .. Gs1Mixed], 8, 2, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("0109501101530003", result.Text);
@@ -273,7 +273,7 @@ public class MicroPdf417Tests
     [DataRow(911)]
     public void ACode128EmulationCodewordCanImplyNumericCompaction(int flag)
     {
-        var result = BbPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Numeric.Length, flag, .. Gs1Numeric], 8, 2, 0);
+        var result = BbScannerPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Numeric.Length, flag, .. Gs1Numeric], 8, 2, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("010950110153000317260101", result.Text);
@@ -292,14 +292,14 @@ public class MicroPdf417Tests
     {
         // 905 leaves out an AI it implies, and the others open the two-dimensional part of a composite symbol: read
         // as anything else they would be misread.
-        Assert.IsNull(BbPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Numeric.Length, flag, .. Gs1Numeric], 8, 2, 0));
+        Assert.IsNull(BbScannerPdf417BitStreamParser.DecodeMicroPdf417([1 + 1 + Gs1Numeric.Length, flag, .. Gs1Numeric], 8, 2, 0));
     }
 
     [TestMethod]
     public void Code128EmulationIsMicroPdf417sAlone()
     {
         // In PDF417 the same codewords are reserved.
-        Assert.IsNull(BbPdf417BitStreamParser.Decode([1 + 1 + Gs1Numeric.Length, 904, .. Gs1Numeric], 3, 4, 0, 0));
+        Assert.IsNull(BbScannerPdf417BitStreamParser.Decode([1 + 1 + Gs1Numeric.Length, 904, .. Gs1Numeric], 3, 4, 0, 0));
     }
 
     [TestMethod]
@@ -308,7 +308,7 @@ public class MicroPdf417Tests
         int[] codewords = [5, 900, (7 * 30) + 4, 928, 111, 105, 17, 300, 922];
         codewords[0] = codewords.Length;
 
-        var result = BbPdf417BitStreamParser.DecodeMicroPdf417(codewords, 10, 3, 2);
+        var result = BbScannerPdf417BitStreamParser.DecodeMicroPdf417(codewords, 10, 3, 2);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("HE", result.Text);
@@ -329,7 +329,7 @@ public class MicroPdf417Tests
         // MicroPDF417's symbol characters are PDF417's, read with the same table; a table that does not claim to be
         // the specification's turns it off too. The table is process wide, so this puts the specification one back.
 #pragma warning disable CS0618 // The placeholder is exactly the kind of table this is about.
-        BbPdf417SymbolTable.Register(BbPdf417SymbolTable.CreatePlaceholder());
+        BbScannerPdf417SymbolTable.Register(BbScannerPdf417SymbolTable.CreatePlaceholder());
 #pragma warning restore CS0618
         try
         {
@@ -340,7 +340,7 @@ public class MicroPdf417Tests
         }
         finally
         {
-            BbPdf417SymbolTable.Register(BbPdf417SymbolTable.Specification);
+            BbScannerPdf417SymbolTable.Register(BbScannerPdf417SymbolTable.Specification);
         }
     }
 
@@ -352,7 +352,7 @@ public class MicroPdf417Tests
         // a budget of twelve in each polarity. What is counted is the scans, not the time they take: a shared build
         // machine running both target frameworks at once took six times as long as a desk one, and no bound on the time
         // both passes there and fails the unbudgeted sweep everywhere.
-        using var noise = new BbBitMatrix(800, 600);
+        using var noise = new BbScannerBitMatrix(800, 600);
         var random = new Random(3);
         for (var y = 0; y < noise.Height; y++)
         {
@@ -362,8 +362,8 @@ public class MicroPdf417Tests
             }
         }
 
-        var reader = new BbMicroPdf417Reader();
-        var result = reader.Decode(noise, new BbMatrixDecodeOptions(TryHarder: true, AllowInverted: true));
+        var reader = new BbScannerMicroPdf417Reader();
+        var result = reader.Decode(noise, new BbScannerMatrixDecodeOptions(TryHarder: true, AllowInverted: true));
 
         Assert.IsNull(result);
 
@@ -373,19 +373,19 @@ public class MicroPdf417Tests
     }
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_fullScans")]
-    private static extern ref int FullScans(BbMicroPdf417Reader reader);
+    private static extern ref int FullScans(BbScannerMicroPdf417Reader reader);
 
     [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_pieces")]
-    private static extern ref int[] Pieces(BbMicroPdf417Reader reader);
+    private static extern ref int[] Pieces(BbScannerMicroPdf417Reader reader);
 
-    private static BbLuminanceBuffer Blank(int width, int height)
+    private static BbScannerLuminanceBuffer Blank(int width, int height)
     {
-        var image = BbLuminanceBuffer.Rent(width, height);
+        var image = BbScannerLuminanceBuffer.Rent(width, height);
         image.Pixels.Fill(255);
         return image;
     }
 
-    private static void Blot(BbLuminanceBuffer image, int x, int y, int width, int height, bool dark)
+    private static void Blot(BbScannerLuminanceBuffer image, int x, int y, int width, int height, bool dark)
     {
         var pixels = image.Pixels;
         for (var row = Math.Max(0, y); row < Math.Min(image.Height, y + height); row++)

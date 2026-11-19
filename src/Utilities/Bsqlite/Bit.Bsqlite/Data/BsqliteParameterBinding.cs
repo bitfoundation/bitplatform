@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Converts CLR values onto the SQLite representation Microsoft.Data.Sqlite would bind, and back.

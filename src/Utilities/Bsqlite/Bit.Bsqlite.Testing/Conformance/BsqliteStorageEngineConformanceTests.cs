@@ -1,7 +1,6 @@
-﻿using Bit.Bsqlite.Data;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Bit.Bsqlite.Storage.ConformanceTests;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Engine-level rules every backend must satisfy once a real database is open. Inherit it next

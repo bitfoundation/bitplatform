@@ -65,10 +65,88 @@ public class ToolTests
 
         host.Runner.NotFound("aspire");
         var missing = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
-        CollectionAssert.AreEqual(new[] { "tool", "install", "--global", "Aspire.Cli", "--version", "13.6.0" }, missing.Action!.Commands[0].Arguments.ToArray());
+        Assert.AreEqual("/bin/sh", missing.Action!.Commands.Single().FileName);
+        StringAssert.Contains(missing.Action.Commands.Single().Arguments[^1], "https://aspire.dev/install.sh");
+        StringAssert.Contains(missing.Action.Commands.Single().Arguments[^1], "--version '13.6.0'");
+        StringAssert.Contains(missing.Action.Commands.Single().Arguments[^1], $"--install-path '{Path.Combine(host.Home, ".aspire", "bin")}'", "The PATH refresh after the install looks there.");
+        CollectionAssert.AreEqual(new[] { "tool", "install", "--global", "Aspire.Cli", "--version", "13.6.0" }, missing.Action.Fallback.Single().Arguments.ToArray());
 
         host.Runner.On("aspire", "--version", 0, "13.7.0+1a2b3c4");
         Assert.AreEqual(ToolState.Installed, (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire").Status.State);
+    }
+
+    [TestMethod]
+    public async Task AspireCliInstaller_Should_LeaveTheDotnetToolAloneWhenItWorks()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Aspire = true, AspireVersion = new Version(13, 6, 5) };
+        host.Runner.NotFound("aspire");
+        var aspire = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+        host.Runner.On("sh", "-c", _ =>
+        {
+            host.Runner.On("aspire", "--version", 0, "13.6.5+b33d222049f1ecc3bc7257ec07b622fe550b2580");
+            return new ProcessResult { ExitCode = 0 };
+        });
+        var native = Directory.CreateDirectory(Path.Combine(host.Home, ".aspire", "bin")).FullName;
+        var dotnetTools = Directory.CreateDirectory(Path.Combine(host.Home, ".dotnet", "tools")).FullName;
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([aspire], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, steps.Reports.Single(r => r.Id == "aspire").Result.Status);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["tool", ..]));
+        var path = host.Environment.GetVariable("PATH")!.Split(Path.PathSeparator).ToList();
+        Assert.IsLessThan(path.IndexOf(dotnetTools), path.IndexOf(native), "An older aspire among the .NET tools would hide the one just installed.");
+    }
+
+    [TestMethod]
+    public async Task AspireCliInstallerThatFails_Should_FallBackToTheDotnetTool()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Aspire = true, AspireVersion = new Version(13, 6, 5) };
+        host.Runner.NotFound("aspire");
+        var aspire = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+        host.Runner.On("powershell", "-NoProfile", 1, "Error: Failed to download https://github.com/microsoft/aspire/releases/download/v13.6.5/aspire-cli-win-x64-13.6.5.zip");
+        host.Runner.On("dotnet", "tool install --global Aspire.Cli --version 13.6.5", _ =>
+        {
+            host.Runner.On("aspire", "--version", 0, "13.6.5+b33d222049f1ecc3bc7257ec07b622fe550b2580");
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        StringAssert.Contains(aspire.Action!.Commands.Single().Arguments[^1], "https://aspire.dev/install.ps1");
+        StringAssert.Contains(aspire.Action.Commands.Single().Arguments[^1], "-Version '13.6.5'");
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([aspire], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        var result = steps.Reports.Single(r => r.Id == "aspire").Result;
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments is ["tool", "install", "--global", "Aspire.Cli", ..]));
+    }
+
+    [TestMethod]
+    public async Task AspireCliInstallerThatFailsAfterInstalling_Should_SkipTheDotnetTool()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        var needs = new ToolNeeds { Aspire = true, AspireVersion = new Version(13, 6, 5) };
+        host.Runner.NotFound("aspire");
+        var aspire = (await CheckAsync(host, needs)).Single(c => c.Tool.Id == "aspire");
+        host.Runner.On("sh", "-c", _ =>
+        {
+            host.Runner.On("aspire", "--version", 0, "13.6.5+b33d222049f1ecc3bc7257ec07b622fe550b2580");
+            return new ProcessResult { ExitCode = 1, Output = "Error: Failed to update the shell profile" };
+        });
+        var checks = host.Runner.Calls.Count(c => c.FileName is "aspire");
+
+        var steps = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, steps).InstallAsync([aspire], new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner)), CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, steps.Reports.Single(r => r.Id == "aspire").Result.Status);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["tool", ..]), "A second aspire, from dotnet tool, would only compete with the first on PATH.");
+        Assert.AreEqual(checks + 1, host.Runner.Calls.Count(c => c.FileName is "aspire"), "The check that skipped the .NET tool also decides the result.");
     }
 
     [TestMethod]
@@ -586,7 +664,7 @@ public class ToolTests
         Assert.AreEqual(TemplateRequirements.Embedded.Sdk, TemplateRequirements.Embedded.For(net11).Sdk);
         Assert.AreEqual("10.0", TemplateRequirements.Embedded.For(net10).Sdk?.Channel);
         Assert.IsFalse(TemplateRequirements.Embedded.For(net10).Sdk?.Pinned);
-        Assert.AreEqual(TemplateRequirements.Embedded.For(net10).Sdk, TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)).Sdk);
+        Assert.AreEqual(TemplateRequirements.Embedded.For(net11).Sdk, TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)).Sdk);
     }
 
     [TestMethod]

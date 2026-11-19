@@ -1,7 +1,4 @@
-﻿using Bit.Bsqlite.Storage.ConformanceTests;
-using Bit.Bsqlite.Storage.FileSystem;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 /// <summary>
 /// Runs the conformance kit against the file system backend - on desktop .NET, which runs natively the

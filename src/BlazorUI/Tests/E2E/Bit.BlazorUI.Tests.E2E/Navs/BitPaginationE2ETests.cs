@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// re-render and unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPaginationE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/pagination";

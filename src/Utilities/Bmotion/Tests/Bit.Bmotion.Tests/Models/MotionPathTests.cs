@@ -15,7 +15,7 @@ public class MotionPathTests
     [TestMethod]
     public void OffsetDistance_Keyframes_AnimateThroughEngine()
     {
-        var d = Bm.To(offsetDistance: new BmStringKeyframes("0%", "100%")).ToJsDictionary();
+        var d = Bm.To(offsetDistance: new BmotionStringKeyframes("0%", "100%")).ToJsDictionary();
         CollectionAssert.AreEqual(new[] { "0%", "100%" }, (string[])d["offsetDistance"]!);
     }
 

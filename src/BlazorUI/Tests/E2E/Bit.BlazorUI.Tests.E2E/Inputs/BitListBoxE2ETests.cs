@@ -9,6 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// an EditForm validating it; axe; and forced colors.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitListBoxE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/listbox";

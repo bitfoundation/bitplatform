@@ -33,14 +33,14 @@ else
 
     /// <summary>The results to list, newest first.</summary>
     [Parameter]
-    public IReadOnlyList<BbBarcodeResult> Results { get; set; } = [];
+    public IReadOnlyList<BbScannerBarcodeResult> Results { get; set; } = [];
 
     /// <summary>
     /// Puts <paramref name="latest"/> at the top of <paramref name="results"/>, in order, and drops what falls past
     /// <see cref="Capacity"/>, so a page scanned all afternoon redraws a short table and holds little memory - on a
     /// circuit, the server's.
     /// </summary>
-    public static void Prepend(List<BbBarcodeResult> results, IEnumerable<BbBarcodeResult> latest)
+    public static void Prepend(List<BbScannerBarcodeResult> results, IEnumerable<BbScannerBarcodeResult> latest)
     {
         results.InsertRange(0, latest);
         if (results.Count > Capacity)
@@ -49,7 +49,7 @@ else
         }
     }
 
-    private static string Describe(BbBarcodeResultMetadata? metadata)
+    private static string Describe(BbScannerBarcodeResultMetadata? metadata)
     {
         if (metadata is null)
         {

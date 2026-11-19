@@ -5,6 +5,160 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 11.0.0
 
+### `BitFullCalendarState` is read-only, but for its filters ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`BitFullCalendar.State` is what the calendar is showing, for an app to read. The 56 members that changed it are no
+longer public. Each was the plumbing between the calendar and its parts, or a second way to do what a parameter, a
+`Settings` property or a method of `BitFullCalendar` already does. Several of them were undone by the calendar's next
+render, which applies its parameters again. Its color and attendee filters keep their public methods (`SetColorFilter`,
+`SetAttendeeFilter`, `FilterByColor`, `ClearFilter`), since nothing else sets them. What to use instead:
+
+| Was on `State` | Use |
+| --- | --- |
+| `SetSelectedDate(date)` | `BitFullCalendar.GoToDate(date)`, or `DefaultDate` |
+| `GoToToday()`, `NavigateNext()`, `NavigatePrevious()` | The methods of the same names on `BitFullCalendar` |
+| `SetView(view)`, `SetMode(mode)` | `BitFullCalendar.ChangeView(view)`, `ChangeMode(mode)`, or `DefaultView`, `DefaultMode` |
+| `SetUse24HourFormat`, `SetBadgeVariant`, `SetStartOfDayHour`, `SetSlotDurationMinutes`, `SetHiddenDays`, `SetFirstDayOfWeek`, `SetShowWeekNumbers`, `SetShowCurrentTimeIndicator`, `SetMaxEventsPerDayCell`, `SetRequireEventDescription`, `SetAllowEventOverlap`, `SetAllowRangeSelection`, `SetBusinessDays`, `SetHighlightBusinessHours`, `SetRestrictToBusinessHours`, `SetFixedWeekCount`, `SetShowNonCurrentDates`, `SetNavLinks`, `SetAgendaModeGroupBy`, `SetEventLayout`, `SetShowDayViewCalendar`, `SetWeekDayCount` | The `Settings` property of the same name |
+| `SetVisibleHours(start, end)`, `SetBusinessHours(start, end)` | `Settings.VisibleStartHour` / `VisibleEndHour`, `Settings.BusinessStartHour` / `BusinessEndHour` |
+| `SetEditPermissions(add, edit, delete, drag, resize)` | `Settings.AllowAdd`, `AllowEdit`, `AllowDelete`, `AllowDrag`, `AllowResize` |
+| `ToggleTimeFormat()`, `ToggleShowWeekNumbers()`, `ToggleShowCurrentTimeIndicator()`, `ToggleHighlightBusinessHours()`, `ToggleShowDayViewCalendar()`, `ToggleEventLayout()` | Set the `Settings` property to the opposite of what `State` reads |
+| `SetReadOnly`, `SetDateBounds`, `SetCulture`, `SetDirection`, `SyncViews` | The `ReadOnly`, `MinDate` / `MaxDate`, `Culture` / `CultureName`, `Dir` and `Views` parameters |
+| `Initialize`, `SyncEvents`, `AddEvent`, `UpdateEvent`, `RemoveEvent`, `SyncResources` | The `Events` and `Resources` parameters: change the list the calendar is given |
+| The constructor, `StartDrag`, `EndDrag`, `HandleDrop`, `UpdateUI`, `MarkCurrentRangeReported`, `AgendaScrollToTodayNonce` | Nothing: the calendar's own plumbing, which a `State` an app constructs is never attached to. With no public constructor, `BitFullCalendarState` can no longer be constructed or derived from. |
+
+### Five of `BitDataGrid`'s helper types are internal ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`BitDataGridDataProcessor`, `BitDataGridQueryableProcessor`, `BitDataGridPropertyAccessor<TItem>`,
+`BitDataGridColumnSlot<TItem>` and `BitDataGridExcelStyle` are the machinery `BitDataGrid` works with, and none of
+its parameters, callbacks or templates hands one of them out, so they are no longer public:
+
+- **The two processors** apply a search, filters, sorts, groups and aggregates through the grid's own column
+  components, keyed by their ids, and read each column's field through a reader the column sets up only as it renders
+  inside a grid. Columns built outside one are skipped, so the processors could not apply a
+  `BitDataGridReadRequest` anywhere but in the grid. The grid still applies all of it to the rows it is given in
+  `Items`, a list or an `IQueryable<TItem>` (which a provider such as EF Core runs at the source). An `OnRead`
+  handler applies the request's `Search`, `Filters`, `Sorts`, `Skip` and `Take` to its own data source, as before.
+- **`BitDataGridPropertyAccessor<TItem>`** is how a column reads and writes the field its `Field` or `Property` names.
+- **`BitDataGridColumnSlot<TItem>`** is a cell position while `VirtualizeColumns` is on.
+- **`BitDataGridExcelStyle`** carries the colors and fonts read off the rendered grid when `ExcelExportStyled` is set.
+
+### `BitFullCalendarChangeNotifier`, `BitFullCalendarColorScheme` and `BitFullCalendarHelpers` are internal ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+These are the machinery `BitFullCalendar` and its parts work with: the change notifier that hands a drag, a resize or
+an edit to `OnChanging` and `OnChange`, the color scheme the calendar builds from `EventColorOptions`, and the date,
+layout and recurrence helpers its views are drawn with. None of `BitFullCalendar`'s parameters, callbacks or templates
+hands one of them out, so they are no longer public.
+
+- The calendar's changes reach an app through `OnChanging`, `OnChange` and `OnRefused`, as before.
+- An event's color is still set by `BitFullCalendarEvent.Color`, an id of `EventColorOptions`; its default is
+  `"blue"`, which `BitFullCalendarColorScheme.FallbackColorId` held.
+- The occurrences of the recurring events in the shown range are in `BitFullCalendar.State.ExpandedEvents`, and the
+  date math of a week or a month is in .NET's own `Calendar`, `CultureInfo` and `ISOWeek`.
+
+### `BitFullCalendar`'s `BitFc*` parts are `_BitFc*` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The 40 `BitFc*` components are the header, views, dialogs, event blocks and other parts `BitFullCalendar` draws
+itself with. Each one runs on the calendar's own state, change notifier and settings, which the calendar cascades to
+it (16 of them also on a cascade the library keeps internal), so they cannot be used on their own, and they were public
+only because a Razor component cannot be anything else. They now carry the leading underscore of the library's other
+parts (`_BitNavBarChild`, `_BitDataGridRow`) and are hidden from IntelliSense: `BitFcX` is `_BitFcX`, for every one of
+
+`BitFcAddEditEventDialog`, `BitFcAgendaEvents`, `BitFcBackgroundEvents`, `BitFcBody`, `BitFcDateNavigator`,
+`BitFcDateTimePicker`, `BitFcDayBackgroundLabels`, `BitFcDayCell`, `BitFcDayView`, `BitFcDayViewMultiDayEventsRow`,
+`BitFcDraggableEvent`, `BitFcDroppableArea`, `BitFcEventBlock`, `BitFcEventBullet`, `BitFcEventDetailsDialog`,
+`BitFcEventListDialog`, `BitFcEventTemplateHost`, `BitFcFilterEvents`, `BitFcHeader`, `BitFcMiniCalendar`,
+`BitFcModeTabs`, `BitFcMonthEventBadge`, `BitFcMonthView`, `BitFcNowIndicator`, `BitFcRecurrenceScopeDialog`,
+`BitFcRenderGroupedEvents`, `BitFcSettings`, `BitFcTimeColumn`, `BitFcTimelineDayView`, `BitFcTimelineEventBlock`,
+`BitFcTimelineLayout`, `BitFcTimelineMonthView`, `BitFcTimelineNowIndicator`, `BitFcTimelineWeekView`, `BitFcToast`,
+`BitFcTodayButton`, `BitFcViewTabs`, `BitFcWeekView`, `BitFcWeekViewMultiDayEventsRow` and `BitFcYearView`.
+
+An app that only uses `BitFullCalendar` has nothing to change, and what the calendar renders is unchanged. The
+calendar's models, settings, texts and state (`BitFullCalendarEvent`, `BitFullCalendarSettings`,
+`BitFullCalendar.State`, ...) keep their names. The day cell's `LastColumn` and `TabStop`, below, are parameters of
+`_BitFcDayCell`.
+
+### `BitDataGridRow`, `BitDataGridCell` and `BitDataGridCellEditor` are `_BitDataGridRow`, `_BitDataGridCell` and `_BitDataGridCellEditor` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+These are the row, the cell and the built-in cell editor `BitDataGrid` renders for itself. They take the grid itself
+as a parameter and work on its own row, focus and edit state, so they cannot be used on their own, and they were
+public only because a Razor component cannot be anything else. They now carry the leading underscore of the library's
+other parts (`_BitNavBarChild`, `_BitDropdownItem`) and are hidden from IntelliSense.
+
+| Before | After |
+|---|---|
+| `BitDataGridRow<TItem>` | `_BitDataGridRow<TItem>` |
+| `BitDataGridCell<TItem>` | `_BitDataGridCell<TItem>` |
+| `BitDataGridCellEditor<TItem>` | `_BitDataGridCellEditor<TItem>` |
+
+An app that only uses `BitDataGrid` has nothing to change, and what the grid renders is unchanged. A column's own
+editor is still written with its `EditTemplate`. `BitDataGridCellEventArgs` and `BitDataGridRowReorderEventArgs`, the
+payloads of the grid's callbacks, keep their names.
+
+### `IsStreaming` is `Streaming` on `BitAiCodeBlockView` and `BitAiStreamingMarkdown`, and `BitAiChatMessage`'s `IsLatest` is `Latest` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own state is spelled without an `Is`, and three parameters of `Bit.BlazorUI.AI` were still spelled with
+one:
+
+| Before | After |
+|---|---|
+| `<BitAiCodeBlockView Code="@code" IsStreaming="streaming" />` | `<BitAiCodeBlockView Code="@code" Streaming="streaming" />` |
+| `<BitAiStreamingMarkdown Text="@text" IsStreaming="streaming" />` | `<BitAiStreamingMarkdown Text="@text" Streaming="streaming" />` |
+| `<BitAiChatMessage Message="message" IsLatest="false" />` | `<BitAiChatMessage Message="message" Latest="false" />` |
+
+What they do and their defaults (`false`, `false` and `true`) are unchanged. The models keep their `Is`, as the models
+of one item do: `BitAiMessage.IsStreaming`, the parts' `IsStreaming` (`BitAiTextPart`, `IBitAiStreamablePart`, ...)
+and the render contexts' (`BitAiCodeBlockContext.IsStreaming`) are as they were, so
+`<BitAiStreamingMarkdown Text="@part.Text" Streaming="@part.IsStreaming" />` is the new spelling of the usual binding.
+
+An old name left on a tag still builds and is ignored: a streaming block is highlighted and a streaming reply drawn
+without its caret as if they were complete, and an older `BitAiChatMessage` marked `IsLatest="false"` offers
+regeneration and follow-ups again. Search for both names when upgrading.
+
+### `BitFcDayCell`'s `IsLastColumn` and `IsRovingCell` are `LastColumn` and `TabStop` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`BitFcDayCell` is the day cell `BitFullCalendar`'s month view renders for itself, public only because Razor needs it to
+be. A component's own setting is spelled without an `Is`: `IsLastColumn` drops its `Is`, and `IsRovingCell`, set on
+the one cell that holds the month grid's roving tab stop, is named for what it does:
+
+| Before | After |
+|---|---|
+| `<BitFcDayCell IsLastColumn="@last" />` | `<BitFcDayCell LastColumn="@last" />` |
+| `<BitFcDayCell IsRovingCell="@roving" />` | `<BitFcDayCell TabStop="@roving" />` |
+
+`BitFullCalendar` sets both itself, so an app that only uses `BitFullCalendar` has nothing to change. What the calendar
+renders is unchanged.
+
+### `BitNumberField`'s `IsInputReadOnly` is `InputReadOnly` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own setting is spelled without an `Is`, and the number field's switch that stops the typing but
+leaves the stepping was spelled `IsInputReadOnly`. It drops the `Is` and keeps the `Input` the field's `HideInput` and
+`InputMode` start with, with its counterpart on `BitNumberFieldParams`:
+
+| Before | After |
+|---|---|
+| `<BitNumberField IsInputReadOnly />` | `<BitNumberField InputReadOnly />` |
+| `new BitNumberFieldParams { IsInputReadOnly = true }` | `new BitNumberFieldParams { InputReadOnly = true }` |
+
+What it does and its default (`false`) are unchanged. An `IsInputReadOnly` left on a field still builds and is
+ignored, so the field can be typed into again; search for the name when upgrading.
+
+### `IsMonthPickerVisible` is `ShowMonthPicker` on `BitDatePicker` and `BitDateRangePicker` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+A component's own setting is spelled without an `Is`, and the switch that shows or hides a part of a component is
+spelled `Show...` (`ShowGoToToday`, `ShowTimePicker`, `ShowMonthPickerAsOverlay`). The two pickers' month picker
+switch was spelled `IsMonthPickerVisible`; it takes the name `BitCalendar` already gives the same setting, with its
+counterpart on `BitDatePickerParams` and `BitDateRangePickerParams`:
+
+| Before | After |
+|---|---|
+| `<BitDatePicker IsMonthPickerVisible="false" />` | `<BitDatePicker ShowMonthPicker="false" />` |
+| `<BitDateRangePicker IsMonthPickerVisible="false" />` | `<BitDateRangePicker ShowMonthPicker="false" />` |
+| `new BitDatePickerParams { IsMonthPickerVisible = false }` | `new BitDatePickerParams { ShowMonthPicker = false }` |
+| `new BitDateRangePickerParams { IsMonthPickerVisible = false }` | `new BitDateRangePickerParams { ShowMonthPicker = false }` |
+
+What it does and its default (`true`) are unchanged. An `IsMonthPickerVisible="false"` left on a picker still builds
+and is ignored, so the month picker shows again; search for the name when upgrading.
+
 ### `BitDialog`'s `IsDraggable` is `Draggable`, and its `IsOkButtonEnabled` and `IsCancelButtonEnabled` are `OkButtonDisabled` and `CancelButtonDisabled` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 A component's own setting is spelled without an `Is` (`Disabled`, `Blocking`, `Alert`), and three of the dialog's

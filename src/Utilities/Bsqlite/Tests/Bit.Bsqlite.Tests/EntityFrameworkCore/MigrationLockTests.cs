@@ -1,8 +1,3 @@
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Interop;
-using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

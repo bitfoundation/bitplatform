@@ -258,7 +258,7 @@
                                 }
                                 @* GoToToday normally lives in the header of the month picker, so the day picker
                                    takes it over whenever that header is not on screen. *@
-                                @if (isLastMonth && ShowGoToToday && (_showMonthPickerAsOverlayInternal || ShowMonthPicker() is false || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
+                                @if (isLastMonth && ShowGoToToday && (_showMonthPickerAsOverlayInternal || MonthPickerIsVisible() is false || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
                                 {
                                     var goToTodayDisabled = IsGoToTodayButtonDisabled(todayYear, todayMonth);
 
@@ -307,7 +307,7 @@
                                 }
                                 @* The clock button belongs to the header of the month picker; the day picker
                                    takes it over whenever that header is not on screen. *@
-                                @if (isLastMonth && ShowTimePicker && _showTimePickerAsOverlayInternal && (_showMonthPickerAsOverlayInternal || ShowMonthPicker() is false))
+                                @if (isLastMonth && ShowTimePicker && _showTimePickerAsOverlayInternal && (_showMonthPickerAsOverlayInternal || MonthPickerIsVisible() is false))
                                 {
                                     <button @onclick="@ToggleTimePickerOverlay"
                                             tabindex="0"
@@ -434,7 +434,7 @@
                 }
             }
 
-            @if (ShowMonthPicker())
+            @if (MonthPickerIsVisible())
             {
                 @if (_showMonthPickerAsOverlayInternal is false)
                 {

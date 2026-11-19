@@ -8,7 +8,7 @@ using Spectre.Console;
 
 namespace Bit.Cli.Commands;
 
-public sealed record AppleKeysRequest(string IssuerId, string KeyId, string PrivateKeyPath, string? BundleId, string? ProfileName, string? Output);
+public sealed record AppleKeysRequest(string IssuerId, string KeyId, string PrivateKeyPath, string? BundleId, string? ProfileName, string? Output, string? EntitlementsPath = null);
 
 public static partial class KeysCommand
 {
@@ -203,15 +203,17 @@ public static partial class KeysCommand
         var bundleIdOption = new Option<string?>("--bundle-id") { Description = "The app's bundle id, e.g. com.contoso.shop. Default: the ApplicationId of the project's Client.Maui, in a bit Boilerplate project's folder." };
         var profileNameOption = new Option<string?>("--profile-name") { Description = "The provisioning profile's name. A profile with this name is replaced. Default: \"<bundle id> App Store\"." };
         var outputOption = new Option<string?>("--output", "-o") { Description = "The folder to write the .p12 and .mobileprovision files to. Default: the current folder." };
+        var entitlementsOption = new Option<string?>("--entitlements") { Description = "The .plist the iOS app's Release build signs with, whose capabilities the bundle id gets. Default: the CodesignEntitlements the project's Client.Maui sets for iOS outside Development, in a bit Boilerplate project's folder." };
 
-        var command = new Command("apple", "Create an Apple Distribution certificate and an App Store provisioning profile with an App Store Connect API key, so the CD signs the iOS app without a Mac.")
+        var command = new Command("apple", "Create an Apple Distribution certificate and an App Store provisioning profile with an App Store Connect API key, so the CD signs the iOS app without a Mac. The bundle id gets the capabilities the app's entitlements need first.")
         {
             issuerIdOption,
             keyIdOption,
             privateKeyOption,
             bundleIdOption,
             profileNameOption,
-            outputOption
+            outputOption,
+            entitlementsOption
         };
 
         command.SetAction((parseResult, cancellationToken) => AppleAsync(services(), new AppleKeysRequest(
@@ -220,7 +222,8 @@ public static partial class KeysCommand
             parseResult.GetValue(privateKeyOption) ?? "",
             parseResult.GetValue(bundleIdOption)?.Trim(),
             parseResult.GetValue(profileNameOption)?.Trim(),
-            parseResult.GetValue(outputOption)), cancellationToken));
+            parseResult.GetValue(outputOption),
+            parseResult.GetValue(entitlementsOption)), cancellationToken));
 
         return command;
     }
@@ -264,6 +267,19 @@ public static partial class KeysCommand
             return cli.UsageError("key-in-repository", $"The .p12 holds a private key and would be in the git repository {repository}, where a commit takes it along. Pick a folder outside it with -o.");
         }
 
+        AppleEntitlements? entitlements;
+
+        try
+        {
+            entitlements = request.EntitlementsPath is { Length: > 0 } entitlementsPath ? AppleEntitlements.Read(Path.GetFullPath(entitlementsPath, directory))
+                : projectName is null ? null
+                : AppleEntitlements.ForProject(directory, projectName);
+        }
+        catch (AppleSigningException exp)
+        {
+            return cli.UsageError("entitlements-unreadable", exp.Message);
+        }
+
         try
         {
             Directory.CreateDirectory(folder);
@@ -279,7 +295,7 @@ public static partial class KeysCommand
 
         try
         {
-            result = await cli.Console.RunWithStatusAsync($"Creating the App Store signing of {bundleId}", _ => new AppleSigning(http).CreateAppStoreSigningAsync(key, bundleId, profileName, cancellationToken));
+            result = await cli.Console.RunWithStatusAsync($"Creating the App Store signing of {bundleId}", _ => new AppleSigning(http).CreateAppStoreSigningAsync(key, bundleId, profileName, entitlements, cancellationToken));
         }
         catch (AppleSigningException exp)
         {
@@ -302,6 +318,27 @@ public static partial class KeysCommand
         await File.WriteAllBytesAsync(profilePath, result.Profile, CancellationToken.None);
 
         var console = cli.Console;
+
+        if (entitlements is null)
+        {
+            console.Warn(projectName is null
+                ? "bit didn't check the bundle id's capabilities, since it had no entitlements to check them against. Pass the .plist the iOS app's Release build signs with as --entitlements, or run this in a bit Boilerplate project's folder."
+                : $"bit didn't check the bundle id's capabilities: {ProjectContext.FindMauiProject(directory, projectName)} names no entitlements file for iOS. Pass the .plist the iOS app's Release build signs with as --entitlements.");
+        }
+        else if (result.EnabledCapabilities.Count > 0)
+        {
+            console.Out.MarkupLine($"[green]{console.OkSymbol}[/] Turned on {Markup.Escape(string.Join(", ", result.EnabledCapabilities))} for {Markup.Escape(bundleId)}, which {Markup.Escape(Path.GetFileName(entitlements.FilePath))} needs.");
+        }
+        else
+        {
+            console.Dim($"{bundleId} already has the capabilities {Path.GetFileName(entitlements.FilePath)} needs.");
+        }
+
+        if (entitlements?.UnknownWarning is { } unknown)
+        {
+            console.Warn(unknown);
+        }
+
         console.Out.MarkupLine($"[green]{console.OkSymbol}[/] Created an Apple Distribution certificate, valid until {result.CertificateExpiry:yyyy-MM-dd}, and the App Store profile [bold]{Markup.Escape(result.ProfileName)}[/] for {Markup.Escape(bundleId)}.");
         console.Out.MarkupLine($"  [grey]Certificate[/]  {Markup.Escape(certificatePath)}");
         console.Out.MarkupLine($"  [grey]Password[/]     {Markup.Escape(result.Pkcs12Password)}");

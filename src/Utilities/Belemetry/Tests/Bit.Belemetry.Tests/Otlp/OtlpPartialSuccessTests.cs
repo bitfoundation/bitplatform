@@ -21,28 +21,28 @@ public class OtlpPartialSuccessTests
         var logs = new ExportLogsServiceResponse { PartialSuccess = new ExportLogsPartialSuccess { RejectedLogRecords = 2 } }.ToByteArray();
         var metrics = new ExportMetricsServiceResponse { PartialSuccess = new ExportMetricsPartialSuccess { ErrorMessage = "points coalesced" } }.ToByteArray();
 
-        Assert.AreEqual("5 rejected: span too old", OtlpPartialSuccess.Describe(traces, json: false));
-        Assert.AreEqual("2 rejected", OtlpPartialSuccess.Describe(logs, json: false));
-        Assert.AreEqual("warning: points coalesced", OtlpPartialSuccess.Describe(metrics, json: false), "A message with nothing rejected is a warning.");
+        Assert.AreEqual("5 rejected: span too old", BelemetryOtlpPartialSuccess.Describe(traces, json: false));
+        Assert.AreEqual("2 rejected", BelemetryOtlpPartialSuccess.Describe(logs, json: false));
+        Assert.AreEqual("warning: points coalesced", BelemetryOtlpPartialSuccess.Describe(metrics, json: false), "A message with nothing rejected is a warning.");
     }
 
     [TestMethod]
     public void ReadsTheJsonResponse_Int64AsAStringOrANumber()
     {
-        Assert.AreEqual("7 rejected: bad attribute", OtlpPartialSuccess.Describe("""{"partialSuccess":{"rejectedLogRecords":"7","errorMessage":"bad attribute"}}"""u8, json: true));
-        Assert.AreEqual("3 rejected", OtlpPartialSuccess.Describe("""{"partialSuccess":{"rejectedSpans":3}}"""u8, json: true));
+        Assert.AreEqual("7 rejected: bad attribute", BelemetryOtlpPartialSuccess.Describe("""{"partialSuccess":{"rejectedLogRecords":"7","errorMessage":"bad attribute"}}"""u8, json: true));
+        Assert.AreEqual("3 rejected", BelemetryOtlpPartialSuccess.Describe("""{"partialSuccess":{"rejectedSpans":3}}"""u8, json: true));
     }
 
     [TestMethod]
     public void AFullSuccess_OrAnUnreadableBody_ReportsNothing()
     {
-        Assert.IsNull(OtlpPartialSuccess.Describe(new ExportTraceServiceResponse().ToByteArray(), json: false));
-        Assert.IsNull(OtlpPartialSuccess.Describe(new ExportTraceServiceResponse { PartialSuccess = new ExportTracePartialSuccess() }.ToByteArray(), json: false));
-        Assert.IsNull(OtlpPartialSuccess.Describe("{}"u8, json: true));
-        Assert.IsNull(OtlpPartialSuccess.Describe("""{"partialSuccess":{}}"""u8, json: true));
-        Assert.IsNull(OtlpPartialSuccess.Describe("not json"u8, json: true));
-        Assert.IsNull(OtlpPartialSuccess.Describe([0x0A, 0xFF], json: false), "A field running past the end.");
-        Assert.IsNull(OtlpPartialSuccess.Describe([0x0F], json: false), "A wire type that cannot be skipped.");
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe(new ExportTraceServiceResponse().ToByteArray(), json: false));
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe(new ExportTraceServiceResponse { PartialSuccess = new ExportTracePartialSuccess() }.ToByteArray(), json: false));
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe("{}"u8, json: true));
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe("""{"partialSuccess":{}}"""u8, json: true));
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe("not json"u8, json: true));
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe([0x0A, 0xFF], json: false), "A field running past the end.");
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe([0x0F], json: false), "A wire type that cannot be skipped.");
     }
 
     [TestMethod]
@@ -50,11 +50,11 @@ public class OtlpPartialSuccessTests
     public void AHostileBody_NeverHangsOrThrows()
     {
         // Field 2, length-delimited, with a length that is negative as an int: it once moved the reader backwards.
-        Assert.IsNull(OtlpPartialSuccess.Describe([0x12, 0xFA, 0xFF, 0xFF, 0xFF, 0x0F], json: false));
-        Assert.IsNull(OtlpPartialSuccess.Describe([0x0A, 0xFA, 0xFF, 0xFF, 0xFF, 0x0F], json: false));
-        Assert.IsNull(OtlpPartialSuccess.Describe([0x0A, 0x03, 0x12, 0xFA, 0xFF], json: false), "A message's own field running past its end.");
-        Assert.IsNull(OtlpPartialSuccess.Describe([0x0A, 0x02, 0x08, 0x80], json: false), "A truncated varint inside the message.");
-        Assert.IsNull(OtlpPartialSuccess.Describe("""{"partialSuccess":{"rejectedSpans":"99999999999999999999"}}"""u8, json: true), "An overflowing count.");
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe([0x12, 0xFA, 0xFF, 0xFF, 0xFF, 0x0F], json: false));
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe([0x0A, 0xFA, 0xFF, 0xFF, 0xFF, 0x0F], json: false));
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe([0x0A, 0x03, 0x12, 0xFA, 0xFF], json: false), "A message's own field running past its end.");
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe([0x0A, 0x02, 0x08, 0x80], json: false), "A truncated varint inside the message.");
+        Assert.IsNull(BelemetryOtlpPartialSuccess.Describe("""{"partialSuccess":{"rejectedSpans":"99999999999999999999"}}"""u8, json: true), "An overflowing count.");
     }
 
     [TestMethod]

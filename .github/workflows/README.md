@@ -54,7 +54,7 @@ The templates, the websites and the demos made from the Boilerplate take the Bit
 
 ## Exceptions
 
-- Support tracking keeps its own name. It, CD Nuget packages, CD Prerelease nuget packages and CI CodeQL are called by no All workflow. CI CodeQL scans the whole repository on pull requests, pushes to `develop` and `main`, and once a week.
+- Support tracking keeps its own name. It, CD Nuget packages and CD Prerelease nuget packages are called by no All workflow.
 - All Release Build calls no workflows. Its jobs are matrices, one job per solution.
 - All Apps CD and Support tracking have no concurrency group. The CDs that All Apps CD calls decide for themselves, and each Support tracking run handles another issue.
 - The Copilot entries in Actions are GitHub's own workflows, with no file here.

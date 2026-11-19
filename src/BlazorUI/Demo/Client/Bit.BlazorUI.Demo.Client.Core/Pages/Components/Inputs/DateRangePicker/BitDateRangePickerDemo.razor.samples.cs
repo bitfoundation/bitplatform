@@ -17,7 +17,7 @@ public partial class BitDateRangePickerDemo
 <BitDateRangePicker Label=""DropDirection: All"" DropDirection=""BitDropDirection.All"" />
 <BitDateRangePicker Label=""Disabled AutoClose"" AutoClose=""false"" />
 <BitDateRangePicker Label=""Show clear button when has a value"" ShowClearButton ClearButtonTitle=""Clear the dates"" />
-<BitDateRangePicker Label=""Hidden month picker"" IsMonthPickerVisible=""false"" />
+<BitDateRangePicker Label=""Hidden month picker"" ShowMonthPicker=""false"" />
 <BitDateRangePicker Label=""StartingValue: December 2020, Start Time: 10:12, End Time: 16:59"" ShowTimePicker StartingValue=""startingValue"" />";
     private readonly string example1CsharpCode = @"
 private BitDateRangePickerValue? startingValue = new()

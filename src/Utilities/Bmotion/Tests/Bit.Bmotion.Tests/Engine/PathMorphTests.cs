@@ -42,7 +42,7 @@ public class PathMorphTests
         var single = Bm.To(d: "M0 0 L10 10").ToJsDictionary();
         Assert.AreEqual("M0 0 L10 10", single["d"]);
 
-        var frames = Bm.To(d: new BmStringKeyframes("M0 0", "M10 10")).ToJsDictionary();
+        var frames = Bm.To(d: new BmotionStringKeyframes("M0 0", "M10 10")).ToJsDictionary();
         CollectionAssert.AreEqual(new[] { "M0 0", "M10 10" }, (string[])frames["d"]!);
     }
 

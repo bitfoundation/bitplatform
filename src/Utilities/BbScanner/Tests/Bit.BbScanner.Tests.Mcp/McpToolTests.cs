@@ -67,7 +67,7 @@ public class McpToolTests
     {
         var index = await McpCall.TextAsync("GetBbScannerApi");
 
-        foreach (var type in new[] { "BbScanner", "BbScannerOptions", "BbBarcodeFormat", "BbBarcodeResult", "BbBarcodeDecoder", "BbScanRegion", "BbScannerException", "IBbRowDecoder" })
+        foreach (var type in new[] { "BbScanner", "BbScannerOptions", "BbScannerBarcodeFormat", "BbScannerBarcodeResult", "BbScannerBarcodeDecoder", "BbScannerScanRegion", "BbScannerException", "IBbScannerRowDecoder" })
         {
             Assert.Contains($"**{type}**", index);
         }
@@ -75,7 +75,7 @@ public class McpToolTests
         // Internal machinery stays out of the reference.
         Assert.DoesNotContain("BbScannerJsInterop", index);
         Assert.DoesNotContain("BbScannerJsonContext", index);
-        Assert.DoesNotContain("BbDetectorScratch", index);
+        Assert.DoesNotContain("BbScannerDetectorScratch", index);
     }
 
     [TestMethod]
@@ -85,10 +85,10 @@ public class McpToolTests
 
         Assert.StartsWith("# BbScanner (Component)", reference);
         Assert.Contains("## Parameter", reference);
-        Assert.Contains("**Formats** : `BbBarcodeFormat` = `BbBarcodeFormat.Common`", reference);
+        Assert.Contains("**Formats** : `BbScannerBarcodeFormat` = `BbScannerBarcodeFormat.Common`", reference);
         Assert.Contains("**TargetFrameRate** : `int` = `15`", reference);
-        Assert.Contains("**Facing** : `BbCameraFacing` = `BbCameraFacing.Rear`", reference);
-        Assert.Contains("**OnScan** : `EventCallback<BbBarcodeResult>`", reference);
+        Assert.Contains("**Facing** : `BbScannerCameraFacing` = `BbScannerCameraFacing.Rear`", reference);
+        Assert.Contains("**OnScan** : `EventCallback<BbScannerBarcodeResult>`", reference);
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public class McpToolTests
         Assert.Contains("**MaxScanLines** : `int` = `15`", reference);
         Assert.Contains("**TryReversedRows** : `bool` = `true`", reference);
         Assert.Contains("**TryHarder** : `bool` = `false`", reference);
-        Assert.Contains("**Region** : `BbScanRegion` = `BbScanRegion.Full`", reference);
+        Assert.Contains("**Region** : `BbScannerScanRegion` = `BbScannerScanRegion.Full`", reference);
     }
 
     [TestMethod]
@@ -115,7 +115,7 @@ public class McpToolTests
     [TestMethod]
     public async Task What_the_compiler_writes_for_a_record_is_left_out()
     {
-        var reference = await McpCall.TextAsync("GetBbScannerApi", new() { ["typeName"] = "BbCameraDevice" });
+        var reference = await McpCall.TextAsync("GetBbScannerApi", new() { ["typeName"] = "BbScannerCameraDevice" });
 
         Assert.DoesNotContain("- **Equals**", reference);
         Assert.DoesNotContain("- **GetHashCode**", reference);
@@ -154,7 +154,7 @@ public class McpToolTests
     {
         var qr = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "QrCode" });
 
-        Assert.StartsWith("# QR Code (`BbBarcodeFormat.QrCode`)", qr);
+        Assert.StartsWith("# QR Code (`BbScannerBarcodeFormat.QrCode`)", qr);
         Assert.Contains("ISO/IEC 18004", qr);
         Assert.Contains("| `TryHarder` | `bool` | `false` |", qr);
         Assert.Contains("| `AllowInverted` | `bool` | `false` |", qr);
@@ -171,7 +171,7 @@ public class McpToolTests
         var byName = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "EAN-13" });
         var byMember = await McpCall.TextAsync("GetBbScannerFormats", new() { ["format"] = "Ean13" });
 
-        Assert.StartsWith("# EAN-13 (`BbBarcodeFormat.Ean13`)", byName);
+        Assert.StartsWith("# EAN-13 (`BbScannerBarcodeFormat.Ean13`)", byName);
         Assert.AreEqual(byMember, byName);
     }
 
@@ -220,7 +220,7 @@ public class McpToolTests
         Assert.Contains("@rendermode InteractiveServer", guide);
         Assert.Contains("MaximumReceiveMessageSize", guide);
         Assert.Contains("watchdog", guide);
-        Assert.Contains("BbBarcodeDecoder", guide);
+        Assert.Contains("BbScannerBarcodeDecoder", guide);
         Assert.Contains("#### Blazor Server", guide, "The quoted guide section should be demoted under 'From the guide'.");
     }
 

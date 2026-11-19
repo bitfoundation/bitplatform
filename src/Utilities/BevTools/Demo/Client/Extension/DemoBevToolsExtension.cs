@@ -28,7 +28,7 @@ public sealed class DemoBevToolsExtension : IBevToolsExtension
 /// Shows <see cref="FilterState"/> - a plain store that knows nothing about BevTools - in the State panel. Its event
 /// carries no information, so the adapter names each change by comparing with the values it saw last.
 /// </summary>
-internal sealed class FilterStateAdapter : IBevStateProvider
+internal sealed class FilterStateAdapter : IBevToolsStateProvider
 {
     private readonly FilterState _filter;
     private FilterSnapshot _last;
@@ -45,7 +45,7 @@ internal sealed class FilterStateAdapter : IBevStateProvider
 
     public string? Description => "a store without BevTools support, shown by the demo's extension";
 
-    public event Action<BevStateChangeInfo>? Changed;
+    public event Action<BevToolsStateChangeInfo>? Changed;
 
     public object? GetSnapshot() => Snapshot();
 
@@ -54,10 +54,10 @@ internal sealed class FilterStateAdapter : IBevStateProvider
     private void OnChanged()
     {
         var now = Snapshot();
-        var change = now.Query != _last.Query ? new BevStateChangeInfo("SetQuery", now.Query)
-            : now.Category != _last.Category ? new BevStateChangeInfo("SetCategory", now.Category)
-            : now.MaxPrice != _last.MaxPrice ? new BevStateChangeInfo("SetMaxPrice", now.MaxPrice.ToString("C0"))
-            : new BevStateChangeInfo("Notify", "nothing changed");
+        var change = now.Query != _last.Query ? new BevToolsStateChangeInfo("SetQuery", now.Query)
+            : now.Category != _last.Category ? new BevToolsStateChangeInfo("SetCategory", now.Category)
+            : now.MaxPrice != _last.MaxPrice ? new BevToolsStateChangeInfo("SetMaxPrice", now.MaxPrice.ToString("C0"))
+            : new BevToolsStateChangeInfo("Notify", "nothing changed");
         _last = now;
         Changed?.Invoke(change);
     }
@@ -69,7 +69,7 @@ internal sealed class FilterStateAdapter : IBevStateProvider
 /// Turns the custom "sync" events the Extending page records through <see cref="IBevToolsTimeline"/> into a finding.
 /// A rule reads only what the context gives it - recent events and component snapshots - and changes nothing.
 /// </summary>
-internal sealed class SlowSyncRule : IBevDiagnosticRule
+internal sealed class SlowSyncRule : IBevToolsDiagnosticRule
 {
     private const double SlowMs = 1000;
 
@@ -79,7 +79,7 @@ internal sealed class SlowSyncRule : IBevDiagnosticRule
 
     public string Description => "An inventory sync took longer than a second (contributed by the demo's extension).";
 
-    public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+    public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context)
     {
         var slow = context.EventsInWindow(BevToolsEventKind.Custom, TimeSpan.FromMinutes(1))
             .Where(e => e.Category == "sync" && e.DurationMs > SlowMs)
@@ -89,9 +89,9 @@ internal sealed class SlowSyncRule : IBevDiagnosticRule
             yield break;
         }
 
-        yield return new BevDiagnostic(
+        yield return new BevToolsDiagnostic(
             Id,
-            BevDiagnosticSeverity.Warning,
+            BevToolsDiagnosticSeverity.Warning,
             slow.Count == 1 ? $"An inventory sync took {slow[0].DurationMs:0} ms" : $"{slow.Count} inventory syncs took over {SlowMs:0} ms",
             $"Longest: {slow.Max(e => e.DurationMs):0} ms, over the {SlowMs:0} ms this app allows. Recorded by the app through IBevToolsTimeline.BeginActivity.",
             "Sync in the background and show the last result meanwhile, or sync only what changed.",

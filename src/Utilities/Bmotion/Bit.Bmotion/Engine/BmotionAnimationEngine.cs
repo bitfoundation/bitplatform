@@ -44,7 +44,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     private readonly List<KeyValuePair<string, BmotionElementAnimationState>> _tickBuffer = new();
 
     public BmotionAnimationEngine(IBmotionInterop interop, ILogger<BmotionAnimationEngine>? logger = null)
-        : this(interop, logger, new BitBmotionOptions())
+        : this(interop, logger, new BmotionOptions())
     {
     }
 
@@ -53,7 +53,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     /// <see cref="BmotionAnimateService"/> created on this engine alone
     /// (<see cref="BmotionAnimateService(BmotionAnimationEngine, IBmotionInterop)"/>) follows them.
     /// </summary>
-    public BmotionAnimationEngine(IBmotionInterop interop, ILogger<BmotionAnimationEngine>? logger, BitBmotionOptions options)
+    public BmotionAnimationEngine(IBmotionInterop interop, ILogger<BmotionAnimationEngine>? logger, BmotionOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
         _interop = interop;
@@ -62,7 +62,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>The library-wide options this engine was created with: the defaults when it was given none.</summary>
-    internal BitBmotionOptions Options { get; }
+    internal BmotionOptions Options { get; }
 
     /// <summary>This engine's logger, for a service created on the engine alone.</summary>
     internal ILogger? Logger => _logger;
@@ -397,7 +397,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         }
     }
 
-    // ── Seeking (BmAnimationControls) ─────────────────────────────────────────
+    // ── Seeking (BmotionAnimationControls) ─────────────────────────────────────────
 
     /// <summary>
     /// The element's values for <paramref name="keys"/> as an animation about to start on them would start from -
@@ -482,9 +482,9 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sets (or clears) the element's transform-string rewrite - see <see cref="BmTransformTemplate"/>.
+    /// Sets (or clears) the element's transform-string rewrite - see <see cref="BmotionTransformTemplate"/>.
     /// </summary>
-    internal void SetTransformTemplate(string elementId, BmTransformTemplate? template)
+    internal void SetTransformTemplate(string elementId, BmotionTransformTemplate? template)
     {
         if (_elements.TryGetValue(elementId, out var state))
             state.TransformTemplate = template;
@@ -682,7 +682,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             Type = BmotionTransitionType.Tween,
             Duration = (end - from) / 1000,
             Delay = (from - replay.PlayedMs) / 1000,
-            Ease = BmEase.Linear,
+            Ease = BmotionEase.Linear,
             RepeatInfinite = forever,
         };
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -715,7 +715,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         string elementId,
         double velX, double velY,
         bool momentum,
-        BmDragConstraints? constraints,
+        BmotionDragConstraints? constraints,
         string? axis,
         BmotionTransitionConfig? snapTransition,
         bool reducedMotion = false)
@@ -1086,7 +1086,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
                     if (instantValues.ContainsKey(key)) instantValues[key] = "auto";
             state.SetInstant(instantValues);
             // A handler of the start may unregister the element: nothing more is started for it then.
-            if (observed && !ReportPart(elementId, instantValues.Keys, BmPlaybackStrategy.Instant, null, Task.FromResult(true)))
+            if (observed && !ReportPart(elementId, instantValues.Keys, BmotionPlaybackStrategy.Instant, null, Task.FromResult(true)))
             {
                 tcs?.TrySetResult(false);
                 return;
@@ -1141,7 +1141,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             if (observed)
             {
                 if (!ReportPart(elementId, browserValues!.Keys,
-                        offload.Recorded ? BmPlaybackStrategy.BrowserRecorded : BmPlaybackStrategy.BrowserTimeline,
+                        offload.Recorded ? BmotionPlaybackStrategy.BrowserRecorded : BmotionPlaybackStrategy.BrowserTimeline,
                         null, offload.Plan.Completion?.Task))
                 {
                     offload.Plan.Completion?.TrySetResult(false);
@@ -1151,7 +1151,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
                 // An interruption of some of its keys hands the rest to frame-loop drivers: from then on they are a
                 // frame-loop part (which ends the browser part, as interrupted).
                 offload.Plan.HandOff = (keys, carried) =>
-                    ReportPart(elementId, keys, BmPlaybackStrategy.FrameLoop, HandOffReason, carried);
+                    ReportPart(elementId, keys, BmotionPlaybackStrategy.FrameLoop, HandOffReason, carried);
             }
             RegisterWaapiPlan(elementId, state, offload.Plan);
             foreach (var key in offload.Plan.Keys) state.StartWritten(key);
@@ -1164,7 +1164,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             WarnIfDegradingOnServer(elementId, loopValues, transition);
             var loopPart = Part();
             if (observed && !ReportPart(elementId, loopValues.Keys,
-                    _interop.IsInProcess ? BmPlaybackStrategy.FrameLoop : BmPlaybackStrategy.InstantWithoutFrameLoop,
+                    _interop.IsInProcess ? BmotionPlaybackStrategy.FrameLoop : BmotionPlaybackStrategy.InstantWithoutFrameLoop,
                     loopReason ?? (browserDeclined ? BrowserDeclinedReason : "it needs the frame loop"), loopPart?.Task))
             {
                 loopPart?.TrySetResult(false);
@@ -1420,7 +1420,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         if (!BmotionBrowserTiming.CanPlay(config)) return null;
         // A mirrored repeat plays its way back with the same curve (B→A eased forwards); the browser's alternate
         // direction would play the way out backwards instead - a different curve unless it is symmetric.
-        if (config.RepeatType == BmRepeatType.Mirror && (config.IsInfiniteRepeat || config.Repeat > 0)) return null;
+        if (config.RepeatType == BmotionRepeatType.Mirror && (config.IsInfiniteRepeat || config.Repeat > 0)) return null;
 
         var numeric = new Dictionary<string, (double From, double To)>(StringComparer.OrdinalIgnoreCase);
         var strings = new Dictionary<string, (string FromCss, string ToCss, BmotionElementAnimationState.WaapiPlan.StringTrack Track)>(StringComparer.Ordinal);
@@ -1485,7 +1485,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             DelayMs = delayMs,
             DurationMs = durationMs,
             Progress = samples,
-            Ease = config.Type != BmotionTransitionType.Spring && config.StepCount > 0 ? BmEaseFunctions.Get(config) : null,
+            Ease = config.Type != BmotionTransitionType.Spring && config.StepCount > 0 ? BmotionEaseFunctions.Get(config) : null,
             Values = numeric,
             Strings = strings.Count == 0 ? null : strings.ToDictionary(kv => kv.Key, kv => kv.Value.Track, StringComparer.Ordinal),
             Iterations = infinite ? -1 : config.Repeat,
@@ -1558,7 +1558,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     /// browser interpolates (filters, shadows, clip paths, ...). Null otherwise.
     /// </summary>
     private async ValueTask<(string FromCss, string ToCss, BmotionElementAnimationState.WaapiPlan.StringTrack Track)?> TryStringEndpointsAsync(
-        BmotionElementAnimationState state, string key, string to, BmColorSpace space)
+        BmotionElementAnimationState state, string key, string to, BmotionColorSpace space)
     {
         if (state.CurrentValue(key) is not string from) return null;
         // An unregistered custom property interpolates discretely: only a recording reproduces the engine there.
@@ -1568,7 +1568,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         {
             if (BmotionColorInterpolator.Parse(from) is not { } a || BmotionColorInterpolator.Parse(to) is not { } b) return null;
             string fromCss, toCss;
-            if (space == BmColorSpace.Oklab)
+            if (space == BmotionColorSpace.Oklab)
             {
                 if (!await OklabSupportedAsync()) return null;
                 fromCss = BmotionColorInterpolator.ToOklabCss(a);
@@ -1683,10 +1683,10 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         }
         if (config.IsInfiniteRepeat)
         {
-            if (perKey || config.RepeatType == BmRepeatType.Reverse) return null;
+            if (perKey || config.RepeatType == BmotionRepeatType.Reverse) return null;
             // One cycle - a mirror's is the way out and the way back - followed by its repeat delay, on a loop.
             record.RepeatInfinite = false;
-            record.Repeat = config.RepeatType == BmRepeatType.Mirror ? 1 : 0;
+            record.Repeat = config.RepeatType == BmotionRepeatType.Mirror ? 1 : 0;
             holdMs = Math.Max(0, config.RepeatDelay * 1000);
             iterations = -1;
         }
@@ -1783,7 +1783,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     /// so anything else has to stay on the time-based engine.
     /// </summary>
     internal async ValueTask<int> AttachScrollTimelineAsync(
-        string elementId, Dictionary<string, object?> values, BmScrollTimeline timeline)
+        string elementId, Dictionary<string, object?> values, BmotionScrollTimeline timeline)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return 0;
         if (!TryCollectFrameArrays(state, values, out var frameArrays, out var targets,
@@ -1999,7 +1999,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             try
             {
                 if (IsObserved && !ReportPart(elementId, values.Keys,
-                        _interop.IsInProcess ? BmPlaybackStrategy.FrameLoop : BmPlaybackStrategy.InstantWithoutFrameLoop,
+                        _interop.IsInProcess ? BmotionPlaybackStrategy.FrameLoop : BmotionPlaybackStrategy.InstantWithoutFrameLoop,
                         NeverStartedReason, tcs?.Task))
                 {
                     tcs?.TrySetResult(false);
@@ -2035,18 +2035,18 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Detached value animations (drive BmValue instances - no DOM element)
+    // Detached value animations (drive BmotionValue instances - no DOM element)
     // ═══════════════════════════════════════════════════════════════════════════
 
     private sealed record DetachedAnim(IBmotionAnimationDriver Driver, TaskCompletionSource<bool>? Tcs);
 
-    // Keyed by an owner object (typically the BmValue being driven) so a new animation on
+    // Keyed by an owner object (typically the BmotionValue being driven) so a new animation on
     // the same value supersedes the previous one, mirroring per-property element animations.
     private readonly Dictionary<object, DetachedAnim> _detachedAnims = new();
 
     /// <summary>
     /// Starts a driver that isn't attached to a DOM element; <paramref name="apply"/> receives
-    /// each interpolated value (typically forwarding into a <see cref="BmValue{T}"/>).
+    /// each interpolated value (typically forwarding into a <see cref="BmotionValue{T}"/>).
     /// Supersedes any detached animation already running for <paramref name="key"/>. Returns the driver started,
     /// which <see cref="TryRetargetDetached"/> takes to tell it from one someone else started on the same key since.
     /// </summary>
@@ -2066,7 +2066,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // Timeline schedulers (BmSequence segment starts)
+    // Timeline schedulers (BmotionSequence segment starts)
     // ═══════════════════════════════════════════════════════════════════════════
 
     // Sequences schedule their segment starts here rather than on wall-clock timers, so a
@@ -2139,7 +2139,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         }
 
         // Detached value animations tick BEFORE the elements: their apply callbacks typically set
-        // BmValues whose subscribers mark element properties dirty, and ticking them first
+        // BmotionValues whose subscribers mark element properties dirty, and ticking them first
         // lets those changes flush to the DOM in this same frame instead of lagging one behind.
         if (_detachedAnims.Count > 0)
         {

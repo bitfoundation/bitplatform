@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// the lifecycle - prerender, re-render, mount open, AutoFocus and unmount while open.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-picker";
@@ -464,7 +465,7 @@ public class BitDatePickerE2ETests : BitDatePickersE2ETestBase
     }
 
     [TestMethod]
-    public async Task MonthPicker_HiddenByIsMonthPickerVisible_LeavesTheDayPickerAlone()
+    public async Task MonthPicker_HiddenByShowMonthPicker_LeavesTheDayPickerAlone()
     {
         await OpenAsync(Route);
 

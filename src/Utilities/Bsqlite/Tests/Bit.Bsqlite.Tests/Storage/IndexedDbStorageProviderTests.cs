@@ -1,7 +1,4 @@
-﻿using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.IndexedDb;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 [TestClass]
 public sealed class IndexedDbStorageProviderTests

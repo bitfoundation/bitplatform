@@ -4,8 +4,8 @@ namespace Bit.Bmotion.Tests.Services;
 
 /// <summary>
 /// Tests for <see cref="BmotionAnimateService"/> (motion.dev's <c>animate()</c>) and the
-/// <see cref="BmAnimationControls"/> it returns: element targets by selector (with stagger), motion
-/// values, raw numbers, spring followers and <see cref="BmSequence"/> timelines - with the engine
+/// <see cref="BmotionAnimationControls"/> it returns: element targets by selector (with stagger), motion
+/// values, raw numbers, spring followers and <see cref="BmotionSequence"/> timelines - with the engine
 /// ticked by hand and compositor animations finished on demand.
 /// </summary>
 [TestClass]
@@ -118,7 +118,7 @@ public class AnimateServiceTests
     public async Task UnderReducedMotion_TransformsLand_AndFadesStillAnimate()
     {
         var interop = new FakeBmotionInterop();
-        var engine = new BmotionAnimationEngine(interop, null, new BitBmotionOptions { ReducedMotion = BmReducedMotionMode.Always });
+        var engine = new BmotionAnimationEngine(interop, null, new BmotionOptions { ReducedMotion = BmotionReducedMotionMode.Always });
         await using var _ = engine;
         var service = new BmotionAnimateService(engine, interop);
         interop.SelectorResolver = _ => ["li-0", "li-1"];
@@ -142,12 +142,12 @@ public class AnimateServiceTests
     {
         var interop = new FakeBmotionInterop { SelectorResolver = s => [s.TrimStart('#')] };
         interop.WebAnimationsSupported = false;
-        var engine = new BmotionAnimationEngine(interop, null, new BitBmotionOptions { ReducedMotion = BmReducedMotionMode.Always });
+        var engine = new BmotionAnimationEngine(interop, null, new BmotionOptions { ReducedMotion = BmotionReducedMotionMode.Always });
         await using var _ = engine;
         var service = new BmotionAnimateService(engine, interop);
         engine.RegisterElement("box", new Dictionary<string, object?> { ["opacity"] = 0.0 });
-        var transition = Bm.Tween(1, BmEase.Linear);
-        transition.Properties = new() { ["opacity"] = Bm.Tween(0.2, BmEase.Linear) };
+        var transition = Bm.Tween(1, BmotionEase.Linear);
+        transition.Properties = new() { ["opacity"] = Bm.Tween(0.2, BmotionEase.Linear) };
 
         await service.AnimateAsync("#box", Bm.To(x: 100, opacity: 1), transition);
         RunFrames(engine, 0, 96);
@@ -188,14 +188,14 @@ public class AnimateServiceTests
     // ── Playback controls ─────────────────────────────────────────────────────
 
     // A color tween runs on the frame loop (it never offloads), so playback rate is observable.
-    private static async Task<(BmotionAnimateService, BmotionAnimationEngine, BmAnimationControls)> StartColorTween(double seconds = 1)
+    private static async Task<(BmotionAnimateService, BmotionAnimationEngine, BmotionAnimationControls)> StartColorTween(double seconds = 1)
     {
         var (service, engine, interop) = Create();
         // Playback control on the frame loop, ticked by hand (the fake browser has no Web Animations).
         interop.WebAnimationsSupported = false;
         interop.SelectorResolver = _ => ["el"];
         engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
-        var controls = await service.AnimateAsync("#el", Bm.To(backgroundColor: "#ffffff"), Bm.Tween(seconds, ease: BmEase.Linear));
+        var controls = await service.AnimateAsync("#el", Bm.To(backgroundColor: "#ffffff"), Bm.Tween(seconds, ease: BmotionEase.Linear));
         return (service, engine, controls);
     }
 
@@ -279,7 +279,7 @@ public class AnimateServiceTests
         var seen = new List<double>();
         value.Subscribe(v => seen.Add(v));
 
-        var animation = service.AnimateAsync(value, 100, Bm.Tween(0.2, ease: BmEase.Linear));
+        var animation = service.AnimateAsync(value, 100, Bm.Tween(0.2, ease: BmotionEase.Linear));
         RunFrames(engine, 0, 400);
         await animation.WaitAsync(Timeout);
 
@@ -308,7 +308,7 @@ public class AnimateServiceTests
         await using var __ = engine;
         var updates = new List<double>();
 
-        var animation = service.AnimateAsync(0, 100, v => updates.Add(v), Bm.Tween(0.1, ease: BmEase.Linear));
+        var animation = service.AnimateAsync(0, 100, v => updates.Add(v), Bm.Tween(0.1, ease: BmotionEase.Linear));
         Assert.AreEqual(0, updates[0], "the start value is reported synchronously");
 
         RunFrames(engine, 0, 200);
@@ -324,7 +324,7 @@ public class AnimateServiceTests
         var (service, engine, _) = Create();
         await using var __ = engine;
         var source = Bm.Value(0.0);
-        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+        var follower = service.Spring(source, new BmotionSpring { Stiffness = 300, Damping = 30 });
 
         source.SetSync(100);
         Assert.AreEqual(0, follower.Value, "the follower moves on the frame loop, not instantly");
@@ -346,7 +346,7 @@ public class AnimateServiceTests
         var (service, engine, _) = Create();
         await using var __ = engine;
         var source = Bm.Value(0.0);
-        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+        var follower = service.Spring(source, new BmotionSpring { Stiffness = 300, Damping = 30 });
 
         for (int frame = 0; frame < 30; frame++)
         {
@@ -363,7 +363,7 @@ public class AnimateServiceTests
         var (service, engine, _) = Create();
         await using var __ = engine;
         var source = Bm.Value(0.0);
-        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+        var follower = service.Spring(source, new BmotionSpring { Stiffness = 300, Damping = 30 });
 
         // A wide first move, then a short one: the second target, not the first one's scale, decides when it rests.
         source.SetSync(3000);
@@ -382,7 +382,7 @@ public class AnimateServiceTests
         var (service, engine, _) = Create();
         await using var __ = engine;
         var source = Bm.Value(0.0);
-        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+        var follower = service.Spring(source, new BmotionSpring { Stiffness = 300, Damping = 30 });
         follower.Subscribe(v => { if (v == 100) source.SetSync(200); });
 
         source.SetSync(100);
@@ -397,7 +397,7 @@ public class AnimateServiceTests
         var (service, engine, _) = Create();
         await using var __ = engine;
         var source = Bm.Value(0.0);
-        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30, Velocity = -2000 });
+        var follower = service.Spring(source, new BmotionSpring { Stiffness = 300, Damping = 30, Velocity = -2000 });
 
         source.SetSync(100);
         RunFrames(engine, 0, 16);
@@ -413,7 +413,7 @@ public class AnimateServiceTests
         var (service, engine, _) = Create();
         await using var __ = engine;
         var source = Bm.Value(0.0);
-        var follower = service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+        var follower = service.Spring(source, new BmotionSpring { Stiffness = 300, Damping = 30 });
         source.SetSync(100);
         RunFrames(engine, 0, 48);
 
@@ -435,7 +435,7 @@ public class AnimateServiceTests
         await using var __ = engine;
         interop.RafLoopStartFailures = 1;
         var source = Bm.Value(0.0);
-        service.Spring(source, new BmSpring { Stiffness = 300, Damping = 30 });
+        service.Spring(source, new BmotionSpring { Stiffness = 300, Damping = 30 });
 
         source.SetSync(100);
         Assert.AreEqual(0, interop.CountOf("startRafLoop"), "the first start failed");
@@ -466,7 +466,7 @@ public class AnimateServiceTests
         return created;
     }
 
-    private static readonly BmSequence TwoSteps = new BmSequence()
+    private static readonly BmotionSequence TwoSteps = new BmotionSequence()
         .Add("#a", Bm.To(x: 100), Bm.Tween(0.1))
         .Add("#b", Bm.To(x: 50), Bm.Tween(0.1)); // starts when "#a" ends, at 0.1s
 

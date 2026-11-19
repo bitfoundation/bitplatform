@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Integrations;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>
 /// Order for objects kept in a collaborative map: each entry carries a <see cref="BcrdtOrderKey"/>, and the objects

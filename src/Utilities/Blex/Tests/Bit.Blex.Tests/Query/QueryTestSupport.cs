@@ -1,4 +1,3 @@
-using Bit.Blex.Query;
 using Microsoft.Extensions.Time.Testing;
 
 namespace Bit.Blex.Tests.Query;
@@ -9,24 +8,32 @@ namespace Bit.Blex.Tests.Query;
 /// </summary>
 public sealed class FakeServer<T>
 {
+    private readonly Lock _gate = new();
     private readonly List<(TaskCompletionSource<T> Response, CancellationToken Token)> _requests = [];
 
-    public int Calls => _requests.Count;
+    public int Calls { get { lock (_gate) return _requests.Count; } }
 
     /// <summary>Whether request <paramref name="index"/>'s token has been cancelled.</summary>
-    public bool WasCancelled(int index) => _requests[index].Token.IsCancellationRequested;
+    public bool WasCancelled(int index) => Request(index).Token.IsCancellationRequested;
 
     /// <summary>A fetch that parks until answered; it honours its token unless <paramref name="ignoreToken"/>.</summary>
     public Func<CancellationToken, Task<T>> Fetch(bool ignoreToken = false) => ct =>
     {
         var response = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _requests.Add((response, ct));
+        lock (_gate)
+            _requests.Add((response, ct));
         return ignoreToken ? response.Task : response.Task.WaitAsync(ct);
     };
 
-    public void Respond(int index, T value) => _requests[index].Response.SetResult(value);
+    public void Respond(int index, T value) => Request(index).Response.SetResult(value);
 
-    public void Fail(int index, Exception error) => _requests[index].Response.SetException(error);
+    public void Fail(int index, Exception error) => Request(index).Response.SetException(error);
+
+    private (TaskCompletionSource<T> Response, CancellationToken Token) Request(int index)
+    {
+        lock (_gate)
+            return _requests[index];
+    }
 }
 
 /// <summary>One page of a feed: its number, what it holds, and the next page's number, or <c>null</c> on the last.</summary>
@@ -35,6 +42,7 @@ public sealed record FeedPage(int Number, string Content, int? Next);
 /// <summary>A paged server: answers at once unless told to hold, and remembers which pages were asked for.</summary>
 public sealed class PagedServer
 {
+    private readonly Lock _gate = new();
     private readonly List<(int Page, TaskCompletionSource<FeedPage> Response)> _requests = [];
 
     public bool Hold { get; set; }
@@ -43,25 +51,36 @@ public sealed class PagedServer
 
     public string Version { get; set; } = "v1";
 
-    public IReadOnlyList<int> Requested => [.. _requests.Select(r => r.Page)];
+    public IReadOnlyList<int> Requested { get { lock (_gate) return [.. _requests.Select(r => r.Page)]; } }
 
     public Task<FeedPage> Fetch(int? page, CancellationToken cancellationToken)
     {
         var response = new TaskCompletionSource<FeedPage>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _requests.Add((page!.Value, response));
+        int index;
+        lock (_gate)
+        {
+            _requests.Add((page!.Value, response));
+            index = _requests.Count - 1;
+        }
         if (!Hold)
-            Respond(_requests.Count - 1);
+            Respond(index);
 
         return response.Task.WaitAsync(cancellationToken);
     }
 
     public void Respond(int index)
     {
-        var page = _requests[index].Page;
-        _requests[index].Response.TrySetResult(new FeedPage(page, $"{Version}-{page}", page < Pages ? page + 1 : null));
+        var (page, response) = Request(index);
+        response.TrySetResult(new FeedPage(page, $"{Version}-{page}", page < Pages ? page + 1 : null));
     }
 
-    public void Fail(int index, Exception error) => _requests[index].Response.TrySetException(error);
+    public void Fail(int index, Exception error) => Request(index).Response.TrySetException(error);
+
+    private (int Page, TaskCompletionSource<FeedPage> Response) Request(int index)
+    {
+        lock (_gate)
+            return _requests[index];
+    }
 }
 
 /// <summary>A fake clock that counts the timers created on it, so a test advances only once a wait has begun.</summary>

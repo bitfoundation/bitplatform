@@ -114,7 +114,7 @@ public sealed class LazyLoadingTests
             """);
 
         // The server prerenders the router - LazyAssemblyLoader resolved there too - the layout, whose call checks its
-        // options against the server's registration, and the card, whose enter it compiles to CSS (BmPrerenderMode.Animate).
+        // options against the server's registration, and the card, whose enter it compiles to CSS (BmotionPrerenderMode.Animate).
         var response = await GotoAsync(page, "/showcase");
         Assert.AreEqual(200, response?.Status);
         var prerendered = await response!.TextAsync();
@@ -216,7 +216,7 @@ public sealed class LazyLoadingTests
         _context = await browser.NewContextAsync(new()
         {
             ViewportSize = new() { Width = 1280, Height = 720 },
-            // The sample follows the visitor's preference (BmReducedMotionMode.User): explicit, so the OS of the machine
+            // The sample follows the visitor's preference (BmotionReducedMotionMode.User): explicit, so the OS of the machine
             // running the suite cannot turn off the motion measured here.
             ReducedMotion = ReducedMotion.NoPreference,
         });

@@ -1,7 +1,5 @@
 ﻿using System.Buffers.Binary;
 using System.Text;
-using Bit.Bmage.Input;
-using Bit.Bmage.Metadata;
 
 namespace Bit.Bmage.Tests;
 
@@ -22,26 +20,26 @@ public sealed class SrgbProfileTests
     [DataRow("Display P3", false)]
     [DataRow("Adobe RGB (1998)", false)]
     public void AVersion2ProfileIsKnownByItsWholeDescription(string description, bool srgb)
-        => Assert.AreEqual(srgb, ImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version2Description(description))));
+        => Assert.AreEqual(srgb, BmageImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version2Description(description))));
 
     [TestMethod]
     public void AVersion4ProfileIsKnownByAnyOfItsTranslations()
     {
-        Assert.IsTrue(ImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version4Description("sRGB IEC61966-2.1"))));
-        Assert.IsTrue(ImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version4Description("sRGB-Profil", "sRGB IEC61966-2.1"))));
-        Assert.IsFalse(ImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version4Description("Display P3"))));
-        Assert.IsFalse(ImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version4Description("sRGB linear"))));
+        Assert.IsTrue(BmageImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version4Description("sRGB IEC61966-2.1"))));
+        Assert.IsTrue(BmageImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version4Description("sRGB-Profil", "sRGB IEC61966-2.1"))));
+        Assert.IsFalse(BmageImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version4Description("Display P3"))));
+        Assert.IsFalse(BmageImageProcessorFactory.IsSrgbProfile(Profile("RGB ", Version4Description("sRGB linear"))));
     }
 
     [TestMethod]
     public void AProfileThatIsNotRgbOrIsCutShortIsNotSrgb()
     {
-        Assert.IsFalse(ImageProcessorFactory.IsSrgbProfile(Profile("GRAY", Version2Description("sRGB IEC61966-2.1"))), "a grey profile");
+        Assert.IsFalse(BmageImageProcessorFactory.IsSrgbProfile(Profile("GRAY", Version2Description("sRGB IEC61966-2.1"))), "a grey profile");
         var whole = Profile("RGB ", Version2Description("sRGB IEC61966-2.1"));
-        Assert.IsTrue(ImageProcessorFactory.IsSrgbProfile(whole));
+        Assert.IsTrue(BmageImageProcessorFactory.IsSrgbProfile(whole));
         for (var length = 0; length < whole.Length; length++)
-            Assert.IsFalse(ImageProcessorFactory.IsSrgbProfile(whole.AsSpan(0, length)), $"cut at {length} bytes");
-        Assert.IsFalse(ImageProcessorFactory.IsSrgbProfile(Encoding.ASCII.GetBytes(new string('x', 40) + "sRGB IEC61966-2.1")), "not a profile");
+            Assert.IsFalse(BmageImageProcessorFactory.IsSrgbProfile(whole.AsSpan(0, length)), $"cut at {length} bytes");
+        Assert.IsFalse(BmageImageProcessorFactory.IsSrgbProfile(Encoding.ASCII.GetBytes(new string('x', 40) + "sRGB IEC61966-2.1")), "not a profile");
     }
 
     /// <summary>A PNG profile past the size the reader inflates reads as none, but is still no sRGB profile.</summary>
@@ -49,14 +47,14 @@ public sealed class SrgbProfileTests
     public void APngProfileTooLargeToReadStillGoesToTheBrowser()
     {
         using var image = TestImages.Gradient(8, 8);
-        var png = Codecs.Png.PngEncoder.Encode(image).Data;
-        var srgb = PngContainer.WriteMetadata(png, new ImageMetadata(null, Profile("RGB ", Version2Description("sRGB IEC61966-2.1")), default, ImageFormat.Png));
-        var oversized = PngContainer.WriteMetadata(png, new ImageMetadata(null, new byte[5 << 20], default, ImageFormat.Png));
+        var png = BmagePngEncoder.Encode(image).Data;
+        var srgb = BmagePngContainer.WriteMetadata(png, new BmageImageMetadata(null, Profile("RGB ", Version2Description("sRGB IEC61966-2.1")), default, BmageImageFormat.Png));
+        var oversized = BmagePngContainer.WriteMetadata(png, new BmageImageMetadata(null, new byte[5 << 20], default, BmageImageFormat.Png));
 
-        Assert.IsFalse(ImageProcessorFactory.HasWideGamutProfile(ImageFormat.Png, png), "no profile");
-        Assert.IsFalse(ImageProcessorFactory.HasWideGamutProfile(ImageFormat.Png, srgb), "an sRGB profile");
-        Assert.IsTrue(PngContainer.ReadMetadata(oversized).IccProfile.IsEmpty, "the profile is past the cap");
-        Assert.IsTrue(ImageProcessorFactory.HasWideGamutProfile(ImageFormat.Png, oversized), "a profile too large to read");
+        Assert.IsFalse(BmageImageProcessorFactory.HasWideGamutProfile(BmageImageFormat.Png, png), "no profile");
+        Assert.IsFalse(BmageImageProcessorFactory.HasWideGamutProfile(BmageImageFormat.Png, srgb), "an sRGB profile");
+        Assert.IsTrue(BmagePngContainer.ReadMetadata(oversized).IccProfile.IsEmpty, "the profile is past the cap");
+        Assert.IsTrue(BmageImageProcessorFactory.HasWideGamutProfile(BmageImageFormat.Png, oversized), "a profile too large to read");
     }
 
     /// <summary>A profile holding only its header and the description tag.</summary>

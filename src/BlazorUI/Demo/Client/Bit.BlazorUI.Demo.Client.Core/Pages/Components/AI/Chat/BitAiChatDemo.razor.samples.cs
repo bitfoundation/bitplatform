@@ -280,7 +280,7 @@ public ValueTask DisposeAsync() => submitSession.DisposeAsync();";
                 <BitAiChatMessage Message=""message""
                                   Session=""templateSession""
                                   Conversation=""templateSession.Conversation""
-                                  IsLatest=""@(message == templateSession.Conversation.LastMessage)""
+                                  Latest=""@(message == templateSession.Conversation.LastMessage)""
                                   Style=""flex:1;min-width:0"" />
             </div>
         </MessageTemplate>

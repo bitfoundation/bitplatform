@@ -10,7 +10,7 @@ symbols the unit tests round trip against - so every benchmark measures a frame 
 
 | Class | What it covers |
 |-------|----------------|
-| `DecoderBenchmarks` | `BbBarcodeDecoder.Decode` on a frame holding a small QR code, a large one, a noisy one, a Data Matrix, a Code 128, an EAN-13, and nothing at all - each with every format enabled, with QR Code only and with the linear symbologies only, and the bytes each frame allocates. A frame with no symbol in it is the common case while a user is still aiming. |
+| `DecoderBenchmarks` | `BbScannerBarcodeDecoder.Decode` on a frame holding a small QR code, a large one, a noisy one, a Data Matrix, a Code 128, an EAN-13, and nothing at all - each with every format enabled, with QR Code only and with the linear symbologies only, and the bytes each frame allocates. A frame with no symbol in it is the common case while a user is still aiming. |
 | `StageBenchmarks` | The stages one at a time: grayscale conversion from RGBA (with and without subsampling), adaptive block binarization, binarizing one scan line, QR detection and decode, Data Matrix detection on an empty frame, and Code 128 on a row with no symbol. |
 | `SymbolBenchmarks` | The algorithmic pieces on their own, independent of image size: a QR and a Data Matrix module grid to payload - parsing, de-interleaving, Reed-Solomon and the bit stream. |
 

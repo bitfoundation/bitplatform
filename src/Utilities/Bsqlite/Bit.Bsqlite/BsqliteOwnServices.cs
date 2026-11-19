@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Bit.Bsqlite.Interop;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 

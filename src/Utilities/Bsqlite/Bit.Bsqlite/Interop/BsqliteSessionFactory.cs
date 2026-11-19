@@ -1,9 +1,7 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Resolves a storage backend, opens a transport against it, and only then records the binding.

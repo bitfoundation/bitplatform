@@ -40,7 +40,7 @@ public partial class BitAiChatMessageDemo
         },
         new()
         {
-            Name = "IsLatest",
+            Name = "Latest",
             Type = "bool",
             DefaultValue = "true",
             Description = "Whether this is the newest message in the transcript. Regeneration is offered only for the newest reply, because regenerating an older one discards everything after it. It defaults to true, so a reply drawn on its own with a Session offers it; a transcript drawn by hand sets it on the last message only, as BitAiMessageList does.",

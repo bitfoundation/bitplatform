@@ -24,10 +24,13 @@ public sealed class BitDataGridState
     /// <summary>The grid-wide quick-search term, or <c>null</c> when no search was active.</summary>
     public string? Search { get; set; }
 
+    /// <summary>The sorts that were active, each with its priority.</summary>
     public List<BitDataGridSortDescriptor> Sorts { get; set; } = new();
 
+    /// <summary>The column filters that were active.</summary>
     public List<BitDataGridFilterDescriptor> Filters { get; set; } = new();
 
+    /// <summary>The groupings that were active, in nesting order.</summary>
     public List<BitDataGridGroupDescriptor> Groups { get; set; } = new();
 
     /// <summary>
@@ -56,6 +59,7 @@ public sealed class BitDataGridColumnState
     /// <summary>The column's resolved id (<c>ColumnId</c> or <c>Field</c>).</summary>
     public string ColumnId { get; set; } = string.Empty;
 
+    /// <summary>Whether the column was shown, rather than hidden from the column chooser or by code.</summary>
     public bool Visible { get; set; } = true;
 
     /// <summary>The user-resized width in pixels, or <c>null</c> when the column keeps its declared width.</summary>

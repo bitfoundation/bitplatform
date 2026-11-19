@@ -64,7 +64,7 @@
     <button id="cbv-stream-append" @onclick="Append">Append</button>
     <button id="cbv-stream-finish" @onclick="() => _streaming = false">Finish</button>
     <span id="cbv-stream-state">@(_streaming ? "streaming" : "done")</span>
-    <BitAiCodeBlockView Id="cbv-stream" Code="@_streamCode" Language="csharp" IsStreaming="_streaming" />
+    <BitAiCodeBlockView Id="cbv-stream" Code="@_streamCode" Language="csharp" Streaming="_streaming" />
 </E2ESection>
 
 <E2ESection Id="overflow" Title="Overflow">

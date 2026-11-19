@@ -1,4 +1,4 @@
-namespace Bit.BlazeDb.Blex;
+namespace Bit.BlazeDb;
 
 /// <summary>Registers the table Bit.Blex persists to on a BlazeDb database.</summary>
 public static class BlazeDbBlexExtensions

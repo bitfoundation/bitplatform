@@ -23,7 +23,7 @@
                                   OnEnter="() => Ask(draft)"
                                   Disabled="isLoading"
                                   Class="lp-chat-ask-field" />
-                    <BitButton OnClick="() => Ask(draft)" IsLoading="isLoading" LoadingLabel="@Localizer[nameof(LandingStrings.ChatLoading)]">@Localizer[nameof(LandingStrings.ChatSend)]</BitButton>
+                    <BitButton OnClick="() => Ask(draft)" Loading="isLoading" LoadingLabel="@Localizer[nameof(LandingStrings.ChatLoading)]">@Localizer[nameof(LandingStrings.ChatSend)]</BitButton>
                 </div>
                 @if (Suggestions is { Count: > 0 })
                 {

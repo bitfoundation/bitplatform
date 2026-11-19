@@ -30,7 +30,7 @@ public class LayoutModeTests
             : new BmotionBoundingRect { Left = 50, Top = 80, Width = 200, Height = 50 };
     }
 
-    private static (double dx, double dy, double sx, double sy) PlayFlip(BmLayout layout)
+    private static (double dx, double dy, double sx, double sy) PlayFlip(BmotionLayout layout)
     {
         using var ctx = new BmotionTestContext();
         ctx.Interop.BoundingRectProvider = MovingRect();
@@ -50,7 +50,7 @@ public class LayoutModeTests
     [TestMethod]
     public void Full_AnimatesBothPositionAndSize()
     {
-        var (dx, dy, sx, sy) = PlayFlip(BmLayout.Full);
+        var (dx, dy, sx, sy) = PlayFlip(BmotionLayout.Full);
 
         Assert.AreEqual(-50, dx, 1e-9);
         Assert.AreEqual(-80, dy, 1e-9);
@@ -61,7 +61,7 @@ public class LayoutModeTests
     [TestMethod]
     public void Position_TranslatesOnly()
     {
-        var (dx, dy, sx, sy) = PlayFlip(BmLayout.Position);
+        var (dx, dy, sx, sy) = PlayFlip(BmotionLayout.Position);
 
         Assert.AreEqual(-50, dx, 1e-9);
         Assert.AreEqual(-80, dy, 1e-9);
@@ -72,7 +72,7 @@ public class LayoutModeTests
     [TestMethod]
     public void Size_ScalesOnly_AndSnapsToTheNewPosition()
     {
-        var (dx, dy, sx, sy) = PlayFlip(BmLayout.Size);
+        var (dx, dy, sx, sy) = PlayFlip(BmotionLayout.Size);
 
         Assert.AreEqual(0, dx, 1e-9);
         Assert.AreEqual(0, dy, 1e-9);
@@ -82,7 +82,7 @@ public class LayoutModeTests
 
     // ── Holding the element through the render on Blazor Server ───────────────
 
-    private static BmotionTestContext RenderAndMove(bool inProcess, BmLayout layout, Func<string, BmotionBoundingRect?> rects)
+    private static BmotionTestContext RenderAndMove(bool inProcess, BmotionLayout layout, Func<string, BmotionBoundingRect?> rects)
     {
         var ctx = new BmotionTestContext();
         ctx.Interop.IsInProcess = inProcess;
@@ -90,7 +90,7 @@ public class LayoutModeTests
         var component = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Layout, layout)
-            .Add(p => p.LayoutAnchor, BmLayoutAnchor.Center)
+            .Add(p => p.LayoutAnchor, BmotionLayoutAnchor.Center)
             .Add(p => p.ChildContent, Div));
         component.Render(ps => ps.Add(p => p.Custom, "changed"));
         return ctx;
@@ -100,7 +100,7 @@ public class LayoutModeTests
     public void OnServer_TheSnapshotBeforeARender_HoldsTheElementThroughIt_InTheFlipsTerms()
     {
         // The FLIP is a round trip behind the render there: until it comes, the element is held where it was.
-        using var ctx = RenderAndMove(inProcess: false, BmLayout.Position, MovingRect());
+        using var ctx = RenderAndMove(inProcess: false, BmotionLayout.Position, MovingRect());
 
         var hold = ctx.Interop.ArgsOf("measureAndHoldLayout").Single();
         Assert.AreEqual("box", hold[0]);
@@ -116,7 +116,7 @@ public class LayoutModeTests
     public void OnServer_ARenderThatDoesntMoveTheElement_LetsGoOfTheHold()
     {
         var still = new BmotionBoundingRect { Left = 10, Top = 10, Width = 100, Height = 100 };
-        using var ctx = RenderAndMove(inProcess: false, BmLayout.Full, _ => still);
+        using var ctx = RenderAndMove(inProcess: false, BmotionLayout.Full, _ => still);
 
         Assert.AreEqual(1, ctx.Interop.CountOf("measureAndHoldLayout"));
         Assert.IsFalse(ctx.Interop.WasCalled("playWaapiFlip"));
@@ -127,7 +127,7 @@ public class LayoutModeTests
     public void OnWebAssembly_NothingIsHeld()
     {
         // The FLIP plays before the browser paints there.
-        using var ctx = RenderAndMove(inProcess: true, BmLayout.Full, MovingRect());
+        using var ctx = RenderAndMove(inProcess: true, BmotionLayout.Full, MovingRect());
 
         Assert.IsFalse(ctx.Interop.WasCalled("measureAndHoldLayout"));
         Assert.AreEqual(1, ctx.Interop.CountOf("playWaapiFlip"));
@@ -136,9 +136,9 @@ public class LayoutModeTests
     [TestMethod]
     public void Size_IsEnabledAndDistinctFromTheOtherModes()
     {
-        Assert.IsTrue(BmLayout.Size.Enabled);
-        Assert.AreEqual(BmLayoutMode.Size, BmLayout.Size.Mode);
-        Assert.AreNotEqual(BmLayout.Full, BmLayout.Size);
-        Assert.AreNotEqual(BmLayout.Position, BmLayout.Size);
+        Assert.IsTrue(BmotionLayout.Size.Enabled);
+        Assert.AreEqual(BmotionLayoutMode.Size, BmotionLayout.Size.Mode);
+        Assert.AreNotEqual(BmotionLayout.Full, BmotionLayout.Size);
+        Assert.AreNotEqual(BmotionLayout.Position, BmotionLayout.Size);
     }
 }

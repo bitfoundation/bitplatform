@@ -1,22 +1,5 @@
 ﻿namespace Bit.Bcrdt;
 
-/// <summary>How a map key changed within a transaction.</summary>
-public enum BcrdtKeyChangeAction
-{
-    /// <summary>The key did not exist before and does now.</summary>
-    Add,
-    /// <summary>The key existed before and has a different value now.</summary>
-    Update,
-    /// <summary>The key existed before and does not now.</summary>
-    Delete,
-}
-
-/// <summary>A single key's change within a transaction.</summary>
-/// <param name="Action">Whether the key was added, updated or removed.</param>
-/// <param name="OldValue">The value before the transaction, if there was one.</param>
-/// <param name="NewValue">The value after the transaction, if there is one.</param>
-public readonly record struct BcrdtKeyChange(BcrdtKeyChangeAction Action, object? OldValue, object? NewValue);
-
 /// <summary>
 /// What changed in one collaborative type during one transaction.
 /// </summary>

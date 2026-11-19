@@ -1,7 +1,6 @@
-﻿using Bit.Bsqlite.Interop;
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 
-namespace Bit.Bsqlite.Storage.FileSystem;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// The file system backend's databases as files: what exists, deleting, and copying images in and out.

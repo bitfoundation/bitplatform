@@ -236,7 +236,7 @@ public class DemoRegressionTests : DemoTest
     [TestMethod]
     public async Task TheExportTabStartsFromTheEditorsExportOptions()
     {
-        // The editor page exports with MetadataPolicy.StripSensitive; the built-in save button used to start from Remove.
+        // The editor page exports with BmageMetadataPolicy.StripSensitive; the built-in save button used to start from Remove.
         var page = await OpenEditorWithImageAsync();
         await page.GetByRole(AriaRole.Tab, new PageGetByRoleOptions { Name = "Export" }).ClickAsync();
         Assert.AreEqual("StripSensitive", await page.Locator(".bmg-panel-body select").Nth(1).InputValueAsync());

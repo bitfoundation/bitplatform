@@ -59,17 +59,16 @@ from every project that declares table types: analyzers do not flow transitively
 the engine only through another project, or only through `Bit.BlazeDb.EntityFrameworkCore`, compiles the
 attributes but generates nothing, and `TodoItem.Table` then does not exist.
 
-The browser backends (OPFS, IndexedDB, WebCrypto, tabs) ship in the same package, under the
-`Bit.BlazeDb.Browser` namespace. They are marked `[SupportedOSPlatform("browser")]` - the rest of the
+The browser backends (OPFS, IndexedDB, WebCrypto, tabs) ship in the same package and the same
+`Bit.BlazeDb` namespace. They are marked `[SupportedOSPlatform("browser")]` - the rest of the
 engine is not - so on the server, the desktop or MAUI they are simply left unused.
 
-Add the namespaces you use to `_Imports.razor` or a global using:
+Every public type of every BlazeDb package - the engine, the browser backends, the storage abstraction,
+the query API and the EF Core provider's `UseBlazeDb` - lives in the one `Bit.BlazeDb` namespace. Add it
+to `_Imports.razor` or a global using:
 
 ```csharp
 global using Bit.BlazeDb;
-global using Bit.BlazeDb.Browser;   // the browser backends
-global using Bit.BlazeDb.Storage;   // IBlazeDbStorage, the file and in-memory backends, encryption
-global using Bit.BlazeDb.Querying;  // BlazeDbQuery, BlazeDbBound
 ```
 
 ## Requirements
@@ -83,13 +82,13 @@ global using Bit.BlazeDb.Querying;  // BlazeDbQuery, BlazeDbBound
 
 | Package | Purpose |
 | --- | --- |
-| `Bit.BlazeDb` | The engine: tables, indexes, transactions, WAL/snapshot persistence, the storage abstraction with in-memory, file and encrypted backends. It also carries the Roslyn incremental source generator (binary serializers, key extractors and typed index definitions for `[BlazeDbTable]` types) as an analyzer, and - in `Bit.BlazeDb.Browser`, browser-only - the OPFS and IndexedDB storage backends (`[JSImport]` ES modules), Web Locks single-writer election, a WebCrypto cipher and cross-tab sync. |
+| `Bit.BlazeDb` | The engine: tables, indexes, transactions, WAL/snapshot persistence, the storage abstraction with in-memory, file and encrypted backends. It also carries the Roslyn incremental source generator (binary serializers, key extractors and typed index definitions for `[BlazeDbTable]` types) as an analyzer, and - browser-only - the OPFS and IndexedDB storage backends (`[JSImport]` ES modules), Web Locks single-writer election, a WebCrypto cipher and cross-tab sync. |
 | `Bit.BlazeDb.EntityFrameworkCore` | The EF Core provider: `UseBlazeDb`, change tracking over live rows, LINQ translated to query plans. |
 | `Bit.BlazeDb.Blex` | Persists [Bit.Blex](../Blex) stores in a BlazeDb database instead of `localStorage` (see [Bit Platform integrations](#bit-platform-integrations)). |
 | `Bit.BlazeDb.Bcrdt` | Keeps [Bit.Bcrdt](../Bcrdt) collaborative documents in a BlazeDb database (see [Bit Platform integrations](#bit-platform-integrations)). |
 
 Everything public is prefixed `BlazeDb` (`BlazeDbDatabase`, `BlazeDbTable<TKey, TRow>`,
-`BlazeDbOpfsStorage`...) and lives under the `Bit.BlazeDb` namespace and its children.
+`BlazeDbOpfsStorage`...) and lives in the `Bit.BlazeDb` namespace.
 
 ## The demo
 
@@ -645,8 +644,8 @@ download the engine only when a page that uses the database opens - see [lazy lo
 
 The database still lives in the browser, so the code that opens it belongs in the `.Client` project and
 runs under `InteractiveWebAssembly`. What changes is prerendering: a prerendered component runs on the
-server first, where there is no OPFS, no IndexedDB and no Web Locks - the backends in `Bit.BlazeDb.Browser`
-are `[SupportedOSPlatform("browser")]` and throw outside the browser. Either turn prerendering
+server first, where there is no OPFS, no IndexedDB and no Web Locks - the browser backends (OPFS, IndexedDB, Web Locks, WebCrypto,
+tabs) are `[SupportedOSPlatform("browser")]` and throw outside the browser. Either turn prerendering
 off for the pages that use the database (`@rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)"`,
 which is what the demo does for the whole app, since every one of its pages opens the database), or keep
 it and open the database only once the component runs in the browser - in `OnAfterRenderAsync`, or behind
@@ -993,6 +992,8 @@ The provider maps entity types onto the same `[BlazeDbTable]` types the engine u
 source generator emits is the model - and is configured the same way as any other EF Core provider:
 
 ```csharp
+using Bit.BlazeDb;   // UseBlazeDb, GetBlazeDb, UseBlazeDbTable, ...
+
 public sealed class AppContext(DbContextOptions<AppContext> options) : DbContext(options)
 {
     public DbSet<TodoItem> Todos => Set<TodoItem>();
@@ -1217,6 +1218,17 @@ several times that in WebAssembly.
 Reproduce with the suite in `Tests/Bit.BlazeDb.Benchmarks` (see its README). The demo app also has an
 in-browser micro-benchmark page (`/bench`) that measures the same operations in the WebAssembly
 runtime, including per-row storage cost.
+
+## Upgrading
+
+- **Every BlazeDb type is in the `Bit.BlazeDb` namespace.** The EF Core provider's extensions (`UseBlazeDb`,
+  `UseBlazeDbTable`, `GetBlazeDb`, `CloseBlazeDbAsync`) moved there from `Microsoft.EntityFrameworkCore`, and
+  `AddEntityFrameworkBlazeDb` and `AddBitBlexBlazeDbPersistence` from `Microsoft.Extensions.DependencyInjection`; the
+  types of `Bit.BlazeDb.Browser`, `Bit.BlazeDb.Storage`, `Bit.BlazeDb.Querying`, `Bit.BlazeDb.Serialization`,
+  `Bit.BlazeDb.Wal`, `Bit.BlazeDb.EntityFrameworkCore.*`, `Bit.BlazeDb.Blex` and `Bit.BlazeDb.Bcrdt` moved into
+  `Bit.BlazeDb` too. A file that calls one of the extensions and imports only the Microsoft namespace fails with
+  CS1061, and an import of an old namespace with CS0246: add `using Bit.BlazeDb;` (or a global using), and drop the
+  old imports.
 
 ## Building
 

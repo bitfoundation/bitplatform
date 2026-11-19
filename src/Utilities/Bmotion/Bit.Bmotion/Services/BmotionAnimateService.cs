@@ -13,11 +13,11 @@ namespace Bit.Bmotion;
 /// <example>
 /// <code>
 /// // By CSS selector
-/// var controls = await Motion.AnimateAsync(".box", new BmProps { X = 100, Opacity = 1 });
+/// var controls = await Motion.AnimateAsync(".box", new BmotionProps { X = 100, Opacity = 1 });
 /// await controls; // wait for completion
 ///
 /// // By ElementReference captured via @ref
-/// var controls = await Motion.AnimateAsync(myRef, new BmProps { Scale = 1.2 },
+/// var controls = await Motion.AnimateAsync(myRef, new BmotionProps { Scale = 1.2 },
 ///                                          BmotionTransitionConfig.Spring());
 /// controls.Stop(); // cancel early
 /// </code>
@@ -26,14 +26,14 @@ public sealed class BmotionAnimateService
 {
     private readonly BmotionAnimationEngine _engine;
     private readonly IBmotionInterop _interop;
-    private readonly BitBmotionOptions _options;
+    private readonly BmotionOptions _options;
     private readonly ILogger? _logger;
     // The rejections Warn mode has reported, so a target animated again and again is reported once, not once per call.
     private readonly BmotionCssWarnings _cssWarned = new();
 
     /// <summary>
     /// The service on <paramref name="engine"/>, following the library-wide options the engine was created with: an
-    /// engine from the application's container brings its <see cref="BitBmotionOptions.CssSafeMode"/>, and Warn mode
+    /// engine from the application's container brings its <see cref="BmotionOptions.CssSafeMode"/>, and Warn mode
     /// logs to the engine's logger.
     /// </summary>
     public BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop)
@@ -42,15 +42,15 @@ public sealed class BmotionAnimateService
     }
 
     /// <summary>
-    /// The service with library-wide options: <see cref="BitBmotionOptions.CssSafeMode"/> checks the targets it
+    /// The service with library-wide options: <see cref="BmotionOptions.CssSafeMode"/> checks the targets it
     /// animates as it does a <see cref="Bmotion"/> element's, logging to <paramref name="logger"/> in Warn mode.
     /// </summary>
-    public BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop, BitBmotionOptions options, ILogger<BmotionAnimateService>? logger = null)
+    public BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop, BmotionOptions options, ILogger<BmotionAnimateService>? logger = null)
         : this(engine, interop, options, (ILogger?)logger)
     {
     }
 
-    private BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop, BitBmotionOptions options, ILogger? logger)
+    private BmotionAnimateService(BmotionAnimationEngine engine, IBmotionInterop interop, BmotionOptions options, ILogger? logger)
     {
         ArgumentNullException.ThrowIfNull(engine);
         ArgumentNullException.ThrowIfNull(interop);
@@ -73,21 +73,21 @@ public sealed class BmotionAnimateService
     /// <param name="transition">
     /// Optional transition configuration (easing, duration, spring parameters, etc.); the engine's default when
     /// omitted. A <see cref="BmotionConfig"/> in the markup has no say over this call: under reduced motion
-    /// (<see cref="BitBmotionOptions.ReducedMotion"/>) transforms, layout and sizes land at once, as on an element.
+    /// (<see cref="BmotionOptions.ReducedMotion"/>) transforms, layout and sizes land at once, as on an element.
     /// </param>
     /// <param name="stagger">
-    /// Optional per-element start-delay generator (see <see cref="BmStagger"/>) applied in
+    /// Optional per-element start-delay generator (see <see cref="BmotionStagger"/>) applied in
     /// document order across the matched elements.
     /// </param>
     /// <param name="cancellationToken">Cancelling stops the animation and resolves the controls.</param>
     /// <returns>
-    /// An <see cref="BmAnimationControls"/> that can be <c>await</c>ed or stopped early.
+    /// An <see cref="BmotionAnimationControls"/> that can be <c>await</c>ed or stopped early.
     /// </returns>
-    public async ValueTask<BmAnimationControls> AnimateAsync(
+    public async ValueTask<BmotionAnimationControls> AnimateAsync(
         string selector,
-        BmProps keyframes,
-        BmTransition? transition = null,
-        BmStagger? stagger = null,
+        BmotionProps keyframes,
+        BmotionTransition? transition = null,
+        BmotionStagger? stagger = null,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(selector))
@@ -103,7 +103,7 @@ public sealed class BmotionAnimateService
         return WithCancellation(await StartAnimationsAsync(ids, values, config, reduced ? null : stagger), cancellationToken);
     }
 
-    // The transition as it plays, and whether motion is reduced: by BitBmotionOptions.ReducedMotion, the rule a Bmotion
+    // The transition as it plays, and whether motion is reduced: by BmotionOptions.ReducedMotion, the rule a Bmotion
     // element follows (Bmotion.IsMotionReduced) - with no <BmotionConfig> around a call to scope it - so transforms,
     // layout and sizes land at once while fades and colours still animate.
     private async ValueTask<(BmotionTransitionConfig? Config, bool Reduced)> AsPlayedAsync(BmotionTransitionConfig? normal)
@@ -125,18 +125,18 @@ public sealed class BmotionAnimateService
 
     // CSS safe mode, as on a Bmotion element, and the values the engine is handed, in one synchronous step: what is
     // animated is exactly what was checked, however the target changes while the elements are resolved.
-    private Dictionary<string, object?> CheckedValues(BmProps target, string? name)
+    private Dictionary<string, object?> CheckedValues(BmotionProps target, string? name)
     {
         BmotionCssValidator.Enforce(target, _options.CssSafeMode, _logger, name, _cssWarned);
         return target.ToJsDictionary();
     }
 
     // A resolved, no-op controls for a pre-cancelled call: no elements registered, already settled.
-    private BmAnimationControls CancelledControls() => BmAnimationControls.Stopped(_engine);
+    private BmotionAnimationControls CancelledControls() => BmotionAnimationControls.Stopped(_engine);
 
     // Wires a CancellationToken to an in-flight animation: cancelling stops it (and resolves the
     // controls). The registration is disposed once the animation settles so it doesn't leak.
-    private static BmAnimationControls WithCancellation(BmAnimationControls controls, CancellationToken cancellationToken)
+    private static BmotionAnimationControls WithCancellation(BmotionAnimationControls controls, CancellationToken cancellationToken)
     {
         if (!cancellationToken.CanBeCanceled) return controls;
         if (cancellationToken.IsCancellationRequested) { controls.Stop(); return controls; }
@@ -158,12 +158,12 @@ public sealed class BmotionAnimateService
     /// <param name="transition">Optional transition configuration.</param>
     /// <param name="cancellationToken">Cancelling stops the animation and resolves the controls.</param>
     /// <returns>
-    /// An <see cref="BmAnimationControls"/> that can be <c>await</c>ed or stopped early.
+    /// An <see cref="BmotionAnimationControls"/> that can be <c>await</c>ed or stopped early.
     /// </returns>
-    public async ValueTask<BmAnimationControls> AnimateAsync(
+    public async ValueTask<BmotionAnimationControls> AnimateAsync(
         ElementReference elementReference,
-        BmProps keyframes,
-        BmTransition? transition = null,
+        BmotionProps keyframes,
+        BmotionTransition? transition = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(keyframes);
@@ -181,7 +181,7 @@ public sealed class BmotionAnimateService
     /// The returned task completes when the animation settles (false result semantics: it
     /// resolves even when superseded by a newer animation on the same value).
     /// </summary>
-    public async Task AnimateAsync(BmValue<double> value, double to, BmTransition? transition = null)
+    public async Task AnimateAsync(BmotionValue<double> value, double to, BmotionTransition? transition = null)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -211,7 +211,7 @@ public sealed class BmotionAnimateService
     /// <c>animate(0, 100, { onUpdate })</c>. Useful for counters, canvas drawing, or any
     /// consumer outside the DOM. Without a frame loop (Blazor Server) it settles instantly.
     /// </summary>
-    public async Task AnimateAsync(double from, double to, Action<double> onUpdate, BmTransition? transition = null)
+    public async Task AnimateAsync(double from, double to, Action<double> onUpdate, BmotionTransition? transition = null)
     {
         ArgumentNullException.ThrowIfNull(onUpdate);
         onUpdate(from);
@@ -225,10 +225,10 @@ public sealed class BmotionAnimateService
     /// motion.dev's <c>useSpring</c>. Dispose the returned value to detach it from its source (a spring
     /// still moving when it is disposed finishes on its own).
     /// </summary>
-    public BmValue<double> Spring(BmValue<double> source, BmSpring? spring = null)
+    public BmotionValue<double> Spring(BmotionValue<double> source, BmotionSpring? spring = null)
     {
         ArgumentNullException.ThrowIfNull(source);
-        var template = spring ?? new BmSpring();
+        var template = spring ?? new BmotionSpring();
         var follower = Bm.Value(source.Value);
         IBmotionAnimationDriver? following = null;   // the spring this follower last started
 
@@ -265,10 +265,10 @@ public sealed class BmotionAnimateService
     }
 
     /// <summary>
-    /// Runs a multi-step <see cref="BmSequence"/> timeline. Segments start at their computed
+    /// Runs a multi-step <see cref="BmotionSequence"/> timeline. Segments start at their computed
     /// timeline positions; the returned controls can await, stop, pause or speed up the whole run.
     /// </summary>
-    public async ValueTask<BmAnimationControls> RunAsync(BmSequence sequence, CancellationToken cancellationToken = default)
+    public async ValueTask<BmotionAnimationControls> RunAsync(BmotionSequence sequence, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sequence);
         if (cancellationToken.IsCancellationRequested) return CancelledControls();
@@ -285,7 +285,7 @@ public sealed class BmotionAnimateService
         {
             var ids = await ResolveAsync(segment.Selector);
             if (ids.Length == 0) continue;
-            var (config, _) = await AsPlayedAsync((segment.Transition ?? new BmTween()).ToConfig());
+            var (config, _) = await AsPlayedAsync((segment.Transition ?? new BmotionTween()).ToConfig());
             starts.Add((ids, segment.Values, config!, segment.Start));
         }
 
@@ -448,7 +448,7 @@ public sealed class BmotionAnimateService
             },
         };
 
-        var controls = new BmAnimationControls(allIds, _engine, completion, Release,
+        var controls = new BmotionAnimationControls(allIds, _engine, completion, Release,
             setTimelineRate: rate =>
             {
                 timelineRate = rate;
@@ -476,11 +476,11 @@ public sealed class BmotionAnimateService
     // `values` and `config` are the target as checked and lowered before the elements were resolved. The config is the
     // target's embedded transition, else the explicit argument (the component's resolution order), lowered once and
     // shared across all target elements (drivers never mutate the config).
-    private async ValueTask<BmAnimationControls> StartAnimationsAsync(
+    private async ValueTask<BmotionAnimationControls> StartAnimationsAsync(
         string[] elementIds,
         Dictionary<string, object?> values,
         BmotionTransitionConfig? config,
-        BmStagger? stagger)
+        BmotionStagger? stagger)
     {
         // A stagger needs a per-element config so each element gets its own delay.
         BmotionTransitionConfig ConfigFor(int index)
@@ -554,6 +554,6 @@ public sealed class BmotionAnimateService
             },
         };
 
-        return new BmAnimationControls(elementIds, _engine, completion, Release, playback: playback);
+        return new BmotionAnimationControls(elementIds, _engine, completion, Release, playback: playback);
     }
 }

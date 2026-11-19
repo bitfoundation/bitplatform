@@ -468,7 +468,7 @@ internal sealed class BelemetrySettings
         {
             try
             {
-                resolved.Add(new(list[i], SentryDsn.Parse(list[i].Dsn!)));
+                resolved.Add(new(list[i], BelemetrySentryDsn.Parse(list[i].Dsn!)));
             }
             catch (FormatException ex)
             {

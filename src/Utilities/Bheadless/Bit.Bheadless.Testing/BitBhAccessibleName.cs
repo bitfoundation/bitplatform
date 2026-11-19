@@ -2,7 +2,7 @@
 using System.Text;
 using AngleSharp.Dom;
 
-namespace Bit.Bheadless.Testing;
+namespace Bit.Bheadless;
 
 /// <summary>
 /// Computes accessible names and descriptions following the W3C "Accessible Name

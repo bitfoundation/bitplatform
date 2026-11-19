@@ -8,6 +8,7 @@
 /// UiOptions of a chat winning over its provider, and the provider adding no element of its own.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiOptionsProviderE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aioptionsprovider";

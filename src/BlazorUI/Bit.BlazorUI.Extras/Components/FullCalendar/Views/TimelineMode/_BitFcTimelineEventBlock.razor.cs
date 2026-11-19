@@ -1,0 +1,349 @@
+﻿using System.ComponentModel;
+
+namespace Bit.BlazorUI;
+
+/// <summary>
+/// A part of <see cref="BitFullCalendar"/>, rendered by the calendar alone: it is not meant to be used on its own.
+/// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
+public partial class _BitFcTimelineEventBlock
+{
+    [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
+    [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
+    [CascadingParameter] internal BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
+
+    [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
+
+    [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
+
+    /// <summary>Minimum length the event can be resized to (minutes). Defaults to <see cref="SnapMinutes"/>.</summary>
+    [Parameter] public int? MinDurationMinutes { get; set; }
+
+    [Parameter] public EventCallback<BitFullCalendarEvent> OnSelected { get; set; }
+
+    /// <summary>Pixels per minute on the timeline axis (e.g. 96/60 for hour columns, 56/1440 for day columns).</summary>
+    [Parameter] public double PixelsPerMinute { get; set; }
+
+    /// <summary>When true, the resize preview shows the date instead of the time-of-day (used by month timeline).</summary>
+    [Parameter] public bool PreviewAsDate { get; set; }
+
+    /// <summary>Snap interval in minutes used while resizing. Hour timelines snap to 30 min, day timelines snap to a full day.</summary>
+    [Parameter] public int SnapMinutes { get; set; } = 30;
+
+    private readonly string _instanceId = Guid.NewGuid().ToString("N");
+    private DotNetObjectReference<_BitFcTimelineEventBlock>? _dotNetRef;
+    private bool _startResizeInitialized;
+    private bool _endResizeInitialized;
+    private bool _isResizing;
+    private string? _resizeDirection;
+    private BitFullCalendarEvent? _resizeBaseEvent;
+    private DateTime? _previewStart;
+    private DateTime? _previewEnd;
+    private DateTime _suppressClickUntilUtc;
+
+    private string _startHandleId => $"bit-bfc-tl-resize-start-{_instanceId}";
+    private string _endHandleId => $"bit-bfc-tl-resize-end-{_instanceId}";
+
+    private int EffectiveMinDurationMinutes => MinDurationMinutes ?? Math.Max(1, SnapMinutes);
+
+    /// <summary>
+    /// True while this block may be moved: the calendar has to be editable, moving allowed
+    /// (<see cref="BitFullCalendarSettings.AllowDrag"/>), and the event itself not locked with
+    /// <see cref="BitFullCalendarEvent.IsReadOnly"/>.
+    /// </summary>
+    private bool CanMove => State.CanDrag(Event);
+
+    /// <summary>True while this block may be resized - the same rule with <see cref="BitFullCalendarSettings.AllowResize"/>.</summary>
+    private bool CanResize => State.CanResize(Event);
+
+    /// <summary>Pointer movement below this many pixels keeps the original time so the edge does not jump on press.</summary>
+    private double DeadZonePx => Math.Max(2.0, EffectiveMinDurationMinutes * PixelsPerMinute / 2.0);
+
+    private double ToPx(TimeSpan span) => span.TotalMinutes * PixelsPerMinute;
+
+    private void OnDragStart()
+    {
+        if (_isResizing) return;
+        State.StartDrag(Event);
+    }
+
+    private void OnDragEnd() => State.EndDrag();
+
+    private async Task OnClick()
+    {
+        if (DateTime.UtcNow <= _suppressClickUntilUtc || _isResizing) return;
+        await OnSelected.InvokeAsync(Event);
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        // Ignore auto-repeat keydowns so holding Enter/Space cannot fire the selection repeatedly,
+        // matching the day/week block and the month badge.
+        if (e.Key is "Enter" or " " or "Spacebar" && !e.Repeat)
+        {
+            await OnClick();
+            return;
+        }
+
+        if (e.Key is not ("ArrowLeft" or "ArrowRight") || _isResizing)
+            return;
+
+        // Keyboard parity for the pointer gestures. The timeline's axis is horizontal and follows
+        // the reading direction, so "later in time" is the right arrow in a left-to-right layout.
+        var forward = (e.Key == "ArrowRight") != State.IsRtl;
+        var step = TimeSpan.FromMinutes(forward ? EffectiveMinDurationMinutes : -EffectiveMinDurationMinutes);
+
+        if (e.AltKey && CanMove)
+            await ApplyKeyboardEditAsync(step, step, BitFullCalendarChangeSource.Drag);
+        else if (e.ShiftKey && CanResize)
+            await ApplyKeyboardEditAsync(TimeSpan.Zero, step, BitFullCalendarChangeSource.Resize);
+    }
+
+    /// <summary>
+    /// Commits a keyboard-driven move or resize: the same range, overlap, and read-only rules the
+    /// pointer gestures obey, and the same <c>OnChange</c> payload.
+    /// </summary>
+    private async Task ApplyKeyboardEditAsync(TimeSpan startDelta, TimeSpan endDelta, BitFullCalendarChangeSource source)
+    {
+        var start = Event.StartDate + startDelta;
+        var end = Event.EndDate + endDelta;
+
+        // Only a resize can shrink the event, so only a resize is held to the minimum duration. A move
+        // carries the span it already has - an event shorter than the minimum (one created before the
+        // setting changed) would otherwise be unmovable by keyboard.
+        if (endDelta != startDelta && end - start < TimeSpan.FromMinutes(EffectiveMinDurationMinutes))
+            return;
+
+        // The same gate the pointer gestures pass through: allowed date window, business hours, and
+        // the booking rule, so a keyboard edit is never able to commit what a drag could not.
+        var refusal = State.ValidateRange(Event.Id, start, end, Event.Resource);
+        if (refusal is not BitFullCalendarChangeRefusal.None)
+        {
+            Notifier.ReportRefusal(refusal);
+            return;
+        }
+
+        // An occurrence of a series moves on its own; the notifier detaches it and reports both halves.
+        await Notifier.CommitEditAsync(Event, start, end, Event.Resource, source);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // A read-only block renders no resize handles, so there is nothing to bind the JS listeners
+        // to. The handles are removed from the DOM (taking their listeners with them), so the flags
+        // are cleared as well - otherwise the fresh handles rendered when read-only is turned back
+        // off would be skipped here and never receive listeners.
+        if (CanResize is false)
+        {
+            _startResizeInitialized = false;
+            _endResizeInitialized = false;
+            return;
+        }
+
+        if (PixelsPerMinute <= 0) return;
+        if (_startResizeInitialized && _endResizeInitialized) return;
+
+        try
+        {
+            _dotNetRef ??= DotNetObjectReference.Create(this);
+            // Track each handle independently so a failure registering one handle doesn't force a
+            // re-registration of the already-bound handle on the next render.
+            if (!_startResizeInitialized)
+            {
+                await JS.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _startHandleId, "start");
+                _startResizeInitialized = true;
+            }
+            if (!_endResizeInitialized)
+            {
+                await JS.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _endHandleId, "end");
+                _endResizeInitialized = true;
+            }
+        }
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException or OperationCanceledException)
+        {
+            // BitFullCalendar JS not yet available, or the circuit/render is mid-teardown; retry on next render.
+        }
+    }
+
+    [JSInvokable]
+    public void OnResizeStart(string direction)
+    {
+        if (direction is not ("start" or "end"))
+            return;
+
+        // The handles are not rendered while read-only, but a listener bound before the switch can
+        // still deliver a start; refuse it so the block never enters resize mode in read-only.
+        if (CanResize is false)
+            return;
+
+        _isResizing = true;
+        _resizeDirection = direction;
+        _resizeBaseEvent = Event;
+        _previewStart = null;
+        _previewEnd = null;
+        _suppressClickUntilUtc = DateTime.UtcNow.AddMilliseconds(300);
+        State.EndDrag();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public Task OnResizeMove(string direction, double deltaPx)
+    {
+        if (direction is not ("start" or "end"))
+            return Task.CompletedTask;
+
+        if (!_isResizing || _resizeBaseEvent == null || PixelsPerMinute <= 0)
+            return Task.CompletedTask;
+
+        // Read-only can be switched on mid-gesture: the handle leaves the DOM, but the document-level
+        // pointer listeners keep running. Cancel the whole gesture (not just the preview) so the block
+        // snaps back to the stored times and stays there - keeping the resize alive would let it pick
+        // up again, and commit on release, if read-only were switched back off before the pointer up.
+        if (CanResize is false)
+        {
+            _previewStart = null;
+            _previewEnd = null;
+            _isResizing = false;
+            _resizeBaseEvent = null;
+            _resizeDirection = null;
+            // The pointer is still down: swallow the click its release produces so cancelling a resize
+            // doesn't select the event.
+            _suppressClickUntilUtc = DateTime.UtcNow.AddMilliseconds(300);
+            return InvokeAsync(StateHasChanged);
+        }
+
+        // Inside the dead-zone treat the gesture as "no change" so users can press without
+        // immediately snapping the edge. Also clears any previously committed preview.
+        if (Math.Abs(deltaPx) <= DeadZonePx)
+        {
+            if (_previewStart.HasValue || _previewEnd.HasValue)
+            {
+                _previewStart = null;
+                _previewEnd = null;
+                return InvokeAsync(StateHasChanged);
+            }
+            return Task.CompletedTask;
+        }
+
+        // The JS side reports a raw horizontal pixel delta. Blocks are anchored with
+        // inset-inline-start, so in a right-to-left layout a pointer moving left means "later in
+        // time" - the delta is flipped here so the same handler serves both directions.
+        if (State.IsRtl)
+            deltaPx = -deltaPx;
+
+        var sign = Math.Sign(deltaPx);
+        var effectivePx = deltaPx - sign * DeadZonePx;
+        var deltaMinutes = effectivePx / PixelsPerMinute;
+
+        var snap = Math.Max(1, SnapMinutes);
+        var minDur = Math.Max(1, EffectiveMinDurationMinutes);
+        var baseEvent = _resizeBaseEvent;
+
+        var newStart = baseEvent.StartDate;
+        var newEnd = baseEvent.EndDate;
+
+        if (direction == "start")
+        {
+            var maxStart = baseEvent.EndDate.AddMinutes(-minDur);
+            var candidate = baseEvent.StartDate.AddMinutes(deltaMinutes);
+            newStart = deltaMinutes > 0
+                ? BitFullCalendarHelpers.CeilToMinuteInterval(candidate, snap)
+                : BitFullCalendarHelpers.FloorToMinuteInterval(candidate, snap);
+            if (newStart > maxStart)
+                newStart = BitFullCalendarHelpers.FloorToMinuteInterval(maxStart, snap);
+        }
+        else
+        {
+            var minEnd = baseEvent.StartDate.AddMinutes(minDur);
+            var candidate = baseEvent.EndDate.AddMinutes(deltaMinutes);
+            newEnd = deltaMinutes > 0
+                ? BitFullCalendarHelpers.CeilToMinuteInterval(candidate, snap)
+                : BitFullCalendarHelpers.FloorToMinuteInterval(candidate, snap);
+            if (newEnd < minEnd)
+                newEnd = BitFullCalendarHelpers.CeilToMinuteInterval(minEnd, snap);
+        }
+
+        // Snapped range matches drag-start range → treat as restored original.
+        if (newStart == baseEvent.StartDate && newEnd == baseEvent.EndDate)
+        {
+            if (_previewStart.HasValue || _previewEnd.HasValue)
+            {
+                _previewStart = null;
+                _previewEnd = null;
+                return InvokeAsync(StateHasChanged);
+            }
+            return Task.CompletedTask;
+        }
+
+        var curStart = _previewStart ?? baseEvent.StartDate;
+        var curEnd = _previewEnd ?? baseEvent.EndDate;
+        if (newStart == curStart && newEnd == curEnd)
+            return Task.CompletedTask;
+
+        _previewStart = newStart;
+        _previewEnd = newEnd;
+        return InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task OnResizeEnd()
+    {
+        try
+        {
+            // Never commit in read-only: the switch can land between the last move and the release,
+            // which would otherwise persist a resize the calendar no longer allows.
+            if (CanResize && _resizeBaseEvent != null && _previewStart.HasValue && _previewEnd.HasValue)
+            {
+                var s = _previewStart.Value;
+                var e = _previewEnd.Value;
+                if (s != _resizeBaseEvent.StartDate || e != _resizeBaseEvent.EndDate)
+                {
+                    var b = _resizeBaseEvent;
+
+                    // The resized span obeys the same rules a drop does, so a calendar that disallows
+                    // double booking (or confines events to business hours) refuses the resize rather
+                    // than creating what it would not accept from a drag.
+                    var refusal = State.ValidateRange(b.Id, s, e, b.Resource);
+                    if (refusal is not BitFullCalendarChangeRefusal.None)
+                    {
+                        Notifier.ReportRefusal(refusal);
+                        return;
+                    }
+
+                    await Notifier.CommitEditAsync(b, s, e, b.Resource, BitFullCalendarChangeSource.Resize);
+                }
+            }
+        }
+        finally
+        {
+            _previewStart = null;
+            _previewEnd = null;
+            _isResizing = false;
+            _resizeBaseEvent = null;
+            _resizeDirection = null;
+            _suppressClickUntilUtc = DateTime.UtcNow.AddMilliseconds(300);
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void NoOpResize() { /* pointerdown handled in JS via initResizeHorizontal */ }
+
+    private string FormatPreview(DateTime start, DateTime end)
+    {
+        if (PreviewAsDate)
+        {
+            // Month timeline: end is exclusive (00:00 next day) so render the inclusive end.
+            var displayEnd = end.TimeOfDay == TimeSpan.Zero && end > start ? end.AddDays(-1) : end;
+            var startStr = start.ToString("MMM d", State.Culture);
+            var endStr = displayEnd.ToString("MMM d", State.Culture);
+            return startStr == endStr ? startStr : $"{startStr} - {endStr}";
+        }
+
+        return $"{BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)} - {BitFullCalendarHelpers.FormatTime(end, State.Use24HourFormat, State.Culture)}";
+    }
+
+    public void Dispose() => _dotNetRef?.Dispose();
+}

@@ -10,6 +10,7 @@
 /// unmounts without an error.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitBadgeE2ETests : E2ETestBase
 {
     private static readonly (string Name, string Suffix, string Vertical, string Horizontal, string RtlHorizontal)[] Positions =

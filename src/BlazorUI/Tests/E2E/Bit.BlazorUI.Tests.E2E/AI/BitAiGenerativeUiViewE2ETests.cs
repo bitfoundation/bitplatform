@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// the binding diagnostics and their public variables; RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiGenerativeUiViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aigenerativeuiview";

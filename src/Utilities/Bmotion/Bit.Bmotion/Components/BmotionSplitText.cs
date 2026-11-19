@@ -11,7 +11,7 @@ namespace Bit.Bmotion;
 /// for a script to undo.
 /// <code>
 /// &lt;BmotionSplitText Text="Animate every character"
-///                   By="BmSplitBy.Chars"
+///                   By="BmotionSplitBy.Chars"
 ///                   Initial="Bm.To(opacity: 0, y: 24)"
 ///                   Animate="Bm.To(opacity: 1, y: 0)"
 ///                   Stagger="Bm.Stagger(0.03)"
@@ -19,7 +19,7 @@ namespace Bit.Bmotion;
 /// </code>
 /// <para>
 /// Whitespace between words is rendered verbatim rather than as animated units, so the text still
-/// wraps, collapses and copies exactly like the unsplit original. In <see cref="BmSplitBy.Chars"/>
+/// wraps, collapses and copies exactly like the unsplit original. In <see cref="BmotionSplitBy.Chars"/>
 /// mode each word is wrapped in an inline-block of its own, so a word never breaks across lines.
 /// </para>
 /// <para>
@@ -33,9 +33,9 @@ namespace Bit.Bmotion;
 /// (e.g. when the text is already labelled by an ancestor).
 /// </para>
 /// <para>
-/// Every unit is a real animated element, so <see cref="BmSplitBy.Chars"/> on a long paragraph
+/// Every unit is a real animated element, so <see cref="BmotionSplitBy.Chars"/> on a long paragraph
 /// means hundreds of them. Split headlines by character; split body copy by
-/// <see cref="BmSplitBy.Words"/> or <see cref="BmSplitBy.Lines"/>.
+/// <see cref="BmotionSplitBy.Words"/> or <see cref="BmotionSplitBy.Lines"/>.
 /// </para>
 /// </summary>
 public sealed class BmotionSplitText : ComponentBase
@@ -44,44 +44,44 @@ public sealed class BmotionSplitText : ComponentBase
     [Parameter, EditorRequired] public string? Text { get; set; }
 
     /// <summary>Whether to animate per character (default), per word or per authored line.</summary>
-    [Parameter] public BmSplitBy By { get; set; } = BmSplitBy.Chars;
+    [Parameter] public BmotionSplitBy By { get; set; } = BmotionSplitBy.Chars;
 
     // ── Animation targets (forwarded to every unit) ────────────────────────────
     /// <summary>Starting state of every unit.</summary>
-    [Parameter] public BmTarget? Initial { get; set; }
+    [Parameter] public BmotionTarget? Initial { get; set; }
 
     /// <summary>Target state of every unit; each starts at its staggered offset.</summary>
-    [Parameter] public BmTarget? Animate { get; set; }
+    [Parameter] public BmotionTarget? Animate { get; set; }
 
     /// <summary>Exit state of every unit (requires an enclosing presence component).</summary>
-    [Parameter] public BmTarget? Exit { get; set; }
+    [Parameter] public BmotionTarget? Exit { get; set; }
 
     /// <summary>Hover overlay applied per unit - hovering one character animates only that one.</summary>
-    [Parameter] public BmTarget? WhileHover { get; set; }
+    [Parameter] public BmotionTarget? WhileHover { get; set; }
 
     /// <summary>Tap overlay applied per unit.</summary>
-    [Parameter] public BmTarget? WhileTap { get; set; }
+    [Parameter] public BmotionTarget? WhileTap { get; set; }
 
     /// <summary>
     /// In-view overlay: the classic "text animates in when it scrolls into view". Combine with
     /// <see cref="Once"/> so it plays a single time.
     /// </summary>
-    [Parameter] public BmTarget? WhileInView { get; set; }
+    [Parameter] public BmotionTarget? WhileInView { get; set; }
 
     /// <summary>Plays <see cref="WhileInView"/> only the first time the text enters the viewport.</summary>
     [Parameter] public bool Once { get; set; }
 
     /// <summary>Advanced viewport options for <see cref="WhileInView"/>.</summary>
-    [Parameter] public BmViewport? Viewport { get; set; }
+    [Parameter] public BmotionViewport? Viewport { get; set; }
 
     /// <summary>Timing/physics for every unit. Each unit's stagger offset is added to its delay.</summary>
-    [Parameter] public BmTransition? Transition { get; set; }
+    [Parameter] public BmotionTransition? Transition { get; set; }
 
     /// <summary>
     /// The delay generator across units. Defaults to <c>Bm.Stagger(0.03)</c> - the cascade is the
     /// whole point of splitting the text. Pass <c>Bm.Stagger(0)</c> to animate every unit at once.
     /// </summary>
-    [Parameter] public BmStagger? Stagger { get; set; }
+    [Parameter] public BmotionStagger? Stagger { get; set; }
 
     // ── Markup ─────────────────────────────────────────────────────────────────
     /// <summary>The element rendered around the whole run. Default <c>span</c>.</summary>
@@ -125,11 +125,11 @@ public sealed class BmotionSplitText : ComponentBase
         {
             var services = BitBmotion.GetBmotionServices(value);
             Engine = services.GetRequiredService<BmotionAnimationEngine>();
-            Options = services.GetRequiredService<BitBmotionOptions>();
+            Options = services.GetRequiredService<BmotionOptions>();
         }
     }
     private BmotionAnimationEngine Engine { get; set; } = null!;
-    private BitBmotionOptions Options { get; set; } = null!;
+    private BmotionOptions Options { get; set; } = null!;
 
     // The rule every Bmotion element follows (Bmotion.IsMotionReduced), with this one's config.
     private bool MotionReduced
@@ -147,8 +147,8 @@ public sealed class BmotionSplitText : ComponentBase
 
     // ── Cached split ───────────────────────────────────────────────────────────
     private string? _splitText;
-    private BmSplitBy _splitBy;
-    private List<BmTextChunk> _chunks = new();
+    private BmotionSplitBy _splitBy;
+    private List<BmotionTextChunk> _chunks = new();
     private int _unitCount;
 
     protected override void OnParametersSet()
@@ -168,7 +168,7 @@ public sealed class BmotionSplitText : ComponentBase
 
         var stagger = Stagger ?? _defaultStagger;
         // Lines are blocks; characters and words are inline-blocks that must not break mid-unit.
-        bool lines = By == BmSplitBy.Lines;
+        bool lines = By == BmotionSplitBy.Lines;
         string unitDisplay = lines ? "display:block;" : "display:inline-block;";
 
         builder.OpenElement(0, As);
@@ -192,7 +192,7 @@ public sealed class BmotionSplitText : ComponentBase
 
         // In Chars mode the characters of one word live inside a nowrap inline-block, so the word
         // wraps as a unit instead of breaking between two of its letters.
-        bool groupWord = By == BmSplitBy.Chars;
+        bool groupWord = By == BmotionSplitBy.Chars;
 
         // Sequence numbers are emitted from a running counter with a fixed stride per node, so the
         // numbering depends only on the split shape - which is itself determined by Text and By.
@@ -251,8 +251,8 @@ public sealed class BmotionSplitText : ComponentBase
                 builder.AddComponentParameter(seq++, nameof(Bmotion.Transition), StaggeredTransition(stagger, index));
                 builder.AddComponentParameter(seq++, nameof(Bmotion.OnAnimationComplete),
                     last && OnComplete.HasDelegate
-                        ? EventCallback.Factory.Create<BmProps?>(this, _ => OnComplete.InvokeAsync())
-                        : default(EventCallback<BmProps?>));
+                        ? EventCallback.Factory.Create<BmotionProps?>(this, _ => OnComplete.InvokeAsync())
+                        : default(EventCallback<BmotionProps?>));
 
                 builder.AddComponentParameter(seq++, nameof(Bmotion.ChildContent), (RenderFragment)(b =>
                 {
@@ -274,7 +274,7 @@ public sealed class BmotionSplitText : ComponentBase
         builder.CloseElement();
     }
 
-    private static readonly BmStagger _defaultStagger = new(0.03);
+    private static readonly BmotionStagger _defaultStagger = new(0.03);
 
     // The containers whose own role can't take a name - generic ones, and those ARIA forbids naming (a paragraph,
     // emphasis, code, ...): an aria-label there is only read with role="text", and there is no role worth keeping.
@@ -294,7 +294,7 @@ public sealed class BmotionSplitText : ComponentBase
                                              && a.Value is not (null or false)) != true;
 
     /// <summary>The index of the unit that finishes last: the one with the longest stagger delay.</summary>
-    private int LastToFinish(BmStagger stagger)
+    private int LastToFinish(BmotionStagger stagger)
     {
         int latest = Math.Max(_unitCount - 1, 0);
         double latestDelay = double.NegativeInfinity;
@@ -312,13 +312,13 @@ public sealed class BmotionSplitText : ComponentBase
     /// stagger offset added to its delay. Copies rather than mutating, so one shared
     /// <see cref="Transition"/> instance drives every unit without them fighting over its delay.
     /// </summary>
-    private BmTransition StaggeredTransition(BmStagger stagger, int index)
+    private BmotionTransition StaggeredTransition(BmotionStagger stagger, int index)
     {
         // Reduced motion drops the stagger (the units appear together), as it does for a variant's children: the
         // delay would otherwise reach each unit as its own, which reduced motion keeps for the fade.
         double offset = MotionReduced ? 0 : stagger.DelayFor(index, _unitCount);
         var basis = Transition ?? ConfigCtx?.DefaultTransition;
-        if (basis is null) return offset > 0 ? new BmTween { Delay = offset } : new BmTween();
+        if (basis is null) return offset > 0 ? new BmotionTween { Delay = offset } : new BmotionTween();
         return offset > 0 ? basis.WithDelay(basis.Delay + offset) : basis;
     }
 }

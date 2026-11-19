@@ -7,13 +7,13 @@ namespace Bit.BevTools;
 /// Records circuit lifecycle, connection state and inbound message processing for the session that owns the circuit.
 /// Scoped: one instance per circuit, sharing the circuit's BevTools session.
 /// </summary>
-internal sealed class BevToolsCircuitHandler(BevToolsSession session, BevCircuitRegistry registry, BitBevToolsOptions options) : CircuitHandler
+internal sealed class BevToolsCircuitHandler(BevToolsSession session, BevToolsCircuitRegistry registry, BevToolsOptions options) : CircuitHandler
 {
-    private BevCircuitInfo? _info;
+    private BevToolsCircuitInfo? _info;
 
     public override int Order => int.MinValue; // observe before application handlers so their failures are attributed correctly
 
-    public BevCircuitInfo? Info => _info;
+    public BevToolsCircuitInfo? Info => _info;
 
     public override Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken)
     {

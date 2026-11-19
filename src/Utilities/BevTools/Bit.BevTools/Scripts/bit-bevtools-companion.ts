@@ -990,7 +990,7 @@ export class Companion {
     private state(t: TargetModel) {
         const v = this.view();
         const providers: any[] = (t.doc.state || []).filter((p: any) => matches(v.filter, p.provider, p.description));
-        if (!providers.length) return this.empty("No state providers.", "Implement IBevStateProvider, or register one with AddBevToolsStateProvider; the authentication state appears here on its own.");
+        if (!providers.length) return this.empty("No state providers.", "Implement IBevToolsStateProvider, or register one with AddBevToolsStateProvider; the authentication state appears here on its own.");
         return h("div", { class: "bc-scroll" }, providers.map(p => section(p.provider + " · " + p.changeCount + " changes", [
             p.error ? h("div", { class: "bc-err" }, p.error) : null,
             h("div", { class: "bc-muted" }, (p.description || "") + " · " + p.origin),
@@ -1023,7 +1023,7 @@ export class Companion {
         const requests: any[] = (t.doc.http || []).filter((r: any) => matches(v.filter, r.url, r.method, r.error, r.trigger, r.caller)).slice().reverse();
         const selected = requests.find(r => r.id === v.selected);
         const sockets = this.sockets;
-        // Per endpoint, ids in the path as {id}: the runtime groups them (BevHttpEndpoints), the busiest first.
+        // Per endpoint, ids in the path as {id}: the runtime groups them (BevToolsHttpEndpoints), the busiest first.
         const endpoints: any[] = (t.doc.httpEndpoints || []).filter((e: any) => matches(v.filter, e.endpoint));
         return h("div", { class: "bc-split" },
             h("div", { class: "bc-scroll bc-left" },
@@ -1113,7 +1113,7 @@ export class Companion {
 
     private logs(t: TargetModel) {
         const v = this.view();
-        // "level:warning" is a minimum, read as the in-app panel reads it (BevLogLevels.Parse): a level's name or the
+        // "level:warning" is a minimum, read as the in-app panel reads it (BevToolsLogLevels.Parse): a level's name or the
         // start of it, its console label ("fail", "dbug") or its number; the rest of the filter is text.
         const levels = ["Trace", "Debug", "Information", "Warning", "Error", "Critical"];
         const labels = ["trce", "dbug", "info", "warn", "fail", "crit"];
@@ -1141,7 +1141,7 @@ export class Companion {
                         h("td", { class: "bc-num" }, c.executions), h("td", { class: "bc-num" }, fmt.ms(c.totalMs)), h("td", { class: "bc-num" }, fmt.ms(c.maxMs)), h("td", { class: "bc-num" }, c.failed)))))) : null,
                 logs.length ? h("table", null, h("tbody", null, logs.map(l => h("tr", { class: (v.selected === l.id ? "bc-selected " : "") + (l.level === "Warning" ? "bc-sev-warning" : l.level === "Error" || l.level === "Critical" ? "bc-sev-error" : ""), onclick: () => { v.selected = l.id; this.renderContent(); } },
                     h("td", { class: "bc-mono" }, fmt.time(l.at)), h("td", null, chip(l.level)), h("td", { class: "bc-mono bc-muted" }, String(l.category).split(".").pop()),
-                    h("td", { class: "bc-truncate" }, l.message ?? l.messageTemplate ?? "«hidden»"))))) : this.empty("No log entries.", "What an ILogger writes while this runtime's code runs, at BitBevToolsOptions.MinimumLogLevel or above.")),
+                    h("td", { class: "bc-truncate" }, l.message ?? l.messageTemplate ?? "«hidden»"))))) : this.empty("No log entries.", "What an ILogger writes while this runtime's code runs, at BevToolsOptions.MinimumLogLevel or above.")),
             h("div", { class: "bc-scroll bc-right" }, selected ? h("div", null,
                 h("h3", null, selected.message ?? selected.messageTemplate ?? "«hidden»"),
                 kv([["Level", selected.level], ["Category", selected.category], ["Time", fmt.time(selected.at)], ["Template", selected.messageTemplate || "–"],

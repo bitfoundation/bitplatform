@@ -1,8 +1,8 @@
 ﻿@page "/avatar"
 @implements IDisposable
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
-@inject IImageCapabilityProvider Capabilities
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
+@inject IBmageImageCapabilityProvider Capabilities
 
 @* A profile picture, end to end: smart framing, a square or circular crop, a resize, and an encode
    that searches for the highest quality that still fits a byte budget - in WebP where the browser
@@ -96,7 +96,7 @@
                     <span class="demo-field-label" id="framing-label">Framing</span>
                     <div class="bb-segmented">
                         <button type="button" aria-pressed="@(_smart ? "true" : "false")" @onclick="() => SetSmart(true)">Smart</button>
-                        @foreach (var anchor in new[] { Anchor.Center, Anchor.Top, Anchor.Bottom })
+                        @foreach (var anchor in new[] { BmageAnchor.Center, BmageAnchor.Top, BmageAnchor.Bottom })
                         {
                             <button type="button" aria-pressed="@(!_smart && _anchor == anchor ? "true" : "false")"
                                     @onclick="() => SetAnchor(anchor)">@anchor</button>
@@ -181,29 +181,29 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> What to take from it</h3>
     <ul class="bb-detail-list">
-        <li><strong>Frame the subject, not the centre.</strong> <code>SmartCrop</code> is a heuristic, not face recognition; if you have a detector, pass its rectangle to <code>SmartCrop.FindCrop</code> as <code>mustInclude</code>.</li>
-        <li><strong>Budget in bytes, not quality.</strong> <code>MaxFileSize</code> reports the quality it settled on, and throws <code>ImageEncodeException</code> rather than handing back an oversized file when the target is impossible.</li>
-        <li><strong>Remove metadata.</strong> An avatar is published to everyone; <code>MetadataPolicy.Remove</code> is the default for a reason. See <a href="/metadata">Metadata and privacy</a>.</li>
-        <li><strong>Show something before the image arrives.</strong> The swatches are <code>ImageStatistics.GetDominantColors</code>: the first makes a fitting background for the circle while the file loads, and <a href="/headless">the headless API</a> goes further with a 67 character blurred placeholder.</li>
+        <li><strong>Frame the subject, not the centre.</strong> <code>BmageSmartCrop</code> is a heuristic, not face recognition; if you have a detector, pass its rectangle to <code>BmageSmartCrop.FindCrop</code> as <code>mustInclude</code>.</li>
+        <li><strong>Budget in bytes, not quality.</strong> <code>MaxFileSize</code> reports the quality it settled on, and throws <code>BmageImageEncodeException</code> rather than handing back an oversized file when the target is impossible.</li>
+        <li><strong>Remove metadata.</strong> An avatar is published to everyone; <code>BmageMetadataPolicy.Remove</code> is the default for a reason. See <a href="/metadata">Metadata and privacy</a>.</li>
+        <li><strong>Show something before the image arrives.</strong> The swatches are <code>BmageImageStatistics.GetDominantColors</code>: the first makes a fitting background for the circle while the file loads, and <a href="/headless">the headless API</a> goes further with a 67 character blurred placeholder.</li>
     </ul>
 </div>
 
 @code {
-    private ImageBuffer? _source;
-    private ImageBuffer? _result;
-    private EncodedImage? _encoded;
+    private BmageImageBuffer? _source;
+    private BmageImageBuffer? _result;
+    private BmageEncodedImage? _encoded;
     private long _resultVersion;
     private long _sourceBytes;
     private int _size = 256;
     private int _budgetKb = 80;
     private bool _circular = true;
-    private Anchor _anchor = Anchor.Center;
+    private BmageAnchor _anchor = BmageAnchor.Center;
     private bool _smart = true;
-    private IReadOnlyList<ColorFrequency> _dominant = [];
+    private IReadOnlyList<BmageColorFrequency> _dominant = [];
     private bool _busy;
     private string? _error;
     private string? _fallbackNotice;
-    private ImageCapabilities? _capabilities;
+    private BmageImageCapabilities? _capabilities;
     private readonly Debouncer _debounce = new(200);
     // Identifies the newest run. An older run that finishes late, or after the source changed, is discarded.
     private int _run;
@@ -225,29 +225,29 @@
         // Square crop around the subject, high quality downscale, gentle sharpen,
         // then compress until it fits the budget. The circle is a mask on the
         // pixels' alpha, so the exported file is round rather than a CSS trick.
-        var pipeline = ImagePipeline.Create()
+        var pipeline = BmageImagePipeline.Create()
             .AutoOrient()
-            .SmartCrop(AspectRatio.Square)     // finds the subject instead of assuming the centre
-            .Resize(size, size, ResizeMode.Stretch)
+            .SmartCrop(BmageAspectRatio.Square)     // finds the subject instead of assuming the centre
+            .Resize(size, size, BmageResizeMode.Stretch)
             .Sharpen(amount: 0.25f);
-        if (circular) pipeline = pipeline.ApplyMask(Mask.Ellipse());
+        if (circular) pipeline = pipeline.ApplyMask(BmageMask.Ellipse());
 
         using var avatar = await pipeline.ExecuteAsync(source);
 
         var encoded = await exporter.EncodeWithFallbackAsync(
             avatar,
-            circular ? [ImageFormat.WebP, ImageFormat.Png] : [ImageFormat.WebP, ImageFormat.Jpeg],
-            new ImageExportOptions
+            circular ? [BmageImageFormat.WebP, BmageImageFormat.Png] : [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+            new BmageImageExportOptions
             {
                 Quality     = 0.9,
                 MaxFileSize = budgetKb * 1024,
                 MinQuality  = 0.5,
-                Metadata    = MetadataPolicy.Remove,
-                Background  = Rgba32.White,
+                Metadata    = BmageMetadataPolicy.Remove,
+                Background  = BmageRgba32.White,
             });
 
         // The swatches: the photo's main colours, for a placeholder or a profile's accent.
-        var palette = ImageStatistics.GetDominantColors(source, count: 5, ignoreNearWhiteAndBlack: true);
+        var palette = BmageImageStatistics.GetDominantColors(source, count: 5, ignoreNearWhiteAndBlack: true);
         """;
 
     private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
@@ -277,13 +277,13 @@
         await SetSourceAsync(SampleImages.Landscape(), 0);
     }
 
-    private async Task SetSourceAsync(ImageBuffer image, long bytes)
+    private async Task SetSourceAsync(BmageImageBuffer image, long bytes)
     {
         _run++; // whatever is still running was reading the old source
         _source?.Dispose();
         _source = image;
         _sourceBytes = bytes;
-        _dominant = ImageStatistics.GetDominantColors(_source, 5, ignoreNearWhiteAndBlack: true);
+        _dominant = BmageImageStatistics.GetDominantColors(_source, 5, ignoreNearWhiteAndBlack: true);
         await Regenerate();
     }
 
@@ -308,7 +308,7 @@
         await Regenerate();
     }
 
-    private async Task SetAnchor(Anchor anchor)
+    private async Task SetAnchor(BmageAnchor anchor)
     {
         _smart = false;
         _anchor = anchor;
@@ -328,29 +328,29 @@
         _busy = true;
         _error = null;
         StateHasChanged();
-        ImageBuffer? next = null;
+        BmageImageBuffer? next = null;
         try
         {
             // Smart framing picks where to crop; the fixed anchors are there to compare against.
             var pipeline = _smart
-                ? ImagePipeline.Create().AutoOrient().SmartCrop(AspectRatio.Square).Resize(_size, _size, ResizeMode.Stretch).Sharpen(0.25f)
-                : ImagePipeline.Create().AutoOrient().Cover(_size, _size, _anchor).Sharpen(0.25f);
+                ? BmageImagePipeline.Create().AutoOrient().SmartCrop(BmageAspectRatio.Square).Resize(_size, _size, BmageResizeMode.Stretch).Sharpen(0.25f)
+                : BmageImagePipeline.Create().AutoOrient().Cover(_size, _size, _anchor).Sharpen(0.25f);
             // The circle goes on the pixels' alpha, so the exported file is genuinely round.
-            if (_circular) pipeline = pipeline.ApplyMask(Mask.Ellipse());
+            if (_circular) pipeline = pipeline.ApplyMask(BmageMask.Ellipse());
 
             next = await pipeline.ExecuteAsync(source);
 
-            var preferred = new[] { ImageFormat.WebP, ImageFormat.Jpeg };
+            var preferred = new[] { BmageImageFormat.WebP, BmageImageFormat.Jpeg };
             // A circular avatar needs transparency, so a lossy opaque format would show the corners.
-            if (_circular) preferred = [ImageFormat.WebP, ImageFormat.Png];
+            if (_circular) preferred = [BmageImageFormat.WebP, BmageImageFormat.Png];
 
-            var encoded = await Exporter.EncodeWithFallbackAsync(next, preferred, new ImageExportOptions
+            var encoded = await Exporter.EncodeWithFallbackAsync(next, preferred, new BmageImageExportOptions
             {
                 Quality = 0.9,
                 MaxFileSize = _budgetKb * 1024L,
                 MinQuality = 0.5,
-                Metadata = MetadataPolicy.Remove,
-                Background = Rgba32.White,
+                Metadata = BmageMetadataPolicy.Remove,
+                Background = BmageRgba32.White,
             });
             if (run != _run) return;
 
@@ -359,7 +359,7 @@
             next = null;
             _resultVersion++;
             _encoded = encoded;
-            _fallbackNotice = _capabilities is { } caps && !caps.CanEncode(ImageFormat.WebP)
+            _fallbackNotice = _capabilities is { } caps && !caps.CanEncode(BmageImageFormat.WebP)
                 ? $"This browser cannot write WebP, so {_encoded.Format.ToString().ToUpperInvariant()} was used instead."
                 : null;
         }
@@ -367,7 +367,7 @@
         {
             // Superseded: the newer run reports its own outcome.
         }
-        catch (ImageEncodeException)
+        catch (BmageImageEncodeException)
         {
             _error = "That budget is too small for this image even at the lowest quality. Try a larger budget or a smaller output size.";
         }
@@ -421,9 +421,9 @@
 
     private static string Describe(Exception ex) => ex switch
     {
-        ImageLimitExceededException => "That image is larger than this page allows.",
-        ImageDecodeException => "That file could not be read as an image.",
-        ImageCapabilityException c => c.Message,
+        BmageImageLimitExceededException => "That image is larger than this page allows.",
+        BmageImageDecodeException => "That file could not be read as an image.",
+        BmageImageCapabilityException c => c.Message,
         _ => $"Something went wrong: {ex.Message}",
     };
 

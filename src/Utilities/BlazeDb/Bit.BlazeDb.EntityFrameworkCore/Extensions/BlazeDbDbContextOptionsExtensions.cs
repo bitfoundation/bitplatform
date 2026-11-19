@@ -1,9 +1,8 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
-using Bit.BlazeDb.Storage;
-using Microsoft.EntityFrameworkCore.Infrastructure;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.EntityFrameworkCore;
+namespace Bit.BlazeDb;
 
 /// <summary>Configures a <see cref="DbContext"/> to run on BlazeDb, the same way <c>UseSqlite</c> or <c>UseInMemoryDatabase</c> would.</summary>
 public static class BlazeDbDbContextOptionsExtensions

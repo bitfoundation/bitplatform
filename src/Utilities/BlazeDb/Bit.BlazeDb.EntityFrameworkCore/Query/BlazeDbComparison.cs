@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// One <c>row.Member op value</c> test (or <c>values.Contains(row.Member)</c>), with the value already

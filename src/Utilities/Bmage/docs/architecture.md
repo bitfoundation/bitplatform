@@ -3,7 +3,7 @@
 ## The layers
 
 ```
-Bit.Bmage.Blazor   Editor:  components, tools, theming, localisation (Bit.Bmage.Editor.*)
+Bit.Bmage.Blazor   Editor:  components, tools, theming, localisation
                        │
                    Browser: codecs, capabilities, loading, export, one JS module
                        │
@@ -15,7 +15,8 @@ The engine, the `Bit.Bmage` package, has no dependency on Blazor, ASP.NET Core o
 runs. The browser layer, shipped with the editor in `Bit.Bmage.Blazor`, adds the codecs only a browser has, capability
 probing, and the plumbing for files, clipboard, camera and downloads; nothing in the engine calls into it, and the
 package boundary keeps it that way. `Editor` is the user interface, and it is optional in the strong sense that nothing
-below it knows it exists.
+below it knows it exists. All three layers declare their types in the one `Bit.Bmage` namespace: the
+package, not the namespace, is what keeps them apart.
 
 An application that only needs to shrink an upload never pays for the editor: it never links `bit-bmage-editor.css`,
 and a trimmed WebAssembly publish drops the editor's code along with everything else the application does not use.
@@ -25,14 +26,14 @@ and a trimmed WebAssembly publish drops the editor's code along with everything 
 An edit is a **description**, not a mutation.
 
 ```
-ImageBuffer (original pixels, never modified)
+BmageImageBuffer (original pixels, never modified)
         │
-ImageDocument
-   ├── ImagePipeline  ── an ordered list of IImageOperation, some applied through masks
+BmageImageDocument
+   ├── BmageImagePipeline  ── an ordered list of IBmageImageOperation, some applied through masks
    ├── Layers         ── image, fill and adjustment layers, each with a blend mode, opacity and mask
    └── Annotations    ── a list of immutable annotation records
         │
-DocumentRenderer  ──►  ImageBuffer (the result, owned by the caller)
+BmageDocumentRenderer  ──►  BmageImageBuffer (the result, owned by the caller)
 ```
 
 Because the document is a value, and every operation, mask, layer and annotation is an immutable record that knows its
@@ -50,11 +51,11 @@ built:
 
 ## Pixels
 
-`ImageBuffer` is the single working representation: tightly packed RGBA32, straight (non-premultiplied) alpha, row-major.
+`BmageImageBuffer` is the single working representation: tightly packed RGBA32, straight (non-premultiplied) alpha, row-major.
 That is deliberately the same layout as the browser's `ImageData`, so moving pixels across the boundary is a copy rather
 than a conversion.
 
-Buffers come from an `IPixelAllocator`. The default pools through `ArrayPool<byte>`, which is why a resize of a 24
+Buffers come from an `IBmagePixelAllocator`. The default pools through `ArrayPool<byte>`, which is why a resize of a 24
 megapixel image allocates a couple of hundred kilobytes rather than a hundred megabytes: the large buffers are rented and
 returned, and only the small bookkeeping is new. Disposing a buffer returns its memory immediately.
 
@@ -65,12 +66,12 @@ There is a test that catches exactly that regression.
 ## Operations
 
 ```csharp
-public interface IImageOperation
+public interface IBmageImageOperation
 {
     string Name { get; }
     Size GetOutputSize(Size inputSize);       // without touching pixels
-    ImageBuffer Apply(ImageBuffer source, OperationContext context);
-    IImageOperation ForScale(double scale);   // the same edit at another resolution
+    BmageImageBuffer Apply(BmageImageBuffer source, BmageOperationContext context);
+    IBmageImageOperation ForScale(double scale);   // the same edit at another resolution
     bool IsIdentity { get; }                  // can the optimiser drop it
 }
 ```
@@ -80,10 +81,10 @@ previews exact rather than approximate. `IsIdentity` is what lets a slider dragg
 
 Two specialisations carry most of the weight:
 
-- **`PointOperation`** maps each pixel independently, working on rows of `Vector4` in [0,1]. Runs of them execute in a
+- **`BmagePointOperation`** maps each pixel independently, working on rows of `Vector4` in [0,1]. Runs of them execute in a
   single pass over the image. Colour matrices concatenate algebraically; curves compose their lookup tables.
-- **`IGeometricOperation`** exposes the affine matrix it applies. `ImagePipeline.TryGetTransform` composes them into the
-  pipeline's map from source to output coordinates, and `ImageDocument.WithPipeline(pipeline, keepOverlaysAttached: true)`
+- **`IBmageGeometricOperation`** exposes the affine matrix it applies. `BmageImagePipeline.TryGetTransform` composes them into the
+  pipeline's map from source to output coordinates, and `BmageImageDocument.WithPipeline(pipeline, keepOverlaysAttached: true)`
   moves every annotation, layer and pixel mask by the difference between the old map and the new one, so they stay on
   the content they mark through a crop, a quarter turn, a flip, a resize, a canvas change or a straighten, and through
   re-editing any of them. The editor's geometric tools all go through it. Points map exactly; an upright rectangle maps
@@ -93,21 +94,21 @@ Two specialisations carry most of the weight:
 
 ## Masks and layers
 
-A `Mask` is a description, like an operation: a shape, a gradient, a tone or colour range, brush strokes, another
-image's matte, or a combination, in pixels or in fractions of the image. It renders into a `MaskBuffer`, one byte of
+A `BmageMask` is a description, like an operation: a shape, a gradient, a tone or colour range, brush strokes, another
+image's matte, or a combination, in pixels or in fractions of the image. It renders into a `BmageMaskBuffer`, one byte of
 coverage per pixel, for the image it applies to, and rescales itself for a proxy like everything else.
 
-`MaskedOperation` applies any size-keeping operation through a mask. A per-pixel operation goes through
-`PointOperationExecutor.RowProcessor`, the very code an unmasked run uses for each row, so a full mask is bit-identical
+`BmageMaskedOperation` applies any size-keeping operation through a mask. A per-pixel operation goes through
+`BmagePointOperationExecutor.RowProcessor`, the very code an unmasked run uses for each row, so a full mask is bit-identical
 to no mask, and only over the bounds the mask can reach. Anything else runs whole and is blended back. It is an
 optimiser barrier, which is also where the editor's preview cache splits.
 
-A `Layer` composites onto the pipeline's output through a `BlendMode` (the W3C Compositing and Blending Level 1
+A `BmageLayer` composites onto the pipeline's output through a `BmageBlendMode` (the W3C Compositing and Blending Level 1
 modes), an opacity and an optional mask. The edit session caches the composite separately from the pipeline output, so
 annotation edits never composite the layers again and layer edits never re-run the pipeline.
 
-A `GroupLayer` is a layer holding a list of layers, so the document stays one tree of immutable values and every edit,
-a group's included, is still one new document. `LayerCompositor` walks each list the same way: a run of layers with
+A `BmageGroupLayer` is a layer holding a list of layers, so the document stays one tree of immutable values and every edit,
+a group's included, is still one new document. `BmageLayerCompositor` walks each list the same way: a run of layers with
 `ClipToLayerBelow` after a base is drawn with it into a buffer of its own, the base at full strength, the clipped
 layers as if it were opaque, then limited to its alpha and blended with its mode and opacity; a pass-through group
 composites its list in place and, when faded or masked, mixes the result with a copy of what was beneath; an isolated
@@ -117,7 +118,7 @@ document's own.
 
 ## Threads and workers
 
-**In .NET**, operations whose rows are independent split them into bands (`ParallelRows`) over
+**In .NET**, operations whose rows are independent split them into bands (`BmageParallelRows`) over
 `MaxDegreeOfParallelism` threads, each band with its own scratch rows and shared read-only kernels and tables, so the
 pixels are identical on any number of threads. Blurs stay sequential: their running sums would change if split. The
 default is one thread, which suits a server already running requests side by side and the browser, where .NET has only
@@ -174,13 +175,13 @@ polyline before stroking.
 
 Two rasterisers, because the right answer depends on where you are:
 
-- **`FontTextRasterizer`** parses TrueType and OpenType fonts with `glyf` outlines: `cmap` formats 0, 4, 6 and 12,
+- **`BmageFontTextRasterizer`** parses TrueType and OpenType fonts with `glyf` outlines: `cmap` formats 0, 4, 6 and 12,
   composite glyphs, `hmtx` metrics, `kern` pairs and the OpenType layout tables (GDEF, GSUB, GPOS). It shapes text -
   Arabic and Persian joining, ligatures, contextual alternates, kerning, mark positioning - orders mixed-direction text
   with the Unicode Bidirectional Algorithm (checked against Unicode's own conformance files), and falls back across the
   registered fonts character by character. It produces real vector outlines, works headlessly, and is tested against a
   purpose-built font and a Persian one committed to the repository.
-- **`BrowserTextRasterizer`** hands text to the platform's own text engine and gets pixels back. System fonts, emoji,
+- **`BmageBrowserTextRasterizer`** hands text to the platform's own text engine and gets pixels back. System fonts, emoji,
   right-to-left scripts and complex shaping all work without shipping a font file.
 
 The trade is stated rather than hidden: the browser rasteriser returns pixels, so it cannot give you outlines to stroke
@@ -207,7 +208,7 @@ Everything else stays in C#: operations, pipelines, drawing, annotations and the
 pixels wherever they run.
 
 Pixel and file bytes never cross as base64. On WebAssembly the module is called through `[JSImport]` with views of .NET
-memory (`BrowserPixels`), so a 12 megapixel image is copied exactly once in each direction, straight between a .NET
+memory (`BmageBrowserPixels`), so a 12 megapixel image is copied exactly once in each direction, straight between a .NET
 buffer and a typed array, with no 48 MB array allocated for the call. Over a Blazor Server circuit the browser is in
 another process: a JS call returns a small handle object, .NET reads a tiny JSON descriptor from it and streams the
 payload, then releases it. On Server the managed codecs decode PNG, JPEG, BMP, GIF, WebP and AVIF and encode all but GIF
@@ -227,34 +228,34 @@ The concern is treated as a design constraint rather than a later optimisation.
 - Blurs and sharpening stream rows through their passes, keeping only the rows each pass still needs instead of float
   copies of the whole image.
 - History stores descriptions, not pixels.
-- `ImageLimits` rejects absurd dimensions before any allocation happens.
+- `BmageImageLimits` rejects absurd dimensions before any allocation happens.
 - Masks are one byte a pixel, and a masked adjustment touches only the rows its mask reaches.
 - Parallel bands each rent a few rows of scratch, never a copy of the image.
 
-A caller can also predict and bound it: `ImagePipeline.EstimateMemory` gives a run's peak before it starts, a
-`BudgetedPixelAllocator` enforces a ceiling, and a streamed batch admits images by their estimated need. See
+A caller can also predict and bound it: `BmageImagePipeline.EstimateMemory` gives a run's peak before it starts, a
+`BmageBudgetedPixelAllocator` enforces a ceiling, and a streamed batch admits images by their estimated need. See
 [threads-and-memory.md](threads-and-memory.md).
 
 ## Extension points
 
-Every one of these is an interface or an abstract class you can implement without modifying the library: `IImageOperation`
-and `PointOperation` for processing, `Mask` for selections, `Layer` for compositing, `IImageDecoder` and `IImageEncoder`
-registered in `ImageCodecRegistry`, `IPaint` for fills, `ITextRasterizer` for text, `Annotation` for new annotation
-kinds, `IEditorTool` for new editor tools, `IPixelAllocator` for memory strategy, `IImageCapabilityProvider` for
+Every one of these is an interface or an abstract class you can implement without modifying the library: `IBmageImageOperation`
+and `BmagePointOperation` for processing, `BmageMask` for selections, `BmageLayer` for compositing, `IBmageImageDecoder` and `IBmageImageEncoder`
+registered in `BmageImageCodecRegistry`, `IBmagePaint` for fills, `IBmageTextRasterizer` for text, `BmageAnnotation` for new annotation
+kinds, `IBmageEditorTool` for new editor tools, `IBmagePixelAllocator` for memory strategy, `IBmageImageCapabilityProvider` for
 environment detection, and `BmageJsonOptions.Add` for writing any of your own types as JSON. See
 [extending.md](extending.md).
 
 ## Content-dependent sizes
 
-`IImageOperation.GetOutputSize` must be answerable from the input size alone: documents report their size, overlays
+`IBmageImageOperation.GetOutputSize` must be answerable from the input size alone: documents report their size, overlays
 are placed and memory is estimated before any pixel is read. Trimming plain borders depends on the pixels, so it is an
-analysis, `ContentBounds.Find`, whose result is recorded as an ordinary `CropOperation` that replays exactly. Automatic
+analysis, `BmageContentBounds.Find`, whose result is recorded as an ordinary `BmageCropOperation` that replays exactly. Automatic
 corrections that keep the size (auto levels, auto white balance) are operations: they measure the image they are
 applied to, which on a proxy preview is the proxy.
 
 ## Painting
 
-A `PaintLayer` holds brush strokes, not pixels: each stroke is its points, pen pressures, size, colour, opacity and
+A `BmagePaintLayer` holds brush strokes, not pixels: each stroke is its points, pen pressures, size, colour, opacity and
 hardness. Strokes are stamped as round dabs into a coverage buffer, kept at the larger value where dabs overlap so a
 stroke has one even opacity, then laid over the layer (or, for the eraser, taken out of it). Undo stays kilobytes, and a
 proxy preview paints the same strokes scaled. While a stroke is drawn the editor shows it as a line over the kept
@@ -263,8 +264,8 @@ preview rather than compositing the layers on every pointer move, and paints it 
 ## What is deliberately not here
 
 - **Semantic background removal** ships as an architecture, not an implementation. A usable segmentation model is
-  several megabytes and would dominate the bundle; `BitmapMask` takes any model's matte. What ships is the case a
-  model is not needed for: `ImagePipeline.RemoveBackground` floods a plain backdrop in from the corners.
+  several megabytes and would dominate the bundle; `BmageBitmapMask` takes any model's matte. What ships is the case a
+  model is not needed for: `BmageImagePipeline.RemoveBackground` floods a plain backdrop in from the corners.
 - **Healing and content-aware fill.** Results worth using need patch-based reconstruction; a clone stamp that only
   copies would be easy to ship and disappointing to use.
 

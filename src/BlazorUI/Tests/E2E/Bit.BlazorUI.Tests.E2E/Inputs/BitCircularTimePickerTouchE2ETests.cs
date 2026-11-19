@@ -8,6 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// Responsive picker opens its callout as a sheet across the top of the screen that a swipe up dismisses.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCircularTimePickerTouchE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/circular-time-picker";

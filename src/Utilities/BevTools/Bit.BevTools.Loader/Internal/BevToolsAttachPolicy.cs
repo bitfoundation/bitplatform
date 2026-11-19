@@ -17,7 +17,7 @@ internal static class BevToolsAttachPolicy
 
     /// <summary>
     /// Allowing it in a process that serves many users takes <paramref name="allowInMultiUserHost"/> and
-    /// <paramref name="authorizes"/> both: a callback that decides who may open it (<see cref="BitBevToolsLoaderOptions.Authorize"/>).
+    /// <paramref name="authorizes"/> both: a callback that decides who may open it (<see cref="BevToolsLoaderOptions.Authorize"/>).
     /// </summary>
     /// <returns>Whether BevTools may be attached, and why, as the end of a sentence about it.</returns>
     public static (bool Allowed, string Reason) Resolve(IServiceProvider services, bool multiUserHost, bool allowInMultiUserHost, bool authorizes, string howToAllow)
@@ -35,12 +35,12 @@ internal static class BevToolsAttachPolicy
 
         if (allowInMultiUserHost && authorizes)
         {
-            return (true, "this process serves many users, which BitBevToolsLoaderOptions.AllowInMultiUserHost allows to whoever BitBevToolsLoaderOptions.Authorize accepts.");
+            return (true, "this process serves many users, which BevToolsLoaderOptions.AllowInMultiUserHost allows to whoever BevToolsLoaderOptions.Authorize accepts.");
         }
 
         var why = $"this process serves many users (IHostEnvironment reports '{environment?.EnvironmentName ?? "nothing"}'), and the panel would show whoever opens it the server side objects of their circuit.";
         return allowInMultiUserHost
-            ? (false, why + " BitBevToolsLoaderOptions.AllowInMultiUserHost needs BitBevToolsLoaderOptions.Authorize too, to decide who may open it.")
+            ? (false, why + " BevToolsLoaderOptions.AllowInMultiUserHost needs BevToolsLoaderOptions.Authorize too, to decide who may open it.")
             : (false, why + " " + howToAllow);
     }
 }

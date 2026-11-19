@@ -1,13 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Filters;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -23,7 +15,7 @@ public sealed class MaskTests
     [TestMethod]
     public void ARectangleCoversItsPixelsAndNothingElse()
     {
-        using var mask = new RectangleMask(new RectangleF(10, 20, 30, 40)).Render(new Size(100, 100));
+        using var mask = new BmageRectangleMask(new RectangleF(10, 20, 30, 40)).Render(new Size(100, 100));
 
         Assert.AreEqual(255, mask[10, 20]);
         Assert.AreEqual(255, mask[39, 59]);
@@ -35,7 +27,7 @@ public sealed class MaskTests
     [TestMethod]
     public void RelativeUnitsFitEveryImage()
     {
-        var circle = Mask.Ellipse();
+        var circle = BmageMask.Ellipse();
         foreach (var size in new[] { new Size(100, 100), new Size(400, 200), new Size(31, 77) })
         {
             using var rendered = circle.Render(size);
@@ -48,7 +40,7 @@ public sealed class MaskTests
     [TestMethod]
     public void InvertingSwapsCoveredAndUncovered()
     {
-        var rectangle = new RectangleMask(new RectangleF(0, 0, 50, 100));
+        var rectangle = new BmageRectangleMask(new RectangleF(0, 0, 50, 100));
         using var plain = rectangle.Render(new Size(100, 100));
         using var inverted = rectangle.Invert().Render(new Size(100, 100));
 
@@ -58,10 +50,10 @@ public sealed class MaskTests
     [TestMethod]
     public void OpacityScalesTheCoverage()
     {
-        using var half = (Mask.All() with { Opacity = 0.5f }).Render(new Size(8, 8));
+        using var half = (BmageMask.All() with { Opacity = 0.5f }).Render(new Size(8, 8));
         Assert.AreEqual(128, half[3, 3]);
 
-        var none = Mask.All() with { Opacity = 0 };
+        var none = BmageMask.All() with { Opacity = 0 };
         Assert.IsTrue(none.IsEmpty);
         using var rendered = none.Render(new Size(8, 8));
         Assert.AreEqual(Rectangle.Empty, rendered.GetBounds());
@@ -70,7 +62,7 @@ public sealed class MaskTests
     [TestMethod]
     public void FeatheringSoftensTheEdgeSymmetrically_AndKeepsTheInteriorAndFarExterior()
     {
-        var rectangle = new RectangleMask(new RectangleF(50, 0, 100, 40)) { Feather = 6 };
+        var rectangle = new BmageRectangleMask(new RectangleF(50, 0, 100, 40)) { Feather = 6 };
         using var mask = rectangle.Render(new Size(200, 40));
 
         // Deep inside and far outside are untouched.
@@ -88,14 +80,14 @@ public sealed class MaskTests
     public void AffectedBoundsCoverEverythingTheRenderedMaskTouches()
     {
         var size = new Size(300, 200);
-        foreach (var mask in new Mask[]
+        foreach (var mask in new BmageMask[]
         {
-            new RectangleMask(new RectangleF(40, 30, 50, 60)) { Feather = 8 },
-            new EllipseMask(new RectangleF(100, 50, 80, 40)),
-            new RadialGradientMask(new Vector2(150, 100), 60, 30) { Rotation = 30 },
-            new PolygonMask([new(10, 10), new(80, 20), new(30, 90)]),
-            new BrushMask([new BrushStroke([new(20, 20), new(120, 60), new(200, 30)], 14)]) { Feather = 3 },
-            new EllipseMask(new RectangleF(10, 10, 40, 40)).Union(new RectangleMask(new RectangleF(200, 100, 50, 50))),
+            new BmageRectangleMask(new RectangleF(40, 30, 50, 60)) { Feather = 8 },
+            new BmageEllipseMask(new RectangleF(100, 50, 80, 40)),
+            new BmageRadialGradientMask(new Vector2(150, 100), 60, 30) { Rotation = 30 },
+            new BmagePolygonMask([new(10, 10), new(80, 20), new(30, 90)]),
+            new BmageBrushMask([new BmageBrushStroke([new(20, 20), new(120, 60), new(200, 30)], 14)]) { Feather = 3 },
+            new BmageEllipseMask(new RectangleF(10, 10, 40, 40)).Union(new BmageRectangleMask(new RectangleF(200, 100, 50, 50))),
         })
         {
             using var rendered = mask.Render(size);
@@ -108,7 +100,7 @@ public sealed class MaskTests
     [TestMethod]
     public void ALinearGradientFadesFromStartToEnd()
     {
-        using var mask = new LinearGradientMask(new Vector2(0, 10), new Vector2(0, 90)).Render(new Size(20, 100));
+        using var mask = new BmageLinearGradientMask(new Vector2(0, 10), new Vector2(0, 90)).Render(new Size(20, 100));
 
         Assert.AreEqual(255, mask[5, 5]);
         Assert.AreEqual(0, mask[5, 95]);
@@ -119,7 +111,7 @@ public sealed class MaskTests
     [TestMethod]
     public void ARadialGradientIsSolidInsideItsHardnessAndEmptyBeyondItsRadius()
     {
-        using var mask = new RadialGradientMask(new Vector2(50, 50), 40, 40) { Hardness = 0.5f }.Render(new Size(100, 100));
+        using var mask = new BmageRadialGradientMask(new Vector2(50, 50), 40, 40) { Hardness = 0.5f }.Render(new Size(100, 100));
 
         Assert.AreEqual(255, mask[50, 50]);
         Assert.AreEqual(255, mask[50 + 18, 50]);
@@ -130,8 +122,8 @@ public sealed class MaskTests
     [TestMethod]
     public void BrushStrokesPaintAndEraseInOrder()
     {
-        var brush = new BrushMask([new BrushStroke([new(10, 50), new(90, 50)], 20)])
-            .Add(new BrushStroke([new(50, 30), new(50, 70)], 10) { Erase = true });
+        var brush = new BmageBrushMask([new BmageBrushStroke([new(10, 50), new(90, 50)], 20)])
+            .Add(new BmageBrushStroke([new(50, 30), new(50, 70)], 10) { Erase = true });
         using var mask = brush.Render(new Size(100, 100));
 
         Assert.AreEqual(255, mask[20, 50]);
@@ -143,8 +135,8 @@ public sealed class MaskTests
     [TestMethod]
     public void CombiningMasksFollowsFuzzySetRules()
     {
-        var left = new RectangleMask(new RectangleF(0, 0, 60, 10));
-        var right = new RectangleMask(new RectangleF(40, 0, 60, 10));
+        var left = new BmageRectangleMask(new RectangleF(0, 0, 60, 10));
+        var right = new BmageRectangleMask(new RectangleF(40, 0, 60, 10));
         var size = new Size(100, 10);
 
         using var union = left.Union(right).Render(size);
@@ -163,10 +155,10 @@ public sealed class MaskTests
     [TestMethod]
     public void ALuminanceRangeSelectsByBrightness()
     {
-        using var image = ImageBuffer.Create(256, 1);
-        for (var x = 0; x < 256; x++) image[x, 0] = new Rgba32((byte)x, (byte)x, (byte)x);
+        using var image = BmageImageBuffer.Create(256, 1);
+        for (var x = 0; x < 256; x++) image[x, 0] = new BmageRgba32((byte)x, (byte)x, (byte)x);
 
-        using var highlights = new LuminanceRangeMask(0.75f, 1f) { Softness = 0.1f }.Render(image.Size, image);
+        using var highlights = new BmageLuminanceRangeMask(0.75f, 1f) { Softness = 0.1f }.Render(image.Size, image);
 
         Assert.AreEqual(255, highlights[250, 0]);
         Assert.AreEqual(255, highlights[192, 0]);
@@ -178,7 +170,7 @@ public sealed class MaskTests
     public void AColourRangeSelectsSimilarColours()
     {
         using var image = TestImages.Quadrants(20, 20);
-        using var reds = new ColorRangeMask(new Rgba32(250, 10, 10)).Render(image.Size, image);
+        using var reds = new BmageColorRangeMask(new BmageRgba32(250, 10, 10)).Render(image.Size, image);
 
         Assert.AreEqual(255, reds[2, 2]);
         Assert.AreEqual(0, reds[15, 2]);
@@ -189,18 +181,18 @@ public sealed class MaskTests
     [TestMethod]
     public void ContentMasksNeedTheImage()
     {
-        Assert.ThrowsExactly<InvalidOperationException>(() => new LuminanceRangeMask(0, 0.5f).Render(new Size(4, 4)));
+        Assert.ThrowsExactly<InvalidOperationException>(() => new BmageLuminanceRangeMask(0, 0.5f).Render(new Size(4, 4)));
     }
 
     [TestMethod]
     public void ABitmapMaskIsStretchedOverTheImage()
     {
         // A 2x1 matte: left half covered, right half not.
-        using var matte = ImageBuffer.Create(2, 1);
-        matte[0, 0] = new Rgba32(0, 0, 0, 255);
-        matte[1, 0] = new Rgba32(0, 0, 0, 0);
+        using var matte = BmageImageBuffer.Create(2, 1);
+        matte[0, 0] = new BmageRgba32(0, 0, 0, 255);
+        matte[1, 0] = new BmageRgba32(0, 0, 0, 0);
 
-        using var mask = new BitmapMask(matte).Render(new Size(200, 100));
+        using var mask = new BmageBitmapMask(matte).Render(new Size(200, 100));
 
         Assert.AreEqual(255, mask[10, 50]);
         Assert.AreEqual(0, mask[190, 50]);
@@ -210,18 +202,18 @@ public sealed class MaskTests
     [TestMethod]
     public void PixelMasksScaleWithTheEdit_RelativeOnesDoNot()
     {
-        var pixels = new RectangleMask(new RectangleF(100, 50, 200, 100)) { Feather = 10 };
-        var scaled = (RectangleMask)pixels.ForScale(0.5);
+        var pixels = new BmageRectangleMask(new RectangleF(100, 50, 200, 100)) { Feather = 10 };
+        var scaled = (BmageRectangleMask)pixels.ForScale(0.5);
         Assert.AreEqual(new RectangleF(50, 25, 100, 50), scaled.Rectangle);
         Assert.AreEqual(5f, scaled.Feather);
 
-        var relative = Mask.Ellipse() with { Feather = 4 };
-        var rescaled = (EllipseMask)relative.ForScale(0.25);
+        var relative = BmageMask.Ellipse() with { Feather = 4 };
+        var rescaled = (BmageEllipseMask)relative.ForScale(0.25);
         Assert.AreEqual(relative.Rectangle, rescaled.Rectangle);
         Assert.AreEqual(1f, rescaled.Feather);
 
-        var combined = (CombinedMask)pixels.Union(relative).ForScale(0.5);
-        Assert.AreEqual(new RectangleF(50, 25, 100, 50), ((RectangleMask)combined.First).Rectangle);
+        var combined = (BmageCombinedMask)pixels.Union(relative).ForScale(0.5);
+        Assert.AreEqual(new RectangleF(50, 25, 100, 50), ((BmageRectangleMask)combined.First).Rectangle);
     }
 
     // ------------------------------------------------------------------ masked operations
@@ -231,8 +223,8 @@ public sealed class MaskTests
     {
         using var source = ParallelProcessingTests.Noise(120, 80, seed: 4);
         var region = new RectangleF(20, 10, 50, 40);
-        using var full = new BrightnessAdjustment(0.3f).Apply(source, OperationContext.Default);
-        using var masked = new MaskedOperation(new BrightnessAdjustment(0.3f), new RectangleMask(region)).Apply(source, OperationContext.Default);
+        using var full = new BmageBrightnessAdjustment(0.3f).Apply(source, BmageOperationContext.Default);
+        using var masked = new BmageMaskedOperation(new BmageBrightnessAdjustment(0.3f), new BmageRectangleMask(region)).Apply(source, BmageOperationContext.Default);
 
         for (var y = 0; y < source.Height; y++)
             for (var x = 0; x < source.Width; x++)
@@ -246,18 +238,18 @@ public sealed class MaskTests
     public void AFullyCoveringMaskReproducesTheOperationExactly()
     {
         using var source = ParallelProcessingTests.Noise(200, 150, seed: 8);
-        foreach (var operation in new IImageOperation[]
+        foreach (var operation in new IBmageImageOperation[]
         {
-            new BrightnessAdjustment(0.2f),
-            new SaturationAdjustment(-0.5f),
-            new FusedPointOperation([new ContrastAdjustment(0.3f), new HueAdjustment(40)]),
-            new BlurFilter(3),
-            new SharpenFilter(0.8f),
-            new PipelineOperation(ImagePipeline.Create().Exposure(0.5f).Vibrance(0.4f)),
+            new BmageBrightnessAdjustment(0.2f),
+            new BmageSaturationAdjustment(-0.5f),
+            new BmageFusedPointOperation([new BmageContrastAdjustment(0.3f), new BmageHueAdjustment(40)]),
+            new BmageBlurFilter(3),
+            new BmageSharpenFilter(0.8f),
+            new BmagePipelineOperation(BmageImagePipeline.Create().Exposure(0.5f).Vibrance(0.4f)),
         })
         {
-            using var expected = operation.Apply(source, OperationContext.Default);
-            using var actual = new MaskedOperation(operation, Mask.All()).Apply(source, OperationContext.Default);
+            using var expected = operation.Apply(source, BmageOperationContext.Default);
+            using var actual = new BmageMaskedOperation(operation, BmageMask.All()).Apply(source, BmageOperationContext.Default);
             Assert.IsTrue(expected.Bytes.SequenceEqual(actual.Bytes), $"{operation.Name} through a full mask differs from {operation.Name} alone.");
         }
     }
@@ -266,20 +258,20 @@ public sealed class MaskTests
     public void AnEmptyMaskLeavesTheImageAlone()
     {
         using var source = ParallelProcessingTests.Noise(64, 64, seed: 2);
-        var nothing = new RectangleMask(new RectangleF(500, 500, 10, 10));
-        foreach (var operation in new IImageOperation[] { new BrightnessAdjustment(0.5f), new BlurFilter(4) })
+        var nothing = new BmageRectangleMask(new RectangleF(500, 500, 10, 10));
+        foreach (var operation in new IBmageImageOperation[] { new BmageBrightnessAdjustment(0.5f), new BmageBlurFilter(4) })
         {
-            using var result = new MaskedOperation(operation, nothing).Apply(source, OperationContext.Default);
+            using var result = new BmageMaskedOperation(operation, nothing).Apply(source, BmageOperationContext.Default);
             Assert.IsTrue(source.Bytes.SequenceEqual(result.Bytes), operation.Name);
         }
-        Assert.IsTrue(new MaskedOperation(new BrightnessAdjustment(0.5f), Mask.All() with { Opacity = 0 }).IsIdentity);
+        Assert.IsTrue(new BmageMaskedOperation(new BmageBrightnessAdjustment(0.5f), BmageMask.All() with { Opacity = 0 }).IsIdentity);
     }
 
     [TestMethod]
     public void PartialCoverageMixesTheOriginalAndTheEdit()
     {
-        using var source = ImageBuffer.Create(4, 4, new Rgba32(100, 100, 100));
-        using var result = new MaskedOperation(new InvertFilter(), Mask.All() with { Opacity = 0.5f }).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(4, 4, new BmageRgba32(100, 100, 100));
+        using var result = new BmageMaskedOperation(new BmageInvertFilter(), BmageMask.All() with { Opacity = 0.5f }).Apply(source, BmageOperationContext.Default);
 
         // Inverting 100 gives 155; half way between is 127.5, which rounds to 128 with a coverage of 128/255.
         var p = result[1, 1];
@@ -290,11 +282,11 @@ public sealed class MaskTests
     [TestMethod]
     public void TheInPlacePathMatchesTheCopyingPath()
     {
-        var operation = new MaskedOperation(new ContrastAdjustment(0.4f), new EllipseMask(new RectangleF(10, 10, 80, 50)) { Feather = 5 });
+        var operation = new BmageMaskedOperation(new BmageContrastAdjustment(0.4f), new BmageEllipseMask(new RectangleF(10, 10, 80, 50)) { Feather = 5 });
         using var source = ParallelProcessingTests.Noise(100, 70, seed: 6);
         using var copy = source.Clone();
-        using var copied = operation.Apply(source, OperationContext.Default);
-        var inPlace = operation.Apply(copy, OperationContext.Default.WithMutation(true));
+        using var copied = operation.Apply(source, BmageOperationContext.Default);
+        var inPlace = operation.Apply(copy, BmageOperationContext.Default.WithMutation(true));
 
         Assert.AreSame(copy, inPlace);
         Assert.IsTrue(copied.Bytes.SequenceEqual(inPlace.Bytes));
@@ -305,14 +297,14 @@ public sealed class MaskTests
     {
         using var source = ParallelProcessingTests.Noise(80, 60, seed: 3);
         var before = source.ToArray();
-        foreach (var operation in new IImageOperation[]
+        foreach (var operation in new IBmageImageOperation[]
         {
-            new MaskedOperation(new BrightnessAdjustment(0.3f), Mask.Ellipse()),
-            new MaskedOperation(new BlurFilter(2), Mask.Ellipse()),
-            new AlphaMaskOperation(Mask.Ellipse()),
+            new BmageMaskedOperation(new BmageBrightnessAdjustment(0.3f), BmageMask.Ellipse()),
+            new BmageMaskedOperation(new BmageBlurFilter(2), BmageMask.Ellipse()),
+            new BmageAlphaMaskOperation(BmageMask.Ellipse()),
         })
         {
-            using var result = operation.Apply(source, OperationContext.Default);
+            using var result = operation.Apply(source, BmageOperationContext.Default);
             Assert.IsTrue(before.AsSpan().SequenceEqual(source.Bytes), $"{operation.Name} modified its source.");
         }
     }
@@ -320,33 +312,33 @@ public sealed class MaskTests
     [TestMethod]
     public void OperationsThatChangeTheSizeAreRefused()
     {
-        var masked = new MaskedOperation(new CropOperation(0, 0, 10, 10), Mask.All());
+        var masked = new BmageMaskedOperation(new BmageCropOperation(0, 0, 10, 10), BmageMask.All());
         Assert.ThrowsExactly<ArgumentException>(() => masked.GetOutputSize(new Size(100, 100)));
-        using var source = ImageBuffer.Create(100, 100);
-        Assert.ThrowsExactly<ArgumentException>(() => masked.Apply(source, OperationContext.Default));
+        using var source = BmageImageBuffer.Create(100, 100);
+        Assert.ThrowsExactly<ArgumentException>(() => masked.Apply(source, BmageOperationContext.Default));
     }
 
     [TestMethod]
     public void AMaskedPipelineRunsOnManyThreadsWithIdenticalPixels()
     {
         using var source = ParallelProcessingTests.Noise(1024, 768, seed: 12);
-        var pipeline = ImagePipeline.Create()
-            .Masked(Mask.Gradient(new(0, 0), new(0, 0.6f)), sky => sky.Exposure(-0.6f).Saturation(0.3f))
-            .Masked(new RadialGradientMask(new Vector2(0.5f, 0.6f), 0.3f, 0.25f) { Units = MaskUnits.Relative, Feather = 12 }, p => p.Blur(3));
+        var pipeline = BmageImagePipeline.Create()
+            .Masked(BmageMask.Gradient(new(0, 0), new(0, 0.6f)), sky => sky.Exposure(-0.6f).Saturation(0.3f))
+            .Masked(new BmageRadialGradientMask(new Vector2(0.5f, 0.6f), 0.3f, 0.25f) { Units = BmageMaskUnits.Relative, Feather = 12 }, p => p.Blur(3));
 
-        using var one = pipeline.Execute(source, new PipelineExecutionOptions { MaxDegreeOfParallelism = 1 });
-        using var many = pipeline.Execute(source, new PipelineExecutionOptions { MaxDegreeOfParallelism = 8 });
+        using var one = pipeline.Execute(source, new BmagePipelineExecutionOptions { MaxDegreeOfParallelism = 1 });
+        using var many = pipeline.Execute(source, new BmagePipelineExecutionOptions { MaxDegreeOfParallelism = 8 });
         Assert.IsTrue(one.Bytes.SequenceEqual(many.Bytes));
     }
 
     [TestMethod]
     public void AMaskedEditPreviewedOnAProxyMatchesTheExportScaledDown()
     {
-        using var source = ImageBuffer.Create(400, 300, new Rgba32(100, 100, 100));
-        var pipeline = ImagePipeline.Create().Masked(new RectangleMask(new RectangleF(100, 80, 200, 120)) { Feather = 4 }, p => p.Brightness(0.4f));
+        using var source = BmageImageBuffer.Create(400, 300, new BmageRgba32(100, 100, 100));
+        var pipeline = BmageImagePipeline.Create().Masked(new BmageRectangleMask(new RectangleF(100, 80, 200, 120)) { Feather = 4 }, p => p.Brightness(0.4f));
 
         using var full = pipeline.Execute(source);
-        using var proxySource = new ResizeOperation(200, 150, ResizeMode.Stretch, ResamplingFilter.Box).Apply(source, OperationContext.Default);
+        using var proxySource = new BmageResizeOperation(200, 150, BmageResizeMode.Stretch, BmageResamplingFilter.Box).Apply(source, BmageOperationContext.Default);
         using var preview = pipeline.ForScale(0.5).Execute(proxySource);
 
         // The preview is the export at half the size: brightened inside the rectangle, untouched outside it.
@@ -358,8 +350,8 @@ public sealed class MaskTests
     [TestMethod]
     public void ApplyingAMaskCutsTheImageOut()
     {
-        using var source = ImageBuffer.Create(64, 64, Rgba32.White);
-        using var avatar = ImagePipeline.Create().ApplyMask(Mask.Ellipse()).Execute(source);
+        using var source = BmageImageBuffer.Create(64, 64, BmageRgba32.White);
+        using var avatar = BmageImagePipeline.Create().ApplyMask(BmageMask.Ellipse()).Execute(source);
 
         Assert.AreEqual(255, avatar[32, 32].A);
         Assert.AreEqual(0, avatar[0, 0].A);
@@ -370,25 +362,25 @@ public sealed class MaskTests
     [TestMethod]
     public void MaskedOperationsSurviveTheOptimiserAsBarriers()
     {
-        var pipeline = ImagePipeline.Create()
+        var pipeline = BmageImagePipeline.Create()
             .Brightness(0.1f)
-            .Masked(Mask.Ellipse(), p => p.Contrast(0.2f))
+            .Masked(BmageMask.Ellipse(), p => p.Contrast(0.2f))
             .Saturation(0.2f)
-            .Masked(Mask.Ellipse(), p => p.Brightness(0));
+            .Masked(BmageMask.Ellipse(), p => p.Brightness(0));
 
         var optimised = pipeline.Optimize(new Size(100, 100));
 
         // The identity edit through a mask is dropped; the masked contrast is not fused with its neighbours.
         Assert.AreEqual(3, optimised.Count);
-        Assert.IsInstanceOfType<MaskedOperation>(optimised[1]);
+        Assert.IsInstanceOfType<BmageMaskedOperation>(optimised[1]);
     }
 
     [TestMethod]
     public void TheMaskBufferRoundTripsThroughAnImage()
     {
-        using var mask = new EllipseMask(new RectangleF(5, 5, 30, 20)).Render(new Size(40, 30));
+        using var mask = new BmageEllipseMask(new RectangleF(5, 5, 30, 20)).Render(new Size(40, 30));
         using var image = mask.ToImage();
-        using var back = MaskBuffer.FromAlpha(image);
+        using var back = BmageMaskBuffer.FromAlpha(image);
 
         Assert.IsTrue(mask.Values.SequenceEqual(back.Values));
     }
@@ -396,7 +388,7 @@ public sealed class MaskTests
     [TestMethod]
     public void ResizingAMaskKeepsItsShape()
     {
-        using var mask = new RectangleMask(new RectangleF(0, 0, 50, 100)).Render(new Size(100, 100));
+        using var mask = new BmageRectangleMask(new RectangleF(0, 0, 50, 100)).Render(new Size(100, 100));
         using var larger = mask.Resize(400, 400);
         using var smaller = mask.Resize(10, 10);
 

@@ -1,5 +1,4 @@
-﻿using Bit.Belemetry.Hangfire;
-using Hangfire;
+﻿using Hangfire;
 using Hangfire.Client;
 using Hangfire.Common;
 using Hangfire.InMemory;

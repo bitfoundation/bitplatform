@@ -142,7 +142,7 @@ public static class BudgetCheck
     {
         foreach (var frame in FrameFactory.Standard())
         {
-            yield return ($"{frame.Name}, every format", frame, new BbScannerOptions { Formats = BbBarcodeFormat.All });
+            yield return ($"{frame.Name}, every format", frame, new BbScannerOptions { Formats = BbScannerBarcodeFormat.All });
         }
 
         var empty = FrameFactory.Empty();
@@ -150,14 +150,14 @@ public static class BudgetCheck
         yield return ("Empty frame, still image defaults", empty, BbScannerOptions.ForStillImages());
 
         var everything = BbScannerOptions.ForStillImages();
-        everything.Formats = BbBarcodeFormat.All;
+        everything.Formats = BbScannerBarcodeFormat.All;
         yield return ("Empty frame, still image, every format", empty, everything);
     }
 
     private static Budget Measure(FrameFactory.Frame frame, BbScannerOptions options, double calibration)
     {
         options.DuplicateSuppressionWindow = TimeSpan.Zero;
-        using var decoder = new BbBarcodeDecoder(options);
+        using var decoder = new BbScannerBarcodeDecoder(options);
 
         WarmUp(() => Decode(decoder, frame));
 
@@ -178,9 +178,9 @@ public static class BudgetCheck
         return new Budget(Math.Round(LowerQuartile(times) / calibration, 3), bytes);
     }
 
-    private static void Decode(BbBarcodeDecoder decoder, FrameFactory.Frame frame)
+    private static void Decode(BbScannerBarcodeDecoder decoder, FrameFactory.Frame frame)
     {
-        var result = decoder.Decode(frame.Pixels, frame.Width, frame.Height, BbPixelFormat.Gray8, suppressDuplicates: false);
+        var result = decoder.Decode(frame.Pixels, frame.Width, frame.Height, BbScannerPixelFormat.Gray8, suppressDuplicates: false);
         if (result?.Text != frame.Expected)
         {
             // A frame that stopped decoding is measured on its failure path, which is no measurement at all.

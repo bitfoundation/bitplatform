@@ -1,5 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Bit.Bsqlite.EntityFrameworkCore.Tests;

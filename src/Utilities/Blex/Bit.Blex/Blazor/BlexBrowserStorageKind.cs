@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// Which Web Storage area a <see cref="BlexBrowserStorage"/> instance targets.

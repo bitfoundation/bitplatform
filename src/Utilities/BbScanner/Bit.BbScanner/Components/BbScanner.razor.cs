@@ -10,7 +10,7 @@ namespace Bit.BbScanner;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The component owns the camera, the frame loop and one <see cref="BbBarcodeDecoder"/>. Frames
+/// The component owns the camera, the frame loop and one <see cref="BbScannerBarcodeDecoder"/>. Frames
 /// never enter the Blazor render tree: the video element paints itself, the decoder reads pixels
 /// out of a buffer JavaScript writes into directly, and the component only re-renders when
 /// something a user can see actually changes. A scanner running at twenty frames a second
@@ -86,7 +86,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     // The component, not the decoder, owns duplicate suppression: the decoder is replaced whenever
     // the formats or options change, and a symbol already reported must stay reported across that.
     // Owning it also lets every decoded frame reach the highlight, suppressed or not.
-    private readonly BbDuplicateFilter _duplicateFilter = new(TimeSpan.FromSeconds(2));
+    private readonly BbScannerDuplicateFilter _duplicateFilter = new(TimeSpan.FromSeconds(2));
 
     /// <summary>The way into the page's JavaScript, made for where the component runs on its first use.</summary>
     private BbScannerBridge? _bridge;
@@ -97,22 +97,22 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// the decoder to itself: no other frame is grabbed, and what a stop, a new size or a new decoder would do to either
     /// is left to <see cref="EndFrame"/>.
     /// </summary>
-    private BbBarcodeDecoder? _frameDecoder;
-    private BbBarcodeDecoder? _decoder;
+    private BbScannerBarcodeDecoder? _frameDecoder;
+    private BbScannerBarcodeDecoder? _decoder;
     private string? _decoderSignature;
     private Exception? _optionsError;
-    private BbScanDiagnostics _lastDiagnostics;
+    private BbScannerScanDiagnostics _lastDiagnostics;
     private long _retiredFramesDecoded;
     private long _retiredFramesWithSymbol;
     private int _consecutiveDecodeFailures;
     private CancellationTokenSource? _loopCancellation;
     private PeriodicTimer? _timer;
     private byte[] _frameBuffer = [];
-    private BbCameraDevice[] _devices = [];
-    private List<BbCameraDevice> _cameras = [];
+    private BbScannerCameraDevice[] _devices = [];
+    private List<BbScannerCameraDevice> _cameras = [];
     private BbScannerTexts? _camerasLabelledWith;
-    private BbCameraInfo? _camera;
-    private BbScanRegion _region = BbScanRegion.Full;
+    private BbScannerCameraInfo? _camera;
+    private BbScannerScanRegion _region = BbScannerScanRegion.Full;
 
     private BbScannerStatus _status = BbScannerStatus.Idle;
     private string? _message;
@@ -127,7 +127,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     private long _symbolSeenAt;
     private string? _activeDeviceId;
     private string? _lastRequestedDeviceId;
-    private BbCameraFacing _lastRequestedFacing;
+    private BbScannerCameraFacing _lastRequestedFacing;
     private bool _restartRequested;
 
     /// <summary>Set while a camera the browser ended in the background waits for the page to be shown again.</summary>
@@ -162,11 +162,11 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     private bool _disposed;
 
     /// <summary>
-    /// The symbologies to look for: <see cref="BbBarcodeFormat.Common"/> unless set. The others,
+    /// The symbologies to look for: <see cref="BbScannerBarcodeFormat.Common"/> unless set. The others,
     /// PDF417 and Aztec among them, are asked for by name, since each costs every frame time of its own.
     /// </summary>
     [Parameter]
-    public BbBarcodeFormat Formats { get; set; } = BbBarcodeFormat.Common;
+    public BbScannerBarcodeFormat Formats { get; set; } = BbScannerBarcodeFormat.Common;
 
     /// <summary>
     /// The part of the frame to search, in normalized coordinates. The default searches the whole
@@ -174,7 +174,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// scanned through the file picker are always searched in full.
     /// </summary>
     [Parameter]
-    public BbScanRegion Region { get; set; } = BbScanRegion.Full;
+    public BbScannerScanRegion Region { get; set; } = BbScannerScanRegion.Full;
 
     /// <summary>
     /// Advanced tuning. When supplied, <see cref="Formats"/>, <see cref="Region"/> and an
@@ -206,7 +206,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
     /// <summary>Which camera to prefer when <see cref="DeviceId"/> is not set.</summary>
     [Parameter]
-    public BbCameraFacing Facing { get; set; } = BbCameraFacing.Rear;
+    public BbScannerCameraFacing Facing { get; set; } = BbScannerCameraFacing.Rear;
 
     /// <summary>
     /// A specific camera to open, from <see cref="GetCamerasAsync"/>. Changing it while the
@@ -226,7 +226,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <remarks>
     /// <see cref="Timeout.InfiniteTimeSpan"/> reports each value once for as long as the camera
     /// stays open - a stocktake, a check-in desk - remembering up to
-    /// <see cref="BbDuplicateFilter.SessionCapacity"/> values. <see cref="StartAsync"/> on a
+    /// <see cref="BbScannerDuplicateFilter.SessionCapacity"/> values. <see cref="StartAsync"/> on a
     /// scanner with no camera open, after <see cref="StopAsync"/> or a fault, and
     /// <see cref="ResetDuplicateFilter"/> forget them; switching cameras, a camera reopened once the
     /// page is shown again and, unlike a finite window, <see cref="Resume"/> do not.
@@ -244,7 +244,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
     /// <summary>What the scanner does once it has reported a scan: keep going, pause, or stop.</summary>
     [Parameter]
-    public BbAfterScan AfterScan { get; set; } = BbAfterScan.Continue;
+    public BbScannerAfterScan AfterScan { get; set; } = BbScannerAfterScan.Continue;
 
     /// <summary>
     /// Decides which results are reported. A result it turns down is not reported, not
@@ -257,7 +257,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// cheap. An exception it throws rejects the result and is routed to the renderer.
     /// </remarks>
     [Parameter]
-    public Func<BbBarcodeResult, bool>? AcceptResult { get; set; }
+    public Func<BbScannerBarcodeResult, bool>? AcceptResult { get; set; }
 
     /// <summary>Show the built-in control bar.</summary>
     [Parameter]
@@ -317,10 +317,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// A vibration, a beep, or both, each time a scan is reported. Off by default; see
-    /// <see cref="BbScanFeedback"/> for what browsers allow.
+    /// <see cref="BbScannerScanFeedback"/> for what browsers allow.
     /// </summary>
     [Parameter]
-    public BbScanFeedback Feedback { get; set; }
+    public BbScannerScanFeedback Feedback { get; set; }
 
     /// <summary>
     /// Close the camera while the page is hidden - another tab, a minimised window, a locked
@@ -358,7 +358,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
     /// <summary>Raised for every accepted scan, after duplicate suppression.</summary>
     [Parameter]
-    public EventCallback<BbBarcodeResult> OnScan { get; set; }
+    public EventCallback<BbScannerBarcodeResult> OnScan { get; set; }
 
     /// <summary>Raised when the scanner fails to start or the camera is lost.</summary>
     [Parameter]
@@ -370,14 +370,14 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
     /// <summary>Raised when a camera is opened, with what the browser negotiated.</summary>
     [Parameter]
-    public EventCallback<BbCameraInfo> OnCameraChanged { get; set; }
+    public EventCallback<BbScannerCameraInfo> OnCameraChanged { get; set; }
 
     /// <summary>
     /// Raised at most twice a second with the timings of the most recent frame. Subscribing has
     /// no cost when nothing is listening.
     /// </summary>
     [Parameter]
-    public EventCallback<BbScanDiagnostics> OnDiagnostics { get; set; }
+    public EventCallback<BbScannerScanDiagnostics> OnDiagnostics { get; set; }
 
     /// <summary>Any other attributes are applied to the root element.</summary>
     [Parameter(CaptureUnmatchedValues = true)]
@@ -387,7 +387,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
-    /// <summary>Where an <see cref="IBbCameraSource"/> is found, when the app registered one.</summary>
+    /// <summary>Where an <see cref="IBbScannerCameraSource"/> is found, when the app registered one.</summary>
     [Inject]
     private IServiceProvider Services { get; set; } = default!;
 
@@ -395,13 +395,13 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     public BbScannerStatus Status => _status;
 
     /// <summary>What the browser negotiated for the open camera, or <see langword="null"/>.</summary>
-    public BbCameraInfo? Camera => _camera;
+    public BbScannerCameraInfo? Camera => _camera;
 
     /// <summary>Cameras discovered by the last call to <see cref="GetCamerasAsync"/>.</summary>
-    public IReadOnlyList<BbCameraDevice> Cameras => _cameras;
+    public IReadOnlyList<BbScannerCameraDevice> Cameras => _cameras;
 
     /// <summary>Timings from the most recently decoded frame.</summary>
-    public BbScanDiagnostics Diagnostics => _lastDiagnostics;
+    public BbScannerScanDiagnostics Diagnostics => _lastDiagnostics;
 
     /// <summary>Number of camera frames decoded since the scanner was created.</summary>
     public long FramesDecoded => _retiredFramesDecoded + (_decoder?.FramesDecoded ?? 0);
@@ -558,7 +558,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// Browsers withhold camera labels until permission has been granted once, so calling this
     /// before <see cref="StartAsync"/> tends to return generic names.
     /// </remarks>
-    public async Task<IReadOnlyList<BbCameraDevice>> GetCamerasAsync()
+    public async Task<IReadOnlyList<BbScannerCameraDevice>> GetCamerasAsync()
     {
         if (!_disposed && await EnsureModuleAsync().ConfigureAwait(true))
         {
@@ -573,16 +573,16 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// why it needs the camera before the prompt appears, or say how to allow it once it has been refused.
     /// </summary>
     /// <returns>
-    /// The permission, or <see cref="BbCameraPermission.Unknown"/> where the browser will not say - older Firefox
+    /// The permission, or <see cref="BbScannerCameraPermission.Unknown"/> where the browser will not say - older Firefox
     /// releases do not know the camera permission by name, and a WebView may not implement the Permissions API - or
     /// while the component is not interactive yet. Browsers that grant the camera for one visit at a time may report
-    /// <see cref="BbCameraPermission.Granted"/> for such a grant too.
+    /// <see cref="BbScannerCameraPermission.Granted"/> for such a grant too.
     /// </returns>
-    public async Task<BbCameraPermission> GetCameraPermissionAsync()
+    public async Task<BbScannerCameraPermission> GetCameraPermissionAsync()
     {
         if (_disposed || !await EnsureModuleAsync().ConfigureAwait(true) || _bridge is not { } bridge)
         {
-            return BbCameraPermission.Unknown;
+            return BbScannerCameraPermission.Unknown;
         }
 
         string state;
@@ -592,15 +592,15 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         }
         catch (Exception ex) when (bridge.IsInteropFailure(ex))
         {
-            return BbCameraPermission.Unknown;
+            return BbScannerCameraPermission.Unknown;
         }
 
         return state switch
         {
-            "granted" => BbCameraPermission.Granted,
-            "denied" => BbCameraPermission.Denied,
-            "prompt" => BbCameraPermission.Prompt,
-            _ => BbCameraPermission.Unknown,
+            "granted" => BbScannerCameraPermission.Granted,
+            "denied" => BbScannerCameraPermission.Denied,
+            "prompt" => BbScannerCameraPermission.Prompt,
+            _ => BbScannerCameraPermission.Unknown,
         };
     }
 
@@ -659,8 +659,8 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         var facing = Facing switch
         {
-            BbCameraFacing.Rear => "environment",
-            BbCameraFacing.Front => "user",
+            BbScannerCameraFacing.Rear => "environment",
+            BbScannerCameraFacing.Front => "user",
             _ => null,
         };
 
@@ -868,7 +868,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>Sets the zoom where the camera supports it.</summary>
-    /// <param name="zoom">A value between <see cref="BbCameraInfo.ZoomMin"/> and <see cref="BbCameraInfo.ZoomMax"/>.</param>
+    /// <param name="zoom">A value between <see cref="BbScannerCameraInfo.ZoomMin"/> and <see cref="BbScannerCameraInfo.ZoomMax"/>.</param>
     /// <returns><see langword="true"/> when the browser accepted the request.</returns>
     public async Task<bool> SetZoomAsync(double zoom)
     {
@@ -945,9 +945,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <param name="width">Image width.</param>
     /// <param name="height">Image height.</param>
     /// <param name="format">Pixel layout.</param>
-    public BbBarcodeResult? DecodeImage(ReadOnlySpan<byte> pixels, int width, int height, BbPixelFormat format)
+    public BbScannerBarcodeResult? DecodeImage(ReadOnlySpan<byte> pixels, int width, int height, BbScannerPixelFormat format)
     {
-        using var decoder = new BbBarcodeDecoder(BuildStillImageOptions());
+        using var decoder = new BbScannerBarcodeDecoder(BuildStillImageOptions());
         return decoder.Decode(pixels, width, height, format, suppressDuplicates: false);
     }
 
@@ -962,9 +962,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <param name="format">Pixel layout.</param>
     /// <param name="maxSymbols">The most symbols to return, at least one.</param>
     /// <returns>The symbols found; empty when there are none.</returns>
-    public IReadOnlyList<BbBarcodeResult> DecodeAllInImage(ReadOnlySpan<byte> pixels, int width, int height, BbPixelFormat format, int maxSymbols = 16)
+    public IReadOnlyList<BbScannerBarcodeResult> DecodeAllInImage(ReadOnlySpan<byte> pixels, int width, int height, BbScannerPixelFormat format, int maxSymbols = 16)
     {
-        using var decoder = new BbBarcodeDecoder(BuildStillImageOptions());
+        using var decoder = new BbScannerBarcodeDecoder(BuildStillImageOptions());
         return decoder.DecodeAll(pixels, width, height, format, maxSymbols, suppressDuplicates: false);
     }
 
@@ -992,7 +992,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// script could not be loaded.
     /// </exception>
     /// <exception cref="ObjectDisposedException">The scanner has been disposed.</exception>
-    public async Task<IReadOnlyList<BbBarcodeResult>> ScanImageAsync(Stream image, int maxSymbols = 16, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<BbScannerBarcodeResult>> ScanImageAsync(Stream image, int maxSymbols = 16, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(image);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
@@ -1039,7 +1039,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// script could not be loaded.
     /// </exception>
     /// <exception cref="ObjectDisposedException">The scanner has been disposed.</exception>
-    public async Task<IReadOnlyList<BbBarcodeResult>> ScanImageAsync(
+    public async Task<IReadOnlyList<BbScannerBarcodeResult>> ScanImageAsync(
         ReadOnlyMemory<byte> image, string? contentType = null, int maxSymbols = 16, CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
@@ -1082,7 +1082,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             throw new BbScannerException(BbScannerErrorKind.InvalidImage, RefusalMessage(packed));
         }
 
-        (byte[] Pixels, int Width, int Height, BbPixelFormat Format)? prepared;
+        (byte[] Pixels, int Width, int Height, BbScannerPixelFormat Format)? prepared;
         try
         {
             prepared = packed == 0 ? null : await ReadPreparedPixelsAsync(request, packed).ConfigureAwait(true);
@@ -1111,7 +1111,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <returns>The symbols found; empty when the frame holds none.</returns>
     /// <exception cref="InvalidOperationException">The camera is not open.</exception>
     /// <exception cref="ObjectDisposedException">The scanner has been disposed.</exception>
-    public Task<IReadOnlyList<BbBarcodeResult>> ScanCurrentFrameAsync(int maxSymbols = 16)
+    public Task<IReadOnlyList<BbScannerBarcodeResult>> ScanCurrentFrameAsync(int maxSymbols = 16)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxSymbols);
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -1123,10 +1123,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         return CaptureAsync(bridge, maxSymbols);
     }
 
-    private async Task<IReadOnlyList<BbBarcodeResult>> CaptureAsync(BbScannerBridge bridge, int maxSymbols)
+    private async Task<IReadOnlyList<BbScannerBarcodeResult>> CaptureAsync(BbScannerBridge bridge, int maxSymbols)
     {
         var request = ++_scanRequest | ScanRequestBit;
-        (byte[] Pixels, int Width, int Height, BbPixelFormat Format)? frame;
+        (byte[] Pixels, int Width, int Height, BbScannerPixelFormat Format)? frame;
         try
         {
             var packed = await bridge.PrepareVideoFrameAsync(_sessionId, request, CaptureMaxDimension).ConfigureAwait(true);
@@ -1204,7 +1204,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return;
         }
 
-        (byte[] Pixels, int Width, int Height, BbPixelFormat Format)? prepared;
+        (byte[] Pixels, int Width, int Height, BbScannerPixelFormat Format)? prepared;
         try
         {
             prepared = await ReadPreparedPixelsAsync(request, packed).ConfigureAwait(true);
@@ -1229,7 +1229,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return;
         }
 
-        IReadOnlyList<BbBarcodeResult> results;
+        IReadOnlyList<BbScannerBarcodeResult> results;
         try
         {
             results = await DecodeStillAsync(image.Pixels, image.Width, image.Height, image.Format, Math.Max(1, MaxSymbolsPerFrame)).ConfigureAwait(true);
@@ -1271,7 +1271,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// WebAssembly, as luminance where it crosses to another process - or returns <see langword="null"/> when it is
     /// gone or short.
     /// </summary>
-    private async Task<(byte[] Pixels, int Width, int Height, BbPixelFormat Format)?> ReadPreparedPixelsAsync(int request, int packed)
+    private async Task<(byte[] Pixels, int Width, int Height, BbScannerPixelFormat Format)?> ReadPreparedPixelsAsync(int request, int packed)
     {
         if (_bridge is not { IsLoaded: true } bridge)
         {
@@ -1307,12 +1307,12 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// The quick look, when <paramref name="quickOptions"/> asks for one, and then the exhaustive pass, with options
     /// built beforehand: it reads nothing of the component, so it runs on any thread.
     /// </summary>
-    private static IReadOnlyList<BbBarcodeResult> DecodeStillImage(
-        byte[] pixels, int width, int height, BbPixelFormat format, int maxSymbols, BbScannerOptions? quickOptions, BbScannerOptions stillOptions)
+    private static IReadOnlyList<BbScannerBarcodeResult> DecodeStillImage(
+        byte[] pixels, int width, int height, BbScannerPixelFormat format, int maxSymbols, BbScannerOptions? quickOptions, BbScannerOptions stillOptions)
     {
         if (quickOptions is not null)
         {
-            using var quick = new BbBarcodeDecoder(quickOptions);
+            using var quick = new BbScannerBarcodeDecoder(quickOptions);
             var found = quick.DecodeAll(pixels, width, height, format, 1, suppressDuplicates: false);
             if (found.Count > 0)
             {
@@ -1320,7 +1320,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             }
         }
 
-        using var decoder = new BbBarcodeDecoder(stillOptions);
+        using var decoder = new BbScannerBarcodeDecoder(stillOptions);
         return decoder.DecodeAll(pixels, width, height, format, maxSymbols, suppressDuplicates: false);
     }
 
@@ -1336,7 +1336,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// The pixels are always a copy the component made from what JavaScript prepared, never an application's buffer, and
     /// they are zeroed once decoded: a photograph of a document is no business of anything after the scan.
     /// </remarks>
-    private async Task<IReadOnlyList<BbBarcodeResult>> DecodeStillAsync(byte[] pixels, int width, int height, BbPixelFormat format, int maxSymbols)
+    private async Task<IReadOnlyList<BbScannerBarcodeResult>> DecodeStillAsync(byte[] pixels, int width, int height, BbScannerPixelFormat format, int maxSymbols)
     {
         try
         {
@@ -1369,7 +1369,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     {
         var options = Options?.Clone() ?? new BbScannerOptions();
         options.Formats = Formats;
-        options.Region = BbScanRegion.Full;
+        options.Region = BbScannerScanRegion.Full;
         options.DownsampleFactor = 2;
         options.AllowInverted = true;
         options.TryVerticalLines = true;
@@ -1569,8 +1569,8 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         var buffer = _frameBuffer;
         var remote = bridge.IsRemote;
         var maxSymbols = MaxSymbolsPerFrame;
-        BbBarcodeResult? result;
-        IReadOnlyList<BbBarcodeResult>? results;
+        BbScannerBarcodeResult? result;
+        IReadOnlyList<BbScannerBarcodeResult>? results;
 
         _frameDecoder = decoder;
         try
@@ -1612,7 +1612,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
                 return true;
             }
 
-            var format = remote || written == pixels ? BbPixelFormat.Gray8 : BbPixelFormat.Rgba32;
+            var format = remote || written == pixels ? BbScannerPixelFormat.Gray8 : BbScannerPixelFormat.Rgba32;
 
             // Every decoded frame is returned, duplicates included, so the highlight can
             // follow a symbol held in view; suppression is applied below, before reporting.
@@ -1680,15 +1680,15 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// Decodes <paramref name="region"/> of one live frame: the region alone, as a remote page sent it, or cut out of the
     /// whole frame in place, its rows the frame's apart.
     /// </summary>
-    private static (BbBarcodeResult? Single, IReadOnlyList<BbBarcodeResult>? All) DecodeFrame(
-        BbBarcodeDecoder decoder, byte[] buffer, int written, BbPixelFormat format, bool remote,
+    private static (BbScannerBarcodeResult? Single, IReadOnlyList<BbScannerBarcodeResult>? All) DecodeFrame(
+        BbScannerBarcodeDecoder decoder, byte[] buffer, int written, BbScannerPixelFormat format, bool remote,
         (int X, int Y, int Width, int Height) region, int width, int height, int maxSymbols)
     {
         var frame = buffer.AsSpan(0, written);
         var stride = 0;
         if (!remote)
         {
-            var bpp = BbPixelConverter.BytesPerPixel(format);
+            var bpp = BbScannerPixelConverter.BytesPerPixel(format);
             stride = width * bpp;
             frame = frame[((region.Y * stride) + (region.X * bpp))..];
         }
@@ -1704,7 +1704,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// again, or a new size given - is wiped, along with what the decoder kept of the frame, and a decoder retired
     /// meanwhile - the formats changed, or the scanner disposed - is disposed now rather than under the frame.
     /// </summary>
-    private void EndFrame(BbBarcodeDecoder decoder, byte[] buffer, int version)
+    private void EndFrame(BbScannerBarcodeDecoder decoder, byte[] buffer, int version)
     {
         _frameDecoder = null;
         var closed = IsStale(version) || _camera is null;
@@ -2067,7 +2067,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>Reads the camera description the page returns, or <see langword="null"/> when there is none.</summary>
-    private static BbCameraInfo? ParseCamera(string json)
+    private static BbScannerCameraInfo? ParseCamera(string json)
     {
         if (string.IsNullOrEmpty(json))
         {
@@ -2076,7 +2076,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         try
         {
-            return JsonSerializer.Deserialize(json, BbScannerJsonContext.Default.BbCameraInfo);
+            return JsonSerializer.Deserialize(json, BbScannerJsonContext.Default.BbScannerCameraInfo);
         }
         catch (JsonException)
         {
@@ -2107,7 +2107,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
             return false;
         }
 
-        var bridge = _bridge ??= BbScannerBridge.Create(JSRuntime, Services.GetService(typeof(IBbCameraSource)) as IBbCameraSource, InWebView());
+        var bridge = _bridge ??= BbScannerBridge.Create(JSRuntime, Services.GetService(typeof(IBbScannerCameraSource)) as IBbScannerCameraSource, InWebView());
         if (bridge.IsLoaded)
         {
             return true;
@@ -2139,9 +2139,9 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     private bool InWebView() => RendererInfo.Name == "WebView";
 
     /// <summary>Builds a decoder from the current parameters; throws when the options are invalid.</summary>
-    private BbBarcodeDecoder CreateDecoder()
+    private BbScannerBarcodeDecoder CreateDecoder()
     {
-        var decoder = new BbBarcodeDecoder(BuildOptions(Options?.Clone() ?? new BbScannerOptions()));
+        var decoder = new BbScannerBarcodeDecoder(BuildOptions(Options?.Clone() ?? new BbScannerOptions()));
         _decoderSignature = DecoderSignature();
         return decoder;
     }
@@ -2153,7 +2153,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// </summary>
     private void ReplaceDecoder()
     {
-        BbBarcodeDecoder next;
+        BbScannerBarcodeDecoder next;
         try
         {
             next = CreateDecoder();
@@ -2214,7 +2214,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         baseOptions.Formats = Formats;
 
         // The decoder searches the region each frame is handed with (TickAsync), never one of its own.
-        baseOptions.Region = BbScanRegion.Full;
+        baseOptions.Region = BbScannerScanRegion.Full;
         baseOptions.DuplicateSuppressionWindow = EffectiveDuplicateWindow();
         return baseOptions;
     }
@@ -2240,7 +2240,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         var options = Options?.Clone() ?? new BbScannerOptions();
         var still = BbScannerOptions.ForStillImages();
         options.Formats = Formats;
-        options.Region = BbScanRegion.Full;
+        options.Region = BbScannerScanRegion.Full;
         options.MaxScanLines = Math.Max(options.MaxScanLines, still.MaxScanLines);
         options.TryHarder = true;
         options.AllowInverted = true;
@@ -2259,7 +2259,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
         try
         {
             var json = await bridge.ListCamerasAsync().ConfigureAwait(true);
-            _devices = JsonSerializer.Deserialize(json, BbScannerJsonContext.Default.BbCameraDeviceArray) ?? [];
+            _devices = JsonSerializer.Deserialize(json, BbScannerJsonContext.Default.BbScannerCameraDeviceArray) ?? [];
             LabelCameras();
         }
         catch (Exception ex) when (bridge.IsTransient(ex))
@@ -2349,11 +2349,11 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// outlined, and those duplicate suppression lets through are announced and raised through
     /// <see cref="OnScan"/>, after which <see cref="AfterScan"/> decides what happens next.
     /// </summary>
-    private async Task ReportLiveAsync(BbBarcodeResult? result, IReadOnlyList<BbBarcodeResult>? results, int version)
+    private async Task ReportLiveAsync(BbScannerBarcodeResult? result, IReadOnlyList<BbScannerBarcodeResult>? results, int version)
     {
         // A list of the frame's own, not one kept for every frame: the awaits below can let a frame loop superseded by a
         // restart resume and go on adding to it while the new loop is still reporting from it.
-        var accepted = new List<BbBarcodeResult>(results?.Count ?? 1);
+        var accepted = new List<BbScannerBarcodeResult>(results?.Count ?? 1);
         if (result is not null)
         {
             if (await AcceptsAsync(result).ConfigureAwait(true))
@@ -2428,7 +2428,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// The camera session, by its start version, that was open when the image was chosen: <see cref="AfterScan"/> pauses or
     /// stops that one, never one started while the image was being read.
     /// </param>
-    private async Task<int> ReportStillAsync(IReadOnlyList<BbBarcodeResult> results, int camera)
+    private async Task<int> ReportStillAsync(IReadOnlyList<BbScannerBarcodeResult> results, int camera)
     {
         var reported = 0;
         foreach (var result in results)
@@ -2460,7 +2460,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// Asks <see cref="AcceptResult"/> about a result. One that throws has its exception routed to
     /// the renderer, like any other application callback, and the result is turned down.
     /// </summary>
-    private async ValueTask<bool> AcceptsAsync(BbBarcodeResult result)
+    private async ValueTask<bool> AcceptsAsync(BbScannerBarcodeResult result)
     {
         if (AcceptResult is not { } accept)
         {
@@ -2479,7 +2479,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>Puts a result in the live region, for assistive technology to read out.</summary>
-    private void Announce(BbBarcodeResult result) => Announce(Say(T.ScanAnnouncement, BbScannerTexts.Default.ScanAnnouncement, result));
+    private void Announce(BbScannerBarcodeResult result) => Announce(Say(T.ScanAnnouncement, BbScannerTexts.Default.ScanAnnouncement, result));
 
     /// <summary>
     /// Puts text in the polite live region. A live region only speaks when its content changes,
@@ -2497,7 +2497,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// <summary>Vibrates, beeps or both for a reported scan, as <see cref="Feedback"/> asks.</summary>
     private void SignalScan()
     {
-        if (Feedback != BbScanFeedback.None && _bridge is { IsLoaded: true } bridge)
+        if (Feedback != BbScannerScanFeedback.None && _bridge is { IsLoaded: true } bridge)
         {
             // Not awaited: the result is reported while the page beeps, not a round trip after it.
             _ = SignalAsync(bridge, (int)Feedback);
@@ -2548,10 +2548,10 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
 
         switch (AfterScan)
         {
-            case BbAfterScan.Pause:
+            case BbScannerAfterScan.Pause:
                 Pause();
                 break;
-            case BbAfterScan.Stop:
+            case BbScannerAfterScan.Stop:
                 await StopAsync().ConfigureAwait(true);
                 break;
         }
@@ -2562,7 +2562,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// moving with them. Called for every frame that decodes, whether or not its results are
     /// reported.
     /// </summary>
-    private void FollowHighlights(List<BbBarcodeResult> results)
+    private void FollowHighlights(List<BbScannerBarcodeResult> results)
     {
         if (!HighlightResults)
         {
@@ -2609,7 +2609,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>Where a result's bounding box falls on the visible part of the video, as fractions of it.</summary>
-    private bool ViewBoxOf(BbBarcodeResult result, out (double Left, double Top, double Width, double Height) view)
+    private bool ViewBoxOf(BbScannerBarcodeResult result, out (double Left, double Top, double Width, double Height) view)
     {
         view = default;
         if (result.FrameWidth <= 0 || result.FrameHeight <= 0)
@@ -2690,7 +2690,7 @@ public sealed partial class BbScanner : ComponentBase, IAsyncDisposable
     /// known what shape of frame it is square in. Before a camera has opened, the region is drawn
     /// as given.
     /// </summary>
-    private BbScanRegion FrameRegion()
+    private BbScannerScanRegion FrameRegion()
         => _camera is { Width: > 0, Height: > 0 } ? _region.ForFrame(_camera.Width, _camera.Height) : _region;
 
     private string MaskClipPath()

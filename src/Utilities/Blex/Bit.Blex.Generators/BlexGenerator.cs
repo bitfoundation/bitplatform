@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Bit.Blex.Generators;
+namespace Bit.Blex;
 
 /// <summary>
 /// Generates the reactive plumbing for classes annotated with <c>[Bit.Blex.Store]</c>:

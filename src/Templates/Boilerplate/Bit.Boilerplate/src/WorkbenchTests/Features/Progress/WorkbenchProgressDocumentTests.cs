@@ -228,7 +228,7 @@ public class WorkbenchProgressDocumentTests
     [TestMethod]
     public void TheLanguage_Should_ReadBackAsTheAgentGaveIt()
     {
-        Create(Update("ارتقا به template 11.0.0-pre-20") with { Language = "fa" });
+        Create(Update("ارتقا به template 1.2.3-pre-04") with { Language = "fa" });
 
         Assert.AreEqual("fa", Task().Language);
 

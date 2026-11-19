@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Bit.Bcrdt.Borm;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// Keeps a Borm form and a collaborative map in step, so several people fill in one form together.

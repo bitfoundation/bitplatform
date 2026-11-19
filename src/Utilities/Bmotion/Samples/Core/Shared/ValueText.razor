@@ -7,7 +7,7 @@
 @code {
     /// <summary>The value to show.</summary>
     [Parameter, EditorRequired]
-    public BmValue<double> Value { get; set; } = default!;
+    public BmotionValue<double> Value { get; set; } = default!;
 
     /// <summary>How to format it, in the invariant culture.</summary>
     [Parameter]
@@ -17,7 +17,7 @@
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object>? Attributes { get; set; }
 
-    private BmValue<double>? _subscribed;
+    private BmotionValue<double>? _subscribed;
     private IDisposable? _subscription;
 
     protected override void OnParametersSet()

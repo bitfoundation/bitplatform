@@ -18,10 +18,10 @@ The editor fills its container, so give it a height. Everything else has a worki
 | `Class`, `Style` | Applied to the root element. Use `bmg-theme-dark` or `bmg-theme-light` to force a theme. |
 | `ShowToolbar`, `ShowPanel` | Hide the built-in chrome without replacing it. |
 | `Tools` | The tools offered, in toolbar order, or null for all of them. `SetTool` selects no other. See [A cropper](#a-cropper). |
-| `Panels` | The tabs of the built-in panel (`EditorPanels` flags: `Adjust`, `Filters`, `Transform`, `Tools`, `Layers`, `History`, `Export`); `EditorPanels.None` hides it. |
+| `Panels` | The tabs of the built-in panel (`BmageEditorPanels` flags: `Adjust`, `Filters`, `Transform`, `Tools`, `Layers`, `History`, `Export`); `BmageEditorPanels.None` hides it. |
 | `Toolbar`, `Panel`, `Footer` | Replace the chrome entirely; each receives a `BmageEditorContext`. |
 | `EmptyState` | Replace the "drop an image here" view. |
-| `MaxProxyDimension` | Longest edge used for interactive editing. Falls back to `BitBmageOptions.MaxInteractiveDimension`, then 2048. Set 0 to always edit at full resolution. |
+| `MaxProxyDimension` | Longest edge used for interactive editing. Falls back to `BmageOptions.MaxInteractiveDimension`, then 2048. Set 0 to always edit at full resolution. |
 | `MaxHistoryDepth` | Undo steps kept. Default 100. |
 | `ExportOptions` | Settings used by the built-in save action: the Export tab starts from its format, quality and metadata policy, and keeps the rest (background, size budget). |
 | `OnDocumentChanged`, `OnExported`, `OnImageLoaded`, `OnError` | Callbacks. |
@@ -38,18 +38,18 @@ callback so the page re-renders.
 
     async Task Crop16x9()
     {
-        _editor!.SetTool(EditorToolKind.Crop);
-        _editor.SetCropAspect(AspectRatio.Ratio16x9);
+        _editor!.SetTool(BmageEditorToolKind.Crop);
+        _editor.SetCropAspect(BmageAspectRatio.Ratio16x9);
     }
 
     async Task Save() => await _editor!.DownloadAsync("edited",
-        new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
+        new BmageImageExportOptions { Format = BmageImageFormat.WebP, Quality = 0.9 });
 
-    async Task AddCallout() => await _editor!.AddAnnotationAsync(new ArrowAnnotation
+    async Task AddCallout() => await _editor!.AddAnnotationAsync(new BmageArrowAnnotation
     {
         Start = new Vector2(100, 400),
         End   = new Vector2(300, 200),
-        Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 6 } },
+        Style = BmageShapeStyle.Default with { Stroke = new BmageStrokeStyle { Width = 6 } },
     });
 }
 ```
@@ -63,8 +63,8 @@ yours can too.
 <BmageEditor ExportOptions="_options">
     <Toolbar Context="editor">
         <div class="my-toolbar">
-            <button class="@(editor.Tool == EditorToolKind.Crop ? "on" : null)"
-                    @onclick="() => editor.SetTool(EditorToolKind.Crop)">
+            <button class="@(editor.Tool == BmageEditorToolKind.Crop ? "on" : null)"
+                    @onclick="() => editor.SetTool(BmageEditorToolKind.Crop)">
                 Crop
             </button>
             <button disabled="@(!editor.CanUndo)" @onclick="editor.Undo">Undo</button>
@@ -86,10 +86,10 @@ the history gets one entry rather than hundreds:
 
 ```csharp
 async Task OnBrightnessInput(double value)
-    => await context.SetAdjustmentAsync(new BrightnessAdjustment((float)value), "Brightness", transient: true);
+    => await context.SetAdjustmentAsync(new BmageBrightnessAdjustment((float)value), "Brightness", transient: true);
 
 async Task OnBrightnessCommit()
-    => await context.SetAdjustmentAsync(context.FindAdjustment<BrightnessAdjustment>(), "Brightness");
+    => await context.SetAdjustmentAsync(context.FindAdjustment<BmageBrightnessAdjustment>(), "Brightness");
 ```
 
 Note that `onchange` on a range input is not reliable in Blazor when `oninput` is also handled. Debouncing `oninput`
@@ -102,7 +102,7 @@ An edit that touches several steps at once, such as swapping one filter for anot
 `ApplyAsync` call, which records one history entry and renders once:
 
 ```csharp
-await context.ApplyAsync(d => d.WithPipeline(d.Pipeline.Add(new SepiaFilter())), "Sepia");
+await context.ApplyAsync(d => d.WithPipeline(d.Pipeline.Add(new BmageSepiaFilter())), "Sepia");
 ```
 
 ## Layers and selective edits
@@ -112,20 +112,20 @@ setup. Add them from your own controls:
 
 ```csharp
 // A colour wash over the whole photo, through the Color blend mode.
-await context.AddLayerAsync(new FillLayer(new Rgba32(40, 110, 220)) { BlendMode = BlendMode.Color, Opacity = 0.4f });
+await context.AddLayerAsync(new BmageFillLayer(new BmageRgba32(40, 110, 220)) { BlendMode = BmageBlendMode.Color, Opacity = 0.4f });
 
 // A watermark in the corner, blended in.
-await context.AddLayerAsync(new ImageLayer
+await context.AddLayerAsync(new BmageImageLayer
 {
     Image = logo,
     Bounds = new RectangleF(context.OutputSize.Width - 220, context.OutputSize.Height - 220, 200, 200),
-    BlendMode = BlendMode.Overlay,
+    BlendMode = BmageBlendMode.Overlay,
 });
 
 // A graduated filter over the sky, as one undoable step.
-await context.AddOperationAsync(new MaskedOperation(
-    new PipelineOperation(ImagePipeline.Create().Exposure(-0.7f).Saturation(0.3f)),
-    Mask.Gradient(new(0, 0), new(0, 0.55f))), "Graduated filter");
+await context.AddOperationAsync(new BmageMaskedOperation(
+    new BmagePipelineOperation(BmageImagePipeline.Create().Exposure(-0.7f).Saturation(0.3f)),
+    BmageMask.Gradient(new(0, 0), new(0, 0.55f))), "Graduated filter");
 
 // Fading a layer from a slider: one history entry for the whole drag.
 await context.UpdateLayerAsync(layer with { Opacity = value }, transient: true);
@@ -162,7 +162,7 @@ await editor.OpenProjectAsync(file);           // an IBrowserFile or a Stream: t
 ```
 
 The reopened edit is one undoable step over the original, with every layer, mask, adjustment, painted stroke and
-annotation still editable. A project file may be four times `BitBmageOptions.MaxSourceBytes`, since it carries the
+annotation still editable. A project file may be four times `BmageOptions.MaxSourceBytes`, since it carries the
 original losslessly as PNG. See `BmageProject` for saving and loading one without the editor.
 
 ## Theming
@@ -236,9 +236,9 @@ move, resize and apply - with a pointer, or from the keyboard without drawing an
 
 ```razor
 <BmageEditor @ref="cropper"
-             Tools="[EditorToolKind.Crop, EditorToolKind.Pan]"
-             Panels="EditorPanels.None"
-             OnImageLoaded="_ => cropper.BeginCrop(AspectRatio.Square)" />
+             Tools="[BmageEditorToolKind.Crop, BmageEditorToolKind.Pan]"
+             Panels="BmageEditorPanels.None"
+             OnImageLoaded="_ => cropper.BeginCrop(BmageAspectRatio.Square)" />
 ```
 
 The toolbar lists the tools in the order `Tools` gives them. A tool taken away while it is active gives way to `Select`,
@@ -270,7 +270,7 @@ controls away, not the operations: a host can still call `SetAdjustmentAsync` or
 
 A pixel selection is drawn as marching ants and offers, in the toolbar: **Make transparent**, **Fill selection** (a fill
 layer through the selection), **Copy to layer** (the selected pixels, as composited, as a new image layer in place),
-**Crop to selection**, **Invert selection** and **Deselect**. The selection is any `Mask`, in output coordinates:
+**Crop to selection**, **Invert selection** and **Deselect**. The selection is any `BmageMask`, in output coordinates:
 `context.Selection` reads it and `context.SetSelection(mask)` sets it from code, so a host can build its own selection
 tools. It is editor state, not part of the document, so it is not undone; what is done with it is. Crops, quarter turns,
 flips, resizes and canvas changes carry it along; re-straightening drops it. Undo, redo and the history panel carry it
@@ -298,7 +298,7 @@ The Compare button in the toolbar, or the backslash key, shows the original imag
 ends the comparison.
 
 Crops, quarter turns, flips, straightening, resizing, canvas changes and trimming carry the annotations and layers with
-the image, so an arrow keeps pointing at what it pointed at. From code, `ImageDocument.AddOperation(op,
+the image, so an arrow keeps pointing at what it pointed at. From code, `BmageImageDocument.AddOperation(op,
 keepOverlaysAttached: true)` does the same.
 
 ## Keyboard and accessibility
@@ -338,7 +338,7 @@ touch-sized targets on narrow screens, and the panel moves below the canvas.
 ## Large images
 
 By default the editor edits through a proxy no larger than 2048px on its longest edge, and replays the edit at full
-resolution when you export. `ImageEditSession.UsesProxy` and `ProxyScale` tell you when this is happening, and the demo
+resolution when you export. `BmageImageEditSession.UsesProxy` and `ProxyScale` tell you when this is happening, and the demo
 surfaces it. Set `MaxProxyDimension="0"` to always edit at full resolution, which is only sensible for small images. To change
 the default for every editor in the application, set `MaxInteractiveDimension` when registering the services.
 
@@ -356,12 +356,12 @@ Previews reuse what earlier renders computed, without changing a pixel:
 
 This relies on operations and annotations being immutable, as every built-in one is: give a custom operation a new
 instance rather than changing one in place. When something outside the document changes how it renders, such as a font
-registered after text was drawn, call the editor's `RefreshAsync`, or `ImageEditSession.Invalidate` before rendering a
+registered after text was drawn, call the editor's `RefreshAsync`, or `BmageImageEditSession.Invalidate` before rendering a
 session of your own.
 
 When a full preview still takes longer than 25 ms, the editor shows drafts while a control is dragged: the same document
-rendered at half the proxy's resolution, a quarter of the pixels, by `ImageEditSession.RenderDraftAsync`. It renders the
-full preview again when the drag ends, or once the pointer has rested for 200 ms. `ImageEditSession.PreviewScale` tells
+rendered at half the proxy's resolution, a quarter of the pixels, by `BmageImageEditSession.RenderDraftAsync`. It renders the
+full preview again when the drag ends, or once the pointer has rested for 200 ms. `BmageImageEditSession.PreviewScale` tells
 which resolution the current preview has, and `LastPreviewDuration` how long the last full one took.
 
 ## The document
@@ -369,12 +369,12 @@ which resolution the current preview has, and `LastPreviewDuration` how long the
 `OnDocumentChanged` hands you the whole edit as a value:
 
 ```csharp
-private void OnDocumentChanged(ImageDocument document)
+private void OnDocumentChanged(BmageImageDocument document)
 {
     // Pixel operations, in order.
     foreach (var operation in document.Pipeline) Console.WriteLine(operation);
 
-    // Annotation objects, still editable.
+    // BmageAnnotation objects, still editable.
     foreach (var annotation in document.Annotations)
         Console.WriteLine($"{annotation.Kind} at {annotation.GetBounds()}");
 

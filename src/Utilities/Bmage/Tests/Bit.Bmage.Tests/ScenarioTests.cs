@@ -1,13 +1,5 @@
 ﻿using System.Drawing;
 using System.Numerics;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Metadata;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 
 namespace Bit.Bmage.Tests;
 
@@ -19,10 +11,10 @@ namespace Bit.Bmage.Tests;
 public sealed class ScenarioTests
 {
     /// <summary>A synthetic camera photo: gradients, edges and grain, with EXIF orientation and location.</summary>
-    private static ImageBuffer CameraPhoto(int width, int height, Orientation orientation = Orientation.Rotate90)
+    private static BmageImageBuffer CameraPhoto(int width, int height, BmageOrientation orientation = BmageOrientation.Rotate90)
     {
         var rnd = new Random(20260909);
-        var upright = ImageBuffer.Create(width, height);
+        var upright = BmageImageBuffer.Create(width, height);
         for (var y = 0; y < height; y++)
         {
             var row = upright.GetRow(y);
@@ -32,7 +24,7 @@ public sealed class ScenarioTests
                 var r = (byte)Math.Clamp((sky ? 120 : 60) + x * 90 / width + rnd.Next(-10, 10), 0, 255);
                 var g = (byte)Math.Clamp((sky ? 160 : 110) + y * 60 / height + rnd.Next(-10, 10), 0, 255);
                 var b = (byte)Math.Clamp((sky ? 220 : 70) + rnd.Next(-10, 10), 0, 255);
-                row[x] = new Rgba32(r, g, b);
+                row[x] = new BmageRgba32(r, g, b);
             }
         }
         // A face-like bright oval in the upper middle, so smart cropping has something to find.
@@ -41,20 +33,20 @@ public sealed class ScenarioTests
             for (var x = Math.Max(0, cx - rx); x < Math.Min(width, cx + rx); x++)
             {
                 var dx = (x - cx) / (double)rx; var dy = (y - cy) / (double)ry;
-                if (dx * dx + dy * dy <= 1) upright[x, y] = new Rgba32(240, 205, 180);
+                if (dx * dx + dy * dy <= 1) upright[x, y] = new BmageRgba32(240, 205, 180);
             }
 
         // Store it the way a camera does: sensor order plus an orientation tag.
-        var stored = new OrientationOperation(orientation.Inverse()).Apply(upright, OperationContext.Default);
+        var stored = new BmageOrientationOperation(orientation.Inverse()).Apply(upright, BmageOperationContext.Default);
         upright.Dispose();
-        var gps = new ExifDirectory()
-            .With(ExifTag.GpsLatitude, ExifValue.FromRational((51, 1), (30, 1), (275, 10)))
-            .With(ExifTag.GpsLatitudeRef, ExifValue.FromString("N"));
-        var exif = new ExifData(
-            new ExifDirectory().With(ExifTag.Make, ExifValue.FromString("TestCam")).With(ExifTag.Orientation, ExifValue.FromShort((ushort)orientation)),
-            new ExifDirectory().With(ExifTag.BodySerialNumber, ExifValue.FromString("SN-SECRET-1")),
+        var gps = new BmageExifDirectory()
+            .With(BmageExifTag.GpsLatitude, BmageExifValue.FromRational((51, 1), (30, 1), (275, 10)))
+            .With(BmageExifTag.GpsLatitudeRef, BmageExifValue.FromString("N"));
+        var exif = new BmageExifData(
+            new BmageExifDirectory().With(BmageExifTag.Make, BmageExifValue.FromString("TestCam")).With(BmageExifTag.Orientation, BmageExifValue.FromShort((ushort)orientation)),
+            new BmageExifDirectory().With(BmageExifTag.BodySerialNumber, BmageExifValue.FromString("SN-SECRET-1")),
             gps, null, default);
-        stored.Metadata = new ImageMetadata(exif, sourceFormat: ImageFormat.Jpeg);
+        stored.Metadata = new BmageImageMetadata(exif, sourceFormat: BmageImageFormat.Jpeg);
         return stored;
     }
 
@@ -62,18 +54,18 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioA_Avatar()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var photo = CameraPhoto(1200, 900);
-        var camera = await processor.EncodeAsync(photo, ImageExportOptions.Jpeg with { Quality = 0.95, Metadata = MetadataPolicy.Preserve });
+        var camera = await processor.EncodeAsync(photo, BmageImageExportOptions.Jpeg with { Quality = 0.95, Metadata = BmageMetadataPolicy.Preserve });
 
-        using var decoded = await processor.DecodeAsync(camera.Data, new DecodeOptions { AutoOrient = true });
+        using var decoded = await processor.DecodeAsync(camera.Data, new BmageDecodeOptions { AutoOrient = true });
         // Auto-orient must have made the portrait photo upright before anything else runs.
         Assert.AreEqual(new Size(1200, 900), decoded.Size);
 
-        var pipeline = ImagePipeline.Create().CropToAspect(AspectRatio.Square).Resize(512, 512, ResizeMode.Stretch);
+        var pipeline = BmageImagePipeline.Create().CropToAspect(BmageAspectRatio.Square).Resize(512, 512, BmageResizeMode.Stretch);
         var avatar = await processor.EncodeAsync(
             await pipeline.ExecuteAsync(decoded),
-            ImageExportOptions.Jpeg with { Quality = 0.9, Metadata = MetadataPolicy.Remove });
+            BmageImageExportOptions.Jpeg with { Quality = 0.9, Metadata = BmageMetadataPolicy.Remove });
 
         Assert.AreEqual(512, avatar.Width);
         Assert.AreEqual(512, avatar.Height);
@@ -91,35 +83,35 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioB_ScreenshotAnnotation()
     {
-        var processor = new ImageProcessor();
-        using var screenshot = ImageBuffer.Create(800, 600, Rgba32.White);
+        var processor = new BmageImageProcessor();
+        using var screenshot = BmageImageBuffer.Create(800, 600, BmageRgba32.White);
         // Something to redact: a block of high-contrast "text".
         for (var y = 300; y < 340; y++)
             for (var x = 100; x < 400; x++)
-                screenshot[x, y] = (x / 3 + y / 3) % 2 == 0 ? Rgba32.Black : Rgba32.White;
+                screenshot[x, y] = (x / 3 + y / 3) % 2 == 0 ? BmageRgba32.Black : BmageRgba32.White;
 
-        var document = ImageDocument.Create(screenshot.Size)
-            .AddAnnotation(new ArrowAnnotation { Start = new Vector2(600, 100), End = new Vector2(450, 250) })
-            .AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(420, 240, 200, 120) })
-            .AddAnnotation(new StepAnnotation { Center = new Vector2(650, 90), Number = 1 })
-            .AddAnnotation(new RedactionAnnotation { Rectangle = new RectangleF(100, 300, 300, 40), Mode = RedactionMode.Solid });
+        var document = BmageImageDocument.Create(screenshot.Size)
+            .AddAnnotation(new BmageArrowAnnotation { Start = new Vector2(600, 100), End = new Vector2(450, 250) })
+            .AddAnnotation(new BmageRectangleAnnotation { Rectangle = new RectangleF(420, 240, 200, 120) })
+            .AddAnnotation(new BmageStepAnnotation { Center = new Vector2(650, 90), Number = 1 })
+            .AddAnnotation(new BmageRedactionAnnotation { Rectangle = new RectangleF(100, 300, 300, 40), Mode = BmageRedactionMode.Solid });
 
-        using var rendered = new DocumentRenderer().Render(document, screenshot);
+        using var rendered = new BmageDocumentRenderer().Render(document, screenshot);
         Assert.AreEqual(screenshot.Size, rendered.Size);
 
         // The redacted band must be uniform: the pattern underneath is gone.
         for (var y = 305; y < 335; y++)
             for (var x = 105; x < 395; x++)
-                Assert.AreEqual(Rgba32.Black, rendered[x, y]);
+                Assert.AreEqual(BmageRgba32.Black, rendered[x, y]);
 
         // The annotations must have marked the canvas somewhere outside the redaction.
         var marked = 0;
         for (var y = 60; y < 260; y++)
             for (var x = 400; x < 700; x++)
-                if (rendered[x, y] != Rgba32.White) marked++;
+                if (rendered[x, y] != BmageRgba32.White) marked++;
         Assert.IsTrue(marked > 200, $"only {marked} pixels were drawn by the arrow, box and step marker");
 
-        var exported = await processor.EncodeAsync(rendered, ImageExportOptions.Png);
+        var exported = await processor.EncodeAsync(rendered, BmageImageExportOptions.Png);
         using var check = await processor.DecodeAsync(exported.Data);
         Assert.AreEqual(screenshot.Size, check.Size);
     }
@@ -128,13 +120,13 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioC_UploadOptimisation()
     {
-        var processor = new ImageProcessor();
-        using var photo = CameraPhoto(3000, 2250, Orientation.Normal);
-        var original = await processor.EncodeAsync(photo, ImageExportOptions.Jpeg with { Quality = 0.98, Metadata = MetadataPolicy.Preserve });
+        var processor = new BmageImageProcessor();
+        using var photo = CameraPhoto(3000, 2250, BmageOrientation.Normal);
+        var original = await processor.EncodeAsync(photo, BmageImageExportOptions.Jpeg with { Quality = 0.98, Metadata = BmageMetadataPolicy.Preserve });
 
-        var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(2000, 2000);
+        var pipeline = BmageImagePipeline.Create().AutoOrient().MaxSize(2000, 2000);
         var optimised = await processor.ProcessAsync(original.Data, pipeline,
-            ImageExportOptions.Jpeg with { Quality = 0.8, Metadata = MetadataPolicy.StripSensitive, MaxFileSize = 400_000 });
+            BmageImageExportOptions.Jpeg with { Quality = 0.8, Metadata = BmageMetadataPolicy.StripSensitive, MaxFileSize = 400_000 });
 
         Assert.IsTrue(optimised.Length <= 400_000, $"produced {optimised.Length} bytes against a 400,000 byte budget");
         Assert.IsTrue(optimised.Length < original.Length, "optimisation did not reduce the file size");
@@ -144,31 +136,31 @@ public sealed class ScenarioTests
 
         using var check = await processor.DecodeAsync(optimised.Data);
         Assert.IsNull(check.Metadata?.Exif?.Location);
-        Assert.IsFalse(check.Metadata?.Exif?.Exif.Contains(ExifTag.BodySerialNumber) ?? false);
+        Assert.IsFalse(check.Metadata?.Exif?.Exif.Contains(BmageExifTag.BodySerialNumber) ?? false);
     }
 
     /// <summary>Scenario D: a set of product images is normalised to one size and background.</summary>
     [TestMethod]
     public async Task ScenarioD_ProductImages()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         var sizes = new[] { (900, 600), (600, 900), (1000, 1000), (1400, 300) };
         var encoded = new List<byte[]>();
         foreach (var (w, h) in sizes)
         {
-            using var img = CameraPhoto(w, h, Orientation.Normal);
-            encoded.Add((await processor.EncodeAsync(img, ImageExportOptions.Jpeg with { Quality = 0.9 })).Data);
+            using var img = CameraPhoto(w, h, BmageOrientation.Normal);
+            encoded.Add((await processor.EncodeAsync(img, BmageImageExportOptions.Jpeg with { Quality = 0.9 })).Data);
         }
 
         // Contain onto a fixed white canvas: every output identical in size, nothing cropped away.
-        var pipeline = ImagePipeline.Create()
+        var pipeline = BmageImagePipeline.Create()
             .AutoOrient()
-            .Resize(800, 800, ResizeMode.Contain, ResamplingFilter.Auto, Anchor.Center, Rgba32.White);
+            .Resize(800, 800, BmageResizeMode.Contain, BmageResamplingFilter.Auto, BmageAnchor.Center, BmageRgba32.White);
 
         for (var i = 0; i < encoded.Count; i++)
         {
             var (sw, sh) = sizes[i];
-            var result = await processor.ProcessAsync(encoded[i], pipeline, ImageExportOptions.Jpeg with { Quality = 0.85 });
+            var result = await processor.ProcessAsync(encoded[i], pipeline, BmageImageExportOptions.Jpeg with { Quality = 0.85 });
             Assert.AreEqual(800, result.Width);
             Assert.AreEqual(800, result.Height);
 
@@ -198,24 +190,24 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioE_BatchProcessing()
     {
-        var processor = new ImageProcessor();
-        using var sample = CameraPhoto(800, 600, Orientation.Normal);
-        var good = (await processor.EncodeAsync(sample, ImageExportOptions.Jpeg with { Quality = 0.9 })).Data;
+        var processor = new BmageImageProcessor();
+        using var sample = CameraPhoto(800, 600, BmageOrientation.Normal);
+        var good = (await processor.EncodeAsync(sample, BmageImageExportOptions.Jpeg with { Quality = 0.9 })).Data;
 
-        var items = new List<BatchItem>();
+        var items = new List<BmageBatchItem>();
         for (var i = 0; i < 40; i++)
             items.Add(i == 17
-                ? new BatchItem(new byte[] { 0xFF, 0xD8, 0xFF, 0x00, 0x01 }, "corrupt.jpg")
-                : new BatchItem(good, $"product{i:00}.jpg"));
+                ? new BmageBatchItem(new byte[] { 0xFF, 0xD8, 0xFF, 0x00, 0x01 }, "corrupt.jpg")
+                : new BmageBatchItem(good, $"product{i:00}.jpg"));
 
         var updates = 0;
-        var progress = new Progress<BatchProgress>(_ => Interlocked.Increment(ref updates));
-        var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(320, 320);
+        var progress = new Progress<BmageBatchProgress>(_ => Interlocked.Increment(ref updates));
+        var pipeline = BmageImagePipeline.Create().AutoOrient().MaxSize(320, 320);
 
-        var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
+        var result = await processor.ProcessBatchAsync(items, pipeline, new BmageBatchOptions
         {
             MaxConcurrency = 2,
-            ExportOptions = ImageExportOptions.Jpeg with { Quality = 0.8, Metadata = MetadataPolicy.Remove },
+            ExportOptions = BmageImageExportOptions.Jpeg with { Quality = 0.8, Metadata = BmageMetadataPolicy.Remove },
             Progress = progress,
         });
 
@@ -235,23 +227,23 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioE_BatchCancellationMidway()
     {
-        var processor = new ImageProcessor();
-        using var sample = CameraPhoto(900, 700, Orientation.Normal);
-        var good = (await processor.EncodeAsync(sample, ImageExportOptions.Jpeg with { Quality = 0.9 })).Data;
-        var items = Enumerable.Range(0, 60).Select(i => new BatchItem(good, $"i{i}")).ToList();
+        var processor = new BmageImageProcessor();
+        using var sample = CameraPhoto(900, 700, BmageOrientation.Normal);
+        var good = (await processor.EncodeAsync(sample, BmageImageExportOptions.Jpeg with { Quality = 0.9 })).Data;
+        var items = Enumerable.Range(0, 60).Select(i => new BmageBatchItem(good, $"i{i}")).ToList();
 
         using var cts = new CancellationTokenSource();
         var completed = 0;
         // Reported inline: a Progress<T> would post to the thread pool and could cancel the token after it is disposed.
-        var progress = new Inline<BatchProgress>(_ =>
+        var progress = new Inline<BmageBatchProgress>(_ =>
         {
             if (Interlocked.Increment(ref completed) >= 5) cts.Cancel();
         });
 
         // Cancelled like any other method, so a caller's catch for the token still works - with what finished attached.
-        var stopped = await Assert.ThrowsExactlyAsync<BatchCancelledException>(async () =>
-            await processor.ProcessBatchAsync(items, ImagePipeline.Create().MaxSize(200, 200),
-                new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Jpeg, Progress = progress }, cts.Token));
+        var stopped = await Assert.ThrowsExactlyAsync<BmageBatchCancelledException>(async () =>
+            await processor.ProcessBatchAsync(items, BmageImagePipeline.Create().MaxSize(200, 200),
+                new BmageBatchOptions { MaxConcurrency = 2, ExportOptions = BmageImageExportOptions.Jpeg, Progress = progress }, cts.Token));
         var result = stopped.Result;
 
         Assert.IsTrue(result.WasCancelled);
@@ -271,16 +263,16 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioF_InteractiveEditThenFullResolutionExport()
     {
-        var processor = new ImageProcessor();
-        using var photo = CameraPhoto(2400, 1800, Orientation.Normal);
-        using var session = new ImageEditSession(photo.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 600 });
+        var processor = new BmageImageProcessor();
+        using var photo = CameraPhoto(2400, 1800, BmageOrientation.Normal);
+        using var session = new BmageImageEditSession(photo.Clone(), new BmageImageEditSessionOptions { MaxProxyDimension = 600 });
 
         Assert.IsTrue(session.UsesProxy);
         Assert.AreEqual(new Size(600, 450), session.ProxySize);
 
-        session.AddOperation(new CropOperation(200, 150, 1600, 1200), "Crop");
-        session.AddOperation(new Operations.Adjustments.BrightnessAdjustment(0.15f), "Brighten");
-        session.AddAnnotation(new RectangleAnnotation { Rectangle = new RectangleF(300, 200, 400, 300) });
+        session.AddOperation(new BmageCropOperation(200, 150, 1600, 1200), "Crop");
+        session.AddOperation(new BmageBrightnessAdjustment(0.15f), "Brighten");
+        session.AddAnnotation(new BmageRectangleAnnotation { Rectangle = new RectangleF(300, 200, 400, 300) });
 
         var preview = await session.RenderPreviewAsync();
         Assert.IsFalse(preview.IsDisposed);
@@ -296,7 +288,7 @@ public sealed class ScenarioTests
         using var full = await session.RenderFullAsync();
         Assert.AreEqual(new Size(1600, 1200), full.Size);
 
-        var exported = await processor.EncodeAsync(full, ImageExportOptions.Jpeg with { Quality = 0.9 });
+        var exported = await processor.EncodeAsync(full, BmageImageExportOptions.Jpeg with { Quality = 0.9 });
         using var check = await processor.DecodeAsync(exported.Data);
         Assert.AreEqual(new Size(1600, 1200), check.Size);
     }
@@ -308,18 +300,18 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioG_LongEditingSessionStaysConsistent()
     {
-        using var photo = CameraPhoto(1200, 900, Orientation.Normal);
-        using var session = new ImageEditSession(photo.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 400, MaxHistoryDepth = 50 });
+        using var photo = CameraPhoto(1200, 900, BmageOrientation.Normal);
+        using var session = new BmageImageEditSession(photo.Clone(), new BmageImageEditSessionOptions { MaxProxyDimension = 400, MaxHistoryDepth = 50 });
 
         var rnd = new Random(7);
         for (var i = 0; i < 200; i++)
         {
             switch (rnd.Next(6))
             {
-                case 0: session.AddOperation(new Operations.Adjustments.BrightnessAdjustment((float)(rnd.NextDouble() * 0.4 - 0.2))); break;
-                case 1: session.AddOperation(new Operations.Adjustments.ContrastAdjustment((float)(rnd.NextDouble() * 0.4 - 0.2))); break;
-                case 2: session.AddOperation(OrientationOperation.Rotate90); break;
-                case 3: session.AddAnnotation(new StepAnnotation { Center = new Vector2(rnd.Next(100), rnd.Next(100)), Number = i }); break;
+                case 0: session.AddOperation(new BmageBrightnessAdjustment((float)(rnd.NextDouble() * 0.4 - 0.2))); break;
+                case 1: session.AddOperation(new BmageContrastAdjustment((float)(rnd.NextDouble() * 0.4 - 0.2))); break;
+                case 2: session.AddOperation(BmageOrientationOperation.Rotate90); break;
+                case 3: session.AddAnnotation(new BmageStepAnnotation { Center = new Vector2(rnd.Next(100), rnd.Next(100)), Number = i }); break;
                 case 4: session.Undo(); break;
                 default: session.Redo(); break;
             }
@@ -340,17 +332,17 @@ public sealed class ScenarioTests
     [TestMethod]
     public async Task ScenarioH_ResetAndReplaceSource()
     {
-        using var first = CameraPhoto(600, 400, Orientation.Normal);
-        using var session = new ImageEditSession(first.Clone(), new ImageEditSessionOptions { MaxProxyDimension = 300 });
+        using var first = CameraPhoto(600, 400, BmageOrientation.Normal);
+        using var session = new BmageImageEditSession(first.Clone(), new BmageImageEditSessionOptions { MaxProxyDimension = 300 });
 
-        session.AddOperation(new CropOperation(10, 10, 200, 200));
+        session.AddOperation(new BmageCropOperation(10, 10, 200, 200));
         Assert.AreEqual(new Size(200, 200), session.Document.OutputSize);
 
         session.Reset();
         Assert.AreEqual(new Size(600, 400), session.Document.OutputSize);
         Assert.IsTrue(session.Document.IsEmpty);
 
-        using var second = CameraPhoto(1000, 250, Orientation.Normal);
+        using var second = CameraPhoto(1000, 250, BmageOrientation.Normal);
         session.ReplaceSource(second.Clone());
         Assert.AreEqual(new Size(1000, 250), session.SourceSize);
         Assert.AreEqual(new Size(1000, 250), session.Document.OutputSize);

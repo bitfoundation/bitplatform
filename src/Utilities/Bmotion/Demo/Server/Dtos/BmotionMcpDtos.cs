@@ -56,6 +56,13 @@ public record BmotionApiMemberDto
 
     /// <summary>The XML remarks, when the member has any - they carry the caveats.</summary>
     public string? Remarks { get; init; }
+
+    /// <summary>
+    /// The full name of the type that declares the member: a base type's, for a member it inherits. Not part of
+    /// the answer - the search uses it to tell an inherited copy from a different member of the same name.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public string? DeclaringType { get; init; }
 }
 
 /// <summary>The full reference of one public Bit.Bmotion type.</summary>
@@ -99,7 +106,7 @@ public record BmotionPropertyDto
     /// <summary>The CSS property (or transform component) the engine writes.</summary>
     public required string Css { get; init; }
 
-    /// <summary>The C# type of the argument: BmKeyframes (numeric) or BmStringKeyframes (CSS value).</summary>
+    /// <summary>The C# type of the argument: BmotionKeyframes (numeric) or BmotionStringKeyframes (CSS value).</summary>
     public required string ValueType { get; init; }
 
     /// <summary>
@@ -135,10 +142,10 @@ public record BmotionPropertyDto
     public string? Notes { get; init; }
 }
 
-/// <summary>One <see cref="BmEase"/> preset, sampled from the library's own easing function.</summary>
+/// <summary>One <see cref="BmotionEase"/> preset, sampled from the library's own easing function.</summary>
 public record BmotionEasingDto
 {
-    /// <summary>The enum member name, e.g. "InOut". Write it as <c>BmEase.InOut</c>.</summary>
+    /// <summary>The enum member name, e.g. "InOut". Write it as <c>BmotionEase.InOut</c>.</summary>
     public required string Name { get; init; }
 
     /// <summary>In, Out, InOut or Linear - which end of the motion the easing slows.</summary>
@@ -150,7 +157,7 @@ public record BmotionEasingDto
     /// <summary>What it feels like, and when to reach for it.</summary>
     public required string Feel { get; init; }
 
-    /// <summary>Eleven samples of the curve at t = 0, 0.1 ... 1, straight from BmEaseFunctions.</summary>
+    /// <summary>Eleven samples of the curve at t = 0, 0.1 ... 1, straight from BmotionEaseFunctions.</summary>
     public required double[] Curve { get; init; }
 
     /// <summary>The same curve drawn as text, so it can be read in a terminal.</summary>
@@ -195,7 +202,7 @@ public record BmotionSimulationDto
     public required double TimeTo90Percent { get; init; }
 
     /// <summary>
-    /// For a spring: its damping ratio ζ (1 = critically damped, below 1 it bounces), from <c>BmSpring.Analyze</c>. Null
+    /// For a spring: its damping ratio ζ (1 = critically damped, below 1 it bounces), from <c>BmotionSpring.Analyze</c>. Null
     /// for other transitions.
     /// </summary>
     public double? DampingRatio { get; init; }

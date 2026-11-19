@@ -11,7 +11,7 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// <para>
 /// Without it an agent has to guess which corpus holds the answer and what it is called there.
 /// "Make an avatar under 100 KB" is a recipe (avatar-crop), a guide section (Quality and size
-/// budgets), an options property (ImageExportOptions.MaxFileSize), a demo page (/avatar) and a tool
+/// budgets), an options property (BmageImageExportOptions.MaxFileSize), a demo page (/avatar) and a tool
 /// that measures it (RunBmagePipeline) all at once. Each hit therefore carries the exact follow-up
 /// call that returns its full text, so one search is enough to know what to ask for next. The
 /// ranking itself is <see cref="McpSearch"/>, shared with the other utilities' MCP servers: it reads
@@ -174,7 +174,7 @@ public static class BmageSearchIndex
 
                 // An inherited member documented once - TryFuse on every adjustment, say - is one answer, not
                 // eight: left in, the copies push everything else off the page. They stay indexed on every type,
-                // so the copy a query names its type for ("CurveOperation TryFuse") is the one it finds. An
+                // so the copy a query names its type for ("BmageCurveOperation TryFuse") is the one it finds. An
                 // undocumented member says nothing to tell the copies apart from different members of one name.
                 var sameAs = body.Length > 0 ? $"{kind}\n{member.Name}\n{body}" : null;
 

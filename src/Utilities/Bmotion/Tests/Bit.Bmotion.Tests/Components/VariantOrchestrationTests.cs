@@ -11,14 +11,14 @@ namespace Bit.Bmotion.Tests.Components;
 [TestClass]
 public class VariantOrchestrationTests
 {
-    private static readonly BmVariants _states = new()
+    private static readonly BmotionVariants _states = new()
     {
         ["hidden"] = Bm.To(opacity: 0),
         ["visible"] = Bm.To(opacity: 1),
     };
 
     // A container publishing an active variant over `childCount` cascade participants.
-    private static RenderFragment Tree(BmTransition transition, int childCount) => b =>
+    private static RenderFragment Tree(BmotionTransition transition, int childCount) => b =>
     {
         b.OpenComponent<Bmotion>(0);
         b.AddComponentParameter(1, nameof(Bmotion.Id), "parent");
@@ -74,7 +74,7 @@ public class VariantOrchestrationTests
         // their slot during the render pass rather than after it. This is that guarantee under test.
         using var ctx = new BmotionTestContext();
         ctx.Render(Tree(
-            Bm.Tween(0.3, childStagger: Bm.Stagger(0.1, from: BmStaggerFrom.Last)), childCount: 4));
+            Bm.Tween(0.3, childStagger: Bm.Stagger(0.1, from: BmotionStaggerFrom.Last)), childCount: 4));
 
         Assert.AreEqual(300, DelayOf(ctx, "child0"), 1);
         Assert.AreEqual(200, DelayOf(ctx, "child1"), 1);
@@ -87,7 +87,7 @@ public class VariantOrchestrationTests
     {
         using var ctx = new BmotionTestContext();
         ctx.Render(Tree(
-            Bm.Tween(0.3, childStagger: Bm.Stagger(0.1, from: BmStaggerFrom.Center)), childCount: 5));
+            Bm.Tween(0.3, childStagger: Bm.Stagger(0.1, from: BmotionStaggerFrom.Center)), childCount: 5));
 
         // Origin is index 2 of 5; delay grows with distance from it.
         Assert.AreEqual(200, DelayOf(ctx, "child0"), 1);
@@ -124,7 +124,7 @@ public class VariantOrchestrationTests
     public void BeforeChildren_HoldsTheChildrenBackByTheContainersDuration()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Render(Tree(Bm.Tween(0.5, staggerChildren: 0.1, when: BmWhen.BeforeChildren), childCount: 2));
+        ctx.Render(Tree(Bm.Tween(0.5, staggerChildren: 0.1, when: BmotionWhen.BeforeChildren), childCount: 2));
 
         Assert.AreEqual(0, DelayOf(ctx, "parent"), 1, "the container itself goes first, undelayed");
         Assert.AreEqual(500, DelayOf(ctx, "child0"), 1);
@@ -138,7 +138,7 @@ public class VariantOrchestrationTests
         // A container's transition carries orchestration to its children but not its own timing, so
         // these children animate with the engine's default 0.3s tween. The last one starts at its
         // 0.2s stagger slot and therefore finishes at 0.5s - which is what the container waits for.
-        ctx.Render(Tree(Bm.Tween(0.4, staggerChildren: 0.1, when: BmWhen.AfterChildren), childCount: 3));
+        ctx.Render(Tree(Bm.Tween(0.4, staggerChildren: 0.1, when: BmotionWhen.AfterChildren), childCount: 3));
 
         Assert.AreEqual(0, DelayOf(ctx, "child0"), 1);
         Assert.AreEqual(500, DelayOf(ctx, "parent"), 5);
@@ -158,7 +158,7 @@ public class VariantOrchestrationTests
             b.AddComponentParameter(2, nameof(Bmotion.Variants), _states);
             b.AddComponentParameter(3, nameof(Bmotion.State), "visible");
             b.AddComponentParameter(4, nameof(Bmotion.Transition),
-                (BmTransition)Bm.Tween(0.2, staggerChildren: 0.1, when: BmWhen.AfterChildren));
+                (BmotionTransition)Bm.Tween(0.2, staggerChildren: 0.1, when: BmotionWhen.AfterChildren));
             b.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(inner =>
             {
                 inner.OpenElement(0, "div");
@@ -167,7 +167,7 @@ public class VariantOrchestrationTests
                     inner.OpenComponent<Bmotion>(1 + i);
                     inner.AddComponentParameter(100 + i, nameof(Bmotion.Id), $"child{i}");
                     inner.AddComponentParameter(200 + i, nameof(Bmotion.Variants), _states);
-                    inner.AddComponentParameter(400 + i, nameof(Bmotion.Transition), (BmTransition)slowChild);
+                    inner.AddComponentParameter(400 + i, nameof(Bmotion.Transition), (BmotionTransition)slowChild);
                     inner.AddComponentParameter(300 + i, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
                     {
                         leaf.OpenElement(0, "div");
@@ -188,7 +188,7 @@ public class VariantOrchestrationTests
     public void AfterChildren_WithNoChildren_DoesNotDelayTheContainer()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Render(Tree(Bm.Tween(0.4, when: BmWhen.AfterChildren), childCount: 0));
+        ctx.Render(Tree(Bm.Tween(0.4, when: BmotionWhen.AfterChildren), childCount: 0));
 
         Assert.AreEqual(0, DelayOf(ctx, "parent"), 1);
     }

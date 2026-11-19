@@ -955,7 +955,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitDatePicker.get_IsMonthPickerVisible</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitDatePicker.set_IconLocation(Bit.BlazorUI.BitIconLocation)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitDatePicker.set_IsMonthPickerVisible(System.Boolean)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -969,7 +983,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitDateRangePicker.get_IsMonthPickerVisible</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitDateRangePicker.set_IconLocation(Bit.BlazorUI.BitIconLocation)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitDateRangePicker.set_IsMonthPickerVisible(System.Boolean)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -1599,7 +1627,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitNumberField`1.get_IsInputReadOnly</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitNumberField`1.get_LabelPosition</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitNumberField`1.set_IsInputReadOnly(System.Boolean)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

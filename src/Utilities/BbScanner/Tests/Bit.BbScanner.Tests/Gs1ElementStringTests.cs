@@ -14,7 +14,7 @@ public class Gs1ElementStringTests
     [TestMethod]
     public void SplitsAnElementStringIntoItsElements()
     {
-        var elements = BbGs1ElementString.Parse($"010952123454321310ABC123{GS}15261231");
+        var elements = BbScannerGs1ElementString.Parse($"010952123454321310ABC123{GS}15261231");
 
         Assert.HasCount(3, elements.Elements);
         Assert.AreEqual("01", elements.Elements[0].ApplicationIdentifier);
@@ -29,8 +29,8 @@ public class Gs1ElementStringTests
     [TestMethod]
     public void APredefinedLengthElementNeedsNoSeparatorButToleratesOne()
     {
-        var without = BbGs1ElementString.Parse("0109521234543213" + "17261231" + "10LOT");
-        var with = BbGs1ElementString.Parse($"0109521234543213{GS}17261231{GS}10LOT");
+        var without = BbScannerGs1ElementString.Parse("0109521234543213" + "17261231" + "10LOT");
+        var with = BbScannerGs1ElementString.Parse($"0109521234543213{GS}17261231{GS}10LOT");
 
         Assert.AreEqual(without.ToBracketedString(), with.ToBracketedString());
         Assert.AreEqual("0109521234543213" + "17261231" + "10LOT", with.ToElementString());
@@ -41,9 +41,9 @@ public class Gs1ElementStringTests
     {
         // AI 422, the country of origin, is three digits but not among the predefined lengths: an encoder must end it
         // with FNC1, and a reader may not guess where it ends.
-        Assert.IsFalse(BbGs1ElementString.TryParse("422276" + "10ABC", out _));
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("422276" + "10ABC", out _));
 
-        var elements = BbGs1ElementString.Parse($"422276{GS}10ABC");
+        var elements = BbScannerGs1ElementString.Parse($"422276{GS}10ABC");
         Assert.AreEqual("276", elements["422"]);
         Assert.AreEqual($"422276{GS}10ABC", elements.ToElementString());
     }
@@ -56,7 +56,7 @@ public class Gs1ElementStringTests
     [DataRow("\u001D")]
     public void ALeadingSymbologyIdentifierOrFnc1IsSkipped(string prefix)
     {
-        var elements = BbGs1ElementString.Parse(prefix + "0109521234543213");
+        var elements = BbScannerGs1ElementString.Parse(prefix + "0109521234543213");
 
         Assert.AreEqual("09521234543213", elements["01"]);
     }
@@ -64,8 +64,8 @@ public class Gs1ElementStringTests
     [TestMethod]
     public void TheBracketedFormParsesToTheSameElements()
     {
-        var encoded = BbGs1ElementString.Parse($"0109521234543213{GS}3103001250{GS}21A(1)B");
-        var bracketed = BbGs1ElementString.Parse(encoded.ToBracketedString());
+        var encoded = BbScannerGs1ElementString.Parse($"0109521234543213{GS}3103001250{GS}21A(1)B");
+        var bracketed = BbScannerGs1ElementString.Parse(encoded.ToBracketedString());
 
         Assert.AreEqual(@"(01)09521234543213(3103)001250(21)A\(1)B", encoded.ToBracketedString());
         Assert.AreEqual("A(1)B", bracketed["21"]);
@@ -112,9 +112,9 @@ public class Gs1ElementStringTests
     [DataRow("]Q10109521234543213", DisplayName = "A plain QR code's symbology identifier")]
     public void RejectsWhatTheSpecificationDoesNotAllow(string text)
     {
-        Assert.IsFalse(BbGs1ElementString.TryParse(text, out var result), text);
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse(text, out var result), text);
         Assert.IsNull(result);
-        Assert.ThrowsExactly<FormatException>(() => BbGs1ElementString.Parse(text));
+        Assert.ThrowsExactly<FormatException>(() => BbScannerGs1ElementString.Parse(text));
     }
 
     [TestMethod]
@@ -139,14 +139,14 @@ public class Gs1ElementStringTests
     [DataRow("80110", DisplayName = "A coupon serial of zero")]
     public void AcceptsWhatTheSpecificationAllows(string text)
     {
-        Assert.IsTrue(BbGs1ElementString.TryParse(text, out var result), text);
+        Assert.IsTrue(BbScannerGs1ElementString.TryParse(text, out var result), text);
         Assert.AreEqual(text, result.ToElementString());
     }
 
     [TestMethod]
     public void TheFormatExceptionSaysWhichAiFailedAndWhy()
     {
-        var exception = Assert.ThrowsExactly<FormatException>(() => BbGs1ElementString.Parse($"0109521234543213{GS}17261331"));
+        var exception = Assert.ThrowsExactly<FormatException>(() => BbScannerGs1ElementString.Parse($"0109521234543213{GS}17261331"));
 
         StringAssert.Contains(exception.Message, "(17)");
         StringAssert.Contains(exception.Message, "date");
@@ -155,14 +155,14 @@ public class Gs1ElementStringTests
     [TestMethod]
     public void NullIsNotAnElementString()
     {
-        Assert.IsFalse(BbGs1ElementString.TryParse(null, out _));
-        Assert.ThrowsExactly<ArgumentNullException>(() => BbGs1ElementString.Parse(null!));
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse(null, out _));
+        Assert.ThrowsExactly<ArgumentNullException>(() => BbScannerGs1ElementString.Parse(null!));
     }
 
     [TestMethod]
     public void OneAiTwiceWithTheSameValueIsAccepted()
     {
-        var elements = BbGs1ElementString.Parse($"10A{GS}10A");
+        var elements = BbScannerGs1ElementString.Parse($"10A{GS}10A");
 
         Assert.HasCount(2, elements.Elements);
         Assert.AreEqual("A", elements["10"]);
@@ -171,7 +171,7 @@ public class Gs1ElementStringTests
     [TestMethod]
     public void ReadsMeasuresAmountsAndPricesWithTheirDecimalPoint()
     {
-        var elements = BbGs1ElementString.Parse($"3103001250{GS}3922795{GS}39329781999{GS}30120");
+        var elements = BbScannerGs1ElementString.Parse($"3103001250{GS}3922795{GS}39329781999{GS}30120");
 
         Assert.IsTrue(elements.Find("3103")!.TryGetDecimal(out var weight));
         Assert.AreEqual(1.25m, weight);
@@ -194,7 +194,7 @@ public class Gs1ElementStringTests
     [TestMethod]
     public void AValueThatIsNotANumberHasNoDecimal()
     {
-        var elements = BbGs1ElementString.Parse("10123");
+        var elements = BbScannerGs1ElementString.Parse("10123");
 
         Assert.IsFalse(elements.Find("10")!.TryGetDecimal(out _));
         Assert.IsFalse(elements.Find("10")!.TryGetDate(2026, out _));
@@ -213,7 +213,7 @@ public class Gs1ElementStringTests
     [DataRow("725019991231", 2026, 1999, 12, 31, DisplayName = "A four digit year")]
     public void ReadsDatesInTheCenturyTheGs1RulesPlaceThem(string text, int referenceYear, int year, int month, int day)
     {
-        var element = BbGs1ElementString.Parse(text).Elements[0];
+        var element = BbScannerGs1ElementString.Parse(text).Elements[0];
 
         Assert.IsTrue(element.TryGetDate(referenceYear, out var date));
         Assert.AreEqual(new DateOnly(year, month, day), date);
@@ -222,7 +222,7 @@ public class Gs1ElementStringTests
     [TestMethod]
     public void TwoDigitYearsAreReadRelativeToTheCurrentYearByDefault()
     {
-        var element = BbGs1ElementString.Parse("17" + (DateTime.UtcNow.Year % 100).ToString("D2", System.Globalization.CultureInfo.InvariantCulture) + "0101").Elements[0];
+        var element = BbScannerGs1ElementString.Parse("17" + (DateTime.UtcNow.Year % 100).ToString("D2", System.Globalization.CultureInfo.InvariantCulture) + "0101").Elements[0];
 
         Assert.IsTrue(element.TryGetDate(out var date));
         Assert.AreEqual(DateTime.UtcNow.Year, date.Year);
@@ -237,7 +237,7 @@ public class Gs1ElementStringTests
         var grai = "0" + WithCheckDigit("952123456789") + "SERIAL1";
         var gdti = WithCheckDigit("952123456789") + "ABC";
 
-        var elements = BbGs1ElementString.Parse($"00{sscc}{GS}402{gsin}{GS}414{gln}{GS}8003{grai}{GS}253{gdti}");
+        var elements = BbScannerGs1ElementString.Parse($"00{sscc}{GS}402{gsin}{GS}414{gln}{GS}8003{grai}{GS}253{gdti}");
 
         Assert.AreEqual(sscc, elements["00"]);
         Assert.AreEqual(gsin, elements["402"]);
@@ -247,34 +247,34 @@ public class Gs1ElementStringTests
 
         // Each key with its check digit changed.
         static string Wrong(string digits, int at) => digits[..at] + (char)('0' + ((digits[at] - '0' + 1) % 10)) + digits[(at + 1)..];
-        Assert.IsFalse(BbGs1ElementString.TryParse("00" + Wrong(sscc, 17), out _));
-        Assert.IsFalse(BbGs1ElementString.TryParse("402" + Wrong(gsin, 16), out _));
-        Assert.IsFalse(BbGs1ElementString.TryParse("414" + Wrong(gln, 12), out _));
-        Assert.IsFalse(BbGs1ElementString.TryParse("8003" + Wrong(grai, 13), out _));
-        Assert.IsFalse(BbGs1ElementString.TryParse("253" + Wrong(gdti, 12), out _));
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("00" + Wrong(sscc, 17), out _));
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("402" + Wrong(gsin, 16), out _));
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("414" + Wrong(gln, 12), out _));
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("8003" + Wrong(grai, 13), out _));
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("253" + Wrong(gdti, 12), out _));
 
         // A GRAI is fourteen digits, the first of them zero.
-        Assert.IsFalse(BbGs1ElementString.TryParse("8003" + "1" + grai[1..], out _));
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("8003" + "1" + grai[1..], out _));
     }
 
     [TestMethod]
     public void ReadsOptionalTrailingComponents()
     {
         // AI 7007, a harvest date or a range of two; AI 4330, a temperature with an optional minus sign after it.
-        Assert.AreEqual("260101", BbGs1ElementString.Parse("7007260101")["7007"]);
-        Assert.AreEqual("260101260115", BbGs1ElementString.Parse("7007260101260115")["7007"]);
-        Assert.IsFalse(BbGs1ElementString.TryParse("7007260101260", out _));
-        Assert.IsFalse(BbGs1ElementString.TryParse("7007260101261315", out _));
+        Assert.AreEqual("260101", BbScannerGs1ElementString.Parse("7007260101")["7007"]);
+        Assert.AreEqual("260101260115", BbScannerGs1ElementString.Parse("7007260101260115")["7007"]);
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("7007260101260", out _));
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("7007260101261315", out _));
 
-        Assert.AreEqual("001250-", BbGs1ElementString.Parse("4330001250-")["4330"]);
-        Assert.IsFalse(BbGs1ElementString.TryParse("4330001250+", out _));
+        Assert.AreEqual("001250-", BbScannerGs1ElementString.Parse("4330001250-")["4330"]);
+        Assert.IsFalse(BbScannerGs1ElementString.TryParse("4330001250+", out _));
     }
 
     [TestMethod]
     public void AResultOfAnotherSymbologyHasNoElements()
     {
         using var image = SyntheticImage.FromMatrix(QrEncoder.Encode("0109521234543213"), scale: 4);
-        using var decoder = new BbBarcodeDecoder(BbScannerOptions.ForStillImages());
+        using var decoder = new BbScannerBarcodeDecoder(BbScannerOptions.ForStillImages());
 
         var result = decoder.Decode(image.View);
 
@@ -291,7 +291,7 @@ public class Gs1ElementStringTests
             scale: 3,
             height: 34 * 3,
             quietZoneModules: 6);
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.DataBarExpanded });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.DataBarExpanded });
 
         var result = decoder.Decode(image.View);
 

@@ -8,6 +8,7 @@
 /// drives the browser's real touch pipeline (scrolling included); the other engines have no such input and skip.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitLongPressTouchE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/long-press";

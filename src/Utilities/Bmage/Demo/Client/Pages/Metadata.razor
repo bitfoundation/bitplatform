@@ -1,7 +1,7 @@
 ﻿@page "/metadata"
 @implements IDisposable
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
 
 @* Metadata is where an image leaks the most about its owner and the least visibly, so the page
    proves its claims rather than stating them: it exports the reader's photo (or a generated one
@@ -146,7 +146,7 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Writing metadata</h3>
     <CodeSnippet Code="@WriteSnippet" Language="C#" Expanded="true" />
     <p>
-        <code>ExifValue.FromString</code> writes UTF-8. The EXIF specification calls the type ASCII, but
+        <code>BmageExifValue.FromString</code> writes UTF-8. The EXIF specification calls the type ASCII, but
         cameras and editors have written UTF-8 in these fields for years, and restricting to ASCII would
         silently turn "&copy;" into "?" and mangle any name with an accent.
     </p>
@@ -163,7 +163,7 @@
     <CodeSnippet Code="@OrientationSnippet" Language="C#" Expanded="true" />
     <p>
         The eight EXIF orientations form the dihedral group of the square, and
-        <code>OrientationMath</code> implements the algebra: <code>Then</code> composes two,
+        <code>BmageOrientationMath</code> implements the algebra: <code>Then</code> composes two,
         <code>Inverse</code> undoes one, <code>SwapsDimensions</code> says whether width and height
         exchange, and <code>ToMatrix</code> gives the coordinate mapping.
     </p>
@@ -197,7 +197,7 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> A checklist for user uploads</h3>
     <ol class="bb-detail-list">
-        <li>Leave the default <code>MetadataPolicy.Remove</code> unless you have a reason.</li>
+        <li>Leave the default <code>BmageMetadataPolicy.Remove</code> unless you have a reason.</li>
         <li>If you keep metadata for a gallery, use <code>StripSensitive</code>, not <code>Preserve</code>.</li>
         <li>Tell users what is in their file before they publish it.</li>
         <li>Leave <code>AutoOrient</code> on so the exported pixels match what the user saw.</li>
@@ -207,12 +207,12 @@
 
 @code {
     /// <summary>One row of the report: how to read a field, and whether it identifies a person or a place.</summary>
-    private sealed record Field(string Label, bool Sensitive, Func<ExifData, string?> Read);
+    private sealed record Field(string Label, bool Sensitive, Func<BmageExifData, string?> Read);
 
     /// <summary>The source's metadata and what each policy's export kept of it, in <see cref="Policies"/> order.</summary>
-    private sealed record Report(string Name, ExifData Original, ExifData[] Exported);
+    private sealed record Report(string Name, BmageExifData Original, BmageExifData[] Exported);
 
-    private static readonly MetadataPolicy[] Policies = [MetadataPolicy.Remove, MetadataPolicy.StripSensitive, MetadataPolicy.Preserve];
+    private static readonly BmageMetadataPolicy[] Policies = [BmageMetadataPolicy.Remove, BmageMetadataPolicy.StripSensitive, BmageMetadataPolicy.Preserve];
 
     private static readonly Field[] Fields =
     [
@@ -221,8 +221,8 @@
         new("ISO", false, e => e.Iso?.ToString()),
         new("Taken", false, e => e.DateTaken?.ToString("yyyy-MM-dd HH:mm")),
         new("Copyright", false, e => e.Copyright),
-        new("Serial number", true, e => e.Exif.Get(ExifTag.BodySerialNumber)?.GetString()),
-        new("Owner", true, e => e.Exif.Get(ExifTag.OwnerName)?.GetString()),
+        new("Serial number", true, e => e.Exif.Get(BmageExifTag.BodySerialNumber)?.GetString()),
+        new("Owner", true, e => e.Exif.Get(BmageExifTag.OwnerName)?.GetString()),
         new("Location", true, e => e.Location?.ToString()),
     ];
 
@@ -234,9 +234,9 @@
     private bool IsHydrating => RendererInfo.IsInteractive is false;
 
     private const string PolicySnippet = """
-        new ImageExportOptions { Metadata = MetadataPolicy.Remove }          // the default
-        new ImageExportOptions { Metadata = MetadataPolicy.StripSensitive }
-        new ImageExportOptions { Metadata = MetadataPolicy.Preserve }
+        new BmageImageExportOptions { Metadata = BmageMetadataPolicy.Remove }          // the default
+        new BmageImageExportOptions { Metadata = BmageMetadataPolicy.StripSensitive }
+        new BmageImageExportOptions { Metadata = BmageMetadataPolicy.Preserve }
         """;
 
     private const string ReadSnippet = """
@@ -255,7 +255,7 @@
         }
 
         // Every tag stays reachable, typed accessor or not.
-        var artist = exif.Primary.Get(ExifTag.Artist)?.GetString();
+        var artist = exif.Primary.Get(BmageExifTag.Artist)?.GetString();
         var custom = exif.Exif.Get(0x9C9B)?.GetString();
 
         // The colour profile and the XMP packet come as their raw bytes.
@@ -265,23 +265,23 @@
         """;
 
     private const string WriteSnippet = """
-        var exif = new ExifData()
-            .WithPrimary(new ExifDirectory()
-                .With(ExifTag.Artist, ExifValue.FromString("Sam Rivera"))
-                .With(ExifTag.Copyright, ExifValue.FromString("© 2026 Sam Rivera")));
+        var exif = new BmageExifData()
+            .WithPrimary(new BmageExifDirectory()
+                .With(BmageExifTag.Artist, BmageExifValue.FromString("Sam Rivera"))
+                .With(BmageExifTag.Copyright, BmageExifValue.FromString("© 2026 Sam Rivera")));
 
-        image.Metadata = new ImageMetadata(exif);
+        image.Metadata = new BmageImageMetadata(exif);
 
-        var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
+        var encoded = await exporter.EncodeAsync(image, new BmageImageExportOptions
         {
-            Format = ImageFormat.Jpeg,
-            Metadata = MetadataPolicy.Preserve,
+            Format = BmageImageFormat.Jpeg,
+            Metadata = BmageMetadataPolicy.Preserve,
         });
         """;
 
     private const string OrientationSnippet = """
         await loader.LoadAsync(file);                                          // upright
-        await loader.LoadAsync(file, new DecodeOptions { AutoOrient = false }); // as stored
+        await loader.LoadAsync(file, new BmageDecodeOptions { AutoOrient = false }); // as stored
 
         var orientation = image.Metadata!.Orientation;
         if (orientation.SwapsDimensions()) { /* portrait photo stored as landscape */ }
@@ -294,7 +294,7 @@
         _busy = true;
         try
         {
-            var image = await Loader.LoadAsync(files[0], new DecodeOptions { FileName = files[0].Name });
+            var image = await Loader.LoadAsync(files[0], new BmageDecodeOptions { FileName = files[0].Name });
             await InspectAsync(image, files[0].Name);
         }
         catch (Exception ex)
@@ -312,23 +312,23 @@
         await Task.Yield();
 
         var image = SampleImages.Landscape(800, 533);
-        image.Metadata = new ImageMetadata(SampleExif());
+        image.Metadata = new BmageImageMetadata(SampleExif());
         await InspectAsync(image, "the generated photo");
     }
 
     /// <summary>Exports <paramref name="image"/> under every policy and reads each result back. Takes ownership of the image.</summary>
-    private async Task InspectAsync(ImageBuffer image, string name)
+    private async Task InspectAsync(BmageImageBuffer image, string name)
     {
         var run = ++_run;
         try
         {
-            var original = image.Metadata?.Exif ?? new ExifData();
-            var exported = new ExifData[Policies.Length];
+            var original = image.Metadata?.Exif ?? new BmageExifData();
+            var exported = new BmageExifData[Policies.Length];
             for (var i = 0; i < Policies.Length; i++)
             {
-                var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions
+                var encoded = await Exporter.EncodeAsync(image, new BmageImageExportOptions
                 {
-                    Format = ImageFormat.Jpeg,
+                    Format = BmageImageFormat.Jpeg,
                     Quality = 0.85,
                     Metadata = Policies[i],
                 });
@@ -336,7 +336,7 @@
                 // Decoded again from the exported bytes: the report is what the file contains, not
                 // what the policy is documented to do.
                 using var back = await Loader.LoadAsync(encoded.Data);
-                exported[i] = back.Metadata?.Exif ?? new ExifData();
+                exported[i] = back.Metadata?.Exif ?? new BmageExifData();
             }
 
             if (run == _run) _report = new Report(name, original, exported);
@@ -357,28 +357,28 @@
     /// What a phone writes into a photo, give or take: who made the camera, how it was exposed, when,
     /// the body's serial number, the owner's name, and where it was standing.
     /// </summary>
-    private static ExifData SampleExif() => new ExifData()
-        .WithPrimary(new ExifDirectory()
-            .With(ExifTag.Make, ExifValue.FromString("Bmage"))
-            .With(ExifTag.Model, ExifValue.FromString("Demo Phone 15"))
-            .With(ExifTag.Copyright, ExifValue.FromString("© 2026 Sam Rivera")))
-        .WithExif(new ExifDirectory()
-            .With(ExifTag.DateTimeOriginal, ExifValue.FromString("2026:06:21 19:42:07"))
-            .With(ExifTag.Iso, ExifValue.FromShort(125))
-            .With(ExifTag.LensModel, ExifValue.FromString("Demo Phone 15 back camera 6.9mm f/1.8"))
-            .With(ExifTag.BodySerialNumber, ExifValue.FromString("DP15-0042-7731"))
-            .With(ExifTag.OwnerName, ExifValue.FromString("Sam Rivera")))
-        .WithGps(new ExifDirectory()
-            .With(ExifTag.GpsLatitudeRef, ExifValue.FromString("N"))
-            .With(ExifTag.GpsLatitude, ExifValue.FromRational((53, 1), (12, 1), (3720, 100)))
-            .With(ExifTag.GpsLongitudeRef, ExifValue.FromString("E"))
-            .With(ExifTag.GpsLongitude, ExifValue.FromRational((5, 1), (47, 1), (5280, 100))));
+    private static BmageExifData SampleExif() => new BmageExifData()
+        .WithPrimary(new BmageExifDirectory()
+            .With(BmageExifTag.Make, BmageExifValue.FromString("Bmage"))
+            .With(BmageExifTag.Model, BmageExifValue.FromString("Demo Phone 15"))
+            .With(BmageExifTag.Copyright, BmageExifValue.FromString("© 2026 Sam Rivera")))
+        .WithExif(new BmageExifDirectory()
+            .With(BmageExifTag.DateTimeOriginal, BmageExifValue.FromString("2026:06:21 19:42:07"))
+            .With(BmageExifTag.Iso, BmageExifValue.FromShort(125))
+            .With(BmageExifTag.LensModel, BmageExifValue.FromString("Demo Phone 15 back camera 6.9mm f/1.8"))
+            .With(BmageExifTag.BodySerialNumber, BmageExifValue.FromString("DP15-0042-7731"))
+            .With(BmageExifTag.OwnerName, BmageExifValue.FromString("Sam Rivera")))
+        .WithGps(new BmageExifDirectory()
+            .With(BmageExifTag.GpsLatitudeRef, BmageExifValue.FromString("N"))
+            .With(BmageExifTag.GpsLatitude, BmageExifValue.FromRational((53, 1), (12, 1), (3720, 100)))
+            .With(BmageExifTag.GpsLongitudeRef, BmageExifValue.FromString("E"))
+            .With(BmageExifTag.GpsLongitude, BmageExifValue.FromRational((5, 1), (47, 1), (5280, 100))));
 
     private static string Describe(Exception ex) => ex switch
     {
-        ImageLimitExceededException => "That image is larger than this page allows.",
-        ImageDecodeException => "That file could not be read as an image.",
-        ImageCapabilityException c => c.Message,
+        BmageImageLimitExceededException => "That image is larger than this page allows.",
+        BmageImageDecodeException => "That file could not be read as an image.",
+        BmageImageCapabilityException c => c.Message,
         _ => $"Something went wrong: {ex.Message}",
     };
 

@@ -14,7 +14,7 @@ public class RuntimeAttachTests : BunitContext
     {
         JSInterop.Mode = JSRuntimeMode.Loose;
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true, Visibility = "visible" });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true, Visibility = "visible" });
         module.Setup<string?>("loadPrefs", _ => true).SetResult("""{"open":false}""");
         this.UseRenderer("WebAssembly");
     }
@@ -27,12 +27,12 @@ public class RuntimeAttachTests : BunitContext
     [TestMethod]
     public void Reflection_accessors_for_attaching_are_available_on_this_framework()
     {
-        Assert.IsNotNull(BlazorReflection.ComponentFactoryField);
-        Assert.IsNotNull(BlazorReflection.ComponentActivatorField);
-        Assert.IsNotNull(BlazorReflection.ComponentStateByIdField);
-        Assert.IsNotNull(BlazorReflection.RendererDisposedField);
-        Assert.IsNotNull(BlazorReflection.HasNeverRenderedField);
-        Assert.IsNotNull(BlazorReflection.HasPendingQueuedRenderField);
+        Assert.IsNotNull(BevToolsBlazorReflection.ComponentFactoryField);
+        Assert.IsNotNull(BevToolsBlazorReflection.ComponentActivatorField);
+        Assert.IsNotNull(BevToolsBlazorReflection.ComponentStateByIdField);
+        Assert.IsNotNull(BevToolsBlazorReflection.RendererDisposedField);
+        Assert.IsNotNull(BevToolsBlazorReflection.HasNeverRenderedField);
+        Assert.IsNotNull(BevToolsBlazorReflection.HasPendingQueuedRenderField);
     }
 
     [TestMethod]
@@ -59,14 +59,14 @@ public class RuntimeAttachTests : BunitContext
         var parentComponent = cut.FindComponent<ParentComponent>().Instance;
         cut.InvokeAsync(parentComponent.Increment);
         Assert.AreEqual(1, parent.RenderCount);
-        Assert.AreEqual(BevRenderCause.StateHasChanged, parent.LastRender!.Cause);
-        Assert.AreEqual(BevRenderCause.ParentRender, child.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.StateHasChanged, parent.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.ParentRender, child.LastRender!.Cause);
 
         cut.InvokeAsync(cut.Instance.ShowLateChild);
         session.Components.Refresh(force: true);
         var late = session.Components.All.Single(r => r.Type == typeof(ChildComponent) && r != child);
         Assert.AreEqual(1, late.RenderCount);
-        Assert.AreEqual(BevRenderCause.Initial, late.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.Initial, late.LastRender!.Cause);
         Assert.AreEqual(typeof(LazyHost), late.Parent?.Type);
     }
 
@@ -92,9 +92,9 @@ public class RuntimeAttachTests : BunitContext
         Attached = cut.Instance.Session!;
 
         var capabilities = Attached.Capabilities;
-        Assert.AreEqual(BevCapabilityStatus.Available, capabilities.Single(c => c.Name == "Component instances").Status);
-        Assert.AreEqual(BevCapabilityStatus.NotAvailable, capabilities.Single(c => c.Area == "DI" && c.Name.StartsWith("Registrations", StringComparison.Ordinal)).Status);
-        Assert.AreEqual(BevCapabilityStatus.NotAvailable, capabilities.Single(c => c.Area == "Circuit" && c.Name.StartsWith("Circuit lifecycle", StringComparison.Ordinal)).Status);
+        Assert.AreEqual(BevToolsCapabilityStatus.Available, capabilities.Single(c => c.Name == "Component instances").Status);
+        Assert.AreEqual(BevToolsCapabilityStatus.NotAvailable, capabilities.Single(c => c.Area == "DI" && c.Name.StartsWith("Registrations", StringComparison.Ordinal)).Status);
+        Assert.AreEqual(BevToolsCapabilityStatus.NotAvailable, capabilities.Single(c => c.Area == "Circuit" && c.Name.StartsWith("Circuit lifecycle", StringComparison.Ordinal)).Status);
     }
 
     [TestMethod]
@@ -104,7 +104,7 @@ public class RuntimeAttachTests : BunitContext
 
         Attached = BitBevTools.Attach(scope.ServiceProvider);
 
-        Assert.AreEqual(BevCapabilityStatus.RequiresIntegration, Attached.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Status);
+        Assert.AreEqual(BevToolsCapabilityStatus.RequiresIntegration, Attached.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Status);
     }
 
     [TestMethod]
@@ -147,11 +147,11 @@ public class RuntimeAttachTests : BunitContext
             // The user navigates away from the page that rendered the panel; the scope goes on.
             cut.InvokeAsync(cut.Instance.HidePanel);
             Assert.IsEmpty(cut.FindComponents<BevToolsPanel>());
-            RuntimeAttachment.SweepEndedScopes();
+            BevToolsRuntimeAttacher.SweepEndedScopes();
             Assert.IsFalse(session.IsDisposed);
         }
 
-        RuntimeAttachment.SweepEndedScopes();
+        BevToolsRuntimeAttacher.SweepEndedScopes();
 
         Assert.IsTrue(session.IsDisposed);
     }
@@ -164,7 +164,7 @@ public class RuntimeAttachTests : BunitContext
         var session = BitBevTools.Attach(scope.ServiceProvider);
 
         scope.Dispose();
-        RuntimeAttachment.SweepEndedScopes();
+        BevToolsRuntimeAttacher.SweepEndedScopes();
 
         Assert.IsTrue(session.IsDisposed);
     }
@@ -226,7 +226,7 @@ public class RuntimeAttachTests : BunitContext
 
         Assert.AreEqual(1, Attached.Http.Count);
         Assert.AreEqual(1, Attached.Http.FailedCount);
-        Assert.AreEqual(BevCapabilityStatus.Partial, Attached.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Status);
+        Assert.AreEqual(BevToolsCapabilityStatus.Partial, Attached.Capabilities.Single(c => c.Area == "Network" && c.Name == "HTTP requests").Status);
     }
 
     [TestMethod]

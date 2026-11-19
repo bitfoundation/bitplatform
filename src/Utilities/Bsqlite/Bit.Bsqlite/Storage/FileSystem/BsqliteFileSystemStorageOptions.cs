@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Storage.FileSystem;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>Options for <see cref="BsqliteFileSystemStorageProvider"/>.</summary>
 public sealed class BsqliteFileSystemStorageOptions

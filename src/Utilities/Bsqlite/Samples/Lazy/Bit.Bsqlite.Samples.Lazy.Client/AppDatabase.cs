@@ -1,7 +1,4 @@
-﻿using Bit.Bsqlite.EntityFrameworkCore;
-using Bit.Bsqlite.Samples.Lazy.Data;
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.Storage.Opfs;
+﻿using Bit.Bsqlite.Samples.Lazy.Data;
 
 namespace Bit.Bsqlite.Samples.Lazy.Client;
 

@@ -8,7 +8,7 @@ namespace Bit.BbScanner.Demo.Server.Services;
 
 /// <summary>
 /// The symbologies Bit.BbScanner reads, described from the library rather than from a list someone keeps: the
-/// flags of <see cref="BbBarcodeFormat"/> and their XML documentation, the guide's symbology table, whether the
+/// flags of <see cref="BbScannerBarcodeFormat"/> and their XML documentation, the guide's symbology table, whether the
 /// pipeline actually creates each reader, and the <see cref="BbScannerOptions"/> members that steer each one -
 /// with the default a freshly created instance really has.
 /// <para>
@@ -48,45 +48,45 @@ public static class BbScannerFormatCatalog
         (nameof(BbScannerOptions.RequireEanExtension), "Reports the symbol only together with its EAN-2 or EAN-5 add-on, which is otherwise read into Metadata.Extension whenever it is there."),
     ];
 
-    private static readonly Dictionary<BbBarcodeFormat, Known> _known = new()
+    private static readonly Dictionary<BbScannerBarcodeFormat, Known> _known = new()
     {
-        [BbBarcodeFormat.QrCode] = new("QR Code", "https://bitplatform.dev", _matrix),
-        [BbBarcodeFormat.DataMatrix] = new("Data Matrix", "BIT-BBSCANNER-DM", _matrix),
-        [BbBarcodeFormat.Pdf417] = new("PDF417", "PDF FOUR ONE SEVEN", _matrix),
-        [BbBarcodeFormat.Aztec] = new("Aztec Code", "M1BITPLATFORM/AZTEC EABC123 AMSJFKKL 0641", _matrix),
-        [BbBarcodeFormat.MaxiCode] = new("MaxiCode", "MAXICODE DEMO PARCEL 1Z00004951", _matrix),
-        [BbBarcodeFormat.MicroQrCode] = new("Micro QR", "MICRO QR 42", _matrix),
-        [BbBarcodeFormat.MicroPdf417] = new("MicroPDF417", "MICRO PDF FOUR ONE SEVEN", _matrix),
-        [BbBarcodeFormat.Code128] = new("Code 128", "BIT-BBSCANNER-128", _linear),
-        [BbBarcodeFormat.Code39] = new("Code 39", "CODE39 DEMO",
+        [BbScannerBarcodeFormat.QrCode] = new("QR Code", "https://bitplatform.dev", _matrix),
+        [BbScannerBarcodeFormat.DataMatrix] = new("Data Matrix", "BIT-BBSCANNER-DM", _matrix),
+        [BbScannerBarcodeFormat.Pdf417] = new("PDF417", "PDF FOUR ONE SEVEN", _matrix),
+        [BbScannerBarcodeFormat.Aztec] = new("Aztec Code", "M1BITPLATFORM/AZTEC EABC123 AMSJFKKL 0641", _matrix),
+        [BbScannerBarcodeFormat.MaxiCode] = new("MaxiCode", "MAXICODE DEMO PARCEL 1Z00004951", _matrix),
+        [BbScannerBarcodeFormat.MicroQrCode] = new("Micro QR", "MICRO QR 42", _matrix),
+        [BbScannerBarcodeFormat.MicroPdf417] = new("MicroPDF417", "MICRO PDF FOUR ONE SEVEN", _matrix),
+        [BbScannerBarcodeFormat.Code128] = new("Code 128", "BIT-BBSCANNER-128", _linear),
+        [BbScannerBarcodeFormat.Code39] = new("Code 39", "CODE39 DEMO",
         [
             .. _linear,
             (nameof(BbScannerOptions.Code39CheckDigit), "Requires and strips the optional modulo 43 check character."),
             (nameof(BbScannerOptions.Code39ExtendedMode), "Interprets the symbol as full ASCII, where pairs such as +A stand for a."),
         ]),
-        [BbBarcodeFormat.Ean13] = new("EAN-13", "4006381333931", _ean),
-        [BbBarcodeFormat.Ean8] = new("EAN-8", "96385074", _ean),
-        [BbBarcodeFormat.UpcA] = new("UPC-A", "036000291452", _ean),
-        [BbBarcodeFormat.UpcE] = new("UPC-E", "01234565", _ean),
-        [BbBarcodeFormat.Itf] = new("ITF", "1234567890",
+        [BbScannerBarcodeFormat.Ean13] = new("EAN-13", "4006381333931", _ean),
+        [BbScannerBarcodeFormat.Ean8] = new("EAN-8", "96385074", _ean),
+        [BbScannerBarcodeFormat.UpcA] = new("UPC-A", "036000291452", _ean),
+        [BbScannerBarcodeFormat.UpcE] = new("UPC-E", "01234565", _ean),
+        [BbScannerBarcodeFormat.Itf] = new("ITF", "1234567890",
         [
             .. _linear,
             (nameof(BbScannerOptions.ItfLengths), "The digit counts an ITF result may have. ITF has no check character, so this is the main guard against a truncated read."),
         ]),
-        [BbBarcodeFormat.Codabar] = new("Codabar", "31234000123457",
+        [BbScannerBarcodeFormat.Codabar] = new("Codabar", "31234000123457",
         [
             .. _linear,
             (nameof(BbScannerOptions.CodabarStartStop), "Keeps the start and stop characters, A to D, in the decoded text instead of reporting only the data between them."),
         ]),
-        [BbBarcodeFormat.Code93] = new("Code 93", "CODE 93 DEMO", _linear),
-        [BbBarcodeFormat.DataBar] = new("GS1 DataBar", "0109521234543213", _linear),
-        [BbBarcodeFormat.DataBarLimited] = new("GS1 DataBar Limited", "0115012345678907", _linear),
-        [BbBarcodeFormat.DataBarExpanded] = new("GS1 DataBar Expanded", "010952123454321310ABC123", _linear),
+        [BbScannerBarcodeFormat.Code93] = new("Code 93", "CODE 93 DEMO", _linear),
+        [BbScannerBarcodeFormat.DataBar] = new("GS1 DataBar", "0109521234543213", _linear),
+        [BbScannerBarcodeFormat.DataBarLimited] = new("GS1 DataBar Limited", "0115012345678907", _linear),
+        [BbScannerBarcodeFormat.DataBarExpanded] = new("GS1 DataBar Expanded", "010952123454321310ABC123", _linear),
     };
 
     private static readonly Lazy<BbScannerFormatDto[]> _formats = new(Build);
 
-    /// <summary>Every single symbology, in the order BbBarcodeFormat declares them.</summary>
+    /// <summary>Every single symbology, in the order BbScannerBarcodeFormat declares them.</summary>
     public static BbScannerFormatDto[] Formats => _formats.Value;
 
     /// <summary>
@@ -100,15 +100,15 @@ public static class BbScannerFormatCatalog
         var key = Normalize(format);
 
         return Formats.FirstOrDefault(f => Normalize(f.Name) == key || Normalize(f.Title) == key)
-            ?? (key is "qr" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.QrCode))
-              : key is "dm" or "datamatrix" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataMatrix))
-              : key is "interleaved2of5" or "i2of5" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.Itf))
+            ?? (key is "qr" ? Formats.FirstOrDefault(f => f.Name == nameof(BbScannerBarcodeFormat.QrCode))
+              : key is "dm" or "datamatrix" ? Formats.FirstOrDefault(f => f.Name == nameof(BbScannerBarcodeFormat.DataMatrix))
+              : key is "interleaved2of5" or "i2of5" ? Formats.FirstOrDefault(f => f.Name == nameof(BbScannerBarcodeFormat.Itf))
               : key is "rss14" or "rss" or "databaromnidirectional" or "databartruncated" or "databarstacked" or "databarstackedomnidirectional"
-                  ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBar))
-              : key is "rsslimited" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBarLimited))
-              : key is "microqr" or "mqr" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.MicroQrCode))
-              : key is "micropdf" or "mpdf417" or "mpdf" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.MicroPdf417))
-              : key is "rssexpanded" or "databarexpandedstacked" ? Formats.FirstOrDefault(f => f.Name == nameof(BbBarcodeFormat.DataBarExpanded))
+                  ? Formats.FirstOrDefault(f => f.Name == nameof(BbScannerBarcodeFormat.DataBar))
+              : key is "rsslimited" ? Formats.FirstOrDefault(f => f.Name == nameof(BbScannerBarcodeFormat.DataBarLimited))
+              : key is "microqr" or "mqr" ? Formats.FirstOrDefault(f => f.Name == nameof(BbScannerBarcodeFormat.MicroQrCode))
+              : key is "micropdf" or "mpdf417" or "mpdf" ? Formats.FirstOrDefault(f => f.Name == nameof(BbScannerBarcodeFormat.MicroPdf417))
+              : key is "rssexpanded" or "databarexpandedstacked" ? Formats.FirstOrDefault(f => f.Name == nameof(BbScannerBarcodeFormat.DataBarExpanded))
               : null);
     }
 
@@ -118,10 +118,10 @@ public static class BbScannerFormatCatalog
         var builder = new StringBuilder();
 
         builder.AppendLine("# Symbologies Bit.BbScanner reads").AppendLine();
-        builder.AppendLine("`BbBarcodeFormat` is a flags enum: combine members with `|`. The composites are " +
-                           $"`Common` ({(int)BbBarcodeFormat.Common}), `AllLinear` ({(int)BbBarcodeFormat.AllLinear}, the 1D symbologies), " +
-                           $"`AllMatrix` ({(int)BbBarcodeFormat.AllMatrix}, the 2D ones) " +
-                           $"and `All` ({(int)BbBarcodeFormat.All}), and a new `BbScannerOptions` (and the `BbScanner` component) " +
+        builder.AppendLine("`BbScannerBarcodeFormat` is a flags enum: combine members with `|`. The composites are " +
+                           $"`Common` ({(int)BbScannerBarcodeFormat.Common}), `AllLinear` ({(int)BbScannerBarcodeFormat.AllLinear}, the 1D symbologies), " +
+                           $"`AllMatrix` ({(int)BbScannerBarcodeFormat.AllMatrix}, the 2D ones) " +
+                           $"and `All` ({(int)BbScannerBarcodeFormat.All}), and a new `BbScannerOptions` (and the `BbScanner` component) " +
                            $"starts with `{Describe(new BbScannerOptions().Formats)}`. Call `GetBbScannerFormats(format: \"...\")` " +
                            "for one symbology with the options that steer it.").AppendLine();
 
@@ -144,7 +144,7 @@ public static class BbScannerFormatCatalog
 
         var builder = new StringBuilder();
 
-        builder.AppendLine($"# {dto.Title} (`BbBarcodeFormat.{dto.Name}`)").AppendLine();
+        builder.AppendLine($"# {dto.Title} (`BbScannerBarcodeFormat.{dto.Name}`)").AppendLine();
         builder.AppendLine($"{dto.Family} symbology, flag value {dto.Value}.").AppendLine();
 
         if (dto.Summary is not null) builder.AppendLine(dto.Summary).AppendLine();
@@ -157,9 +157,9 @@ public static class BbScannerFormatCatalog
         if (dto.Active is false)
         {
             builder.AppendLine("**The pipeline does not create this reader.** The application registered a PDF417 symbol character table " +
-                               "that is not the specification's (`BbPdf417SymbolTable.Current.IsSpecificationTable` is false), so " +
-                               "`BbBarcodeDecoder` leaves PDF417 off rather than misread with it. " +
-                               "`BbPdf417SymbolTable.Register(BbPdf417SymbolTable.Specification)` puts the shipped ISO/IEC 15438 table back - " +
+                               "that is not the specification's (`BbScannerPdf417SymbolTable.Current.IsSpecificationTable` is false), so " +
+                               "`BbScannerBarcodeDecoder` leaves PDF417 off rather than misread with it. " +
+                               "`BbScannerPdf417SymbolTable.Register(BbScannerPdf417SymbolTable.Specification)` puts the shipped ISO/IEC 15438 table back - " +
                                "see `GetBbScannerGuideSection(heading: \"PDF417 status\")`.").AppendLine();
         }
 
@@ -175,10 +175,10 @@ public static class BbScannerFormatCatalog
         builder.AppendLine();
         builder.AppendLine("## Selecting it").AppendLine();
         builder.AppendLine("```razor");
-        builder.AppendLine($"<BbScanner Formats=\"BbBarcodeFormat.{dto.Name}\" OnScan=\"HandleScan\" />");
+        builder.AppendLine($"<BbScanner Formats=\"BbScannerBarcodeFormat.{dto.Name}\" OnScan=\"HandleScan\" />");
         builder.AppendLine("```").AppendLine();
         builder.AppendLine($"Call `InspectBbScannerSymbol(format: \"{dto.Name}\")` to render one, decode it with the library and see the " +
-                           "`BbBarcodeResult` it produces - its text, raw bytes, corners and metadata.");
+                           "`BbScannerBarcodeResult` it produces - its text, raw bytes, corners and metadata.");
 
         return builder.ToString();
     }
@@ -188,14 +188,14 @@ public static class BbScannerFormatCatalog
         var defaults = new BbScannerOptions();
         var guide = ReadGuideTable();
 
-        return [.. Enum.GetValues<BbBarcodeFormat>()
+        return [.. Enum.GetValues<BbScannerBarcodeFormat>()
             .Where(IsSingleFlag)
             .Select(format =>
             {
                 var known = _known.GetValueOrDefault(format);
                 var title = known?.Title ?? format.ToString();
                 var row = guide.GetValueOrDefault(title);
-                var matrix = (BbBarcodeFormat.AllMatrix & format) != 0;
+                var matrix = (BbScannerBarcodeFormat.AllMatrix & format) != 0;
 
                 return new BbScannerFormatDto
                 {
@@ -203,18 +203,18 @@ public static class BbScannerFormatCatalog
                     Title = title,
                     Family = matrix ? "Matrix" : "Linear",
                     Value = (int)format,
-                    Summary = BbScannerXmlDocs.GetSummary($"F:{typeof(BbBarcodeFormat).FullName}.{format}"),
+                    Summary = BbScannerXmlDocs.GetSummary($"F:{typeof(BbScannerBarcodeFormat).FullName}.{format}"),
                     Status = row.Status,
                     Notes = row.Notes,
                     EnabledByDefault = (defaults.Formats & format) != 0,
-                    Active = format is not (BbBarcodeFormat.Pdf417 or BbBarcodeFormat.MicroPdf417) || BbPdf417SymbolTable.Current.IsSpecificationTable,
+                    Active = format is not (BbScannerBarcodeFormat.Pdf417 or BbScannerBarcodeFormat.MicroPdf417) || BbScannerPdf417SymbolTable.Current.IsSpecificationTable,
                     Options = [.. (known?.Options ?? _shared).Select(option => Option(defaults, option.Option, option.Effect))],
                     SampleText = known?.SampleText ?? "SAMPLE"
                 };
             })];
     }
 
-    private static bool IsSingleFlag(BbBarcodeFormat format)
+    private static bool IsSingleFlag(BbScannerBarcodeFormat format)
     {
         var value = (int)format;
 
@@ -263,7 +263,7 @@ public static class BbScannerFormatCatalog
         bool flag => flag ? "true" : "false",
         Enum enumValue => string.Join(" | ", enumValue.ToString().Split(", ").Select(part => $"{enumValue.GetType().Name}.{part}")),
         TimeSpan span => span == TimeSpan.Zero ? "TimeSpan.Zero" : $"TimeSpan.FromSeconds({span.TotalSeconds.ToString(CultureInfo.InvariantCulture)})",
-        BbScanRegion region => region == BbScanRegion.Full ? "BbScanRegion.Full" : region.ToString(),
+        BbScannerScanRegion region => region == BbScannerScanRegion.Full ? "BbScannerScanRegion.Full" : region.ToString(),
         IEnumerable sequence => $"[{string.Join(", ", sequence.Cast<object>().Select(item => Convert.ToString(item, CultureInfo.InvariantCulture)))}]",
         IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
         _ => value.ToString()

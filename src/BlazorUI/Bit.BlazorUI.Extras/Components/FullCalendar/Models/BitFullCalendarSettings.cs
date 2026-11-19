@@ -15,7 +15,7 @@ public class BitFullCalendarSettings
     /// <summary>Uses 24-hour time format instead of 12-hour (AM/PM).</summary>
     public bool Use24HourFormat { get; set; } = true;
 
-    /// <summary>Badge display style in the month view.</summary>
+    /// <summary>How an event's color is drawn on the month badges and the day, week and timeline blocks.</summary>
     public BitFullCalendarBadgeVariant BadgeVariant { get; set; } = BitFullCalendarBadgeVariant.Colored;
 
     /// <summary>

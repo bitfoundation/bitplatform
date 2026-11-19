@@ -37,13 +37,13 @@ public sealed class BmotionPresenceGroup<TItem> : ComponentBase
     [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
 
     /// <summary>
-    /// <see cref="BmPresenceMode.Sync"/> (default) keeps exiting items in the layout flow while
-    /// they animate out; <see cref="BmPresenceMode.PopLayout"/> pops them out
+    /// <see cref="BmotionPresenceMode.Sync"/> (default) keeps exiting items in the layout flow while
+    /// they animate out; <see cref="BmotionPresenceMode.PopLayout"/> pops them out
     /// (position: absolute at their current spot) so siblings reflow immediately - ideal for
-    /// grids and flex rows. (<see cref="BmPresenceMode.Wait"/> has no meaning for concurrent
+    /// grids and flex rows. (<see cref="BmotionPresenceMode.Wait"/> has no meaning for concurrent
     /// list changes and behaves like Sync.)
     /// </summary>
-    [Parameter] public BmPresenceMode Mode { get; set; }
+    [Parameter] public BmotionPresenceMode Mode { get; set; }
 
     /// <summary>Fires each time a removed item finishes its exit animation.</summary>
     [Parameter] public EventCallback OnExitComplete { get; set; }
@@ -103,7 +103,7 @@ public sealed class BmotionPresenceGroup<TItem> : ComponentBase
                 else
                 {
                     entry.Exiting = true;
-                    entry.Ctx.PopLayout = Mode == BmPresenceMode.PopLayout;
+                    entry.Ctx.PopLayout = Mode == BmotionPresenceMode.PopLayout;
                     entry.Ctx.IsExiting = true;
                 }
             }

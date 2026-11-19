@@ -263,7 +263,7 @@ Here's an actual example from the project (`src/Client/Boilerplate.Client.Core/C
         <BitLabel For="catColorInput">@Localizer[nameof(AppStrings.Color)]</BitLabel>
         <ValidationMessage For="() => category.Color" />
         
-        <BitButton IsLoading=isSaving ButtonType="BitButtonType.Submit">
+        <BitButton Loading=isSaving ButtonType="BitButtonType.Submit">
             @Localizer[nameof(AppStrings.Save)]
         </BitButton>
     </BitStack>
@@ -535,7 +535,7 @@ The tool performs the following tasks automatically:
 
 ### Installation
 
-Nothing to install: `dnx Bit.Cli --version 11.0.0-pre-20 -- translate` runs it straight from NuGet. With the bit CLI installed as a .NET global tool (`dotnet tool install --global Bit.Cli --version 11.0.0-pre-20`), the command is `bit translate`.
+Nothing to install: `dnx Bit.Cli --version 11.0.0-pre-22 -- translate` runs it straight from NuGet. With the bit CLI installed as a .NET global tool (`dotnet tool install --global Bit.Cli --version 11.0.0-pre-22`), the command is `bit translate`.
 
 #### `Bit.ResxTranslator.json` Configuration Options Explained
 

@@ -1,4 +1,4 @@
-namespace Bit.Blex.Query;
+namespace Bit.Blex;
 
 /// <summary>
 /// An observer of a paged query -- a feed, "load more", infinite scroll: the pages loaded so far, whether there is

@@ -43,7 +43,7 @@
                             </BitText>
                         </BitStack>
 
-                        <BitButton IsLoading="isPasskeyRunning"
+                        <BitButton Loading="isPasskeyRunning"
                                    Disabled="IsBusy"
                                    ButtonType="BitButtonType.Button"
                                    OnClick="WrapHandled(ElevateWithPasskey)">
@@ -65,7 +65,7 @@
                              NoValidate
                              Sequential
                              Invalid="isCodeInvalid"
-                             IsLoading="isVerifying"
+                             Loading="isVerifying"
                              Disabled="isPasskeyRunning"
                              Separator="-"
                              SeparatorInterval="3"
@@ -78,7 +78,7 @@
             <BitStack Horizontal Wrap Gap="0.5rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="actions-stack">
                 <BitButton Variant="BitVariant.Text"
                            Color="BitColor.Tertiary"
-                           IsLoading="isSending"
+                           Loading="isSending"
                            Disabled="@(IsBusy || resendAvailableIn is not null)"
                            ButtonType="BitButtonType.Button"
                            OnClick="WrapHandled(SendCode)">
@@ -87,7 +87,7 @@
 
                 <BitSpacer />
 
-                <BitButton IsLoading="isVerifying"
+                <BitButton Loading="isVerifying"
                            Disabled="CanVerify is false"
                            ButtonType="BitButtonType.Button"
                            OnClick="WrapHandled(Verify)">

@@ -1,12 +1,12 @@
 ﻿@page "/capabilities"
-@inject IImageCapabilityProvider Capabilities
+@inject IBmageImageCapabilityProvider Capabilities
 
 <PageTitle>Capabilities · Bmage samples</PageTitle>
 
 <h1>Capabilities</h1>
 
 <p>
-    What <code>IImageCapabilityProvider</code> measured in this browser: every format is confirmed by encoding (or
+    What <code>IBmageImageCapabilityProvider</code> measured in this browser: every format is confirmed by encoding (or
     decoding) a pixel, and the canvas limit by allocating until the browser refuses. While prerendering there is no
     browser, so the provider reports the managed codecs with the <code>Prerendering</code> environment and the probe
     runs again once the page is interactive.
@@ -28,7 +28,7 @@
             <dt>Suggested working size</dt>
             <dd>@caps.SuggestedMaxWorkingDimension px</dd>
             <dt>Best of AVIF, WebP, JPEG</dt>
-            <dd id="capabilities-choice">@caps.ChooseEncodableFormat([ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg])</dd>
+            <dd id="capabilities-choice">@caps.ChooseEncodableFormat([BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg])</dd>
         </dl>
     </div>
 
@@ -72,12 +72,12 @@ else
 }
 
 @code {
-    private static readonly ImageFormat[] Formats =
+    private static readonly BmageImageFormat[] Formats =
     [
-        ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Gif, ImageFormat.Bmp,
+        BmageImageFormat.Png, BmageImageFormat.Jpeg, BmageImageFormat.WebP, BmageImageFormat.Avif, BmageImageFormat.Gif, BmageImageFormat.Bmp,
     ];
 
-    private ImageCapabilities? _capabilities;
+    private BmageImageCapabilities? _capabilities;
 
     protected override async Task OnInitializedAsync()
     {

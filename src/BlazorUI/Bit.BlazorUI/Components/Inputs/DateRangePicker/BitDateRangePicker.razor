@@ -267,7 +267,7 @@
                                            class="bit-dtrp-cic @prevMonthNavIconCss @Classes?.PrevMonthNavIcon" />
                                     </button>
                                 }
-                                @if (isLastMonth && ShowGoToToday && (IsMonthPickerVisible is false || _showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
+                                @if (isLastMonth && ShowGoToToday && (ShowMonthPicker is false || _showMonthPickerAsOverlayInternal || (ShowTimePicker && _showTimePickerAsOverlayInternal is false)))
                                 {
                                     var goToTodayDisabled = IsGoToTodayButtonDisabled(todayYear, todayMonth);
 
@@ -312,7 +312,7 @@
                                            class="bit-dtrp-cic @closeButtonIconCss @Classes?.CloseButtonIcon" />
                                     </button>
                                 }
-                                @if (isLastMonth && (_showMonthPickerAsOverlayInternal || IsMonthPickerVisible is false) && _showTimePickerAsOverlayInternal && ShowTimePicker)
+                                @if (isLastMonth && (_showMonthPickerAsOverlayInternal || ShowMonthPicker is false) && _showTimePickerAsOverlayInternal && ShowTimePicker)
                                 {
                                     <button @onclick="@ToggleTimePickerOverlay"
                                             type="button"
@@ -433,7 +433,7 @@
                 }
             }
 
-            @if (ShowMonthPicker())
+            @if (MonthPickerIsVisible())
             {
                 @if (_showMonthPickerAsOverlayInternal is false)
                 {

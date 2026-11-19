@@ -15,10 +15,10 @@
     /// method: they are set once per runtime, every later call must set the same ones, and the server checks that this
     /// layout's call agrees with its registration while it prerenders the showcase.
     /// </summary>
-    public static void ConfigureBmotion(BitBmotionOptions options)
+    public static void ConfigureBmotion(BmotionOptions options)
     {
-        options.ReducedMotion = BmReducedMotionMode.User;
-        options.Prerender = BmPrerenderMode.Animate;
+        options.ReducedMotion = BmotionReducedMotionMode.User;
+        options.Prerender = BmotionPrerenderMode.Animate;
     }
 
     // In the browser the first call creates the services, and every later one - the showcase opened again - finds them

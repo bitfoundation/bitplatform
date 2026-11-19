@@ -21,14 +21,14 @@
             <BitText Typography="BitTypography.H5" Gutter>1. Install the .NET SDK</BitText>
             <BitPivot>
                 <BitPivotItem HeaderText="Windows">
-                    <CodeBox>winget install Microsoft.DotNet.SDK.10 --accept-package-agreements --accept-source-agreements</CodeBox>
+                    <CodeBox>winget install Microsoft.DotNet.SDK.11 --accept-package-agreements --accept-source-agreements</CodeBox>
                 </BitPivotItem>
                 <BitPivotItem HeaderText="macOS">
                     <br />
-                    Download and run the macOS installer of the latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/10.0" target="_blank" rel="noopener">.NET 10 SDK</a>.
+                    Download and run the macOS installer of the latest <a href="https://dotnet.microsoft.com/en-us/download/dotnet/11.0" target="_blank" rel="noopener">.NET 11 SDK</a>.
                 </BitPivotItem>
                 <BitPivotItem HeaderText="Linux">
-                    <CodeBox>curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 10.0
+                    <CodeBox>curl -sSL https://dot.net/v1/dotnet-install.sh | bash -s -- --channel 11.0
 echo 'export DOTNET_ROOT=$HOME/.dotnet' >> ~/.bashrc
 echo 'export PATH=$HOME/.dotnet:$HOME/.dotnet/tools:$PATH' >> ~/.bashrc
 source ~/.bashrc</CodeBox>
@@ -41,8 +41,8 @@ source ~/.bashrc</CodeBox>
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>2. Install the bit CLI</BitText>
-            <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-20</CodeBox>
-            Or run it once without installing it: <code>dnx Bit.Cli --version 11.0.0-pre-20 -- new MyApp</code>
+            <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-22</CodeBox>
+            Or run it once without installing it: <code>dnx Bit.Cli --version 11.0.0-pre-22 -- new MyApp</code>
             <br />
             <br />
             <BitText Typography="BitTypography.Subtitle1" Gutter><b>Why it's safe to run</b></BitText>
@@ -100,6 +100,17 @@ source ~/.bashrc</CodeBox>
             which needs several GB of extra build tools and makes the first run much longer. You can add them any time later from the project folder:
             <CodeBox>bit setup --platforms android</CodeBox>
             iOS and macOS apps need a Mac with Xcode, and the Windows app needs Windows.
+        </div>
+    </section>
+    <br />
+
+    <section class="section-card">
+        <div class="section-card-txt">
+            <BitText Typography="BitTypography.H5" Gutter>On another computer, or a teammate's</BitText>
+            Give <code>bit setup</code> your project's repository: it clones it, signing in to GitHub in the browser for a private one,
+            and gets it ready the way <code>bit new</code> did on the computer that created it.
+            <CodeBox>bit setup https://github.com/contoso/Contoso</CodeBox>
+            On a computer without .NET or bit CLI yet, <a href="https://bitfabric.co/setup" target="_blank">bitfabric.co/setup</a> gives one line that installs both and runs it.
         </div>
     </section>
     <br />

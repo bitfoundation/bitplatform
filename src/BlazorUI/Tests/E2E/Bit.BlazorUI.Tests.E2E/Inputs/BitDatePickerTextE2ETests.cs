@@ -8,6 +8,7 @@
 /// TimeZone of the picker's own.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDatePickerTextE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-picker/text";

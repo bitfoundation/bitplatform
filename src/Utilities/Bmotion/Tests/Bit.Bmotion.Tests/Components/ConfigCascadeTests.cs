@@ -13,12 +13,12 @@ namespace Bit.Bmotion.Tests.Components;
 [TestClass]
 public class ConfigCascadeTests
 {
-    private static RenderFragment Box(BmProps animate, BmTransition? transition = null, BmProps? initial = null) => b =>
+    private static RenderFragment Box(BmotionProps animate, BmotionTransition? transition = null, BmotionProps? initial = null) => b =>
     {
         b.OpenComponent<Bmotion>(0);
         b.AddComponentParameter(1, nameof(Bmotion.Id), "box");
-        if (initial is not null) b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmTarget?)initial);
-        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmTarget?)animate);
+        if (initial is not null) b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmotionTarget?)initial);
+        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmotionTarget?)animate);
         if (transition is not null) b.AddComponentParameter(4, nameof(Bmotion.Transition), transition);
         b.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
         {
@@ -61,7 +61,7 @@ public class ConfigCascadeTests
         using var ctx = new BmotionTestContext();
         ctx.Render<BmotionConfig>(ps => ps
             .Add(p => p.ReduceMotion, true)
-            .Add(p => p.ChildContent, Box(Bm.To(x: 100, opacity: 0.2), Bm.Tween(1, ease: BmEase.Linear))));
+            .Add(p => p.ChildContent, Box(Bm.To(x: 100, opacity: 0.2), Bm.Tween(1, ease: BmotionEase.Linear))));
 
         // The move lands at once; the fade keeps its normal transition, played by the browser - on every runtime.
         var state = State(ctx);
@@ -77,7 +77,7 @@ public class ConfigCascadeTests
     public void ReduceMotionFalse_OverridesAnAlwaysReducePolicy()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Options.ReducedMotion = BmReducedMotionMode.Always;
+        ctx.Options.ReducedMotion = BmotionReducedMotionMode.Always;
         ctx.Render<BmotionConfig>(ps => ps
             .Add(p => p.ReduceMotion, false)
             .Add(p => p.ChildContent, Box(Bm.To(x: 100), Bm.Tween(0.6))));
@@ -124,7 +124,7 @@ public class ConfigCascadeTests
     }
 
     // Plays a red→blue linear tween to its midpoint under the given cascade and returns the colour.
-    private static async Task<string> MidpointColor(BmColorSpace? globalSpace, BmColorSpace? ownSpace = null)
+    private static async Task<string> MidpointColor(BmotionColorSpace? globalSpace, BmotionColorSpace? ownSpace = null)
     {
         using var ctx = new BmotionTestContext();
         ctx.Interop.WebAnimationsSupported = false; // sampled mid-way on the frame loop
@@ -132,7 +132,7 @@ public class ConfigCascadeTests
             .Add(p => p.ColorSpace, globalSpace)
             .Add(p => p.ChildContent, Box(
                 Bm.To(backgroundColor: "#0000ff"),
-                Bm.Tween(1, ease: BmEase.Linear, colorSpace: ownSpace),
+                Bm.Tween(1, ease: BmotionEase.Linear, colorSpace: ownSpace),
                 initial: Bm.To(backgroundColor: "#ff0000"))));
 
         await ctx.RunFramesAsync(0, 496);
@@ -143,7 +143,7 @@ public class ConfigCascadeTests
     public async Task ColorSpace_AppliesToTransitionsThatDontSetTheirOwn()
     {
         var srgb = await MidpointColor(null);
-        var oklab = await MidpointColor(BmColorSpace.Oklab);
+        var oklab = await MidpointColor(BmotionColorSpace.Oklab);
 
         Assert.AreNotEqual(srgb, oklab, "a perceptual mix must differ from the plain sRGB one mid-way");
     }
@@ -152,7 +152,7 @@ public class ConfigCascadeTests
     public async Task ColorSpace_ATransitionsOwnSpaceWins()
     {
         var srgb = await MidpointColor(null);
-        var overridden = await MidpointColor(BmColorSpace.Oklab, ownSpace: BmColorSpace.Srgb);
+        var overridden = await MidpointColor(BmotionColorSpace.Oklab, ownSpace: BmotionColorSpace.Srgb);
 
         Assert.AreEqual(srgb, overridden);
     }

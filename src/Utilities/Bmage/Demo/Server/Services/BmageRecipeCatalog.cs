@@ -29,8 +29,8 @@ public static class BmageRecipeCatalog
             SeeAlso = "/headless",
             Code = """
                 @implements IAsyncDisposable
-                @inject ImageLoader Loader
-                @inject ImageExporter Exporter
+                @inject BmageImageLoader Loader
+                @inject BmageImageExporter Exporter
 
                 <InputFile OnChange="OnChange" accept="image/*" />
 
@@ -41,7 +41,7 @@ public static class BmageRecipeCatalog
 
                 @code {
                     // A pipeline is an immutable value: build it once, reuse it for every image.
-                    private static readonly ImagePipeline Thumbnail = ImagePipeline.Create()
+                    private static readonly BmageImagePipeline Thumbnail = BmageImagePipeline.Create()
                         .AutoOrient()
                         .MaxSize(320, 320)      // shrink to fit, never enlarge
                         .Sharpen(0.3f);         // recover the bite downscaling takes away
@@ -54,8 +54,8 @@ public static class BmageRecipeCatalog
                         using var thumb = await Thumbnail.ExecuteAsync(image);
 
                         var encoded = await Exporter.EncodeWithFallbackAsync(
-                            thumb, [ImageFormat.WebP, ImageFormat.Jpeg],
-                            new ImageExportOptions { Quality = 0.8 });
+                            thumb, [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+                            new BmageImageExportOptions { Quality = 0.8 });
 
                         if (_url is not null) await Exporter.ReleaseObjectUrlAsync(_url);
                         _url = await Exporter.CreateObjectUrlAsync(encoded);
@@ -82,14 +82,14 @@ public static class BmageRecipeCatalog
             RunsIn = "Browser",
             SeeAlso = "/optimize",
             Code = """
-                @inject ImageLoader Loader
-                @inject ImageExporter Exporter
+                @inject BmageImageLoader Loader
+                @inject BmageImageExporter Exporter
                 @inject HttpClient Http
 
                 <InputFile OnChange="UploadAsync" accept="image/*" />
 
                 @code {
-                    private static readonly ImagePipeline Shrink = ImagePipeline.Create()
+                    private static readonly BmageImagePipeline Shrink = BmageImagePipeline.Create()
                         .AutoOrient()
                         .MaxSize(1920, 1920)
                         .Sharpen(0.3f);
@@ -99,16 +99,16 @@ public static class BmageRecipeCatalog
                         // A hint to the browser decoder: it may downscale while decoding, so the
                         // full 48 MP pixels of a large photo never exist in memory at all.
                         using var image = await Loader.LoadAsync(e.File,
-                            new DecodeOptions { MaxSize = new System.Drawing.Size(3840, 3840) });
+                            new BmageDecodeOptions { MaxSize = new System.Drawing.Size(3840, 3840) });
 
                         using var shrunk = await Shrink.ExecuteAsync(image);
 
                         var encoded = await Exporter.EncodeWithFallbackAsync(
-                            shrunk, [ImageFormat.WebP, ImageFormat.Jpeg],
-                            new ImageExportOptions
+                            shrunk, [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+                            new BmageImageExportOptions
                             {
                                 Quality = 0.82,
-                                Metadata = MetadataPolicy.Remove,   // the default, written out
+                                Metadata = BmageMetadataPolicy.Remove,   // the default, written out
                             });
 
                         using var content = new MultipartFormDataContent();
@@ -134,20 +134,20 @@ public static class BmageRecipeCatalog
             RunsIn = "Browser",
             SeeAlso = "/avatar",
             Code = """
-                @inject ImageLoader Loader
-                @inject ImageExporter Exporter
+                @inject BmageImageLoader Loader
+                @inject BmageImageExporter Exporter
 
                 @code {
-                    private async Task<EncodedImage?> MakeAvatarAsync(IBrowserFile file, int size, bool circular, int budgetKb)
+                    private async Task<BmageEncodedImage?> MakeAvatarAsync(IBrowserFile file, int size, bool circular, int budgetKb)
                     {
                         using var source = await Loader.LoadAsync(file);
 
-                        // SmartCrop scores detail, colour and skin tones to find the subject, instead of
+                        // BmageSmartCrop scores detail, colour and skin tones to find the subject, instead of
                         // assuming it is in the middle - centre-cropping is how avatars lose the top of a head.
-                        using var avatar = await ImagePipeline.Create()
+                        using var avatar = await BmageImagePipeline.Create()
                             .AutoOrient()
-                            .SmartCrop(AspectRatio.Square)
-                            .Resize(size, size, ResizeMode.Stretch)
+                            .SmartCrop(BmageAspectRatio.Square)
+                            .Resize(size, size, BmageResizeMode.Stretch)
                             .Sharpen(0.25f)
                             .ExecuteAsync(source);
 
@@ -158,23 +158,23 @@ public static class BmageRecipeCatalog
                             // A circle needs alpha: JPEG would show the corners, so fall back to PNG instead.
                             return await Exporter.EncodeWithFallbackAsync(
                                 avatar,
-                                circular ? [ImageFormat.WebP, ImageFormat.Png] : [ImageFormat.WebP, ImageFormat.Jpeg],
-                                new ImageExportOptions
+                                circular ? [BmageImageFormat.WebP, BmageImageFormat.Png] : [BmageImageFormat.WebP, BmageImageFormat.Jpeg],
+                                new BmageImageExportOptions
                                 {
                                     Quality = 0.9,
                                     MaxFileSize = budgetKb * 1024L,   // bisects on quality, then shrinks if allowed
                                     MinQuality = 0.5,
-                                    Metadata = MetadataPolicy.Remove,
+                                    Metadata = BmageMetadataPolicy.Remove,
                                 });
                         }
-                        catch (ImageEncodeException)
+                        catch (BmageImageEncodeException)
                         {
                             return null;   // the budget is impossible for this image even at MinQuality
                         }
                     }
 
                     // Clears everything outside the inscribed circle, with a one pixel feather.
-                    private static void ApplyCircularMask(ImageBuffer image)
+                    private static void ApplyCircularMask(BmageImageBuffer image)
                     {
                         var cx = image.Width / 2f;
                         var cy = image.Height / 2f;
@@ -195,9 +195,9 @@ public static class BmageRecipeCatalog
                     }
                 }
                 """,
-            Notes = "SmartCrop is a heuristic, not face recognition: when you have a detector, pass its rectangle to " +
-                    "SmartCrop.FindCrop(image, AspectRatio.Square, mustInclude: face) and crop to the result's Rectangle. " +
-                    "MaxFileSize throws ImageEncodeException rather than handing back an oversized file, and the quality " +
+            Notes = "BmageSmartCrop is a heuristic, not face recognition: when you have a detector, pass its rectangle to " +
+                    "BmageSmartCrop.FindCrop(image, BmageAspectRatio.Square, mustInclude: face) and crop to the result's Rectangle. " +
+                    "MaxFileSize throws BmageImageEncodeException rather than handing back an oversized file, and the quality " +
                     "it settled on is on encoded.Quality. PNG ignores Quality, so a circular avatar that falls back to PNG " +
                     "can only meet the budget by shrinking (the default QualityThenDimensions strategy does that). " +
                     "RunBmagePipeline with maxFileSize shows whether a budget is reachable before you ship it."
@@ -211,8 +211,8 @@ public static class BmageRecipeCatalog
             RunsIn = "Anywhere",
             SeeAlso = "/metadata",
             Code = """
-                @inject ImageLoader Loader
-                @inject ImageExporter Exporter
+                @inject BmageImageLoader Loader
+                @inject BmageImageExporter Exporter
 
                 @if (_location is not null)
                 {
@@ -224,26 +224,26 @@ public static class BmageRecipeCatalog
                 @code {
                     private string? _location;
 
-                    private async Task<EncodedImage> PrepareAsync(IBrowserFile file)
+                    private async Task<BmageEncodedImage> PrepareAsync(IBrowserFile file)
                     {
                         using var image = await Loader.LoadAsync(file);
 
                         // Tell the user what is in their file before it is published.
                         _location = image.Metadata?.Exif?.Location?.ToString();
 
-                        return await Exporter.EncodeAsync(image, new ImageExportOptions
+                        return await Exporter.EncodeAsync(image, new BmageImageExportOptions
                         {
-                            Format = ImageFormat.Jpeg,
+                            Format = BmageImageFormat.Jpeg,
                             Quality = 0.88,
                             // Keeps camera, lens, exposure, dates, copyright and the ICC profile; drops GPS,
                             // serial numbers, owner and artist names, user comments, maker notes, unique ids, the
                             // embedded thumbnail and all of XMP.
-                            Metadata = MetadataPolicy.StripSensitive,
+                            Metadata = BmageMetadataPolicy.StripSensitive,
                         });
                     }
                 }
                 """,
-            Notes = "MetadataPolicy.Remove is the default and the right choice for anything public (avatars, uploads). " +
+            Notes = "BmageMetadataPolicy.Remove is the default and the right choice for anything public (avatars, uploads). " +
                     "StripSensitive is for galleries that want to show camera data. Preserve keeps EVERYTHING the format " +
                     "can carry, GPS included - never use it on user photos. All three reset the orientation tag, because " +
                     "the exported pixels are already upright. CompareBmageMetadataPolicies encodes a GPS-tagged photo " +
@@ -259,7 +259,7 @@ public static class BmageRecipeCatalog
             SeeAlso = "/annotate",
             Code = """
                 @implements IAsyncDisposable
-                @inject ImageLoader Loader
+                @inject BmageImageLoader Loader
 
                 <div style="height: 70vh">
                     <BmageEditor @ref="_editor" ExportOptions="ExportOptions" />
@@ -268,10 +268,10 @@ public static class BmageRecipeCatalog
                 <button @onclick="MarkUpAsync">Add a worked example</button>
 
                 @code {
-                    private static readonly ImageExportOptions ExportOptions = new()
+                    private static readonly BmageImageExportOptions ExportOptions = new()
                     {
-                        Format = ImageFormat.Png,              // screenshots are flat colour: PNG
-                        Metadata = MetadataPolicy.Remove,
+                        Format = BmageImageFormat.Png,              // screenshots are flat colour: PNG
+                        Metadata = BmageMetadataPolicy.Remove,
                     };
 
                     private BmageEditor? _editor;
@@ -293,20 +293,20 @@ public static class BmageRecipeCatalog
                         var h = session.OutputSize.Height;
 
                         // Solid replaces the pixels underneath; the secret is gone from the exported file.
-                        await _editor.AddAnnotationAsync(new RedactionAnnotation
+                        await _editor.AddAnnotationAsync(new BmageRedactionAnnotation
                         {
                             Rectangle = new System.Drawing.RectangleF(w * 0.06f, h * 0.10f, w * 0.34f, h * 0.06f),
-                            Mode = RedactionMode.Solid,
+                            Mode = BmageRedactionMode.Solid,
                         }, "Redact");
 
-                        await _editor.AddAnnotationAsync(new ArrowAnnotation
+                        await _editor.AddAnnotationAsync(new BmageArrowAnnotation
                         {
                             Start = new Vector2(w * 0.30f, h * 0.78f),
                             End = new Vector2(w * 0.56f, h * 0.46f),
-                            Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = MathF.Max(4, w / 220f) } },
+                            Style = BmageShapeStyle.Default with { Stroke = new BmageStrokeStyle { Width = MathF.Max(4, w / 220f) } },
                         }, "Arrow");
 
-                        await _editor.AddAnnotationAsync(new StepAnnotation
+                        await _editor.AddAnnotationAsync(new BmageStepAnnotation
                         {
                             Center = new Vector2(w * 0.26f, h * 0.82f),
                             Number = 1,
@@ -319,13 +319,13 @@ public static class BmageRecipeCatalog
                     }
                 }
                 """,
-            Notes = "Prefer RedactionMode.Solid: a strong blur or pixelation is irreversible in practice, but text has " +
+            Notes = "Prefer BmageRedactionMode.Solid: a strong blur or pixelation is irreversible in practice, but text has " +
                     "been recovered from both when the possible inputs are constrained (account numbers). Redactions always " +
                     "render before other annotations, so an arrow on top is never blurred away. Redaction is about pixels; " +
                     "metadata is a separate leak, which the export policy handles. The paste listener needs a browser, so it " +
                     "is attached in OnAfterRenderAsync and disposed with the page. Annotation coordinates are image pixels, " +
                     "not screen pixels. Step numbers and text annotations need a text rasterizer: set the editor's " +
-                    "TextRasterizer, or register a font with the FontTextRasterizer service, or the editor says it has none."
+                    "TextRasterizer, or register a font with the BmageFontTextRasterizer service, or the editor says it has none."
         },
         new()
         {
@@ -338,43 +338,38 @@ public static class BmageRecipeCatalog
             Code = """
                 using System.Drawing;
                 using System.Numerics;
-                using Bit.Bmage.Annotations;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Drawing;
-                using Bit.Bmage.Editing;
-                using Bit.Bmage.Metadata;
-                using Bit.Bmage.Pipeline;
+                using Bit.Bmage;
 
-                public static async Task<EncodedImage> RedactAsync(ImageProcessor processor, byte[] bytes, RectangleF secret)
+                public static async Task<BmageEncodedImage> RedactAsync(BmageImageProcessor processor, byte[] bytes, RectangleF secret)
                 {
                     using var source = await processor.DecodeAsync(bytes);
 
                     // An edit is a value: the pixel operations plus the annotations, applied on render.
-                    var document = ImageDocument.Create(source)
-                        .AddAnnotation(new RedactionAnnotation { Rectangle = secret, Mode = RedactionMode.Solid })
-                        .AddAnnotation(new ArrowAnnotation
+                    var document = BmageImageDocument.Create(source)
+                        .AddAnnotation(new BmageRedactionAnnotation { Rectangle = secret, Mode = BmageRedactionMode.Solid })
+                        .AddAnnotation(new BmageArrowAnnotation
                         {
                             Start = new Vector2(secret.Right + 120, secret.Bottom + 80),
                             End = new Vector2(secret.Right + 8, secret.Bottom + 4),
-                            Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 6 } },
+                            Style = BmageShapeStyle.Default with { Stroke = new BmageStrokeStyle { Width = 6 } },
                         });
 
-                    using var rendered = await new DocumentRenderer().RenderAsync(document, source);
+                    using var rendered = await new BmageDocumentRenderer().RenderAsync(document, source);
 
-                    return await processor.EncodeAsync(rendered, new ImageExportOptions
+                    return await processor.EncodeAsync(rendered, new BmageImageExportOptions
                     {
-                        Format = ImageFormat.Png,
-                        Metadata = MetadataPolicy.Remove,
+                        Format = BmageImageFormat.Png,
+                        Metadata = BmageMetadataPolicy.Remove,
                     });
                 }
 
                 // Or, for a pixel-only redaction with no annotation model at all:
-                // ImagePipeline.Create().Pixelate(14, new Rectangle(40, 120, 300, 40))
+                // BmageImagePipeline.Create().Pixelate(14, new Rectangle(40, 120, 300, 40))
                 """,
-            Notes = "The source buffer is never modified - rendering returns a new buffer you own. ImageProcessor comes " +
-                    "from AddBitBmageHeadlessServices on a server (or new ImageProcessor() in a console app); in a browser " +
-                    "app get it from ImageProcessorFactory.GetAsync() instead. Text annotations need a text rasterizer: " +
-                    "pass new DocumentRenderer(fontTextRasterizer) with a registered TrueType font. A document is " +
+            Notes = "The source buffer is never modified - rendering returns a new buffer you own. BmageImageProcessor comes " +
+                    "from AddBitBmageHeadlessServices on a server (or new BmageImageProcessor() in a console app); in a browser " +
+                    "app get it from BmageImageProcessorFactory.GetAsync() instead. Text annotations need a text rasterizer: " +
+                    "pass new BmageDocumentRenderer(fontTextRasterizer) with a registered TrueType font. A document is " +
                     "serialisable, so the browser can send the edit and the server can render it against the original."
         },
         new()
@@ -387,7 +382,7 @@ public static class BmageRecipeCatalog
             SeeAlso = "/batch",
             Code = """
                 @implements IDisposable
-                @inject ImageProcessorFactory Processors
+                @inject BmageImageProcessorFactory Processors
 
                 <InputFile OnChange="RunAsync" multiple accept="image/*" />
                 <button @onclick="() => _cts?.Cancel()">Stop</button>
@@ -403,27 +398,27 @@ public static class BmageRecipeCatalog
                         var files = e.GetMultipleFiles(maximumFileCount: 200);
                         _total = files.Count;
 
-                        var items = new List<BatchItem>(files.Count);
+                        var items = new List<BmageBatchItem>(files.Count);
                         foreach (var file in files)
                         {
                             // IBrowserFile refuses anything over 500 KB unless told otherwise.
                             await using var stream = file.OpenReadStream(maxAllowedSize: 64 * 1024 * 1024, _cts.Token);
                             using var memory = new MemoryStream();
                             await stream.CopyToAsync(memory, _cts.Token);
-                            items.Add(new BatchItem(memory.ToArray(), file.Name));
+                            items.Add(new BmageBatchItem(memory.ToArray(), file.Name));
                         }
 
                         // The browser's codecs are probed once, asynchronously, so the processor comes from a factory.
                         var processor = await Processors.GetAsync(_cts.Token);
 
                         var result = await processor.ProcessBatchAsync(items,
-                            ImagePipeline.Create().AutoOrient().MaxSize(1600, 1600),
-                            new BatchOptions
+                            BmageImagePipeline.Create().AutoOrient().MaxSize(1600, 1600),
+                            new BmageBatchOptions
                             {
                                 MaxConcurrency = 2,          // each worker holds a decoded image
                                 StopOnFirstError = false,    // one bad file must not lose the rest
-                                ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
-                                Progress = new Progress<BatchProgress>(p =>
+                                ExportOptions = new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
+                                Progress = new Progress<BmageBatchProgress>(p =>
                                 {
                                     _completed = p.Completed;
                                     InvokeAsync(StateHasChanged);
@@ -433,7 +428,7 @@ public static class BmageRecipeCatalog
                         foreach (var item in result.Failed) Console.WriteLine($"{item.FileName}: {item.Error!.Message}");
                     }
                     // Stop throws, as any cancelled call does, with what finished attached: the rest are Result.Cancelled.
-                    catch (BatchCancelledException stopped)
+                    catch (BmageBatchCancelledException stopped)
                     {
                         Console.WriteLine($"Stopped with {stopped.Result.CancelledCount} not processed.");
                     }
@@ -448,7 +443,7 @@ public static class BmageRecipeCatalog
             Notes = "MaxConcurrency is a memory dial as much as a speed dial: four workers on 24 MP photos is about 400 MB " +
                     "of live pixels, which kills a phone's tab. Two is the safe default in a browser; on a server size it " +
                     "against memory, not cores alone. Every item comes back with its own outcome (result.Succeeded, " +
-                    "result.Failed); StopOnFirstError is opt-in. Cancelling the token throws BatchCancelledException, an " +
+                    "result.Failed); StopOnFirstError is opt-in. Cancelling the token throws BmageBatchCancelledException, an " +
                     "OperationCanceledException that keeps what finished in its Result; the items it never reached are Result.Cancelled. " +
                     "JPEG is used here for the widest compatibility of the files; WebP encodes everywhere too, while AVIF " +
                     "needs the capabilities checked first, as the batch options take one fixed format."
@@ -476,16 +471,16 @@ public static class BmageRecipeCatalog
                 @code {
                     private BmageEditor? _editor;
 
-                    private readonly ImageExportOptions _export = new()
+                    private readonly BmageImageExportOptions _export = new()
                     {
-                        Format = ImageFormat.Jpeg,
+                        Format = BmageImageFormat.Jpeg,
                         Quality = 0.9,
-                        Metadata = MetadataPolicy.Remove,
+                        Metadata = BmageMetadataPolicy.Remove,
                     };
 
                     private Task SaveAsync() => _editor!.DownloadAsync("edited");
 
-                    private void OnExported(EncodedImage image)
+                    private void OnExported(BmageEncodedImage image)
                     {
                         // Also raised when the user exports from the editor's own panel.
                     }
@@ -512,8 +507,8 @@ public static class BmageRecipeCatalog
                                  OnDocumentChanged="doc => _document = doc">
                         <Toolbar Context="editor">
                             <div class="my-toolbar">
-                                <button aria-pressed="@(editor.Tool == EditorToolKind.Crop ? "true" : "false")"
-                                        @onclick="() => editor.SetTool(EditorToolKind.Crop)">@editor.Strings.Crop</button>
+                                <button aria-pressed="@(editor.Tool == BmageEditorToolKind.Crop ? "true" : "false")"
+                                        @onclick="() => editor.SetTool(BmageEditorToolKind.Crop)">@editor.Strings.Crop</button>
                                 <button @onclick="() => editor.RotateAsync(90)">⟳</button>
                                 <button disabled="@(!editor.CanUndo)" @onclick="editor.Undo">@editor.Strings.Undo</button>
                                 <button disabled="@(!editor.CanRedo)" @onclick="editor.Redo">@editor.Strings.Redo</button>
@@ -525,7 +520,7 @@ public static class BmageRecipeCatalog
                 </div>
 
                 @code {
-                    private ImageDocument? _document;
+                    private BmageImageDocument? _document;
 
                     // Every label is a property on a record: override only the words you care about.
                     private static readonly BmageEditorStrings _german = BmageEditorStrings.Default with
@@ -567,19 +562,17 @@ public static class BmageRecipeCatalog
             SeeAlso = "/hosting",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Pipeline;
 
                 var builder = WebApplication.CreateBuilder(args);
 
                 builder.Services.AddBitBmageHeadlessServices(options =>
                 {
-                    options.Limits = ImageLimits.Default with { MaxPixels = 30_000_000 };
+                    options.Limits = BmageImageLimits.Default with { MaxPixels = 30_000_000 };
                 });
 
                 var app = builder.Build();
 
-                app.MapPost("/thumbnail", async (IFormFile file, ImageProcessor processor, CancellationToken cancellationToken) =>
+                app.MapPost("/thumbnail", async (IFormFile file, BmageImageProcessor processor, CancellationToken cancellationToken) =>
                 {
                     if (file.Length > 20 * 1024 * 1024) return Results.BadRequest("Too large.");
 
@@ -596,13 +589,13 @@ public static class BmageRecipeCatalog
                     {
                         var thumbnail = await processor.ProcessAsync(
                             bytes,
-                            ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-                            new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 },
+                            BmageImagePipeline.Create().AutoOrient().MaxSize(400, 400),
+                            new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 },
                             cancellationToken: cancellationToken);
 
                         return Results.File(thumbnail.Data, thumbnail.MimeType);
                     }
-                    catch (ImageDecodeException)
+                    catch (BmageImageDecodeException)
                     {
                         return Results.BadRequest("That file could not be read as an image.");
                     }
@@ -611,10 +604,10 @@ public static class BmageRecipeCatalog
                 app.Run();
                 """,
             Notes = "Only the managed codecs exist on a server: PNG, JPEG, BMP and GIF decode; PNG, JPEG and BMP encode. " +
-                    "WebP and AVIF are browser codecs and throw ImageCapabilityException here - if the client wants WebP, " +
+                    "WebP and AVIF are browser codecs and throw BmageImageCapabilityException here - if the client wants WebP, " +
                     "encode it in the browser before upload (recipe upload-optimise). An upload is attacker-chosen input to " +
-                    "your decoder: keep limits tight, Identify first, and treat ImageDecodeException as an expected outcome. " +
-                    "AddBitBmageHeadlessServices registers ImageProcessor directly; it registers none of the browser services."
+                    "your decoder: keep limits tight, Identify first, and treat BmageImageDecodeException as an expected outcome. " +
+                    "AddBitBmageHeadlessServices registers BmageImageProcessor directly; it registers none of the browser services."
         },
         new()
         {
@@ -625,22 +618,20 @@ public static class BmageRecipeCatalog
             RunsIn = "Server",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Pipeline;
 
-                var processor = new ImageProcessor();   // the managed codecs, no DI needed
+                var processor = new BmageImageProcessor();   // the managed codecs, no DI needed
                 Directory.CreateDirectory("out");
 
                 var items = Directory.EnumerateFiles("photos")
                     .Where(path => path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-                    .Select(path => new BatchItem(File.ReadAllBytes(path), Path.GetFileName(path)));
+                    .Select(path => new BmageBatchItem(File.ReadAllBytes(path), Path.GetFileName(path)));
 
                 var result = await processor.ProcessBatchAsync(items,
-                    ImagePipeline.Create().AutoOrient().MaxSize(1600, 1600).Sharpen(0.3f),
-                    new BatchOptions
+                    BmageImagePipeline.Create().AutoOrient().MaxSize(1600, 1600).Sharpen(0.3f),
+                    new BmageBatchOptions
                     {
                         MaxConcurrency = Math.Max(1, Environment.ProcessorCount / 2),
-                        ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+                        ExportOptions = new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
                     });
 
                 foreach (var item in result.Succeeded)
@@ -667,40 +658,40 @@ public static class BmageRecipeCatalog
             Code = """
                 // Fit, never Cover: a product must never be cropped. It is scaled into the padded
                 // area and centred on a canvas of the catalogue background.
-                public static async Task<List<EncodedImage>> ProductVariantsAsync(
-                    ImageBuffer decodedOnce, ImageExporter exporter, Rgba32 background, double padding = 0.06)
+                public static async Task<List<BmageEncodedImage>> ProductVariantsAsync(
+                    BmageImageBuffer decodedOnce, BmageImageExporter exporter, BmageRgba32 background, double padding = 0.06)
                 {
-                    var results = new List<EncodedImage>();
+                    var results = new List<BmageEncodedImage>();
 
                     foreach (var size in new[] { 1024, 512, 256 })
                     {
                         var inner = (int)(size * (1 - padding * 2));
 
-                        using var fitted = await ImagePipeline.Create()
+                        using var fitted = await BmageImagePipeline.Create()
                             .AutoOrient()
-                            .Resize(inner, inner, ResizeMode.Fit)
+                            .Resize(inner, inner, BmageResizeMode.Fit)
                             .Sharpen(0.25f)
                             .ExecuteAsync(decodedOnce);
 
-                        using var canvas = ImageCanvas.Create(size, size, background);
+                        using var canvas = BmageImageCanvas.Create(size, size, background);
                         canvas.DrawImage(fitted, new System.Drawing.RectangleF(
                             (size - fitted.Width) / 2f, (size - fitted.Height) / 2f, fitted.Width, fitted.Height));
 
                         using var variant = canvas.Snapshot();
                         results.Add(await exporter.EncodeWithFallbackAsync(variant,
-                            [ImageFormat.WebP, ImageFormat.Jpeg], new ImageExportOptions { Quality = 0.85 }));
+                            [BmageImageFormat.WebP, BmageImageFormat.Jpeg], new BmageImageExportOptions { Quality = 0.85 }));
                     }
 
                     return results;
                 }
 
                 // One call does the same when the padding can be the background colour:
-                // ImagePipeline.Create().Resize(512, 512, ResizeMode.Contain, background: Rgba32.White)
+                // BmageImagePipeline.Create().Resize(512, 512, BmageResizeMode.Contain, background: BmageRgba32.White)
                 """,
             Notes = "Decode once and derive every size from the original, rather than shrinking the previous variant: each " +
-                    "resample from already-downscaled pixels loses detail. ResizeMode.Contain pads to the exact canvas in " +
-                    "one step; Cover would crop; Max never enlarges a small source. On a server swap ImageExporter for " +
-                    "ImageProcessor.EncodeAsync with JPEG or PNG - WebP is browser-only."
+                    "resample from already-downscaled pixels loses detail. BmageResizeMode.Contain pads to the exact canvas in " +
+                    "one step; Cover would crop; Max never enlarges a small source. On a server swap BmageImageExporter for " +
+                    "BmageImageProcessor.EncodeAsync with JPEG or PNG - WebP is browser-only."
         },
         new()
         {
@@ -711,43 +702,43 @@ public static class BmageRecipeCatalog
             RunsIn = "Browser",
             SeeAlso = "/social",
             Code = """
-                @inject ImageExporter Exporter
-                @inject BrowserTextRasterizer Text
+                @inject BmageImageExporter Exporter
+                @inject BmageBrowserTextRasterizer Text
 
                 @code {
-                    private async Task<EncodedImage> ComposeAsync(ImageBuffer source, string caption)
+                    private async Task<BmageEncodedImage> ComposeAsync(BmageImageBuffer source, string caption)
                     {
                         // Cover fills the canvas exactly, cropping the overflow rather than distorting.
-                        using var composed = await ImagePipeline.Create()
+                        using var composed = await BmageImagePipeline.Create()
                             .AutoOrient()
                             .Cover(1200, 630)
                             .Saturation(0.12f)
                             .Vignette(0.25f)
                             .ExecuteAsync(source);
 
-                        using var canvas = ImageCanvas.FromBuffer(composed);
+                        using var canvas = BmageImageCanvas.FromBuffer(composed);
                         var band = composed.Height * 0.28f;
-                        canvas.FillRectangle(new System.Drawing.RectangleF(0, composed.Height - band, composed.Width, band), new Rgba32(0, 0, 0, 130));
+                        canvas.FillRectangle(new System.Drawing.RectangleF(0, composed.Height - band, composed.Width, band), new BmageRgba32(0, 0, 0, 130));
 
                         // The browser's own text engine: system fonts, emoji, right-to-left and shaping.
                         await Text.DrawTextAsync(canvas, caption,
-                            new Vector2(composed.Width / 2f, composed.Height - band / 2), new TextStyle
+                            new Vector2(composed.Width / 2f, composed.Height - band / 2), new BmageTextStyle
                             {
                                 FontSize = composed.Height * 0.06f,
                                 Bold = true,
-                                FillColor = Rgba32.White,
-                                Alignment = TextAlignment.Center,
-                                Baseline = TextBaseline.Middle,
+                                FillColor = BmageRgba32.White,
+                                Alignment = BmageTextAlignment.Center,
+                                Baseline = BmageTextBaseline.Middle,
                                 MaxWidth = composed.Width * 0.86f,
                             });
 
-                        return await Exporter.EncodeAsync(composed, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.88 });
+                        return await Exporter.EncodeAsync(composed, new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.88 });
                     }
                 }
                 """,
-            Notes = "ImageCanvas.FromBuffer draws into the buffer itself, so the encode afterwards sees the caption. " +
-                    "BrowserTextRasterizer needs a browser (call it from a handler, never during prerendering); on a server " +
-                    "use FontTextRasterizer with registered TrueType fonts and canvas.DrawText - it shapes Arabic and Persian " +
+            Notes = "BmageImageCanvas.FromBuffer draws into the buffer itself, so the encode afterwards sees the caption. " +
+                    "BmageBrowserTextRasterizer needs a browser (call it from a handler, never during prerendering); on a server " +
+                    "use BmageFontTextRasterizer with registered TrueType fonts and canvas.DrawText - it shapes Arabic and Persian " +
                     "and orders right-to-left text, but not Indic scripts. Open Graph scrapers want JPEG or PNG; do not serve them WebP."
         },
         new()
@@ -760,12 +751,12 @@ public static class BmageRecipeCatalog
             SeeAlso = "/headless",
             Code = """
                 // When the image is saved (browser or server):
-                var placeholder = ImagePlaceholder.Create(image, columns: 4, rows: 4);
+                var placeholder = BmageImagePlaceholder.Create(image, columns: 4, rows: 4);
                 var token = placeholder.ToCompactString();   // ~67 characters, store it beside the row
                 var ratio = placeholder.AspectRatio;          // reserve the layout space
 
                 // When the list is rendered - no image request, CSS gradients alone:
-                var restored = ImagePlaceholder.Parse(token, width, height);
+                var restored = BmageImagePlaceholder.Parse(token, width, height);
                 var css = restored?.ToCssBackground();
 
                 // <div style="aspect-ratio: @ratio; background: @css">
@@ -787,11 +778,11 @@ public static class BmageRecipeCatalog
             RunsIn = "Browser",
             SeeAlso = "/formats",
             Code = """
-                @inject IImageCapabilityProvider Capabilities
-                @inject ImageExporter Exporter
+                @inject IBmageImageCapabilityProvider Capabilities
+                @inject BmageImageExporter Exporter
 
                 @code {
-                    private ImageCapabilities? _capabilities;
+                    private BmageImageCapabilities? _capabilities;
 
                     protected override async Task OnAfterRenderAsync(bool firstRender)
                     {
@@ -802,15 +793,15 @@ public static class BmageRecipeCatalog
                         StateHasChanged();
                     }
 
-                    private async Task<EncodedImage> ExportAsync(ImageBuffer image)
+                    private async Task<BmageEncodedImage> ExportAsync(BmageImageBuffer image)
                     {
                         // Transparent output needs a format with alpha; a JPEG would flatten it onto Background.
-                        IReadOnlyList<ImageFormat> preferred = image.HasTransparency()
-                            ? [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Png]
-                            : [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg];
+                        IReadOnlyList<BmageImageFormat> preferred = image.HasTransparency()
+                            ? [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Png]
+                            : [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg];
 
                         // Picks the first format this browser can actually encode; reported on encoded.Format.
-                        return await Exporter.EncodeWithFallbackAsync(image, preferred, new ImageExportOptions { Quality = 0.82 });
+                        return await Exporter.EncodeWithFallbackAsync(image, preferred, new BmageImageExportOptions { Quality = 0.82 });
                     }
 
                     private bool TooLargeForThisBrowser(int width, int height)
@@ -818,7 +809,7 @@ public static class BmageRecipeCatalog
                 }
                 """,
             Notes = "Browsers asked to encode a format they cannot write silently hand back a PNG; Bmage detects that and " +
-                    "throws ImageCapabilityException from EncodeAsync rather than mislabelling the bytes - so a plain " +
+                    "throws BmageImageCapabilityException from EncodeAsync rather than mislabelling the bytes - so a plain " +
                     "EncodeAsync with Format = WebP is a crash on a browser without WebP encoding. AVIF encoding is rarely " +
                     "available; always pair it with a fallback. On a server neither exists. Exceeding the browser's canvas " +
                     "limit (4096px on older iPhones) gives a silently blank canvas: cap at SuggestedMaxWorkingDimension."
@@ -834,18 +825,18 @@ public static class BmageRecipeCatalog
             Code = """
                 try
                 {
-                    var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
+                    var encoded = await exporter.EncodeAsync(image, new BmageImageExportOptions
                     {
-                        Format = ImageFormat.Jpeg,
+                        Format = BmageImageFormat.Jpeg,
                         Quality = 0.9,                 // where the search starts
                         MaxFileSize = 150 * 1024,
                         MinQuality = 0.5,              // the floor before dimensions start to shrink
-                        MaxFileSizeStrategy = MaxFileSizeStrategy.QualityThenDimensions,
+                        MaxFileSizeStrategy = BmageMaxFileSizeStrategy.QualityThenDimensions,
                     });
 
                     Console.WriteLine($"{encoded.Length} bytes at quality {encoded.Quality:0.00}, {encoded.Width}x{encoded.Height}");
                 }
-                catch (ImageEncodeException ex)
+                catch (BmageImageEncodeException ex)
                 {
                     // "Cannot reach 153600 bytes for this image (smallest attempt was ...)"
                     Console.WriteLine(ex.Message);
@@ -867,14 +858,14 @@ public static class BmageRecipeCatalog
             SeeAlso = "/annotate",
             Code = """
                 @implements IAsyncDisposable
-                @inject ImageLoader Loader
-                @inject IImageCapabilityProvider Capabilities
+                @inject BmageImageLoader Loader
+                @inject IBmageImageCapabilityProvider Capabilities
 
                 <button disabled="@(!_canRead)" @onclick="PasteAsync">Paste</button>
 
                 @code {
                     private IAsyncDisposable? _listener;
-                    private ImageBuffer? _image;
+                    private BmageImageBuffer? _image;
                     private bool _canRead;
 
                     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -898,7 +889,7 @@ public static class BmageRecipeCatalog
                         if (await Loader.LoadFromClipboardAsync() is { } image) Replace(image);
                     }
 
-                    private void Replace(ImageBuffer image)
+                    private void Replace(BmageImageBuffer image)
                     {
                         _image?.Dispose();
                         _image = image;
@@ -913,7 +904,7 @@ public static class BmageRecipeCatalog
                 """,
             Notes = "LoadFromClipboardAsync needs a user gesture and usually a permission prompt, and is missing in some " +
                     "browsers and in insecure contexts - check SupportsClipboardRead and keep a file picker as well. Writing " +
-                    "to the clipboard (ImageExporter.CopyToClipboardAsync) is usually PNG only."
+                    "to the clipboard (BmageImageExporter.CopyToClipboardAsync) is usually PNG only."
         },
         new()
         {
@@ -926,20 +917,18 @@ public static class BmageRecipeCatalog
             Code = """
                 using System.Numerics;
                 using Bit.Bmage;
-                using Bit.Bmage.Masks;
-                using Bit.Bmage.Pipeline;
 
                 // Relative units (fractions of the image) make one pipeline fit uploads of any size.
-                var sky = Mask.Gradient(new Vector2(0, 0), new Vector2(0, 0.55f));
-                var subject = new RadialGradientMask(new Vector2(0.4f, 0.5f), 0.25f, 0.35f) { Units = MaskUnits.Relative, Feather = 8 };
+                var sky = BmageMask.Gradient(new Vector2(0, 0), new Vector2(0, 0.55f));
+                var subject = new BmageRadialGradientMask(new Vector2(0.4f, 0.5f), 0.25f, 0.35f) { Units = BmageMaskUnits.Relative, Feather = 8 };
 
-                var pipeline = ImagePipeline.Create()
+                var pipeline = BmageImagePipeline.Create()
                     .AutoOrient()
                     .MaxSize(2048, 2048)
                     // Darken and enrich the sky, fading out towards the horizon.
                     .Masked(sky, p => p.Exposure(-0.7f).Saturation(0.3f))
                     // Recover blown highlights only.
-                    .Masked(new LuminanceRangeMask(0.8f, 1f), p => p.Exposure(-0.4f))
+                    .Masked(new BmageLuminanceRangeMask(0.8f, 1f), p => p.Exposure(-0.4f))
                     // Darken everything around the subject.
                     .Masked(subject.Invert(), p => p.Exposure(-0.8f));
 
@@ -948,9 +937,9 @@ public static class BmageRecipeCatalog
             Notes = "Where the mask is 0 the pixels are untouched and where it is 255 they are exactly the edit's; in between " +
                     "they mix. A run of adjustments through a mask is one pass, and only over the rows the mask reaches. The " +
                     "masked edit must keep the image's size - no crop or resize inside Masked. Content masks " +
-                    "(LuminanceRangeMask, ColorRangeMask) select from the pixels the step receives. For a cut-out instead of " +
-                    "an edit, ApplyMask multiplies the alpha: .Cover(512, 512).ApplyMask(Mask.Ellipse()) is a round avatar, " +
-                    "and a BitmapMask plugs in a background removal model's matte."
+                    "(BmageLuminanceRangeMask, BmageColorRangeMask) select from the pixels the step receives. For a cut-out instead of " +
+                    "an edit, ApplyMask multiplies the alpha: .Cover(512, 512).ApplyMask(BmageMask.Ellipse()) is a round avatar, " +
+                    "and a BmageBitmapMask plugs in a background removal model's matte."
         },
         new()
         {
@@ -964,36 +953,31 @@ public static class BmageRecipeCatalog
                 using System.Drawing;
                 using System.Numerics;
                 using Bit.Bmage;
-                using Bit.Bmage.Drawing;
-                using Bit.Bmage.Editing;
-                using Bit.Bmage.Layers;
-                using Bit.Bmage.Masks;
-                using Bit.Bmage.Pipeline;
 
-                var document = ImageDocument.Create(photo)
-                    .AddOperation(new Bit.Bmage.Operations.Transforms.ResizeOperation(1920, 1920, Bit.Bmage.Geometry.ResizeMode.Max))
+                var document = BmageImageDocument.Create(photo)
+                    .AddOperation(new Bit.Bmage.BmageResizeOperation(1920, 1920, Bit.Bmage.BmageResizeMode.Max))
                     // Layer coordinates are those of the pipeline's output.
-                    .AddLayer(new ImageLayer
+                    .AddLayer(new BmageImageLayer
                     {
                         Image = logo,                     // not owned: keep it alive while the document is used
                         Bounds = new RectangleF(40, 40, 160, 160),
-                        BlendMode = BlendMode.Overlay,
+                        BlendMode = BmageBlendMode.Overlay,
                         Opacity = 0.85f,
                     })
-                    .AddLayer(new FillLayer(new Rgba32(255, 120, 40))
+                    .AddLayer(new BmageFillLayer(new BmageRgba32(255, 120, 40))
                     {
-                        BlendMode = BlendMode.Screen,
+                        BlendMode = BmageBlendMode.Screen,
                         Opacity = 0.4f,
-                        Mask = Mask.Gradient(new Vector2(0, 0.8f), new Vector2(0, 0.3f)),
+                        Mask = BmageMask.Gradient(new Vector2(0, 0.8f), new Vector2(0, 0.3f)),
                     })
-                    .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Contrast(0.3f)) { Mask = new LuminanceRangeMask(0f, 0.35f) });
+                    .AddLayer(new BmageAdjustmentLayer(BmageImagePipeline.Create().Contrast(0.3f)) { Mask = new BmageLuminanceRangeMask(0f, 0.35f) });
 
-                using var rendered = new DocumentRenderer().Render(document, photo);
+                using var rendered = new BmageDocumentRenderer().Render(document, photo);
 
-                // Without a document: LayerCompositor.Flatten(size, background, layers) builds an image from layers alone.
+                // Without a document: BmageLayerCompositor.Flatten(size, background, layers) builds an image from layers alone.
                 """,
             Notes = "Layers composite onto the pipeline's output, bottom first, and annotations draw over them. The blend modes " +
-                    "are CSS mix-blend-mode's (W3C Compositing and Blending). An AdjustmentLayer edits everything beneath it, " +
+                    "are CSS mix-blend-mode's (W3C Compositing and Blending). A BmageAdjustmentLayer edits everything beneath it, " +
                     "layers included, and at full opacity without a mask equals its pipeline exactly. In the editor use " +
                     "context.AddLayerAsync / UpdateLayerAsync(transient: true) / RemoveLayerAsync; the editor previews layers " +
                     "on its proxy and exports them at full resolution."
@@ -1008,10 +992,6 @@ public static class BmageRecipeCatalog
             SeeAlso = "/layers-and-masks",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Editing;
-                using Bit.Bmage.Pipeline;
-                using Bit.Bmage.Serialization;
 
                 // Browser: the edit is a few kilobytes, whatever the photo's size.
                 var json = BmageJson.Serialize(editor.Document!, new BmageJsonOptions
@@ -1024,16 +1004,16 @@ public static class BmageRecipeCatalog
                 using var original = await processor.DecodeAsync(uploadBytes);
                 if (original.Size != document.SourceSize) throw new InvalidOperationException("The edit was made for another image.");
 
-                using var rendered = new DocumentRenderer(fonts).Render(document, original);
-                var file = await processor.EncodeAsync(rendered, new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.9 });
+                using var rendered = new BmageDocumentRenderer(fonts).Render(document, original);
+                var file = await processor.EncodeAsync(rendered, new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.9 });
 
                 // Or reopen the editor where the user left off: await context.RestoreDocumentAsync(document);
                 """,
             Notes = "Every built-in operation, mask, layer and annotation round-trips exactly; pixels are never embedded, which " +
                     "is why images go through ImageReferences and ImageResolver. A custom type needs a codec " +
                     "(BmageJsonOptions.Add<T>) or serialising throws rather than dropping a step. Malformed input throws " +
-                    "ImageDocumentFormatException naming the location. On the server keep to JPEG and PNG - WebP and AVIF " +
-                    "encode in the browser only - and give DocumentRenderer a FontTextRasterizer with fonts registered if " +
+                    "BmageImageDocumentFormatException naming the location. On the server keep to JPEG and PNG - WebP and AVIF " +
+                    "encode in the browser only - and give BmageDocumentRenderer a BmageFontTextRasterizer with fonts registered if " +
                     "the edit has text."
         },
         new()
@@ -1046,22 +1026,20 @@ public static class BmageRecipeCatalog
             SeeAlso = "/batch",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Pipeline;
 
-                var processor = new ImageProcessor();
-                var pipeline = ImagePipeline.Create().AutoOrient().MaxSize(1600, 1600).Sharpen(0.3f);
+                var processor = new BmageImageProcessor();
+                var pipeline = BmageImagePipeline.Create().AutoOrient().MaxSize(1600, 1600).Sharpen(0.3f);
 
                 // Files are read only when their turn comes.
                 var items = Directory.EnumerateFiles("photos", "*.jpg")
-                    .Select(path => BatchItem.Deferred(async ct => (ReadOnlyMemory<byte>)await File.ReadAllBytesAsync(path, ct), Path.GetFileName(path)));
+                    .Select(path => BmageBatchItem.Deferred(async ct => (ReadOnlyMemory<byte>)await File.ReadAllBytesAsync(path, ct), Path.GetFileName(path)));
 
                 // Results arrive as they finish and are not kept: save each and let it go.
-                await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BatchOptions
+                await foreach (var result in processor.ProcessBatchStreamAsync(items, pipeline, new BmageBatchOptions
                 {
                     MaxConcurrency = 4,
                     MaxMemoryBytes = 768L * 1024 * 1024,   // images start only while their estimated need fits
-                    ExportOptions = new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.82 },
+                    ExportOptions = new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.82 },
                 }))
                 {
                     if (result.Output is { } output) await File.WriteAllBytesAsync(Path.Combine("out", result.FileName!), output.Data);
@@ -1070,8 +1048,8 @@ public static class BmageRecipeCatalog
                 """,
             Notes = "MaxMemoryBytes estimates each image's peak from its header before decoding (pipeline.EstimateMemory gives " +
                     "the same numbers), so small photos run several at a time and a huge one runs alone rather than never. " +
-                    "It schedules by estimate; for a hard ceiling give the processor a BudgetedPixelAllocator, which refuses " +
-                    "an allocation past its budget with ImageMemoryBudgetExceededException. Each image's operations run on " +
+                    "It schedules by estimate; for a hard ceiling give the processor a BmageBudgetedPixelAllocator, which refuses " +
+                    "an allocation past its budget with BmageImageMemoryBudgetExceededException. Each image's operations run on " +
                     "one thread unless the processor's MaxDegreeOfParallelism gives them more, and every image in flight " +
                     "uses that many: keep MaxConcurrency times MaxDegreeOfParallelism near the cores you have."
         },
@@ -1085,32 +1063,29 @@ public static class BmageRecipeCatalog
             SeeAlso = "/retouch",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Analysis;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Pipeline;
 
-                var processor = new ImageProcessor();
+                var processor = new BmageImageProcessor();
                 using var photo = await processor.DecodeAsync(uploadBytes);
 
                 // Flood the backdrop in from the four corners, within 10% of their colour, and make it transparent.
-                using var cutout = ImagePipeline.Create()
+                using var cutout = BmageImagePipeline.Create()
                     .RemoveBackground(tolerance: 0.1f, feather: 0.6f)
                     .Execute(photo);
 
                 // Then trim the transparent border and keep a little room around the subject.
-                var pipeline = ImagePipeline.Create();
-                if (ContentBounds.Find(cutout, new TrimOptions { Mode = TrimMode.Transparent, Padding = 12 }) is { } content)
+                var pipeline = BmageImagePipeline.Create();
+                if (BmageContentBounds.Find(cutout, new BmageTrimOptions { Mode = BmageTrimMode.Transparent, Padding = 12 }) is { } content)
                     pipeline = pipeline.Crop(content);
                 using var trimmed = pipeline.Execute(cutout);
 
-                // PNG or WebP keep the transparency; JPEG would fill it with ImageExportOptions.Background.
-                var file = await processor.EncodeAsync(trimmed, ImageExportOptions.Png);
+                // PNG or WebP keep the transparency; JPEG would fill it with BmageImageExportOptions.Background.
+                var file = await processor.EncodeAsync(trimmed, BmageImageExportOptions.Png);
                 """,
-            Notes = "RemoveBackground is a FloodMask seeded at the corners, inverted, through ApplyMask: it removes the region " +
+            Notes = "RemoveBackground is a BmageFloodMask seeded at the corners, inverted, through ApplyMask: it removes the region " +
                     "connected to the corners whose colour is within the tolerance of theirs, so a subject touching a corner in " +
                     "the backdrop's colour is taken with it. Raise the tolerance for a shaded backdrop, lower it for a pale " +
-                    "subject. For photos of real scenes plug a segmentation model's matte in as a BitmapMask instead. Trimming " +
-                    "reads the pixels, so it is ContentBounds.Find followed by an ordinary crop rather than a pipeline step."
+                    "subject. For photos of real scenes plug a segmentation model's matte in as a BmageBitmapMask instead. Trimming " +
+                    "reads the pixels, so it is BmageContentBounds.Find followed by an ordinary crop rather than a pipeline step."
         },
         new()
         {
@@ -1123,27 +1098,24 @@ public static class BmageRecipeCatalog
             Code = """
                 using System.Drawing;
                 using Bit.Bmage;
-                using Bit.Bmage.Analysis;
-                using Bit.Bmage.Operations.Adjustments;
-                using Bit.Bmage.Pipeline;
 
                 using var photo = await processor.DecodeAsync(uploadBytes);
 
                 // A grey card, a white wall, a shadow on snow: what should have no colour, sampled 5x5 to average out noise.
-                var neutral = ColorSampler.Sample(photo, new Point(612, 840), radius: 2);
+                var neutral = BmageColorSampler.Sample(photo, new Point(612, 840), radius: 2);
 
-                using var corrected = ImagePipeline.Create()
+                using var corrected = BmageImagePipeline.Create()
                     .AutoOrient()
                     .WhiteBalance(neutral)                    // or .AutoWhiteBalance() with nothing to pick
                     .Straighten(-2.5)                         // clockwise degrees; crops to the largest rectangle with no empty corner
                     .WhitesBlacks(0.15f, -0.1f)
-                    .Hsl(HueBand.Blues, saturation: 0.2f, lightness: -0.15f)
+                    .Hsl(BmageHueBand.Blues, saturation: 0.2f, lightness: -0.15f)
                     .Execute(photo);
                 """,
             Notes = "Straighten accepts up to 45 degrees either way and crops by a fraction of the image, so a proxy preview frames " +
                     "what the export will. White balance gains apply to the encoded sRGB values: a picked colour comes out " +
                     "exactly neutral and the rest closely follows; AutoWhiteBalance assumes the mid-tones average to grey and " +
-                    "stops at 80% by default, because sunsets and forests are not grey. In an ImageDocument add geometric steps " +
+                    "stops at 80% by default, because sunsets and forests are not grey. In a BmageImageDocument add geometric steps " +
                     "with AddOperation(op, keepOverlaysAttached: true) so annotations and layers stay on what they mark."
         },
         new()
@@ -1156,8 +1128,6 @@ public static class BmageRecipeCatalog
             SeeAlso = "/retouch",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Editing;
-                using Bit.Bmage.Serialization;
 
                 // Save: the original, the document and the images its layers, masks and annotations use, in one ZIP.
                 await using (var file = File.Create("holiday" + BmageProject.FileExtension))
@@ -1166,15 +1136,15 @@ public static class BmageRecipeCatalog
                 // Open: safe on untrusted files - names, file counts, unpacked sizes and image dimensions are all checked.
                 await using var stream = File.OpenRead("holiday.bmage");
                 using var project = await BmageProject.LoadAsync(stream, new BmageProjectOptions { MaxUnpackedBytes = 512L * 1024 * 1024 });
-                using var rendered = new DocumentRenderer().Render(project.Document, project.Original);
+                using var rendered = new BmageDocumentRenderer().Render(project.Document, project.Original);
 
                 // In the editor the Export tab does both; from code: await editor.SaveProjectAsync("holiday"), editor.OpenProjectAsync(stream).
                 """,
             Notes = "Images are stored as lossless PNG, which keeps the pixels exactly and makes a project of a large photo tens of " +
                     "megabytes. The project owns the original and the document's images until disposed; DetachOriginal and " +
-                    "DetachImages hand them on, for instance to an ImageEditSession through Own. The original's metadata is " +
+                    "DetachImages hand them on, for instance to a BmageImageEditSession through Own. The original's metadata is " +
                     "removed by default (BmageProjectOptions.OriginalMetadata), like an export, so a shared project does not " +
-                    "carry the photo's location. Malformed or hostile archives throw ImageDocumentFormatException and leave " +
+                    "carry the photo's location. Malformed or hostile archives throw BmageImageDocumentFormatException and leave " +
                     "nothing allocated."
         },
         new()
@@ -1187,29 +1157,27 @@ public static class BmageRecipeCatalog
             SeeAlso = "/scan",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Analysis;
-                using Bit.Bmage.Pipeline;
 
                 using var photo = await processor.DecodeAsync(bytes);
 
                 // Measured, not applied: both depend on the pixels, so record their result.
-                if (ImageSharpness.Measure(photo) < minimumSharpness)   // chosen from your own good and bad samples
+                if (BmageImageSharpness.Measure(photo) < minimumSharpness)   // chosen from your own good and bad samples
                     return Results.BadRequest("The photo is blurred; take it again.");
 
-                var pipeline = ImagePipeline.Create();
-                if (DocumentSkew.Estimate(photo) is { Confidence: > 0.3 } skew)
-                    pipeline = pipeline.Rotate(skew.Angle, Rgba32.White, expandCanvas: false);
+                var pipeline = BmageImagePipeline.Create();
+                if (BmageDocumentSkew.Estimate(photo) is { Confidence: > 0.3 } skew)
+                    pipeline = pipeline.Rotate(skew.Angle, BmageRgba32.White, expandCanvas: false);
                 pipeline = pipeline.AdaptiveThreshold(radius: 18);    // about the height of a line of text
 
                 using var scan = await pipeline.ExecuteAsync(photo);
-                var png = await processor.EncodeAsync(scan, new ImageExportOptions
+                var png = await processor.EncodeAsync(scan, new BmageImageExportOptions
                 {
-                    Format    = ImageFormat.Png,
+                    Format    = BmageImageFormat.Png,
                     MaxColors = 2,                                     // a 1-bit indexed PNG
                 });
                 """,
-            Notes = "ImageSharpness depends on the content as well as the focus, so no fixed threshold suits every kind of " +
-                    "image: set it from a few good and bad examples of what your users send. DocumentSkew.Estimate returns the " +
+            Notes = "BmageImageSharpness depends on the content as well as the focus, so no fixed threshold suits every kind of " +
+                    "image: set it from a few good and bad examples of what your users send. BmageDocumentSkew.Estimate returns the " +
                     "clockwise turn that levels the lines; below a confidence of about 0.3 leave the page as it is. The adaptive " +
                     "threshold compares each pixel with the window around it, so a shadow across the page neither blackens the " +
                     "paper nor loses the text; its radius should be about a line of text. Read barcodes or QR codes from the photo, " +
@@ -1226,22 +1194,20 @@ public static class BmageRecipeCatalog
             SeeAlso = "/formats",
             Code = """
                 using Bit.Bmage;
-                using Bit.Bmage.Codecs;
-                using Bit.Bmage.Codecs.Ico;
 
                 // At most 64 colours: exact for a logo with fewer, often a third of the full-colour PNG's size.
-                var logo = await processor.EncodeAsync(image, new ImageExportOptions
+                var logo = await processor.EncodeAsync(image, new BmageImageExportOptions
                 {
-                    Format    = ImageFormat.Png,
+                    Format    = BmageImageFormat.Png,
                     MaxColors = 64,
                     Dither    = false,          // flat artwork; leave it on for gradients and photos
                 });
 
                 // GIF: one frame, 256 colours, one transparent colour.
-                var gif = await processor.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Gif });
+                var gif = await processor.EncodeAsync(image, new BmageImageExportOptions { Format = BmageImageFormat.Gif });
 
                 // favicon.ico at 16, 32 and 48 pixels, the image fitted on transparency.
-                var favicon = IcoEncoder.CreateFavicon(image);
+                var favicon = BmageIcoEncoder.CreateFavicon(image);
                 """,
             Notes = "MaxColors reduces a photo's colours to the palette, which changes them, so it is off unless set; an " +
                     "image with no more colours than allowed keeps every pixel. In the browser the managed encoder writes " +

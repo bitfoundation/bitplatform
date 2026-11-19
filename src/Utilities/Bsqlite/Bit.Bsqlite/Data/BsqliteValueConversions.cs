@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Reads a cell - <see langword="long"/>, <see langword="double"/>, <see langword="string"/> or a blob - as

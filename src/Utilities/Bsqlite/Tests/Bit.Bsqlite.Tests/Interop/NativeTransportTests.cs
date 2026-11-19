@@ -1,7 +1,4 @@
 using System.Diagnostics;
-using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.FileSystem;
 using Bit.Bsqlite.Storage.Tests;
 using Microsoft.Data.Sqlite;
 

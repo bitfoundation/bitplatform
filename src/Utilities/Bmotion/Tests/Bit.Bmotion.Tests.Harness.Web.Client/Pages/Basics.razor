@@ -55,33 +55,33 @@
     <button id="play" @onclick="() => Change(() => _play = true)">play</button>
 
     <Bmotion Animate="_play ? Bm.To(scale: [1, 1.6, 1]) : null"
-             Transition="Bm.Tween(0.8, BmEase.Linear)"
+             Transition="Bm.Tween(0.8, BmotionEase.Linear)"
              OnAnimationComplete='_ => Log("keyframes:complete")'>
         <div id="keyframes" class="box"></div>
     </Bmotion>
 
     <Bmotion Animate="Bm.To(rotate: [0, 360])"
-             Transition="Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever)">
+             Transition="Bm.Tween(1, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
         <div id="forever" class="small"></div>
     </Bmotion>
 
     @* Stopped by #spin-stop: however long it has been playing, a new target ends a forever animation. *@
     <button id="spin-stop" @onclick="() => Change(() => _spinning = false)">stop</button>
     <Bmotion Animate="@(_spinning ? Bm.To(rotate: [0, 360]) : Bm.To(rotate: 0))"
-             Transition="@(_spinning ? Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever) : Bm.Tween(0.1))">
+             Transition="@(_spinning ? Bm.Tween(1, BmotionEase.Linear, repeat: BmotionRepeat.Forever) : Bm.Tween(0.1))">
         <div id="spinner" class="small"></div>
     </Bmotion>
 
     <Bmotion Initial='Bm.To(backgroundColor: "rgb(255, 0, 0)")'
              Animate='_play ? Bm.To(backgroundColor: "rgb(0, 0, 255)") : null'
-             Transition="Bm.Tween(1, BmEase.Linear)"
+             Transition="Bm.Tween(1, BmotionEase.Linear)"
              OnAnimationComplete='_ => Log("color:complete")'>
         <div id="color" class="box"></div>
     </Bmotion>
 
     <Bmotion Initial='Bm.To(width: "60px")'
              Animate='_play ? Bm.To(width: "200px") : null'
-             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             Transition="Bm.Tween(0.6, BmotionEase.Linear)"
              OnAnimationComplete='_ => Log("size:complete")'>
         <div id="size" class="box"></div>
     </Bmotion>
@@ -90,7 +90,7 @@
     <div class="track" style="height: 60px">
         <Bmotion Initial='Bm.To(width: "100px")'
                  Animate='_play ? Bm.To(width: "50%") : null'
-                 Transition="Bm.Tween(0.6, BmEase.Linear)"
+                 Transition="Bm.Tween(0.6, BmotionEase.Linear)"
                  OnAnimationComplete='_ => Log("units:complete")'>
             <div id="units" class="box"></div>
         </Bmotion>
@@ -110,7 +110,7 @@
 
     @* OnUpdate: a per-frame callback with the CSS flushed that frame. *@
     <Bmotion Animate="_play ? Bm.To(x: 60) : null"
-             Transition="Bm.Tween(0.5, BmEase.Linear)"
+             Transition="Bm.Tween(0.5, BmotionEase.Linear)"
              OnUpdate="OnFrame"
              OnAnimationComplete='_ => Log("onupdate:complete")'>
         <div id="onupdate" class="small"></div>

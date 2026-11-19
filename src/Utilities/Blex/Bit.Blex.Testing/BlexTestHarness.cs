@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 
-namespace Bit.Blex.Testing;
+namespace Bit.Blex;
 
 /// <summary>
 /// A self-contained test fixture around a single store: it creates a <see cref="BlexManager"/>,

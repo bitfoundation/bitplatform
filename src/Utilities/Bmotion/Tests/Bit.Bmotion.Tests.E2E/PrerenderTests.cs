@@ -23,7 +23,7 @@ public sealed class PrerenderStaticTests : BmotionPageTest
     public async Task Initial_IsServedAtItsInitialState_AndStaysThere()
     {
         var samples = await SampleAsync("#pr-initial", 600);
-        Assert.IsTrue(samples.All(s => s.Opacity < 0.01), "BmPrerenderMode.Initial should serve (and keep) the Initial state.");
+        Assert.IsTrue(samples.All(s => s.Opacity < 0.01), "BmotionPrerenderMode.Initial should serve (and keep) the Initial state.");
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public sealed class PrerenderNoScriptTests : BmotionPageTest
     }
 }
 
-/// <summary>The same static page without bit-bmotion.css: BmPrerenderMode.Animate degrades to serving at rest.</summary>
+/// <summary>The same static page without bit-bmotion.css: BmotionPrerenderMode.Animate degrades to serving at rest.</summary>
 [TestClass]
 public sealed class PrerenderWithoutStylesheetTests : BmotionPageTest
 {

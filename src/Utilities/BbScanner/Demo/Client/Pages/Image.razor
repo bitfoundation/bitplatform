@@ -24,7 +24,7 @@
                 <BbScanner @ref="_scanner"
                            AutoStart="false"
                            ShowStatusBar="true"
-                           Formats="BbBarcodeFormat.All"
+                           Formats="BbScannerBarcodeFormat.All"
                            EnableFileScanning="true"
                            MaxImageFileSize="_maxFileSize"
                            MaxSymbolsPerFrame="@(_everySymbol ? 16 : 1)"
@@ -135,10 +135,10 @@
         <code>Formats</code> and its other options still apply. The same preset serves the headless decoder:
     </p>
     <pre class="bb-code"><span class="k">var</span> options = BbScannerOptions.ForStillImages();
-options.Formats = BbBarcodeFormat.QrCode;
+options.Formats = BbScannerBarcodeFormat.QrCode;
 
-<span class="k">using var</span> decoder = <span class="k">new</span> BbBarcodeDecoder(options);
-<span class="k">var</span> result = decoder.Decode(pixels, width, height, BbPixelFormat.Rgba32);</pre>
+<span class="k">using var</span> decoder = <span class="k">new</span> BbScannerBarcodeDecoder(options);
+<span class="k">var</span> result = decoder.Decode(pixels, width, height, BbScannerPixelFormat.Rgba32);</pre>
 </div>
 
 <div class="bb-card">
@@ -162,7 +162,7 @@ options.Formats = BbBarcodeFormat.QrCode;
     {
         _error = null;
 
-        var sample = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.QrCode);
+        var sample = SampleCatalog.All.First(s => s.Format == BbScannerBarcodeFormat.QrCode);
         using var image = Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(sample.Matrix!, scale: 6);
 
         // Expand to the packed RGBA an application would normally get from a canvas.
@@ -176,7 +176,7 @@ options.Formats = BbBarcodeFormat.QrCode;
         }
 
         var result = _scanner?.DecodeImage(
-            rgba, image.Width, image.Height, BbPixelFormat.Rgba32);
+            rgba, image.Width, image.Height, BbScannerPixelFormat.Rgba32);
 
         if (result is not null)
         {
@@ -196,17 +196,17 @@ options.Formats = BbBarcodeFormat.QrCode;
     {
         _error = null;
 
-        var qr = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.QrCode);
-        var dataMatrix = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.DataMatrix);
+        var qr = SampleCatalog.All.First(s => s.Format == BbScannerBarcodeFormat.QrCode);
+        var dataMatrix = SampleCatalog.All.First(s => s.Format == BbScannerBarcodeFormat.DataMatrix);
         using var left = Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(qr.Matrix!, scale: 6);
         using var right = Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(dataMatrix.Matrix!, scale: 6);
-        using var sheet = BbLuminanceBuffer.Rent(left.Width + right.Width, Math.Max(left.Height, right.Height));
+        using var sheet = BbScannerLuminanceBuffer.Rent(left.Width + right.Width, Math.Max(left.Height, right.Height));
         sheet.Pixels.Fill(255);
         Bit.BbScanner.TestKit.ImageTransforms.Paste(left, sheet, 0, 0);
         Bit.BbScanner.TestKit.ImageTransforms.Paste(right, sheet, left.Width, 0);
 
         var rgba = Bit.BbScanner.TestKit.ImageTransforms.ToRgba(sheet, tint: false);
-        var results = _scanner?.DecodeAllInImage(rgba, sheet.Width, sheet.Height, BbPixelFormat.Rgba32) ?? [];
+        var results = _scanner?.DecodeAllInImage(rgba, sheet.Width, sheet.Height, BbScannerPixelFormat.Rgba32) ?? [];
 
         if (results.Count == 0)
         {
@@ -260,7 +260,7 @@ options.Formats = BbBarcodeFormat.QrCode;
         }
     }
 
-    private readonly List<BbBarcodeResult> _results = [];
+    private readonly List<BbScannerBarcodeResult> _results = [];
     private BbScanner? _scanner;
     private BbScannerException? _error;
     private bool _everySymbol;
@@ -268,7 +268,7 @@ options.Formats = BbBarcodeFormat.QrCode;
 
     private Task OpenPicker() => _scanner is null ? Task.CompletedTask : _scanner.OpenFilePickerAsync();
 
-    private void HandleScan(BbBarcodeResult result)
+    private void HandleScan(BbScannerBarcodeResult result)
     {
         _error = null;
         _results.Insert(0, result);

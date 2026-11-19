@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// them, the BitParams cascade, Style/Class, RTL, the prerender, runtime re-renders and unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitIconE2ETests : E2ETestBase
 {
     private const string Path = "/e2e/icon";

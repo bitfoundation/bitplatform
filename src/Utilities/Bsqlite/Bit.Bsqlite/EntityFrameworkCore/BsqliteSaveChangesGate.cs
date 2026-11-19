@@ -1,4 +1,6 @@
-﻿namespace Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Holds live-query refreshes back while the context's <c>SaveChanges</c> is in progress.

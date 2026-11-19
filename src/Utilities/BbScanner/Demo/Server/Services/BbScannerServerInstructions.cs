@@ -22,13 +22,13 @@ public static class BbScannerServerInstructions
     /// dropped: it identifies nothing a caller could act on.
     /// </summary>
     public static readonly string BbScannerVersion = (
-        typeof(BbBarcodeDecoder).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-        ?? typeof(BbBarcodeDecoder).Assembly.GetName().Version?.ToString()
+        typeof(BbScannerBarcodeDecoder).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+        ?? typeof(BbScannerBarcodeDecoder).Assembly.GetName().Version?.ToString()
         ?? "unknown").Split('+')[0];
 
     public static readonly string Text = $"""
         Bit.BbScanner is a barcode scanner for Blazor: the `BbScanner` component reads QR Code, Data Matrix, Code 128,
-        Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images, and `BbBarcodeDecoder` decodes
+        Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images, and `BbScannerBarcodeDecoder` decodes
         pixels anywhere .NET runs. The decoding is C#; the browser only opens the camera and copies pixels.
 
         Every answer here is read out of Bit.BbScanner {BbScannerVersion} as it is loaded in this server - its compiled XML
@@ -43,15 +43,15 @@ public static class BbScannerServerInstructions
         - Every reference tool takes the key of one thing and answers with that thing; leave the key out and it answers
           with the index of what there is - guide sections, public types, symbologies, source files.
         - Do not write a BbScanner type or member from memory. There is one package and one namespace, `Bit.BbScanner`;
-          the component is `BbScanner` and every other public type is prefixed `Bb` (`BbBarcodeFormat`,
-          `BbBarcodeResult`, `BbScannerOptions`, `BbBarcodeDecoder`...). `GetBbScannerApi` gives the real names, types and
+          the component is `BbScanner` and every other public type is prefixed `Bb` (`BbScannerBarcodeFormat`,
+          `BbScannerBarcodeResult`, `BbScannerOptions`, `BbScannerBarcodeDecoder`...). `GetBbScannerApi` gives the real names, types and
           default values.
         - Camera scanning works in every interactive render mode - WebAssembly, Server, Auto and Hybrid. Call
           `GetBbScannerSetupGuide` before writing wiring: there are no services to register and the stylesheet injects
           itself, but the project the package belongs in differs per render mode, the page must be served over HTTPS or
           from localhost, and a .NET MAUI app uses the device's own camera through the `Bit.BbScanner.Maui` package -
           `builder.UseBbScanner()`, the BlazorWebView wrapped in a `BbScannerHost`, and each platform's camera permission.
-        - To see the `BbBarcodeResult` a payload produces - its text, raw bytes, corners, metadata and timings - or to
+        - To see the `BbScannerBarcodeResult` a payload produces - its text, raw bytes, corners, metadata and timings - or to
           check whether a symbol survives rotation or blur, call `InspectBbScannerSymbol`: it runs the library's own decoder.
 
         Every tool on this server is read-only and cheap: none of them changes anything, anywhere, so there is no reason

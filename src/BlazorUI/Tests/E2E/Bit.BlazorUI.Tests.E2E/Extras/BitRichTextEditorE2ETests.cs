@@ -17,6 +17,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitRichTextEditorE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/rich-text-editor";

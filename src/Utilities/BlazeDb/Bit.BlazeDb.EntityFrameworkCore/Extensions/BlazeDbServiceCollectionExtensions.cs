@@ -1,20 +1,17 @@
-﻿using Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
-using Bit.BlazeDb.EntityFrameworkCore.Metadata;
-using Bit.BlazeDb.EntityFrameworkCore.Query;
-using Bit.BlazeDb.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+﻿using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Infrastructure;
 using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
+using Microsoft.Extensions.DependencyInjection;
 
 // See BlazeDbQueryCompiler: replacing IQueryCompiler is a deliberate dependency on an EF internal.
 #pragma warning disable EF1001
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Bit.BlazeDb;
 
 /// <summary>Registers the BlazeDb provider's services.</summary>
 public static class BlazeDbServiceCollectionExtensions

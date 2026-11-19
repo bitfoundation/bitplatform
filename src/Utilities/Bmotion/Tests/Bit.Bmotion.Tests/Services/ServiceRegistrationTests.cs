@@ -22,7 +22,7 @@ public class ServiceRegistrationTests
         var services = new ServiceCollection();
         services.AddBitBmotionServices();
 
-        Assert.AreEqual(ServiceLifetime.Singleton, LifetimeOf<BitBmotionOptions>(services));
+        Assert.AreEqual(ServiceLifetime.Singleton, LifetimeOf<BmotionOptions>(services));
         Assert.AreEqual(ServiceLifetime.Scoped, LifetimeOf<IBmotionInterop>(services));
         Assert.AreEqual(ServiceLifetime.Scoped, LifetimeOf<BmotionAnimationEngine>(services));
         Assert.AreEqual(ServiceLifetime.Scoped, LifetimeOf<BmotionCapabilities>(services));
@@ -48,13 +48,13 @@ public class ServiceRegistrationTests
         var services = new ServiceCollection();
         services.AddBitBmotionServices(o =>
         {
-            o.ReducedMotion = BmReducedMotionMode.User;
-            o.CssSafeMode = BmCssSafeMode.Warn;
+            o.ReducedMotion = BmotionReducedMotionMode.User;
+            o.CssSafeMode = BmotionCssSafeMode.Warn;
         });
 
-        var options = (BitBmotionOptions)services.Single(d => d.ServiceType == typeof(BitBmotionOptions)).ImplementationInstance!;
-        Assert.AreEqual(BmReducedMotionMode.User, options.ReducedMotion);
-        Assert.AreEqual(BmCssSafeMode.Warn, options.CssSafeMode);
+        var options = (BmotionOptions)services.Single(d => d.ServiceType == typeof(BmotionOptions)).ImplementationInstance!;
+        Assert.AreEqual(BmotionReducedMotionMode.User, options.ReducedMotion);
+        Assert.AreEqual(BmotionCssSafeMode.Warn, options.CssSafeMode);
     }
 
     [TestMethod]
@@ -64,7 +64,7 @@ public class ServiceRegistrationTests
 
         // Same registrations as an app, the bridge swapped for the fake...
         Assert.AreSame(ctx.Interop, ctx.Services.GetRequiredService<IBmotionInterop>());
-        Assert.AreSame(ctx.Options, ctx.Services.GetRequiredService<BitBmotionOptions>());
+        Assert.AreSame(ctx.Options, ctx.Services.GetRequiredService<BmotionOptions>());
         // ...and every service resolves (and shares one engine) through it.
         var engine = ctx.Services.GetRequiredService<BmotionAnimationEngine>();
         Assert.AreSame(engine, ctx.Engine);

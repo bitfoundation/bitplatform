@@ -1,12 +1,5 @@
 ﻿namespace Bit.BevTools;
 
-public enum BevPanelSize
-{
-    Small,
-    Medium,
-    Large,
-}
-
 /// <summary>UI state that survives navigation within a session (circuit).</summary>
 public sealed class BevToolsUiState
 {
@@ -20,7 +13,7 @@ public sealed class BevToolsUiState
 
     public BevToolsTheme Theme { get; set; }
 
-    public BevPanelSize Size { get; set; } = BevPanelSize.Medium;
+    public BevToolsPanelSize Size { get; set; } = BevToolsPanelSize.Medium;
 
     public long? SelectedComponentId { get; set; }
 
@@ -58,19 +51,19 @@ public sealed class BevToolsUiState
     public HashSet<long> CollapsedTreeNodes { get; } = [];
 
     /// <summary>The Profiler's sort, grouping, selected batch and comparison, kept while other tabs are open.</summary>
-    internal BevProfilerView Profiler { get; } = new();
+    internal BevToolsProfilerView Profiler { get; } = new();
 
     /// <summary>The Network panel's view (requests or endpoints), endpoint filter and sorts.</summary>
-    internal BevNetworkView Network { get; } = new();
+    internal BevToolsNetworkView Network { get; } = new();
 
     /// <summary>The Errors panel's view (errors or groups), group filter and sorts.</summary>
-    internal BevErrorsView Errors { get; } = new();
+    internal BevToolsErrorsView Errors { get; } = new();
 
     /// <summary>The log entry selected in the Logs panel.</summary>
     public long? SelectedLogId { get; set; }
 
     /// <summary>The Logs panel's view (entries or categories).</summary>
-    internal BevLogsView Logs { get; } = new();
+    internal BevToolsLogsView Logs { get; } = new();
 
     public string? GetQuery(string panelId) => _queries.TryGetValue(panelId, out var q) ? q : null;
 
@@ -108,104 +101,4 @@ public sealed class BevToolsUiState
         NotificationAt = DateTimeOffset.UtcNow;
         Touch();
     }
-}
-
-/// <summary>A table's sort: the column and its direction. Selecting the sorted column again reverses it.</summary>
-internal sealed class BevSortState(string key, bool ascending)
-{
-    public string Key { get; private set; } = key;
-
-    public bool Ascending { get; private set; } = ascending;
-
-    public void Set(string key, bool ascending)
-    {
-        Key = key;
-        Ascending = ascending;
-    }
-
-    /// <param name="key">The column selected.</param>
-    /// <param name="ascendingFirst">The direction a column starts in: text A to Z, figures largest first.</param>
-    public void Select(string key, bool ascendingFirst)
-    {
-        if (Key == key)
-        {
-            Ascending = !Ascending;
-        }
-        else
-        {
-            Key = key;
-            Ascending = ascendingFirst;
-        }
-    }
-}
-
-internal sealed class BevNetworkView
-{
-    /// <summary>One row per endpoint instead of one per request.</summary>
-    public bool ByEndpoint { get; set; }
-
-    /// <summary>Only the requests to this <see cref="BevHttpRecord.EndpointTemplate"/>.</summary>
-    public string? Endpoint { get; set; }
-
-    public BevSortState Requests { get; } = new("time", ascending: false);
-
-    public BevSortState Endpoints { get; } = new("requests", ascending: false);
-}
-
-internal sealed class BevErrorsView
-{
-    /// <summary>One row per group of errors that are one problem (<see cref="BevErrorGroups"/>).</summary>
-    public bool ByGroup { get; set; }
-
-    /// <summary>Only the errors of this <see cref="BevErrorRecord.Group"/>, shown by its <see cref="GroupTitle"/>.</summary>
-    public string? Group { get; set; }
-
-    public string? GroupTitle { get; set; }
-
-    public BevSortState Errors { get; } = new("last", ascending: false);
-
-    public BevSortState Groups { get; } = new("occurrences", ascending: false);
-}
-
-internal sealed class BevLogsView
-{
-    /// <summary>One row per category, with its counts per level, instead of one per entry.</summary>
-    public bool ByCategory { get; set; }
-
-    /// <summary>One row per database command (Entity Framework Core's, by SQL) instead of one per entry.</summary>
-    public bool ByCommand { get; set; }
-
-    /// <summary>Only the entries of this command (its SQL, whitespace collapsed), when one was opened from the Database view.</summary>
-    public string? Command { get; set; }
-}
-
-internal sealed class BevProfilerView
-{
-    public BevSortState Sorting { get; } = new("total", ascending: false);
-
-    public bool ByType { get; set; }
-
-    public bool SinceBaseline { get; set; }
-
-    public bool IncludeDisposed { get; set; }
-
-    /// <summary>The render batch whose cost tree is shown, and its timeline event (gone once the timeline is cleared).</summary>
-    public long? BatchId { get; set; }
-
-    public long? BatchEventId { get; set; }
-
-    /// <summary>The selected batch as a tree (self and subtree time) or on a time axis.</summary>
-    public bool BatchOnTimeAxis { get; set; }
-
-    /// <summary>Whether the renders-per-page section is open; it reads every retained render, so only while it is.</summary>
-    public bool ShowRoutes { get; set; }
-
-    /// <summary>The uploaded export's profile, so the comparison can be run again after another interaction.</summary>
-    public BevRenderProfile? ComparedProfile { get; set; }
-
-    public string? ComparedFile { get; set; }
-
-    public BevProfileComparisonResult? Comparison { get; set; }
-
-    public string? ComparisonError { get; set; }
 }

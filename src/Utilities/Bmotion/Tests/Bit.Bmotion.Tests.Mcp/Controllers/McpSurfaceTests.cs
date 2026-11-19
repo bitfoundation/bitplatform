@@ -233,8 +233,8 @@ public class McpSurfaceTests
         Assert.IsTrue(McpResources.ApiList().Length > 500);
         StringAssert.StartsWith(McpResources.ApiList(), "# Bit.Bmotion public API");
 
-        StringAssert.Contains(McpResources.ApiType("BmSpring"), "# BmSpring");
-        StringAssert.Contains(McpResources.ApiType("BmSpring"), "Stiffness");
+        StringAssert.Contains(McpResources.ApiType("BmotionSpring"), "# BmotionSpring");
+        StringAssert.Contains(McpResources.ApiType("BmotionSpring"), "Stiffness");
 
         var properties = await McpResources.Properties();
 
@@ -243,7 +243,7 @@ public class McpSurfaceTests
 
         var easings = await McpResources.Easings();
 
-        StringAssert.Contains(easings, "`BmEase.Linear`");
+        StringAssert.Contains(easings, "`BmotionEase.Linear`");
 
         var recipes = McpResources.Recipes();
 

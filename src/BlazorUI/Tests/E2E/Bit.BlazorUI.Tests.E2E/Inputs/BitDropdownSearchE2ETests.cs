@@ -9,6 +9,7 @@
 /// HideSelectedItems in the count, and the EmptyText / EmptyTemplate / NoResultsText / NoResultsTemplate states.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownSearchE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/search";

@@ -22,11 +22,11 @@ internal sealed class BmotionElementAnimationState
     internal readonly Dictionary<string, string> StringValues = new();
 
     /// <summary>
-    /// Optional consumer rewrite of the composed transform string (see <see cref="BmTransformTemplate"/>).
+    /// Optional consumer rewrite of the composed transform string (see <see cref="BmotionTransformTemplate"/>).
     /// Every path that writes this element's transform goes through <see cref="ComposeTransform"/>,
     /// so the template can't be bypassed by one of them.
     /// </summary>
-    internal BmTransformTemplate? TransformTemplate;
+    internal BmotionTransformTemplate? TransformTemplate;
 
     /// <summary>
     /// Composes <paramref name="components"/> into a CSS transform string and applies the
@@ -1450,7 +1450,7 @@ internal sealed class BmotionElementAnimationState
     {
         var config = transition?.Properties is { } perKey && perKey.TryGetValue(key, out var own) ? own : transition;
         if (config?.IsInfiniteRepeat == true) return value;
-        bool mirrorsBack = config is { RepeatType: BmRepeatType.Mirror or BmRepeatType.Reverse } && config.Repeat % 2 == 1;
+        bool mirrorsBack = config is { RepeatType: BmotionRepeatType.Mirror or BmotionRepeatType.Reverse } && config.Repeat % 2 == 1;
         return value switch
         {
             double[] { Length: > 0 } numbers when double.IsFinite(mirrorsBack ? numbers[0] : numbers[^1]) => mirrorsBack ? numbers[0] : numbers[^1],

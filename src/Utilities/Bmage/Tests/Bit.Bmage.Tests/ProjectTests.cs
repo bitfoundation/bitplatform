@@ -3,32 +3,23 @@ using System.Drawing;
 using System.IO.Compression;
 using System.Numerics;
 using System.Text;
-using Bit.Bmage.Annotations;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Editing;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
-using Bit.Bmage.Serialization;
 
 namespace Bit.Bmage.Tests;
 
 [TestClass]
 public sealed class ProjectTests
 {
-    private static ImageDocument RichDocument(ImageBuffer source, ImageBuffer logo, ImageBuffer matte) => ImageDocument.Create(source)
-        .AddOperation(new CropOperation(5, 5, 150, 100))
-        .AddOperation(new StraightenOperation(3))
-        .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(10, 10, 30, 20), BlendMode = BlendMode.Overlay })
-        .AddLayer(new ImageLayer { Image = logo, Bounds = new RectangleF(80, 40, 15, 10), Opacity = 0.5f })
-        .AddLayer(new PaintLayer([new PaintStroke([new(20, 60), new(90, 70)], 6, new Rgba32(200, 30, 30)) { Pressures = [0.4f, 1f] }]))
-        .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Hsl(Operations.Adjustments.HueBand.Reds, saturation: 0.5f)) { Mask = new BitmapMask(matte) })
-        .AddAnnotation(new ImageAnnotation { Image = logo, Rectangle = new RectangleF(100, 70, 20, 12) })
-        .AddAnnotation(new ArrowAnnotation { Start = new Vector2(10, 90), End = new Vector2(60, 40) });
+    private static BmageImageDocument RichDocument(BmageImageBuffer source, BmageImageBuffer logo, BmageImageBuffer matte) => BmageImageDocument.Create(source)
+        .AddOperation(new BmageCropOperation(5, 5, 150, 100))
+        .AddOperation(new BmageStraightenOperation(3))
+        .AddLayer(new BmageImageLayer { Image = logo, Bounds = new RectangleF(10, 10, 30, 20), BlendMode = BmageBlendMode.Overlay })
+        .AddLayer(new BmageImageLayer { Image = logo, Bounds = new RectangleF(80, 40, 15, 10), Opacity = 0.5f })
+        .AddLayer(new BmagePaintLayer([new BmagePaintStroke([new(20, 60), new(90, 70)], 6, new BmageRgba32(200, 30, 30)) { Pressures = [0.4f, 1f] }]))
+        .AddLayer(new BmageAdjustmentLayer(BmageImagePipeline.Create().Hsl(BmageHueBand.Reds, saturation: 0.5f)) { Mask = new BmageBitmapMask(matte) })
+        .AddAnnotation(new BmageImageAnnotation { Image = logo, Rectangle = new RectangleF(100, 70, 20, 12) })
+        .AddAnnotation(new BmageArrowAnnotation { Start = new Vector2(10, 90), End = new Vector2(60, 40) });
 
-    private static async Task<byte[]> SaveAsync(ImageBuffer original, ImageDocument document, BmageProjectOptions? options = null)
+    private static async Task<byte[]> SaveAsync(BmageImageBuffer original, BmageImageDocument document, BmageProjectOptions? options = null)
     {
         using var stream = new MemoryStream();
         await BmageProject.SaveAsync(stream, original, document, options);
@@ -48,8 +39,8 @@ public sealed class ProjectTests
         using var project = await LoadAsync(await SaveAsync(source, document));
 
         Assert.AreEqual(0, TestImages.MaxChannelDifference(source, project.Original), "the original comes back exactly");
-        using var expected = new DocumentRenderer().Render(document, source);
-        using var actual = new DocumentRenderer().Render(project.Document, project.Original);
+        using var expected = new BmageDocumentRenderer().Render(document, source);
+        using var actual = new BmageDocumentRenderer().Render(project.Document, project.Original);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(expected, actual), "and renders the same edit");
         Assert.AreEqual(document.Pipeline.Count, project.Document.Pipeline.Count);
         Assert.AreEqual(document.Layers.Count, project.Document.Layers.Count);
@@ -69,15 +60,15 @@ public sealed class ProjectTests
 
         using var project = await LoadAsync(bytes);
         Assert.HasCount(2, project.Images);
-        var first = ((ImageLayer)project.Document.Layers[0]).Image;
-        Assert.AreSame(first, ((ImageLayer)project.Document.Layers[1]).Image, "and comes back as one buffer");
-        Assert.AreSame(first, ((ImageAnnotation)project.Document.Annotations[0]).Image);
+        var first = ((BmageImageLayer)project.Document.Layers[0]).Image;
+        Assert.AreSame(first, ((BmageImageLayer)project.Document.Layers[1]).Image, "and comes back as one buffer");
+        Assert.AreSame(first, ((BmageImageAnnotation)project.Document.Annotations[0]).Image);
     }
 
     [TestMethod]
     public async Task TheProjectOwnsItsImagesUntilTheyAreHandedOn()
     {
-        var allocator = new BudgetedPixelAllocator(64L * 1024 * 1024);
+        var allocator = new BmageBudgetedPixelAllocator(64L * 1024 * 1024);
         using var source = TestImages.Gradient(64, 48);
         using var logo = ParallelProcessingTests.Noise(12, 12, seed: 1);
         using var matte = TestImages.Gradient(8, 8);
@@ -97,7 +88,7 @@ public sealed class ProjectTests
     {
         using var source = TestImages.Gradient(64, 48);
         using var other = TestImages.Gradient(10, 10);
-        await Assert.ThrowsExactlyAsync<ArgumentException>(() => SaveAsync(other, ImageDocument.Create(source)));
+        await Assert.ThrowsExactlyAsync<ArgumentException>(() => SaveAsync(other, BmageImageDocument.Create(source)));
     }
 
     // ---- Untrusted input ----
@@ -116,16 +107,16 @@ public sealed class ProjectTests
 
     private static byte[] Text(string text) => Encoding.UTF8.GetBytes(text);
 
-    private static byte[] Png(int width, int height) => Codecs.Png.PngEncoder.Encode(TestImages.Gradient(width, height)).Data;
+    private static byte[] Png(int width, int height) => BmagePngEncoder.Encode(TestImages.Gradient(width, height)).Data;
 
     private static string Manifest(string original = "images/original.png", string images = "[]", string format = "bmage-project", int version = 1)
         => $$"""{"format":"{{format}}","version":{{version}},"document":"document.json","original":"{{original}}","images":{{images}}}""";
 
-    private static string Document(int width, int height) => BmageJson.Serialize(ImageDocument.Create(new Size(width, height)));
+    private static string Document(int width, int height) => BmageJson.Serialize(BmageImageDocument.Create(new Size(width, height)));
 
     private static async Task AssertRefusedAsync(byte[] bytes, string expected, BmageProjectOptions? options = null)
     {
-        var error = await Assert.ThrowsExactlyAsync<ImageDocumentFormatException>(() => LoadAsync(bytes, options));
+        var error = await Assert.ThrowsExactlyAsync<BmageImageDocumentFormatException>(() => LoadAsync(bytes, options));
         StringAssert.Contains(error.Message, expected);
     }
 
@@ -181,12 +172,12 @@ public sealed class ProjectTests
         var images = imageSizes.Select(s => TestImages.Gradient(s, s)).ToArray();
         try
         {
-            var document = ImageDocument.Create(new Size(size, size));
-            foreach (var image in images) document = document.AddAnnotation(new ImageAnnotation { Image = image, Rectangle = new RectangleF(0, 0, 4, 4) });
+            var document = BmageImageDocument.Create(new Size(size, size));
+            foreach (var image in images) document = document.AddAnnotation(new BmageImageAnnotation { Image = image, Rectangle = new RectangleF(0, 0, 4, 4) });
             var json = BmageJson.Serialize(document, new BmageJsonOptions { ImageReferences = image => $"images/{Array.IndexOf(images, image) + 1}.png" });
             var names = string.Join(",", images.Select((_, i) => $"\"images/{i + 1}.png\""));
             return Zip([("manifest.json", Text(Manifest(images: $"[{names}]"))), ("images/original.png", Png(size, size)), ("document.json", Text(json)),
-                .. images.Select((image, i) => ($"images/{i + 1}.png", Codecs.Png.PngEncoder.Encode(image).Data))]);
+                .. images.Select((image, i) => ($"images/{i + 1}.png", BmagePngEncoder.Encode(image).Data))]);
         }
         finally
         {
@@ -197,14 +188,14 @@ public sealed class ProjectTests
     [TestMethod]
     public async Task TheImagesTogetherAreBoundedBeforeTheyAreDecoded()
     {
-        var allocator = new BudgetedPixelAllocator(64L * 1024 * 1024);
+        var allocator = new BmageBudgetedPixelAllocator(64L * 1024 * 1024);
         // 64² for the original and 64² for each image: the second image passes 10,000 pixels.
         var project = ProjectUsing(64, 64, 64, 64);
         await AssertRefusedAsync(project, "more pixels than allowed together", new BmageProjectOptions { MaxTotalPixels = 10_000, Allocator = allocator });
         Assert.AreEqual(0, allocator.CurrentBytes, "and what was decoded before is returned");
 
         // By default the images may hold four times the largest one allowed.
-        var limits = ImageLimits.Default with { MaxPixels = 64 * 64 };
+        var limits = BmageImageLimits.Default with { MaxPixels = 64 * 64 };
         using (var fits = await LoadAsync(ProjectUsing(64, 64, 64, 64), new BmageProjectOptions { Limits = limits })) Assert.HasCount(3, fits.Images);
         await AssertRefusedAsync(ProjectUsing(64, 64, 64, 64, 64), "more pixels than allowed together", new BmageProjectOptions { Limits = limits });
     }
@@ -212,7 +203,7 @@ public sealed class ProjectTests
     [TestMethod]
     public async Task AnImageNothingUsesIsNeverDecoded()
     {
-        var allocator = new BudgetedPixelAllocator(64L * 1024 * 1024);
+        var allocator = new BmageBudgetedPixelAllocator(64L * 1024 * 1024);
         var project = Zip(("manifest.json", Text(Manifest(images: """["images/1.png"]"""))), ("images/original.png", Png(32, 32)), ("images/1.png", Png(500, 500)),
             ("document.json", Text(Document(32, 32))));
         using var loaded = await LoadAsync(project, new BmageProjectOptions { Allocator = allocator, MaxTotalPixels = 32 * 32 });
@@ -233,7 +224,7 @@ public sealed class ProjectTests
         await AssertRefusedAsync(Zip(("manifest.json", Text(Manifest())), ("images/original.png", Png(8, 6)), ("document.json", Text(Document(9, 9)))), "made for a 9x9 image");
 
         using var stamp = TestImages.Gradient(2, 2);
-        var withImage = BmageJson.Serialize(ImageDocument.Create(new Size(8, 6)).AddAnnotation(new ImageAnnotation { Image = stamp, Rectangle = new RectangleF(0, 0, 2, 2) }),
+        var withImage = BmageJson.Serialize(BmageImageDocument.Create(new Size(8, 6)).AddAnnotation(new BmageImageAnnotation { Image = stamp, Rectangle = new RectangleF(0, 0, 2, 2) }),
             new BmageJsonOptions { ImageReferences = _ => "images/elsewhere.png" });
         await AssertRefusedAsync(Zip(("manifest.json", Text(Manifest())), ("images/original.png", Png(8, 6)), ("document.json", Text(withImage))), "images/elsewhere.png");
     }
@@ -243,7 +234,7 @@ public sealed class ProjectTests
     {
         var project = Zip(("manifest.json", Text(Manifest())), ("images/original.png", Png(64, 64)), ("document.json", Text(Document(64, 64))));
         await AssertRefusedAsync(project, "larger than 256 bytes", new BmageProjectOptions { MaxUnpackedBytes = 256 });
-        await AssertRefusedAsync(project, "could not be read", new BmageProjectOptions { Limits = ImageLimits.Default with { MaxWidth = 32 } });
+        await AssertRefusedAsync(project, "could not be read", new BmageProjectOptions { Limits = BmageImageLimits.Default with { MaxWidth = 32 } });
 
         var many = Enumerable.Range(0, 20).Select(i => ($"x{i}.txt", Text("x"))).Prepend(("manifest.json", Text(Manifest()))).ToArray();
         await AssertRefusedAsync(Zip(many), "21 files", new BmageProjectOptions { MaxEntries = 10 });
@@ -257,7 +248,7 @@ public sealed class ProjectTests
     [TestMethod]
     public async Task AFailedLoadLeavesNothingAllocated()
     {
-        var allocator = new BudgetedPixelAllocator(64L * 1024 * 1024);
+        var allocator = new BmageBudgetedPixelAllocator(64L * 1024 * 1024);
         // Everything decodes, then the document turns out not to fit: the decoded images must all be returned.
         var project = ProjectUsing(32, 8, 8);
         var mismatched = Zip([.. ReadAll(project).Select(e => e.Name == "document.json" ? (e.Name, Text(Encoding.UTF8.GetString(e.Bytes).Replace("32", "33", StringComparison.Ordinal))) : e)]);

@@ -1,5 +1,4 @@
-﻿using Bit.Bcrdt.Butil;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
 namespace Bit.Bcrdt.Tests.Integrations;

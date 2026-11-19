@@ -68,7 +68,7 @@ public class McpSurfaceTests
     {
         // The package version is stamped into the assembly by Bit.Build.props; the MCP version must be
         // that, not the demo host's, since the answers are about the library.
-        var informational = typeof(BbBarcodeDecoder).Assembly
+        var informational = typeof(BbScannerBarcodeDecoder).Assembly
             .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
             .OfType<System.Reflection.AssemblyInformationalVersionAttribute>()
             .Single().InformationalVersion;

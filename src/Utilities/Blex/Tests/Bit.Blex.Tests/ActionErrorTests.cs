@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Bit.Blex;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Blex.Tests;
@@ -175,7 +174,7 @@ public class ActionErrorTests
     [TestMethod]
     public void TheHarnessRecordsFailures()
     {
-        using var harness = Bit.Blex.Testing.BlexTestHarness.For<FailingStore>();
+        using var harness = Bit.Blex.BlexTestHarness.For<FailingStore>();
 
         Assert.ThrowsExactly<InvalidOperationException>(harness.Store.Boom);
 

@@ -29,7 +29,7 @@ public class TransitionSpecTests
 
         Assert.IsNull(result.Error, $"'{spec}' was rejected: {result.Error}");
 
-        var spring = result.Transition as BmSpring;
+        var spring = result.Transition as BmotionSpring;
 
         Assert.IsNotNull(spring, $"'{spec}' did not parse as a spring but as {result.Transition?.GetType().Name}.");
         Assert.AreEqual(260, spring.Stiffness);
@@ -39,18 +39,18 @@ public class TransitionSpecTests
     [TestMethod]
     public void Parse_PositionalArguments_FollowTheBmFactorySignatures()
     {
-        var spring = (BmSpring)BmotionTransitionSpec.Parse("spring(260, 12, 1.5)").Transition!;
+        var spring = (BmotionSpring)BmotionTransitionSpec.Parse("spring(260, 12, 1.5)").Transition!;
 
         Assert.AreEqual(260, spring.Stiffness);
         Assert.AreEqual(12, spring.Damping);
         Assert.AreEqual(1.5, spring.Mass);
 
-        var tween = (BmTween)BmotionTransitionSpec.Parse("tween(0.4, InOut)").Transition!;
+        var tween = (BmotionTween)BmotionTransitionSpec.Parse("tween(0.4, InOut)").Transition!;
 
         Assert.AreEqual(0.4, tween.Duration);
-        Assert.AreEqual(BmEase.InOut, tween.Ease);
+        Assert.AreEqual(BmotionEase.InOut, tween.Ease);
 
-        var inertia = (BmInertia)BmotionTransitionSpec.Parse("inertia(500, 700, 0.8)").Transition!;
+        var inertia = (BmotionInertia)BmotionTransitionSpec.Parse("inertia(500, 700, 0.8)").Transition!;
 
         Assert.AreEqual(500, inertia.Velocity);
         Assert.AreEqual(700, inertia.TimeConstant);
@@ -76,13 +76,13 @@ public class TransitionSpecTests
     [DataRow("spring damping: 30", 30)]
     public void Parse_ASingleNamedArgument_LandsInTheArgumentItNames(string spec, double damping)
     {
-        var spring = BmotionTransitionSpec.Parse(spec).Transition as BmSpring;
+        var spring = BmotionTransitionSpec.Parse(spec).Transition as BmotionSpring;
 
         Assert.IsNotNull(spring, $"'{spec}' did not parse as a spring.");
         Assert.AreEqual(damping, spring.Damping, $"'{spec}' did not set damping.");
 
         // And nothing leaked into the slot a positional argument would have taken.
-        Assert.AreEqual(new BmSpring().Stiffness, spring.Stiffness, $"'{spec}' also wrote to stiffness.");
+        Assert.AreEqual(new BmotionSpring().Stiffness, spring.Stiffness, $"'{spec}' also wrote to stiffness.");
     }
 
     [TestMethod]
@@ -106,7 +106,7 @@ public class TransitionSpecTests
             var result = BmotionTransitionSpec.Parse(spec);
 
             Assert.IsNull(result.Error);
-            Assert.IsInstanceOfType<BmTween>(result.Transition);
+            Assert.IsInstanceOfType<BmotionTween>(result.Transition);
         }
     }
 
@@ -115,11 +115,11 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("0.4, BackOut");
 
-        var tween = result.Transition as BmTween;
+        var tween = result.Transition as BmotionTween;
 
         Assert.IsNotNull(tween);
         Assert.AreEqual(0.4, tween.Duration);
-        Assert.AreEqual(BmEase.BackOut, tween.Ease);
+        Assert.AreEqual(BmotionEase.BackOut, tween.Ease);
         // The assumption is the kind of thing that produces a confidently wrong answer if unstated.
         Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("read as a tween", StringComparison.OrdinalIgnoreCase)),
                       $"No warning named the assumption. Warnings: {string.Join(" | ", result.Warnings)}");
@@ -152,7 +152,7 @@ public class TransitionSpecTests
                       $"The misspelling was dropped silently. Warnings: {string.Join(" | ", result.Warnings)}");
 
         // The rest of the spec still applied: a typo costs one argument, not the whole call.
-        Assert.AreEqual(12, ((BmSpring)result.Transition).Damping);
+        Assert.AreEqual(12, ((BmotionSpring)result.Transition).Damping);
     }
 
     [TestMethod]
@@ -160,7 +160,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("spring(stiffness: lots, damping: 12)");
 
-        var spring = (BmSpring)result.Transition!;
+        var spring = (BmotionSpring)result.Transition!;
 
         Assert.AreNotEqual(0, result.Warnings.Length);
         Assert.AreEqual(12, spring.Damping);
@@ -215,7 +215,7 @@ public class TransitionSpecTests
     [TestMethod]
     public void Parse_SecondsWrittenWithAUnit_IsStillANumber()
     {
-        var tween = (BmTween)BmotionTransitionSpec.Parse("tween(duration: 0.4s)").Transition!;
+        var tween = (BmotionTween)BmotionTransitionSpec.Parse("tween(duration: 0.4s)").Transition!;
 
         Assert.AreEqual(0.4, tween.Duration);
     }
@@ -226,14 +226,14 @@ public class TransitionSpecTests
     /// thing the spec says.
     /// </summary>
     [TestMethod]
-    [DataRow("tween(BackOut)", BmEase.BackOut)]
-    [DataRow("tween(Linear)", BmEase.Linear)]
-    [DataRow("tween(BmEase.InOut)", BmEase.InOut)]
-    public void Parse_AnEasingInThePositionalDurationSlot_IsReadAsTheEasing(string spec, BmEase expected)
+    [DataRow("tween(BackOut)", BmotionEase.BackOut)]
+    [DataRow("tween(Linear)", BmotionEase.Linear)]
+    [DataRow("tween(BmotionEase.InOut)", BmotionEase.InOut)]
+    public void Parse_AnEasingInThePositionalDurationSlot_IsReadAsTheEasing(string spec, BmotionEase expected)
     {
         var result = BmotionTransitionSpec.Parse(spec);
 
-        Assert.AreEqual(expected, ((BmTween)result.Transition!).Ease);
+        Assert.AreEqual(expected, ((BmotionTween)result.Transition!).Ease);
         Assert.IsFalse(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
                        $"The easing was reported as a bad duration. Warnings: {string.Join(" | ", result.Warnings)}");
     }
@@ -261,7 +261,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse(spec);
 
-        Assert.AreEqual(expected, ((BmTween)result.Transition!).Duration, 1e-9);
+        Assert.AreEqual(expected, ((BmotionTween)result.Transition!).Duration, 1e-9);
         Assert.IsFalse(result.Warnings.Any(warning => warning.Contains("is not a number", StringComparison.Ordinal)),
                        $"Warnings: {string.Join(" | ", result.Warnings)}");
     }
@@ -269,7 +269,7 @@ public class TransitionSpecTests
     [TestMethod]
     public void Parse_ABezier_KeepsItsOwnCommasTogether()
     {
-        var tween = (BmTween)BmotionTransitionSpec.Parse("tween(duration: 0.5, bezier: [0.42, 0, 0.58, 1])").Transition!;
+        var tween = (BmotionTween)BmotionTransitionSpec.Parse("tween(duration: 0.5, bezier: [0.42, 0, 0.58, 1])").Transition!;
 
         Assert.AreEqual(0.5, tween.Duration);
         CollectionAssert.AreEqual(new[] { 0.42, 0, 0.58, 1.0 }, tween.Bezier);
@@ -280,7 +280,7 @@ public class TransitionSpecTests
     {
         var result = BmotionTransitionSpec.Parse("tween(duration: 0.5, bezier: [0.42, 0])");
 
-        Assert.IsNull(((BmTween)result.Transition!).Bezier);
+        Assert.IsNull(((BmotionTween)result.Transition!).Bezier);
         Assert.IsTrue(result.Warnings.Any(warning => warning.Contains("four numbers", StringComparison.OrdinalIgnoreCase)),
                       $"Warnings: {string.Join(" | ", result.Warnings)}");
     }
@@ -295,13 +295,13 @@ public class TransitionSpecTests
     }
 
     [TestMethod]
-    [DataRow("InOut", BmEase.InOut)]
-    [DataRow("inout", BmEase.InOut)]
-    [DataRow("BmEase.BackOut", BmEase.BackOut)]
-    [DataRow("ease.BackOut", BmEase.BackOut)]
-    [DataRow("easeBackOut", BmEase.BackOut)]
-    [DataRow("Linear", BmEase.Linear)]
-    public void TryEase_AcceptsEverySpellingAnAgentIsLikelyToWrite(string text, BmEase expected)
+    [DataRow("InOut", BmotionEase.InOut)]
+    [DataRow("inout", BmotionEase.InOut)]
+    [DataRow("BmotionEase.BackOut", BmotionEase.BackOut)]
+    [DataRow("ease.BackOut", BmotionEase.BackOut)]
+    [DataRow("easeBackOut", BmotionEase.BackOut)]
+    [DataRow("Linear", BmotionEase.Linear)]
+    public void TryEase_AcceptsEverySpellingAnAgentIsLikelyToWrite(string text, BmotionEase expected)
     {
         Assert.IsTrue(BmotionTransitionSpec.TryEase(text, out var ease), $"'{text}' was not recognised.");
         Assert.AreEqual(expected, ease);
@@ -362,7 +362,7 @@ public class TransitionSpecTests
         {
             CultureInfo.CurrentCulture = new CultureInfo("de-DE");
 
-            var tween = (BmTween)BmotionTransitionSpec.Parse("tween(duration: 0.4)").Transition!;
+            var tween = (BmotionTween)BmotionTransitionSpec.Parse("tween(duration: 0.4)").Transition!;
 
             Assert.AreEqual(0.4, tween.Duration);
 

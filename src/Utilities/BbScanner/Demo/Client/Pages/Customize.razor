@@ -22,8 +22,8 @@
 @* The custom properties are set on the scanner itself, through the unmatched attribute
    capture, because a declaration on the element always beats one inherited from an ancestor. *@
                 <div id="scanner-language" lang="@_language" dir="@(_language == "fa" ? "rtl" : "ltr")">
-                    <BbScanner Formats="BbBarcodeFormat.All"
-                               Region="BbScanRegion.CenteredSquare(0.72)"
+                    <BbScanner Formats="BbScannerBarcodeFormat.All"
+                               Region="BbScannerScanRegion.CenteredSquare(0.72)"
                                ShowControls="_showControls"
                                CssClass="demo-scanner"
                                AriaLabel="Customisable barcode scanner"
@@ -290,7 +290,7 @@
         Instruction,
     }
 
-    private BbBarcodeResult? _last;
+    private BbScannerBarcodeResult? _last;
     private OverlayStyle _overlayStyle = OverlayStyle.Default;
     private string _language = "en";
 

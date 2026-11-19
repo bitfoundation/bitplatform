@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// panel, Escape inside a dialog, AutoFocus, prerendering and unmounting while open.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPhoneInputE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/phone-input";

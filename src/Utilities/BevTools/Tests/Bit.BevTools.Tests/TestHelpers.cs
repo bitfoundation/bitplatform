@@ -9,7 +9,7 @@ namespace Bit.BevTools.Tests;
 internal static class TestHelpers
 {
     /// <summary>Creates an enabled BevTools session backed by a fresh DI scope (no renderer).</summary>
-    public static (BevToolsSession Session, IServiceScope Scope) CreateSession(Action<BitBevToolsOptions>? configure = null, Action<IServiceCollection>? services = null)
+    public static (BevToolsSession Session, IServiceScope Scope) CreateSession(Action<BevToolsOptions>? configure = null, Action<IServiceCollection>? services = null)
     {
         var collection = new ServiceCollection();
         services?.Invoke(collection);

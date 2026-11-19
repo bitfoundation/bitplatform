@@ -14,7 +14,7 @@
 <div class="surface narrow">
     <BbScanner @ref="_scanner"
                AutoStart="false"
-               Formats="BbBarcodeFormat.All"
+               Formats="BbScannerBarcodeFormat.All"
                OnScan="HandleScan"
                OnError="e => _error = e" />
 </div>
@@ -64,12 +64,12 @@
 <ResultList Results="_results" />
 
 @code {
-    private readonly List<BbBarcodeResult> _results = [];
+    private readonly List<BbScannerBarcodeResult> _results = [];
     private readonly CancellationTokenSource _leaving = new();
     private BbScanner? _scanner;
     private BbScannerException? _error;
 
-    private void HandleScan(BbBarcodeResult result)
+    private void HandleScan(BbScannerBarcodeResult result)
     {
         _error = null;
         ResultList.Prepend(_results, [result]);
@@ -134,13 +134,13 @@
             return;
         }
 
-        var qr = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.QrCode);
+        var qr = SampleCatalog.All.First(s => s.Format == BbScannerBarcodeFormat.QrCode);
         using var upright = SampleCatalog.RenderMatrix(qr, scale: 4);
         using var turned = ImageTransforms.Rotate(upright, 20);
 
         // The packed RGBA an application gets from a canvas or a camera.
         var rgba = ImageTransforms.ToRgba(turned, tint: false);
-        var result = _scanner.DecodeImage(rgba, turned.Width, turned.Height, BbPixelFormat.Rgba32);
+        var result = _scanner.DecodeImage(rgba, turned.Width, turned.Height, BbScannerPixelFormat.Rgba32);
         if (result is null)
         {
             _error = new BbScannerException(BbScannerErrorKind.Unknown, "The generated image did not decode.");

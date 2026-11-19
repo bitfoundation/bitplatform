@@ -28,7 +28,7 @@
     <div class="number-grid">
         @foreach (var number in _numbers)
         {
-            <Bmotion @key="number" Layout="true" LayoutDependency="_arrangement" Transition="Bm.Tween(0.4, BmEase.InOut)">
+            <Bmotion @key="number" Layout="true" LayoutDependency="_arrangement" Transition="Bm.Tween(0.4, BmotionEase.InOut)">
                 <div class="number-tile tone-@(number % 4)">@number</div>
             </Bmotion>
         }
@@ -50,7 +50,7 @@
                 @tab
                 @if (tab == _tab)
                 {
-                    <Bmotion LayoutId="tab-underline" Layout="true" Transition="Bm.Tween(0.3, BmEase.InOut)">
+                    <Bmotion LayoutId="tab-underline" Layout="true" Transition="Bm.Tween(0.3, BmotionEase.InOut)">
                         <span class="underline"></span>
                     </Bmotion>
                 }

@@ -422,12 +422,12 @@ public class InertiaDriverTests
     [TestMethod]
     public void BmInertia_CarriesItsBounce_IntoTheConfig()
     {
-        var inertia = new BmInertia { BounceStiffness = 250, BounceDamping = 30 };
+        var inertia = new BmotionInertia { BounceStiffness = 250, BounceDamping = 30 };
         var config = inertia.ToConfig();
 
         Assert.AreEqual(250, config.BounceStiffness);
         Assert.AreEqual(30, config.BounceDamping);
         Assert.AreEqual(250, config.Clone().BounceStiffness);
-        Assert.IsNull(new BmInertia().ToConfig().BounceStiffness, "unset means the context's default");
+        Assert.IsNull(new BmotionInertia().ToConfig().BounceStiffness, "unset means the context's default");
     }
 }

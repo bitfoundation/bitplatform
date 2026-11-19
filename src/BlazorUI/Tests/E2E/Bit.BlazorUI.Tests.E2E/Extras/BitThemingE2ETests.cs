@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// bit-theme-system with a renamed light / dark pair, bit-theme-color-meta, bit-theme-view-transition).
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitThemingE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/theming";

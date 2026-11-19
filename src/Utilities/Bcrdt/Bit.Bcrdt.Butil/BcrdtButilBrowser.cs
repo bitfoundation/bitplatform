@@ -1,55 +1,7 @@
 ﻿using Bit.Butil;
 using Microsoft.JSInterop;
 
-namespace Bit.Bcrdt.Butil;
-
-/// <summary>Something the browser reported about the page or the network.</summary>
-internal enum BcrdtBrowserSignal
-{
-    /// <summary><c>online</c>: the browser believes it regained connectivity.</summary>
-    Online,
-
-    /// <summary><c>offline</c>: the browser believes it lost connectivity.</summary>
-    Offline,
-
-    /// <summary><c>visibilitychange</c> to hidden: another tab, a minimized window, a backgrounded app.</summary>
-    Hidden,
-
-    /// <summary><c>visibilitychange</c> to visible.</summary>
-    Visible,
-
-    /// <summary><c>pagehide</c>: the page is being unloaded, or put in the back/forward cache.</summary>
-    PageHide,
-
-    /// <summary><c>pageshow</c>: the page was loaded, or restored from the back/forward cache.</summary>
-    PageShow,
-
-    /// <summary><c>freeze</c>: the browser is about to suspend the page's tasks, and may discard it.</summary>
-    Freeze,
-
-    /// <summary><c>resume</c>: a frozen page runs again.</summary>
-    Resume,
-}
-
-/// <summary>The few things the browser lifecycle needs from the browser.</summary>
-/// <remarks>
-/// An interface so the decisions in <see cref="BcrdtBrowserLifecycle"/> can be exercised without a browser; the
-/// one implementation that ships, <see cref="BcrdtButilBrowser"/>, is a thin translation of Bit.Butil's services.
-/// </remarks>
-internal interface IBcrdtBrowser
-{
-    /// <summary>Whether this process runs in a browser, so the events below exist.</summary>
-    bool IsAvailable { get; }
-
-    /// <summary>Starts reporting the signals; disposing the result stops it.</summary>
-    ValueTask<IAsyncDisposable> SubscribeAsync(Func<BcrdtBrowserSignal, Task> handler, CancellationToken cancellationToken);
-
-    /// <summary><c>navigator.onLine</c>.</summary>
-    ValueTask<bool> IsOnlineAsync(CancellationToken cancellationToken);
-
-    /// <summary>Asks for persistent storage unless it is already granted; whether it is.</summary>
-    ValueTask<bool> RequestPersistentStorageAsync(CancellationToken cancellationToken);
-}
+namespace Bit.Bcrdt;
 
 /// <summary>The browser, as Bit.Butil's services reach it.</summary>
 internal sealed class BcrdtButilBrowser(Window window, Document document, Navigator navigator, StorageManager storageManager) : IBcrdtBrowser

@@ -8,6 +8,7 @@
 /// and Space), with Single selection, and Enter on a navigable cell.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridDetailE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/detail";

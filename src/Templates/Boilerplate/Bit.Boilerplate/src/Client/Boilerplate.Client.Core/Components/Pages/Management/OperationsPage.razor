@@ -49,7 +49,7 @@
                          FitWidth />
             <BitButton Variant="BitVariant.Outline"
                        IconName="@BitIconName.Refresh"
-                       IsLoading="isLoading"
+                       Loading="isLoading"
                        OnClick="WrapHandled(Load)">
                 Refresh
             </BitButton>
@@ -419,7 +419,7 @@
                                         <BitStack Horizontal Wrap FitHeight VerticalAlign="BitAlignment.Center" Gap="0.75rem">
                                             <BitButton Size="BitSize.Small"
                                                        IconName="@buttonIcon"
-                                                       IsLoading="@(runningTest == manual.Test)"
+                                                       Loading="@(runningTest == manual.Test)"
                                                        Disabled="@(runningTest is not ManualTest.None)"
                                                        OnClick="WrapHandled(() => RunTest(manual.Test))">
                                                 @buttonText

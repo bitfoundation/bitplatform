@@ -9,6 +9,7 @@
 /// disabled and read-only time pickers.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDatePickerTimeE2ETests : BitDatePickersE2ETestBase
 {
     private const string Route = "/e2e/date-picker/time";

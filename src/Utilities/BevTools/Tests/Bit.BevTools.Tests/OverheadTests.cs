@@ -53,7 +53,7 @@ public class OverheadTests : BunitContext
         public void Configure(IBevToolsExtensionBuilder builder) => builder.AddDiagnosticRule(new SlowRule());
     }
 
-    private sealed class SlowRule : IBevDiagnosticRule
+    private sealed class SlowRule : IBevToolsDiagnosticRule
     {
         public string Id => "test.slow";
 
@@ -61,7 +61,7 @@ public class OverheadTests : BunitContext
 
         public string Description => "";
 
-        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context)
         {
             var watch = System.Diagnostics.Stopwatch.StartNew();
             while (watch.ElapsedMilliseconds < 20)

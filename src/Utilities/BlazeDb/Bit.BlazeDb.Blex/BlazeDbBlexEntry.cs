@@ -1,4 +1,4 @@
-namespace Bit.BlazeDb.Blex;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// One persisted Blex store - or any other key Blex writes - as a row of the <c>blex_state</c> table. Register the table

@@ -1,6 +1,6 @@
 using Bit.Bcrdt;
 
-namespace Bit.BlazeDb.Bcrdt;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// An <see cref="IBcrdtDocumentStore"/> that keeps each document's updates as rows of a BlazeDb table

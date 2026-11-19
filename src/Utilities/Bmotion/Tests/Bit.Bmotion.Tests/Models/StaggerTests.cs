@@ -20,7 +20,7 @@ public class StaggerTests
     [TestMethod]
     public void OneD_Center_RadiatesFromMiddle()
     {
-        var s = Bm.Stagger(0.1, BmStaggerFrom.Center);
+        var s = Bm.Stagger(0.1, BmotionStaggerFrom.Center);
         Assert.AreEqual(0.2, s.DelayFor(0, 5), Tol);
         Assert.AreEqual(0, s.DelayFor(2, 5), Tol);
         Assert.AreEqual(0.2, s.DelayFor(4, 5), Tol);
@@ -29,7 +29,7 @@ public class StaggerTests
     [TestMethod]
     public void OneD_StartDelay_IsAdded()
     {
-        var s = Bm.Stagger(0.1, BmStaggerFrom.First, startDelay: 0.5);
+        var s = Bm.Stagger(0.1, BmotionStaggerFrom.First, startDelay: 0.5);
         Assert.AreEqual(0.5, s.DelayFor(0, 5), Tol);
         Assert.AreEqual(0.7, s.DelayFor(2, 5), Tol);
     }
@@ -40,7 +40,7 @@ public class StaggerTests
     public void Grid_Center_RadiatesRadially()
     {
         // 3x3 grid, radiate from the center cell (1,1).
-        var s = Bm.Stagger(0.1, BmStaggerFrom.Center, grid: (3, 3));
+        var s = Bm.Stagger(0.1, BmotionStaggerFrom.Center, grid: (3, 3));
         Assert.AreEqual(0, s.DelayFor(4, 9), Tol);                    // center cell
         Assert.AreEqual(0.1, s.DelayFor(1, 9), Tol);                 // one cell up (distance 1)
         Assert.AreEqual(0.1 * Math.Sqrt(2), s.DelayFor(0, 9), Tol);  // corner (distance √2)
@@ -49,7 +49,7 @@ public class StaggerTests
     [TestMethod]
     public void Grid_First_RadiatesFromTopLeft()
     {
-        var s = Bm.Stagger(0.1, BmStaggerFrom.First, grid: (3, 3));
+        var s = Bm.Stagger(0.1, BmotionStaggerFrom.First, grid: (3, 3));
         Assert.AreEqual(0, s.DelayFor(0, 9), Tol);                    // top-left origin
         Assert.AreEqual(0.1 * Math.Sqrt(8), s.DelayFor(8, 9), Tol);  // bottom-right (√8)
     }

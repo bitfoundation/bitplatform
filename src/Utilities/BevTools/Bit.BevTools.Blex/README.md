@@ -18,6 +18,6 @@ builder.Services.AddBevToolsBlex();
 
 State → *Blex* lists the actions newest first, each with the members it changed; *⟲ restore* on one puts every store
 back as it was right after it. BevTools offers restoring only in Development or in a process that serves one user
-(WebAssembly, Hybrid), as it does for any provider that implements `IBevStateRestorer`. A restore Blex makes for another
+(WebAssembly, Hybrid), as it does for any provider that implements `IBevToolsStateRestorer`. A restore Blex makes for another
 reason - the Redux DevTools, persistence, another tab - is recorded as a change too. The last hundred states are kept
 for restoring.

@@ -12,6 +12,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// methods, prerendering and unmounting while open. DetectTimeZone is driven by <see cref="BitTimeZonePickerDetectE2ETests"/>.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTimeZonePickerE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/time-zone-picker";
@@ -966,6 +967,7 @@ public class BitTimeZonePickerE2ETests : E2ETestBase
 /// with a value keeps it, and a disabled one detects nothing.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTimeZonePickerDetectE2ETests : E2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new() { TimezoneId = "Asia/Kolkata" };

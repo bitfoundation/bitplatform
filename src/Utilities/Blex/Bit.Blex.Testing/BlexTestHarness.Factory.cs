@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Nodes;
 
-namespace Bit.Blex.Testing;
+namespace Bit.Blex;
 
 /// <summary>Factory helpers for <see cref="BlexTestHarness{TStore}"/>.</summary>
 public static class BlexTestHarness

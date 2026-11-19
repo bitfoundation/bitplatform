@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Security.Claims;
-using Bit.Bcrdt.Server;
-using Bit.Bcrdt.SignalR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using LoopbackHost = Bit.Bcrdt.Tests.SyncRegressionTests.LoopbackHost;

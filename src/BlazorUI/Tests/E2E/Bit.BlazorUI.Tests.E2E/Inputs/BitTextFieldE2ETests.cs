@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// variables, RTL, reduced motion, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTextFieldE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/text-field";

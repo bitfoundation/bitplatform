@@ -253,7 +253,7 @@ internal static class BelemetryBrowserConfigFactory
         {
             try
             {
-                var connectionString = AzureMonitorConnectionString.Parse(azure.ConnectionString!);
+                var connectionString = BelemetryAzureMonitorConnectionString.Parse(azure.ConnectionString!);
                 Add(connectionString.IngestionEndpoint.ToString());
                 Add(connectionString.LiveEndpoint.ToString());
             }

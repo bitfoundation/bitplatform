@@ -69,7 +69,7 @@ public class ScaleTests : BunitContext
         {
             // BevTools holds components weakly, so the test has to keep them alive itself.
             var alive = new List<ChildComponent>(50_000);
-            BevComponentRecord? parent = null;
+            BevToolsComponentRecord? parent = null;
             for (var i = 0; i < 50_000; i++)
             {
                 var component = new ChildComponent();
@@ -78,7 +78,7 @@ public class ScaleTests : BunitContext
                 record.ComponentId = i;
                 record.Parent = parent;
                 record.ParentResolved = true;
-                record.AddRender(new BevRenderSample { Sequence = i, At = DateTimeOffset.UtcNow, StartTicks = Stopwatch.GetTimestamp() });
+                record.AddRender(new BevToolsRenderSample { Sequence = i, At = DateTimeOffset.UtcNow, StartTicks = Stopwatch.GetTimestamp() });
                 parent = record;
             }
 
@@ -102,12 +102,12 @@ public class ScaleTests : BunitContext
                 var record = session.Components.Register(component, typeof(ChildComponent), isBevTools: false, isHidden: false)!;
                 for (var r = 0; r < session.Options.MaxRendersPerComponent; r++)
                 {
-                    record.AddRender(new BevRenderSample { Sequence = r, At = DateTimeOffset.UtcNow, StartTicks = Stopwatch.GetTimestamp(), DurationMs = (i * 7 + r) % 13 });
+                    record.AddRender(new BevToolsRenderSample { Sequence = r, At = DateTimeOffset.UtcNow, StartTicks = Stopwatch.GetTimestamp(), DurationMs = (i * 7 + r) % 13 });
                 }
             }
 
             var start = Stopwatch.GetTimestamp();
-            var profile = BevRenderProfile.Of(session);
+            var profile = BevToolsRenderProfile.Of(session);
             var elapsed = Stopwatch.GetElapsedTime(start);
 
             var type = Assert.ContainsSingle(profile.Types);
@@ -127,7 +127,7 @@ public class ScaleTests : BunitContext
         using (scope)
         {
             var alive = new List<ChildComponent>(20_000);
-            BevComponentRecord? parent = null;
+            BevToolsComponentRecord? parent = null;
             for (var i = 0; i < 20_000; i++)
             {
                 var component = new ChildComponent();
@@ -135,11 +135,11 @@ public class ScaleTests : BunitContext
                 var record = session.Components.Register(component, typeof(ChildComponent), isBevTools: false, isHidden: false)!;
                 record.Parent = parent;
                 record.ParentResolved = true;
-                record.AddRender(new BevRenderSample { Sequence = i, At = DateTimeOffset.UtcNow, StartTicks = Stopwatch.GetTimestamp(), BatchId = 7, DurationMs = 0.5 });
+                record.AddRender(new BevToolsRenderSample { Sequence = i, At = DateTimeOffset.UtcNow, StartTicks = Stopwatch.GetTimestamp(), BatchId = 7, DurationMs = 0.5 });
                 parent = record;
             }
 
-            var tree = BevBatchCostTree.Build(session.Components.All, 7, maxRows: 300);
+            var tree = BevToolsBatchCostTree.Build(session.Components.All, 7, maxRows: 300);
 
             Assert.HasCount(300, tree.Rows);
             Assert.AreEqual(19_700, tree.Omitted);

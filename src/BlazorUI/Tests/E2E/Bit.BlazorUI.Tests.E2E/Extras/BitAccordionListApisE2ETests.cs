@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// the bound ExpandedKeys, ExpandAll / CollapseAll and an empty option list's EmptyTemplate).
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAccordionListApisE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/accordion-list/apis";

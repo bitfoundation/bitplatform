@@ -1,7 +1,6 @@
-﻿using Bit.Bsqlite.Storage;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Storage.Opfs;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Persists SQLite databases in the origin's private file system via <c>OPFSCoopSyncVFS</c>.

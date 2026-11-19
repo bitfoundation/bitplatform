@@ -71,7 +71,7 @@ public class HttpBodiesTests
             Assert.IsNull(record.RequestBody);
             Assert.IsNull(record.ResponseBody);
             Assert.IsNull(record.RequestBodyNote);
-            Assert.AreEqual(BevCapabilityStatus.NotAvailable, session.Capabilities.Single(c => c.Name == "Request/response bodies").Status);
+            Assert.AreEqual(BevToolsCapabilityStatus.NotAvailable, session.Capabilities.Single(c => c.Name == "Request/response bodies").Status);
         }
     }
 
@@ -96,8 +96,8 @@ public class HttpBodiesTests
             StringAssert.Contains(record.ResponseBody, "\"accessToken\": \"«redacted»\"");
             StringAssert.Contains(record.ResponseBody, "\"name\": \"Ada\"");
             Assert.DoesNotContain("hunter2", record.ResponseBody!, StringComparison.Ordinal);
-            Assert.AreEqual(BevCapabilityStatus.Available, session.Capabilities.Single(c => c.Name == "Request/response bodies").Status);
-            StringAssert.Contains(BevSessionExporter.ToJson(session, new BevSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }), "\"requestBody\":");
+            Assert.AreEqual(BevToolsCapabilityStatus.Available, session.Capabilities.Single(c => c.Name == "Request/response bodies").Status);
+            StringAssert.Contains(BevToolsSessionExporter.ToJson(session, new BevToolsSessionExportOptions { Indented = false, Sections = new HashSet<string> { "http" } }), "\"requestBody\":");
         }
     }
 
@@ -177,7 +177,7 @@ public class HttpBodiesTests
         (session, scope) = TestHelpers.CreateSession(o =>
         {
             o.CaptureHttpBodies = true;
-            o.ValueAccess = BevValueAccess.Shallow;
+            o.ValueAccess = BevToolsValueAccess.Shallow;
         });
         using (scope)
         {

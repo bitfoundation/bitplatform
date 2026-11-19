@@ -6,8 +6,8 @@
     <h1>Presets</h1>
     <p class="bb-subtitle">
         Most interfaces animate the same dozen things: a modal opening, a toast arriving, a card lifting under
-        the pointer, a list revealing itself on scroll. <strong>BmPresets</strong> packages each one, its
-        transition included, so <code>Preset="BmPresets.Modal()"</code> replaces an <code>Initial</code>, an
+        the pointer, a list revealing itself on scroll. <strong>BmotionPresets</strong> packages each one, its
+        transition included, so <code>Preset="BmotionPresets.Modal()"</code> replaces an <code>Initial</code>, an
         <code>Animate</code>, an <code>Exit</code> and a tuned spring. A preset only fills in what the element
         leaves unset, so anything you write on the element still wins.
     </p>
@@ -70,7 +70,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Disclosure panels</h3>
     <p>
-        <strong>BmPresets.Expand()</strong> opens an accordion panel to its natural height - <code>height: auto</code>,
+        <strong>BmotionPresets.Expand()</strong> opens an accordion panel to its natural height - <code>height: auto</code>,
         measured, so the panel follows its content once open - and closes it back to nothing on exit. The button stays
         outside the animated panel and says whether it is open with <code>aria-expanded</code>; the panel needs
         <code>overflow: hidden</code>. Under reduced motion the height lands at once and the fade remains.
@@ -80,7 +80,7 @@
             <button class="btn btn-secondary" aria-expanded="@(_expanded ? "true" : "false")" aria-controls="expand-panel"
                     @onclick="() => _expanded = !_expanded">@(_expanded ? "Hide details" : "Show details")</button>
             <BmotionAnimatePresence IsPresent="_expanded">
-                <Bmotion Preset="BmPresets.Expand()">
+                <Bmotion Preset="BmotionPresets.Expand()">
                     <div id="expand-panel" style="overflow: hidden">
                         <p style="margin: .75rem 0 0">
                             The panel grows to fit whatever it holds, and keeps following it once open - add a line,
@@ -103,15 +103,15 @@
     <div class="demo-row">
         <div class="demo-card stack">
             <span class="demo-label">HoverLift</span>
-            <Bmotion Preset="BmPresets.HoverLift()"><div class="preset-tile">Card</div></Bmotion>
+            <Bmotion Preset="BmotionPresets.HoverLift()"><div class="preset-tile">Card</div></Bmotion>
         </div>
         <div class="demo-card stack">
             <span class="demo-label">HoverScale</span>
-            <Bmotion Preset="BmPresets.HoverScale()"><div class="box" /></Bmotion>
+            <Bmotion Preset="BmotionPresets.HoverScale()"><div class="box" /></Bmotion>
         </div>
         <div class="demo-card stack">
             <span class="demo-label">Press</span>
-            <Bmotion Preset="BmPresets.Press()"><button type="button" class="sample-btn">Press me</button></Bmotion>
+            <Bmotion Preset="BmotionPresets.Press()"><button type="button" class="sample-btn">Press me</button></Bmotion>
         </div>
     </div>
     <CodeSnippet Code="@_gestureCode" />
@@ -149,19 +149,19 @@
     <div class="demo-row">
         @for (int i = 0; i < 3; i++)
         {
-            var from = (BmEdge)(i % 4);
+            var from = (BmotionEdge)(i % 4);
             <div class="demo-card stack">
-                <span class="demo-label">Reveal(from: BmEdge.@from)</span>
-                <Bmotion Preset="BmPresets.Reveal(from: from)"><div class="box box-sm" /></Bmotion>
+                <span class="demo-label">Reveal(from: BmotionEdge.@from)</span>
+                <Bmotion Preset="BmotionPresets.Reveal(from: from)"><div class="box box-sm" /></Bmotion>
             </div>
         }
         <div class="demo-card stack">
             <span class="demo-label">Spin</span>
-            <Bmotion Preset="BmPresets.Spin()"><div class="preset-spinner" role="status" aria-label="Loading" /></Bmotion>
+            <Bmotion Preset="BmotionPresets.Spin()"><div class="preset-spinner" role="status" aria-label="Loading" /></Bmotion>
         </div>
         <div class="demo-card stack">
             <span class="demo-label">Shimmer</span>
-            <Bmotion Preset="BmPresets.Shimmer()"><div class="preset-skeleton" aria-hidden="true" /></Bmotion>
+            <Bmotion Preset="BmotionPresets.Shimmer()"><div class="preset-skeleton" aria-hidden="true" /></Bmotion>
         </div>
     </div>
     <CodeSnippet Code="@_loopCode" />
@@ -172,7 +172,7 @@
     <p>
         Every factory takes the knobs that matter for it, such as the edge a slide starts from or how far a card
         lifts. Presets add with <code>+</code>, target by target, and the right-hand side's transition wins.
-        They are records, so <code>with</code> changes a single part, and <code>new BmPreset { … }</code> makes
+        They are records, so <code>with</code> changes a single part, and <code>new BmotionPreset { … }</code> makes
         one of your own - an app's house entrance, written once and reused everywhere. Set a property on the
         element and it overrides the preset's.
     </p>
@@ -186,13 +186,13 @@
         <div class="demo-card stack presence-stage preset-stage">
             <span class="demo-label">Slide(), with the element's own transition</span>
             <BmotionAnimatePresence IsPresent="_shown">
-                <Bmotion Preset="BmPresets.Slide(from: BmEdge.Left, distance: 60)" Transition="Bm.Tween(0.9, BmEase.Out)">
+                <Bmotion Preset="BmotionPresets.Slide(from: BmotionEdge.Left, distance: 60)" Transition="Bm.Tween(0.9, BmotionEase.Out)">
                     <div class="box box-sm" />
                 </Bmotion>
             </BmotionAnimatePresence>
         </div>
         <div class="demo-card stack presence-stage preset-stage">
-            <span class="demo-label">new BmPreset { … } &middot; your own</span>
+            <span class="demo-label">new BmotionPreset { … } &middot; your own</span>
             <BmotionAnimatePresence IsPresent="_shown">
                 <Bmotion Preset="_houseEntrance"><div class="box box-sm" /></Bmotion>
             </BmotionAnimatePresence>
@@ -217,7 +217,7 @@
                 @onclick="() => _open = !_open">Details</button>
 
         <BmotionAnimatePresence IsPresent="_open">
-            <Bmotion Preset="BmPresets.Expand()">
+            <Bmotion Preset="BmotionPresets.Expand()">
                 <div id="details" style="overflow: hidden">...</div>
             </Bmotion>
         </BmotionAnimatePresence>
@@ -227,38 +227,38 @@
         }
         """;
 
-    private readonly (string Name, BmPreset Preset)[] _enterExit =
+    private readonly (string Name, BmotionPreset Preset)[] _enterExit =
     [
-        ("Fade", BmPresets.Fade()),
-        ("Slide", BmPresets.Slide()),
-        ("Scale", BmPresets.Scale()),
-        ("Pop", BmPresets.Pop()),
-        ("Blur", BmPresets.Blur()),
-        ("Rotate", BmPresets.Rotate()),
-        ("Flip", BmPresets.Flip()),
+        ("Fade", BmotionPresets.Fade()),
+        ("Slide", BmotionPresets.Slide()),
+        ("Scale", BmotionPresets.Scale()),
+        ("Pop", BmotionPresets.Pop()),
+        ("Blur", BmotionPresets.Blur()),
+        ("Rotate", BmotionPresets.Rotate()),
+        ("Flip", BmotionPresets.Flip()),
     ];
 
-    private readonly (string Name, BmPreset Preset)[] _overlays =
+    private readonly (string Name, BmotionPreset Preset)[] _overlays =
     [
-        ("Modal", BmPresets.Modal()),
-        ("Drawer", BmPresets.Drawer()),
-        ("Popover", BmPresets.Popover()),
-        ("Tooltip", BmPresets.Tooltip()),
-        ("Toast", BmPresets.Toast()),
+        ("Modal", BmotionPresets.Modal()),
+        ("Drawer", BmotionPresets.Drawer()),
+        ("Popover", BmotionPresets.Popover()),
+        ("Tooltip", BmotionPresets.Tooltip()),
+        ("Toast", BmotionPresets.Toast()),
     ];
 
-    private readonly (string Name, BmPreset Preset)[] _attention =
+    private readonly (string Name, BmotionPreset Preset)[] _attention =
     [
-        ("Pulse", BmPresets.Pulse()),
-        ("Shake", BmPresets.Shake()),
-        ("Wiggle", BmPresets.Wiggle()),
-        ("Jump", BmPresets.Jump()),
-        ("Heartbeat", BmPresets.Heartbeat()),
+        ("Pulse", BmotionPresets.Pulse()),
+        ("Shake", BmotionPresets.Shake()),
+        ("Wiggle", BmotionPresets.Wiggle()),
+        ("Jump", BmotionPresets.Jump()),
+        ("Heartbeat", BmotionPresets.Heartbeat()),
     ];
 
-    private readonly BmPreset _composed = BmPresets.Fade() + BmPresets.Scale(from: 0.5) with { Transition = Bm.Spring(bounce: 0.5, duration: 0.5) };
+    private readonly BmotionPreset _composed = BmotionPresets.Fade() + BmotionPresets.Scale(from: 0.5) with { Transition = Bm.Spring(bounce: 0.5, duration: 0.5) };
 
-    private static readonly BmPreset _houseEntrance = new()
+    private static readonly BmotionPreset _houseEntrance = new()
     {
         Initial = Bm.To(opacity: 0, scale: 0.6, rotate: -20),
         Animate = Bm.To(opacity: 1, scale: 1, rotate: 0),
@@ -268,7 +268,7 @@
 
     private const string _enterCode = """
         <BmotionAnimatePresence IsPresent="_open">
-            <Bmotion Preset="BmPresets.Slide(from: BmEdge.Bottom, distance: 24)">
+            <Bmotion Preset="BmotionPresets.Slide(from: BmotionEdge.Bottom, distance: 24)">
                 <div class="card">…</div>
             </Bmotion>
         </BmotionAnimatePresence>
@@ -280,13 +280,13 @@
 
     private const string _overlayCode = """
         <BmotionAnimatePresence IsPresent="_dialogOpen">
-            <Bmotion Preset="BmPresets.Modal()">
+            <Bmotion Preset="BmotionPresets.Modal()">
                 <div role="dialog" aria-modal="true" class="dialog">…</div>
             </Bmotion>
         </BmotionAnimatePresence>
 
         <BmotionAnimatePresence IsPresent="_menuOpen">
-            <Bmotion Preset="BmPresets.Popover(origin: BmEdge.Top)">
+            <Bmotion Preset="BmotionPresets.Popover(origin: BmotionEdge.Top)">
                 <ul role="menu" class="menu">…</ul>
             </Bmotion>
         </BmotionAnimatePresence>
@@ -298,13 +298,13 @@
         """;
 
     private const string _gestureCode = """
-        <Bmotion Preset="BmPresets.HoverLift(lift: 6)"><article class="card">…</article></Bmotion>
-        <Bmotion Preset="BmPresets.Press()"><button>Save</button></Bmotion>
+        <Bmotion Preset="BmotionPresets.HoverLift(lift: 6)"><article class="card">…</article></Bmotion>
+        <Bmotion Preset="BmotionPresets.Press()"><button>Save</button></Bmotion>
         """;
 
     private const string _attentionCode = """
         @* A new key mounts it afresh, which plays it again *@
-        <Bmotion @key="_attempt" Preset="BmPresets.Shake()">
+        <Bmotion @key="_attempt" Preset="BmotionPresets.Shake()">
             <input type="password" />
         </Bmotion>
 
@@ -314,31 +314,31 @@
         """;
 
     private const string _loopCode = """
-        <Bmotion Preset="BmPresets.Reveal(from: BmEdge.Left)"><section>…</section></Bmotion>
+        <Bmotion Preset="BmotionPresets.Reveal(from: BmotionEdge.Left)"><section>…</section></Bmotion>
 
-        <Bmotion Preset="BmPresets.Spin()"><div class="spinner" role="status" aria-label="Loading" /></Bmotion>
+        <Bmotion Preset="BmotionPresets.Spin()"><div class="spinner" role="status" aria-label="Loading" /></Bmotion>
 
         <style>
             .skeleton { background: linear-gradient(90deg, #eee 25%, #f8f8f8 50%, #eee 75%); background-size: 200% 100%; }
         </style>
-        <Bmotion Preset="BmPresets.Shimmer()"><div class="skeleton" /></Bmotion>
+        <Bmotion Preset="BmotionPresets.Shimmer()"><div class="skeleton" /></Bmotion>
         """;
 
     private const string _composeCode = """
         @code {
             // Target by target: the fade fades, the scale scales - and the right-hand side's transition wins.
-            BmPreset enter = BmPresets.Fade() + BmPresets.Scale(from: 0.5) with { Transition = Bm.Spring(bounce: 0.5) };
+            BmotionPreset enter = BmotionPresets.Fade() + BmotionPresets.Scale(from: 0.5) with { Transition = Bm.Spring(bounce: 0.5) };
         }
 
         <Bmotion Preset="enter">…</Bmotion>
 
         @* Anything set on the element wins over the preset *@
-        <Bmotion Preset="BmPresets.Slide(from: BmEdge.Left, distance: 60)" Transition="Bm.Tween(0.9, BmEase.Out)">…</Bmotion>
+        <Bmotion Preset="BmotionPresets.Slide(from: BmotionEdge.Left, distance: 60)" Transition="Bm.Tween(0.9, BmotionEase.Out)">…</Bmotion>
 
         @code {
             // Your own: every target is optional - Initial, Animate, Exit, WhileHover, WhileTap, WhileFocus,
             // WhileInView - plus the Viewport and the Transition they share.
-            static readonly BmPreset HouseEntrance = new()
+            static readonly BmotionPreset HouseEntrance = new()
             {
                 Initial = Bm.To(opacity: 0, scale: 0.6, rotate: -20),
                 Animate = Bm.To(opacity: 1, scale: 1, rotate: 0),

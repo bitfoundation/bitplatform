@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// custom items is covered by BitNavBarUrlE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitNavBarCustomE2ETests : E2ETestBase
 {
     private const string PAGE = "/e2e/nav-bar/custom";

@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 using AngleSharp.Dom;
 
-namespace Bit.Bheadless.Testing;
+namespace Bit.Bheadless;
 
 /// <summary>
 /// WAI-ARIA 1.2 knowledge used by the audit: valid roles, implicit (HTML-AAM)

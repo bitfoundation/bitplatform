@@ -11,7 +11,7 @@ namespace Bit.BlazorUI;
 /// A descriptor that cannot be translated (unknown column, delegate-based sort key, or an operator
 /// the member type does not support) is skipped rather than failing the query.
 /// </summary>
-public static class BitDataGridQueryableProcessor
+internal static class BitDataGridQueryableProcessor
 {
     /// <summary>Applies the active filters then sorts onto the queryable (no paging).</summary>
     public static IQueryable<TItem> Apply<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(

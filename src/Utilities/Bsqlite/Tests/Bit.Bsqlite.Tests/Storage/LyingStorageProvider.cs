@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Storage;
-
-namespace Bit.Bsqlite.Storage.Tests;
+﻿namespace Bit.Bsqlite.Storage.Tests;
 
 /// <summary>
 /// A backend that can be told to break any one rule the conformance kit checks, so that the kit can be

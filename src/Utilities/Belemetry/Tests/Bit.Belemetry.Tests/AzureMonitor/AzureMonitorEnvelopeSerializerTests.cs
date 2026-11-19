@@ -11,7 +11,7 @@ public class AzureMonitorEnvelopeSerializerTests
 
     private static List<JsonElement> Serialize(BelemetryBatch batch, bool maskIp, out int count)
     {
-        var bytes = AzureMonitorEnvelopeSerializer.Serialize(batch, new AzureMonitorEnvelopeSerializer.Context(IKey, maskIp), out count);
+        var bytes = BelemetryAzureMonitorEnvelopeSerializer.Serialize(batch, new BelemetryAzureMonitorEnvelopeSerializer.Context(IKey, maskIp), out count);
         using var doc = JsonDocument.Parse(bytes);
         return doc.RootElement.EnumerateArray().Select(e => e.Clone()).ToList();
     }
@@ -313,15 +313,15 @@ public class AzureMonitorEnvelopeSerializerTests
             return span;
         }
 
-        static int Items(BelemetrySpan span, AzureMonitorEnvelopeSerializer.Context context)
+        static int Items(BelemetrySpan span, BelemetryAzureMonitorEnvelopeSerializer.Context context)
         {
             var batch = new BelemetryBatch(Records.Resource(), [span]);
-            AzureMonitorEnvelopeSerializer.Serialize(batch, context, out var count);
-            Assert.AreEqual(count, AzureMonitorEnvelopeSerializer.Count(batch, context), "Count says what Serialize writes.");
+            BelemetryAzureMonitorEnvelopeSerializer.Serialize(batch, context, out var count);
+            Assert.AreEqual(count, BelemetryAzureMonitorEnvelopeSerializer.Count(batch, context), "Count says what Serialize writes.");
             return count;
         }
 
-        var all = new AzureMonitorEnvelopeSerializer.Context(IKey, true);
+        var all = new BelemetryAzureMonitorEnvelopeSerializer.Context(IKey, true);
         Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error), all), "The log record's Exception stands for it.");
         Assert.AreEqual(1, Items(Span(BelemetrySeverity.Error, limited: true), all), "The error limits dropped it as an item of its own.");
         Assert.AreEqual(2, Items(Span(BelemetrySeverity.Error, dropped: true), all), "A log record dropped before the export stands for nothing.");
@@ -344,12 +344,12 @@ public class AzureMonitorEnvelopeSerializerTests
         var histogram = new BelemetryMetric { Name = "latency", Type = BelemetryMetricType.Histogram, Points = [new() { DeltaCount = 1, DeltaSum = 3 }, new()] };
         var gauge = new BelemetryMetric { Name = "queue", Type = BelemetryMetricType.Gauge, Points = [new() { Value = 1 }] };
         var batch = new BelemetryBatch(Records.Resource(), [span, Records.Span()], [Records.Log(), Records.Log()], [counter, histogram, gauge]);
-        var context = new AzureMonitorEnvelopeSerializer.Context(IKey, true);
+        var context = new BelemetryAzureMonitorEnvelopeSerializer.Context(IKey, true);
 
-        AzureMonitorEnvelopeSerializer.Serialize(batch, context, out var count);
+        BelemetryAzureMonitorEnvelopeSerializer.Serialize(batch, context, out var count);
 
         Assert.AreEqual(9, count, "2 spans and 2 of their events, 2 logs, and the 3 metric points with something new.");
-        Assert.AreEqual(count, AzureMonitorEnvelopeSerializer.Count(batch, context));
+        Assert.AreEqual(count, BelemetryAzureMonitorEnvelopeSerializer.Count(batch, context));
     }
 
     [TestMethod]
@@ -503,9 +503,9 @@ public class AzureMonitorEnvelopeSerializerTests
             Assert.AreEqual("MyApp.Orders", Prop(e, "CategoryName"));
         }
 
-        Assert.AreEqual(1, AzureMonitorEnvelopeSerializer.ToSeverityLevel((BelemetrySeverity)12));
-        Assert.AreEqual(2, AzureMonitorEnvelopeSerializer.ToSeverityLevel((BelemetrySeverity)16));
-        Assert.AreEqual(3, AzureMonitorEnvelopeSerializer.ToSeverityLevel((BelemetrySeverity)20));
+        Assert.AreEqual(1, BelemetryAzureMonitorEnvelopeSerializer.ToSeverityLevel((BelemetrySeverity)12));
+        Assert.AreEqual(2, BelemetryAzureMonitorEnvelopeSerializer.ToSeverityLevel((BelemetrySeverity)16));
+        Assert.AreEqual(3, BelemetryAzureMonitorEnvelopeSerializer.ToSeverityLevel((BelemetrySeverity)20));
     }
 
     [TestMethod]
@@ -548,14 +548,14 @@ public class AzureMonitorEnvelopeSerializerTests
     [TestMethod]
     public void SampleRate_Is100_ForARatioThatSamplesNothingOut()
     {
-        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(1));
-        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(1.5));
-        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(0));
-        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(-0.5));
-        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(double.NaN));
-        Assert.AreEqual(100, AzureMonitorEnvelopeSerializer.SampleRate(double.PositiveInfinity));
-        Assert.AreEqual(10, AzureMonitorEnvelopeSerializer.SampleRate(0.1), 1e-9);
-        Assert.AreEqual(0.001, AzureMonitorEnvelopeSerializer.SampleRate(0.00001), 1e-12);
+        Assert.AreEqual(100, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(1));
+        Assert.AreEqual(100, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(1.5));
+        Assert.AreEqual(100, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(0));
+        Assert.AreEqual(100, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(-0.5));
+        Assert.AreEqual(100, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(double.NaN));
+        Assert.AreEqual(100, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(double.PositiveInfinity));
+        Assert.AreEqual(10, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(0.1), 1e-9);
+        Assert.AreEqual(0.001, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(0.00001), 1e-12);
     }
 
     [TestMethod]
@@ -564,11 +564,11 @@ public class AzureMonitorEnvelopeSerializerTests
         // Application Insights counts an item in whole numbers (sample rates of 100 / N): Live Metrics counts the same N.
         foreach (var (ratio, items) in new[] { (0.5, 2.0), (0.25, 4), (0.3, 3), (0.07, 14), (0.4, 3), (0.6, 2), (0.9, 1), (0.01, 100) })
         {
-            Assert.AreEqual(items, AzureMonitorEnvelopeSerializer.ItemCount(ratio), $"{ratio}");
-            Assert.AreEqual(100 / items, AzureMonitorEnvelopeSerializer.SampleRate(ratio), 1e-12, $"{ratio}");
+            Assert.AreEqual(items, BelemetryAzureMonitorEnvelopeSerializer.ItemCount(ratio), $"{ratio}");
+            Assert.AreEqual(100 / items, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(ratio), 1e-12, $"{ratio}");
         }
-        Assert.AreEqual(25, AzureMonitorEnvelopeSerializer.SampleRate(0.25), "Exact for 1 / N: no float artifacts.");
-        Assert.AreEqual(1, AzureMonitorEnvelopeSerializer.ItemCount(1));
+        Assert.AreEqual(25, BelemetryAzureMonitorEnvelopeSerializer.SampleRate(0.25), "Exact for 1 / N: no float artifacts.");
+        Assert.AreEqual(1, BelemetryAzureMonitorEnvelopeSerializer.ItemCount(1));
     }
 
     [TestMethod]
@@ -577,8 +577,8 @@ public class AzureMonitorEnvelopeSerializerTests
         // A processor that compounds ratios could go subnormal: 1 / ratio would be infinite and poison every count.
         foreach (var ratio in new[] { 1e-320, double.Epsilon, 1e-12 })
         {
-            Assert.AreEqual(int.MaxValue, AzureMonitorEnvelopeSerializer.ItemCount(ratio), $"{ratio}");
-            var rate = AzureMonitorEnvelopeSerializer.SampleRate(ratio);
+            Assert.AreEqual(int.MaxValue, BelemetryAzureMonitorEnvelopeSerializer.ItemCount(ratio), $"{ratio}");
+            var rate = BelemetryAzureMonitorEnvelopeSerializer.SampleRate(ratio);
             Assert.IsTrue(double.IsNormal(rate) && rate > 0, $"{ratio}: {rate}");
         }
     }
@@ -662,9 +662,9 @@ public class AzureMonitorEnvelopeSerializerTests
     [TestMethod]
     public void DurationFormat()
     {
-        Assert.AreEqual("00:00:00.0010000", AzureMonitorEnvelopeSerializer.FormatDuration(TimeSpan.FromMilliseconds(1)));
-        Assert.AreEqual("1.02:03:04.5000000", AzureMonitorEnvelopeSerializer.FormatDuration(new TimeSpan(1, 2, 3, 4, 500)));
-        Assert.AreEqual("00:00:00", AzureMonitorEnvelopeSerializer.FormatDuration(TimeSpan.FromSeconds(-1)));
+        Assert.AreEqual("00:00:00.0010000", BelemetryAzureMonitorEnvelopeSerializer.FormatDuration(TimeSpan.FromMilliseconds(1)));
+        Assert.AreEqual("1.02:03:04.5000000", BelemetryAzureMonitorEnvelopeSerializer.FormatDuration(new TimeSpan(1, 2, 3, 4, 500)));
+        Assert.AreEqual("00:00:00", BelemetryAzureMonitorEnvelopeSerializer.FormatDuration(TimeSpan.FromSeconds(-1)));
 
         var span = Records.Span();
         span.EndTimeUnixNano = span.StartTimeUnixNano - 1;

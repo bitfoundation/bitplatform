@@ -75,7 +75,7 @@ public static class MaxiCodeEncoder
     private const int Latch = 63; // latch B in code set A, latch A in code set B
 
     /// <summary>Encodes <paramref name="content"/>, characters of code sets A and B only, in mode 4 or 5.</summary>
-    public static BbBitMatrix Encode(string content, int mode = 4)
+    public static BbScannerBitMatrix Encode(string content, int mode = 4)
     {
         ArgumentNullException.ThrowIfNull(content);
         ArgumentOutOfRangeException.ThrowIfLessThan(mode, 4);
@@ -145,7 +145,7 @@ public static class MaxiCodeEncoder
             primary[i + 1] = message[i];
         }
 
-        var encoder = new ReedSolomonEncoder(new BbGenericGF(0x43, 64, 1));
+        var encoder = new ReedSolomonEncoder(new BbScannerGenericGF(0x43, 64, 1));
         encoder.Encode(primary, 10);
         primary.CopyTo(codewords, 0);
         for (var half = 0; half < 2; half++)
@@ -163,7 +163,7 @@ public static class MaxiCodeEncoder
             }
         }
 
-        var matrix = new BbBitMatrix(30, 33);
+        var matrix = new BbScannerBitMatrix(30, 33);
         for (var bit = 0; bit < ModuleMap.Length; bit++)
         {
             if (((codewords[bit / 6] >> (5 - (bit % 6))) & 1) == 1)

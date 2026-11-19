@@ -6,6 +6,7 @@
 /// detail toggle and on a group toggle open them.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridMobileE2ETests : BitDataGridE2ETestBase
 {
     protected override BrowserNewContextOptions? ContextOptions => new()

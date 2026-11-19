@@ -3,9 +3,8 @@ using System.Buffers.Binary;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using Bit.Bsqlite.Data;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Translates between the ADO.NET layer's types and the bytes the browser transport carries.

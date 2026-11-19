@@ -1,42 +1,42 @@
 ﻿@page "/prerender"
 
-@* What an element looks like before - or without - an interactive runtime, per BmPrerenderMode, and how the
+@* What an element looks like before - or without - an interactive runtime, per BmotionPrerenderMode, and how the
    runtime takes it over. Every enter is long (2s) so a test can tell a CSS animation still playing from one that
    never ran, and an element that rests from one that replays its enter. *@
 
 <HarnessHeader Title="Prerender" Ready="Ready" OnLog="BindLog" />
 
-<Bmotion Prerender="BmPrerenderMode.Initial"
+<Bmotion Prerender="BmotionPrerenderMode.Initial"
          Initial="Bm.To(opacity: 0)"
          Animate="Bm.To(opacity: 1)"
-         Transition="Bm.Tween(2, BmEase.Linear)"
+         Transition="Bm.Tween(2, BmotionEase.Linear)"
          OnAnimationStart='_ => Log("initial:start")'>
     <div id="pr-initial" class="small"></div>
 </Bmotion>
 
-<Bmotion Prerender="BmPrerenderMode.Final"
+<Bmotion Prerender="BmotionPrerenderMode.Final"
          Initial="Bm.To(opacity: 0, x: -50)"
          Animate="Bm.To(opacity: 1, x: 0)"
-         Transition="Bm.Tween(2, BmEase.Linear)"
+         Transition="Bm.Tween(2, BmotionEase.Linear)"
          OnAnimationStart='_ => Log("final:start")'>
     <div id="pr-final" class="small"></div>
 </Bmotion>
 
-<Bmotion Prerender="BmPrerenderMode.Animate"
+<Bmotion Prerender="BmotionPrerenderMode.Animate"
          Initial="Bm.To(opacity: 0, x: -50)"
          Animate="Bm.To(opacity: 1, x: 0)"
-         Transition="Bm.Tween(2, BmEase.Linear)"
+         Transition="Bm.Tween(2, BmotionEase.Linear)"
          OnAnimationStart='_ => Log("animate:start")'>
     <div id="pr-animate" class="small"></div>
 </Bmotion>
 
-<Bmotion Prerender="BmPrerenderMode.Animate"
+<Bmotion Prerender="BmotionPrerenderMode.Animate"
          Animate="Bm.To(rotate: [0, 360])"
-         Transition="Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever)">
+         Transition="Bm.Tween(1, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
     <div id="pr-forever" class="small"></div>
 </Bmotion>
 
-<Bmotion Prerender="BmPrerenderMode.Final"
+<Bmotion Prerender="BmotionPrerenderMode.Final"
          Initial="Bm.To(opacity: 0.2)"
          WhileInView="Bm.To(opacity: 1)">
     <div id="pr-inview" class="small"></div>

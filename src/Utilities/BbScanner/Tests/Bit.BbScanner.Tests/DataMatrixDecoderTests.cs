@@ -10,7 +10,7 @@ public class DataMatrixDecoderTests
         get
         {
             var data = new List<object[]>();
-            foreach (var version in BbDataMatrixVersion.All)
+            foreach (var version in BbScannerDataMatrixVersion.All)
             {
                 for (var scale = 2; scale <= 5; scale++)
                 {
@@ -30,7 +30,7 @@ public class DataMatrixDecoderTests
     [DynamicData(nameof(EveryShapeAndScale))]
     public void DecodesEveryShapeFromRenderedImage(int versionNumber, int scale)
     {
-        var version = BbDataMatrixVersion.All.Single(v => v.VersionNumber == versionNumber);
+        var version = BbScannerDataMatrixVersion.All.Single(v => v.VersionNumber == versionNumber);
 
         // Fill about half of the symbol with distinct letters so the data region is busy.
         var content = new string(
@@ -43,11 +43,11 @@ public class DataMatrixDecoderTests
         Assert.AreEqual(version.SymbolSizeColumns, matrix.Width);
 
         using var image = SyntheticImage.FromMatrix(matrix, scale, quietZoneModules: 4);
-        using var binary = new BbHybridBinarizer().GetBlackMatrix(image.View);
+        using var binary = new BbScannerHybridBinarizer().GetBlackMatrix(image.View);
         Assert.IsNotNull(binary);
 
-        var reader = new BbDataMatrixReader();
-        foreach (var options in new[] { BbMatrixDecodeOptions.Live, BbMatrixDecodeOptions.Thorough })
+        var reader = new BbScannerDataMatrixReader();
+        foreach (var options in new[] { BbScannerMatrixDecodeOptions.Live, BbScannerMatrixDecodeOptions.Thorough })
         {
             var result = reader.Decode(binary, options);
 
@@ -66,7 +66,7 @@ public class DataMatrixDecoderTests
     public void DecodesGrid(string content)
     {
         using var matrix = DataMatrixEncoder.Encode(content);
-        var result = new BbDataMatrixReader().DecodeMatrix(matrix);
+        var result = new BbScannerDataMatrixReader().DecodeMatrix(matrix);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(content, result.Text);
@@ -84,10 +84,10 @@ public class DataMatrixDecoderTests
         const string Content = "AB";
         using var matrix = DataMatrixEncoder.Encode(Content, minimumVersion);
 
-        var expected = BbDataMatrixVersion.All.First(v => v.VersionNumber == minimumVersion);
+        var expected = BbScannerDataMatrixVersion.All.First(v => v.VersionNumber == minimumVersion);
         Assert.AreEqual(expected.SymbolSizeRows, matrix.Height);
 
-        var result = new BbDataMatrixReader().DecodeMatrix(matrix);
+        var result = new BbScannerDataMatrixReader().DecodeMatrix(matrix);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Text);
@@ -101,14 +101,14 @@ public class DataMatrixDecoderTests
         using var matrix = DataMatrixEncoder.Encode(Content);
         using var image = SyntheticImage.FromMatrix(matrix, scale: 6, quietZoneModules: 4);
 
-        using var binary = new BbHybridBinarizer().GetBlackMatrix(image.View);
+        using var binary = new BbScannerHybridBinarizer().GetBlackMatrix(image.View);
         Assert.IsNotNull(binary);
 
-        var result = new BbDataMatrixReader().Decode(binary, BbMatrixDecodeOptions.Thorough);
+        var result = new BbScannerDataMatrixReader().Decode(binary, BbScannerMatrixDecodeOptions.Thorough);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
-        Assert.AreEqual(BbBarcodeFormat.DataMatrix, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.DataMatrix, result.Format);
         Assert.AreEqual(4, result.Points.Length);
     }
 
@@ -122,7 +122,7 @@ public class DataMatrixDecoderTests
         matrix[8, 8] = !matrix[8, 8];
         matrix[9, 9] = !matrix[9, 9];
 
-        var result = new BbDataMatrixReader().DecodeMatrix(matrix);
+        var result = new BbScannerDataMatrixReader().DecodeMatrix(matrix);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Text);
@@ -132,7 +132,7 @@ public class DataMatrixDecoderTests
     [TestMethod]
     public void SymbolShapeTableIsInternallyConsistent()
     {
-        foreach (var version in BbDataMatrixVersion.All)
+        foreach (var version in BbScannerDataMatrixVersion.All)
         {
             var regionsDown = version.SymbolSizeRows / version.DataRegionSizeRows;
             var regionsAcross = version.SymbolSizeColumns / version.DataRegionSizeColumns;
@@ -153,7 +153,7 @@ public class DataMatrixDecoderTests
     [TestMethod]
     public void ReturnsNullForAnEmptyImage()
     {
-        using var blank = new BbBitMatrix(64, 64);
-        Assert.IsNull(new BbDataMatrixReader().Decode(blank, BbMatrixDecodeOptions.Live));
+        using var blank = new BbScannerBitMatrix(64, 64);
+        Assert.IsNull(new BbScannerDataMatrixReader().Decode(blank, BbScannerMatrixDecodeOptions.Live));
     }
 }

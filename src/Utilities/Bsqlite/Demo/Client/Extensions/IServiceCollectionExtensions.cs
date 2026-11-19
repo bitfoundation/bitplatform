@@ -1,9 +1,6 @@
 ﻿using Bit.Bsqlite.Demo.Client;
 using Bit.Bsqlite.Demo.Data;
-using Bit.Bsqlite.Storage.CacheStorage;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.Storage.Opfs;
+using Bit.Bsqlite;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;

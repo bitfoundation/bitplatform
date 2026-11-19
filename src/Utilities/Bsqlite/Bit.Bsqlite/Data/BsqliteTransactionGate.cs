@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Whose turn it is on a transport: a transaction holds it from <c>BEGIN</c> to its end, and a

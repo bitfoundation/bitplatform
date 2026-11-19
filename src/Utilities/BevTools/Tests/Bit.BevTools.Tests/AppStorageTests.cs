@@ -24,12 +24,12 @@ public class AppStorageTests : BunitContext
 
     private BevToolsSession Session => Services.GetRequiredService<BevToolsSession>();
 
-    private static BevAppStorage Sample() => new()
+    private static BevToolsAppStorage Sample() => new()
     {
-        Cookies = [new BevCookieInfo { Name = ".AspNetCore.Culture", Size = 24 }, new BevCookieInfo { Name = "ai_session", Size = 60 }],
-        IndexedDb = [new BevIndexedDbInfo { Name = "orders-cache", Version = 3 }],
-        Caches = [new BevCacheInfo { Name = "bit-bswup-v2", Entries = 41 }],
-        ServiceWorkers = [new BevServiceWorkerInfo { Scope = "https://shop.test/", Active = "https://shop.test/service-worker.js?v=1", ActiveState = "activated", Waiting = "https://shop.test/service-worker.js?v=2" }],
+        Cookies = [new BevToolsCookieInfo { Name = ".AspNetCore.Culture", Size = 24 }, new BevToolsCookieInfo { Name = "ai_session", Size = 60 }],
+        IndexedDb = [new BevToolsIndexedDbInfo { Name = "orders-cache", Version = 3 }],
+        Caches = [new BevToolsCacheInfo { Name = "bit-bswup-v2", Entries = 41 }],
+        ServiceWorkers = [new BevToolsServiceWorkerInfo { Scope = "https://shop.test/", Active = "https://shop.test/service-worker.js?v=1", ActiveState = "activated", Waiting = "https://shop.test/service-worker.js?v=2" }],
         Controller = "https://shop.test/service-worker.js?v=1",
         UsageBytes = 5 * 1024 * 1024,
         QuotaBytes = 100 * 1024 * 1024,
@@ -38,12 +38,12 @@ public class AppStorageTests : BunitContext
         Errors = [],
     };
 
-    private IRenderedComponent<BevToolsPanel> RenderPanel(BevAppStorage storage)
+    private IRenderedComponent<BevToolsPanel> RenderPanel(BevToolsAppStorage storage)
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { Online = true });
-        module.Setup<BevStorageEntry[]>("getStorage", _ => true).SetResult([]);
-        module.Setup<BevAppStorage>("getAppStorage", _ => true).SetResult(storage);
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true });
+        module.Setup<BevToolsStorageEntry[]>("getStorage", _ => true).SetResult([]);
+        module.Setup<BevToolsAppStorage>("getAppStorage", _ => true).SetResult(storage);
         return Render<BevToolsPanel>();
     }
 
@@ -79,7 +79,7 @@ public class AppStorageTests : BunitContext
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "pwa.update-waiting", Session.Diagnostics.Findings).Diagnostic;
         Assert.AreEqual("An update is waiting for https://shop.test/", finding.Title);
 
-        using var json = JsonDocument.Parse(BevSessionExporter.ToJson(Session));
+        using var json = JsonDocument.Parse(BevToolsSessionExporter.ToJson(Session));
         var storage = json.RootElement.GetProperty("browser").GetProperty("storage");
         Assert.AreEqual(".AspNetCore.Culture", storage.GetProperty("cookies")[0].GetProperty("name").GetString());
         Assert.IsFalse(storage.GetProperty("cookies")[0].TryGetProperty("value", out _));
@@ -91,11 +91,11 @@ public class AppStorageTests : BunitContext
     public void What_the_page_reported_is_bounded_and_redacted()
     {
         var token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.c2lnbmF0dXJlLXZhbHVl";
-        var storage = BevToolsPanel.Clean(new BevAppStorage
+        var storage = BevToolsPanel.Clean(new BevToolsAppStorage
         {
-            Cookies = Enumerable.Range(0, 500).Select(i => new BevCookieInfo { Name = "c" + i, Size = -1 }).ToArray(),
-            Caches = [new BevCacheInfo { Name = new string('x', 1000), Entries = -3 }],
-            ServiceWorkers = [new BevServiceWorkerInfo { Scope = "https://shop.test/?token=" + token, Active = null }],
+            Cookies = Enumerable.Range(0, 500).Select(i => new BevToolsCookieInfo { Name = "c" + i, Size = -1 }).ToArray(),
+            Caches = [new BevToolsCacheInfo { Name = new string('x', 1000), Entries = -3 }],
+            ServiceWorkers = [new BevToolsServiceWorkerInfo { Scope = "https://shop.test/?token=" + token, Active = null }],
             Errors = [null!, "IndexedDB: timed out"],
         })!;
 

@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Reflection;
 using System.Globalization;
 using System.Collections.Concurrent;
@@ -50,7 +50,7 @@ public static class BmotionApiCatalog
     /// Every public type with its summary cut to the first sentence.
     /// <para>
     /// The full summaries are what <see cref="GetTypeDetails"/> is for. Several of them run to a
-    /// paragraph and a worked code sample - which is the right answer to "how do I use BmVariants"
+    /// paragraph and a worked code sample - which is the right answer to "how do I use BmotionVariants"
     /// and the wrong one to "which type do I ask about next", the only question a list of 66 types
     /// is called with. Handing over all of them cost more than reading the type itself afterwards.
     /// </para>
@@ -133,7 +133,8 @@ public static class BmotionApiCatalog
                                      // by ulong has members that do not fit in an Int64.
                                      Default = Format(field.GetRawConstantValue()),
                                      Summary = BmotionXmlDocs.GetSummary(DocumentationId(field)),
-                                     Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(field))
+                                     Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(field)),
+                                     DeclaringType = type.FullName
                                  }));
         }
         else
@@ -208,7 +209,8 @@ public static class BmotionApiCatalog
                 Default = DefaultValueOf(property, instance),
                 Required = property.IsDefined(typeof(EditorRequiredAttribute), inherit: true),
                 Summary = BmotionXmlDocs.GetSummary(DocumentationId(property)),
-                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(property))
+                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(property)),
+                DeclaringType = property.DeclaringType?.FullName
             };
         }
     }
@@ -229,7 +231,8 @@ public static class BmotionApiCatalog
                 Type = FriendlyName(field.FieldType),
                 Default = field.IsLiteral ? Format(field.GetRawConstantValue()) : null,
                 Summary = BmotionXmlDocs.GetSummary(DocumentationId(field)),
-                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(field))
+                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(field)),
+                DeclaringType = field.DeclaringType?.FullName
             };
         }
     }
@@ -263,7 +266,8 @@ public static class BmotionApiCatalog
                 Type = FriendlyName(method.ReturnType),
                 Signature = signature,
                 Summary = summary,
-                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(method))
+                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(method)),
+                DeclaringType = method.DeclaringType?.FullName
             };
         }
     }
@@ -282,7 +286,8 @@ public static class BmotionApiCatalog
                 Kind = "Event",
                 Type = FriendlyName(member.EventHandlerType ?? typeof(void)),
                 Summary = BmotionXmlDocs.GetSummary(DocumentationId(member)),
-                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(member))
+                Remarks = BmotionXmlDocs.GetRemarks(DocumentationId(member)),
+                DeclaringType = member.DeclaringType?.FullName
             };
         }
     }
@@ -396,7 +401,7 @@ public static class BmotionApiCatalog
         _ => 6
     };
 
-    /// <summary>The C# spelling of a type: "double?", "string[]", "BmValue&lt;double&gt;".</summary>
+    /// <summary>The C# spelling of a type: "double?", "string[]", "BmotionValue&lt;double&gt;".</summary>
     public static string FriendlyName(Type type)
     {
         if (type.IsByRef) return FriendlyName(type.GetElementType()!);

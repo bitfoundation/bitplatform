@@ -29,9 +29,10 @@ public static partial class ToolCatalog
 
     public static Tool? Find(string id) => All.FirstOrDefault(t => string.Equals(t.Id, id, StringComparison.OrdinalIgnoreCase));
 
-    public static async Task<IReadOnlyList<ToolCheck>> CheckAsync(ToolContext context, CancellationToken cancellationToken)
+    /// <summary>Checks the tools that apply to what the context needs, or only the ones <paramref name="only"/> names.</summary>
+    public static async Task<IReadOnlyList<ToolCheck>> CheckAsync(ToolContext context, CancellationToken cancellationToken, IReadOnlyCollection<string>? only = null)
     {
-        var applicable = All.Where(t => t.AppliesTo(context) && (context.Environment.IsCI is false || t.AppliesInCi(context))).ToArray();
+        var applicable = All.Where(t => t.AppliesTo(context) && (context.Environment.IsCI is false || t.AppliesInCi(context)) && (only is null || only.Contains(t.Id, StringComparer.OrdinalIgnoreCase))).ToArray();
         var statuses = await Task.WhenAll(applicable.Select(async tool =>
         {
             try
@@ -310,7 +311,7 @@ public static partial class ToolCatalog
 
         public override string Name => "Git";
 
-        public override string Why(ToolContext context) => "version control, and the main branch of the new project";
+        public override string Why(ToolContext context) => context.Needs.ClonesProject ? "clones the project" : "version control, and the main branch of the new project";
 
         public override bool IsNeeded(ToolContext context) => true;
 
@@ -336,9 +337,11 @@ public static partial class ToolCatalog
 
         public override string Name => "GitHub CLI";
 
-        public override bool AppliesTo(ToolContext context) => context.Needs.GitHubRepo;
+        public override bool AppliesTo(ToolContext context) => context.Needs.GitHubRepo || context.Needs.CloneFromGitHub;
 
-        public override string Why(ToolContext context) => "creates the project's private GitHub repository and pushes main to it";
+        public override string Why(ToolContext context) => context.Needs.GitHubRepo
+            ? "creates the project's private GitHub repository and pushes main to it"
+            : "signs in to GitHub, so a private repository can be cloned";
 
         public override bool IsNeeded(ToolContext context) => true;
 
@@ -826,15 +829,36 @@ public static partial class ToolCatalog
             string[] version = wanted is null ? [] : ["--version", wanted];
             var aspire = outdated ? context.Runner.FindExecutable("aspire") : null;
             var dotnetTools = Path.Combine(context.Environment.HomeDirectory, ".dotnet", "tools");
+            var dotnetTool = new ProcessSpec { FileName = "dotnet", Arguments = ["tool", outdated ? "update" : "install", "--global", "Aspire.Cli", .. version], Timeout = TimeSpan.FromMinutes(10) };
 
             return new ToolAction
             {
                 ToolId = Id,
                 Title = outdated ? $"Update the Aspire CLI to {wanted}" : wanted is null ? "Install the Aspire CLI" : $"Install the Aspire CLI {wanted}",
-                Commands = [aspire is not null && string.Equals(Path.GetDirectoryName(aspire), dotnetTools, StringComparison.OrdinalIgnoreCase) is false
+                Commands = [outdated is false ? NativeInstaller(context, wanted)
+                    : aspire is not null && string.Equals(Path.GetDirectoryName(aspire), dotnetTools, StringComparison.OrdinalIgnoreCase) is false
                     ? new ProcessSpec { FileName = aspire, Arguments = ["update", "--self", "--channel", "stable"], Timeout = TimeSpan.FromMinutes(10) }
-                    : new ProcessSpec { FileName = "dotnet", Arguments = ["tool", outdated ? "update" : "install", "--global", "Aspire.Cli", .. version], Timeout = TimeSpan.FromMinutes(10) }]
+                    : dotnetTool],
+                Fallback = outdated ? [] : [dotnetTool]
             };
+        }
+
+        private static ProcessSpec NativeInstaller(ToolContext context, string? version)
+        {
+            var installPath = Path.Combine(context.Environment.HomeDirectory, ".aspire", "bin");
+
+            if (context.Environment.IsWindows)
+            {
+                var script = "$installer = Join-Path ([IO.Path]::GetTempPath()) ('aspire-install-' + [guid]::NewGuid().ToString('N') + '.ps1'); " +
+                    "Invoke-WebRequest -UseBasicParsing -Uri 'https://aspire.dev/install.ps1' -OutFile $installer -ErrorAction Stop; " +
+                    $"& $installer -InstallPath '{installPath.Replace("'", "''", StringComparison.Ordinal)}'{(version is null ? "" : $" -Version '{version}'")}; if (-not $?) {{ exit 1 }}; exit $LASTEXITCODE";
+
+                return new ProcessSpec { FileName = "powershell.exe", Arguments = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", script], Environment = new Dictionary<string, string?> { ["PSModulePath"] = null }, Timeout = TimeSpan.FromMinutes(10) };
+            }
+
+            var shell = $"set -e; installer=\"$(mktemp -d)/aspire-install.sh\"; curl -fsSL -o \"$installer\" https://aspire.dev/install.sh; bash \"$installer\" --install-path '{installPath.Replace("'", "'\\''", StringComparison.Ordinal)}'{(version is null ? "" : $" --version '{version}'")}";
+
+            return new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", shell], Timeout = TimeSpan.FromMinutes(10) };
         }
 
         private static Version Normalize(Version version) => new(version.Major, version.Minor, Math.Max(version.Build, 0));

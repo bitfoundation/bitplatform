@@ -11,10 +11,10 @@ public static class BitBevToolsServer
     /// inbound message processing, active circuit overview). Call this in the server project; Interactive Auto apps
     /// must also call <c>AddBitBevToolsServices</c> in the client project so the WebAssembly render path is instrumented.
     /// </summary>
-    public static IServiceCollection AddBitBevToolsServerServices(this IServiceCollection services, Action<BitBevToolsOptions>? configure = null)
+    public static IServiceCollection AddBitBevToolsServerServices(this IServiceCollection services, Action<BevToolsOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
-        services.TryAddSingleton<BevCircuitRegistry>();
+        services.TryAddSingleton<BevToolsCircuitRegistry>();
         if (!services.Any(descriptor => descriptor.ServiceType == typeof(IBevToolsServiceRegistration)
             && descriptor.ImplementationInstance is ServerServiceRegistration))
         {

@@ -24,17 +24,17 @@ public partial class BitAiStreamingMarkdownDemo
         },
         new()
         {
-            Name = "IsStreaming",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Whether more text is expected. While it is true the streaming caret trails the text (unless BitAiUiOptions.ShowStreamingCaret is off), the last block is left open - a code block is not highlighted, a dangling emphasis or code delimiter is hidden - and turning it false settles the document.",
-        },
-        new()
-        {
             Name = "OnCitationClick",
             Type = "EventCallback<BitAiCitation>",
             DefaultValue = "",
             Description = "The callback for when the user activates an inline citation marker, with the citation it stands for.",
+        },
+        new()
+        {
+            Name = "Streaming",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether more text is expected. While it is true the streaming caret trails the text (unless BitAiUiOptions.ShowStreamingCaret is off), the last block is left open - a code block is not highlighted, a dangling emphasis or code delimiter is hidden - and turning it false settles the document.",
         },
         new()
         {

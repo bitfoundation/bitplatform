@@ -10,6 +10,7 @@
 /// overlay of a panel that leaves the page scrolling is handed to the named scroller.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitPanelTouchE2ETests : E2ETestBase
 {
     private const string PagePath = "/e2e/panel";

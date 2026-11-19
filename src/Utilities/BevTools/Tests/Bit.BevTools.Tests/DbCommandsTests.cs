@@ -27,7 +27,7 @@ public class DbCommandsTests
         public DbSet<Order> Orders => Set<Order>();
     }
 
-    private static (BevToolsSession Session, IServiceScope Scope, ShopContext Context, SqliteConnection Connection) Create(Action<BitBevToolsOptions>? configure = null)
+    private static (BevToolsSession Session, IServiceScope Scope, ShopContext Context, SqliteConnection Connection) Create(Action<BevToolsOptions>? configure = null)
     {
         var (session, scope) = TestHelpers.CreateSession(configure, services => services.AddLogging(logging => logging.SetMinimumLevel(LogLevel.Information)));
         var connection = new SqliteConnection("Data Source=:memory:");
@@ -67,14 +67,14 @@ public class DbCommandsTests
             var commands = session.Logs.Snapshot().Where(l => l.DbCommand is not null).ToArray();
             Assert.HasCount(12, commands);
             var first = commands[0];
-            Assert.AreEqual(BevDbCommands.Category, first.Category);
-            Assert.AreEqual(BevDbCommands.ExecutedEventId, first.EventId);
+            Assert.AreEqual(BevToolsDbCommands.Category, first.Category);
+            Assert.AreEqual(BevToolsDbCommands.ExecutedEventId, first.EventId);
             StringAssert.Contains(first.DbCommand!.CommandText, "SELECT");
             StringAssert.Contains(first.DbCommand.CommandText, "FROM \"Orders\"");
             Assert.IsNotNull(first.DbCommand.ElapsedMs);
             Assert.IsFalse(first.DbCommand.Failed);
 
-            var summary = Assert.ContainsSingle(BevDbCommands.Summarize(session.Logs.Snapshot()));
+            var summary = Assert.ContainsSingle(BevToolsDbCommands.Summarize(session.Logs.Snapshot()));
             Assert.AreEqual(12, summary.Executions);
 
             session.Diagnostics.Evaluate(force: true);
@@ -82,7 +82,7 @@ public class DbCommandsTests
             StringAssert.Contains(finding.Title, "ran 12 times");
             StringAssert.Contains(finding.Evidence, "12 executions of one command");
 
-            using var json = JsonDocument.Parse(BevSessionExporter.ToJson(session, new BevSessionExportOptions { Sections = new HashSet<string> { "logs" } }));
+            using var json = JsonDocument.Parse(BevToolsSessionExporter.ToJson(session, new BevToolsSessionExportOptions { Sections = new HashSet<string> { "logs" } }));
             Assert.AreEqual(12, json.RootElement.GetProperty("dbCommands")[0].GetProperty("executions").GetInt32());
             Assert.IsTrue(json.RootElement.GetProperty("logs")[0].GetProperty("dbCommand").TryGetProperty("elapsedMs", out _));
         }
@@ -102,7 +102,7 @@ public class DbCommandsTests
             }
 
             var failed = Assert.ContainsSingle(l => l.DbCommand is { Failed: true }, session.Logs.Snapshot());
-            Assert.AreEqual(BevDbCommands.FailedEventId, failed.EventId);
+            Assert.AreEqual(BevToolsDbCommands.FailedEventId, failed.EventId);
             Assert.AreEqual("SELECT * FROM Missing", failed.DbCommand!.CommandText);
             Assert.Contains(e => e.Source == "log" && e.Message.StartsWith("Command:", StringComparison.Ordinal), session.Errors.Snapshot());
         }
@@ -111,7 +111,7 @@ public class DbCommandsTests
     [TestMethod]
     public void Value_access_none_keeps_the_sql_unread_but_counts_and_times_the_commands()
     {
-        var (session, scope, context, connection) = Create(o => o.ValueAccess = BevValueAccess.None);
+        var (session, scope, context, connection) = Create(o => o.ValueAccess = BevToolsValueAccess.None);
         using (scope)
         using (connection)
         using (context)
@@ -124,7 +124,7 @@ public class DbCommandsTests
             var command = Assert.ContainsSingle(session.Logs.Snapshot().Where(l => l.DbCommand is not null)).DbCommand!;
             Assert.IsNull(command.CommandText);
             Assert.IsNotNull(command.ElapsedMs);
-            var exported = BevSessionExporter.ToJson(session);
+            var exported = BevToolsSessionExporter.ToJson(session);
             Assert.DoesNotContain("SELECT", exported, StringComparison.Ordinal);
 
             // The unread commands' group is marked as such, not exported as a command whose SQL is "".
@@ -161,13 +161,13 @@ public class DbCommandsTests
         IReadOnlyList<KeyValuePair<string, object?>> Pairs(string elapsed) =>
             [new("elapsed", elapsed), new("commandText", "SELECT 1"), new("{OriginalFormat}", "Executed DbCommand ({elapsed}ms)")];
 
-        Assert.AreEqual(1234, BevDbCommands.Read(20101, Pairs("1,234"), BevValueAccess.Full).ElapsedMs);
-        Assert.AreEqual(1234, BevDbCommands.Read(20101, Pairs("1.234"), BevValueAccess.Full).ElapsedMs);
-        Assert.IsNull(BevDbCommands.Read(20101, Pairs("n/a"), BevValueAccess.Full).ElapsedMs);
-        Assert.AreEqual("SELECT a FROM b WHERE c = @p0", BevDbCommands.Normalize("SELECT a\r\n  FROM b\n\tWHERE c = @p0  "));
+        Assert.AreEqual(1234, BevToolsDbCommands.Read(20101, Pairs("1,234"), BevToolsValueAccess.Full).ElapsedMs);
+        Assert.AreEqual(1234, BevToolsDbCommands.Read(20101, Pairs("1.234"), BevToolsValueAccess.Full).ElapsedMs);
+        Assert.IsNull(BevToolsDbCommands.Read(20101, Pairs("n/a"), BevToolsValueAccess.Full).ElapsedMs);
+        Assert.AreEqual("SELECT a FROM b WHERE c = @p0", BevToolsDbCommands.Normalize("SELECT a\r\n  FROM b\n\tWHERE c = @p0  "));
         // A literal's whitespace is its value: two commands that differ only in it are two commands.
-        Assert.AreEqual("SELECT \"a  b\" FROM t WHERE n = 'x  y' AND m = 'it''s  z'", BevDbCommands.Normalize("SELECT  \"a  b\"\n FROM t WHERE n = 'x  y'  AND m = 'it''s  z'"));
-        Assert.AreNotEqual(BevDbCommands.Normalize("WHERE n = 'a  b'"), BevDbCommands.Normalize("WHERE n = 'a b'"));
+        Assert.AreEqual("SELECT \"a  b\" FROM t WHERE n = 'x  y' AND m = 'it''s  z'", BevToolsDbCommands.Normalize("SELECT  \"a  b\"\n FROM t WHERE n = 'x  y'  AND m = 'it''s  z'"));
+        Assert.AreNotEqual(BevToolsDbCommands.Normalize("WHERE n = 'a  b'"), BevToolsDbCommands.Normalize("WHERE n = 'a b'"));
     }
 
     [TestMethod]
@@ -197,7 +197,7 @@ public class DbCommandsTests
 public class DatabaseViewTests : BunitContext
 {
     private static readonly Action<ILogger, string, string, Exception?> Executed = LoggerMessage.Define<string, string>(
-        LogLevel.Information, new EventId(BevDbCommands.ExecutedEventId, "Microsoft.EntityFrameworkCore.Database.Command.CommandExecuted"), "Executed DbCommand ({elapsed}ms){commandText}");
+        LogLevel.Information, new EventId(BevToolsDbCommands.ExecutedEventId, "Microsoft.EntityFrameworkCore.Database.Command.CommandExecuted"), "Executed DbCommand ({elapsed}ms){commandText}");
 
     public DatabaseViewTests()
     {
@@ -216,7 +216,7 @@ public class DatabaseViewTests : BunitContext
     public void The_database_view_groups_commands_by_sql_and_opens_one_s_executions()
     {
         var session = Services.GetRequiredService<BevToolsSession>();
-        var logger = Services.GetRequiredService<ILoggerFactory>().CreateLogger(BevDbCommands.Category);
+        var logger = Services.GetRequiredService<ILoggerFactory>().CreateLogger(BevToolsDbCommands.Category);
         using (session.UseAmbient())
         {
             for (var i = 0; i < 3; i++)

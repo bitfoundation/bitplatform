@@ -5,6 +5,12 @@
 
 <h1>BitTimePicker</h1>
 
+@* A click on a spin button is a pointerdown and a pointerup the browser is handed one after the other, and a busy
+   runner can hold the second back past the press-and-hold delay, which then spins on as the user holding the button
+   would. So the pickers here hold out for a minute before spinning, as the calendar's and the date pickers' pages do;
+   the ones the press-and-hold tests use set a delay of their own, which outranks this one. *@
+<BitParams Parameters="_spinParams">
+
 @* ---------------------------------------------------------------- Basic *@
 
 <E2ESection Id="basic" Title="Basic">
@@ -762,9 +768,13 @@
     <span id="form4-value">@Show(_formModel4.Time)</span>
 </E2ESection>
 
+</BitParams>
+
 <E2EStatus Status="@_formStatus" />
 
 @code {
+    private static readonly IBitComponentParams[] _spinParams = [new BitTimePickerParams { ContinuousSpinDelay = 60000 }];
+
     private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
     private static readonly CultureInfo _fa = CultureInfo.GetCultureInfo("fa-IR");
     private static readonly CultureInfo _ja = CultureInfo.GetCultureInfo("ja-JP");

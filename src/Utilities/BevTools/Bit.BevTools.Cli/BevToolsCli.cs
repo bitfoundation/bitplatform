@@ -16,7 +16,7 @@ internal static class BevToolsCli
     internal const int Unusable = 2;
 
     private const string Usage = """
-        Checks bit BevTools session exports (About → Export session, or BevSessionExporter.ToJson).
+        Checks bit BevTools session exports (About → Export session, or BevToolsSessionExporter.ToJson).
 
         Usage:
           bevtools check <export.json> [--fail-on warning|error|info|none] [--ignore <rule-id>]... [--fail-on-errors]
@@ -140,16 +140,16 @@ internal static class BevToolsCli
         Expect(files, 1, "check <export.json>");
         Allow(options, "--fail-on", "--ignore", "--fail-on-errors", "--format", "--output", "--report");
         var format = Format(options, "markdown", "json", "sarif", "github");
-        var checkOptions = new BevSessionCheckOptions { FailOnErrors = options.ContainsKey("--fail-on-errors") };
+        var checkOptions = new BevToolsSessionCheckOptions { FailOnErrors = options.ContainsKey("--fail-on-errors") };
         if (options.TryGetValue("--fail-on", out var failOn))
         {
             // By name: Enum.TryParse would also take "1" or "warning,error", and the latter as a level above every finding.
             checkOptions.FailOn = failOn[^1].ToLowerInvariant() switch
             {
                 "none" => null,
-                "info" => BevDiagnosticSeverity.Info,
-                "warning" => BevDiagnosticSeverity.Warning,
-                "error" => BevDiagnosticSeverity.Error,
+                "info" => BevToolsDiagnosticSeverity.Info,
+                "warning" => BevToolsDiagnosticSeverity.Warning,
+                "error" => BevToolsDiagnosticSeverity.Error,
                 _ => throw new UsageException($"--fail-on takes info, warning, error or none, not '{failOn[^1]}'."),
             };
         }
@@ -159,13 +159,13 @@ internal static class BevToolsCli
             checkOptions.IgnoredRules.Add(rule);
         }
 
-        var result = BevSessionCheck.Check(Read(files[0]), checkOptions);
+        var result = BevToolsSessionCheck.Check(Read(files[0]), checkOptions);
         var markdown = result.ToMarkdown();
         return (markdown, format switch
         {
-            "json" => BevCliFormats.CheckJson(result, checkOptions, files[0]) + "\n",
-            "sarif" => BevCliFormats.Sarif(result, checkOptions, files[0]) + "\n",
-            "github" => BevCliFormats.GitHubCommands(result),
+            "json" => BevToolsCliFormats.CheckJson(result, checkOptions, files[0]) + "\n",
+            "sarif" => BevToolsCliFormats.Sarif(result, checkOptions, files[0]) + "\n",
+            "github" => BevToolsCliFormats.GitHubCommands(result),
             _ => markdown,
         }, result.Failed);
     }
@@ -175,7 +175,7 @@ internal static class BevToolsCli
         Expect(files, 2, "compare <baseline.json> <current.json>");
         Allow(options, "--min-render-change", "--render-change-ratio", "--min-time-change-ms", "--time-change-ratio", "--min-allocation-change-bytes", "--allocation-change-ratio", "--format", "--output", "--report");
         var format = Format(options, "markdown", "json");
-        var compareOptions = new BevProfileComparisonOptions();
+        var compareOptions = new BevToolsProfileComparisonOptions();
         if (options.ContainsKey("--min-render-change"))
         {
             compareOptions.MinRenderChange = (int)Number(options, "--min-render-change", integer: true);
@@ -206,9 +206,9 @@ internal static class BevToolsCli
             compareOptions.AllocationChangeRatio = Number(options, "--allocation-change-ratio");
         }
 
-        var result = BevProfileComparison.Compare(Read(files[0]), Read(files[1]), compareOptions);
+        var result = BevToolsProfileComparison.Compare(Read(files[0]), Read(files[1]), compareOptions);
         var markdown = result.ToMarkdown();
-        return (markdown, format == "json" ? BevCliFormats.CompareJson(result, compareOptions, files[0], files[1]) + "\n" : markdown, result.HasRegressions);
+        return (markdown, format == "json" ? BevToolsCliFormats.CompareJson(result, compareOptions, files[0], files[1]) + "\n" : markdown, result.HasRegressions);
     }
 
     // Kept out of Run, and never inlined into it, so that check and compare never load the MCP SDK: the runtime loads
@@ -218,7 +218,7 @@ internal static class BevToolsCli
     {
         // Every file is read and parsed before the transport starts: a missing one, or one that is not an export, is
         // exit code 2 at startup, not an error an agent meets on its first call.
-        using var exports = BevMcpExports.Parse(files.Select(f => (f, Read(f))).ToList());
+        using var exports = BevToolsMcpExports.Parse(files.Select(f => (f, Read(f))).ToList());
         // stderr: stdout is the protocol stream. MCP clients show a server's stderr in their logs.
         error.WriteLine(string.Create(CultureInfo.InvariantCulture, $"bevtools mcp: serving {exports.All.Count} export{(exports.All.Count == 1 ? "" : "s")} read-only over stdio."));
         BevToolsMcp.RunAsync(exports, null, null, CancellationToken.None).GetAwaiter().GetResult();

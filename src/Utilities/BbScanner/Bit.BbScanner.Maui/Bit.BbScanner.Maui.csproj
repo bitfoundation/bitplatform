@@ -11,7 +11,7 @@
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net11.0-android;net10.0-android</TargetFrameworks>
         <UseMaui>true</UseMaui>
         <SingleProject>true</SingleProject>
-        <RootNamespace>Bit.BbScanner.Maui</RootNamespace>
+        <RootNamespace>Bit.BbScanner</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- The camera's frames are copied out of the platform's buffers through pointers. -->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

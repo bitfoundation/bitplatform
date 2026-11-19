@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
-        <RootNamespace>Bit.Bcrdt.Testing</RootNamespace>
+        <RootNamespace>Bit.Bcrdt</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- Runs in test hosts, never in a trimmed or native AOT app: the convergence harness reflects over root
              kinds and serializes projections to describe a divergence. -->

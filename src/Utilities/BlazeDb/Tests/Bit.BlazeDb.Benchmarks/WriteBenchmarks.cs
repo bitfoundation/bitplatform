@@ -1,6 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using Bit.BlazeDb;
-using Bit.BlazeDb.Storage;
 using Microsoft.Data.Sqlite;
 
 namespace Bit.BlazeDb.Benchmarks;

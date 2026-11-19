@@ -1,4 +1,4 @@
-﻿namespace Bit.Bcrdt.Blazor;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>
 /// Where a document's connection stood at one moment: what <see cref="BcrdtSyncStatus"/> renders, and what it hands a

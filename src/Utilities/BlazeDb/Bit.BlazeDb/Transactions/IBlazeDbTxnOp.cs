@@ -1,6 +1,4 @@
-﻿using Bit.BlazeDb.Serialization;
-
-namespace Bit.BlazeDb;
+﻿namespace Bit.BlazeDb;
 
 /// <summary>
 /// A single buffered write operation: applied to memory immediately, revertible on rollback,

@@ -31,7 +31,7 @@ public class OwnAccessibilityTests : BunitContext
     private IRenderedComponent<BevToolsPanel> RenderPanel()
     {
         var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
-        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetResult(new BevBrowserSnapshot { TargetId = "t1" });
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { TargetId = "t1" });
         module.SetupVoid("focusIn", invocation =>
         {
             _calls.Add((invocation.Identifier, invocation.Arguments.ToArray()));

@@ -140,9 +140,3 @@ public class BitBhContextMenu : BitBhComponentBase, IBitBhMenuRoot
 
     internal ValueTask<BitBhRect?> GetRectAsync(string id) => Interop.GetRectAsync(id);
 }
-
-/// <summary>Implemented by floating content that can be moved to a new anchor point.</summary>
-internal interface IBitBhPointAnchoredContent
-{
-    Task MoveToAsync(double x, double y);
-}

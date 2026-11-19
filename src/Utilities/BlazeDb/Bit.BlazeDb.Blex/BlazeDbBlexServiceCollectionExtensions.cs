@@ -1,8 +1,7 @@
-using Bit.BlazeDb;
-using Bit.BlazeDb.Blex;
 using Bit.Blex;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Bit.BlazeDb;
 
 /// <summary>Registers BlazeDb as the place Bit.Blex persists its stores.</summary>
 public static class BlazeDbBlexServiceCollectionExtensions

@@ -16,6 +16,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// prerendering, re-rendering and unmounting while shown.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitTooltipE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/tooltip";

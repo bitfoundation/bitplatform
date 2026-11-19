@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Storage;
-
-namespace Bit.Bsqlite.Storage.InMemory;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// Keeps databases in the engine's own memory. Available everywhere, survives nothing.

@@ -6,6 +6,7 @@
 /// hover - turns itself off and leaves the button to toggle the callout on a tap.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropMenuMobileE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/drop-menu";

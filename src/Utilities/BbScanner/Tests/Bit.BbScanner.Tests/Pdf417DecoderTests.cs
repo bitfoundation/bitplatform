@@ -19,10 +19,10 @@ public class Pdf417DecoderTests
     public void DecodesTextCompaction(string content)
     {
         using var matrix = Pdf417Encoder.Encode(content);
-        var result = new BbPdf417Reader().Decode(matrix, BbMatrixDecodeOptions.Live);
+        var result = new BbScannerPdf417Reader().Decode(matrix, BbScannerMatrixDecodeOptions.Live);
 
         Assert.IsNotNull(result);
-        Assert.AreEqual(BbBarcodeFormat.Pdf417, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.Pdf417, result.Format);
         Assert.AreEqual(content, result.Payload.Text);
     }
 
@@ -32,7 +32,7 @@ public class Pdf417DecoderTests
     public void DecodesByteCompaction(string content)
     {
         using var matrix = Pdf417Encoder.Encode(content, columns: 6);
-        var result = new BbPdf417Reader().Decode(matrix, BbMatrixDecodeOptions.Live);
+        var result = new BbScannerPdf417Reader().Decode(matrix, BbScannerMatrixDecodeOptions.Live);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(content, result.Payload.Text);
@@ -47,7 +47,7 @@ public class Pdf417DecoderTests
         const string Content = "STACKED SYMBOLOGY";
         using var matrix = Pdf417Encoder.Encode(Content, columns, level);
 
-        var result = new BbPdf417Reader().Decode(matrix, BbMatrixDecodeOptions.Live);
+        var result = new BbScannerPdf417Reader().Decode(matrix, BbScannerMatrixDecodeOptions.Live);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
@@ -61,7 +61,7 @@ public class Pdf417DecoderTests
         const string Content = "ERROR CORRECTION OVER NINE TWO NINE";
         using var matrix = Pdf417Encoder.Encode(Content, columns: 4, errorCorrectionLevel: 5);
 
-        var result = new BbPdf417Reader().Decode(matrix, BbMatrixDecodeOptions.Live);
+        var result = new BbScannerPdf417Reader().Decode(matrix, BbScannerMatrixDecodeOptions.Live);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
@@ -70,8 +70,8 @@ public class Pdf417DecoderTests
     [TestMethod]
     public void ReedSolomonOverGf929RoundTrips()
     {
-        var field = BbModulusGF.Pdf417;
-        var correction = new BbPdf417ErrorCorrection();
+        var field = BbScannerModulusGF.Pdf417;
+        var correction = new BbScannerPdf417ErrorCorrection();
 
         // Build a codeword block by hand, damage two codewords, and check both are repaired.
         var data = new List<int> { 9, 100, 200, 300, 400, 500, 600, 700 };
@@ -93,7 +93,7 @@ public class Pdf417DecoderTests
     [TestMethod]
     public void TooManyErrorsAreReportedRatherThanGuessed()
     {
-        var correction = new BbPdf417ErrorCorrection();
+        var correction = new BbScannerPdf417ErrorCorrection();
         var encoded = BuildBlock([9, 1, 2, 3, 4, 5, 6, 7], numEc: 4);
 
         for (var i = 0; i < 5; i++)
@@ -116,10 +116,10 @@ public class Pdf417DecoderTests
         using var matrix = Pdf417Encoder.Encode(Content, columns: 4, errorCorrectionLevel: 2, rowHeightModules: 4);
         using var image = SyntheticImage.FromMatrix(matrix, scale: 6);
 
-        using var binary = new BbHybridBinarizer().GetBlackMatrix(image.View);
+        using var binary = new BbScannerHybridBinarizer().GetBlackMatrix(image.View);
         Assert.IsNotNull(binary);
 
-        var result = new BbPdf417Reader().Decode(binary, BbMatrixDecodeOptions.Thorough);
+        var result = new BbScannerPdf417Reader().Decode(binary, BbScannerMatrixDecodeOptions.Thorough);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
@@ -136,7 +136,7 @@ public class Pdf417DecoderTests
         const string Content = "ABABABABABAB";
         using var matrix = Pdf417Encoder.Encode(Content, columns: 2, errorCorrectionLevel: 0);
 
-        var result = new BbPdf417Reader().Decode(matrix, BbMatrixDecodeOptions.Live);
+        var result = new BbScannerPdf417Reader().Decode(matrix, BbScannerMatrixDecodeOptions.Live);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
@@ -154,7 +154,7 @@ public class Pdf417DecoderTests
         var x = matrix.Width / 2;
         matrix[x, y] = !matrix[x, y];
 
-        var result = new BbPdf417Reader().Decode(matrix, BbMatrixDecodeOptions.Live);
+        var result = new BbScannerPdf417Reader().Decode(matrix, BbScannerMatrixDecodeOptions.Live);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
@@ -179,7 +179,7 @@ public class Pdf417DecoderTests
             }
         }
 
-        var result = new BbPdf417Reader().Decode(matrix, BbMatrixDecodeOptions.Live);
+        var result = new BbScannerPdf417Reader().Decode(matrix, BbScannerMatrixDecodeOptions.Live);
 
         Assert.IsNotNull(result);
         Assert.AreEqual(Content, result.Payload.Text);
@@ -192,7 +192,7 @@ public class Pdf417DecoderTests
         // Text: latch to lower, "abc", shift to byte for '!', then "de" which must still be lower case.
         int[] codewords = [7, 900, (27 * 30) + 0, (1 * 30) + 2, 913, '!', (3 * 30) + 4];
 
-        var result = BbPdf417BitStreamParser.Decode(codewords, 3, 3, 0, 0);
+        var result = BbScannerPdf417BitStreamParser.Decode(codewords, 3, 3, 0, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("abc!de", result.Text);
@@ -220,7 +220,7 @@ public class Pdf417DecoderTests
 
         int[] codewords = [9, 927, 26, 924, .. group];
 
-        var result = BbPdf417BitStreamParser.Decode(codewords, 3, 3, 0, 0);
+        var result = BbScannerPdf417BitStreamParser.Decode(codewords, 3, 3, 0, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("héllo", result.Text);
@@ -235,7 +235,7 @@ public class Pdf417DecoderTests
         // codewords, optional field 1 holding the segment count 3 ("100003"), terminator.
         int[] codewords = [13, 900, (0 * 30) + 29, 928, 111, 105, 100, 200, 923, 1, 111, 103, 922];
 
-        var result = BbPdf417BitStreamParser.Decode(codewords, 3, 4, 0, 0);
+        var result = BbScannerPdf417BitStreamParser.Decode(codewords, 3, 4, 0, 0);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("A", result.Text);
@@ -246,8 +246,8 @@ public class Pdf417DecoderTests
     [TestMethod]
     public void TheSpecificationTableShipsAndIsInUseByDefault()
     {
-        Assert.AreSame(BbPdf417SymbolTable.Specification, BbPdf417SymbolTable.Current);
-        Assert.IsTrue(BbPdf417SymbolTable.Current.IsSpecificationTable);
+        Assert.AreSame(BbScannerPdf417SymbolTable.Specification, BbScannerPdf417SymbolTable.Current);
+        Assert.IsTrue(BbScannerPdf417SymbolTable.Current.IsSpecificationTable);
 
         // Spot checks against ISO/IEC 15438, so an accidental edit of the data shows up here and not only as
         // symbols that quietly stop reading: the first and last codeword of every cluster.
@@ -260,7 +260,7 @@ public class Pdf417DecoderTests
 
         static void AssertPattern(int cluster, int codeword, int expected)
         {
-            Assert.IsTrue(BbPdf417SymbolTable.Specification.TryGetPattern(cluster, codeword, out var pattern));
+            Assert.IsTrue(BbScannerPdf417SymbolTable.Specification.TryGetPattern(cluster, codeword, out var pattern));
             Assert.AreEqual(expected, pattern, $"cluster {cluster}, codeword {codeword}");
         }
     }
@@ -268,19 +268,19 @@ public class Pdf417DecoderTests
     [TestMethod]
     public void ShippedSymbolTableIsStructurallyValid()
     {
-        var table = BbPdf417SymbolTable.Current;
+        var table = BbScannerPdf417SymbolTable.Current;
         var widths = new int[8];
 
         foreach (var cluster in new[] { 0, 3, 6 })
         {
             var seen = new HashSet<int>();
-            for (var codeword = 0; codeword < BbPdf417SymbolTable.CodewordCount; codeword++)
+            for (var codeword = 0; codeword < BbScannerPdf417SymbolTable.CodewordCount; codeword++)
             {
                 Assert.IsTrue(table.TryGetPattern(cluster, codeword, out var pattern));
                 Assert.IsTrue(seen.Add(pattern), "Every codeword of a cluster has a pattern of its own.");
 
                 // Seventeen modules, starting with a bar and ending with a space.
-                Assert.IsTrue(pattern < 1 << BbPdf417SymbolTable.ModulesPerCodeword);
+                Assert.IsTrue(pattern < 1 << BbScannerPdf417SymbolTable.ModulesPerCodeword);
                 Assert.IsTrue((pattern & (1 << 16)) != 0, "A symbol character starts with a bar.");
                 Assert.IsTrue((pattern & 1) == 0, "A symbol character ends with a space.");
 
@@ -307,8 +307,8 @@ public class Pdf417DecoderTests
                     Assert.IsTrue(width is >= 1 and <= 6, $"pattern {pattern:X} has an element {width} modules wide");
                 }
 
-                Assert.AreEqual(cluster, BbPdf417SymbolTable.ClusterOf(widths), $"pattern {pattern:X}");
-                Assert.AreEqual(pattern, BbPdf417SymbolTable.ToPattern(widths));
+                Assert.AreEqual(cluster, BbScannerPdf417SymbolTable.ClusterOf(widths), $"pattern {pattern:X}");
+                Assert.AreEqual(pattern, BbScannerPdf417SymbolTable.ToPattern(widths));
 
                 Assert.IsTrue(table.TryGetCodeword(cluster, pattern, out var roundTripped));
                 Assert.AreEqual(codeword, roundTripped);
@@ -323,19 +323,19 @@ public class Pdf417DecoderTests
         using var image = SyntheticImage.FromMatrix(matrix, scale: 3);
 
         // Its locator costs every frame time of its own, so the default set leaves it out.
-        using var defaults = new BbBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var defaults = new BbScannerBarcodeDecoder(new BbScannerOptions { DuplicateSuppressionWindow = TimeSpan.Zero });
         Assert.IsNull(defaults.Decode(image.View));
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.Common | BbBarcodeFormat.Pdf417,
+            Formats = BbScannerBarcodeFormat.Common | BbScannerBarcodeFormat.Pdf417,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
         var result = decoder.Decode(image.View);
 
         Assert.IsNotNull(result);
-        Assert.AreEqual(BbBarcodeFormat.Pdf417, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.Pdf417, result.Format);
         Assert.AreEqual("ASKED FOR BY NAME", result.Text);
     }
 
@@ -345,11 +345,11 @@ public class Pdf417DecoderTests
     {
         // The table is process wide, so this runs on its own and puts the specification table back.
 #pragma warning disable CS0618 // The placeholder is exactly the kind of table this is about.
-        BbPdf417SymbolTable.Register(BbPdf417SymbolTable.CreatePlaceholder());
+        BbScannerPdf417SymbolTable.Register(BbScannerPdf417SymbolTable.CreatePlaceholder());
 #pragma warning restore CS0618
         try
         {
-            using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Pdf417 });
+            using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.Pdf417 });
 
             using var matrix = Pdf417Encoder.Encode("DISABLED");
             using var image = SyntheticImage.FromMatrix(matrix, scale: 3);
@@ -358,21 +358,21 @@ public class Pdf417DecoderTests
         }
         finally
         {
-            BbPdf417SymbolTable.Register(BbPdf417SymbolTable.Specification);
+            BbScannerPdf417SymbolTable.Register(BbScannerPdf417SymbolTable.Specification);
         }
     }
 
     private static int[] BuildBlock(List<int> data, int numEc)
     {
-        var field = BbModulusGF.Pdf417;
+        var field = BbScannerModulusGF.Pdf417;
 
         var generator = field.One;
         for (var i = 1; i <= numEc; i++)
         {
-            generator = generator.Multiply(new BbModulusPoly(field, [1, field.Subtract(0, field.Exp(i))]));
+            generator = generator.Multiply(new BbScannerModulusPoly(field, [1, field.Subtract(0, field.Exp(i))]));
         }
 
-        var remainder = new BbModulusPoly(field, [.. data]).MultiplyByMonomial(numEc, 1);
+        var remainder = new BbScannerModulusPoly(field, [.. data]).MultiplyByMonomial(numEc, 1);
         var inverse = field.Inverse(generator.GetCoefficient(generator.Degree));
 
         while (remainder.Degree >= generator.Degree && !remainder.IsZero)
@@ -413,8 +413,8 @@ public class Pdf417DecoderTests
             rotated.Pixels[i] = (byte)(255 - rotated.Pixels[i]);
         }
 
-        using var bits = new BbHybridBinarizer().GetBlackMatrix(rotated.View)!;
-        var result = new BbPdf417Reader().Decode(bits, new BbMatrixDecodeOptions(TryHarder: false, AllowInverted: true));
+        using var bits = new BbScannerHybridBinarizer().GetBlackMatrix(rotated.View)!;
+        var result = new BbScannerPdf417Reader().Decode(bits, new BbScannerMatrixDecodeOptions(TryHarder: false, AllowInverted: true));
 
         Assert.AreEqual(Content, result?.Payload.Text);
     }
@@ -448,14 +448,14 @@ public class Pdf417DecoderTests
         Add(7, 1, 1, 3, 1, 1, 1, 2, 1);
         using var drawn = SyntheticImage.FromLinear(modules.ToArray(), scale: 1, height: 460);
         using var frame = ImageTransforms.Frame(drawn, 640, 480);
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Pdf417, DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.Pdf417, DuplicateSuppressionWindow = TimeSpan.Zero });
         decoder.Decode(frame.View, suppressDuplicates: false);
 
         const System.Reflection.BindingFlags Private = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
-        var readers = (System.Collections.IEnumerable)typeof(BbBarcodeDecoder).GetField("_matrixDecoders", Private)!.GetValue(decoder)!;
-        var reader = readers.OfType<BbPdf417Reader>().Single();
-        var locator = typeof(BbPdf417Reader).GetField("_locator", Private)!.GetValue(reader)!;
-        var upright = (BbLuminanceBuffer?)locator.GetType().GetField("_upright", Private)!.GetValue(locator);
+        var readers = (System.Collections.IEnumerable)typeof(BbScannerBarcodeDecoder).GetField("_matrixDecoders", Private)!.GetValue(decoder)!;
+        var reader = readers.OfType<BbScannerPdf417Reader>().Single();
+        var locator = typeof(BbScannerPdf417Reader).GetField("_locator", Private)!.GetValue(reader)!;
+        var upright = (BbScannerLuminanceBuffer?)locator.GetType().GetField("_upright", Private)!.GetValue(locator);
 
         Assert.IsNotNull(upright, "The stripes were never resampled, so this test no longer tests.");
         Assert.IsLessThanOrEqualTo(Math.Max(640 * 480 * 3 / 2, 512 * 1024), upright.Width * upright.Height);
@@ -471,13 +471,13 @@ public class Pdf417DecoderTests
         using var left = SyntheticImage.FromMatrix(Pdf417Encoder.Encode("LEFT SYMBOL 0001", columns: 3), 2);
         using var right = SyntheticImage.FromMatrix(Pdf417Encoder.Encode("RIGHT SYMBOL 0002", columns: 3), 2);
         var shift = (int)(left.Height * offset);
-        using var sheet = BbLuminanceBuffer.Rent(left.Width + right.Width + 40, Math.Max(left.Height, right.Height) + shift + 40);
+        using var sheet = BbScannerLuminanceBuffer.Rent(left.Width + right.Width + 40, Math.Max(left.Height, right.Height) + shift + 40);
         sheet.Pixels.Fill(255);
         ImageTransforms.Paste(left, sheet, 10, 10);
         ImageTransforms.Paste(right, sheet, left.Width + 30, 10 + shift);
         using var frame = ImageTransforms.Frame(sheet, Math.Max(640, sheet.Width), Math.Max(480, sheet.Height));
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { Formats = BbBarcodeFormat.Pdf417, DuplicateSuppressionWindow = TimeSpan.Zero });
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions { Formats = BbScannerBarcodeFormat.Pdf417, DuplicateSuppressionWindow = TimeSpan.Zero });
         var values = decoder.DecodeAll(frame.View, maxSymbols: 2, suppressDuplicates: false).Select(r => r.Text).Order().ToList();
 
         CollectionAssert.AreEqual(new[] { "LEFT SYMBOL 0001", "RIGHT SYMBOL 0002" }, values);
@@ -492,7 +492,7 @@ public class Pdf417DecoderTests
         {
             var content = string.Concat(Enumerable.Range(0, length).Select(i => "abcdefghij0123456789"[i % 20]));
             using var matrix = Pdf417Encoder.Encode(content);
-            if (new BbPdf417Reader().Decode(matrix, BbMatrixDecodeOptions.Live)?.Payload.Text is var text && text != content)
+            if (new BbScannerPdf417Reader().Decode(matrix, BbScannerMatrixDecodeOptions.Live)?.Payload.Text is var text && text != content)
             {
                 failures.Add($"{length}: {text}");
             }

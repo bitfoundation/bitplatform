@@ -39,7 +39,7 @@ These run after the provider's own statements and after `PRAGMA foreign_keys`, o
 
 ## A custom transport
 
-`IBsqliteTransport` is the seam between the ADO.NET layer and wherever the engine runs. `Bit.Bsqlite.Testing.BsqliteInProcessTransport` runs Microsoft.Data.Sqlite in-process for desktop tests; `BsqliteWorkerTransport` drives the worker. A transport that can also:
+`IBsqliteTransport` is the seam between the ADO.NET layer and wherever the engine runs. `Bit.Bsqlite.BsqliteInProcessTransport` runs Microsoft.Data.Sqlite in-process for desktop tests; `BsqliteWorkerTransport` drives the worker. A transport that can also:
 
 - report committed writes - raise `TablesChanged` once a write commits, for its own writes and other writers' alike, and return `true` from `ReportsLocalWrites`; otherwise leave both at their defaults and the connection infers tables from the SQL;
 - snapshot an open database - implement `IBsqliteSnapshotSource`.

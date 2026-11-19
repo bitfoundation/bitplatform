@@ -48,7 +48,7 @@ public record BbScannerApiMemberDto
     /// <summary>The C# type of the member, or the signature's return type for a method.</summary>
     public string? Type { get; init; }
 
-    /// <summary>The method's parameter list, e.g. "(ReadOnlySpan&lt;byte&gt; pixels, int width, int height, BbPixelFormat format, bool suppressDuplicates = true)".</summary>
+    /// <summary>The method's parameter list, e.g. "(ReadOnlySpan&lt;byte&gt; pixels, int width, int height, BbScannerPixelFormat format, bool suppressDuplicates = true)".</summary>
     public string? Signature { get; init; }
 
     /// <summary>The value the member has on a freshly created instance, when it could be determined.</summary>
@@ -141,13 +141,13 @@ public record BbScannerSearchResultDto
 }
 
 /// <summary>
-/// One symbology the library reads, described from the library itself: its flag in BbBarcodeFormat, the
+/// One symbology the library reads, described from the library itself: its flag in BbScannerBarcodeFormat, the
 /// documentation of that flag, whether the pipeline actually creates its reader, and the options that steer it
 /// with the defaults a freshly created BbScannerOptions has.
 /// </summary>
 public record BbScannerFormatDto
 {
-    /// <summary>The BbBarcodeFormat member, e.g. "QrCode".</summary>
+    /// <summary>The BbScannerBarcodeFormat member, e.g. "QrCode".</summary>
     public required string Name { get; init; }
 
     /// <summary>The symbology's usual name, e.g. "QR Code".</summary>
@@ -172,8 +172,8 @@ public record BbScannerFormatDto
     public required bool EnabledByDefault { get; init; }
 
     /// <summary>
-    /// True when BbBarcodeDecoder creates a reader for it. False only for PDF417, and only when an application
-    /// registered a symbol character table that is not the specification one (BbPdf417SymbolTable.Current.IsSpecificationTable).
+    /// True when BbScannerBarcodeDecoder creates a reader for it. False only for PDF417, and only when an application
+    /// registered a symbol character table that is not the specification one (BbScannerPdf417SymbolTable.Current.IsSpecificationTable).
     /// </summary>
     public required bool Active { get; init; }
 
@@ -217,7 +217,7 @@ public record BbScannerRectDto
     public required float Height { get; init; }
 }
 
-/// <summary>Where the time of one decoded frame went, read off BbBarcodeDecoder.LastFrame.</summary>
+/// <summary>Where the time of one decoded frame went, read off BbScannerBarcodeDecoder.LastFrame.</summary>
 public record BbScannerTimingsDto
 {
     public required double TotalMilliseconds { get; init; }
@@ -235,7 +235,7 @@ public record BbScannerTimingsDto
 }
 
 /// <summary>
-/// One run of BbBarcodeDecoder over the rendered frame, and the BbBarcodeResult it returned - every member an
+/// One run of BbScannerBarcodeDecoder over the rendered frame, and the BbScannerBarcodeResult it returned - every member an
 /// application reads, with the values the library really produced.
 /// </summary>
 public record BbScannerDecodeAttemptDto
@@ -245,31 +245,31 @@ public record BbScannerDecodeAttemptDto
 
     public required bool Decoded { get; init; }
 
-    /// <summary>BbBarcodeResult.Text.</summary>
+    /// <summary>BbScannerBarcodeResult.Text.</summary>
     public string? Text { get; init; }
 
-    /// <summary>BbBarcodeResult.Format.</summary>
+    /// <summary>BbScannerBarcodeResult.Format.</summary>
     public string? Format { get; init; }
 
     /// <summary>True when Text is the payload that was encoded.</summary>
     public bool? Matches { get; init; }
 
-    /// <summary>BbBarcodeResult.RawBytes as hex, cut after 64 bytes.</summary>
+    /// <summary>BbScannerBarcodeResult.RawBytes as hex, cut after 64 bytes.</summary>
     public string? RawBytes { get; init; }
 
     public int? RawByteCount { get; init; }
 
-    /// <summary>BbBarcodeResult.Corners, in frame pixel coordinates.</summary>
+    /// <summary>BbScannerBarcodeResult.Corners, in frame pixel coordinates.</summary>
     public BbScannerPointDto[]? Corners { get; init; }
 
-    /// <summary>BbBarcodeResult.BoundingBox.</summary>
+    /// <summary>BbScannerBarcodeResult.BoundingBox.</summary>
     public BbScannerRectDto? BoundingBox { get; init; }
 
-    /// <summary>The members of BbBarcodeResult.Metadata that the symbology filled in, by name.</summary>
+    /// <summary>The members of BbScannerBarcodeResult.Metadata that the symbology filled in, by name.</summary>
     public Dictionary<string, string>? Metadata { get; init; }
 
     /// <summary>
-    /// BbBarcodeResult.TryGetGs1, in bracketed form - "(01)09521234543213(10)ABC123" - for a GS1 symbol whose content
+    /// BbScannerBarcodeResult.TryGetGs1, in bracketed form - "(01)09521234543213(10)ABC123" - for a GS1 symbol whose content
     /// is a valid element string; null otherwise.
     /// </summary>
     public string? Gs1 { get; init; }
@@ -283,7 +283,7 @@ public record BbScannerDecodeAttemptDto
 /// </summary>
 public record BbScannerDecodeReportDto
 {
-    /// <summary>The BbBarcodeFormat member that was encoded.</summary>
+    /// <summary>The BbScannerBarcodeFormat member that was encoded.</summary>
     public required string Format { get; init; }
 
     /// <summary>The payload that was encoded, after the lab completed it (an EAN or UPC check digit, for one).</summary>

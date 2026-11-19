@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Infrastructure;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Refuses a model with a query filter, or a shadow concurrency token, when it is first initialized for use. Every model comes through

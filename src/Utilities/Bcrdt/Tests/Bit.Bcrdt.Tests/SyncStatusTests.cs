@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
-using Bit.Bcrdt.Blazor;
 
 namespace Bit.Bcrdt.Tests;
 

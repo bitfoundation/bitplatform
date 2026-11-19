@@ -4,12 +4,12 @@ namespace Bit.Bmotion.Tests.Models;
 [TestClass]
 public class BmApiTests
 {
-    // ── BmKeyframes ────────────────────────────────────────────────────────────
+    // ── BmotionKeyframes ────────────────────────────────────────────────────────────
 
     [TestMethod]
     public void Keyframes_ImplicitFromDouble_IsSingle()
     {
-        BmKeyframes k = 1.5;
+        BmotionKeyframes k = 1.5;
         Assert.IsTrue(k.IsSingle);
         Assert.AreEqual(1.5, k.First);
         Assert.AreEqual(1.5, (double)k.ToEngineValue());
@@ -18,7 +18,7 @@ public class BmApiTests
     [TestMethod]
     public void Keyframes_CollectionExpression_ProducesArrayEngineValue()
     {
-        BmKeyframes k = [1, 1.4, 0.8, 1];
+        BmotionKeyframes k = [1, 1.4, 0.8, 1];
         Assert.AreEqual(4, k.Count);
         var engine = (double[])k.ToEngineValue();
         CollectionAssert.AreEqual(new[] { 1.0, 1.4, 0.8, 1.0 }, engine);
@@ -27,21 +27,21 @@ public class BmApiTests
     [TestMethod]
     public void Keyframes_ValueEquality_IncludesWildcards()
     {
-        BmKeyframes a = [Bm.Current, 100];
-        BmKeyframes b = [Bm.Current, 100];
-        BmKeyframes c = [0, 100];
+        BmotionKeyframes a = [Bm.Current, 100];
+        BmotionKeyframes b = [Bm.Current, 100];
+        BmotionKeyframes c = [0, 100];
         Assert.AreEqual(a, b);
         Assert.AreNotEqual(a, c);
     }
 
     [TestMethod]
     public void Keyframes_Empty_Throws()
-        => Assert.ThrowsExactly<ArgumentException>(() => _ = new BmKeyframes());
+        => Assert.ThrowsExactly<ArgumentException>(() => _ = new BmotionKeyframes());
 
     [TestMethod]
     public void StringKeyframes_NumberDefaultsToPx()
     {
-        BmStringKeyframes k = 200;
+        BmotionStringKeyframes k = 200;
         Assert.AreEqual("200px", k.First);
     }
 
@@ -81,10 +81,10 @@ public class BmApiTests
     [TestMethod]
     public void Tween_LowersToTweenConfig()
     {
-        var config = Bm.Tween(0.4, BmEase.InOut, delay: 0.1, times: [0, 0.5, 1]).ToConfig();
+        var config = Bm.Tween(0.4, BmotionEase.InOut, delay: 0.1, times: [0, 0.5, 1]).ToConfig();
         Assert.AreEqual(BmotionTransitionType.Tween, config.Type);
         Assert.AreEqual(0.4, config.Duration);
-        Assert.AreEqual(BmEase.InOut, config.Ease);
+        Assert.AreEqual(BmotionEase.InOut, config.Ease);
         Assert.AreEqual(0.1, config.Delay);
         CollectionAssert.AreEqual(new[] { 0.0, 0.5, 1.0 }, config.Times);
     }
@@ -122,12 +122,12 @@ public class BmApiTests
     [TestMethod]
     public void Repeat_Forever_LowersToInfiniteConfig()
     {
-        var config = Bm.Tween(repeat: BmRepeat.Forever).ToConfig();
+        var config = Bm.Tween(repeat: BmotionRepeat.Forever).ToConfig();
         Assert.IsTrue(config.IsInfiniteRepeat);
 
-        var mirrored = Bm.Tween(repeat: BmRepeat.Mirror(delay: 0.5)).ToConfig();
+        var mirrored = Bm.Tween(repeat: BmotionRepeat.Mirror(delay: 0.5)).ToConfig();
         Assert.IsTrue(mirrored.IsInfiniteRepeat);
-        Assert.AreEqual(BmRepeatType.Mirror, mirrored.RepeatType);
+        Assert.AreEqual(BmotionRepeatType.Mirror, mirrored.RepeatType);
         Assert.AreEqual(0.5, mirrored.RepeatDelay);
     }
 
@@ -153,9 +153,9 @@ public class BmApiTests
     [TestMethod]
     public void Transition_AreEquivalent_ComparesStructurally()
     {
-        Assert.IsTrue(BmTransition.AreEquivalent(Bm.Tween(0.4, BmEase.In), Bm.Tween(0.4, BmEase.In)));
-        Assert.IsFalse(BmTransition.AreEquivalent(Bm.Tween(0.4), Bm.Spring()));
-        Assert.IsFalse(BmTransition.AreEquivalent(Bm.Tween(0.4), Bm.Tween(0.5)));
+        Assert.IsTrue(BmotionTransition.AreEquivalent(Bm.Tween(0.4, BmotionEase.In), Bm.Tween(0.4, BmotionEase.In)));
+        Assert.IsFalse(BmotionTransition.AreEquivalent(Bm.Tween(0.4), Bm.Spring()));
+        Assert.IsFalse(BmotionTransition.AreEquivalent(Bm.Tween(0.4), Bm.Tween(0.5)));
     }
 
     // ── Variants ───────────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ public class BmApiTests
     [TestMethod]
     public void Variants_IndexerInitializer_AndCaseInsensitiveLookup()
     {
-        var variants = new BmVariants
+        var variants = new BmotionVariants
         {
             ["hidden"] = Bm.To(opacity: 0),
             ["visible"] = Bm.To(opacity: 1),
@@ -175,7 +175,7 @@ public class BmApiTests
     [TestMethod]
     public void Variants_DynamicEntry_ReceivesCustomData()
     {
-        var variants = new BmVariants();
+        var variants = new BmotionVariants();
         variants.Add("visible", custom => Bm.To(x: 10 * (int)custom!));
         Assert.AreEqual(30.0, variants.Get("visible", 3)!.X!.First);
     }
@@ -189,11 +189,11 @@ public class BmApiTests
         Assert.AreEqual(0.0, first.DelayFor(0, 5), 1e-9);
         Assert.AreEqual(0.4, first.DelayFor(4, 5), 1e-9);
 
-        var last = Bm.Stagger(0.1, BmStaggerFrom.Last);
+        var last = Bm.Stagger(0.1, BmotionStaggerFrom.Last);
         Assert.AreEqual(0.4, last.DelayFor(0, 5), 1e-9);
         Assert.AreEqual(0.0, last.DelayFor(4, 5), 1e-9);
 
-        var center = Bm.Stagger(0.1, BmStaggerFrom.Center, startDelay: 0.2);
+        var center = Bm.Stagger(0.1, BmotionStaggerFrom.Center, startDelay: 0.2);
         Assert.AreEqual(0.2, center.DelayFor(2, 5), 1e-9);
         Assert.AreEqual(0.4, center.DelayFor(0, 5), 1e-9);
     }
@@ -203,7 +203,7 @@ public class BmApiTests
     [TestMethod]
     public void Sequence_DefaultPositioning_ChainsSegments()
     {
-        var seq = new BmSequence()
+        var seq = new BmotionSequence()
             .Add("#a", Bm.To(x: 1), Bm.Tween(0.5))
             .Add("#a", Bm.To(y: 1), Bm.Tween(0.3));
         Assert.AreEqual(0.0, seq.Segments[0].Start, 1e-9);
@@ -213,7 +213,7 @@ public class BmApiTests
     [TestMethod]
     public void Sequence_AtOffsets_RelativeStartAndLabels()
     {
-        var seq = new BmSequence()
+        var seq = new BmotionSequence()
             .Add("#a", Bm.To(x: 1), Bm.Tween(0.5))
             .Add("#b", Bm.To(x: 1), Bm.Tween(0.2), at: "-0.1")   // 0.5 - 0.1
             .Add("#c", Bm.To(x: 1), Bm.Tween(0.2), at: "<")       // with #b's start
@@ -229,11 +229,11 @@ public class BmApiTests
     [TestMethod]
     public void Sequence_UnknownLabel_Throws()
     {
-        var seq = new BmSequence();
+        var seq = new BmotionSequence();
         Assert.ThrowsExactly<ArgumentException>(() => seq.Add("#a", Bm.To(x: 1), at: "nope"));
     }
 
-    // ── BmValue velocity ──────────────────────────────────────────────────
+    // ── BmotionValue velocity ──────────────────────────────────────────────────
 
     [TestMethod]
     public void Value_TracksVelocity_AndJumpResetsIt()
@@ -289,28 +289,28 @@ public class BmApiTests
         Assert.AreEqual(0, value.GetVelocity());
     }
 
-    // ── BmDrag ─────────────────────────────────────────────────────────────────
+    // ── BmotionDrag ─────────────────────────────────────────────────────────────────
 
     [TestMethod]
     public void Drag_ImplicitBool_AndAxisFactories()
     {
-        BmDrag off = false;
+        BmotionDrag off = false;
         Assert.IsFalse(off.Enabled);
 
-        BmDrag on = true;
+        BmotionDrag on = true;
         Assert.IsTrue(on.Enabled);
-        Assert.AreEqual(BmDragAxis.Both, on.Axis);
+        Assert.AreEqual(BmotionDragAxis.Both, on.Axis);
 
-        Assert.AreEqual(BmDragAxis.X, BmDrag.X.Axis);
-        Assert.IsTrue(BmDrag.Y.Enabled);
+        Assert.AreEqual(BmotionDragAxis.X, BmotionDrag.X.Axis);
+        Assert.IsTrue(BmotionDrag.Y.Enabled);
     }
 
-    // ── BmDragConstraints (element-bounds mode) ────────────────────────────────
+    // ── BmotionDragConstraints (element-bounds mode) ────────────────────────────────
 
     [TestMethod]
     public void DragConstraints_Parent_SetsElementBoundsMode()
     {
-        var constraints = BmDragConstraints.Parent();
+        var constraints = BmotionDragConstraints.Parent();
 
         Assert.IsTrue(constraints.FromParent);
         Assert.IsNull(constraints.Selector);
@@ -323,7 +323,7 @@ public class BmApiTests
     [TestMethod]
     public void DragConstraints_Within_CarriesSelector()
     {
-        var constraints = BmDragConstraints.Within(".drop-zone");
+        var constraints = BmotionDragConstraints.Within(".drop-zone");
 
         Assert.AreEqual(".drop-zone", constraints.Selector);
         Assert.IsFalse(constraints.FromParent);
@@ -334,14 +334,14 @@ public class BmApiTests
 
     [TestMethod]
     public void DragConstraints_Within_RejectsEmptySelector()
-        => Assert.ThrowsExactly<ArgumentException>(() => BmDragConstraints.Within("  "));
+        => Assert.ThrowsExactly<ArgumentException>(() => BmotionDragConstraints.Within("  "));
 
-    // ── BmDragElastic ──────────────────────────────────────────────────────────
+    // ── BmotionDragElastic ──────────────────────────────────────────────────────────
 
     [TestMethod]
     public void DragElastic_ImplicitDouble_IsUniform()
     {
-        BmDragElastic elastic = 0.5;
+        BmotionDragElastic elastic = 0.5;
 
         Assert.AreEqual(0.5, elastic.Left);
         Assert.AreEqual(0.5, elastic.Right);
@@ -352,7 +352,7 @@ public class BmApiTests
     [TestMethod]
     public void DragElastic_Edges_UnspecifiedEdgesAreRigid()
     {
-        var elastic = BmDragElastic.Edges(right: 0.9, bottom: 0.9);
+        var elastic = BmotionDragElastic.Edges(right: 0.9, bottom: 0.9);
 
         Assert.AreEqual(0.0, elastic.Left);
         Assert.AreEqual(0.9, elastic.Right);
@@ -363,7 +363,7 @@ public class BmApiTests
     [TestMethod]
     public void DragElastic_ToJsObject_SanitisesValues()
     {
-        var elastic = BmDragElastic.Edges(left: double.NaN, right: 5, top: -1, bottom: 0.5);
+        var elastic = BmotionDragElastic.Edges(left: double.NaN, right: 5, top: -1, bottom: 0.5);
 
         var js = elastic.ToJsObject();
 
@@ -378,22 +378,22 @@ public class BmApiTests
     [TestMethod]
     public void Tween_Eases_FlowsIntoConfig()
     {
-        var tween = Bm.Tween(0.5, eases: [BmEase.Linear, BmEase.CircOut]);
+        var tween = Bm.Tween(0.5, eases: [BmotionEase.Linear, BmotionEase.CircOut]);
 
-        var config = ((BmTransition)tween).ToConfig();
+        var config = ((BmotionTransition)tween).ToConfig();
 
-        CollectionAssert.AreEqual(new[] { BmEase.Linear, BmEase.CircOut }, config.Eases);
+        CollectionAssert.AreEqual(new[] { BmotionEase.Linear, BmotionEase.CircOut }, config.Eases);
     }
 
     [TestMethod]
     public void Tween_Eases_ParticipatesInValueEquality()
     {
-        var a = Bm.Tween(0.5, eases: [BmEase.Linear, BmEase.CircOut]);
-        var b = Bm.Tween(0.5, eases: [BmEase.Linear, BmEase.CircOut]);
-        var c = Bm.Tween(0.5, eases: [BmEase.Linear, BmEase.BackOut]);
+        var a = Bm.Tween(0.5, eases: [BmotionEase.Linear, BmotionEase.CircOut]);
+        var b = Bm.Tween(0.5, eases: [BmotionEase.Linear, BmotionEase.CircOut]);
+        var c = Bm.Tween(0.5, eases: [BmotionEase.Linear, BmotionEase.BackOut]);
 
-        Assert.IsTrue(BmTransition.AreEquivalent(a, b));
-        Assert.IsFalse(BmTransition.AreEquivalent(a, c));
+        Assert.IsTrue(BmotionTransition.AreEquivalent(a, b));
+        Assert.IsFalse(BmotionTransition.AreEquivalent(a, c));
     }
 
     // ── Bm.Template (useMotionTemplate) ────────────────────────────────────────

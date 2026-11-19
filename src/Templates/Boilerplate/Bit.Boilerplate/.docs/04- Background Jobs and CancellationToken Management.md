@@ -212,7 +212,7 @@ Let's look at a example of how `NavigationLock` can be used to prevent navigatio
     <BitTextField @bind-Value="product.Name" Label="Product Name" />
     <BitTextField @bind-Value="product.Price" Label="Price" />
     
-    <BitButton IsLoading="isSaving" ButtonType="BitButtonType.Submit">
+    <BitButton Loading="isSaving" ButtonType="BitButtonType.Submit">
         @Localizer[nameof(AppStrings.Save)]
     </BitButton>
 </EditForm>
@@ -265,7 +265,7 @@ public partial class EditProductPage
 3. **HandleNavigation Method**: Called by `NavigationLock` before any navigation occurs
    - If `isSaving` is `true`, it calls `context.PreventNavigation()` to block navigation
    - This ensures the save operation completes before the user can leave
-4. **User Experience**: The user sees a loading indicator on the button (`IsLoading="isSaving"`) and cannot navigate away until the operation completes
+4. **User Experience**: The user sees a loading indicator on the button (`Loading="isSaving"`) and cannot navigate away until the operation completes
 
 **When Navigation is Blocked:**
 - User clicks browser back button → **Blocked**

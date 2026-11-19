@@ -3,17 +3,6 @@ using System.Drawing;
 using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Bit.Bmage.Codecs;
-using Bit.Bmage.Drawing;
-using Bit.Bmage.Geometry;
-using Bit.Bmage.Interop;
-using Bit.Bmage.Layers;
-using Bit.Bmage.Masks;
-using Bit.Bmage.Memory;
-using Bit.Bmage.Operations;
-using Bit.Bmage.Operations.Adjustments;
-using Bit.Bmage.Operations.Transforms;
-using Bit.Bmage.Pipeline;
 using Microsoft.JSInterop;
 
 namespace Bit.Bmage.Tests;
@@ -28,16 +17,16 @@ public sealed class ReviewFindingsTests
     public void ABrushStrokeTurningSharplyIsNotClippedByItsBounds()
     {
         // The smoothing curve overshoots the corner at (400, 100) upwards, beyond the box around the points.
-        var brush = new BrushMask([new BrushStroke([new(100, 100), new(400, 100), new(400, 400)], 20)]);
+        var brush = new BmageBrushMask([new BmageBrushStroke([new(100, 100), new(400, 100), new(400, 400)], 20)]);
         var size = new Size(500, 500);
         using var rendered = brush.Render(size);
 
         Assert.IsTrue(brush.GetAffectedBounds(size).Contains(rendered.GetBounds()),
             $"The stroke reaches {rendered.GetBounds()}, beyond the affected bounds {brush.GetAffectedBounds(size)}.");
 
-        using var source = ImageBuffer.Create(500, 500, new Rgba32(100, 100, 100));
-        using var masked = new MaskedOperation(new BrightnessAdjustment(0.5f), brush).Apply(source, OperationContext.Default);
-        using var plain = new BrightnessAdjustment(0.5f).Apply(source, OperationContext.Default);
+        using var source = BmageImageBuffer.Create(500, 500, new BmageRgba32(100, 100, 100));
+        using var masked = new BmageMaskedOperation(new BmageBrightnessAdjustment(0.5f), brush).Apply(source, BmageOperationContext.Default);
+        using var plain = new BmageBrightnessAdjustment(0.5f).Apply(source, BmageOperationContext.Default);
         for (var y = 0; y < 500; y++)
             for (var x = 0; x < 500; x++)
                 if (rendered[x, y] == 255) Assert.AreEqual(plain[x, y], masked[x, y], $"({x},{y}) is covered but was left unedited.");
@@ -46,24 +35,24 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void ARotatedCopyLayerReplacesOnlyItsOwnOutline()
     {
-        using var stamp = ImageBuffer.Create(40, 40, new Rgba32(0, 0, 255));
-        using var image = ImageBuffer.Create(100, 100, Rgba32.White);
-        new ImageLayer { Image = stamp, Bounds = new RectangleF(30, 30, 40, 40), Rotation = 45, BlendMode = BlendMode.Copy }.Composite(image);
+        using var stamp = BmageImageBuffer.Create(40, 40, new BmageRgba32(0, 0, 255));
+        using var image = BmageImageBuffer.Create(100, 100, BmageRgba32.White);
+        new BmageImageLayer { Image = stamp, Bounds = new RectangleF(30, 30, 40, 40), Rotation = 45, BlendMode = BmageBlendMode.Copy }.Composite(image);
 
-        Assert.AreEqual(new Rgba32(0, 0, 255), image[50, 50]);
+        Assert.AreEqual(new BmageRgba32(0, 0, 255), image[50, 50]);
         // The corner of the rotated layer's bounding box lies outside the rotated square.
-        Assert.AreEqual(Rgba32.White, image[24, 24], "Copy cleared the empty corner around the rotated layer.");
+        Assert.AreEqual(BmageRgba32.White, image[24, 24], "Copy cleared the empty corner around the rotated layer.");
     }
 
     [TestMethod]
     public void CopyAtPartialStrengthMovesTowardsTheSource()
     {
-        var mixed = Compositor.Blend(new Rgba32(200, 200, 200, 255), Rgba32.Transparent, BlendMode.Copy, 0.5f);
+        var mixed = BmageCompositor.Blend(new BmageRgba32(200, 200, 200, 255), BmageRgba32.Transparent, BmageBlendMode.Copy, 0.5f);
         Assert.IsTrue(mixed.A is >= 126 and <= 129, $"{mixed}");
 
         // A transparent fill through a feathered mask punches a soft hole, not a hard one.
-        using var image = ImageBuffer.Create(100, 100, Rgba32.White);
-        new FillLayer(Rgba32.Transparent) { BlendMode = BlendMode.Copy, Mask = Mask.Ellipse() with { Feather = 8 } }.Composite(image);
+        using var image = BmageImageBuffer.Create(100, 100, BmageRgba32.White);
+        new BmageFillLayer(BmageRgba32.Transparent) { BlendMode = BmageBlendMode.Copy, Mask = BmageMask.Ellipse() with { Feather = 8 } }.Composite(image);
         Assert.AreEqual(0, image[50, 50].A);
         Assert.IsTrue(Enumerable.Range(0, 50).Any(x => image[x, 50].A is > 0 and < 255), "The feathered edge left no partly cleared pixels.");
     }
@@ -71,7 +60,7 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void AnAbsurdFeatherFinishesAtOnce()
     {
-        var mask = new RectangleMask(new RectangleF(10, 10, 50, 50)) { Feather = 1e9f };
+        var mask = new BmageRectangleMask(new RectangleF(10, 10, 50, 50)) { Feather = 1e9f };
         var watch = System.Diagnostics.Stopwatch.StartNew();
         using var rendered = mask.Render(new Size(300, 200));
         Assert.IsLessThan(2000, watch.ElapsedMilliseconds, $"Feathering took {watch.ElapsedMilliseconds} ms.");
@@ -81,16 +70,16 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void TheBudgetNeverRefusesARequestThatFits()
     {
-        var budget = new BudgetedPixelAllocator(1_000_000);
+        var budget = new BmageBudgetedPixelAllocator(1_000_000);
         // Many threads asking near the limit at once: whatever is refused must really not have fitted.
-        var refusals = new ConcurrentBag<ImageMemoryBudgetExceededException>();
+        var refusals = new ConcurrentBag<BmageImageMemoryBudgetExceededException>();
         Parallel.For(0, 4_000, _ =>
         {
             try
             {
                 using var owner = budget.Rent(300_000);
             }
-            catch (ImageMemoryBudgetExceededException ex)
+            catch (BmageImageMemoryBudgetExceededException ex)
             {
                 refusals.Add(ex);
             }
@@ -103,11 +92,11 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public async Task AStreamedBatchWaitsForASlowConsumer()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var image = ParallelProcessingTests.Noise(32, 32, seed: 1);
-        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png)).Data;
+        var png = (await processor.EncodeAsync(image, BmageImageExportOptions.Png)).Data;
         var loaded = 0;
-        var items = Enumerable.Range(0, 40).Select(i => BatchItem.Deferred(_ =>
+        var items = Enumerable.Range(0, 40).Select(i => BmageBatchItem.Deferred(_ =>
         {
             Interlocked.Increment(ref loaded);
             return new ValueTask<ReadOnlyMemory<byte>>(png);
@@ -115,7 +104,7 @@ public sealed class ReviewFindingsTests
 
         var consumed = 0;
         var mostAhead = 0;
-        await foreach (var _ in processor.ProcessBatchStreamAsync(items, ImagePipeline.Create(), new BatchOptions { MaxConcurrency = 2, ExportOptions = ImageExportOptions.Png }))
+        await foreach (var _ in processor.ProcessBatchStreamAsync(items, BmageImagePipeline.Create(), new BmageBatchOptions { MaxConcurrency = 2, ExportOptions = BmageImageExportOptions.Png }))
         {
             consumed++;
             mostAhead = Math.Max(mostAhead, Volatile.Read(ref loaded) - consumed);
@@ -130,18 +119,18 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public async Task ASourceTimingOutIsTheBatchsError()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var image = ParallelProcessingTests.Noise(16, 16, seed: 2);
-        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png)).Data;
+        var png = (await processor.EncodeAsync(image, BmageImageExportOptions.Png)).Data;
 
         await Assert.ThrowsExactlyAsync<TaskCanceledException>(async () =>
         {
-            await foreach (var _ in processor.ProcessBatchStreamAsync(TimesOut(), ImagePipeline.Create())) { }
+            await foreach (var _ in processor.ProcessBatchStreamAsync(TimesOut(), BmageImagePipeline.Create())) { }
         });
 
-        async IAsyncEnumerable<BatchItem> TimesOut()
+        async IAsyncEnumerable<BmageBatchItem> TimesOut()
         {
-            yield return new BatchItem(png);
+            yield return new BmageBatchItem(png);
             await Task.Yield();
             // What an HttpClient timeout looks like: a cancellation nobody asked the batch for.
             throw new TaskCanceledException("The source timed out.");
@@ -151,16 +140,16 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public async Task AnUnboundedConcurrencyIsClampedRatherThanAllocated()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var image = ParallelProcessingTests.Noise(16, 16, seed: 3);
-        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png)).Data;
+        var png = (await processor.EncodeAsync(image, BmageImageExportOptions.Png)).Data;
 
-        var result = await processor.ProcessBatchAsync([new BatchItem(png), new BatchItem(png)], ImagePipeline.Create(), new BatchOptions { MaxConcurrency = int.MaxValue });
+        var result = await processor.ProcessBatchAsync([new BmageBatchItem(png), new BmageBatchItem(png)], BmageImagePipeline.Create(), new BmageBatchOptions { MaxConcurrency = int.MaxValue });
 
         Assert.AreEqual(2, result.SuccessCount);
-        Assert.AreEqual(2, ImageProcessor.WorkerCount(int.MaxValue, 2));
-        Assert.AreEqual(256, ImageProcessor.WorkerCount(int.MaxValue, -1));
-        Assert.AreEqual(1, ImageProcessor.WorkerCount(0, 10));
+        Assert.AreEqual(2, BmageImageProcessor.WorkerCount(int.MaxValue, 2));
+        Assert.AreEqual(256, BmageImageProcessor.WorkerCount(int.MaxValue, -1));
+        Assert.AreEqual(1, BmageImageProcessor.WorkerCount(0, 10));
     }
 
     [TestMethod]
@@ -170,7 +159,7 @@ public sealed class ReviewFindingsTests
         var values = new ConcurrentQueue<double>();
         var progress = new Inline(values.Enqueue);
         // Shrinking 8x runs a box reduction, then the resample: both on several threads.
-        using (new ResizeOperation(200, 150, ResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(source, new OperationContext(progress: progress, maxDegreeOfParallelism: 8))) { }
+        using (new BmageResizeOperation(200, 150, BmageResizeMode.Stretch, BmageResamplingFilter.Lanczos3).Apply(source, new BmageOperationContext(progress: progress, maxDegreeOfParallelism: 8))) { }
 
         var reported = values.ToArray();
         for (var i = 1; i < reported.Length; i++) Assert.IsGreaterThanOrEqualTo(reported[i - 1], reported[i], $"Progress went from {reported[i - 1]} to {reported[i]}.");
@@ -179,12 +168,12 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void AnImageLayerNeverDisposesTheCallersImage()
     {
-        using var logo = ImageBuffer.Create(200, 200, new Rgba32(0, 120, 0));
-        var layer = new ImageLayer { Image = logo, Bounds = new RectangleF(0, 0, 199.6f, 199.6f), Pipeline = ImagePipeline.Create().Grayscale() };
-        using var target = ImageBuffer.Create(220, 220, Rgba32.White);
+        using var logo = BmageImageBuffer.Create(200, 200, new BmageRgba32(0, 120, 0));
+        var layer = new BmageImageLayer { Image = logo, Bounds = new RectangleF(0, 0, 199.6f, 199.6f), Pipeline = BmageImagePipeline.Create().Grayscale() };
+        using var target = BmageImageBuffer.Create(220, 220, BmageRgba32.White);
 
-        LayerCompositor.Composite(target, [layer], new OperationContext(canMutateSource: true));
-        LayerCompositor.Composite(target, [layer], new OperationContext(canMutateSource: true));
+        BmageLayerCompositor.Composite(target, [layer], new BmageOperationContext(canMutateSource: true));
+        BmageLayerCompositor.Composite(target, [layer], new BmageOperationContext(canMutateSource: true));
 
         Assert.IsFalse(logo.IsDisposed);
     }
@@ -192,15 +181,15 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void AKernelWhoseSizeOverflowsIsRefused()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => new Operations.Filters.ConvolutionFilter(new float[131073], 65537, 65537));
+        Assert.ThrowsExactly<ArgumentException>(() => new BmageConvolutionFilter(new float[131073], 65537, 65537));
     }
 
     [TestMethod]
     public void TheEstimateCountsTheMaskACombinationHoldsBesideItsOwn()
     {
         var size = new Size(1000, 1000);
-        var single = ImagePipeline.Create().Masked(Mask.Ellipse(), p => p.Brightness(0.1f)).EstimateMemory(size).PeakBytes;
-        var combined = ImagePipeline.Create().Masked(Mask.Ellipse().Union(Mask.All()), p => p.Brightness(0.1f)).EstimateMemory(size).PeakBytes;
+        var single = BmageImagePipeline.Create().Masked(BmageMask.Ellipse(), p => p.Brightness(0.1f)).EstimateMemory(size).PeakBytes;
+        var combined = BmageImagePipeline.Create().Masked(BmageMask.Ellipse().Union(BmageMask.All()), p => p.Brightness(0.1f)).EstimateMemory(size).PeakBytes;
 
         // The first side is drawn into the combination's own mask, the second beside it.
         Assert.AreEqual(1L * 1000 * 1000, combined - single);
@@ -213,9 +202,9 @@ public sealed class ReviewFindingsTests
     {
         using var logo = ParallelProcessingTests.Noise(100, 4, seed: 6);
         // Wider than the default limits allow: only the context the layer is composited with lifts them.
-        using var target = ImageBuffer.Create(17_000, 4, allocator: null, clear: true, ImageLimits.Unrestricted);
-        var budget = new BudgetedPixelAllocator(long.MaxValue);
-        new ImageLayer { Image = logo, Bounds = new RectangleF(0, 0, 17_000, 4) }.Composite(target, new OperationContext(budget, ImageLimits.Unrestricted));
+        using var target = BmageImageBuffer.Create(17_000, 4, allocator: null, clear: true, BmageImageLimits.Unrestricted);
+        var budget = new BmageBudgetedPixelAllocator(long.MaxValue);
+        new BmageImageLayer { Image = logo, Bounds = new RectangleF(0, 0, 17_000, 4) }.Composite(target, new BmageOperationContext(budget, BmageImageLimits.Unrestricted));
 
         // The resampled copy is the size of the area drawn, and counted against the budget.
         Assert.IsGreaterThanOrEqualTo(17_000L * 4 * 4, budget.PeakBytes);
@@ -223,9 +212,9 @@ public sealed class ReviewFindingsTests
 
         using var cancelled = new CancellationTokenSource();
         cancelled.Cancel();
-        using var small = ImageBuffer.Create(200, 200, Rgba32.White);
+        using var small = BmageImageBuffer.Create(200, 200, BmageRgba32.White);
         Assert.ThrowsExactly<OperationCanceledException>(() =>
-            new ImageLayer { Image = logo, Bounds = new RectangleF(20, 20, 150, 150), Rotation = 30 }.Composite(small, new OperationContext(cancellationToken: cancelled.Token)));
+            new BmageImageLayer { Image = logo, Bounds = new RectangleF(20, 20, 150, 150), Rotation = 30 }.Composite(small, new BmageOperationContext(cancellationToken: cancelled.Token)));
     }
 
     [TestMethod]
@@ -233,12 +222,12 @@ public sealed class ReviewFindingsTests
     {
         using var photo = ParallelProcessingTests.Noise(800, 800, seed: 7);
         var crop = new Rectangle(200, 200, 100, 100);
-        using var cropped = new CropOperation(crop).Apply(photo, OperationContext.Default);
-        using var throughPipeline = ImageBuffer.Create(100, 100, Rgba32.White);
-        using var direct = ImageBuffer.Create(100, 100, Rgba32.White);
+        using var cropped = new BmageCropOperation(crop).Apply(photo, BmageOperationContext.Default);
+        using var throughPipeline = BmageImageBuffer.Create(100, 100, BmageRgba32.White);
+        using var direct = BmageImageBuffer.Create(100, 100, BmageRgba32.White);
 
-        new ImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 100, 100), Pipeline = ImagePipeline.Create().Crop(crop) }.Composite(throughPipeline);
-        new ImageLayer { Image = cropped, Bounds = new RectangleF(0, 0, 100, 100) }.Composite(direct);
+        new BmageImageLayer { Image = photo, Bounds = new RectangleF(0, 0, 100, 100), Pipeline = BmageImagePipeline.Create().Crop(crop) }.Composite(throughPipeline);
+        new BmageImageLayer { Image = cropped, Bounds = new RectangleF(0, 0, 100, 100) }.Composite(direct);
 
         CollectionAssert.AreEqual(direct.Pixels.ToArray(), throughPipeline.Pixels.ToArray(), "The cropped layer was shrunk before its crop and drawn blurred.");
     }
@@ -247,7 +236,7 @@ public sealed class ReviewFindingsTests
     public async Task AModuleWithoutConfigureWorkersStillLoads_AndACancelledLoadReleasesIt()
     {
         var old = new FakeModule(identifier => { if (identifier == "configureWorkers") throw new JSException("configureWorkers is not a function"); });
-        await using (var interop = new BrowserImageInterop(new ImportingJSRuntime(old), new BitBmageOptions { MaxCodecWorkers = 2 }))
+        await using (var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(old), new BmageOptions { MaxCodecWorkers = 2 }))
         {
             Assert.AreSame(old, await interop.GetModuleAsync());
             Assert.IsTrue(interop.IsLoaded);
@@ -261,7 +250,7 @@ public sealed class ReviewFindingsTests
             cancel.Cancel();
             throw new TaskCanceledException();
         });
-        await using var cancelled = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions { MaxCodecWorkers = 2 });
+        await using var cancelled = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions { MaxCodecWorkers = 2 });
         await Assert.ThrowsAsync<OperationCanceledException>(async () => await cancelled.GetModuleAsync(cancel.Token));
         Assert.IsTrue(module.Disposed, "The module imported for a cancelled load was never released.");
         Assert.IsFalse(cancelled.IsLoaded);
@@ -272,10 +261,10 @@ public sealed class ReviewFindingsTests
     {
         // What fetch reports when a server sends no CORS header: a bare TypeError that names neither cause nor cure.
         var module = new FakeModule(identifier => { if (identifier == "fetchImage") throw new JSException("TypeError: Failed to fetch"); });
-        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance);
+        await using var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions());
+        var loader = new BmageImageLoader(new BmageImageProcessorFactory(interop, BmageManagedCapabilityProvider.Instance), interop, BmageManagedCapabilityProvider.Instance);
 
-        var error = await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/beach.jpg")));
+        var error = await Assert.ThrowsExactlyAsync<BmageImageDecodeException>(async () => await loader.LoadAsync(BmageImageSource.FromUrl("https://photos.example/beach.jpg")));
 
         StringAssert.Contains(error.Message, "https://photos.example/beach.jpg");
         StringAssert.Contains(error.Message, "CORS header");
@@ -288,10 +277,10 @@ public sealed class ReviewFindingsTests
     {
         object? passed = null;
         var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "fetchImage") passed = args?[2]; });
-        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = 123_456 };
+        await using var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions());
+        var loader = new BmageImageLoader(new BmageImageProcessorFactory(interop, BmageManagedCapabilityProvider.Instance), interop, BmageManagedCapabilityProvider.Instance) { MaxSourceBytes = 123_456 };
 
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/huge.jpg")));
+        await Assert.ThrowsExactlyAsync<BmageImageLimitExceededException>(async () => await loader.LoadAsync(BmageImageSource.FromUrl("https://photos.example/huge.jpg")));
         Assert.AreEqual(123_456L, passed);
     }
 
@@ -299,14 +288,14 @@ public sealed class ReviewFindingsTests
     public async Task AUrlServingNoMoreThanTheSourceLimitIsDecoded()
     {
         using var image = TestImages.Gradient(12, 9);
-        var png = Codecs.Png.PngEncoder.Encode(image).Data;
+        var png = BmagePngEncoder.Encode(image).Data;
         var module = new FakeModule(_ => { }, respond: (identifier, _) => identifier == "fetchImage"
             ? new FakeHandle(new JsonObject { ["mimeType"] = "image/png", ["byteLength"] = png.Length }, png)
             : null);
-        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var loader = new Input.ImageLoader(new Input.ImageProcessorFactory(interop, Capabilities.ManagedCapabilityProvider.Instance), interop, Capabilities.ManagedCapabilityProvider.Instance) { MaxSourceBytes = png.Length };
+        await using var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions());
+        var loader = new BmageImageLoader(new BmageImageProcessorFactory(interop, BmageManagedCapabilityProvider.Instance), interop, BmageManagedCapabilityProvider.Instance) { MaxSourceBytes = png.Length };
 
-        using var loaded = await loader.LoadAsync(Input.ImageSource.FromUrl("https://photos.example/small.png"));
+        using var loaded = await loader.LoadAsync(BmageImageSource.FromUrl("https://photos.example/small.png"));
 
         Assert.AreEqual(image.Size, loaded.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(image, loaded));
@@ -317,11 +306,11 @@ public sealed class ReviewFindingsTests
     {
         object?[]? passed = null;
         var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "renderText") passed = args; },
-            (identifier, _) => identifier == "renderText" ? new FakeHandle(new Text.BrowserTextRasterizer.TextRenderInfo { Width = 20_000, Height = 9_000, TooLarge = true }, []) : null);
-        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        using var rasterizer = new Text.BrowserTextRasterizer(interop) { Limits = ImageLimits.Default with { MaxPixels = 1_000_000, MaxWidth = 4_000, MaxHeight = 3_000 } };
+            (identifier, _) => identifier == "renderText" ? new FakeHandle(new BmageBrowserTextRasterizer.TextRenderInfo { Width = 20_000, Height = 9_000, TooLarge = true }, []) : null);
+        await using var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions());
+        using var rasterizer = new BmageBrowserTextRasterizer(interop) { Limits = BmageImageLimits.Default with { MaxPixels = 1_000_000, MaxWidth = 4_000, MaxHeight = 3_000 } };
 
-        var error = await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await rasterizer.MeasureAsync("Hello", new TextStyle()));
+        var error = await Assert.ThrowsExactlyAsync<BmageImageLimitExceededException>(async () => await rasterizer.MeasureAsync("Hello", new BmageTextStyle()));
         StringAssert.Contains(error.Message, "20000x9000");
         Assert.AreEqual(1_000_000L, passed?[7]);
         Assert.AreEqual(4_000, passed?[8]);
@@ -334,10 +323,10 @@ public sealed class ReviewFindingsTests
         const int side = 2048; // 16 MB a bitmap, so four fill the cache's 64 MB
         var rendered = new List<string>();
         var module = new FakeModule(_ => { }, (identifier, args) => { if (identifier == "renderText") rendered.Add((string)args![0]!); },
-            (identifier, _) => identifier == "renderText" ? new FakeHandle(new Text.BrowserTextRasterizer.TextRenderInfo { Width = side, Height = side, LineCount = 1 }, new byte[side * side * 4]) : null);
-        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        using var rasterizer = new Text.BrowserTextRasterizer(interop);
-        var style = new TextStyle();
+            (identifier, _) => identifier == "renderText" ? new FakeHandle(new BmageBrowserTextRasterizer.TextRenderInfo { Width = side, Height = side, LineCount = 1 }, new byte[side * side * 4]) : null);
+        await using var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions());
+        using var rasterizer = new BmageBrowserTextRasterizer(interop);
+        var style = new BmageTextStyle();
 
         await rasterizer.MeasureAsync("a", style);
         await rasterizer.MeasureAsync("a", style);
@@ -360,8 +349,8 @@ public sealed class ReviewFindingsTests
     {
         var called = new List<string>();
         var module = new FakeModule(called.Add);
-        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+        await using var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions());
+        var decoder = new BmageBrowserImageDecoder(interop);
 
         // Browsers grow a GIF's canvas to take in a first frame larger than its logical screen of one pixel.
         byte[] gif =
@@ -370,16 +359,16 @@ public sealed class ReviewFindingsTests
             0x2C, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3B,
         ];
         Assert.AreEqual(1, decoder.Identify(gif)!.Width);
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(gif, DecodeOptions.Default, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<BmageImageLimitExceededException>(async () => await decoder.DecodeAsync(gif, BmageDecodeOptions.Default, BmagePooledPixelAllocator.Shared));
 
         // A file whose size cannot be read is refused, rather than handed to a browser that may read a larger one in it.
         byte[] noFrame = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, .. "JFIF\0"u8, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xD9];
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, DecodeOptions.Default, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<BmageImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, BmageDecodeOptions.Default, BmagePooledPixelAllocator.Shared));
         CollectionAssert.DoesNotContain(called, "decode");
 
         // Unlimited, there is nothing to check the size against.
-        var unlimited = DecodeOptions.Default with { Limits = ImageLimits.Unrestricted };
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, unlimited, PooledPixelAllocator.Shared));
+        var unlimited = BmageDecodeOptions.Default with { Limits = BmageImageLimits.Unrestricted };
+        await Assert.ThrowsExactlyAsync<BmageImageDecodeException>(async () => await decoder.DecodeAsync(noFrame, unlimited, BmagePooledPixelAllocator.Shared));
         Assert.AreEqual(1, called.Count(identifier => identifier == "decode"));
     }
 
@@ -391,22 +380,22 @@ public sealed class ReviewFindingsTests
     public async Task TheBrowserDecodersSizeCheckAllowsForTheResizeItAsksTheBrowserFor()
     {
         using var small = TestImages.Gradient(8, 8);
-        var png = Codecs.Png.PngEncoder.Encode(small).Data;
+        var png = BmagePngEncoder.Encode(small).Data;
         System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), 8_000);
         System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), 6_000);
         var called = new List<string>();
         var module = new FakeModule(called.Add);
-        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
-        var options = DecodeOptions.Default with { Limits = ImageLimits.Default with { MaxPixels = 8_000_000 } };
+        await using var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions());
+        var decoder = new BmageBrowserImageDecoder(interop);
+        var options = BmageDecodeOptions.Default with { Limits = BmageImageLimits.Default with { MaxPixels = 8_000_000 } };
 
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options, PooledPixelAllocator.Shared));
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(20_000, 20_000) }, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<BmageImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options, BmagePooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<BmageImageLimitExceededException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(20_000, 20_000) }, BmagePooledPixelAllocator.Shared));
         CollectionAssert.DoesNotContain(called, "decode");
 
         // These reach the browser, which the fake answers with nothing.
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 2_048) }, PooledPixelAllocator.Shared));
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 0) }, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<BmageImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 2_048) }, BmagePooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<BmageImageDecodeException>(async () => await decoder.DecodeAsync(png, options with { MaxSize = new Size(2_048, 0) }, BmagePooledPixelAllocator.Shared));
         Assert.AreEqual(2, called.Count(identifier => identifier == "decode"));
     }
 
@@ -416,21 +405,21 @@ public sealed class ReviewFindingsTests
         using var small = TestImages.Gradient(8, 8);
         byte[] Png(int width, int height)
         {
-            var png = Codecs.Png.PngEncoder.Encode(small).Data;
+            var png = BmagePngEncoder.Encode(small).Data;
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16), (uint)width);
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20), (uint)height);
             return png;
         }
         var called = new List<string>();
         var module = new FakeModule(called.Add);
-        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+        await using var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions());
+        var decoder = new BmageBrowserImageDecoder(interop);
 
-        await Assert.ThrowsExactlyAsync<ImageLimitExceededException>(async () => await decoder.DecodeAsync(Png(20_000, 20_000), DecodeOptions.Default, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<BmageImageLimitExceededException>(async () => await decoder.DecodeAsync(Png(20_000, 20_000), BmageDecodeOptions.Default, BmagePooledPixelAllocator.Shared));
         CollectionAssert.DoesNotContain(called, "decode");
 
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(12_000, 9_000), DecodeOptions.Default, PooledPixelAllocator.Shared));
-        await Assert.ThrowsExactlyAsync<ImageDecodeException>(async () => await decoder.DecodeAsync(Png(20_000, 1_000), DecodeOptions.Default with { MaxSize = new Size(1_000, 1_000) }, PooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<BmageImageDecodeException>(async () => await decoder.DecodeAsync(Png(12_000, 9_000), BmageDecodeOptions.Default, BmagePooledPixelAllocator.Shared));
+        await Assert.ThrowsExactlyAsync<BmageImageDecodeException>(async () => await decoder.DecodeAsync(Png(20_000, 1_000), BmageDecodeOptions.Default with { MaxSize = new Size(1_000, 1_000) }, BmagePooledPixelAllocator.Shared));
         Assert.AreEqual(2, called.Count(identifier => identifier == "decode"));
     }
 
@@ -441,53 +430,53 @@ public sealed class ReviewFindingsTests
     /// upright with the tag still saying to turn them, and anything applying it turned them twice.
     /// </summary>
     [TestMethod]
-    [DataRow(Orientation.Rotate90)]
-    [DataRow(Orientation.Rotate270)]
-    [DataRow(Orientation.FlipHorizontal)]
-    [DataRow(Orientation.Transpose)]
-    public async Task TheBrowserDecoderGivesAnImageAsStoredWhenItIsNotToBeTurnedUpright(Orientation orientation)
+    [DataRow(BmageOrientation.Rotate90)]
+    [DataRow(BmageOrientation.Rotate270)]
+    [DataRow(BmageOrientation.FlipHorizontal)]
+    [DataRow(BmageOrientation.Transpose)]
+    public async Task TheBrowserDecoderGivesAnImageAsStoredWhenItIsNotToBeTurnedUpright(BmageOrientation orientation)
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var upright = TestImages.Quadrants(32, 24);
-        using var stored = new OrientationOperation(orientation.Inverse()).Apply(upright, OperationContext.Default);
-        stored.Metadata = new Metadata.ImageMetadata(Metadata.ExifData.FromOrientation(orientation), sourceFormat: ImageFormat.Jpeg);
-        var jpeg = (await processor.EncodeAsync(stored, ImageExportOptions.Jpeg with { Quality = 1.0, Metadata = Metadata.MetadataPolicy.Preserve })).Data;
+        using var stored = new BmageOrientationOperation(orientation.Inverse()).Apply(upright, BmageOperationContext.Default);
+        stored.Metadata = new BmageImageMetadata(BmageExifData.FromOrientation(orientation), sourceFormat: BmageImageFormat.Jpeg);
+        var jpeg = (await processor.EncodeAsync(stored, BmageImageExportOptions.Jpeg with { Quality = 1.0, Metadata = BmageMetadataPolicy.Preserve })).Data;
 
         var module = new FakeModule(_ => { }, respond: (identifier, _) => identifier == "decode"
-            ? new FakeHandle(new Codecs.Browser.BrowserImageInfo { Width = upright.Width, Height = upright.Height }, upright.Bytes.ToArray())
+            ? new FakeHandle(new BmageBrowserImageInfo { Width = upright.Width, Height = upright.Height }, upright.Bytes.ToArray())
             : null);
-        await using var interop = new BrowserImageInterop(new ImportingJSRuntime(module), new BitBmageOptions());
-        var decoder = new Codecs.Browser.BrowserImageDecoder(interop);
+        await using var interop = new BmageBrowserImageInterop(new ImportingJSRuntime(module), new BmageOptions());
+        var decoder = new BmageBrowserImageDecoder(interop);
 
-        using var asStored = await decoder.DecodeAsync(jpeg, new DecodeOptions { AutoOrient = false }, PooledPixelAllocator.Shared);
+        using var asStored = await decoder.DecodeAsync(jpeg, new BmageDecodeOptions { AutoOrient = false }, BmagePooledPixelAllocator.Shared);
         Assert.AreEqual(stored.Size, asStored.Size);
         Assert.AreEqual(0, TestImages.MaxChannelDifference(stored, asStored), $"{orientation}: the pixels are not as stored.");
         Assert.AreEqual(orientation, asStored.Metadata?.Orientation);
 
         // Without its metadata read, the image is still given as stored.
-        using var bare = await decoder.DecodeAsync(jpeg, new DecodeOptions { AutoOrient = false, ReadMetadata = false }, PooledPixelAllocator.Shared);
+        using var bare = await decoder.DecodeAsync(jpeg, new BmageDecodeOptions { AutoOrient = false, ReadMetadata = false }, BmagePooledPixelAllocator.Shared);
         Assert.AreEqual(stored.Size, bare.Size);
 
-        using var shown = await decoder.DecodeAsync(jpeg, new DecodeOptions { AutoOrient = true }, PooledPixelAllocator.Shared);
+        using var shown = await decoder.DecodeAsync(jpeg, new BmageDecodeOptions { AutoOrient = true }, BmagePooledPixelAllocator.Shared);
         Assert.AreEqual(upright.Size, shown.Size);
-        Assert.AreEqual(Orientation.Normal, shown.Metadata?.Orientation ?? Orientation.Normal);
+        Assert.AreEqual(BmageOrientation.Normal, shown.Metadata?.Orientation ?? BmageOrientation.Normal);
     }
 
     [TestMethod]
     public void ADocumentNestingMasksDeeplyIsRefused_AChainBuiltAStepAtATimeIsNot()
     {
-        Mask nested = Mask.All();
-        for (var i = 0; i < 20; i++) nested = Mask.Ellipse().Union(nested);
-        var refused = Assert.ThrowsExactly<Serialization.ImageDocumentFormatException>(() => Serialization.BmageJson.DeserializeObject<Mask>(Serialization.BmageJson.SerializeObject(nested)));
+        BmageMask nested = BmageMask.All();
+        for (var i = 0; i < 20; i++) nested = BmageMask.Ellipse().Union(nested);
+        var refused = Assert.ThrowsExactly<BmageImageDocumentFormatException>(() => BmageJson.DeserializeObject<BmageMask>(BmageJson.SerializeObject(nested)));
         Assert.Contains("too deeply", refused.Message);
 
-        Mask chain = Mask.All();
-        for (var i = 0; i < 100; i++) chain = chain.Union(new EllipseMask(new RectangleF(i * 9, i * 7, 60, 40)));
-        var back = Serialization.BmageJson.DeserializeObject<Mask>(Serialization.BmageJson.SerializeObject(chain));
+        BmageMask chain = BmageMask.All();
+        for (var i = 0; i < 100; i++) chain = chain.Union(new BmageEllipseMask(new RectangleF(i * 9, i * 7, 60, 40)));
+        var back = BmageJson.DeserializeObject<BmageMask>(BmageJson.SerializeObject(chain));
 
         // However long the chain, drawing it holds its own mask and the one being combined in.
-        var budget = new BudgetedPixelAllocator(long.MaxValue);
-        using var rendered = back.Render(new Size(1000, 800), null, new OperationContext(budget));
+        var budget = new BmageBudgetedPixelAllocator(long.MaxValue);
+        using var rendered = back.Render(new Size(1000, 800), null, new BmageOperationContext(budget));
         Assert.IsLessThanOrEqualTo(2L * 1000 * 800, budget.PeakBytes);
         using var expected = chain.Render(new Size(1000, 800));
         CollectionAssert.AreEqual(expected.Values.ToArray(), rendered.Values.ToArray());
@@ -496,10 +485,10 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void OperationsUseOneThreadUnlessToldOtherwise()
     {
-        Assert.AreEqual(1, OperationContext.Default.MaxDegreeOfParallelism);
-        Assert.AreEqual(1, new OperationContext().MaxDegreeOfParallelism);
-        Assert.AreEqual(4, new OperationContext(maxDegreeOfParallelism: 4).MaxDegreeOfParallelism);
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new DecodeOptions { MaxDegreeOfParallelism = 0 });
+        Assert.AreEqual(1, BmageOperationContext.Default.MaxDegreeOfParallelism);
+        Assert.AreEqual(1, new BmageOperationContext().MaxDegreeOfParallelism);
+        Assert.AreEqual(4, new BmageOperationContext(maxDegreeOfParallelism: 4).MaxDegreeOfParallelism);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new BmageDecodeOptions { MaxDegreeOfParallelism = 0 });
     }
 
     [TestMethod]
@@ -514,7 +503,7 @@ public sealed class ReviewFindingsTests
             threads.Add(Environment.CurrentManagedThreadId);
             values.Enqueue(value);
         });
-        using (new ResizeOperation(900, 700, ResizeMode.Stretch, ResamplingFilter.Lanczos3).Apply(source, new OperationContext(progress: progress, maxDegreeOfParallelism: 8))) { }
+        using (new BmageResizeOperation(900, 700, BmageResizeMode.Stretch, BmageResamplingFilter.Lanczos3).Apply(source, new BmageOperationContext(progress: progress, maxDegreeOfParallelism: 8))) { }
 
         Assert.IsTrue(threads.All(thread => thread == caller), "Progress was reported on a thread other than the caller's.");
         Assert.AreEqual(1.0, values.Last(), 1e-9);
@@ -523,24 +512,24 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void ANumberJsonHasNoLiteralForRoundTrips()
     {
-        var mask = new RadialGradientMask(new Vector2(float.NaN, 0.5f), float.PositiveInfinity, 0.25f) { Rotation = float.NegativeInfinity, Units = MaskUnits.Relative };
-        var json = Serialization.BmageJson.SerializeObject(mask);
-        var back = (RadialGradientMask)Serialization.BmageJson.DeserializeObject<Mask>(json);
+        var mask = new BmageRadialGradientMask(new Vector2(float.NaN, 0.5f), float.PositiveInfinity, 0.25f) { Rotation = float.NegativeInfinity, Units = BmageMaskUnits.Relative };
+        var json = BmageJson.SerializeObject(mask);
+        var back = (BmageRadialGradientMask)BmageJson.DeserializeObject<BmageMask>(json);
 
         Assert.IsTrue(float.IsNaN(back.Center.X));
         Assert.AreEqual(float.PositiveInfinity, back.RadiusX);
         Assert.AreEqual(float.NegativeInfinity, back.Rotation);
-        Assert.AreEqual(json, Serialization.BmageJson.SerializeObject(back));
+        Assert.AreEqual(json, BmageJson.SerializeObject(back));
     }
 
     [TestMethod]
     public async Task ANullBatchItemFailsOnItsOwn()
     {
-        var processor = new ImageProcessor();
+        var processor = new BmageImageProcessor();
         using var image = ParallelProcessingTests.Noise(16, 16, seed: 9);
-        var png = (await processor.EncodeAsync(image, ImageExportOptions.Png)).Data;
+        var png = (await processor.EncodeAsync(image, BmageImageExportOptions.Png)).Data;
 
-        var result = await processor.ProcessBatchAsync([new BatchItem(png), null!, new BatchItem(png)], ImagePipeline.Create(), new BatchOptions { ExportOptions = ImageExportOptions.Png });
+        var result = await processor.ProcessBatchAsync([new BmageBatchItem(png), null!, new BmageBatchItem(png)], BmageImagePipeline.Create(), new BmageBatchOptions { ExportOptions = BmageImageExportOptions.Png });
 
         Assert.AreEqual(2, result.SuccessCount);
         Assert.AreEqual(1, result.FailureCount);
@@ -551,13 +540,13 @@ public sealed class ReviewFindingsTests
     public void RenderingADocumentReportsTheLayersProgressToo()
     {
         using var source = ParallelProcessingTests.Noise(300, 200, seed: 10);
-        var document = Editing.ImageDocument.Create(source)
-            .AddOperation(new BrightnessAdjustment(0.1f))
-            .AddLayer(new FillLayer(new Rgba32(255, 0, 0)) { Mask = Mask.Ellipse(), BlendMode = BlendMode.Multiply })
-            .AddLayer(new AdjustmentLayer(ImagePipeline.Create().Saturation(0.3f)));
+        var document = BmageImageDocument.Create(source)
+            .AddOperation(new BmageBrightnessAdjustment(0.1f))
+            .AddLayer(new BmageFillLayer(new BmageRgba32(255, 0, 0)) { Mask = BmageMask.Ellipse(), BlendMode = BmageBlendMode.Multiply })
+            .AddLayer(new BmageAdjustmentLayer(BmageImagePipeline.Create().Saturation(0.3f)));
         var values = new ConcurrentQueue<double>();
 
-        using (new Editing.DocumentRenderer().Render(document, source, new PipelineExecutionOptions { Progress = new Inline(values.Enqueue) })) { }
+        using (new BmageDocumentRenderer().Render(document, source, new BmagePipelineExecutionOptions { Progress = new Inline(values.Enqueue) })) { }
 
         var reported = values.ToArray();
         // One share for the pipeline's step, one for each layer.
@@ -569,10 +558,10 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void AStepOfANestedPipelineThatFailsIsNamed()
     {
-        using var source = ImageBuffer.Create(8, 8, Rgba32.White);
-        var nested = new PipelineOperation(ImagePipeline.Create().Brightness(0.1f).Apply(new Fails()));
+        using var source = BmageImageBuffer.Create(8, 8, BmageRgba32.White);
+        var nested = new BmagePipelineOperation(BmageImagePipeline.Create().Brightness(0.1f).Apply(new Fails()));
 
-        var failure = Assert.ThrowsExactly<ImageException>(() => nested.Apply(source, OperationContext.Default));
+        var failure = Assert.ThrowsExactly<BmageImageException>(() => nested.Apply(source, BmageOperationContext.Default));
 
         Assert.Contains("'Fails' (step 2 of 2)", failure.Message);
     }
@@ -583,20 +572,20 @@ public sealed class ReviewFindingsTests
         var size = new Size(240, 180);
         using var source = ParallelProcessingTests.Noise(240, 180, seed: 11);
         using var matte = ParallelProcessingTests.Noise(60, 45, seed: 12);
-        Mask[] masks =
+        BmageMask[] masks =
         [
-            new RectangleMask(new RectangleF(30.3f, 20.7f, 120, 90)) { CornerRadius = 12, Feather = 3 },
-            Mask.Ellipse() with { Feather = 6.5f },
-            new PolygonMask([new(10, 10), new(200, 40), new(90, 170)]) { Inverted = true, Feather = 1.2f },
-            new PathMask(new PathBuilder().AddEllipse(new RectangleF(60, 40, 90, 70)).Build()) { Opacity = 0.7f },
-            new BrushMask([new BrushStroke([new(20, 30), new(120, 90), new(220, 40)], 14)]) { Opacity = 0.6f },
-            Mask.Gradient(new(0, 0), new(0.3f, 0.8f)) with { Feather = 2 },
-            new RadialGradientMask(new Vector2(120, 90), 70, 40) { Rotation = 30, Feather = 0.5f },
-            new LuminanceRangeMask(0.2f, 0.6f) { Feather = 4 },
-            new ColorRangeMask(new Rgba32(128, 64, 200)) { Tolerance = 0.4f },
-            new BitmapMask(matte) { Channel = MaskChannel.Luminance, Feather = 2 },
+            new BmageRectangleMask(new RectangleF(30.3f, 20.7f, 120, 90)) { CornerRadius = 12, Feather = 3 },
+            BmageMask.Ellipse() with { Feather = 6.5f },
+            new BmagePolygonMask([new(10, 10), new(200, 40), new(90, 170)]) { Inverted = true, Feather = 1.2f },
+            new BmagePathMask(new BmagePathBuilder().AddEllipse(new RectangleF(60, 40, 90, 70)).Build()) { Opacity = 0.7f },
+            new BmageBrushMask([new BmageBrushStroke([new(20, 30), new(120, 90), new(220, 40)], 14)]) { Opacity = 0.6f },
+            BmageMask.Gradient(new(0, 0), new(0.3f, 0.8f)) with { Feather = 2 },
+            new BmageRadialGradientMask(new Vector2(120, 90), 70, 40) { Rotation = 30, Feather = 0.5f },
+            new BmageLuminanceRangeMask(0.2f, 0.6f) { Feather = 4 },
+            new BmageColorRangeMask(new BmageRgba32(128, 64, 200)) { Tolerance = 0.4f },
+            new BmageBitmapMask(matte) { Channel = BmageMaskChannel.Luminance, Feather = 2 },
             new CheckerMask { Feather = 2 },
-            Mask.Ellipse().Union(new RectangleMask(new RectangleF(0, 0, 60, 60))).Subtract(new EllipseMask(new RectangleF(100, 50, 50, 50)) { Feather = 5 }) with { Feather = 3 },
+            BmageMask.Ellipse().Union(new BmageRectangleMask(new RectangleF(0, 0, 60, 60))).Subtract(new BmageEllipseMask(new RectangleF(100, 50, 50, 50)) { Feather = 5 }) with { Feather = 3 },
         ];
         Rectangle[] windows = [new(0, 0, 240, 180), new(37, 21, 50, 33), new(0, 100, 240, 80), new(200, 0, 40, 10), new(119, 89, 1, 1)];
 
@@ -605,7 +594,7 @@ public sealed class ReviewFindingsTests
             using var whole = mask.Render(size, source);
             foreach (var window in windows)
             {
-                using var part = mask.RenderWindow(size, window, source, OperationContext.Default);
+                using var part = mask.RenderWindow(size, window, source, BmageOperationContext.Default);
                 for (var y = 0; y < window.Height; y++)
                     CollectionAssert.AreEqual(whole.GetRow(window.Y + y).Slice(window.X, window.Width).ToArray(), part.GetRow(y).ToArray(), $"{mask.Kind} in {window}, row {y}.");
             }
@@ -615,17 +604,17 @@ public sealed class ReviewFindingsTests
     [TestMethod]
     public void ASmallMaskedLayerDrawsOnlyItsOwnPartOfTheMask()
     {
-        using var logo = ImageBuffer.Create(50, 50, new Rgba32(0, 0, 255));
-        using var target = ImageBuffer.Create(2000, 1500, Rgba32.White);
-        var budget = new BudgetedPixelAllocator(long.MaxValue);
+        using var logo = BmageImageBuffer.Create(50, 50, new BmageRgba32(0, 0, 255));
+        using var target = BmageImageBuffer.Create(2000, 1500, BmageRgba32.White);
+        var budget = new BmageBudgetedPixelAllocator(long.MaxValue);
 
-        new ImageLayer { Image = logo, Bounds = new RectangleF(100, 100, 50, 50), Mask = new EllipseMask(new RectangleF(100, 100, 50, 50)) { Feather = 2 } }
-            .Composite(target, new OperationContext(budget));
+        new BmageImageLayer { Image = logo, Bounds = new RectangleF(100, 100, 50, 50), Mask = new BmageEllipseMask(new RectangleF(100, 100, 50, 50)) { Feather = 2 } }
+            .Composite(target, new BmageOperationContext(budget));
 
         // The whole image's mask alone would be 3 MB.
         Assert.IsLessThan(100_000L, budget.PeakBytes, $"Compositing held {budget.PeakBytes} bytes.");
-        Assert.AreEqual(new Rgba32(0, 0, 255), target[125, 125]);
-        Assert.AreEqual(Rgba32.White, target[101, 101]);
+        Assert.AreEqual(new BmageRgba32(0, 0, 255), target[125, 125]);
+        Assert.AreEqual(BmageRgba32.White, target[101, 101]);
     }
 
     [TestMethod]
@@ -633,9 +622,9 @@ public sealed class ReviewFindingsTests
     {
         using var logo = ParallelProcessingTests.Noise(400, 400, seed: 13);
         var counter = new Counts();
-        var budget = new BudgetedPixelAllocator(long.MaxValue);
-        var layer = new ImageLayer { Image = logo, Bounds = new RectangleF(50, 50, 200, 200), Pipeline = ImagePipeline.Create().Apply(counter) };
-        using (var session = new Editing.ImageEditSession(ParallelProcessingTests.Noise(600, 400, seed: 14), new Editing.ImageEditSessionOptions { MaxProxyDimension = 0, Allocator = budget }))
+        var budget = new BmageBudgetedPixelAllocator(long.MaxValue);
+        var layer = new BmageImageLayer { Image = logo, Bounds = new RectangleF(50, 50, 200, 200), Pipeline = BmageImagePipeline.Create().Apply(counter) };
+        using (var session = new BmageImageEditSession(ParallelProcessingTests.Noise(600, 400, seed: 14), new BmageImageEditSessionOptions { MaxProxyDimension = 0, Allocator = budget }))
         {
             session.Apply(d => d.AddLayer(layer), "Add");
             await session.RenderPreviewAsync();
@@ -649,18 +638,18 @@ public sealed class ReviewFindingsTests
         Assert.AreEqual(0, budget.CurrentBytes, "The session kept a prepared layer image after it was disposed.");
     }
 
-    private sealed class Fails : ImageOperation
+    private sealed class Fails : BmageImageOperation
     {
         public override string Name => "Fails";
-        public override ImageBuffer Apply(ImageBuffer source, OperationContext context) => throw new InvalidOperationException("It always does.");
+        public override BmageImageBuffer Apply(BmageImageBuffer source, BmageOperationContext context) => throw new InvalidOperationException("It always does.");
     }
 
-    private sealed class Counts : ImageOperation
+    private sealed class Counts : BmageImageOperation
     {
         private int _runs;
         public int Runs => Volatile.Read(ref _runs);
         public override string Name => "Counts";
-        public override ImageBuffer Apply(ImageBuffer source, OperationContext context)
+        public override BmageImageBuffer Apply(BmageImageBuffer source, BmageOperationContext context)
         {
             Interlocked.Increment(ref _runs);
             return GetMutableCopy(source, context);
@@ -668,12 +657,12 @@ public sealed class ReviewFindingsTests
     }
 
     /// <summary>A mask from outside the library, which is always handed a target the size of the whole image.</summary>
-    private sealed record CheckerMask : Mask
+    private sealed record CheckerMask : BmageMask
     {
         public override string Kind => "Checker";
 
         // Protected internal only because the tests see the library's internals; outside it this is protected.
-        protected internal override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
+        protected internal override void RenderCoverage(BmageMaskBuffer target, BmageMaskRenderContext context)
         {
             Assert.AreEqual(context.Size, target.Size, "A custom mask was handed part of the image.");
             for (var y = 0; y < target.Height; y++)

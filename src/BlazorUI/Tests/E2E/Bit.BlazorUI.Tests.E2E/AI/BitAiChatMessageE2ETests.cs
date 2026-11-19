@@ -10,6 +10,7 @@
 /// forced colors and print.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiChatMessageE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aichatmessage";

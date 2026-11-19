@@ -4,16 +4,16 @@ Every extension point below is an interface or abstract class. None of them requ
 
 ## A custom operation
 
-Implement `PointOperation` when your operation maps each pixel independently. It then joins the single-pass run with the
+Implement `BmagePointOperation` when your operation maps each pixel independently. It then joins the single-pass run with the
 adjustments around it, so adding one costs nothing extra at runtime.
 
 ```csharp
-public sealed class DuotoneOperation : PointOperation
+public sealed class DuotoneOperation : BmagePointOperation
 {
     private readonly Vector4 _shadow;
     private readonly Vector4 _highlight;
 
-    public DuotoneOperation(Rgba32 shadow, Rgba32 highlight)
+    public DuotoneOperation(BmageRgba32 shadow, BmageRgba32 highlight)
     {
         Shadow = shadow;
         Highlight = highlight;
@@ -21,8 +21,8 @@ public sealed class DuotoneOperation : PointOperation
         _highlight = new Vector4(highlight.R, highlight.G, highlight.B, 0) / 255f;
     }
 
-    public Rgba32 Shadow { get; }
-    public Rgba32 Highlight { get; }
+    public BmageRgba32 Shadow { get; }
+    public BmageRgba32 Highlight { get; }
 
     public override string Name => "Duotone";
 
@@ -48,19 +48,19 @@ state between calls and say so; a custom one runs on one thread unless it overri
 above, which it should whenever `ProcessRow` only reads its own fields. Nothing else changes: the pixels are the same on
 any number of threads.
 
-For anything that reads neighbouring pixels or changes the size, implement `ImageOperation`:
+For anything that reads neighbouring pixels or changes the size, implement `BmageImageOperation`:
 
 ```csharp
-public sealed class BorderOperation : ImageOperation
+public sealed class BorderOperation : BmageImageOperation
 {
-    public BorderOperation(int thickness, Rgba32 colour) { /* ... */ }
+    public BorderOperation(int thickness, BmageRgba32 colour) { /* ... */ }
 
     public override string Name => "Border";
 
     public override Size GetOutputSize(Size input)
         => new(input.Width + _thickness * 2, input.Height + _thickness * 2);
 
-    public override ImageBuffer Apply(ImageBuffer source, OperationContext context)
+    public override BmageImageBuffer Apply(BmageImageBuffer source, BmageOperationContext context)
     {
         var output = context.Allocate(source.Width + _thickness * 2, source.Height + _thickness * 2);
         output.Fill(_colour);
@@ -70,7 +70,7 @@ public sealed class BorderOperation : ImageOperation
     }
 
     // Keeps the border proportional when previewing on a proxy.
-    public override IImageOperation ForScale(double scale)
+    public override IBmageImageOperation ForScale(double scale)
         => scale == 1 ? this : new BorderOperation(Math.Max(1, (int)Math.Round(_thickness * scale)), _colour);
 }
 ```
@@ -88,7 +88,7 @@ Three obligations are worth stating plainly:
 If a convolution is all you need, there is no new type to write:
 
 ```csharp
-var edges = new ConvolutionFilter(
+var edges = new BmageConvolutionFilter(
     kernel: [-1, -1, -1, -1, 8, -1, -1, -1, -1],
     kernelWidth: 3, kernelHeight: 3,
     name: "Edge detect");
@@ -99,23 +99,23 @@ pipeline.Apply(edges);
 Colour transformations that are matrices should be matrices, so they concatenate with their neighbours:
 
 ```csharp
-var warm = new ColorMatrixOperation(
-    ColorMatrix.Concat(ColorMatrix.Saturate(1.1f), ColorMatrix.Scale(1.05f, 1f, 0.95f)),
+var warm = new BmageColorMatrixOperation(
+    BmageColorMatrix.Concat(BmageColorMatrix.Saturate(1.1f), BmageColorMatrix.Scale(1.05f, 1f, 0.95f)),
     "Warm");
 ```
 
 ## A custom codec
 
 ```csharp
-public sealed class TiffDecoder : IImageDecoder
+public sealed class TiffDecoder : IBmageImageDecoder
 {
-    public IReadOnlyCollection<ImageFormat> Formats => [ImageFormat.Tiff];
+    public IReadOnlyCollection<BmageImageFormat> Formats => [BmageImageFormat.Tiff];
 
-    public ImageInfo? Identify(ReadOnlySpan<byte> data) { /* header only */ }
+    public BmageImageInfo? Identify(ReadOnlySpan<byte> data) { /* header only */ }
 
-    public ValueTask<ImageBuffer> DecodeAsync(
-        ReadOnlyMemory<byte> data, DecodeOptions options,
-        IPixelAllocator allocator, CancellationToken cancellationToken)
+    public ValueTask<BmageImageBuffer> DecodeAsync(
+        ReadOnlyMemory<byte> data, BmageDecodeOptions options,
+        IBmagePixelAllocator allocator, CancellationToken cancellationToken)
     {
         options.Limits.ValidateEncodedSize(data.Length);
         // ... validate dimensions against options.Limits before allocating ...
@@ -124,9 +124,9 @@ public sealed class TiffDecoder : IImageDecoder
 ```
 
 ```csharp
-var registry = ImageCodecRegistry.CreateDefault();
+var registry = BmageImageCodecRegistry.CreateDefault();
 registry.AddDecoder(new TiffDecoder());
-var processor = new ImageProcessor(registry);
+var processor = new BmageImageProcessor(registry);
 ```
 
 Later registrations win, so registering a decoder for a format that already has one replaces it. That is how the browser
@@ -135,11 +135,11 @@ codecs take precedence over the managed ones.
 ## A custom paint
 
 ```csharp
-public sealed class CheckerPaint : IPaint
+public sealed class CheckerPaint : IBmagePaint
 {
-    public CheckerPaint(int size, Rgba32 a, Rgba32 b) { /* ... */ }
+    public CheckerPaint(int size, BmageRgba32 a, BmageRgba32 b) { /* ... */ }
 
-    public Rgba32 GetColor(int x, int y)
+    public BmageRgba32 GetColor(int x, int y)
         => ((x / _size) + (y / _size)) % 2 == 0 ? _a : _b;
 }
 
@@ -148,15 +148,15 @@ canvas.FillPath(path, new CheckerPaint(8, light, dark));
 
 ## A custom annotation
 
-Derive from `Annotation` and the editor will select, move, reorder, undo and persist it like any built-in kind.
+Derive from `BmageAnnotation` and the editor will select, move, reorder, undo and persist it like any built-in kind.
 
 ```csharp
-public sealed record MeasurementAnnotation : Annotation
+public sealed record MeasurementAnnotation : BmageAnnotation
 {
     public required Vector2 Start { get; init; }
     public required Vector2 End { get; init; }
     public double UnitsPerPixel { get; init; } = 1;
-    public ShapeStyle Style { get; init; } = ShapeStyle.Default;
+    public BmageShapeStyle Style { get; init; } = BmageShapeStyle.Default;
 
     public override string Kind => "Measurement";
 
@@ -164,7 +164,7 @@ public sealed record MeasurementAnnotation : Annotation
         MathF.Min(Start.X, End.X) - 20, MathF.Min(Start.Y, End.Y) - 20,
         MathF.Max(Start.X, End.X) + 20, MathF.Max(Start.Y, End.Y) + 20);
 
-    public override void Render(ImageCanvas canvas, AnnotationRenderContext context)
+    public override void Render(BmageImageCanvas canvas, BmageAnnotationRenderContext context)
     {
         if (Style.StrokeColor is not { } colour) return;
         canvas.DrawLine(Start, End, colour, Style.Stroke);
@@ -173,17 +173,17 @@ public sealed record MeasurementAnnotation : Annotation
         if (context.TextRasterizer is { } text)
         {
             var middle = (Start + End) / 2;
-            canvas.DrawText($"{distance:0.0}", middle, new TextStyle
+            canvas.DrawText($"{distance:0.0}", middle, new BmageTextStyle
             {
-                FontSize = 16, FillColor = colour, Alignment = TextAlignment.Center,
+                FontSize = 16, FillColor = colour, Alignment = BmageTextAlignment.Center,
             }, text);
         }
     }
 
-    public override Annotation Translate(float dx, float dy)
+    public override BmageAnnotation Translate(float dx, float dy)
         => this with { Start = Start + new Vector2(dx, dy), End = End + new Vector2(dx, dy) };
 
-    public override Annotation ForScale(double scale) => scale == 1 ? this : this with
+    public override BmageAnnotation ForScale(double scale) => scale == 1 ? this : this with
     {
         Start = Start * (float)scale,
         End = End * (float)scale,
@@ -204,7 +204,7 @@ called with the affine map from the old output to the new one. The default moves
 `ForScale` and turns its `Rotation`, which is right for most shapes; one made of points should map them exactly:
 
 ```csharp
-    public override Annotation Transform(Matrix3x2 matrix)
+    public override BmageAnnotation Transform(Matrix3x2 matrix)
     {
         var m = Through(matrix);   // its own rotation, then the image's transform
         return this with { Start = Vector2.Transform(Start, m), End = Vector2.Transform(End, m), Rotation = 0,
@@ -215,19 +215,19 @@ called with the affine map from the old output to the new one. The default moves
 ## A custom editor tool
 
 ```csharp
-public sealed class StarTool : IEditorTool
+public sealed class StarTool : IBmageEditorTool
 {
-    public EditorToolKind Kind => EditorToolKind.Rectangle;   // reuse a kind, or extend the enum
+    public BmageEditorToolKind Kind => BmageEditorToolKind.Rectangle;   // reuse a kind, or extend the enum
 
-    public Annotation? BuildPreview(ToolDrag drag, EditorToolSettings settings)
-        => new PolygonAnnotation
+    public BmageAnnotation? BuildPreview(BmageToolDrag drag, BmageEditorToolSettings settings)
+        => new BmagePolygonAnnotation
         {
             Points = Star(drag.Start, Vector2.Distance(drag.Start, drag.Current)),
             Style = settings.ToShapeStyle(),
         };
 
-    public Annotation? BuildFinal(ToolDrag drag, EditorToolSettings settings)
-        => Vector2.Distance(drag.Start, drag.Current) < EditorTools.MinimumDragDistance
+    public BmageAnnotation? BuildFinal(BmageToolDrag drag, BmageEditorToolSettings settings)
+        => Vector2.Distance(drag.Start, drag.Current) < BmageEditorTools.MinimumDragDistance
             ? null
             : BuildPreview(drag, settings);
 }
@@ -239,21 +239,21 @@ nothing, which is how an accidental click does not litter the document.
 ## A custom text rasteriser
 
 ```csharp
-public sealed class MyTextRasterizer : ITextRasterizer
+public sealed class MyTextRasterizer : IBmageTextRasterizer
 {
-    public TextMetrics Measure(string text, TextStyle style) { /* ... */ }
-    public VectorPath? GetTextPath(string text, Vector2 origin, TextStyle style) { /* ... */ }
+    public BmageTextMetrics Measure(string text, BmageTextStyle style) { /* ... */ }
+    public BmageVectorPath? GetTextPath(string text, Vector2 origin, BmageTextStyle style) { /* ... */ }
 }
 ```
 
-Pass it to `ImageCanvas.DrawText`, or to `ImageEditSessionOptions.TextRasterizer` so annotations use it.
+Pass it to `BmageImageCanvas.DrawText`, or to `BmageImageEditSessionOptions.TextRasterizer` so annotations use it.
 
 ## A custom allocator
 
 ```csharp
-public sealed class TrackingAllocator : IPixelAllocator
+public sealed class TrackingAllocator : IBmagePixelAllocator
 {
-    private readonly IPixelAllocator _inner = PooledPixelAllocator.Shared;
+    private readonly IBmagePixelAllocator _inner = BmagePooledPixelAllocator.Shared;
     public long PeakBytes { get; private set; }
 
     public IMemoryOwner<byte> Rent(int byteCount)
@@ -271,13 +271,13 @@ Useful for measuring, for enforcing a hard budget, or for pointing at native mem
 ## A custom capability provider
 
 ```csharp
-public sealed class FixedCapabilityProvider : IImageCapabilityProvider
+public sealed class FixedCapabilityProvider : IBmageImageCapabilityProvider
 {
-    public ValueTask<ImageCapabilities> GetAsync(CancellationToken cancellationToken = default)
-        => new(ImageCapabilities.Managed with { EncodableFormats = new HashSet<ImageFormat> { ImageFormat.Png } });
+    public ValueTask<BmageImageCapabilities> GetAsync(CancellationToken cancellationToken = default)
+        => new(BmageImageCapabilities.Managed with { EncodableFormats = new HashSet<BmageImageFormat> { BmageImageFormat.Png } });
 }
 
-builder.Services.AddSingleton<IImageCapabilityProvider, FixedCapabilityProvider>();
+builder.Services.AddSingleton<IBmageImageCapabilityProvider, FixedCapabilityProvider>();
 ```
 
 Handy for tests, and for forcing a conservative configuration.
@@ -289,16 +289,16 @@ them over when it builds a new one; left null, the whole sets are taken as the b
 
 ## A custom mask
 
-Derive from `Mask` and write the plain coverage; `Render` applies the feather, inversion and opacity afterwards, and
+Derive from `BmageMask` and write the plain coverage; `Render` applies the feather, inversion and opacity afterwards, and
 the mask works with `Masked`, `ApplyMask`, layers and combinations like any built-in one.
 
 ```csharp
 /// Covers a checkerboard of squares, for a test pattern or a stylised reveal.
-public sealed record CheckerMask(float CellSize) : Mask
+public sealed record CheckerMask(float CellSize) : BmageMask
 {
     public override string Kind => "Checker";
 
-    protected override void RenderCoverage(MaskBuffer target, MaskRenderContext context)
+    protected override void RenderCoverage(BmageMaskBuffer target, BmageMaskRenderContext context)
     {
         var cell = Math.Max(1, (int)CellSize);
         for (var y = 0; y < target.Height; y++)
@@ -310,33 +310,33 @@ public sealed record CheckerMask(float CellSize) : Mask
     }
 
     // Keeps the pattern the same size relative to the image when previewed on a proxy.
-    protected override Mask ScaleGeometry(double scale) => this with { CellSize = (float)(CellSize * scale) };
+    protected override BmageMask ScaleGeometry(double scale) => this with { CellSize = (float)(CellSize * scale) };
 }
 ```
 
-`MaskRenderContext.Source` is the image the mask applies to, for a mask that selects by content, and
+`BmageMaskRenderContext.Source` is the image the mask applies to, for a mask that selects by content, and
 `GetCoverageBounds` lets an edit through the mask skip what it cannot reach.
 
 ## A custom layer
 
-Derive from `Layer`, produce the layer's pixels in `CompositeCore`, and hand them to `BlendRows`, which applies the blend
+Derive from `BmageLayer`, produce the layer's pixels in `CompositeCore`, and hand them to `BlendRows`, which applies the blend
 mode, opacity and mask, on as many threads as the context allows. Visibility and the mask's rescaling for a proxy are
 handled before `CompositeCore` is ever called.
 
 ```csharp
 /// Film grain laid over the image through the layer's blend mode: Overlay or SoftLight look best.
-public sealed record GrainLayer(float Amount) : Layer
+public sealed record GrainLayer(float Amount) : BmageLayer
 {
     public override string Kind => "Grain";
 
-    protected override void CompositeCore(ImageBuffer target, OperationContext context)
+    protected override void CompositeCore(BmageImageBuffer target, BmageOperationContext context)
     {
-        using var grain = ImageBuffer.Create(target.Width, target.Height, new Rgba32(128, 128, 128), context.Allocator);
-        new NoiseFilter(Amount, monochrome: true).Apply(grain, context.WithMutation(true));
+        using var grain = BmageImageBuffer.Create(target.Width, target.Height, new BmageRgba32(128, 128, 128), context.Allocator);
+        new BmageNoiseFilter(Amount, monochrome: true).Apply(grain, context.WithMutation(true));
         BlendRows(target, target.Bounds, context, y => grain.GetRow(y));
     }
 
-    protected override Layer ScaleCore(double scale) => this;
+    protected override BmageLayer ScaleCore(double scale) => this;
 }
 ```
 
@@ -371,28 +371,28 @@ inversion, opacity, blend mode and so on) are written for it.
 
 This is an extension point, not an implementation. A model good enough to be useful is several megabytes and would
 dominate the bundle for everyone who does not use it, so none is shipped. What it plugs into is a mask: a model
-produces a matte, and a `BitmapMask` stretches that matte over the photo whatever its resolution.
+produces a matte, and a `BmageBitmapMask` stretches that matte over the photo whatever its resolution.
 
 ```csharp
 public interface IBackgroundRemovalProvider
 {
     /// Returns a matte: opaque where the subject is, at any resolution.
-    ValueTask<ImageBuffer> SegmentAsync(ImageBuffer image, CancellationToken cancellationToken = default);
+    ValueTask<BmageImageBuffer> SegmentAsync(BmageImageBuffer image, CancellationToken cancellationToken = default);
 }
 
 using var matte = await provider.SegmentAsync(photo);
 
 // Cut the subject out...
-using var cutOut = ImagePipeline.Create().ApplyMask(new BitmapMask(matte) { Feather = 1.5f }).Execute(photo);
+using var cutOut = BmageImagePipeline.Create().ApplyMask(new BmageBitmapMask(matte) { Feather = 1.5f }).Execute(photo);
 
 // ...or blur only the background behind it.
-using var portrait = ImagePipeline.Create()
-    .Masked(new BitmapMask(matte).Invert(), background => background.Blur(12))
+using var portrait = BmageImagePipeline.Create()
+    .Masked(new BmageBitmapMask(matte).Invert(), background => background.Blur(12))
     .Execute(photo);
 ```
 
 Shipping a poor implementation would be worse than shipping none: it would look like a feature and behave like a
 disappointment. If you have a model that meets your bundle and latency budget, this is where it plugs in.
 
-A subject on a plain backdrop - a product shot, a logo, a scan - needs no model: `ImagePipeline.RemoveBackground`
-floods the backdrop in from the four corners with a `FloodMask` and cuts it out.
+A subject on a plain backdrop - a product shot, a logo, a scan - needs no model: `BmageImagePipeline.RemoveBackground`
+floods the backdrop in from the four corners with a `BmageFloodMask` and cuts it out.

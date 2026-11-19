@@ -1,5 +1,5 @@
 ﻿@page "/"
-@inject IImageCapabilityProvider Capabilities
+@inject IBmageImageCapabilityProvider Capabilities
 
 <PageTitle>Bmage samples</PageTitle>
 
@@ -29,12 +29,12 @@
 <ul>
     <li><NavLink href="engine">Engine</NavLink> - draw, process and encode with the managed engine, wherever the component runs</li>
     <li><NavLink href="capabilities">Capabilities</NavLink> - the browser probe: formats, canvas limits and platform features</li>
-    <li><NavLink href="process">Process</NavLink> - <code>ImageLoader</code>, <code>ImagePipeline</code> and <code>ImageExporter</code>: load, transform, encode, preview and download</li>
+    <li><NavLink href="process">Process</NavLink> - <code>BmageImageLoader</code>, <code>BmageImagePipeline</code> and <code>BmageImageExporter</code>: load, transform, encode, preview and download</li>
     <li><NavLink href="editor">Editor</NavLink> - the <code>BmageEditor</code> component: load, edit, undo and export</li>
 </ul>
 
 @code {
-    private ImageEnvironment? _environment;
+    private BmageImageEnvironment? _environment;
 
     protected override async Task OnInitializedAsync()
     {

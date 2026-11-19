@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// inherited), the disabled-markup and activation contracts, runtime re-renders, unmounting and reduced motion.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCheckboxE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/checkbox";

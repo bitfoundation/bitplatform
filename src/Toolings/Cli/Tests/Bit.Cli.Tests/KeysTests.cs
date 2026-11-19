@@ -213,7 +213,7 @@ public class KeysTests
         using var rsa = RSA.Create(2048);
         using var handler = new FakeAppStoreConnect();
 
-        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(handler).CreateAppStoreSigningAsync(new AppleApiKey("issuer", "KEY", rsa.ExportPkcs8PrivateKeyPem()), "com.contoso.shop", "Shop", CancellationToken.None));
+        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(handler).CreateAppStoreSigningAsync(new AppleApiKey("issuer", "KEY", rsa.ExportPkcs8PrivateKeyPem()), "com.contoso.shop", "Shop", null, CancellationToken.None));
 
         StringAssert.Contains(error.Message, ".p8");
         Assert.IsEmpty(handler.Requests);
@@ -227,7 +227,7 @@ public class KeysTests
         apple.Profiles.Add(("P0", "com.contoso.shop App Store"));
         apple.Profiles.Add(("P9", "com.contoso.shop App Store 2"));
 
-        var result = await new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "com.contoso.shop App Store", CancellationToken.None);
+        var result = await new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "com.contoso.shop App Store", null, CancellationToken.None);
 
         CollectionAssert.AreEqual(new[]
         {
@@ -290,7 +290,7 @@ public class KeysTests
         using var apple = new FakeAppStoreConnect { TeamUnit = null };
         apple.BundleIds.Add(("B7", "COM.Contoso.Shop", "SEED123456"));
 
-        var result = await new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None);
+        var result = await new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", null, CancellationToken.None);
 
         Assert.IsFalse(apple.Requests.Any(r => r.Line is "POST /v1/bundleIds"));
         Assert.IsFalse(apple.Requests.Any(r => r.Method == HttpMethod.Delete));
@@ -310,7 +310,7 @@ public class KeysTests
                 new JsonObject { ["type"] = "certificates", ["id"] = "X2", ["attributes"] = new JsonObject { ["name"] = "iOS Distribution: Contoso", ["expirationDate"] = "2026-12-24T10:00:00.000+0000", ["serialNumber"] = "4D5E6F" } })
         }.ToJsonString());
 
-        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None));
+        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", null, CancellationToken.None));
 
         StringAssert.Contains(error.Message, "as many distribution certificates as Apple allows");
         StringAssert.Contains(error.Message, "You already have a current Distribution certificate");
@@ -326,7 +326,7 @@ public class KeysTests
         using var apple = new FakeAppStoreConnect();
         apple.Respond["GET /v1/bundleIds?filter[identifier]=com.contoso.shop&limit=200"] = (HttpStatusCode.Unauthorized, FakeAppStoreConnect.Error("401", "NOT_AUTHORIZED", "Provide a properly configured and signed bearer token, and make sure that it has not expired."));
 
-        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None));
+        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", null, CancellationToken.None));
 
         StringAssert.Contains(error.Message, "didn't accept the API key");
         StringAssert.Contains(error.Message, "issuer id");
@@ -338,7 +338,7 @@ public class KeysTests
         using var apple = new FakeAppStoreConnect();
         apple.Respond["POST /v1/bundleIds"] = (HttpStatusCode.Forbidden, FakeAppStoreConnect.Error("403", "FORBIDDEN_ERROR", "The API key in use does not allow this request"));
 
-        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None));
+        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", null, CancellationToken.None));
 
         StringAssert.Contains(error.Message, "isn't allowed to register the bundle id com.contoso.shop");
         StringAssert.Contains(error.Message, "Admin role");
@@ -351,7 +351,7 @@ public class KeysTests
         using var apple = new FakeAppStoreConnect();
         apple.Respond["POST /v1/profiles"] = (HttpStatusCode.Conflict, FakeAppStoreConnect.Error("409", "ENTITY_ERROR.ATTRIBUTE.INVALID", "Multiple profiles found with the name 'Shop'."));
 
-        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", CancellationToken.None));
+        var error = await Assert.ThrowsAsync<AppleSigningException>(() => new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", null, CancellationToken.None));
 
         StringAssert.Contains(error.Message, "Couldn't create the profile Shop. App Store Connect answered 409: Multiple profiles found");
         Assert.AreEqual("DELETE /v1/certificates/C1", apple.Requests[^1].Line);
@@ -415,6 +415,182 @@ public class KeysTests
         Assert.IsFalse(File.Exists(Path.Combine(host.WorkingDirectory, "com.contoso.shop.p12")));
     }
 
+    [TestMethod]
+    public async Task AppleSigning_Should_TurnOnTheCapabilitiesOfANewBundleIdBeforeItCreatesTheProfile()
+    {
+        using var host = new TestHost();
+        using var apple = new FakeAppStoreConnect();
+        var entitlements = AppleEntitlements.Read(Plist(host.WorkingDirectory, "Entitlements.plist", AssociatedDomains, PushNotifications));
+
+        var result = await new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", entitlements, CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[]
+        {
+            "GET /v1/bundleIds?filter[identifier]=com.contoso.shop&limit=200",
+            "POST /v1/bundleIds",
+            "GET /v1/bundleIds/B1/bundleIdCapabilities?limit=200",
+            "POST /v1/bundleIdCapabilities",
+            "POST /v1/bundleIdCapabilities",
+            "POST /v1/certificates",
+            "GET /v1/profiles?filter[name]=Shop&limit=200",
+            "POST /v1/profiles"
+        }, apple.Requests.Select(r => r.Line).ToArray());
+
+        var turnedOn = apple.Requests.Where(r => r.Line is "POST /v1/bundleIdCapabilities").Select(r => r.Body!["data"]!).ToList();
+        CollectionAssert.AreEqual(new[] { "ASSOCIATED_DOMAINS", "PUSH_NOTIFICATIONS" }, turnedOn.Select(data => (string?)data["attributes"]!["capabilityType"]).ToArray());
+
+        foreach (var data in turnedOn)
+        {
+            Assert.AreEqual("bundleIdCapabilities", (string?)data["type"]);
+            Assert.AreEqual("bundleIds", (string?)data["relationships"]!["bundleId"]!["data"]!["type"]);
+            Assert.AreEqual("B1", (string?)data["relationships"]!["bundleId"]!["data"]!["id"]);
+            Assert.IsNull(data["attributes"]!["settings"]);
+        }
+
+        CollectionAssert.AreEqual(new[] { "ASSOCIATED_DOMAINS", "PUSH_NOTIFICATIONS" }, result.EnabledCapabilities.ToArray());
+        CollectionAssert.AreEquivalent(new[] { "IN_APP_PURCHASE", "ASSOCIATED_DOMAINS", "PUSH_NOTIFICATIONS" }, apple.Capabilities["B1"]);
+    }
+
+    [TestMethod]
+    public async Task AppleSigning_Should_TurnOnOnlyTheCapabilitiesAnExistingBundleIdLacks()
+    {
+        using var host = new TestHost();
+        using var apple = new FakeAppStoreConnect();
+        apple.BundleIds.Add(("B7", "com.contoso.shop", "SEED123456"));
+        apple.Capabilities["B7"] = ["IN_APP_PURCHASE", "ASSOCIATED_DOMAINS"];
+        var entitlements = AppleEntitlements.Read(Plist(host.WorkingDirectory, "Entitlements.plist", AssociatedDomains, PushNotifications, "<key>com.apple.developer.applesignin</key><array><string>Default</string></array>"));
+
+        var result = await new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", entitlements, CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[] { "PUSH_NOTIFICATIONS", "APPLE_ID_AUTH" }, result.EnabledCapabilities.ToArray());
+        var turnedOn = apple.Requests.Where(r => r.Line is "POST /v1/bundleIdCapabilities").Select(r => r.Body!["data"]!).ToList();
+        CollectionAssert.AreEqual(new[] { "PUSH_NOTIFICATIONS", "APPLE_ID_AUTH" }, turnedOn.Select(data => (string?)data["attributes"]!["capabilityType"]).ToArray());
+        Assert.IsTrue(turnedOn.All(data => (string?)data["relationships"]!["bundleId"]!["data"]!["id"] is "B7"));
+
+        var setting = turnedOn[1]["attributes"]!["settings"]![0]!;
+        Assert.AreEqual("APPLE_ID_AUTH_APP_CONSENT", (string?)setting["key"]);
+        Assert.AreEqual("PRIMARY_APP_CONSENT", (string?)setting["options"]![0]!["key"]);
+
+        Assert.IsLessThan(apple.Requests.FindIndex(r => r.Line is "POST /v1/profiles"), apple.Requests.FindLastIndex(r => r.Line is "POST /v1/bundleIdCapabilities"));
+        Assert.AreEqual("B7", (string?)apple.Body("POST /v1/profiles")["data"]!["relationships"]!["bundleId"]!["data"]!["id"]);
+    }
+
+    [TestMethod]
+    public async Task AppleSigning_Should_LeaveABundleIdThatHasEveryCapabilityAsItIs()
+    {
+        using var host = new TestHost();
+        using var apple = new FakeAppStoreConnect();
+        apple.BundleIds.Add(("B7", "com.contoso.shop", "SEED123456"));
+        apple.Capabilities["B7"] = ["IN_APP_PURCHASE", "PUSH_NOTIFICATIONS", "ASSOCIATED_DOMAINS"];
+        var entitlements = AppleEntitlements.Read(Plist(host.WorkingDirectory, "Entitlements.plist", AssociatedDomains, PushNotifications));
+
+        var result = await new AppleSigning(apple).CreateAppStoreSigningAsync(apple.Key, "com.contoso.shop", "Shop", entitlements, CancellationToken.None);
+
+        Assert.IsEmpty(result.EnabledCapabilities);
+        Assert.AreEqual(1, apple.Requests.Count(r => r.Line is "GET /v1/bundleIds/B7/bundleIdCapabilities?limit=200"));
+        Assert.IsFalse(apple.Requests.Any(r => r.Line is "POST /v1/bundleIdCapabilities"));
+        Assert.AreEqual("B7", (string?)apple.Body("POST /v1/profiles")["data"]!["relationships"]!["bundleId"]!["data"]!["id"]);
+    }
+
+    [TestMethod]
+    public async Task KeysApple_Should_FollowTheProjectsReleaseEntitlementsAndWarnAboutOnesWithNoCapability()
+    {
+        using var host = new TestHost();
+        using var apple = new FakeAppStoreConnect();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "Shop.Web.slnf"), "{}");
+        var maui = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "Client", "Shop.Client.Maui")).FullName;
+        File.WriteAllText(Path.Combine(maui, "Shop.Client.Maui.csproj"), """
+            <Project>
+              <PropertyGroup>
+                <ApplicationId>com.contoso.shop</ApplicationId>
+              </PropertyGroup>
+              <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
+                <CodesignEntitlements>Platforms/iOS/Entitlements.Development.plist</CodesignEntitlements>
+              </PropertyGroup>
+              <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' != 'Development'">
+                <CodesignEntitlements>Platforms\iOS\Entitlements.Production.plist</CodesignEntitlements>
+              </PropertyGroup>
+              <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Environment)' != 'Development'">
+                <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Production.plist</CodesignEntitlements>
+              </PropertyGroup>
+              <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+                <CodesignEntitlements>Platforms/iOS/Entitlements.Debug.plist</CodesignEntitlements>
+              </PropertyGroup>
+            </Project>
+            """);
+        var ios = Path.Combine(maui, "Platforms", "iOS");
+        Plist(ios, "Entitlements.Development.plist", "<key>com.apple.developer.healthkit</key><true/>");
+        Plist(ios, "Entitlements.Production.plist", AssociatedDomains, "<!--#if (notification == true)-->", PushNotifications, "<!--#endif-->",
+            "<key>keychain-access-groups</key><array><string>$(AppIdentifierPrefix)com.contoso.shop</string></array>",
+            "<key>com.apple.developer.siri</key><false/>",
+            "<key>com.apple.developer.usernotifications.critical-alerts</key><true/>");
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "AuthKey.p8"), apple.Key.PrivateKey);
+
+        Assert.AreEqual(0, await KeysCommand.AppleAsync(host.Services, new AppleKeysRequest("issuer-id", "KEY", "AuthKey.p8", null, null, "signing"), CancellationToken.None, apple), host.Output);
+
+        CollectionAssert.AreEqual(new[] { "ASSOCIATED_DOMAINS", "PUSH_NOTIFICATIONS" }, apple.Requests.Where(r => r.Line is "POST /v1/bundleIdCapabilities").Select(r => (string?)r.Body!["data"]!["attributes"]!["capabilityType"]).ToArray());
+        StringAssert.Contains(host.FlatOutput, "Turned on ASSOCIATED_DOMAINS, PUSH_NOTIFICATIONS for com.contoso.shop, which Entitlements.Production.plist needs.");
+        StringAssert.Contains(host.FlatOutput, "bit knows no App Store Connect capability of com.apple.developer.usernotifications.critical-alerts, which Entitlements.Production.plist asks for.");
+        StringAssert.Contains(host.FlatOutput, AppleSigning.IdentifiersPage);
+        Assert.IsFalse(host.FlatOutput.Contains("keychain-access-groups", StringComparison.Ordinal), host.Output);
+        Assert.IsTrue(File.Exists(Path.Combine(host.WorkingDirectory, "signing", "com.contoso.shop.p12")));
+    }
+
+    [TestMethod]
+    public async Task KeysApple_Should_SayItCheckedNoCapabilitiesWithoutEntitlements()
+    {
+        using var host = new TestHost();
+        using var apple = new FakeAppStoreConnect();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "AuthKey.p8"), apple.Key.PrivateKey);
+
+        Assert.AreEqual(0, await KeysCommand.AppleAsync(host.Services, new AppleKeysRequest("issuer-id", "KEY", "AuthKey.p8", "com.contoso.shop", null, "first"), CancellationToken.None, apple), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "bit didn't check the bundle id's capabilities, since it had no entitlements to check them against. Pass the .plist the iOS app's Release build signs with as --entitlements");
+        Assert.IsFalse(apple.Requests.Any(r => r.Line.Contains("bundleIdCapabilities", StringComparison.Ordinal)));
+        Assert.AreEqual(1, apple.Requests.Count(r => r.Line is "POST /v1/profiles"));
+
+        var requests = apple.Requests.Count;
+        Assert.AreEqual(CliApp.ExitUsage, await KeysCommand.AppleAsync(host.Services, new AppleKeysRequest("issuer-id", "KEY", "AuthKey.p8", "com.contoso.shop", null, "second", "Missing.plist"), CancellationToken.None, apple));
+        StringAssert.Contains(host.FlatOutput, $"There's no entitlements file at {Path.Combine(host.WorkingDirectory, "Missing.plist")}.");
+        Assert.HasCount(requests, apple.Requests);
+
+        Plist(host.WorkingDirectory, "Entitlements.plist", PushNotifications);
+        Assert.AreEqual(0, await KeysCommand.AppleAsync(host.Services, new AppleKeysRequest("issuer-id", "KEY", "AuthKey.p8", "com.contoso.shop", null, "third", "Entitlements.plist"), CancellationToken.None, apple), host.Output);
+        Assert.AreEqual("PUSH_NOTIFICATIONS", (string?)apple.Body("POST /v1/bundleIdCapabilities")["data"]!["attributes"]!["capabilityType"]);
+    }
+
+    [TestMethod]
+    public void TheTemplatesIosApp_Should_NeedAssociatedDomainsAndPushNotificationsOutsideDevelopment()
+    {
+        var template = Path.GetDirectoryName(TestHost.RepositoryFile("src", "Templates", "Boilerplate", "Bit.Boilerplate", "Boilerplate.slnx"))!;
+
+        var entitlements = AppleEntitlements.ForProject(template, "Boilerplate");
+
+        Assert.IsNotNull(entitlements);
+        Assert.AreEqual(Path.Combine(template, "src", "Client", "Boilerplate.Client.Maui", "Platforms", "iOS", "Entitlements.Production.plist"), entitlements.FilePath);
+        CollectionAssert.AreEqual(new[] { "ASSOCIATED_DOMAINS", "PUSH_NOTIFICATIONS" }, entitlements.Capabilities.Select(c => c.Type).ToArray());
+        Assert.IsEmpty(entitlements.Unknown);
+    }
+
+    internal const string AssociatedDomains = "<key>com.apple.developer.associated-domains</key><array><string>applinks:shop.contoso.com</string></array>";
+
+    internal const string PushNotifications = "<key>aps-environment</key><string>production</string>";
+
+    internal static string Plist(string folder, string name, params string[] entries)
+    {
+        var path = Path.Combine(Directory.CreateDirectory(folder).FullName, name);
+        File.WriteAllText(path, $"""
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+            <plist version="1.0">
+            <dict>
+            {string.Join('\n', entries)}
+            </dict>
+            </plist>
+            """);
+        return path;
+    }
+
     private static byte[] Oid(string value)
     {
         var writer = new AsnWriter(AsnEncodingRules.DER);
@@ -452,6 +628,11 @@ public class KeysTests
 
         public List<(string Id, string Name)> Profiles { get; } = [];
 
+        /// <summary>
+        /// The capabilities each bundle id has on, by its resource id. Apple turns on IN_APP_PURCHASE for a new one.
+        /// </summary>
+        public Dictionary<string, List<string>> Capabilities { get; } = [];
+
         public Dictionary<string, (HttpStatusCode Status, string Body)> Respond { get; } = [];
 
         public List<(HttpMethod Method, string Line, string? Token, JsonNode? Body)> Requests { get; } = [];
@@ -482,7 +663,30 @@ public class KeysTests
                 return (HttpStatusCode.OK, List(BundleIds.Select(b => Resource("bundleIds", b.Id, new JsonObject { ["identifier"] = b.Identifier, ["name"] = "An app", ["platform"] = "IOS", ["seedId"] = b.SeedId }))));
 
             if (line is "POST /v1/bundleIds")
+            {
+                Capabilities["B1"] = ["IN_APP_PURCHASE"];
                 return (HttpStatusCode.Created, Single(Resource("bundleIds", "B1", new JsonObject { ["identifier"] = (string?)body!["data"]!["attributes"]!["identifier"], ["platform"] = "IOS", ["seedId"] = "SEED000000" })));
+            }
+
+            if (line.StartsWith("GET /v1/bundleIds/", StringComparison.Ordinal) && line.Contains("/bundleIdCapabilities?", StringComparison.Ordinal))
+            {
+                var bundleId = line["GET /v1/bundleIds/".Length..line.IndexOf("/bundleIdCapabilities", StringComparison.Ordinal)];
+                return (HttpStatusCode.OK, List(Capabilities.GetValueOrDefault(bundleId, []).Select(type => Resource("bundleIdCapabilities", $"{bundleId}_{type}", new JsonObject { ["capabilityType"] = type }))));
+            }
+
+            if (line is "POST /v1/bundleIdCapabilities")
+            {
+                var bundleId = (string)body!["data"]!["relationships"]!["bundleId"]!["data"]!["id"]!;
+                var type = (string)body["data"]!["attributes"]!["capabilityType"]!;
+
+                if (Capabilities.TryGetValue(bundleId, out var on) is false)
+                {
+                    Capabilities[bundleId] = on = [];
+                }
+
+                on.Add(type);
+                return (HttpStatusCode.Created, Single(Resource("bundleIdCapabilities", $"{bundleId}_{type}", new JsonObject { ["capabilityType"] = type })));
+            }
 
             if (line is "POST /v1/certificates")
             {

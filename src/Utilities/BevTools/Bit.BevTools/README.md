@@ -34,7 +34,7 @@ instead of the registration; the repository README's *Opening it on demand, and 
 a session attached that late can't see.
 
 Libraries integrate through the extension contracts in this package: implement `IBevToolsExtension` to contribute
-panels, state providers (`IBevStateProvider`), diagnostic rules (`IBevDiagnosticRule`), commands (`IBevToolsCommand`)
+panels, state providers (`IBevToolsStateProvider`), diagnostic rules (`IBevToolsDiagnosticRule`), commands (`IBevToolsCommand`)
 and value formatters, write events with `IBevToolsTimeline`, and mark members with `[BevToolsSensitive]` /
 `[BevToolsIgnore]`. The application registers an extension with
 `services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()))`.

@@ -20,14 +20,14 @@ namespace Bit.Bmotion;
 /// two-keyframe timeline can't express is recorded by the engine and played as keyframes - and drag
 /// follows the pointer. Only what needs the per-frame loop lands on its target at once: per-frame
 /// callbacks (<c>OnUpdate</c>/<c>OnFrame</c>), SVG <c>d</c>/<c>points</c> morphs, and the motion values
-/// <see cref="BmotionAnimateService"/> animates (<see cref="BmValue{T}"/>, raw numbers, springs that follow a value).
+/// <see cref="BmotionAnimateService"/> animates (<see cref="BmotionValue{T}"/>, raw numbers, springs that follow a value).
 /// </para>
 /// <para>
 /// <b>Prerendering / static SSR:</b> no browser is attached, so the engine doesn't run. By default
 /// elements render their <c>Initial</c> state and animate once interactive;
-/// <see cref="BitBmotionOptions.Prerender"/> can instead render them at rest
-/// (<see cref="BmPrerenderMode.Final"/>) or play the enter animation in pure CSS before the runtime
-/// loads (<see cref="BmPrerenderMode.Animate"/>, which needs <c>_content/Bit.Bmotion/bit-bmotion.css</c>
+/// <see cref="BmotionOptions.Prerender"/> can instead render them at rest
+/// (<see cref="BmotionPrerenderMode.Final"/>) or play the enter animation in pure CSS before the runtime
+/// loads (<see cref="BmotionPrerenderMode.Animate"/>, which needs <c>_content/Bit.Bmotion/bit-bmotion.css</c>
 /// linked in the page head).
 /// </para>
 /// </remarks>
@@ -69,19 +69,19 @@ public static class BitBmotion
 
     /// <summary>
     /// Registers all Bit.Bmotion services with library-wide options, e.g. the reduced-motion policy:
-    /// <code>builder.Services.AddBitBmotionServices(o =&gt; o.ReducedMotion = BmReducedMotionMode.User);</code>
+    /// <code>builder.Services.AddBitBmotionServices(o =&gt; o.ReducedMotion = BmotionReducedMotionMode.User);</code>
     /// </summary>
-    public static IServiceCollection AddBitBmotionServices(this IServiceCollection services, Action<BitBmotionOptions>? configure)
+    public static IServiceCollection AddBitBmotionServices(this IServiceCollection services, Action<BmotionOptions>? configure)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        var options = new BitBmotionOptions();
+        var options = new BmotionOptions();
         configure?.Invoke(options);
 
         return Register(services, options);
     }
 
-    private static IServiceCollection Register(IServiceCollection services, BitBmotionOptions options)
+    private static IServiceCollection Register(IServiceCollection services, BmotionOptions options)
     {
         services.AddSingleton(options);
 
@@ -100,7 +100,7 @@ public static class BitBmotion
         services.AddScoped(sp => new BmotionAnimationEngine(
             sp.GetRequiredService<IBmotionInterop>(),
             sp.GetService<ILogger<BmotionAnimationEngine>>(),
-            sp.GetRequiredService<BitBmotionOptions>()));
+            sp.GetRequiredService<BmotionOptions>()));
 
         // Queryable render-mode capability flags (WASM frame loop vs Server compositor-only).
         services.AddScoped(sp => new BmotionCapabilities(sp.GetRequiredService<IBmotionInterop>()));
@@ -167,16 +167,16 @@ public static class BitBmotion
 
     /// <summary>
     /// Creates the services of a WebAssembly app that lazy loads Bit.Bmotion, and so cannot register them with
-    /// <see cref="AddBitBmotionServices(IServiceCollection, Action{BitBmotionOptions}?)"/>, with the
-    /// <see cref="BitBmotionOptions"/> <paramref name="configure"/> sets. Call it in <c>OnInitialized</c> of every page
+    /// <see cref="AddBitBmotionServices(IServiceCollection, Action{BmotionOptions}?)"/>, with the
+    /// <see cref="BmotionOptions"/> <paramref name="configure"/> sets. Call it in <c>OnInitialized</c> of every page
     /// or layout that holds animated elements, which runs before theirs:
     /// <code>
     /// @inject IServiceProvider Services
     ///
     /// protected override void OnInitialized() => Services.ConfigureBmotionServices(o =&gt;
     /// {
-    ///     o.ReducedMotion = BmReducedMotionMode.User;
-    ///     o.Prerender = BmPrerenderMode.Animate;
+    ///     o.ReducedMotion = BmotionReducedMotionMode.User;
+    ///     o.Prerender = BmotionPrerenderMode.Animate;
     /// });
     /// </code>
     /// </summary>
@@ -200,17 +200,17 @@ public static class BitBmotion
     /// The services are not registered, and <paramref name="services"/> do not belong to a WebAssembly runtime; or the
     /// options are already set, to other values.
     /// </exception>
-    public static void ConfigureBmotionServices(this IServiceProvider services, Action<BitBmotionOptions> configure)
+    public static void ConfigureBmotionServices(this IServiceProvider services, Action<BmotionOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
 
-        var options = new BitBmotionOptions();
+        var options = new BmotionOptions();
         configure(options);
 
         if (IsRegistered(services))
         {
-            EnsureSameOptions(services.GetRequiredService<BitBmotionOptions>(), options);
+            EnsureSameOptions(services.GetRequiredService<BmotionOptions>(), options);
             return;
         }
 
@@ -220,7 +220,7 @@ public static class BitBmotion
         {
             if (_ownServices.TryGetValue(runtime, out var own))
             {
-                EnsureSameOptions(own.GetRequiredService<BitBmotionOptions>(), options);
+                EnsureSameOptions(own.GetRequiredService<BmotionOptions>(), options);
             }
             else
             {
@@ -270,7 +270,7 @@ public static class BitBmotion
         "Bit.Bmotion's services are not registered: call builder.Services.AddBitBmotionServices() in Program.cs - in a Blazor Web App, in both the server and the client project. " +
         "Only a WebAssembly app that lazy loads Bit.Bmotion goes without: it calls IServiceProvider.ConfigureBmotionServices(...) before its first animated element is created, and takes its services from IServiceProvider.GetBmotionService<T>().");
 
-    private static void EnsureSameOptions(BitBmotionOptions current, BitBmotionOptions requested)
+    private static void EnsureSameOptions(BmotionOptions current, BmotionOptions requested)
     {
         var differences = current.DifferencesFrom(requested).ToArray();
 
@@ -283,7 +283,7 @@ public static class BitBmotion
         }
     }
 
-    private static ServiceProvider BuildOwnServices(IServiceProvider services, BitBmotionOptions options)
+    private static ServiceProvider BuildOwnServices(IServiceProvider services, BmotionOptions options)
     {
         var own = new ServiceCollection().AddSingleton(services.GetRequiredService<IJSRuntime>());
 
@@ -307,10 +307,10 @@ public static class BitBmotion
     // effect because this method is reachable from AddBitBmotionServices (an app entry point),
     // and from ConfigureBmotionServices for an app that never calls it.
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionBoundingRect))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmScrollInfo))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionScrollInfo))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionXY))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmViewport))]
-    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmDragConstraints))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionViewport))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionDragConstraints))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BmotionStyleRead))]
     private static void PreserveInteropContracts() { }
 }

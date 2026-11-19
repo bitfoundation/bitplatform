@@ -18,7 +18,7 @@ public class DataBarFamilyTests
     {
         // BWIPP draws the left guard's module of light and the right guard's five; the test kit leaves both to the
         // quiet zone, as it does for DataBar.
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.DataBarLimited))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbScannerBarcodeFormat.DataBarLimited))
         {
             var widths = symbol.Widths!;
             Assert.AreEqual(0, widths[0], symbol.Id);
@@ -47,7 +47,7 @@ public class DataBarFamilyTests
             var gtin = digits + LinearEncoders.EanCheckDigit(digits);
             using var image = SyntheticImage.FromLinear(LinearEncoders.DataBarLimited(gtin), scale: 3, height: 10 * 3, quietZoneModules: 6);
 
-            Assert.AreEqual("01" + gtin, Decode(image, BbBarcodeFormat.DataBarLimited, still: true)?.Text, gtin);
+            Assert.AreEqual("01" + gtin, Decode(image, BbScannerBarcodeFormat.DataBarLimited, still: true)?.Text, gtin);
         }
     }
 
@@ -96,7 +96,7 @@ public class DataBarFamilyTests
             }
 
             using var image = SyntheticImage.FromLinear(modules, scale: 2, height: 34 * 2, quietZoneModules: 6);
-            Assert.AreEqual(Visible(text), Visible(Decode(image, BbBarcodeFormat.DataBarExpanded, still: true)?.Text), Visible(text));
+            Assert.AreEqual(Visible(text), Visible(Decode(image, BbScannerBarcodeFormat.DataBarExpanded, still: true)?.Text), Visible(text));
             tested++;
         }
 
@@ -107,11 +107,11 @@ public class DataBarFamilyTests
     public void ExpandedIsReportedAsGs1()
     {
         using var image = SyntheticImage.FromLinear(LinearEncoders.DataBarExpanded("010952123454321310ABC123"), scale: 3, height: 34 * 3, quietZoneModules: 6);
-        var result = Decode(image, BbBarcodeFormat.DataBarExpanded, still: false);
+        var result = Decode(image, BbScannerBarcodeFormat.DataBarExpanded, still: false);
 
         Assert.AreEqual("010952123454321310ABC123", result?.Text);
         Assert.IsTrue(result!.Metadata!.IsGs1);
-        Assert.AreEqual(BbBarcodeFormat.DataBarExpanded, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.DataBarExpanded, result.Format);
     }
 
     [TestMethod]
@@ -221,7 +221,7 @@ public class DataBarFamilyTests
                 var columns = random.Next(1, 3);
                 var cellWidth = images.Max(i => i.Width) + gap;
                 var cellHeight = images.Max(i => i.Height) + gap;
-                using var page = BbLuminanceBuffer.Rent((columns * cellWidth) + 20, ((images.Length + columns - 1) / columns * cellHeight) + 20);
+                using var page = BbScannerLuminanceBuffer.Rent((columns * cellWidth) + 20, ((images.Length + columns - 1) / columns * cellHeight) + 20);
                 page.Pixels.Fill(255);
                 for (var k = 0; k < images.Length; k++)
                 {
@@ -235,7 +235,7 @@ public class DataBarFamilyTests
                     var options = live ? new BbScannerOptions() : BbScannerOptions.ForStillImages();
                     options.Formats = Family;
                     options.DuplicateSuppressionWindow = TimeSpan.Zero;
-                    using var decoder = new BbBarcodeDecoder(options);
+                    using var decoder = new BbScannerBarcodeDecoder(options);
                     foreach (var result in decoder.DecodeAll(frame.View, 4, suppressDuplicates: false))
                     {
                         reads++;
@@ -259,10 +259,10 @@ public class DataBarFamilyTests
         Assert.IsGreaterThan(20, reads);
     }
 
-    private const BbBarcodeFormat Family = BbBarcodeFormat.DataBar | BbBarcodeFormat.DataBarLimited | BbBarcodeFormat.DataBarExpanded;
+    private const BbScannerBarcodeFormat Family = BbScannerBarcodeFormat.DataBar | BbScannerBarcodeFormat.DataBarLimited | BbScannerBarcodeFormat.DataBarExpanded;
 
     /// <summary>A family fixture at its own height: Truncated 13 modules, Limited 10, the other linear forms 34.</summary>
-    private static BbLuminanceBuffer Render(ReferenceSymbol symbol, int scale)
+    private static BbScannerLuminanceBuffer Render(ReferenceSymbol symbol, int scale)
     {
         if (!symbol.IsLinear)
         {
@@ -276,10 +276,10 @@ public class DataBarFamilyTests
     }
 
     /// <summary>Up to four live frames of the same image through one decoder, as a camera held still delivers them.</summary>
-    private static BbBarcodeResult? DecodeLive(BbLuminanceBuffer frame, BbBarcodeFormat format)
+    private static BbScannerBarcodeResult? DecodeLive(BbScannerLuminanceBuffer frame, BbScannerBarcodeFormat format)
     {
         var options = new BbScannerOptions { Formats = format, DuplicateSuppressionWindow = TimeSpan.Zero };
-        using var decoder = new BbBarcodeDecoder(options);
+        using var decoder = new BbScannerBarcodeDecoder(options);
         for (var i = 0; i < 4; i++)
         {
             if (decoder.Decode(frame.View, suppressDuplicates: false) is { } result)
@@ -297,12 +297,12 @@ public class DataBarFamilyTests
 
     private static string? Visible(string? text) => text?.Replace(GroupSeparator, '|');
 
-    private static BbBarcodeResult? Decode(BbLuminanceBuffer image, BbBarcodeFormat format, bool still)
+    private static BbScannerBarcodeResult? Decode(BbScannerLuminanceBuffer image, BbScannerBarcodeFormat format, bool still)
     {
         var options = still ? BbScannerOptions.ForStillImages() : new BbScannerOptions();
         options.Formats = format;
         options.DuplicateSuppressionWindow = TimeSpan.Zero;
-        using var decoder = new BbBarcodeDecoder(options);
+        using var decoder = new BbScannerBarcodeDecoder(options);
         return decoder.Decode(image.View, suppressDuplicates: false);
     }
 }

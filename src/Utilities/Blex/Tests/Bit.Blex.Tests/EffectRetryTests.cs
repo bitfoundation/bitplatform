@@ -1,4 +1,3 @@
-using Bit.Blex.Testing;
 using Microsoft.Extensions.Time.Testing;
 
 namespace Bit.Blex.Tests;

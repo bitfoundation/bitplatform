@@ -155,7 +155,7 @@ public static partial class BsqliteSetupGuide
             """
             Supported with no code of its own. In a Blazor Hybrid app .NET runs natively next to the web view, so
             `AddBitBsqliteServices` adds the `file-system` backend (`BsqliteFileSystemStorageProvider`, namespace
-            `Bit.Bsqlite.Storage.FileSystem`) and ranks it ahead of the browser backends - which need .NET running in the
+            `Bit.Bsqlite`) and ranks it ahead of the browser backends - which need .NET running in the
             browser and are passed over without being probed. The database is a SQLite file in the app's own folder,
             opened in-process by the native SQLite the app brings for Android, iOS, Mac Catalyst, Windows and macOS.
             So the registration a WebAssembly client uses - typically one extension method in a shared Razor class
@@ -274,14 +274,14 @@ public static partial class BsqliteSetupGuide
 
         1. `dotnet add package Bit.Bsqlite` - one package, every storage backend included. In a Blazor Web App, add it to
            the .Client project.
-        2. Register with `AddBitBsqliteServices` (namespace `Microsoft.Extensions.DependencyInjection`): each backend with
+        2. Register with `AddBitBsqliteServices` (namespace `Bit.Bsqlite`): each backend with
            `AddStorageProvider<T>()` - at least one persistent one, OPFS first and IndexedDB as its fallback - the
            preference order with `UseStorage(s => s.Prefer(...).Fallback(...))` - required, selection never guesses - and
            the database with `AddDatabase("app.db")`.
         3. Register the context with `AddBitBsqliteDbContext<AppDbContext>()`. Migrations run once per session by default
            (`BsqliteSchemaStrategy.Migrate`); seed through `OnFirstUse`. Do not also call `AddDbContext` or `UseSqlite`:
            the factory binds every context to the one shared browser database.
-        4. Inject `IBsqliteDbContextFactory<AppDbContext>` (namespace `Bit.Bsqlite.EntityFrameworkCore`; the plain
+        4. Inject `IBsqliteDbContextFactory<AppDbContext>` (namespace `Bit.Bsqlite`; the plain
            `IDbContextFactory<AppDbContext>` is registered too) and create contexts with `await CreateDbContextAsync()`.
         5. Async only: `ToListAsync`, `SaveChangesAsync`, `MigrateAsync`. The synchronous members throw
            `BsqliteSynchronousApiNotSupportedException` naming the async overload - the engine runs in a worker the main
@@ -368,13 +368,13 @@ public static partial class BsqliteSetupGuide
     private const string StorageChecklist = """
         ## Checklist
 
-        1. OPFS first (`BsqliteOpfsStorageProvider`, namespace `Bit.Bsqlite.Storage.Opfs`): the only persistent backend on
+        1. OPFS first (`BsqliteOpfsStorageProvider`, namespace `Bit.Bsqlite`): the only persistent backend on
            the synchronous engine build - the smallest download - and the fastest storage the web has.
-        2. IndexedDB as its fallback (`BsqliteIndexedDbStorageProvider`, namespace `Bit.Bsqlite.Storage.IndexedDb`): the
+        2. IndexedDB as its fallback (`BsqliteIndexedDbStorageProvider`, namespace `Bit.Bsqlite`): the
            widest reach, where OPFS is missing.
-        3. In-memory (`BsqliteInMemoryStorageProvider`, namespace `Bit.Bsqlite.Storage.InMemory`) only as a declared last
+        3. In-memory (`BsqliteInMemoryStorageProvider`, namespace `Bit.Bsqlite`) only as a declared last
            resort - with `AllowNonPersistentFallback()` - or for demos and tests. Data written to it is gone on reload.
-        4. Cache Storage (`BsqliteCacheStorageProvider`, namespace `Bit.Bsqlite.Storage.CacheStorage`) for a read-heavy app
+        4. Cache Storage (`BsqliteCacheStorageProvider`, namespace `Bit.Bsqlite`) for a read-heavy app
            open in several tabs: it is the one browser backend that declares concurrent reads. Otherwise leave it out - it
            commits through a journal rather than as one batch, and needs JSPI or Asyncify as IndexedDB does.
         5. Leave the migration mode at `KeepExisting` unless moving a user's database without asking is acceptable.
@@ -399,7 +399,7 @@ public static partial class BsqliteSetupGuide
            the in-memory backend, and `UseBindingStore<BsqliteInMemoryStorageBindingStore>()` (the default store needs a
            browser's localStorage).
         6. A storage backend's test project inherits `BsqliteStorageProviderConformanceTests` (and, with a running engine,
-           `BsqliteStorageEngineConformanceTests`) from namespace `Bit.Bsqlite.Storage.ConformanceTests`, with
+           `BsqliteStorageEngineConformanceTests`) from namespace `Bit.Bsqlite`, with
            `[TestClass]` on each derived class; a backend that cannot run in that environment reports inconclusive.
         """;
 
@@ -427,8 +427,7 @@ public static partial class BsqliteSetupGuide
         ### `Program.cs`
 
         ```csharp
-        using Bit.Bsqlite.Storage.IndexedDb;
-        using Bit.Bsqlite.Storage.Opfs;
+        using Bit.Bsqlite;
         using Microsoft.AspNetCore.Components.Web;
         using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -454,7 +453,7 @@ public static partial class BsqliteSetupGuide
 
         ```razor
         @page "/products"
-        @using Bit.Bsqlite.EntityFrameworkCore
+        @using Bit.Bsqlite
         @using Microsoft.EntityFrameworkCore
         @inject IBsqliteDbContextFactory<AppDbContext> Contexts
 
@@ -498,7 +497,7 @@ public static partial class BsqliteSetupGuide
 
         ```razor
         @page "/orders"
-        @using Bit.Bsqlite.EntityFrameworkCore
+        @using Bit.Bsqlite
         @using Microsoft.EntityFrameworkCore
         @inject IBsqliteDbContextFactory<AppDbContext> Contexts
 
@@ -604,8 +603,7 @@ public static partial class BsqliteSetupGuide
         ### A shared registration - the WebAssembly client and the Hybrid app both call it
 
         ```csharp
-        using Bit.Bsqlite.Storage.IndexedDb;
-        using Bit.Bsqlite.Storage.Opfs;
+        using Bit.Bsqlite;
 
         public static class BsqliteServiceCollectionExtensions
         {
@@ -656,9 +654,7 @@ public static partial class BsqliteSetupGuide
         ### Every first-party backend, in the recommended order
 
         ```csharp
-        using Bit.Bsqlite.Storage.IndexedDb;
-        using Bit.Bsqlite.Storage.InMemory;
-        using Bit.Bsqlite.Storage.Opfs;
+        using Bit.Bsqlite;
 
         builder.Services.AddBitBsqliteServices(sqlite => sqlite
             .AddStorageProvider<BsqliteOpfsStorageProvider>()
@@ -675,7 +671,7 @@ public static partial class BsqliteSetupGuide
         ### Why this session landed where it did
 
         ```csharp
-        // In a component that injects BsqliteDatabase (namespace Bit.Bsqlite.Interop) as Database:
+        // In a component that injects BsqliteDatabase (namespace Bit.Bsqlite) as Database:
         var session = await Database.OpenAsync();
         var resolution = session.Resolution;
 
@@ -690,8 +686,7 @@ public static partial class BsqliteSetupGuide
         ### A test of the model, the migrations and the SQL
 
         ```csharp
-        using Bit.Bsqlite.Data;
-        using Bit.Bsqlite.Testing;
+        using Bit.Bsqlite;
         using Microsoft.EntityFrameworkCore;
 
         [TestClass]
@@ -727,11 +722,7 @@ public static partial class BsqliteSetupGuide
         ### The whole composition, through dependency injection
 
         ```csharp
-        using Bit.Bsqlite.Data;
-        using Bit.Bsqlite.Interop;
-        using Bit.Bsqlite.Storage;
-        using Bit.Bsqlite.Storage.InMemory;
-        using Bit.Bsqlite.Testing;
+        using Bit.Bsqlite;
 
         var services = new ServiceCollection();
 
@@ -755,8 +746,7 @@ public static partial class BsqliteSetupGuide
         ### A storage backend's conformance tests
 
         ```csharp
-        using Bit.Bsqlite.Storage;
-        using Bit.Bsqlite.Storage.ConformanceTests;
+        using Bit.Bsqlite;
 
         [TestClass]
         public sealed class MyBackendConformanceTests : BsqliteStorageProviderConformanceTests
@@ -772,7 +762,7 @@ public static partial class BsqliteSetupGuide
         ### The .NET half
 
         ```csharp
-        using Bit.Bsqlite.Storage;
+        using Bit.Bsqlite;
         using Microsoft.JSInterop;
 
         public sealed class MyStorageProvider(IJSRuntime? js = null) : IBsqliteStorageProvider

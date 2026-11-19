@@ -1,0 +1,214 @@
+﻿using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+
+namespace Bit.BevTools;
+
+/// <summary>Aggregates errors from every source. Repeats within a minute collapse into one record with a count.</summary>
+internal sealed partial class BevToolsErrorCenter
+{
+    private readonly BevToolsSession _session;
+    private readonly BevToolsRingBuffer<BevToolsErrorRecord> _errors;
+    private readonly ConditionalWeakTable<Exception, BevToolsErrorRecord> _byException = new();
+    private readonly object _lock = new();
+    private long _nextId;
+    private int _total;
+
+    public BevToolsErrorCenter(BevToolsSession session, BevToolsOptions options)
+    {
+        _session = session;
+        _errors = new BevToolsRingBuffer<BevToolsErrorRecord>(options.MaxErrors);
+    }
+
+    public int Count => _errors.Count;
+
+    /// <summary>Total occurrences including collapsed repeats.</summary>
+    public int TotalOccurrences => Volatile.Read(ref _total);
+
+    public BevToolsErrorRecord Record(
+        Exception? exception,
+        string source,
+        string? message = null,
+        BevToolsComponentRecord? component = null,
+        long? precedingEventId = null,
+        string? exceptionType = null,
+        string? stackTrace = null)
+    {
+        // One exception can reach BevTools through two capture paths: the render wrapper records it, then the
+        // ErrorBoundary or renderer that handles it logs it. That is one error, not two.
+        if (exception is not null && _byException.TryGetValue(exception, out var known))
+        {
+            return known;
+        }
+
+        exceptionType ??= exception?.GetType().FullName ?? "Error";
+        // Messages are redacted where they are captured, like everything else: "Login failed for Password=…" and
+        // "invalid token eyJ…" are common exception messages, and these are shown, searched and exported.
+        message = BevToolsRedactor.RedactText(message ?? exception?.Message ?? "Unknown error");
+        stackTrace ??= exception?.StackTrace;
+        if (stackTrace is not null)
+        {
+            stackTrace = BevToolsRedactor.RedactText(stackTrace);
+        }
+        var location = FindSourceLocation(stackTrace);
+        // Without "in file:line" in the text, the frame itself says where, once the symbols do. It is shown, not
+        // grouped on: whether the symbols are there yet must not split one failure into two groups.
+        var throwSite = location is null && exception is not null ? BevToolsThrowSite.Of(exception) : null;
+        if (throwSite is not null && BevToolsSourceLocator.NeedsDownload(throwSite.Method.Module.Assembly))
+        {
+            _session.WantSymbols(throwSite.Method.Module.Assembly);
+        }
+
+        var (anchor, inApplication) = location is null ? BevToolsErrorGroups.StackAnchor(stackTrace) : (location, true);
+        // With no application frame to tell throw sites apart, a quoted name ("service of type 'IOrderApi'") is what
+        // tells one failure from another, so it stays in the template.
+        var template = BevToolsErrorGroups.Template(message, keepQuoted: !inApplication);
+        var fingerprint = string.Concat(source, "|", exceptionType, "|", message, "|", location ?? FirstLine(stackTrace), "|", component?.InstanceId);
+        var now = DateTimeOffset.UtcNow;
+        component?.AddError();
+
+        lock (_lock)
+        {
+            _total++;
+            var existing = _errors.FindLast(e => e.Fingerprint == fingerprint);
+            if (existing is not null && now - existing.LastSeen < TimeSpan.FromMinutes(1))
+            {
+                existing.Count++;
+                existing.LastSeen = now;
+                Remember(exception, existing);
+                RecordTimeline(existing, repeat: true);
+                _session.Touch();
+                return existing;
+            }
+
+            var record = new BevToolsErrorRecord
+            {
+                Id = Interlocked.Increment(ref _nextId),
+                At = now,
+                LastSeen = now,
+                Source = source,
+                ExceptionType = exceptionType,
+                Message = message,
+                MessageTemplate = template,
+                Group = BevToolsErrorGroups.KeyOf(source, exceptionType, template, anchor),
+                StackTrace = stackTrace,
+                SourceLocation = location,
+                ThrowSite = throwSite,
+                ComponentInstanceId = component?.InstanceId,
+                ComponentName = component?.DisplayName,
+                PrecedingEventId = precedingEventId ?? _session.CurrentTriggerEventId ?? (exception is null ? null : _session.TakeFailedTrigger(exceptionType)),
+                Fingerprint = fingerprint,
+                InnerError = Describe(exception?.InnerException),
+            };
+            if (_errors.Add(record, out var evicted) && evicted is not null)
+            {
+                _total -= evicted.Count;
+            }
+
+            Remember(exception, record);
+            RecordTimeline(record, repeat: false);
+            _session.Touch();
+            return record;
+        }
+    }
+
+    private void Remember(Exception? exception, BevToolsErrorRecord record)
+    {
+        if (exception is not null)
+        {
+            _byException.AddOrUpdate(exception, record);
+        }
+    }
+
+    private void RecordTimeline(BevToolsErrorRecord record, bool repeat)
+    {
+        var id = _session.Timeline.Record(new BevToolsEvent
+        {
+            Kind = BevToolsEventKind.Error,
+            Category = "error:" + record.Source,
+            Title = (repeat ? "(repeat) " : "") + ShortTypeName(record.ExceptionType) + ": " + record.Message,
+            Detail = record.SourceLocation is null ? record.Source : record.Source + " · " + record.SourceLocation,
+            Severity = BevToolsSeverity.Error,
+            ComponentInstanceId = record.ComponentInstanceId,
+            ComponentName = record.ComponentName,
+            ParentEventId = record.PrecedingEventId,
+            // The group travels with each occurrence, so error.repeated still counts it once the record left the buffer.
+            Data = new Dictionary<string, object?> { ["errorId"] = record.Id, ["errorGroup"] = record.Group, ["errorTemplate"] = ShortTypeName(record.ExceptionType) + ": " + record.MessageTemplate },
+        });
+        if (!repeat)
+        {
+            record.TimelineEventId = id;
+        }
+    }
+
+    public BevToolsErrorRecord[] Snapshot() => _errors.ToArray();
+
+    public BevToolsErrorRecord? Find(long id) => _errors.FindByKey(static e => e.Id, id);
+
+    public void Clear()
+    {
+        lock (_lock)
+        {
+            _errors.Clear();
+            _byException.Clear();
+            _total = 0;
+        }
+
+        _session.Touch();
+    }
+
+    internal static string? FindSourceLocation(string? stackTrace)
+    {
+        if (string.IsNullOrEmpty(stackTrace))
+        {
+            return null;
+        }
+
+        var match = LocationRegex().Match(stackTrace);
+        if (!match.Success)
+        {
+            return null;
+        }
+
+        var path = match.Groups["file"].Value;
+        var slash = Math.Max(path.LastIndexOf('\\'), path.LastIndexOf('/'));
+        var file = slash >= 0 ? path[(slash + 1)..] : path;
+        return file + ":" + match.Groups["line"].Value;
+    }
+
+    private static string? Describe(Exception? exception)
+    {
+        if (exception is null)
+        {
+            return null;
+        }
+
+        var innermost = exception;
+        var hops = 0;
+        while (innermost.InnerException is { } inner && hops++ < 16)
+        {
+            innermost = inner;
+        }
+
+        return innermost.GetType().Name + ": " + BevToolsRedactor.RedactText(innermost.Message);
+    }
+
+    private static string? FirstLine(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return null;
+        }
+
+        var nl = text.IndexOf('\n');
+        return (nl < 0 ? text : text[..nl]).Trim();
+    }
+
+    internal static string ShortTypeName(string fullName)
+    {
+        var dot = fullName.LastIndexOf('.');
+        return dot < 0 ? fullName : fullName[(dot + 1)..];
+    }
+
+    [GeneratedRegex(@" in (?<file>[^\r\n]+?):line (?<line>\d+)", RegexOptions.CultureInvariant)]
+    private static partial Regex LocationRegex();
+}

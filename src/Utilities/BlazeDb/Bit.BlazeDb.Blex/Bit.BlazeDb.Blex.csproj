@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
-        <RootNamespace>Bit.BlazeDb.Blex</RootNamespace>
+        <RootNamespace>Bit.BlazeDb</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
         <Description>Persists Bit.Blex stores in a Bit.BlazeDb database: an IBlexStorage over a BlazeDb table, so persisted state shares the database's write-ahead log, encryption at rest, quota handling and backups with the rest of the application's data, on every platform BlazeDb runs on.</Description>

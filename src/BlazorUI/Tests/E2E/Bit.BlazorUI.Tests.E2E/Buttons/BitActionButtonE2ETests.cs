@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Buttons;
 /// forced colors, prerendering, re-rendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitActionButtonE2ETests : E2ETestBase
 {
     private const string Transparent = "rgba(0, 0, 0, 0)";

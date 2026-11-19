@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Registers the scalar functions, aggregates, and collation that EF Core's SQLite provider

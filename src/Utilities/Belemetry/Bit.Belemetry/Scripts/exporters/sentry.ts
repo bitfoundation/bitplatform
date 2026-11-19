@@ -30,7 +30,7 @@ export interface SentryDsn {
     publicDsn: string;
 }
 
-/** Parses `{scheme}://{public key}[:{secret}]@{host}[:{port}][/{path}]/{project id}`, as C# SentryDsn.Parse. */
+/** Parses `{scheme}://{public key}[:{secret}]@{host}[:{port}][/{path}]/{project id}`, as C# BelemetrySentryDsn.Parse. */
 export function parseDsn(dsn: string | null | undefined): SentryDsn | null {
     let url: URL;
     try {
@@ -80,7 +80,7 @@ function isInApp(url: string): boolean {
     return url.indexOf('://') >= 0 && !/^wasm:/i.test(url) && !EXTENSION_SCHEME.test(url) && url.indexOf('/_framework/') < 0 && url.indexOf('/_content/Bit.Belemetry/') < 0;
 }
 
-/** The number of ASCII digits; undefined past 2147483647, as C# SentryStackTrace.ToInt (an int there). */
+/** The number of ASCII digits; undefined past 2147483647, as C# BelemetrySentryStackTrace.ToInt (an int there). */
 function toInt(digits: string): number | undefined {
     const value = Number(digits);
     return value <= 2147483647 ? value : undefined;
@@ -160,7 +160,7 @@ export function parseStack(stack: string | null | undefined): SentryFrame[] {
     return frames.reverse();
 }
 
-// .NET stack traces, as C# SentryStackTrace parses them: a .NET exception the script recorded - a Blazor Server
+// .NET stack traces, as C# BelemetrySentryStackTrace parses them: a .NET exception the script recorded - a Blazor Server
 // component's TrackException, forwarded to the page - has a .NET stack, told by its lines rather than by who recorded it.
 
 const END_OF_INNER = '--- End of inner exception stack trace ---';
@@ -187,7 +187,7 @@ function fileNameOf(path: string): string {
 
 /**
  * A frame of a .NET stack trace's text (`at Namespace.Type.Method(Args)[ + 0x2a][ in path:line 42]`); null for
- * another line. Read by hand in one pass, as C# SentryStackTrace.DotnetFrame: the method runs to the first `(`, with no
+ * another line. Read by hand in one pass, as C# BelemetrySentryStackTrace.DotnetFrame: the method runs to the first `(`, with no
  * whitespace before it (which no JavaScript frame has), and the arguments close at the first `)` the rest can follow.
  */
 export function dotnetFrame(line: string): SentryFrame | null {
@@ -291,7 +291,7 @@ function splitHeader(part: string): { type?: string; message?: string } {
 }
 
 /**
- * The exceptions of a .NET stack trace's text, outermost first (C# SentryStackTrace.ParseDotnet): the header names
+ * The exceptions of a .NET stack trace's text, outermost first (C# BelemetrySentryStackTrace.ParseDotnet): the header names
  * them (`Outer: message ---> Inner: message`), and their frames follow innermost first, each set closed by "End of
  * inner exception stack trace". When the two do not line up, only the outermost is told, with its own frames. The
  * frames start at the first frame line: a message's line may start with "at" too ("at least one item is required").

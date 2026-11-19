@@ -20,7 +20,7 @@ public class PresenceParticipationTests
         [Parameter] public TaskCompletionSource ExitDone { get; set; } = default!;
         [Parameter] public Action? OnLeaving { get; set; }
 
-        public BmPresenceRegistration? Registration { get; private set; }
+        public BmotionPresenceRegistration? Registration { get; private set; }
         private bool _leaving;
 
         protected override void OnInitialized() => Registration = Presence?.Register();
@@ -54,8 +54,8 @@ public class PresenceParticipationTests
         if (!withBmotion) return;
         b.OpenComponent<Bmotion>(3);
         b.AddComponentParameter(4, nameof(Bmotion.Id), "box");
-        b.AddComponentParameter(5, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1));
-        b.AddComponentParameter(6, nameof(Bmotion.Exit), (BmTarget?)Bm.To(opacity: 0));
+        b.AddComponentParameter(5, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 1));
+        b.AddComponentParameter(6, nameof(Bmotion.Exit), (BmotionTarget?)Bm.To(opacity: 0));
         b.AddComponentParameter(7, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
         {
             leaf.OpenElement(0, "div");
@@ -66,7 +66,7 @@ public class PresenceParticipationTests
     };
 
     private IRenderedComponent<BmotionAnimatePresence> Render(BmotionTestContext ctx, RenderFragment content, Action onExitComplete,
-        BmPresenceMode mode = BmPresenceMode.Sync)
+        BmotionPresenceMode mode = BmotionPresenceMode.Sync)
         => ctx.Render<BmotionAnimatePresence>(ps => ps
             .Add(p => p.IsPresent, true)
             .Add(p => p.Mode, mode)
@@ -150,7 +150,7 @@ public class PresenceParticipationTests
     {
         using var ctx = new BmotionTestContext();
         var exitDone = new TaskCompletionSource();
-        var cut = Render(ctx, Content(exitDone), () => { }, BmPresenceMode.Wait);
+        var cut = Render(ctx, Content(exitDone), () => { }, BmotionPresenceMode.Wait);
 
         cut.Render(ps => ps.Add(p => p.IsPresent, false));
         cut.Render(ps => ps.Add(p => p.IsPresent, true));

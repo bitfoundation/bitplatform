@@ -8,6 +8,7 @@
 /// --bit-AiScrollToLatest-* variable, Styles/Classes, RTL and print.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiScrollToLatestE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiscrolltolatest";

@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Storage;
-
-namespace Bit.Bsqlite;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// One candidate's fate, recorded for every candidate so that both diagnostics and failure messages

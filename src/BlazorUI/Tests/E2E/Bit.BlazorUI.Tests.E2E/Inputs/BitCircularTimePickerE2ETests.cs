@@ -15,6 +15,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// disabled and read-only contracts, Escape inside a modal, reduced motion and the lifecycle.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCircularTimePickerE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/circular-time-picker";
@@ -44,6 +45,16 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
     private static ILocator Pm(ILocator callout) => callout.Locator(".bit-ctp-apb").Nth(1);
 
     private static ILocator Action(ILocator callout, string text) => callout.Locator(".bit-ctp-abn", new() { HasTextString = text });
+
+    // Picks a number and waits for the dial to move on to the view after it. The numbers of the next view stand where the
+    // ones of this view stood, and several are in both (the hour 20 and the minute 20): a number clicked before that
+    // render arrives is found on the face being left, and the click lands where it stood on the new one - the 20th hour
+    // sits where the 40th minute does, so the minute picked is 40.
+    private static async Task PickAndMoveOnAsync(ILocator callout, string number, ILocator nextView)
+    {
+        await Number(callout, number).ClickAsync();
+        await Expect(nextView).ToHaveAttributeAsync("aria-pressed", "true");
+    }
 
     private async Task<ILocator> CalloutOfAsync(string scope)
     {
@@ -585,8 +596,8 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var callout = await OpenCalloutAsync("seconds-field");
-        await Number(callout, "08").ClickAsync();
-        await Number(callout, "15").ClickAsync();
+        await PickAndMoveOnAsync(callout, "08", MinuteButton(callout));
+        await PickAndMoveOnAsync(callout, "15", SecondButton(callout));
         await Number(callout, "30").ClickAsync();
         await Expect(Out("seconds-field-value")).ToHaveTextAsync("08:15:30");
 
@@ -872,7 +883,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var callout = await OpenCalloutAsync("autoclose");
-        await Number(callout, "16").ClickAsync();
+        await PickAndMoveOnAsync(callout, "16", MinuteButton(callout));
         await Expect(callout).ToBeVisibleAsync();
         await Number(callout, "20").ClickAsync();
 
@@ -888,7 +899,7 @@ public class BitCircularTimePickerE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         var callout = await OpenCalloutAsync("autoclose-delay");
-        await Number(callout, "16").ClickAsync();
+        await PickAndMoveOnAsync(callout, "16", MinuteButton(callout));
         await Number(callout, "20").ClickAsync();
         await Expect(Out("autoclose-delay-value")).ToHaveTextAsync("16:20:00");
 

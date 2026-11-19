@@ -11,7 +11,7 @@
     @* Blue from the stylesheet, never from Bmotion: hovering must start from blue and leaving must bring blue back. *@
     <Bmotion Animate="Bm.To(opacity: 1)"
              WhileHover='Bm.To(backgroundColor: "rgb(255, 0, 0)")'
-             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             Transition="Bm.Tween(0.6, BmotionEase.Linear)"
              OnAnimationStart='_ => Armed("css-hover")'
              OnHoverEnd='() => Log("css-hover:end")'>
         <div id="css-hover" class="box css-blue"></div>
@@ -21,7 +21,7 @@
        from there, and leaving must shrink it back. *@
     <Bmotion Animate="Bm.To(opacity: 1)"
              WhileHover='Bm.To(boxShadow: "0 16px 32px rgba(0,0,0,.5)")'
-             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             Transition="Bm.Tween(0.6, BmotionEase.Linear)"
              OnAnimationStart='_ => Armed("css-shadow")'
              OnHoverEnd='() => Log("css-shadow:end")'>
         <div id="css-shadow" class="box css-shadow"></div>
@@ -30,7 +30,7 @@
     @* No filter at all (the page reports "none"): hovering must blur it gradually, not at once. *@
     <Bmotion Animate="Bm.To(opacity: 1)"
              WhileHover='Bm.To(filter: "blur(6px)")'
-             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             Transition="Bm.Tween(0.6, BmotionEase.Linear)"
              OnAnimationStart='_ => Armed("css-filter")'>
         <div id="css-filter" class="box"></div>
     </Bmotion>
@@ -38,7 +38,7 @@
     @* 100px wide from the stylesheet; the first Animate that names a width must animate from there. *@
     <button id="widen" @onclick="() => Change(() => _wide = !_wide)">widen</button>
     <Bmotion Animate='_wide ? Bm.To(width: "300px") : Bm.To(opacity: 1)'
-             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             Transition="Bm.Tween(0.6, BmotionEase.Linear)"
              OnAnimationStart='_ => Armed("css-width")'>
         <div id="css-width" class="box css-width"></div>
     </Bmotion>
@@ -52,7 +52,7 @@
     <button id="accordion-grow" @onclick="() => Change(() => _lines++)">add line</button>
     <Bmotion Initial='Bm.To(height: "0px")'
              Animate='Bm.To(height: _open ? "auto" : "0px")'
-             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             Transition="Bm.Tween(0.6, BmotionEase.Linear)"
              OnAnimationStart='_ => Armed("accordion")'
              OnAnimationComplete='_ => Log(_open ? "accordion:opened" : "accordion:closed")'>
         <div id="accordion" class="accordion">
@@ -69,7 +69,7 @@
     <button id="recolor" @onclick="() => Change(() => _blue = !_blue)">recolor</button>
     <Bmotion Initial='Bm.To(backgroundColor: "red")'
              Animate='Bm.To(backgroundColor: _blue ? "blue" : "red")'
-             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             Transition="Bm.Tween(0.6, BmotionEase.Linear)"
              OnAnimationStart='_ => Armed("named")'>
         <div id="named" class="box"></div>
     </Bmotion>
@@ -77,7 +77,7 @@
     <button id="recolor-modern" @onclick="() => Change(() => _modern = !_modern)">recolor modern</button>
     <Bmotion Initial='Bm.To(backgroundColor: "rgb(0 0 0 / 1)")'
              Animate='Bm.To(backgroundColor: _modern ? "oklch(0.7 0.2 140)" : "rgb(0 0 0 / 1)")'
-             Transition="Bm.Tween(0.6, BmEase.Linear)"
+             Transition="Bm.Tween(0.6, BmotionEase.Linear)"
              OnAnimationStart='_ => Armed("modern")'>
         <div id="modern" class="box"></div>
     </Bmotion>
@@ -87,7 +87,7 @@
 <section class="row">
     <Bmotion Animate="Bm.To(opacity: 1)"
              WhileHover="Bm.To(scale: 1.5)"
-             Transition="Bm.Tween(0.8, BmEase.Linear)"
+             Transition="Bm.Tween(0.8, BmotionEase.Linear)"
              OnAnimationStart='_ => Armed("slow-hover")'>
         <div id="slow-hover" class="box"></div>
     </Bmotion>
@@ -96,7 +96,7 @@
     <button id="reduced-toggle" @onclick="() => Change(() => _reducedOn = !_reducedOn)">reduced toggle</button>
     <BmotionConfig ReduceMotion="true">
         <Bmotion Animate="_reducedOn ? Bm.To(opacity: 0.2, x: 200) : Bm.To(opacity: 1, x: 0)"
-                 Transition="Bm.Tween(0.8, BmEase.Linear)"
+                 Transition="Bm.Tween(0.8, BmotionEase.Linear)"
                  OnAnimationStart='_ => Armed("reduced")'>
             <div id="reduced" class="box"></div>
         </Bmotion>

@@ -7,14 +7,14 @@
 [TestClass]
 public class LinearMisreadTests
 {
-    private static BbBitRow Binarize(BbLuminanceBuffer image, int row)
+    private static BbScannerBitRow Binarize(BbScannerLuminanceBuffer image, int row)
     {
-        var bits = new BbBitRow(image.Width);
-        Assert.IsTrue(new BbAdaptiveRowBinarizer().TryGetBlackRow(image.View, row, bits));
+        var bits = new BbScannerBitRow(image.Width);
+        Assert.IsTrue(new BbScannerAdaptiveRowBinarizer().TryGetBlackRow(image.View, row, bits));
         return bits;
     }
 
-    private static BbSymbolDecodeResult? DecodeMiddle(IBbRowDecoder decoder, BbLuminanceBuffer image, BbBarcodeFormat formats)
+    private static BbScannerSymbolDecodeResult? DecodeMiddle(IBbScannerRowDecoder decoder, BbScannerLuminanceBuffer image, BbScannerBarcodeFormat formats)
     {
         var middle = image.Height / 2;
         return decoder.DecodeRow(middle, Binarize(image, middle), formats);
@@ -30,14 +30,14 @@ public class LinearMisreadTests
     /// of the image width instead would usually destroy the guard patterns and the symbol would
     /// be rejected for a reason that has nothing to do with truncation.
     /// </remarks>
-    private static BbLuminanceBuffer RenderCutAtModule(bool[] modules, int cut, bool fromLeft, int scale = 3)
+    private static BbScannerLuminanceBuffer RenderCutAtModule(bool[] modules, int cut, bool fromLeft, int scale = 3)
     {
         const int Quiet = 12;
         const int Height = 40;
 
         var kept = fromLeft ? modules[cut..] : modules[..cut];
         var width = (kept.Length + Quiet) * scale;
-        var buffer = BbLuminanceBuffer.Rent(width, Height);
+        var buffer = BbScannerLuminanceBuffer.Rent(width, Height);
         buffer.Pixels.Fill(255);
 
         var offset = fromLeft ? 0 : Quiet * scale;
@@ -63,7 +63,7 @@ public class LinearMisreadTests
     /// still decoded to something other than the true value.
     /// </summary>
     private static List<string> CollectTruncatedReads(
-        Func<IBbRowDecoder> decoderFactory, bool[] modules, string expected, BbBarcodeFormat format)
+        Func<IBbScannerRowDecoder> decoderFactory, bool[] modules, string expected, BbScannerBarcodeFormat format)
     {
         var misreads = new List<string>();
 
@@ -75,8 +75,8 @@ public class LinearMisreadTests
 
                 // A cut that leaves too little of the symbol to binarise cannot be misread either.
                 var middle = image.Height / 2;
-                var bits = new BbBitRow(image.Width);
-                if (!new BbAdaptiveRowBinarizer().TryGetBlackRow(image.View, middle, bits))
+                var bits = new BbScannerBitRow(image.Width);
+                if (!new BbScannerAdaptiveRowBinarizer().TryGetBlackRow(image.View, middle, bits))
                 {
                     continue;
                 }
@@ -100,7 +100,7 @@ public class LinearMisreadTests
         // the frame, this swept up thirteen distinct wrong numbers, among them "1234567890"
         // and "78901231" from the value below.
         const string Digits = "12345678901231";
-        var misreads = CollectTruncatedReads(() => new BbItfReader(), LinearEncoders.Itf(Digits), Digits, BbBarcodeFormat.Itf);
+        var misreads = CollectTruncatedReads(() => new BbScannerItfReader(), LinearEncoders.Itf(Digits), Digits, BbScannerBarcodeFormat.Itf);
 
         Assert.IsEmpty(misreads);
     }
@@ -110,7 +110,7 @@ public class LinearMisreadTests
     {
         const string Content = "SHIPMENT-4471";
         var misreads = CollectTruncatedReads(
-            () => new BbCode39Reader(), LinearEncoders.Code39(Content), Content, BbBarcodeFormat.Code39);
+            () => new BbScannerCode39Reader(), LinearEncoders.Code39(Content), Content, BbScannerBarcodeFormat.Code39);
 
         Assert.IsEmpty(misreads);
     }
@@ -120,7 +120,7 @@ public class LinearMisreadTests
     {
         const string Content = "SHIPMENT-4471";
         var misreads = CollectTruncatedReads(
-            () => new BbCode128Reader(), LinearEncoders.Code128(Content), Content, BbBarcodeFormat.Code128);
+            () => new BbScannerCode128Reader(), LinearEncoders.Code128(Content), Content, BbScannerBarcodeFormat.Code128);
 
         Assert.IsEmpty(misreads);
     }
@@ -130,7 +130,7 @@ public class LinearMisreadTests
     {
         const string Digits = "4006381333931";
         var misreads = CollectTruncatedReads(
-            () => new BbEanUpcReader(), LinearEncoders.Ean13(Digits), Digits, BbBarcodeFormat.All);
+            () => new BbScannerEanUpcReader(), LinearEncoders.Ean13(Digits), Digits, BbScannerBarcodeFormat.All);
 
         Assert.IsEmpty(misreads);
     }
@@ -142,7 +142,7 @@ public class LinearMisreadTests
         // zones beyond them stand between a scan line that leaves the symbol early and a shorter wrong value.
         var symbol = ReferenceSymbols.Get("codabar-library");
         var misreads = CollectTruncatedReads(
-            () => new BbCodabarReader(), SyntheticImage.ExpandWidths(symbol.Widths), symbol.Expected!, BbBarcodeFormat.Codabar);
+            () => new BbScannerCodabarReader(), SyntheticImage.ExpandWidths(symbol.Widths), symbol.Expected!, BbScannerBarcodeFormat.Codabar);
 
         Assert.IsEmpty(misreads);
     }
@@ -154,7 +154,7 @@ public class LinearMisreadTests
         // is read as a different one, from its finder patterns and whatever print the line runs into.
         var symbol = ReferenceSymbols.Get("databar-omni-1");
         var misreads = CollectTruncatedReads(
-            () => new BbDataBarReader(), SyntheticImage.ExpandWidths(symbol.Widths), symbol.Expected!, BbBarcodeFormat.DataBar);
+            () => new BbScannerDataBarReader(), SyntheticImage.ExpandWidths(symbol.Widths), symbol.Expected!, BbScannerBarcodeFormat.DataBar);
 
         Assert.IsEmpty(misreads);
     }
@@ -175,15 +175,15 @@ public class LinearMisreadTests
         }
 
         var expected = "01" + Gtin[..13] + LinearEncoders.EanCheckDigit(Gtin[..13]);
-        var spotted = DecodeMiddle(new BbDataBarReader(), image, BbBarcodeFormat.DataBar)?.Payload.Text;
+        var spotted = DecodeMiddle(new BbScannerDataBarReader(), image, BbScannerBarcodeFormat.DataBar)?.Payload.Text;
         Assert.IsNotNull(spotted, "The spot no longer makes the middle row read anything, so this test no longer tests.");
         Assert.AreNotEqual(expected, spotted, "The spot no longer makes the middle row misread, so this test no longer tests.");
 
         foreach (var options in new[] { new BbScannerOptions(), BbScannerOptions.ForStillImages() })
         {
-            options.Formats = BbBarcodeFormat.DataBar;
+            options.Formats = BbScannerBarcodeFormat.DataBar;
             options.DuplicateSuppressionWindow = TimeSpan.Zero;
-            using var decoder = new BbBarcodeDecoder(options);
+            using var decoder = new BbScannerBarcodeDecoder(options);
             var text = decoder.Decode(image.View, suppressDuplicates: false)?.Text;
             Assert.IsTrue(text is null || text == expected, $"Read {text} for {expected}.");
         }
@@ -209,9 +209,9 @@ public class LinearMisreadTests
                 using var blurred = blur == 0 ? null : ImageTransforms.Blur(rotated, blur);
                 foreach (var options in new[] { new BbScannerOptions(), BbScannerOptions.ForStillImages() })
                 {
-                    options.Formats = BbBarcodeFormat.DataBar;
+                    options.Formats = BbScannerBarcodeFormat.DataBar;
                     options.DuplicateSuppressionWindow = TimeSpan.Zero;
-                    using var decoder = new BbBarcodeDecoder(options);
+                    using var decoder = new BbScannerBarcodeDecoder(options);
                     if (decoder.Decode((blurred ?? rotated).View, suppressDuplicates: false)?.Text is { } text && text != expected)
                     {
                         wrong.Add($"blur {blur}, {degrees} degrees: {text}");
@@ -265,13 +265,13 @@ public class LinearMisreadTests
                 }
             }
 
-            void Check(BbLuminanceBuffer image, string what)
+            void Check(BbScannerLuminanceBuffer image, string what)
             {
                 foreach (var options in new[] { new BbScannerOptions(), BbScannerOptions.ForStillImages() })
                 {
-                    options.Formats = BbBarcodeFormat.DataBar;
+                    options.Formats = BbScannerBarcodeFormat.DataBar;
                     options.DuplicateSuppressionWindow = TimeSpan.Zero;
-                    using var decoder = new BbBarcodeDecoder(options);
+                    using var decoder = new BbScannerBarcodeDecoder(options);
                     attempts++;
                     if (decoder.Decode(image.View, suppressDuplicates: false)?.Text is not { } text)
                     {
@@ -299,7 +299,7 @@ public class LinearMisreadTests
         // of modules wide is not rounded the other way to put that right: that would leave the modulo 79 checksum
         // alone between the damage and a wrong GTIN. Every edge of every fixture is moved both ways.
         var misreads = new List<string>();
-        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbBarcodeFormat.DataBar && s.IsLinear))
+        foreach (var symbol in ReferenceSymbols.All.Where(s => s.BarcodeFormat == BbScannerBarcodeFormat.DataBar && s.IsLinear))
         {
             var widths = symbol.Widths!;
             for (var edge = 1; edge + 1 < widths.Length; edge++)
@@ -315,7 +315,7 @@ public class LinearMisreadTests
                     }
 
                     using var image = SyntheticImage.FromLinear(SyntheticImage.ExpandWidths(damaged), scale: 3, height: 30);
-                    var result = DecodeMiddle(new BbDataBarReader(), image, BbBarcodeFormat.DataBar);
+                    var result = DecodeMiddle(new BbScannerDataBarReader(), image, BbScannerBarcodeFormat.DataBar);
                     if (result is not null && result.Payload.Text != symbol.Expected)
                     {
                         misreads.Add($"{symbol.Id}, edge {edge} moved {shift}: {result.Payload.Text}");
@@ -332,7 +332,7 @@ public class LinearMisreadTests
     {
         var symbol = ReferenceSymbols.Get("code93");
         var misreads = CollectTruncatedReads(
-            () => new BbCode93Reader(), SyntheticImage.ExpandWidths(symbol.Widths), symbol.Expected!, BbBarcodeFormat.Code93);
+            () => new BbScannerCode93Reader(), SyntheticImage.ExpandWidths(symbol.Widths), symbol.Expected!, BbScannerBarcodeFormat.Code93);
 
         Assert.IsEmpty(misreads);
     }
@@ -347,7 +347,7 @@ public class LinearMisreadTests
         for (var cut = 96; cut < modules.Length; cut++)
         {
             using var image = RenderCutAtModule(modules, cut, fromLeft: false);
-            var result = DecodeMiddle(new BbEanUpcReader(), image, BbBarcodeFormat.Ean13);
+            var result = DecodeMiddle(new BbScannerEanUpcReader(), image, BbScannerBarcodeFormat.Ean13);
             if (result?.Payload.Extension is { } extension && extension != symbol.Extension)
             {
                 wrong.Add($"cut at {cut}: {extension}");
@@ -357,7 +357,7 @@ public class LinearMisreadTests
         Assert.IsEmpty(wrong);
 
         using var whole = SyntheticImage.FromLinear(modules, scale: 3, height: 40);
-        Assert.AreEqual(symbol.Extension, DecodeMiddle(new BbEanUpcReader(), whole, BbBarcodeFormat.Ean13)?.Payload.Extension);
+        Assert.AreEqual(symbol.Extension, DecodeMiddle(new BbScannerEanUpcReader(), whole, BbScannerBarcodeFormat.Ean13)?.Payload.Extension);
     }
 
     [TestMethod]
@@ -366,24 +366,24 @@ public class LinearMisreadTests
         var symbol = ReferenceSymbols.Get("ean13");
         using var image = SyntheticImage.FromLinear(SyntheticImage.ExpandWidths(symbol.Widths), scale: 3, height: 40);
 
-        Assert.IsNotNull(DecodeMiddle(new BbEanUpcReader(), image, BbBarcodeFormat.Ean13));
-        Assert.IsNull(DecodeMiddle(new BbEanUpcReader(requireExtension: true), image, BbBarcodeFormat.Ean13));
+        Assert.IsNotNull(DecodeMiddle(new BbScannerEanUpcReader(), image, BbScannerBarcodeFormat.Ean13));
+        Assert.IsNull(DecodeMiddle(new BbScannerEanUpcReader(requireExtension: true), image, BbScannerBarcodeFormat.Ean13));
     }
 
     [TestMethod]
     public void IntactSymbolsStillDecodeAfterTheTruncationGuards()
     {
         using var itf = SyntheticImage.FromLinear(LinearEncoders.Itf("12345678901231"), scale: 3, height: 40);
-        Assert.AreEqual("12345678901231", DecodeMiddle(new BbItfReader(), itf, BbBarcodeFormat.Itf)?.Payload.Text);
+        Assert.AreEqual("12345678901231", DecodeMiddle(new BbScannerItfReader(), itf, BbScannerBarcodeFormat.Itf)?.Payload.Text);
 
         using var code39 = SyntheticImage.FromLinear(LinearEncoders.Code39("SHIPMENT-4471"), scale: 3, height: 40);
-        Assert.AreEqual("SHIPMENT-4471", DecodeMiddle(new BbCode39Reader(), code39, BbBarcodeFormat.Code39)?.Payload.Text);
+        Assert.AreEqual("SHIPMENT-4471", DecodeMiddle(new BbScannerCode39Reader(), code39, BbScannerBarcodeFormat.Code39)?.Payload.Text);
 
         using var code128 = SyntheticImage.FromLinear(LinearEncoders.Code128("SHIPMENT-4471"), scale: 3, height: 40);
-        Assert.AreEqual("SHIPMENT-4471", DecodeMiddle(new BbCode128Reader(), code128, BbBarcodeFormat.Code128)?.Payload.Text);
+        Assert.AreEqual("SHIPMENT-4471", DecodeMiddle(new BbScannerCode128Reader(), code128, BbScannerBarcodeFormat.Code128)?.Payload.Text);
 
         using var ean = SyntheticImage.FromLinear(LinearEncoders.Ean13("4006381333931"), scale: 3, height: 40);
-        Assert.AreEqual("4006381333931", DecodeMiddle(new BbEanUpcReader(), ean, BbBarcodeFormat.All)?.Payload.Text);
+        Assert.AreEqual("4006381333931", DecodeMiddle(new BbScannerEanUpcReader(), ean, BbScannerBarcodeFormat.All)?.Payload.Text);
     }
 
     [TestMethod]
@@ -391,8 +391,8 @@ public class LinearMisreadTests
     {
         using var image = SyntheticImage.FromLinear(LinearEncoders.Itf("1234567890"), scale: 3, height: 40);
 
-        Assert.IsNull(DecodeMiddle(new BbItfReader([14]), image, BbBarcodeFormat.Itf));
-        Assert.IsNotNull(DecodeMiddle(new BbItfReader([10]), image, BbBarcodeFormat.Itf));
+        Assert.IsNull(DecodeMiddle(new BbScannerItfReader([14]), image, BbScannerBarcodeFormat.Itf));
+        Assert.IsNotNull(DecodeMiddle(new BbScannerItfReader([10]), image, BbScannerBarcodeFormat.Itf));
     }
 
     [TestMethod]
@@ -429,7 +429,7 @@ public class LinearMisreadTests
             }
 
             using var image = SyntheticImage.FromLinear(modules, scale: 3, height: 40);
-            var result = DecodeMiddle(new BbEanUpcReader(), image, BbBarcodeFormat.All);
+            var result = DecodeMiddle(new BbScannerEanUpcReader(), image, BbScannerBarcodeFormat.All);
 
             if (result is not null && result.Payload.Text != digits)
             {
@@ -463,15 +463,15 @@ public class LinearMisreadTests
             image.Pixels.Slice((y * image.Width) + scratchStart, 14 * 3).Fill(255);
         }
 
-        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        using var decoder = new BbScannerBarcodeDecoder(new BbScannerOptions
         {
-            Formats = BbBarcodeFormat.Ean13 | BbBarcodeFormat.UpcE,
+            Formats = BbScannerBarcodeFormat.Ean13 | BbScannerBarcodeFormat.UpcE,
             DuplicateSuppressionWindow = TimeSpan.Zero,
         });
 
         var result = decoder.Decode(image.View, suppressDuplicates: false);
         Assert.IsNotNull(result);
-        Assert.AreEqual(BbBarcodeFormat.Ean13, result.Format);
+        Assert.AreEqual(BbScannerBarcodeFormat.Ean13, result.Format);
         Assert.AreEqual(Digits, result.Text);
     }
 
@@ -483,7 +483,7 @@ public class LinearMisreadTests
         var modules = LinearEncoders.Code39("ABC", wideRatio: 1);
         using var image = SyntheticImage.FromLinear(modules, scale: 5, height: 40);
 
-        Assert.IsNull(DecodeMiddle(new BbCode39Reader(), image, BbBarcodeFormat.Code39));
+        Assert.IsNull(DecodeMiddle(new BbScannerCode39Reader(), image, BbScannerBarcodeFormat.Code39));
     }
 
     [TestMethod]
@@ -502,12 +502,12 @@ public class LinearMisreadTests
         using var valid = SyntheticImage.FromLinear(LinearEncoders.Code39(Content + check), scale: 3, height: 40);
         using var invalid = SyntheticImage.FromLinear(LinearEncoders.Code39(Content + "Z"), scale: 3, height: 40);
 
-        var reader = new BbCode39Reader(validateCheckCharacter: true);
-        var accepted = DecodeMiddle(reader, valid, BbBarcodeFormat.Code39);
+        var reader = new BbScannerCode39Reader(validateCheckCharacter: true);
+        var accepted = DecodeMiddle(reader, valid, BbScannerBarcodeFormat.Code39);
         Assert.IsNotNull(accepted);
         Assert.AreEqual(Content, accepted.Payload.Text);
 
-        Assert.IsNull(DecodeMiddle(reader, invalid, BbBarcodeFormat.Code39));
+        Assert.IsNull(DecodeMiddle(reader, invalid, BbScannerBarcodeFormat.Code39));
     }
 
     [TestMethod]
@@ -516,7 +516,7 @@ public class LinearMisreadTests
         // Full ASCII encodes a lower case letter as a "+" escape followed by the upper case one.
         using var image = SyntheticImage.FromLinear(LinearEncoders.Code39("+A+B+C"), scale: 3, height: 40);
 
-        var result = DecodeMiddle(new BbCode39Reader(extendedMode: true), image, BbBarcodeFormat.Code39);
+        var result = DecodeMiddle(new BbScannerCode39Reader(extendedMode: true), image, BbScannerBarcodeFormat.Code39);
 
         Assert.IsNotNull(result);
         Assert.AreEqual("abc", result.Payload.Text);
@@ -528,15 +528,15 @@ public class LinearMisreadTests
         // Every linear decoder runs on every scan line of every camera frame, most of which are
         // noise. One accepted row in a million is a wrong value handed to an application.
         var random = new Random(4242);
-        var decoders = new IBbRowDecoder[]
+        var decoders = new IBbScannerRowDecoder[]
         {
-            new BbCode128Reader(), new BbCode39Reader(), new BbEanUpcReader(), new BbItfReader(),
-            new BbCode93Reader(), new BbCodabarReader(), new BbCodabarReader(keepStartStop: true), new BbEanUpcReader(requireExtension: true),
-            new BbDataBarReader(),
+            new BbScannerCode128Reader(), new BbScannerCode39Reader(), new BbScannerEanUpcReader(), new BbScannerItfReader(),
+            new BbScannerCode93Reader(), new BbScannerCodabarReader(), new BbScannerCodabarReader(keepStartStop: true), new BbScannerEanUpcReader(requireExtension: true),
+            new BbScannerDataBarReader(),
         };
 
         var accepted = new List<string>();
-        var row = new BbBitRow(640);
+        var row = new BbScannerBitRow(640);
 
         for (var attempt = 0; attempt < 20_000; attempt++)
         {
@@ -557,7 +557,7 @@ public class LinearMisreadTests
 
             foreach (var decoder in decoders)
             {
-                var result = decoder.DecodeRow(0, row, BbBarcodeFormat.All);
+                var result = decoder.DecodeRow(0, row, BbScannerBarcodeFormat.All);
                 if (result is not null)
                 {
                     accepted.Add($"{result.Format}: {result.Payload.Text}");
@@ -572,16 +572,16 @@ public class LinearMisreadTests
     public void EveryLinearDecoderSurvivesAdversarialRowsWithoutThrowing()
     {
         var random = new Random(7);
-        var decoders = new IBbRowDecoder[]
+        var decoders = new IBbScannerRowDecoder[]
         {
-            new BbCode128Reader(), new BbCode39Reader(), new BbEanUpcReader(), new BbItfReader(),
-            new BbCode93Reader(), new BbCodabarReader(), new BbCodabarReader(keepStartStop: true), new BbEanUpcReader(requireExtension: true),
-            new BbDataBarReader(),
+            new BbScannerCode128Reader(), new BbScannerCode39Reader(), new BbScannerEanUpcReader(), new BbScannerItfReader(),
+            new BbScannerCode93Reader(), new BbScannerCodabarReader(), new BbScannerCodabarReader(keepStartStop: true), new BbScannerEanUpcReader(requireExtension: true),
+            new BbScannerDataBarReader(),
         };
 
         foreach (var size in new[] { 1, 2, 3, 31, 32, 33, 64, 257 })
         {
-            var row = new BbBitRow(size);
+            var row = new BbScannerBitRow(size);
             for (var attempt = 0; attempt < 200; attempt++)
             {
                 row.Reset(size);
@@ -593,9 +593,9 @@ public class LinearMisreadTests
                 foreach (var decoder in decoders)
                 {
                     // The contract is that a decoder reports failure by returning null.
-                    decoder.DecodeRow(0, row, BbBarcodeFormat.All);
+                    decoder.DecodeRow(0, row, BbScannerBarcodeFormat.All);
                     row.Reverse();
-                    decoder.DecodeRow(0, row, BbBarcodeFormat.All);
+                    decoder.DecodeRow(0, row, BbScannerBarcodeFormat.All);
                     row.Reverse();
                 }
             }

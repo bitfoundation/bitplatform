@@ -17,7 +17,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Named states</h3>
     <p>
-        Declare the states in a <strong>BmVariants</strong> dictionary and select one with the
+        Declare the states in a <strong>BmotionVariants</strong> dictionary and select one with the
         razor-literal-friendly <code>State</code> and <code>InitialState</code> parameters. The
         list below sets <code>State</code> on the container only; each row carries its own
         variants and picks up the active name automatically.
@@ -61,7 +61,7 @@
         a spring while the container itself simply fades.
     </p>
     <p>
-        <code>when: BmWhen.BeforeChildren</code> is the same idea without the magic number: instead
+        <code>when: BmotionWhen.BeforeChildren</code> is the same idea without the magic number: instead
         of guessing a <code>delayChildren</code> that happens to match the container's duration, the
         children are held back <em>by</em> that duration - and stay correct when you change it.
         The right-hand card is the same cascade ordered that way, and the middle one has one row cut
@@ -110,7 +110,7 @@
             <Bmotion Variants="_containerVariants"
                     InitialState="hidden"
                     State='@(_visible2 ? "visible" : "hidden")'
-                    Transition="Bm.Tween(0.5, staggerChildren: 0.12, when: BmWhen.BeforeChildren)">
+                    Transition="Bm.Tween(0.5, staggerChildren: 0.12, when: BmotionWhen.BeforeChildren)">
                 <div class="variant-boxes">
                     @for (int i = 0; i < 4; i++)
                     {
@@ -127,7 +127,7 @@
             <Bmotion Variants="_fadeVariants"
                     InitialState="hidden"
                     State='@(_visible2 ? "visible" : "hidden")'
-                    Transition="Bm.Tween(0.4, staggerChildren: 0.12, when: BmWhen.AfterChildren)">
+                    Transition="Bm.Tween(0.4, staggerChildren: 0.12, when: BmotionWhen.AfterChildren)">
                 <div class="variant-boxes">
                     @for (int i = 0; i < 4; i++)
                     {
@@ -167,7 +167,7 @@
             <span class="demo-label">from: Last</span>
             <Bmotion Variants="_containerVariants" InitialState="hidden"
                     State='@(_visible2 ? "visible" : "hidden")'
-                    Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09, from: BmStaggerFrom.Last))">
+                    Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09, from: BmotionStaggerFrom.Last))">
                 <div class="variant-boxes">
                     @for (int i = 0; i < 5; i++)
                     {
@@ -181,7 +181,7 @@
             <span class="demo-label">from: Center</span>
             <Bmotion Variants="_containerVariants" InitialState="hidden"
                     State='@(_visible2 ? "visible" : "hidden")'
-                    Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09, from: BmStaggerFrom.Center))">
+                    Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09, from: BmotionStaggerFrom.Center))">
                 <div class="variant-boxes">
                     @for (int i = 0; i < 5; i++)
                     {
@@ -244,7 +244,7 @@
         <code>State</code> is not the only way in. Every target parameter - <code>Initial</code>,
         <code>Animate</code>, <code>Exit</code>, <code>WhileHover</code>, <code>WhileTap</code>,
         <code>WhileFocus</code>, <code>WhileInView</code>, <code>WhileDrag</code> - takes a variant name as readily
-        as a <code>Bm.To(...)</code>, so a component can keep all of its looks in one <code>BmVariants</code> and
+        as a <code>Bm.To(...)</code>, so a component can keep all of its looks in one <code>BmotionVariants</code> and
         refer to each by name. Those parameters read their value as C#, so the name goes in as a string
         expression - <code>WhileHover="@@("hover")"</code>; <code>State</code> and <code>InitialState</code> are
         plain strings, which is why they exist. A gesture's name resolves against the element's own variants (or,
@@ -303,11 +303,11 @@
     private bool _visible2 = true;
     private bool _fanned;
 
-    private Task RippleAsync() => RippleAsync(BmStaggerFrom.Center);
+    private Task RippleAsync() => RippleAsync(BmotionStaggerFrom.Center);
 
-    private Task RippleFromFirstAsync() => RippleAsync(BmStaggerFrom.First);
+    private Task RippleFromFirstAsync() => RippleAsync(BmotionStaggerFrom.First);
 
-    private async Task RippleAsync(BmStaggerFrom from)
+    private async Task RippleAsync(BmotionStaggerFrom from)
     {
         await Motion.AnimateAsync(
             ".grid-dot",
@@ -316,7 +316,7 @@
             stagger: Bm.Stagger(0.04, from: from, grid: (6, 6)));
     }
 
-    private readonly BmVariants _containerVariants = new()
+    private readonly BmotionVariants _containerVariants = new()
     {
         ["hidden"]  = Bm.To(opacity: 0),
         ["visible"] = Bm.To(opacity: 1),
@@ -324,26 +324,26 @@
 
     // The AfterChildren container animates last, so it needs a state change you can still see once
     // its contents have already arrived - a fade alone would be invisible behind opaque children.
-    private readonly BmVariants _fadeVariants = new()
+    private readonly BmotionVariants _fadeVariants = new()
     {
         ["hidden"]  = Bm.To(opacity: 0.15, scale: 0.94),
         ["visible"] = Bm.To(opacity: 1, scale: 1),
     };
 
-    private readonly BmVariants _itemVariants = new()
+    private readonly BmotionVariants _itemVariants = new()
     {
         ["hidden"]  = Bm.To(opacity: 0, x: -30),
         ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300, damping: 24)),
     };
 
     // One component's looks, each named once and picked by State or by a gesture.
-    private readonly BmVariants _cardVariants = BmVariants.Create(
+    private readonly BmotionVariants _cardVariants = BmotionVariants.Create(
         ("rest", Bm.To(scale: 1, rotate: 0, y: 0)),
         ("hover", Bm.To(scale: 1.08, rotate: -4, y: -6)),
         ("press", Bm.To(scale: 0.92, rotate: 0, y: 0)));
 
     // Dynamic variants: one named state, resolved per element against that element's Custom value.
-    private readonly BmVariants _fanVariants = new BmVariants()
+    private readonly BmotionVariants _fanVariants = new BmotionVariants()
         .Add("closed", Bm.To(x: 0, rotate: 0, y: 0))
         .Add("open", custom =>
         {
@@ -367,8 +367,8 @@
         @* Animate="@("visible")" is the same as State="visible"; Exit="@("gone")" works too. *@
 
         @code {
-            // BmVariants.Create takes (name, target) pairs - the same as the dictionary initializer.
-            private readonly BmVariants _card = BmVariants.Create(
+            // BmotionVariants.Create takes (name, target) pairs - the same as the dictionary initializer.
+            private readonly BmotionVariants _card = BmotionVariants.Create(
                 ("rest",  Bm.To(scale: 1, rotate: 0, y: 0)),
                 ("hover", Bm.To(scale: 1.08, rotate: -4, y: -6)),
                 ("press", Bm.To(scale: 0.92, rotate: 0, y: 0)));
@@ -390,7 +390,7 @@
                 await Motion.AnimateAsync(".grid-dot",
                     Bm.To(scale: [1, 1.6, 1]),
                     Bm.Spring(stiffness: 400, damping: 18),
-                    stagger: Bm.Stagger(0.04, from: BmStaggerFrom.Center, grid: (6, 6)));
+                    stagger: Bm.Stagger(0.04, from: BmotionStaggerFrom.Center, grid: (6, 6)));
         }
         """;
 
@@ -441,13 +441,13 @@
         @code {
             private bool _visible = true;
 
-            private readonly BmVariants _containerVariants = new()
+            private readonly BmotionVariants _containerVariants = new()
             {
                 ["hidden"]  = Bm.To(opacity: 0),
                 ["visible"] = Bm.To(opacity: 1),
             };
 
-            private readonly BmVariants _itemVariants = new()
+            private readonly BmotionVariants _itemVariants = new()
             {
                 ["hidden"]  = Bm.To(opacity: 0, x: -30),
                 // A variant can embed its own transition; it wins over the component's.
@@ -485,7 +485,7 @@
         <Bmotion Variants="_containerVariants"
                  InitialState="hidden"
                  State='@(_visible ? "visible" : "hidden")'
-                 Transition="Bm.Tween(0.5, staggerChildren: 0.12, when: BmWhen.BeforeChildren)">
+                 Transition="Bm.Tween(0.5, staggerChildren: 0.12, when: BmotionWhen.BeforeChildren)">
             <div style="display:flex;gap:.5rem">
                 @for (int i = 0; i < 4; i++)
                 {
@@ -501,7 +501,7 @@
         <Bmotion Variants="_fadeVariants"
                  InitialState="hidden"
                  State='@(_visible ? "visible" : "hidden")'
-                 Transition="Bm.Tween(0.4, staggerChildren: 0.12, when: BmWhen.AfterChildren)">
+                 Transition="Bm.Tween(0.4, staggerChildren: 0.12, when: BmotionWhen.AfterChildren)">
             <div style="display:flex;gap:.5rem">
                 @for (int i = 0; i < 4; i++)
                 {
@@ -515,7 +515,7 @@
         <Bmotion Variants="_containerVariants"
                  InitialState="hidden"
                  State='@(_visible ? "visible" : "hidden")'
-                 Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09, from: BmStaggerFrom.Center))">
+                 Transition="Bm.Tween(0.3, childStagger: Bm.Stagger(0.09, from: BmotionStaggerFrom.Center))">
             <div style="display:flex;gap:.5rem">
                 @for (int i = 0; i < 5; i++)
                 {
@@ -529,13 +529,13 @@
         @code {
             private bool _visible = true;
 
-            private readonly BmVariants _containerVariants = new()
+            private readonly BmotionVariants _containerVariants = new()
             {
                 ["hidden"]  = Bm.To(opacity: 0),
                 ["visible"] = Bm.To(opacity: 1),
             };
 
-            private readonly BmVariants _fadeVariants = new()
+            private readonly BmotionVariants _fadeVariants = new()
             {
                 ["hidden"]  = Bm.To(opacity: 0.15, scale: 0.94),
                 ["visible"] = Bm.To(opacity: 1, scale: 1),
@@ -543,7 +543,7 @@
 
             // A variant can carry its own transition: the rows land on a spring while the
             // containers simply fade.
-            private readonly BmVariants _itemVariants = new()
+            private readonly BmotionVariants _itemVariants = new()
             {
                 ["hidden"]  = Bm.To(opacity: 0, x: -30),
                 ["visible"] = Bm.To(opacity: 1, x: 0, transition: Bm.Spring(stiffness: 300, damping: 24)),
@@ -570,7 +570,7 @@
         @code {
             private bool _fanned;
 
-            private readonly BmVariants _fanVariants = new BmVariants()
+            private readonly BmotionVariants _fanVariants = new BmotionVariants()
                 .Add("closed", Bm.To(x: 0, rotate: 0, y: 0))
                 .Add("open", custom =>
                 {

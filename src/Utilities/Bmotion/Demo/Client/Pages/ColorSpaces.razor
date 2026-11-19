@@ -19,8 +19,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> sRGB and OKLab side by side</h3>
     <p>
         sRGB is the default, matching Framer Motion. Opt into the perceptual space per transition
-        with <code>colorSpace: BmColorSpace.Oklab</code>, or for a whole subtree with
-        <code>&lt;BmotionConfig ColorSpace="BmColorSpace.Oklab"&gt;</code>. The pairs below run the
+        with <code>colorSpace: BmotionColorSpace.Oklab</code>, or for a whole subtree with
+        <code>&lt;BmotionConfig ColorSpace="BmotionColorSpace.Oklab"&gt;</code>. The pairs below run the
         same transition over the same 1.6&nbsp;s - watch the middle of each run, not the endpoints,
         which are identical by definition.
     </p>
@@ -39,7 +39,7 @@
                     </div>
                     <div class="swatch-cell">
                         <Bmotion Animate="@(_on ? pair.To : pair.From)"
-                                 Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Oklab)">
+                                 Transition="Bm.Tween(1.6, colorSpace: BmotionColorSpace.Oklab)">
                             <div class="swatch" style="@($"background:{pair.FromCss}")" />
                         </Bmotion>
                         <span class="demo-label">OKLab</span>
@@ -59,7 +59,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> For a whole subtree</h3>
     <p>
-        <code>&lt;BmotionConfig ColorSpace="BmColorSpace.Oklab"&gt;</code> sets the space for every colour
+        <code>&lt;BmotionConfig ColorSpace="BmotionColorSpace.Oklab"&gt;</code> sets the space for every colour
         animation inside it that doesn't choose its own - colour keyframes included, so a palette cycle passes
         clean mid-points at every step. A transition that sets its own <code>colorSpace</code> still wins inside
         it, so one exception needs no second config. Both orbs below cycle through the same four stops on the
@@ -69,14 +69,14 @@
     <div class="demo-row">
         <div class="demo-card stack">
             <span class="demo-label">no config &middot; sRGB</span>
-            <Bmotion Animate="_palette" Transition="Bm.Tween(4.5, BmEase.Linear, repeat: BmRepeat.Forever)">
+            <Bmotion Animate="_palette" Transition="Bm.Tween(4.5, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                 <div class="box color-orb" style="background-color:#0000FF" />
             </Bmotion>
         </div>
         <div class="demo-card stack">
             <span class="demo-label">inside BmotionConfig ColorSpace="Oklab"</span>
-            <BmotionConfig ColorSpace="BmColorSpace.Oklab">
-                <Bmotion Animate="_palette" Transition="Bm.Tween(4.5, BmEase.Linear, repeat: BmRepeat.Forever)">
+            <BmotionConfig ColorSpace="BmotionColorSpace.Oklab">
+                <Bmotion Animate="_palette" Transition="Bm.Tween(4.5, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                     <div class="box color-orb" style="background-color:#0000FF" />
                 </Bmotion>
             </BmotionConfig>
@@ -106,7 +106,7 @@
     private bool _on;
 
     /// <summary>One comparison: the two ends of the transition, plus the CSS the swatch starts in.</summary>
-    private sealed record ColorPair(string Label, string FromCss, BmProps From, BmProps To);
+    private sealed record ColorPair(string Label, string FromCss, BmotionProps From, BmotionProps To);
 
     private static ColorPair Pair(string label, string from, string to)
         => new(label, from, Bm.To(backgroundColor: from), Bm.To(backgroundColor: to));
@@ -119,22 +119,22 @@
     ];
 
     // A palette cycle: blue, yellow, red and back to blue, so each loop arrives where the next begins.
-    private static readonly BmProps _palette = Bm.To(backgroundColor: ["#0000FF", "#FFDD00", "#E01B24", "#0000FF"]);
+    private static readonly BmotionProps _palette = Bm.To(backgroundColor: ["#0000FF", "#FFDD00", "#E01B24", "#0000FF"]);
 
     private const string _configCode = """
         @using Bit.Bmotion
 
         @* Every colour animation inside picks OKLab unless its transition names a space itself -
            keyframe palettes included. *@
-        <BmotionConfig ColorSpace="BmColorSpace.Oklab">
+        <BmotionConfig ColorSpace="BmotionColorSpace.Oklab">
             <Bmotion Animate='Bm.To(backgroundColor: ["#0000FF", "#FFDD00", "#E01B24", "#0000FF"])'
-                     Transition="Bm.Tween(4.5, BmEase.Linear, repeat: BmRepeat.Forever)">
+                     Transition="Bm.Tween(4.5, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                 <div class="orb" style="background-color:#0000FF" />
             </Bmotion>
 
             @* The exception: this one keeps sRGB without leaving the config. *@
             <Bmotion Animate='Bm.To(backgroundColor: "#FFDD00")'
-                     Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Srgb)">
+                     Transition="Bm.Tween(1.6, colorSpace: BmotionColorSpace.Srgb)">
                 <div class="orb" style="background-color:#0000FF" />
             </Bmotion>
         </BmotionConfig>
@@ -145,13 +145,13 @@
 
         @* Per-transition. sRGB is the default, matching Framer Motion. *@
         <Bmotion Animate='@(_on ? Bm.To(backgroundColor: "#FFDD00") : Bm.To(backgroundColor: "#0000FF"))'
-                 Transition="Bm.Tween(1.6, colorSpace: BmColorSpace.Oklab)">
+                 Transition="Bm.Tween(1.6, colorSpace: BmotionColorSpace.Oklab)">
             <div class="swatch" style="background:#0000FF" />
         </Bmotion>
         <button @onclick="@(() => _on = !_on)">Cross-fade</button>
 
         @* …or once, for a whole subtree. *@
-        <BmotionConfig ColorSpace="BmColorSpace.Oklab">
+        <BmotionConfig ColorSpace="BmotionColorSpace.Oklab">
             ...
         </BmotionConfig>
 

@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// Builds and caches fast compiled delegates to read and write a property on
 /// <typeparamref name="TItem"/> by name, supporting nested paths like "Address.City".
 /// </summary>
-public sealed class BitDataGridPropertyAccessor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>
+internal sealed class BitDataGridPropertyAccessor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>
 {
     // Build() resolves members with BindingFlags.IgnoreCase, so logically identical paths that differ only
     // in casing ("Address.City" vs "address.city") map to the same member. Key the cache case-insensitively

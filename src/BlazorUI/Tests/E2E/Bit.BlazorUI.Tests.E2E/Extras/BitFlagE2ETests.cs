@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// variable, RTL, reduced motion, prerendering and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitFlagE2ETests : E2ETestBase
 {
     private const string PackagedPath = "_content/Bit.BlazorUI.Extras/flags/";

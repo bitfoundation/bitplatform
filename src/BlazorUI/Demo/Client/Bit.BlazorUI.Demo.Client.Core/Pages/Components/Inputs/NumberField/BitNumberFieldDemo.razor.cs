@@ -293,6 +293,13 @@ public partial class BitNumberFieldDemo
         },
         new()
         {
+            Name = "InputReadOnly",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Makes only the text input part read-only, preventing typing, while the value can still be changed using the increment/decrement buttons, the arrow keys and the mouse wheel (unlike ReadOnly, which blocks all of them).",
+        },
+        new()
+        {
             Name = "Invalid",
             Type = "bool",
             DefaultValue = "false",
@@ -304,13 +311,6 @@ public partial class BitNumberFieldDemo
             Type = "bool",
             DefaultValue = "false",
             Description = "Reverses the direction of the value change when the user spins the value using the mouse wheel (the wheel only changes the value while the Shift key is held down, to keep normal page scrolling intact).",
-        },
-        new()
-        {
-            Name = "IsInputReadOnly",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Makes only the text input part read-only, preventing typing, while the value can still be changed using the increment/decrement buttons, the arrow keys and the mouse wheel (unlike ReadOnly, which blocks all of them).",
         },
         new()
         {

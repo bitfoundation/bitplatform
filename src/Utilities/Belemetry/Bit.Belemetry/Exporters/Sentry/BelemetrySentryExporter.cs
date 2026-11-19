@@ -8,30 +8,30 @@ internal sealed class BelemetrySentryExporter : IBelemetryHttpExporter
     /// <param name="options">The options.</param>
     /// <param name="dsn">Their DSN, parsed (<see cref="BelemetrySentryExporterSettings"/>).</param>
     /// <param name="name">The exporter's name: <c>sentry</c>, <c>sentry1</c>, ...</param>
-    public BelemetrySentryExporter(BelemetrySentryExporterOptions options, SentryDsn dsn, string name)
+    public BelemetrySentryExporter(BelemetrySentryExporterOptions options, BelemetrySentryDsn dsn, string name)
     {
         _options = options;
         Name = name;
         Dsn = dsn;
         MinimumSeverity = BelemetryLogger.ToMinimumSeverity(options.MinimumEventLevel);
-        Context = new SentryEnvelopeSerializer.Context(Dsn, string.IsNullOrWhiteSpace(options.Release) ? null : options.Release.Trim(),
+        Context = new BelemetrySentryEnvelopeSerializer.Context(Dsn, string.IsNullOrWhiteSpace(options.Release) ? null : options.Release.Trim(),
                                                        MinimumSeverity, options.IncludeUnhandledExceptions, options.MaskIp);
     }
 
     public string Name { get; }
 
-    public SentryDsn Dsn { get; }
+    public BelemetrySentryDsn Dsn { get; }
 
-    internal SentryEnvelopeSerializer.Context Context { get; }
+    internal BelemetrySentryEnvelopeSerializer.Context Context { get; }
 
     public TimeSpan Timeout => _options.Timeout;
 
-    // The key is in the URL (SentryDsn.EnvelopeUrl): public, and what a page or a stored request needs.
+    // The key is in the URL (BelemetrySentryDsn.EnvelopeUrl): public, and what a page or a stored request needs.
     public IReadOnlyDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
     /// <summary>
     /// The minimum event level: plain log records below it are left out of the batch before it is serialized. Events
-    /// (exceptions included) pass that step, and <see cref="SentryEnvelopeSerializer.IsEvent(BelemetryLogRecord, SentryEnvelopeSerializer.Context)"/>
+    /// (exceptions included) pass that step, and <see cref="BelemetrySentryEnvelopeSerializer.IsEvent(BelemetryLogRecord, BelemetrySentryEnvelopeSerializer.Context)"/>
     /// holds them to the level too.
     /// </summary>
     public BelemetrySeverity? MinimumSeverity { get; }
@@ -39,7 +39,7 @@ internal sealed class BelemetrySentryExporter : IBelemetryHttpExporter
     public IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch)
     {
         // One event per envelope, as Sentry takes them.
-        foreach (var body in SentryEnvelopeSerializer.Serialize(batch, Context))
+        foreach (var body in BelemetrySentryEnvelopeSerializer.Serialize(batch, Context))
         {
             yield return new BelemetryHttpRequest
             {
@@ -53,7 +53,7 @@ internal sealed class BelemetrySentryExporter : IBelemetryHttpExporter
         }
     }
 
-    public int CountItems(BelemetryBatch batch) => SentryEnvelopeSerializer.Count(batch, Context);
+    public int CountItems(BelemetryBatch batch) => BelemetrySentryEnvelopeSerializer.Count(batch, Context);
 
     public bool PostsTo(string url) => url == Dsn.EnvelopeUrl;
 

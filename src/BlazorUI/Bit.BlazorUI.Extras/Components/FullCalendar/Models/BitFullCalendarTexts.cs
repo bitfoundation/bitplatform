@@ -1,14 +1,31 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// Every word <see cref="BitFullCalendar"/> shows or announces (<see cref="BitFullCalendar.Texts"/>), in English by
+/// default: set the ones to translate or reword. A text ending in <c>Format</c> is a composite format string whose
+/// placeholders are described on it, so a translation decides the word order.
+/// </summary>
 public class BitFullCalendarTexts
 {
+    /// <summary>Name of the day view on the view tabs (<see cref="GetViewLabel"/>).</summary>
     public string ViewDay { get; set; } = "Day";
+
+    /// <summary>Name of the week view on the view tabs (<see cref="GetViewLabel"/>).</summary>
     public string ViewWeek { get; set; } = "Week";
+
+    /// <summary>Name of the month view on the view tabs (<see cref="GetViewLabel"/>).</summary>
     public string ViewMonth { get; set; } = "Month";
+
+    /// <summary>Name of the year view on the view tabs (<see cref="GetViewLabel"/>).</summary>
     public string ViewYear { get; set; } = "Year";
+
+    /// <summary>Name of the agenda view on the view tabs (<see cref="GetViewLabel"/>).</summary>
     public string ViewAgenda { get; set; } = "Agenda";
 
+    /// <summary>Name of the events mode on the mode tabs (<see cref="GetModeLabel"/>).</summary>
     public string ModeEvent { get; set; } = "Events";
+
+    /// <summary>Name of the timeline mode on the mode tabs (<see cref="GetModeLabel"/>).</summary>
     public string ModeTimeline { get; set; } = "Timeline";
 
     /// <summary>Accessible name of the view tab strip (day, week, month, year, agenda).</summary>
@@ -20,86 +37,273 @@ public class BitFullCalendarTexts
     /// <summary>Label of the "today" navigation button.</summary>
     public string TodayButton { get; set; } = "Today";
 
+    /// <summary>Label of the header's button that opens the add dialog.</summary>
     public string AddEventButton { get; set; } = "Add Event";
+
+    /// <summary>
+    /// The hint a time slot of the day and week views, or a month cell, shows under the pointer or the keyboard focus to
+    /// say an event can be added there. It also starts their accessible names, ahead of the time or the date.
+    /// </summary>
     public string AddEventHoverHint { get; set; } = "Add event";
+
+    /// <summary>Tooltip and accessible name of the header's button that goes back one day, week, month or year.</summary>
     public string PreviousButtonTitle { get; set; } = "Previous";
+
+    /// <summary>Tooltip and accessible name of the header's button that goes forward one day, week, month or year.</summary>
     public string NextButtonTitle { get; set; } = "Next";
+
+    /// <summary>
+    /// Accessible name of the button that shows the previous month, in the day view's mini calendar and in the date
+    /// pickers of the add/edit dialog.
+    /// </summary>
     public string PreviousMonthAriaLabel { get; set; } = "Previous month";
+
+    /// <summary>
+    /// Accessible name of the button that shows the next month, in the day view's mini calendar and in the date
+    /// pickers of the add/edit dialog.
+    /// </summary>
     public string NextMonthAriaLabel { get; set; } = "Next month";
+
+    /// <summary>Accessible name of the hour field of the add/edit dialog's start and end pickers.</summary>
     public string PickerHourAriaLabel { get; set; } = "Hour";
+
+    /// <summary>Accessible name of the minute field of the add/edit dialog's start and end pickers.</summary>
     public string PickerMinuteAriaLabel { get; set; } = "Minute";
+
+    /// <summary>
+    /// Accessible name of the AM/PM field of the add/edit dialog's start and end pickers, shown in the 12-hour format.
+    /// </summary>
     public string PickerMeridiemAriaLabel { get; set; } = "AM/PM";
+
+    /// <summary>
+    /// Added to the accessible name of the selected day, after its date, in the add/edit dialog's date pickers and the
+    /// day view's mini calendar.
+    /// </summary>
     public string PickerSelectedDayAriaLabel { get; set; } = "selected";
+
+    /// <summary>Tooltip and accessible name of the header's button that opens the settings panel.</summary>
     public string SettingsButtonTitle { get; set; } = "Settings";
 
+    /// <summary>Accessible name of the header's color filter.</summary>
     public string FilterByColorAriaLabel { get; set; } = "Filter events by color";
+
+    /// <summary>Accessible name of the header's attendee filter, which offers the attendees of the events in view.</summary>
     public string FilterByPersonAriaLabel { get; set; } = "Filter events by person in current view";
+
+    /// <summary>The color filter's option that shows the events of every color.</summary>
     public string AllColorsOption { get; set; } = "All colors";
+
+    /// <summary>The attendee filter's option that shows the events of every attendee.</summary>
     public string AllPeopleOption { get; set; } = "All people";
+
+    /// <summary>
+    /// The attendee filter's name for an attendee with neither a name nor an <see cref="BitFullCalendarAttendee.Id"/>.
+    /// The filter leaves such an attendee out, so this text is not shown at present.
+    /// </summary>
     public string UnnamedAttendee { get; set; } = "(Unnamed)";
 
+    /// <summary>Title of the settings panel.</summary>
     public string CalendarSettingsLabel { get; set; } = "Calendar settings";
+
+    /// <summary>
+    /// Label of the settings panel's switch between the <see cref="BitFullCalendarBadgeVariant.Dot"/> and
+    /// <see cref="BitFullCalendarBadgeVariant.Colored"/> badges.
+    /// </summary>
     public string DotBadgeLabel { get; set; } = "Dot badge";
+
+    /// <summary>Label of the settings panel's switch between the 24-hour and the 12-hour time format.</summary>
     public string TwentyFourHourFormatLabel { get; set; } = "24-hour format";
+
+    /// <summary>
+    /// Label of the settings panel's field for the hour the day and week views scroll to
+    /// (<see cref="BitFullCalendarSettings.StartOfDayHour"/>).
+    /// </summary>
     public string DayStartsAtLabel { get; set; } = "Day starts at";
+
+    /// <summary>The unit shown after the settings panel's "day starts at" hour.</summary>
     public string HourSuffix { get; set; } = "h";
+
+    /// <summary>Label of the settings panel's choice of how the agenda view groups its events.</summary>
     public string AgendaGroupByLabel { get; set; } = "Agenda group by";
+
+    /// <summary>The agenda grouping choice <see cref="BitFullCalendarAgendaGroupBy.Date"/>.</summary>
     public string AgendaGroupByDate { get; set; } = "Date";
+
+    /// <summary>The agenda grouping choice <see cref="BitFullCalendarAgendaGroupBy.Color"/>.</summary>
     public string AgendaGroupByColor { get; set; } = "Color";
+
+    /// <summary>
+    /// Label of the settings panel's switch between the <see cref="BitFullCalendarEventLayout.Stack"/> and
+    /// <see cref="BitFullCalendarEventLayout.Overlap"/> layouts of overlapping events.
+    /// </summary>
     public string StackedEventsLabel { get; set; } = "Stack overlapping events";
+
+    /// <summary>
+    /// Label of the settings panel's switch for the day view's mini calendar
+    /// (<see cref="BitFullCalendarSettings.ShowDayViewCalendar"/>).
+    /// </summary>
     public string ShowDayViewCalendarLabel { get; set; } = "Show calendar in day view";
+
+    /// <summary>
+    /// Label of the settings panel's switch for the week numbers (<see cref="BitFullCalendarSettings.ShowWeekNumbers"/>).
+    /// </summary>
     public string ShowWeekNumbersLabel { get; set; } = "Show week numbers";
+
+    /// <summary>
+    /// Label of the settings panel's switch for the current-time line
+    /// (<see cref="BitFullCalendarSettings.ShowCurrentTimeIndicator"/>).
+    /// </summary>
     public string ShowCurrentTimeIndicatorLabel { get; set; } = "Show current time";
+
+    /// <summary>
+    /// Label of the settings panel's choice of the time grids' slot length
+    /// (<see cref="BitFullCalendarSettings.SlotDurationMinutes"/>).
+    /// </summary>
     public string SlotDurationLabel { get; set; } = "Slot duration";
+
+    /// <summary>The unit shown after each slot length the settings panel offers.</summary>
     public string MinuteSuffix { get; set; } = "min";
 
+    /// <summary>
+    /// The notice above the week view on a screen 768 pixels wide or narrower, while the week shows more than three
+    /// days.
+    /// </summary>
     public string WeekMobileWarning { get; set; } = "Weekly view is not recommended on smaller devices. Please switch to a desktop device or use the daily view instead.";
+
+    /// <summary>Title of the day view sidebar's list of the events in progress.</summary>
     public string HappeningNowTitle { get; set; } = "Happening now";
+
+    /// <summary>Shown under <see cref="HappeningNowTitle"/> while no event is in progress.</summary>
     public string NoAppointmentsNow { get; set; } = "No appointments at the moment";
 
+    /// <summary>Placeholder and accessible name of the agenda view's search box.</summary>
     public string SearchEventsPlaceholder { get; set; } = "Search events...";
+
+    /// <summary>Shown by the agenda view when it has no event to list, with or without a search.</summary>
     public string NoEventsFound { get; set; } = "No events found.";
 
     // Full format templates ({0} = the relevant value) so localized strings control word order and
     // placement rather than concatenating fixed English fragments at the call site.
+
+    /// <summary>
+    /// Title of the dialog listing a day's events, opened from a month cell's "+N more" or a day of the year view
+    /// ({0} = the long date).
+    /// </summary>
     public string EventListTitleFormat { get; set; } = "Events on {0}";
+
+    /// <summary>
+    /// A number of events ({0} = the count): under the title of the dialog listing a day's events, in the accessible
+    /// name of a day of the year view, and announced as the agenda's search narrows its list.
+    /// </summary>
     public string EventListCountFormat { get; set; } = "{0} event(s)";
+
+    /// <summary>
+    /// The button of a month cell that has more events than it shows, which opens the day's list ({0} = the number of
+    /// events not shown).
+    /// </summary>
     public string MoreEventsFormat { get; set; } = "+{0} more";
 
+    /// <summary>Title of the add dialog.</summary>
     public string AddEventDialogTitle { get; set; } = "Add New Event";
+
+    /// <summary>Title of the edit dialog.</summary>
     public string EditEventDialogTitle { get; set; } = "Edit Event";
+
+    /// <summary>The line under the add dialog's title.</summary>
     public string AddEventDialogSubtitle { get; set; } = "Create a new event for your calendar.";
+
+    /// <summary>The line under the edit dialog's title.</summary>
     public string EditEventDialogSubtitle { get; set; } = "Modify your existing event.";
 
+    /// <summary>Accessible name of the close (X) button of the add/edit dialog and of the details dialog.</summary>
     public string CloseAriaLabel { get; set; } = "Close";
+
+    /// <summary>Label of the button that closes the details dialog or the dialog listing a day's events.</summary>
     public string CloseButton { get; set; } = "Close";
+
+    /// <summary>
+    /// Label of the button that closes the add/edit dialog without saving, and of the one that cancels the prompt asking
+    /// which occurrences of a recurring event a change applies to.
+    /// </summary>
     public string CancelButton { get; set; } = "Cancel";
+
+    /// <summary>Label of the details dialog's button that opens the edit dialog.</summary>
     public string EditButton { get; set; } = "Edit";
+
+    /// <summary>Label of the details dialog's button that deletes the event.</summary>
     public string DeleteButton { get; set; } = "Delete";
+
+    /// <summary>Label of the add dialog's button that saves the new event.</summary>
     public string CreateEventButton { get; set; } = "Create Event";
+
+    /// <summary>Label of the edit dialog's button that saves the changes.</summary>
     public string SaveChangesButton { get; set; } = "Save Changes";
 
+    /// <summary>Label of the add/edit dialog's title field.</summary>
     public string TitleLabel { get; set; } = "Title";
+
+    /// <summary>Placeholder of the add/edit dialog's title field.</summary>
     public string EventTitlePlaceholder { get; set; } = "Event title";
+
+    /// <summary>Caption of the add/edit dialog's start picker.</summary>
     public string StartDateTimeLabel { get; set; } = "Start Date & Time";
+
+    /// <summary>Caption of the add/edit dialog's end picker.</summary>
     public string EndDateTimeLabel { get; set; } = "End Date & Time";
+
+    /// <summary>Label of the add/edit dialog's color field, and of the color in the details dialog.</summary>
     public string ColorLabel { get; set; } = "Color";
+
+    /// <summary>Accessible name of the add/edit dialog's color field.</summary>
     public string EventColorAriaLabel { get; set; } = "Event color";
+
+    /// <summary>Label of the add/edit dialog's description field, and of the description in the details dialog.</summary>
     public string DescriptionLabel { get; set; } = "Description";
+
+    /// <summary>Placeholder of the add/edit dialog's description field.</summary>
     public string EventDescriptionPlaceholder { get; set; } = "Event description";
+
+    /// <summary>Label of the add/edit dialog's attendees, and of the attendees in the details dialog.</summary>
     public string AttendeesLabel { get; set; } = "Attendees";
+
+    /// <summary>Shown by the details dialog for an event with no attendees.</summary>
     public string NoAttendeesText { get; set; } = "No attendees";
+
+    /// <summary>Placeholder and accessible name of the first-name field of a new attendee in the add/edit dialog.</summary>
     public string FirstNamePlaceholder { get; set; } = "First name";
+
+    /// <summary>Placeholder and accessible name of the last-name field of a new attendee in the add/edit dialog.</summary>
     public string LastNamePlaceholder { get; set; } = "Last name";
+
+    /// <summary>
+    /// Placeholder and accessible name of the field for a new attendee's <see cref="BitFullCalendarAttendee.Id"/> in the
+    /// add/edit dialog.
+    /// </summary>
     public string IdOptionalPlaceholder { get; set; } = "ID (optional)";
+
+    /// <summary>Label of the add/edit dialog's button that adds the attendee typed in.</summary>
     public string AddButton { get; set; } = "Add";
+
+    /// <summary>
+    /// Accessible name of the button that removes an attendee in the add/edit dialog, followed by a colon and the
+    /// attendee's name.
+    /// </summary>
     public string RemoveAttendeeAriaLabel { get; set; } = "Remove attendee";
 
+    /// <summary>Label of the start in the details dialog.</summary>
     public string StartDateLabel { get; set; } = "Start Date";
+
+    /// <summary>Label of the end in the details dialog.</summary>
     public string EndDateLabel { get; set; } = "End Date";
+
+    /// <summary>The word between the date and the time of the start and the end in the details dialog.</summary>
     public string AtWord { get; set; } = "at";
 
-    /// <summary>Label of the all-day switch in the add/edit dialog, and of the all-day row.</summary>
+    /// <summary>
+    /// The words for an all-day event: the label of the add/edit dialog's all-day switch, and what stands in for the
+    /// time of an all-day event on its badge or block, in its tooltip and accessible name, in the agenda and in the
+    /// dialogs.
+    /// </summary>
     public string AllDayLabel { get; set; } = "All day";
 
     /// <summary>
@@ -110,21 +314,29 @@ public class BitFullCalendarTexts
     /// <summary>Accessible name of a week-number cell ({0} = the ISO-8601 week number).</summary>
     public string WeekNumberAriaLabelFormat { get; set; } = "Week {0}";
 
-    /// <summary>Notice shown when a move, resize, or save is refused because it would overlap another event.</summary>
+    /// <summary>
+    /// Why a move, resize, or save was refused because it would overlap another event: the calendar's notice after a
+    /// move or resize, and shown in the add/edit dialog after a save.
+    /// </summary>
     public string EventOverlapMessage { get; set; } = "This time range is already taken on that resource.";
 
-    /// <summary>Notice shown when a move or resize is refused because it falls outside the allowed date range.</summary>
+    /// <summary>
+    /// Why a move, resize, or save was refused because it falls outside the allowed date range: the calendar's notice
+    /// after a move or resize, and shown in the add/edit dialog after a save.
+    /// </summary>
     public string OutOfRangeMessage { get; set; } = "That date is outside the allowed range.";
 
     /// <summary>
-    /// Notice shown when a move, resize, or save is refused because it falls outside the business
-    /// hours while <see cref="BitFullCalendarSettings.RestrictToBusinessHours"/> is on.
+    /// Why a move, resize, or save was refused because it falls outside the business hours while
+    /// <see cref="BitFullCalendarSettings.RestrictToBusinessHours"/> is on: the calendar's notice after a move or
+    /// resize, and shown in the add/edit dialog after a save.
     /// </summary>
     public string OutsideBusinessHoursMessage { get; set; } = "That time is outside business hours.";
 
     /// <summary>
-    /// Notice shown when a move, resize, or save is refused because it would overlap an event marked
-    /// <see cref="BitFullCalendarEvent.IsBlocking"/>.
+    /// Why a move, resize, or save was refused because it would overlap an event marked
+    /// <see cref="BitFullCalendarEvent.IsBlocking"/>: the calendar's notice after a move or resize, and shown in the
+    /// add/edit dialog after a save.
     /// </summary>
     public string BlockedMessage { get; set; } = "That time is unavailable.";
 
@@ -143,11 +355,25 @@ public class BitFullCalendarTexts
     /// </summary>
     public string NavLinkWeekAriaLabelFormat { get; set; } = "Go to week {0}";
 
+    /// <summary>The add/edit dialog's message when the title is empty.</summary>
     public string ValidationTitleRequired { get; set; } = "Title is required";
+
+    /// <summary>
+    /// The add/edit dialog's message when the description is empty while
+    /// <see cref="BitFullCalendarSettings.RequireEventDescription"/> is on.
+    /// </summary>
     public string ValidationDescriptionRequired { get; set; } = "Description is required";
+
+    /// <summary>The add/edit dialog's message when the end is not after the start.</summary>
     public string ValidationEndAfterStart { get; set; } = "End date must be after start date";
+
+    /// <summary>The add/edit dialog's message when an attendee is added with neither a first nor a last name.</summary>
     public string ValidationAttendeeNameRequired { get; set; } = "First name or last name is required";
 
+    /// <summary>
+    /// Accessible name of the time range shown on an event while its edge is dragged, in the day and week views and
+    /// the timeline.
+    /// </summary>
     public string ResizePreviewAriaLabel { get; set; } = "New time range";
 
     /// <summary>Label of the repeat-rule row in the event details dialog.</summary>
@@ -298,6 +524,9 @@ public class BitFullCalendarTexts
     public string OkButton { get; set; } = "OK";
 
     /// <summary>The localized name of a week of the month, as used in repeat summaries and the dialog.</summary>
+    /// <param name="week">The week of the month to name.</param>
+    /// <returns>The text of <paramref name="week"/> (<see cref="WeekOfMonthFirst"/> and the others), or the value's own
+    /// name for a value the enum does not define.</returns>
     public string GetWeekOfMonthLabel(BitFullCalendarWeekOfMonth week) => week switch
     {
         BitFullCalendarWeekOfMonth.First => WeekOfMonthFirst,
@@ -317,6 +546,12 @@ public class BitFullCalendarTexts
     /// that lists no weekday follows the start date's own, which only the start can name.
     /// </para>
     /// </summary>
+    /// <param name="recurrence">The repeat rule to describe.</param>
+    /// <param name="culture">The culture the numbers, the weekday names and the end date are written in;
+    /// <see cref="System.Globalization.CultureInfo.CurrentUICulture"/> when <c>null</c>.</param>
+    /// <param name="seriesStart">The start of the series' first event, if it is known.</param>
+    /// <returns>The parts of the summary, joined by " · ".</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="recurrence"/> is <c>null</c>.</exception>
     public string GetRecurrenceSummary(BitFullCalendarRecurrence recurrence, System.Globalization.CultureInfo? culture = null, DateTime? seriesStart = null)
     {
         ArgumentNullException.ThrowIfNull(recurrence);
@@ -364,12 +599,31 @@ public class BitFullCalendarTexts
         return string.Join(" · ", parts);
     }
 
+    /// <summary>
+    /// Label of the add/edit dialog's resource field, shown when the calendar has resources, and of the resource in the
+    /// details dialog.
+    /// </summary>
     public string ResourceLabel { get; set; } = "Resource";
+
+    /// <summary>Header of the timeline's resource column.</summary>
     public string ResourceColumnHeader { get; set; } = "Resource";
+
+    /// <summary>
+    /// Name of the timeline row of the events assigned to no resource, and what the details dialog shows as such an
+    /// event's resource.
+    /// </summary>
     public string NoResourceLabel { get; set; } = "Unassigned";
+
+    /// <summary>The add/edit dialog's resource option that assigns the event to no resource.</summary>
     public string NoResourceOption { get; set; } = "(none)";
+
+    /// <summary>Shown by the timeline when it has no resource row to show.</summary>
     public string NoResourcesMessage { get; set; } = "No resources to display.";
 
+    /// <summary>The name of a view on the view tabs.</summary>
+    /// <param name="view">The view to name.</param>
+    /// <returns>The text of <paramref name="view"/> (<see cref="ViewDay"/> and the others), or the value's own name for
+    /// a value the enum does not define.</returns>
     public string GetViewLabel(BitFullCalendarView view) => view switch
     {
         BitFullCalendarView.Day => ViewDay,
@@ -380,6 +634,10 @@ public class BitFullCalendarTexts
         _ => view.ToString()
     };
 
+    /// <summary>The name of a mode on the mode tabs.</summary>
+    /// <param name="mode">The mode to name.</param>
+    /// <returns>The text of <paramref name="mode"/> (<see cref="ModeEvent"/> or <see cref="ModeTimeline"/>), or the
+    /// value's own name for a value the enum does not define.</returns>
     public string GetModeLabel(BitFullCalendarMode mode) => mode switch
     {
         BitFullCalendarMode.Event => ModeEvent,

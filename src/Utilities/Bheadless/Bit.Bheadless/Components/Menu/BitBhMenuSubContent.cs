@@ -41,7 +41,7 @@ public class BitBhMenuSubContent : BitBhMenuContentBase
     }
 
     private protected override BitBhMenuLevel CreateLevel(Action refresh)
-        => new(Sub?.Parent?.Root ?? DetachedMenuRoot.Instance, Sub?.Parent, Sub, ContentId, Interop, refresh);
+        => new(Sub?.Parent?.Root ?? BitBhDetachedMenuRoot.Instance, Sub?.Parent, Sub, ContentId, Interop, refresh);
 
     private protected override BitBhMenuFocus ConsumeFocusIntent() => Sub?.ConsumeFocusIntent() ?? BitBhMenuFocus.None;
 

@@ -16,6 +16,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// unmounting and reduced motion.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitSliderE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/slider";

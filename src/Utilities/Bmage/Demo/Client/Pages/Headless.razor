@@ -1,7 +1,7 @@
 ﻿@page "/headless"
 @implements IDisposable
-@inject ImageLoader Loader
-@inject ImageExporter Exporter
+@inject BmageImageLoader Loader
+@inject BmageImageExporter Exporter
 
 @* Not one editor component on the page: every example below is the engine driven from plain C#,
    run against whichever image the reader drops, and printed with the code that produced it. That
@@ -98,9 +98,9 @@
     <p>
         The same package works in an ASP.NET Core endpoint or a console app. Register the headless
         services and you get the managed PNG, JPEG, BMP, GIF and WebP codecs and the AVIF decoder with
-        no JavaScript involved - and <code>ImageProcessor</code> directly, because the managed codecs
+        no JavaScript involved - and <code>BmageImageProcessor</code> directly, because the managed codecs
         need no probing. WebP is written lossy or, with <code>Lossless = true</code>, lossless. Asking
-        to encode AVIF there throws <code>ImageCapabilityException</code> saying so.
+        to encode AVIF there throws <code>BmageImageCapabilityException</code> saying so.
     </p>
     <CodeSnippet Code="@ServerSnippet" Language="C#" Expanded="true" />
 </div>
@@ -113,20 +113,20 @@
                 <tr><th scope="col">Type</th><th scope="col">Purpose</th></tr>
             </thead>
             <tbody>
-                <tr><th scope="row"><code>ImageBuffer</code></th><td>The pixels. Pooled; dispose it.</td></tr>
-                <tr><th scope="row"><code>ImagePipeline</code></th><td>An immutable list of operations - see <a href="/pipelines">Pipelines</a>.</td></tr>
-                <tr><th scope="row"><code>ImageProcessor</code></th><td>Decode, process, encode and batch. Registered directly by <code>AddBitBmageHeadlessServices</code>; in a browser app, get one from <code>ImageProcessorFactory.GetAsync()</code>.</td></tr>
-                <tr><th scope="row"><code>ImageCanvas</code></th><td>Immediate-mode drawing.</td></tr>
-                <tr><th scope="row"><code>ImageCodecRegistry</code></th><td>Which decoders and encoders are available; register your own to take precedence.</td></tr>
-                <tr><th scope="row"><code>ImageDocument</code></th><td>A non-destructive edit: a pipeline, the layers over it, and annotations.</td></tr>
-                <tr><th scope="row"><code>DocumentRenderer</code></th><td>Renders a document against a source image.</td></tr>
-                <tr><th scope="row"><code>LayerCompositor</code></th><td>Composites layers onto any buffer, or builds an image from layers alone - see <a href="/layers-and-masks">Layers and masks</a>.</td></tr>
-                <tr><th scope="row"><code>EditHistory</code></th><td>Undo and redo over documents.</td></tr>
-                <tr><th scope="row"><code>ImageEditSession</code></th><td>What the editor runs on: an original, a display-sized proxy, cached previews and the history - for an editing UI of your own.</td></tr>
+                <tr><th scope="row"><code>BmageImageBuffer</code></th><td>The pixels. Pooled; dispose it.</td></tr>
+                <tr><th scope="row"><code>BmageImagePipeline</code></th><td>An immutable list of operations - see <a href="/pipelines">Pipelines</a>.</td></tr>
+                <tr><th scope="row"><code>BmageImageProcessor</code></th><td>Decode, process, encode and batch. Registered directly by <code>AddBitBmageHeadlessServices</code>; in a browser app, get one from <code>BmageImageProcessorFactory.GetAsync()</code>.</td></tr>
+                <tr><th scope="row"><code>BmageImageCanvas</code></th><td>Immediate-mode drawing.</td></tr>
+                <tr><th scope="row"><code>BmageImageCodecRegistry</code></th><td>Which decoders and encoders are available; register your own to take precedence.</td></tr>
+                <tr><th scope="row"><code>BmageImageDocument</code></th><td>A non-destructive edit: a pipeline, the layers over it, and annotations.</td></tr>
+                <tr><th scope="row"><code>BmageDocumentRenderer</code></th><td>Renders a document against a source image.</td></tr>
+                <tr><th scope="row"><code>BmageLayerCompositor</code></th><td>Composites layers onto any buffer, or builds an image from layers alone - see <a href="/layers-and-masks">Layers and masks</a>.</td></tr>
+                <tr><th scope="row"><code>BmageEditHistory</code></th><td>Undo and redo over documents.</td></tr>
+                <tr><th scope="row"><code>BmageImageEditSession</code></th><td>What the editor runs on: an original, a display-sized proxy, cached previews and the history - for an editing UI of your own.</td></tr>
                 <tr><th scope="row"><code>BmageJson</code>, <code>BmageProject</code></th><td>A document as JSON that references its images, or one file with the images inside.</td></tr>
-                <tr><th scope="row"><code>ImageStatistics</code>, <code>ColorSampler</code>, <code>ContentBounds</code>, <code>SmartCrop</code>, <code>ImagePlaceholder</code></th><td>Analysis: histograms and palettes, the colour at a point, the rectangle inside a border, the crop around a subject, a tiny placeholder.</td></tr>
-                <tr><th scope="row"><code>BudgetedPixelAllocator</code></th><td>A hard ceiling on the pixel memory a request, a session or a batch may take.</td></tr>
-                <tr><th scope="row"><code>FontTextRasterizer</code></th><td>Text from a font file, no browser needed.</td></tr>
+                <tr><th scope="row"><code>BmageImageStatistics</code>, <code>BmageColorSampler</code>, <code>BmageContentBounds</code>, <code>BmageSmartCrop</code>, <code>BmageImagePlaceholder</code></th><td>Analysis: histograms and palettes, the colour at a point, the rectangle inside a border, the crop around a subject, a tiny placeholder.</td></tr>
+                <tr><th scope="row"><code>BmageBudgetedPixelAllocator</code></th><td>A hard ceiling on the pixel memory a request, a session or a batch may take.</td></tr>
+                <tr><th scope="row"><code>BmageFontTextRasterizer</code></th><td>Text from a font file, no browser needed.</td></tr>
             </tbody>
         </table>
     </div>
@@ -135,15 +135,15 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Drawing without a UI</h3>
     <p>
-        <code>ImageCanvas</code> is a complete drawing surface - the last example above was composed
-        with it. Paths come from <code>PathBuilder</code> (lines, quadratic and cubic curves, arcs,
+        <code>BmageImageCanvas</code> is a complete drawing surface - the last example above was composed
+        with it. Paths come from <code>BmagePathBuilder</code> (lines, quadratic and cubic curves, arcs,
         rounded rectangles, ellipses, polygons, flattened adaptively), and fills take a colour or any
-        <code>IPaint</code>: solid, linear and radial gradients, or your own.
+        <code>IBmagePaint</code>: solid, linear and radial gradients, or your own.
     </p>
     <CodeSnippet Code="@CanvasSnippet" Language="C#" />
     <p>
-        Text needs a rasterizer. In a browser, <code>BrowserTextRasterizer</code> uses the platform's
-        text engine (shaping, emoji, right-to-left). Anywhere else, <code>FontTextRasterizer</code>
+        Text needs a rasterizer. In a browser, <code>BmageBrowserTextRasterizer</code> uses the platform's
+        text engine (shaping, emoji, right-to-left). Anywhere else, <code>BmageFontTextRasterizer</code>
         draws from TrueType or OpenType fonts with <code>glyf</code> outlines - shaped with their
         OpenType rules, Persian and Arabic joining included, ordered right to left where the text
         is, and wrapped.
@@ -154,9 +154,9 @@
 <div class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Analysing an image</h3>
     <p>
-        <code>ImageStatistics</code> samples on a regular grid by default, which keeps a 24 megapixel
+        <code>BmageImageStatistics</code> samples on a regular grid by default, which keeps a 24 megapixel
         photo well under a frame while staying indistinguishable from a full pass. Each channel and the
-        luminance come back as a 256-bucket <code>Histogram</code> - the one the editor's Adjust tab
+        luminance come back as a 256-bucket <code>BmageHistogram</code> - the one the editor's Adjust tab
         draws - and the dominant colours on the <a href="/avatar">Avatar</a> page come from here too.
     </p>
     <CodeSnippet Code="@StatsSnippet" Language="C#" />
@@ -167,7 +167,7 @@
     </p>
     <CodeSnippet Code="@MeasureSnippet" Language="C#" />
     <p>
-        <code>ImagePlaceholder</code> is the low-quality image placeholder pattern: a 67 character
+        <code>BmageImagePlaceholder</code> is the low-quality image placeholder pattern: a 67 character
         token for a 4&times;4 grid, small enough to return from a list endpoint, that renders the right
         colours and shape immediately - as pixels, or as CSS gradients alone.
     </p>
@@ -184,11 +184,11 @@
 </div>
 
 @code {
-    private sealed record Example(string Title, string Description, string Code, ImageBuffer Image, long Bytes, long Version);
+    private sealed record Example(string Title, string Description, string Code, BmageImageBuffer Image, long Bytes, long Version);
 
-    private ImageBuffer? _source;
+    private BmageImageBuffer? _source;
     private readonly List<Example> _examples = [];
-    private ExifData? _exif;
+    private BmageExifData? _exif;
     private bool _hasAlpha;
     private string? _error;
     private long _version;
@@ -201,10 +201,10 @@
 
     private const string ServerSnippet = """
         // Program.cs of an API that accepts uploads
-        builder.Services.AddBitBmageHeadlessServices(o => o.Limits = ImageLimits.Default);
+        builder.Services.AddBitBmageHeadlessServices(o => o.Limits = BmageImageLimits.Default);
 
         // In the endpoint
-        app.MapPost("/upload", async (IFormFile file, ImageProcessor processor) =>
+        app.MapPost("/upload", async (IFormFile file, BmageImageProcessor processor) =>
         {
             // Cap the upload before reading it; IFormFile reports its length up front.
             if (file.Length > 20 * 1024 * 1024) return Results.BadRequest("Too large.");
@@ -219,39 +219,39 @@
 
             var thumb = await processor.ProcessAsync(
                 bytes,
-                ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
-                new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
+                BmageImagePipeline.Create().AutoOrient().MaxSize(400, 400),
+                new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Quality = 0.8 });
 
             return Results.File(thumb.Data, thumb.MimeType);
         });
         """;
 
     private const string CanvasSnippet = """
-        using var canvas = ImageCanvas.Create(1200, 630, new Rgba32(17, 19, 24));
+        using var canvas = BmageImageCanvas.Create(1200, 630, new BmageRgba32(17, 19, 24));
 
         canvas.DrawImage(photo, new RectangleF(700, 0, 500, 630));
 
         // Fade the photo into the panel.
-        var fade = new LinearGradientPaint(
+        var fade = new BmageLinearGradientPaint(
             new Vector2(700, 0), new Vector2(900, 0),
-            [(0f, new Rgba32(17, 19, 24, 255)), (1f, new Rgba32(17, 19, 24, 0))]);
-        canvas.FillPath(new PathBuilder().AddRectangle(new RectangleF(700, 0, 200, 630)).Build(), fade);
+            [(0f, new BmageRgba32(17, 19, 24, 255)), (1f, new BmageRgba32(17, 19, 24, 0))]);
+        canvas.FillPath(new BmagePathBuilder().AddRectangle(new RectangleF(700, 0, 200, 630)).Build(), fade);
 
-        canvas.FillRoundedRectangle(new RectangleF(60, 60, 160, 40), 20, new Rgba32(105, 65, 198));
-        canvas.DrawText("Release notes", new Vector2(60, 200), new TextStyle
+        canvas.FillRoundedRectangle(new RectangleF(60, 60, 160, 40), 20, new BmageRgba32(105, 65, 198));
+        canvas.DrawText("Release notes", new Vector2(60, 200), new BmageTextStyle
         {
             FontSize = 56,
             Bold = true,
-            FillColor = Rgba32.White,
+            FillColor = BmageRgba32.White,
             MaxWidth = 580,
         }, textRasterizer);
 
-        var png = await canvas.ExportAsync(ImageExportOptions.Png);
+        var png = await canvas.ExportAsync(BmageImageExportOptions.Png);
         """;
 
     private const string FontSnippet = """
-        var font = FontFile.Load(await File.ReadAllBytesAsync("Inter-Regular.ttf"));
-        var rasterizer = new FontTextRasterizer()
+        var font = BmageFontFile.Load(await File.ReadAllBytesAsync("Inter-Regular.ttf"));
+        var rasterizer = new BmageFontTextRasterizer()
             .Register("Inter", font)
             .Register("Inter", boldFont, bold: true);
 
@@ -260,7 +260,7 @@
         """;
 
     private const string StatsSnippet = """
-        var stats = ImageStatistics.Measure(image);
+        var stats = BmageImageStatistics.Measure(image);
 
         stats.Luminance.Mean;              // exposure
         stats.Luminance.GetPercentile(0.5);
@@ -269,7 +269,7 @@
         stats.IsGrayscale;
         stats.HasTransparency;
 
-        var palette = ImageStatistics.GetDominantColors(image, count: 5, ignoreNearWhiteAndBlack: true);
+        var palette = BmageImageStatistics.GetDominantColors(image, count: 5, ignoreNearWhiteAndBlack: true);
         foreach (var c in palette) Console.WriteLine($"{c.Color.ToHex(false)} {c.Percent:0.#}%");
 
         // A histogram: draw it, or read clipping from its ends.
@@ -281,42 +281,42 @@
 
     private const string MeasureSnippet = """
         // The eyedropper: a 7 × 7 average around a point, alpha-weighted.
-        var colour = ColorSampler.Sample(image, new Point(120, 80), radius: 3);
+        var colour = BmageColorSampler.Sample(image, new Point(120, 80), radius: 3);
 
         // Trim: the content inside a transparent or uniform border, or null when there is only border.
-        if (ContentBounds.Find(image, new TrimOptions { Mode = TrimMode.Auto, Tolerance = 0.05f, Padding = 8 }) is { } content)
+        if (BmageContentBounds.Find(image, new BmageTrimOptions { Mode = BmageTrimMode.Auto, Tolerance = 0.05f, Padding = 8 }) is { } content)
             pipeline = pipeline.Crop(content);
 
         // Smart cropping as a measurement: where the subject is, and how sure the heuristic is.
-        var crop = SmartCrop.FindCrop(image, AspectRatio.Ratio16x9);
+        var crop = BmageSmartCrop.FindCrop(image, BmageAspectRatio.Ratio16x9);
         Console.WriteLine($"{crop.Rectangle} scored {crop.Score:0.00}");
         pipeline = pipeline.Apply(crop.ToOperation());
         """;
 
     private const string PlaceholderSnippet = """
-        var placeholder = ImagePlaceholder.Create(image, columns: 4, rows: 4);
+        var placeholder = BmageImagePlaceholder.Create(image, columns: 4, rows: 4);
 
         var token = placeholder.ToCompactString();   // store it beside the row
         placeholder.AspectRatio;                     // reserve layout space before the image loads
         placeholder.AverageColor;                    // a single-colour fallback
 
         // Later, in the browser or on the server:
-        var restored = ImagePlaceholder.Parse(token, width, height);
+        var restored = BmageImagePlaceholder.Parse(token, width, height);
         using var blurred = restored!.Render(400, 300);   // smooth, no image request
         var css = restored.ToCssBackground();             // or CSS gradients alone
         """;
 
     private const string DocumentSnippet = """
-        var document = ImageDocument.Create(source)
-            .AddOperation(new CropOperation(100, 100, 800, 600))
-            .AddOperation(new BrightnessAdjustment(0.1f))
-            .AddAnnotation(new ArrowAnnotation { Start = a, End = b });
+        var document = BmageImageDocument.Create(source)
+            .AddOperation(new BmageCropOperation(100, 100, 800, 600))
+            .AddOperation(new BmageBrightnessAdjustment(0.1f))
+            .AddAnnotation(new BmageArrowAnnotation { Start = a, End = b });
 
-        var history = new EditHistory(document);
+        var history = new BmageEditHistory(document);
         history.Push(document.AddAnnotation(label), "Add label");
         history.Undo();
 
-        using var rendered = new DocumentRenderer(textRasterizer)
+        using var rendered = new BmageDocumentRenderer(textRasterizer)
             .Render(history.Current, source);
         """;
 
@@ -343,7 +343,7 @@
         await RunAsync(SampleImages.Landscape());
     }
 
-    private async Task RunAsync(ImageBuffer image)
+    private async Task RunAsync(BmageImageBuffer image)
     {
         Clear();
         var run = _run;
@@ -380,48 +380,48 @@
 
         await Add(run, "Thumbnail",
             "A capped, sharpened thumbnail: the single most common upload task.",
-            "ImagePipeline.Create()\n    .AutoOrient()\n    .MaxSize(320, 320)\n    .Sharpen(0.3f)",
-            ImagePipeline.Create().AutoOrient().MaxSize(320, 320).Sharpen(0.3f));
+            "BmageImagePipeline.Create()\n    .AutoOrient()\n    .MaxSize(320, 320)\n    .Sharpen(0.3f)",
+            BmageImagePipeline.Create().AutoOrient().MaxSize(320, 320).Sharpen(0.3f));
 
         await Add(run, "Square cover crop",
             "Cover fills the target exactly, cropping the overflow instead of distorting.",
-            "ImagePipeline.Create()\n    .Cover(300, 300, Anchor.Center)",
-            ImagePipeline.Create().Cover(300, 300));
+            "BmageImagePipeline.Create()\n    .Cover(300, 300, BmageAnchor.Center)",
+            BmageImagePipeline.Create().Cover(300, 300));
 
         await Add(run, "Letterboxed",
             "Contain keeps the whole subject and pads to the exact canvas.",
-            "ImagePipeline.Create()\n    .Resize(400, 260, ResizeMode.Contain,\n            background: new Rgba32(24, 26, 31))",
-            ImagePipeline.Create().Resize(400, 260, ResizeMode.Contain, background: new Rgba32(24, 26, 31)));
+            "BmageImagePipeline.Create()\n    .Resize(400, 260, BmageResizeMode.Contain,\n            background: new BmageRgba32(24, 26, 31))",
+            BmageImagePipeline.Create().Resize(400, 260, BmageResizeMode.Contain, background: new BmageRgba32(24, 26, 31)));
 
         await Add(run, "Graded",
             "Adjustments compose and fuse into a single pass over the pixels.",
-            "ImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Exposure(0.3f)\n    .Contrast(0.15f)\n    .Vibrance(0.35f)\n    .Vignette(0.3f)",
-            ImagePipeline.Create().MaxSize(360, 360).Exposure(0.3f).Contrast(0.15f).Vibrance(0.35f).Vignette(0.3f));
+            "BmageImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Exposure(0.3f)\n    .Contrast(0.15f)\n    .Vibrance(0.35f)\n    .Vignette(0.3f)",
+            BmageImagePipeline.Create().MaxSize(360, 360).Exposure(0.3f).Contrast(0.15f).Vibrance(0.35f).Vignette(0.3f));
 
         await Add(run, "Rotated 12°",
             "Arbitrary rotation expands the canvas and keeps the corners transparent.",
-            "ImagePipeline.Create()\n    .MaxSize(300, 300)\n    .Rotate(12, background: Rgba32.Transparent)",
-            ImagePipeline.Create().MaxSize(300, 300).Rotate(12, Rgba32.Transparent));
+            "BmageImagePipeline.Create()\n    .MaxSize(300, 300)\n    .Rotate(12, background: BmageRgba32.Transparent)",
+            BmageImagePipeline.Create().MaxSize(300, 300).Rotate(12, BmageRgba32.Transparent));
 
         await Add(run, "Redacted region",
             "Filters accept a region, so only part of the image is touched.",
-            "ImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Pixelate(14, new Rectangle(0, 0, 180, 90))",
-            ImagePipeline.Create().MaxSize(360, 360).Pixelate(14, new System.Drawing.Rectangle(0, 0, 180, 90)));
+            "BmageImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Pixelate(14, new Rectangle(0, 0, 180, 90))",
+            BmageImagePipeline.Create().MaxSize(360, 360).Pixelate(14, new System.Drawing.Rectangle(0, 0, 180, 90)));
 
         await Add(run, "Straightened 6°",
             "Levels a tilt and crops to the largest rectangle the turned image covers, so no corner is left empty.",
-            "ImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Straighten(6)",
-            ImagePipeline.Create().MaxSize(360, 360).Straighten(6));
+            "BmageImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Straighten(6)",
+            BmageImagePipeline.Create().MaxSize(360, 360).Straighten(6));
 
         await Add(run, "Framed",
             "Pad grows the canvas without scaling the image: a white mount, then a thin dark frame.",
-            "ImagePipeline.Create()\n    .MaxSize(320, 320)\n    .Pad(18, Rgba32.White)\n    .Pad(3, new Rgba32(40, 40, 46))",
-            ImagePipeline.Create().MaxSize(320, 320).Pad(18, Rgba32.White).Pad(3, new Rgba32(40, 40, 46)));
+            "BmageImagePipeline.Create()\n    .MaxSize(320, 320)\n    .Pad(18, BmageRgba32.White)\n    .Pad(3, new BmageRgba32(40, 40, 46))",
+            BmageImagePipeline.Create().MaxSize(320, 320).Pad(18, BmageRgba32.White).Pad(3, new BmageRgba32(40, 40, 46)));
 
         await Add(run, "Duotone",
             "The image's tones mapped onto two colours: shadows to the first, highlights to the second.",
-            "ImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Duotone(new Rgba32(24, 32, 88),\n             new Rgba32(250, 214, 140))",
-            ImagePipeline.Create().MaxSize(360, 360).Duotone(new Rgba32(24, 32, 88), new Rgba32(250, 214, 140)));
+            "BmageImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Duotone(new BmageRgba32(24, 32, 88),\n             new BmageRgba32(250, 214, 140))",
+            BmageImagePipeline.Create().MaxSize(360, 360).Duotone(new BmageRgba32(24, 32, 88), new BmageRgba32(250, 214, 140)));
 
         await AddPlaceholder(run);
 
@@ -435,27 +435,27 @@
     private async Task AddPlaceholder(int run)
     {
         if (run != _run || _source is not { } source) return;
-        var token = ImagePlaceholder.Create(source).ToCompactString();
+        var token = BmageImagePlaceholder.Create(source).ToCompactString();
         var height = (int)Math.Round(360.0 * source.Height / Math.Max(1, source.Width));
-        var image = ImagePlaceholder.Parse(token, source.Width, source.Height)!.Render(360, Math.Clamp(height, 1, 720));
+        var image = BmageImagePlaceholder.Parse(token, source.Width, source.Height)!.Render(360, Math.Clamp(height, 1, 720));
         await AddImage(run, "Placeholder",
             $"Rebuilt from the {token.Length} character token \"{token}\" - the colours and shape before the image arrives.",
-            "var token = ImagePlaceholder.Create(image)\n    .ToCompactString();\n\nusing var blurred = ImagePlaceholder\n    .Parse(token, width, height)!\n    .Render(360, 240);",
+            "var token = BmageImagePlaceholder.Create(image)\n    .ToCompactString();\n\nusing var blurred = BmageImagePlaceholder\n    .Parse(token, width, height)!\n    .Render(360, 240);",
             image);
     }
 
-    private async Task Add(int run, string title, string description, string code, ImagePipeline pipeline)
+    private async Task Add(int run, string title, string description, string code, BmageImagePipeline pipeline)
     {
         if (run != _run || _source is not { } source) return;
         await AddImage(run, title, description, code, await pipeline.ExecuteAsync(source));
     }
 
     /// <summary>Encodes an example's result to report its size and adds it to the grid. Takes ownership of the image.</summary>
-    private async Task AddImage(int run, string title, string description, string code, ImageBuffer image)
+    private async Task AddImage(int run, string title, string description, string code, BmageImageBuffer image)
     {
         try
         {
-            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png });
+            var encoded = await Exporter.EncodeAsync(image, new BmageImageExportOptions { Format = BmageImageFormat.Png });
             if (run != _run)
             {
                 image.Dispose();
@@ -478,34 +478,34 @@
         if (run != _run || _source is null) return;
         const int width = 420;
         const int height = 240;
-        var canvas = ImageCanvas.Create(width, height, new Rgba32(17, 19, 24));
+        var canvas = BmageImageCanvas.Create(width, height, new BmageRgba32(17, 19, 24));
         try
         {
-            using var photo = await ImagePipeline.Create().Cover(180, height).ExecuteAsync(_source);
+            using var photo = await BmageImagePipeline.Create().Cover(180, height).ExecuteAsync(_source);
             canvas.DrawImage(photo, new System.Drawing.RectangleF(width - 180, 0, 180, height));
 
             // A gradient scrim so the photo blends into the panel rather than butting against it.
-            var fade = new LinearGradientPaint(
+            var fade = new BmageLinearGradientPaint(
                 new Vector2(width - 180, 0), new Vector2(width - 110, 0),
-                [(0f, new Rgba32(17, 19, 24, 255)), (1f, new Rgba32(17, 19, 24, 0))]);
-            canvas.FillPath(new PathBuilder().AddRectangle(new System.Drawing.RectangleF(width - 180, 0, 80, height)).Build(), fade);
+                [(0f, new BmageRgba32(17, 19, 24, 255)), (1f, new BmageRgba32(17, 19, 24, 0))]);
+            canvas.FillPath(new BmagePathBuilder().AddRectangle(new System.Drawing.RectangleF(width - 180, 0, 80, height)).Build(), fade);
 
-            canvas.FillRoundedRectangle(new System.Drawing.RectangleF(20, 24, 90, 24), 12, new Rgba32(105, 65, 198));
-            canvas.DrawLine(new Vector2(20, 76), new Vector2(210, 76), new Rgba32(255, 255, 255, 70), new StrokeStyle { Width = 2 });
-            canvas.DrawArrow(new Vector2(24, 190), new Vector2(150, 130), new Rgba32(255, 90, 90), new StrokeStyle { Width = 4 });
-            canvas.DrawEllipse(new System.Drawing.RectangleF(150, 100, 70, 60), new Rgba32(255, 200, 40), new StrokeStyle { Width = 3, DashPattern = [8f, 5f] });
+            canvas.FillRoundedRectangle(new System.Drawing.RectangleF(20, 24, 90, 24), 12, new BmageRgba32(105, 65, 198));
+            canvas.DrawLine(new Vector2(20, 76), new Vector2(210, 76), new BmageRgba32(255, 255, 255, 70), new BmageStrokeStyle { Width = 2 });
+            canvas.DrawArrow(new Vector2(24, 190), new Vector2(150, 130), new BmageRgba32(255, 90, 90), new BmageStrokeStyle { Width = 4 });
+            canvas.DrawEllipse(new System.Drawing.RectangleF(150, 100, 70, 60), new BmageRgba32(255, 200, 40), new BmageStrokeStyle { Width = 3, DashPattern = [8f, 5f] });
 
             var image = canvas.Snapshot();
-            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png });
+            var encoded = await Exporter.EncodeAsync(image, new BmageImageExportOptions { Format = BmageImageFormat.Png });
             if (run != _run)
             {
                 image.Dispose();
                 return;
             }
             _examples.Add(new Example(
-                "Composed with ImageCanvas",
+                "Composed with BmageImageCanvas",
                 "Shapes, gradients, arrows and an image composited together, with no editor component involved.",
-                "using var canvas = ImageCanvas.Create(420, 240, background);\ncanvas.DrawImage(photo, destination);\ncanvas.FillRoundedRectangle(badge, 12, accent);\ncanvas.DrawArrow(from, to, red, stroke);\nvar png = await canvas.ExportAsync();",
+                "using var canvas = BmageImageCanvas.Create(420, 240, background);\ncanvas.DrawImage(photo, destination);\ncanvas.FillRoundedRectangle(badge, 12, accent);\ncanvas.DrawArrow(from, to, red, stroke);\nvar png = await canvas.ExportAsync();",
                 image, encoded.Length, ++_version));
         }
         finally
@@ -527,9 +527,9 @@
 
     private static string Describe(Exception ex) => ex switch
     {
-        ImageLimitExceededException => "That image is too large to process here.",
-        ImageDecodeException => "That file could not be read as an image.",
-        ImageCapabilityException c => c.Message,
+        BmageImageLimitExceededException => "That image is too large to process here.",
+        BmageImageDecodeException => "That file could not be read as an image.",
+        BmageImageCapabilityException c => c.Message,
         _ => ex.Message,
     };
 

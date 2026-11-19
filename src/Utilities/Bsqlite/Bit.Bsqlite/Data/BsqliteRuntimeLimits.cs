@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// What the current storage backend can honour. The core enforces these generically so a new

@@ -3,76 +3,6 @@ using Microsoft.Extensions.Http;
 
 namespace Bit.BevTools;
 
-/// <summary>Adds <see cref="BevToolsHttpMessageHandler"/> to every <c>IHttpClientFactory</c> pipeline.</summary>
-internal sealed class BevToolsHttpFilter(BitBevToolsOptions options, BevToolsRegistry registry) : IHttpMessageHandlerBuilderFilter
-{
-    public Action<HttpMessageHandlerBuilder> Configure(Action<HttpMessageHandlerBuilder> next) => builder =>
-    {
-        next(builder);
-        if (registry.IsEnabled && options.TrackHttp)
-        {
-            // Outermost: the caller's synchronization context is still current here, so this is where the issuing
-            // session can be inferred. A handler further in that awaits with ConfigureAwait(false) - a retry delay, a
-            // token fetch - leaves everything after it on the thread pool, where it no longer can.
-            builder.AdditionalHandlers.Insert(0, new BevToolsHttpSessionHandler());
-
-            // Innermost, i.e. closest to the primary handler: every attempt a resilience/retry handler makes is a real
-            // network request and is recorded as one. Sitting outermost would hide retries behind a single record,
-            // which is exactly the pattern "why is this request repeating?" needs to show.
-            builder.AdditionalHandlers.Add(new BevToolsHttpMessageHandler(options));
-        }
-    };
-}
-
-/// <summary>
-/// Resolves the session that issued a request, and the component that sent it, at the outer end of the pipeline and
-/// passes both, in the request's options, to the <see cref="BevToolsHttpMessageHandler"/> at the inner end.
-/// </summary>
-internal sealed class BevToolsHttpSessionHandler : DelegatingHandler
-{
-    internal static readonly HttpRequestOptionsKey<BevToolsSession> SessionKey = new("Bit.BevTools.Session");
-
-    internal static readonly HttpRequestOptionsKey<BevCallSites.CallSite> CallerKey = new("Bit.BevTools.Caller");
-
-    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-    {
-        Capture(request);
-        return base.SendAsync(request, cancellationToken);
-    }
-
-    internal static void Capture(HttpRequestMessage request)
-    {
-        if (!request.Options.TryGetValue(SessionKey, out _) && SessionResolver.Resolve() is { } session)
-        {
-            request.Options.Set(SessionKey, session);
-
-            // Here, not where the request is recorded: a retry or resilience handler in between awaits before it
-            // sends, and from then on the component is no longer on the stack - retries included. Once per request,
-            // and only for one that will be recorded.
-            if (session.IsEnabled && session.IsCapturing && session.Options.TrackHttp && session.Options.CaptureHttpCallers)
-            {
-                request.Options.Set(CallerKey, BevCallSites.Find(skipFrames: 0));
-            }
-        }
-    }
-}
-
-/// <summary>Records what reaches the HTTP hooks of Bit.BevTools.Loader, the same way <see cref="BevToolsHttpMessageHandler"/> does.</summary>
-internal sealed class BevToolsHttpRecorder : IBevToolsHttpRecorder
-{
-    public static readonly BevToolsHttpRecorder Instance = new();
-
-    public void CaptureSession(HttpRequestMessage request) => BevToolsHttpSessionHandler.Capture(request);
-
-    public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next, bool attachedSessionsOnly, CancellationToken cancellationToken)
-    {
-        var session = BevToolsHttpMessageHandler.ResolveSession(request);
-        return session is null || !session.IsEnabled || !session.Options.TrackHttp || (attachedSessionsOnly && !session.IsAttachedAtRuntime)
-            ? next(request, cancellationToken)
-            : BevToolsHttpMessageHandler.RecordAsync(session, session.Options, request, next, cancellationToken);
-    }
-}
-
 /// <summary>
 /// Records HTTP requests (method, URL, status, duration, sizes, headers with redaction; never bodies) into the
 /// session that issued them. Can also be added manually to a hand-built <c>HttpClient</c>.
@@ -84,11 +14,11 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         "Authorization", "Proxy-Authorization", "Cookie", "Set-Cookie", "X-Api-Key", "Api-Key", "X-Auth-Token", "X-CSRF-Token", "X-XSRF-Token",
     };
 
-    private readonly BitBevToolsOptions _options;
+    private readonly BevToolsOptions _options;
     private readonly BevToolsSession? _explicitSession;
     private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _next;
 
-    public BevToolsHttpMessageHandler(BitBevToolsOptions options)
+    public BevToolsHttpMessageHandler(BevToolsOptions options)
     {
         _options = options;
         _next = base.SendAsync;
@@ -111,11 +41,11 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
     /// <summary>The session an outer handler noted on the request, or the one the current context belongs to.</summary>
     internal static BevToolsSession? ResolveSession(HttpRequestMessage request) =>
         (request.Options.TryGetValue(BevToolsHttpSessionHandler.SessionKey, out var captured) && !captured.IsDisposed ? captured : null)
-        ?? SessionResolver.Resolve();
+        ?? BevToolsSessionResolver.Resolve();
 
-    internal static async Task<HttpResponseMessage> RecordAsync(BevToolsSession session, BitBevToolsOptions options, HttpRequestMessage request, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next, CancellationToken cancellationToken)
+    internal static async Task<HttpResponseMessage> RecordAsync(BevToolsSession session, BevToolsOptions options, HttpRequestMessage request, Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> next, CancellationToken cancellationToken)
     {
-        var trigger = ActivityObserver.CurrentTriggerEvent(session);
+        var trigger = BevToolsActivityObserver.CurrentTriggerEvent(session);
         if (!session.IsCapturing)
         {
             // Paused: the network log and the timeline stay frozen, but a failed request still reaches the error
@@ -145,8 +75,8 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         // the request is still on the stack - the awaits below would lose it.
         var caller = !options.CaptureHttpCallers ? default
             : request.Options.TryGetValue(BevToolsHttpSessionHandler.CallerKey, out var noted) ? noted
-            : BevCallSites.Find(skipFrames: 0);
-        var record = new BevHttpRecord
+            : BevToolsCallSites.Find(skipFrames: 0);
+        var record = new BevToolsHttpRecord
         {
             Id = session.Http.NextId(),
             StartedAt = DateTimeOffset.UtcNow,
@@ -173,11 +103,11 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
         });
         session.Http.Add(record);
 
-        var bodies = BevHttpBodies.Allowed(session);
+        var bodies = BevToolsHttpBodies.Allowed(session);
         if (bodies)
         {
-            (record.RequestBody, record.RequestBodyNote) = await BevHttpBodies.ReadRequestAsync(session, request.Content).ConfigureAwait(false);
-            record.GraphQlOperation = BevHttpBodies.GraphQlOperation(record.RequestBody);
+            (record.RequestBody, record.RequestBodyNote) = await BevToolsHttpBodies.ReadRequestAsync(session, request.Content).ConfigureAwait(false);
+            record.GraphQlOperation = BevToolsHttpBodies.GraphQlOperation(record.RequestBody);
         }
 
         var start = Stopwatch.GetTimestamp();
@@ -186,10 +116,10 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             var response = await next(request, cancellationToken).ConfigureAwait(false);
             record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
             ReadTraceParent(request, record);
-            record.Protocol = BevHttpBodies.Protocol(request, response);
+            record.Protocol = BevToolsHttpBodies.Protocol(request, response);
             if (bodies)
             {
-                (record.ResponseBody, record.ResponseBodyNote) = await BevHttpBodies.ReadResponseAsync(session, response, cancellationToken).ConfigureAwait(false);
+                (record.ResponseBody, record.ResponseBodyNote) = await BevToolsHttpBodies.ReadResponseAsync(session, response, cancellationToken).ConfigureAwait(false);
             }
 
             record.StatusCode = (int)response.StatusCode;
@@ -230,7 +160,7 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
             record.DurationMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
             ReadTraceParent(request, record);
             // A connect timeout is a TaskCanceledException whose inner TimeoutException says what happened.
-            record.Error = BevRedactor.RedactText(ex.GetType().Name + ": " + ex.Message + (ex.InnerException is { } inner && inner.Message != ex.Message ? " (" + inner.GetType().Name + ": " + inner.Message + ")" : ""));
+            record.Error = BevToolsRedactor.RedactText(ex.GetType().Name + ": " + ex.Message + (ex.InnerException is { } inner && inner.Message != ex.Message ? " (" + inner.GetType().Name + ": " + inner.Message + ")" : ""));
             session.Http.MarkFailed(record);
             session.Timeline.Complete(record.TimelineEventId, record.DurationMs.Value, record.Error, BevToolsSeverity.Error);
             RecordException(session, ex, trigger?.Id, tokenCancelled: false);
@@ -243,7 +173,7 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
     /// The trace the request was sent in: <c>traceparent</c> ("00-{trace id}-{parent id}-{flags}") as it left, which the
     /// client's diagnostics handler writes into the request below BevTools. Only a well-formed header counts.
     /// </summary>
-    internal static void ReadTraceParent(HttpRequestMessage request, BevHttpRecord record)
+    internal static void ReadTraceParent(HttpRequestMessage request, BevToolsHttpRecord record)
     {
         try
         {
@@ -302,10 +232,10 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
                 // Under ValueAccess None the names alone say what was sent (an Authorization header, a custom tenant
                 // header), and no value is kept; otherwise a value is kept unless its name or its shape is a secret.
                 var value = AlwaysRedactedHeaders.Contains(header.Key) || session.Redactor.IsSensitiveName(header.Key)
-                    ? BevRedactor.RedactedValue
-                    : session.ValueAccess == BevValueAccess.None
-                        ? BevRedactor.HiddenValue
-                        : BevRedactor.RedactText(string.Join(", ", header.Value));
+                    ? BevToolsRedactor.RedactedValue
+                    : session.ValueAccess == BevToolsValueAccess.None
+                        ? BevToolsRedactor.HiddenValue
+                        : BevToolsRedactor.RedactText(string.Join(", ", header.Value));
                 list.Add(new KeyValuePair<string, string>(header.Key, value));
             }
         }

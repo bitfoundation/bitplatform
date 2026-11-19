@@ -1,8 +1,7 @@
 ﻿using System.Data.Common;
-using Bit.Bsqlite.Data;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Bit.Bsqlite.EntityFrameworkCore;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Marks the commands EF Core creates as enlisting explicitly, so a context outside the open

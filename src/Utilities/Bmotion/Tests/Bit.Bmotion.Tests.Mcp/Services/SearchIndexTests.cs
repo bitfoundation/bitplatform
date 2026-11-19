@@ -144,7 +144,7 @@ public class SearchIndexTests
     /// four transition types is the same member however it is qualified.
     /// </summary>
     [TestMethod]
-    [DataRow("BmSpring", "BmSpring")]
+    [DataRow("BmotionSpring", "BmotionSpring")]
     [DataRow("BmotionAnimatePresence", "BmotionAnimatePresence")]
     [DataRow("staggerChildren", "StaggerChildren")]
     [DataRow("LayoutId", "LayoutId")]
@@ -169,6 +169,169 @@ public class SearchIndexTests
 
         Assert.IsTrue(hits.Any(hit => hit.Title.Equals("Variants", StringComparison.OrdinalIgnoreCase)),
                       $"Found: {string.Join(", ", hits.Select(hit => hit.Title))}.");
+    }
+
+    /// <summary>
+    /// The thing a request asks to be done outranks the words it names what to do it to: "fade a list
+    /// item in" is about the fade, and one item is one element, not the staggered list or the reorder
+    /// group's Items. Ranked by "list" and "item", an agent following the first hit staggers a whole
+    /// list when one item was asked for.
+    /// </summary>
+    [TestMethod]
+    [DataRow("fade a list item in")]
+    [DataRow("fade in a list item")]
+    [DataRow("fade a list-item in")]
+    [DataRow("fade an item in")]
+    [DataRow("fade the item in")]
+    [DataRow("fade a single item in")]
+    [DataRow("fade a card in")]
+    [DataRow("fade this row in")]
+    public async Task Search_FadingOneItemIn_PutsTheFadeInRecipeFirst(string query)
+    {
+        var hits = await BmotionSearchIndex.SearchAsync(query, 12);
+        var titles = string.Join(", ", hits.Select(hit => hit.Title));
+
+        Assert.AreNotEqual(0, hits.Length, $"'{query}' found nothing.");
+        Assert.AreEqual("Fade and slide in on mount", hits[0].Title, $"'{query}' ranked: {titles}.");
+        Assert.IsTrue(hits.Take(3).Any(hit => hit.Title == "BmotionPresets.Fade"), $"'{query}' ranked: {titles}.");
+        Assert.IsFalse(hits.Take(5).Any(hit => hit.Title.Contains("Reorder", StringComparison.Ordinal)),
+                       $"'{query}' ranked the reorder group, which has nothing to do with fading, among the first hits: {titles}.");
+    }
+
+    /// <summary>
+    /// The plural is still a question about the list: "stagger list items" is the staggered list, and
+    /// the singular rule above must not take that away.
+    /// </summary>
+    [TestMethod]
+    [DataRow("stagger list items")]
+    [DataRow("fade list items in one by one")]
+    [DataRow("make a list appear one item at a time")]
+    [DataRow("fade each list item in one after another")]
+    [DataRow("animate every list item in sequence")]
+    public async Task Search_AWholeListInSequence_StillPutsTheStaggeredListFirst(string query)
+    {
+        var hits = await BmotionSearchIndex.SearchAsync(query, 12);
+
+        Assert.AreNotEqual(0, hits.Length, $"'{query}' found nothing.");
+        Assert.AreEqual("Staggered list entrance", hits[0].Title, $"'{query}' ranked: {string.Join(", ", hits.Select(hit => hit.Title))}.");
+    }
+
+    /// <summary>
+    /// "The item key" is the name of a parameter, not one element: the rule that reads "an item" as an
+    /// element must leave it to find ItemKey.
+    /// </summary>
+    [TestMethod]
+    [DataRow("set the item key")]
+    [DataRow("an item key")]
+    public async Task Search_TheItemKey_StillFindsItemKey(string query)
+    {
+        var hits = await BmotionSearchIndex.SearchAsync(query, 5);
+
+        Assert.IsTrue(hits.Length > 0 && hits[0].Title.EndsWith(".ItemKey", StringComparison.Ordinal),
+                      $"'{query}' ranked: {string.Join(", ", hits.Select(hit => hit.Title))}.");
+    }
+
+    /// <summary>
+    /// Only a word that runs on into a name ("item key" is ItemKey) keeps "the item" from being one element:
+    /// "keyframes" merely starts with "key".
+    /// </summary>
+    [TestMethod]
+    [DataRow("fade the item keyframes")]
+    [DataRow("animate an item keyframe")]
+    public async Task Search_AnItemFollowedByAWordThatIsNoName_IsStillOneElement(string query)
+    {
+        var hits = await BmotionSearchIndex.SearchAsync(query, 5);
+        var titles = string.Join(", ", hits.Select(hit => hit.Title));
+
+        Assert.AreNotEqual(0, hits.Length, $"'{query}' found nothing.");
+        Assert.IsFalse(hits.Any(hit => hit.Title.Contains("Reorder", StringComparison.Ordinal) || hit.Title.EndsWith(".ItemKey", StringComparison.Ordinal)),
+                       $"'{query}' ranked the list's members among the first hits: {titles}.");
+    }
+
+    /// <summary>
+    /// The first word of a sentence is capitalized whatever it is, so its case is no sign it is a name:
+    /// "Fade a list item in" is ranked as "fade a list item in" is, rather than for the member called Fade.
+    /// </summary>
+    [TestMethod]
+    [DataRow("fade a list item in")]
+    [DataRow("items jump when reordered")]
+    [DataRow("the list is fine. items jump when reordered")]
+    public async Task Search_ACapitalAtTheStartOfASentence_ChangesNothing(string query)
+    {
+        var capitalized = string.Join(". ", query.Split(". ").Select(sentence => $"{char.ToUpperInvariant(sentence[0])}{sentence[1..]}"));
+
+        var lower = (await BmotionSearchIndex.SearchAsync(query, 10)).Select(hit => hit.Title).ToArray();
+        var upper = (await BmotionSearchIndex.SearchAsync(capitalized, 10)).Select(hit => hit.Title).ToArray();
+
+        CollectionAssert.AreEqual(lower, upper, $"'{query}' ranked: {string.Join(", ", lower)}; '{capitalized}' ranked: {string.Join(", ", upper)}.");
+    }
+
+    /// <summary>An easing preset is found by its own name, as a member is, not only by the words of it.</summary>
+    [TestMethod]
+    [DataRow("BackInOut")]
+    [DataRow("CircOut")]
+    public async Task Search_AnEasingPresetsName_FindsThePreset(string query)
+    {
+        var hits = await BmotionSearchIndex.SearchAsync(query, 5);
+
+        Assert.IsTrue(hits.Take(3).Any(hit => hit.Kind == "Easing preset" && hit.Title == $"BmotionEase.{query}"),
+                      $"'{query}' ranked: {string.Join(", ", hits.Select(hit => $"{hit.Kind}: {hit.Title}"))}.");
+    }
+
+    /// <summary>
+    /// The words a problem is reported in are dropped before the query is cut to the most terms it is
+    /// searched by, so however many of them a description holds, the name at its end is still searched for.
+    /// </summary>
+    [TestMethod]
+    public async Task Search_ALongSymptomFullOfReportingWords_StillSearchesTheNameAtItsEnd()
+    {
+        const string query = "it will not run, it still is not working, it doesnt work and it wont even run when I use it " +
+                             "or keep using it instead, it can only just work and it runs and it works and it isnt running " +
+                             "with LayoutId";
+
+        var hits = await BmotionSearchIndex.SearchAsync(query, 5);
+
+        Assert.IsTrue(hits.Length > 0 && hits[0].Title.EndsWith(".LayoutId", StringComparison.Ordinal),
+                      $"Ranked: {string.Join(", ", hits.Select(hit => hit.Title))}.");
+    }
+
+    /// <summary>
+    /// A member each component declares for itself is a different answer on each, however alike their
+    /// documentation reads; only a member one type inherits from another is one answer.
+    /// </summary>
+    [TestMethod]
+    public async Task Search_MembersOfOneNameDeclaredByDifferentTypes_AreNotMergedIntoOne()
+    {
+        var hits = await BmotionSearchIndex.SearchAsync("ChildContent", 20);
+
+        Assert.IsTrue(hits.Count(hit => hit.Title.EndsWith(".ChildContent", StringComparison.Ordinal)) > 1,
+                      $"Ranked: {string.Join(", ", hits.Select(hit => hit.Title))}.");
+
+        var stagger = await BmotionSearchIndex.SearchAsync("ChildStagger", 20);
+
+        Assert.AreEqual(1, stagger.Count(hit => hit.Title.EndsWith(".ChildStagger", StringComparison.Ordinal)
+                                                && hit.Context is "BmotionTransition" or "BmotionTween" or "BmotionSpring" or "BmotionInertia"),
+                        $"The inherited ChildStagger was listed once per type: {string.Join(", ", stagger.Select(hit => hit.Title))}.");
+    }
+
+    /// <summary>
+    /// A word is matched from the start of a word only: "item" is not inside every "TItem", nor "fade"
+    /// inside "Crossfade", and a method's overloads are one hit rather than one per overload.
+    /// </summary>
+    [TestMethod]
+    public async Task Search_MatchesWholeWordsAndListsAnOverloadedMethodOnce()
+    {
+        var hits = await BmotionSearchIndex.SearchAsync("fade", 20);
+        var titles = string.Join(", ", hits.Select(hit => hit.Title));
+
+        Assert.AreNotEqual(0, hits.Length, "'fade' found nothing.");
+        Assert.AreNotEqual("Bmotion.LayoutCrossfade", hits[0].Title, titles);
+        Assert.IsTrue(hits.Take(2).Any(hit => hit.Title == "BmotionPresets.Fade"), titles);
+
+        var stagger = await BmotionSearchIndex.SearchAsync("stagger", 20);
+
+        Assert.AreEqual(1, stagger.Count(hit => hit.Title == "Bm.Stagger"),
+                        $"Bm.Stagger was listed once per overload: {string.Join(", ", stagger.Select(hit => hit.Title))}.");
     }
 
     /// <summary>

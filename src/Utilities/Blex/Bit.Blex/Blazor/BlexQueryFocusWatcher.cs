@@ -1,7 +1,6 @@
-using Bit.Blex.Query;
 using Microsoft.JSInterop;
 
-namespace Bit.Blex.Blazor;
+namespace Bit.Blex;
 
 /// <summary>
 /// Tells the query cache when the browser tab becomes visible again or the network comes back, so stale

@@ -51,7 +51,7 @@ public class GestureRevertTests
         ctx.Interop.WebAnimationsSupported = false;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Transition, Bm.Tween(0.1, ease: BmEase.Linear))
+            .Add(p => p.Transition, Bm.Tween(0.1, ease: BmotionEase.Linear))
             .Add(p => p.WhileFocus, Bm.To(scale: 1.08))
             .Add(p => p.WhileHover, Bm.To(scale: 1.2))
             .Add(p => p.WhileTap, Bm.To(scale: 0.88))
@@ -90,9 +90,9 @@ public class GestureRevertTests
             .Add(p => p.Id, "box")
             .Add(p => p.Initial, Bm.To(backgroundColor: "#000000"))
             .Add(p => p.Animate, Bm.To(backgroundColor: "#ffffff"))
-            .Add(p => p.Transition, Bm.Tween(1, ease: BmEase.Linear))
+            .Add(p => p.Transition, Bm.Tween(1, ease: BmotionEase.Linear))
             .Add(p => p.WhileHover, Bm.To(scale: 1.2, transition: Bm.Tween(0.1)))
-            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmProps?>(this, _ => enterCompleted.TrySetResult()))
+            .Add(p => p.OnAnimationComplete, EventCallback.Factory.Create<BmotionProps?>(this, _ => enterCompleted.TrySetResult()))
             .Add(p => p.ChildContent, Div));
         await ctx.RunFramesAsync(0, 200);
 
@@ -117,7 +117,7 @@ public class GestureRevertTests
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
             .Add(p => p.Animate, Bm.To(opacity: new double[] { 0, 1 }))
-            .Add(p => p.Transition, Bm.Tween(0.2, ease: BmEase.Linear))
+            .Add(p => p.Transition, Bm.Tween(0.2, ease: BmotionEase.Linear))
             .Add(p => p.WhileHover, Bm.To(opacity: 0.5))
             .Add(p => p.ChildContent, Div));
         await ctx.FinishWaapiAsync("box"); // the [0, 1] fade-in has played
@@ -163,7 +163,7 @@ public class GestureRevertTests
     {
         using var ctx = new BmotionTestContext();
         ctx.Interop.WebAnimationsSupported = false;
-        var states = new BmVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
+        var states = new BmotionVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
         // The parent holds its children back by a second; the child's own transition is quick.
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "parent")
@@ -176,8 +176,8 @@ public class GestureRevertTests
                 b.OpenElement(0, "div");
                 b.OpenComponent<Bmotion>(1);
                 b.AddComponentParameter(2, nameof(Bmotion.Id), "child");
-                b.AddComponentParameter(3, nameof(Bmotion.Transition), (BmTransition?)Bm.Tween(0.2, ease: BmEase.Linear));
-                b.AddComponentParameter(4, nameof(Bmotion.WhileHover), (BmTarget?)Bm.To(opacity: 0.5));
+                b.AddComponentParameter(3, nameof(Bmotion.Transition), (BmotionTransition?)Bm.Tween(0.2, ease: BmotionEase.Linear));
+                b.AddComponentParameter(4, nameof(Bmotion.WhileHover), (BmotionTarget?)Bm.To(opacity: 0.5));
                 b.AddComponentParameter(5, nameof(Bmotion.ChildContent), Div);
                 b.CloseComponent();
                 b.CloseElement();
@@ -203,7 +203,7 @@ public class GestureRevertTests
     {
         using var ctx = new BmotionTestContext();
         ctx.Interop.WebAnimationsSupported = false;
-        var states = new BmVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
+        var states = new BmotionVariants { ["hidden"] = Bm.To(opacity: 0), ["visible"] = Bm.To(opacity: 1) };
         // As above, but the child has no transition of its own (nor a config default): its resting
         // transition is the engine default, and only its entrance - not the revert - may inherit
         // the parent's second of delayChildren.
@@ -218,7 +218,7 @@ public class GestureRevertTests
                 b.OpenElement(0, "div");
                 b.OpenComponent<Bmotion>(1);
                 b.AddComponentParameter(2, nameof(Bmotion.Id), "child");
-                b.AddComponentParameter(3, nameof(Bmotion.WhileHover), (BmTarget?)Bm.To(opacity: 0.5));
+                b.AddComponentParameter(3, nameof(Bmotion.WhileHover), (BmotionTarget?)Bm.To(opacity: 0.5));
                 b.AddComponentParameter(4, nameof(Bmotion.ChildContent), Div);
                 b.CloseComponent();
                 b.CloseElement();
@@ -246,10 +246,10 @@ public class GestureRevertTests
         {
             b.OpenComponent<Bmotion>(0);
             b.AddComponentParameter(1, nameof(Bmotion.Id), "card");
-            b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1, scale: 1));
-            b.AddComponentParameter(3, nameof(Bmotion.WhileHover), (BmTarget?)Bm.To(scale: 1.5));
-            b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmTarget?)Bm.To(opacity: 0, scale: 0.5));
-            b.AddComponentParameter(5, nameof(Bmotion.Transition), (BmTransition?)Bm.Tween(1, ease: BmEase.Linear));
+            b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 1, scale: 1));
+            b.AddComponentParameter(3, nameof(Bmotion.WhileHover), (BmotionTarget?)Bm.To(scale: 1.5));
+            b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmotionTarget?)Bm.To(opacity: 0, scale: 0.5));
+            b.AddComponentParameter(5, nameof(Bmotion.Transition), (BmotionTransition?)Bm.Tween(1, ease: BmotionEase.Linear));
             b.AddComponentParameter(6, nameof(Bmotion.ChildContent), Div);
             b.CloseComponent();
         };
@@ -274,14 +274,14 @@ public class GestureRevertTests
     }
 
     // A card in a presence: Animate, WhileHover and Exit as given, every transition a linear 1s tween.
-    private static RenderFragment PresenceCard(BmTarget animate, BmTarget whileHover, BmTarget exit) => b =>
+    private static RenderFragment PresenceCard(BmotionTarget animate, BmotionTarget whileHover, BmotionTarget exit) => b =>
     {
         b.OpenComponent<Bmotion>(0);
         b.AddComponentParameter(1, nameof(Bmotion.Id), "card");
-        b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmTarget?)animate);
-        b.AddComponentParameter(3, nameof(Bmotion.WhileHover), (BmTarget?)whileHover);
-        b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmTarget?)exit);
-        b.AddComponentParameter(5, nameof(Bmotion.Transition), (BmTransition?)Bm.Tween(1, ease: BmEase.Linear));
+        b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmotionTarget?)animate);
+        b.AddComponentParameter(3, nameof(Bmotion.WhileHover), (BmotionTarget?)whileHover);
+        b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmotionTarget?)exit);
+        b.AddComponentParameter(5, nameof(Bmotion.Transition), (BmotionTransition?)Bm.Tween(1, ease: BmotionEase.Linear));
         b.AddComponentParameter(6, nameof(Bmotion.ChildContent), Div);
         b.CloseComponent();
     };

@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// following reduced motion, Disabled (the toggles and the page's handlers), the public variables and Styles / Classes.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiJsonViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aijsonview";

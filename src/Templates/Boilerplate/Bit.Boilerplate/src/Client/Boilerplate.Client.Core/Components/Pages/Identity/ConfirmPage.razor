@@ -37,13 +37,13 @@
                                         <ValidationMessage For="@(() => emailModel.Email)" />
 
                                         <BitOtpInput @bind-Value="emailModel.Token"
-                                                     IsLoading="isWaiting"
+                                                     Loading="isWaiting"
                                                      TabIndex="2"
                                                      OnFill="WrapHandled(ConfirmEmail)"
                                                      Label="@Localizer[nameof(AppStrings.EmailToken)]" />
                                         <ValidationMessage For="@(() => emailModel.Token)" />
 
-                                        <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                                        <BitButton Loading="isWaiting" ButtonType="BitButtonType.Submit">
                                             @Localizer[nameof(AppStrings.EmailTokenConfirmButtonText)]
                                         </BitButton>
                                     </BitStack>
@@ -57,7 +57,7 @@
                                     @Localizer[nameof(AppStrings.CheckSpamMailMessage)]
                                 </BitText>
 
-                                <BitButton IsLoading="isWaiting"
+                                <BitButton Loading="isWaiting"
                                            ButtonType="BitButtonType.Button"
                                            Variant="BitVariant.Outline"
                                            OnClick="WrapHandled(ResendEmailToken)">
@@ -104,12 +104,12 @@
                                         <ValidationMessage For="@(() => phoneModel.PhoneNumber)" />
 
                                         <BitOtpInput @bind-Value="phoneModel.Token"
-                                                     IsLoading="isWaiting"
+                                                     Loading="isWaiting"
                                                      OnFill="WrapHandled(ConfirmPhone)"
                                                      Label="@Localizer[nameof(AppStrings.PhoneToken)]" />
                                         <ValidationMessage For="@(() => phoneModel.Token)" />
 
-                                        <BitButton IsLoading="isWaiting" ButtonType="BitButtonType.Submit">
+                                        <BitButton Loading="isWaiting" ButtonType="BitButtonType.Submit">
                                             @Localizer[nameof(AppStrings.PhoneTokenConfirmButtonText)]
                                         </BitButton>
                                     </BitStack>
@@ -119,7 +119,7 @@
                                     @Localizer[nameof(AppStrings.NotReceivedPhoneMessage)]
                                 </BitText>
 
-                                <BitButton IsLoading="isWaiting"
+                                <BitButton Loading="isWaiting"
                                            ButtonType="BitButtonType.Button"
                                            Variant="BitVariant.Outline"
                                            OnClick="WrapHandled(ResendPhoneToken)">

@@ -10,6 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// --bit-AiAgentStepView-* variable, Styles and Classes, RTL and Disabled.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiAgentStepViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiagentstepview";

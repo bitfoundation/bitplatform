@@ -21,8 +21,6 @@ public partial class _BitNavBarChild
 
     [Parameter] public string? Href { get; set; }
 
-    [Parameter] public bool IsLink { get; set; }
-
     /// <summary>
     /// The visually hidden sentence a link opening a new tab is announced with, rendered after the content.
     /// </summary>

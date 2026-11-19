@@ -38,7 +38,7 @@
         <div class="demo-card stack arc-stage">
             <span class="demo-label">straight line</span>
             <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                     Transition="Bm.Tween(1.1, BmEase.InOut)">
+                     Transition="Bm.Tween(1.1, BmotionEase.InOut)">
                 <div class="box box-sm arc-start" />
             </Bmotion>
         </div>
@@ -46,7 +46,7 @@
         <div class="demo-card stack arc-stage">
             <span class="demo-label">arc &middot; strength 0.6</span>
             <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6))">
+                     Transition="Bm.Tween(1.1, BmotionEase.InOut, path: Bm.Arc(strength: 0.6))">
                 <div class="box box-sm arc-start" />
             </Bmotion>
         </div>
@@ -54,7 +54,7 @@
         <div class="demo-card stack arc-stage">
             <span class="demo-label">arc &middot; rotate 1</span>
             <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, rotate: 1))">
+                     Transition="Bm.Tween(1.1, BmotionEase.InOut, path: Bm.Arc(strength: 0.6, rotate: 1))">
                 <div class="box box-sm arc-start arc-card">&#9992;</div>
             </Bmotion>
         </div>
@@ -62,7 +62,7 @@
         <div class="demo-card stack arc-stage">
             <span class="demo-label">arc &middot; peak 0.15 &middot; crests early</span>
             <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, peak: 0.15))">
+                     Transition="Bm.Tween(1.1, BmotionEase.InOut, path: Bm.Arc(strength: 0.6, peak: 0.15))">
                 <div class="box box-sm arc-start" />
             </Bmotion>
         </div>
@@ -70,7 +70,7 @@
         <div class="demo-card stack arc-stage arc-below">
             <span class="demo-label">arc &middot; direction CounterClockwise &middot; bulges below</span>
             <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                     Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.35, direction: BmArcDirection.CounterClockwise))">
+                     Transition="Bm.Tween(1.1, BmotionEase.InOut, path: Bm.Arc(strength: 0.35, direction: BmotionArcDirection.CounterClockwise))">
                 <div class="box box-sm arc-start" />
             </Bmotion>
         </div>
@@ -109,7 +109,7 @@
                 </svg>
                 <Bmotion Initial="_initial"
                          Animate="@(_on ? _travel : _initial)"
-                         Transition="Bm.Tween(2.0, BmEase.InOut)">
+                         Transition="Bm.Tween(2.0, BmotionEase.InOut)">
                     <div class="mpath-dot" />
                 </Bmotion>
             </div>
@@ -145,7 +145,7 @@
             <svg viewBox="0 0 200 120" class="draw-svg">
                 <Bmotion Initial="Bm.To(pathLength: 0)"
                          Animate="Bm.To(pathLength: 1)"
-                         Transition="Bm.Tween(2.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+                         Transition="Bm.Tween(2.2, BmotionEase.InOut, repeat: BmotionRepeat.Mirror())">
                     <path d="M20,100 C50,10 90,110 120,50 C140,10 175,30 185,90"
                           fill="none" style="stroke:var(--bb-primary)" stroke-width="6" stroke-linecap="round" />
                 </Bmotion>
@@ -157,7 +157,7 @@
             <svg viewBox="0 0 200 120" class="draw-svg">
                 <Bmotion Initial="Bm.To(pathLength: 0.25)"
                          Animate="Bm.To(pathOffset: [0, 1])"
-                         Transition="Bm.Tween(2.4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                         Transition="Bm.Tween(2.4, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                     <circle cx="100" cy="60" r="42"
                             fill="none" style="stroke:var(--bb-accent)" stroke-width="6" stroke-linecap="round" />
                 </Bmotion>
@@ -169,7 +169,7 @@
             <svg viewBox="0 0 200 120" class="draw-svg">
                 <Bmotion Initial="Bm.To(pathLength: 0.1, pathSpacing: 0.15)"
                          Animate="Bm.To(pathOffset: [0, 1])"
-                         Transition="Bm.Tween(4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                         Transition="Bm.Tween(4, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                     <circle cx="100" cy="60" r="42"
                             fill="none" style="stroke:var(--bb-primary)" stroke-width="6" stroke-linecap="round" />
                 </Bmotion>
@@ -220,13 +220,13 @@
     private bool _morph;
     private bool _thrown;
 
-    private static readonly BmProps _initial =
+    private static readonly BmotionProps _initial =
         Bm.To(offsetPath: "path('M20,150 C80,20 220,20 280,150')", offsetDistance: "0%");
-    private static readonly BmProps _travel = Bm.To(offsetDistance: "100%");
+    private static readonly BmotionProps _travel = Bm.To(offsetDistance: "100%");
 
     // Same command structure (M + 4 cubic segments) so the control points interpolate smoothly.
-    private static readonly BmProps _blobA = Bm.To(d: "M100 30 C140 30 170 60 170 100 C170 140 140 170 100 170 C60 170 30 140 30 100 C30 60 60 30 100 30");
-    private static readonly BmProps _blobB = Bm.To(d: "M100 50 C130 20 180 70 150 100 C180 130 130 180 100 150 C70 180 20 130 50 100 C20 70 70 20 100 50");
+    private static readonly BmotionProps _blobA = Bm.To(d: "M100 30 C140 30 170 60 170 100 C170 140 140 170 100 170 C60 170 30 140 30 100 C30 60 60 30 100 30");
+    private static readonly BmotionProps _blobB = Bm.To(d: "M100 50 C130 20 180 70 150 100 C180 130 130 180 100 150 C70 180 20 130 50 100 C20 70 70 20 100 50");
 
     private const string _code = """
         @using Bit.Bmotion
@@ -235,16 +235,16 @@
            properties, so the browser owns the curve. *@
         <Bmotion Initial="_initial"
                  Animate="@(_on ? _travel : _initial)"
-                 Transition="Bm.Tween(2.0, BmEase.InOut)">
+                 Transition="Bm.Tween(2.0, BmotionEase.InOut)">
             <div class="dot" />
         </Bmotion>
 
         @code {
             private bool _on;
 
-            static readonly BmProps _initial =
+            static readonly BmotionProps _initial =
                 Bm.To(offsetPath: "path('M20,150 C80,20 220,20 280,150')", offsetDistance: "0%");
-            static readonly BmProps _travel = Bm.To(offsetDistance: "100%");
+            static readonly BmotionProps _travel = Bm.To(offsetDistance: "100%");
         }
         """;
 
@@ -256,7 +256,7 @@
         <svg viewBox="0 0 200 120">
             <Bmotion Initial="Bm.To(pathLength: 0)"
                      Animate="Bm.To(pathLength: 1)"
-                     Transition="Bm.Tween(2.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+                     Transition="Bm.Tween(2.2, BmotionEase.InOut, repeat: BmotionRepeat.Mirror())">
                 <path d="M20,100 C50,10 90,110 120,50 C140,10 175,30 185,90"
                       fill="none" stroke="#1276C6" stroke-width="6" stroke-linecap="round" />
             </Bmotion>
@@ -268,7 +268,7 @@
         <svg viewBox="0 0 200 120">
             <Bmotion Initial="Bm.To(pathLength: 0.25)"
                      Animate="Bm.To(pathOffset: [0, 1])"
-                     Transition="Bm.Tween(2.4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                     Transition="Bm.Tween(2.4, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                 <circle cx="100" cy="60" r="42"
                         fill="none" stroke="#FD7F36" stroke-width="6" stroke-linecap="round" />
             </Bmotion>
@@ -279,7 +279,7 @@
         <svg viewBox="0 0 200 120">
             <Bmotion Initial="Bm.To(pathLength: 0.1, pathSpacing: 0.15)"
                      Animate="Bm.To(pathOffset: [0, 1])"
-                     Transition="Bm.Tween(4, BmEase.Linear, repeat: BmRepeat.Forever)">
+                     Transition="Bm.Tween(4, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                 <circle cx="100" cy="60" r="42"
                         fill="none" stroke="#1276C6" stroke-width="6" stroke-linecap="round" />
             </Bmotion>
@@ -302,8 +302,8 @@
 
             // Same command structure (M + 4 cubic segments) in both, so every control point
             // has a counterpart to travel to. Mismatched paths snap instead of morphing.
-            static readonly BmProps _blobA = Bm.To(d: "M100 30 C140 30 170 60 170 100 …");
-            static readonly BmProps _blobB = Bm.To(d: "M100 50 C130 20 180 70 150 100 …");
+            static readonly BmotionProps _blobA = Bm.To(d: "M100 30 C140 30 170 60 170 100 …");
+            static readonly BmotionProps _blobB = Bm.To(d: "M100 50 C130 20 180 70 150 100 …");
         }
         """;
 
@@ -313,32 +313,32 @@
         @* Straight line: x and y are interpolated independently, which is the only
            thing two separate interpolations can describe. *@
         <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                 Transition="Bm.Tween(1.1, BmEase.InOut)">
+                 Transition="Bm.Tween(1.1, BmotionEase.InOut)">
             <div class="box" />
         </Bmotion>
 
         @* Same target, curved: `path` couples the two axes onto one journey. No `d`
            string - the curve is derived from the two endpoints. *@
         <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                 Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6))">
+                 Transition="Bm.Tween(1.1, BmotionEase.InOut, path: Bm.Arc(strength: 0.6))">
             <div class="box" />
         </Bmotion>
 
         @* rotate: 1 turns the element along the tangent, so it banks into the curve. *@
         <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                 Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, rotate: 1))">
+                 Transition="Bm.Tween(1.1, BmotionEase.InOut, path: Bm.Arc(strength: 0.6, rotate: 1))">
             <div class="box">&#9992;</div>
         </Bmotion>
 
         @* peak moves the crest along the journey (0 towards the start, 1 towards the end);
            direction fixes the side - Auto bulges upward, as a throw does. *@
         <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                 Transition="Bm.Tween(1.1, BmEase.InOut, path: Bm.Arc(strength: 0.6, peak: 0.15))">
+                 Transition="Bm.Tween(1.1, BmotionEase.InOut, path: Bm.Arc(strength: 0.6, peak: 0.15))">
             <div class="box" />
         </Bmotion>
         <Bmotion Animate="@(_thrown ? Bm.To(x: 150, y: 40) : Bm.To(x: 0, y: 0))"
-                 Transition="Bm.Tween(1.1, BmEase.InOut,
-                                      path: Bm.Arc(strength: 0.35, direction: BmArcDirection.CounterClockwise))">
+                 Transition="Bm.Tween(1.1, BmotionEase.InOut,
+                                      path: Bm.Arc(strength: 0.35, direction: BmotionArcDirection.CounterClockwise))">
             <div class="box" />
         </Bmotion>
 

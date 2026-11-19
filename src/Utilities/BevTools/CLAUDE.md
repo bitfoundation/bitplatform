@@ -13,14 +13,14 @@ measured overhead - keep all of them accurate when behaviour changes.
 | Path | What it is |
 | --- | --- |
 | `Bit.BevTools/` | Instrumentation, session stores, inspection, diagnostics, export and the UI (`BevToolsPanel` and the panels), plus `BitBevTools.AddBitBevToolsServices` |
-| `Bit.BevTools/Abstractions/` | The integration contract (`IBevToolsExtension`, `IBevStateProvider`, `IBevDiagnosticRule`, `IBevToolsCommand`, `IBevToolsTimeline`, `BevToolsEvent`, the attributes). Additions only, never removals or signature changes. It uses no Blazor types, so it can move back into a package of its own (with `[TypeForwardedTo]`) if a Blazor-free consumer appears; keep it that way |
+| `Bit.BevTools/Abstractions/` | The integration contract (`IBevToolsExtension`, `IBevToolsStateProvider`, `IBevToolsDiagnosticRule`, `IBevToolsCommand`, `IBevToolsTimeline`, `BevToolsEvent`, the attributes). Additions only, never removals or signature changes. It uses no Blazor types, so it can move back into a package of its own (with `[TypeForwardedTo]`) if a Blazor-free consumer appears; keep it that way |
 | `Bit.BevTools/Scripts/bit-bevtools.ts` | The page hub: one target per BevTools runtime on the page, page-level facts (errors, failed resources, CSP, WebSocket traffic, enhanced navigation), and `window.__BIT_BEVTOOLS__` for external frontends. Compiled by MSBuild to `wwwroot/bit-bevtools.js` (generated, git-ignored; minified in Release) |
 | `Bit.BevTools/Scripts/bit-bevtools-companion.ts` | The companion frontend (companion window and browser extension), compiled to `wwwroot/bit-bevtools-companion.js`; `wwwroot/companion.html` and its stylesheet are sources. Renders application strings as text nodes only |
 | `Bit.BevTools/Protocol/` | `BevToolsProtocol`: what external frontends ask a runtime, answered from the same stores and through the same inspector as the panels |
 | `Bit.BevTools/Routing/`, `Auth/`, `WebApp/`, `Runtime/` | Route data and route table, the authentication state provider, the prerendering handoff, per-platform runtime facts |
 | `Bit.BevTools.Server/` | Circuit instrumentation and the Circuit panel, itself written as a BevTools extension |
-| `Bit.BevTools.Loader/` | The half an app references at startup when it opens BevTools on demand or lazy loads it: startup hooks (activator, HTTP, framework diagnostics, service collection), `BevToolsLoader`, `BevToolsLoaderPanel`, `BevToolsHttpHookHandler`. It ships in every startup download, AOT builds included, so it is trimmable, AOT compatible and reflection free, and it never references `Bit.BevTools`: `Bit.BevTools` references it, and implements its internal contract (`Internal/BevToolsLoaderContract.cs`) through `[assembly: BevToolsEntryPoint]` |
-| `Bit.BevTools.Cli/` | The `bevtools` .NET tool: `check` (`BevSessionCheck`) and `compare` (`BevProfileComparison`) over export files for CI (Markdown, JSON, SARIF, GitHub annotations), and `mcp`, a read-only Model Context Protocol server over exports for coding agents; a thin shell, the logic lives in `Bit.BevTools`. Reads files only, never a running app |
+| `Bit.BevTools.Loader/` | The half an app references at startup when it opens BevTools on demand or lazy loads it: startup hooks (activator, HTTP, framework diagnostics, service collection), `BevToolsLoader`, `BevToolsLoaderPanel`, `BevToolsHttpHookHandler`. It ships in every startup download, AOT builds included, so it is trimmable, AOT compatible and reflection free, and it never references `Bit.BevTools`: `Bit.BevTools` references it, and implements its internal contract (`Internal/`: `IBevToolsEntryPoint`, `IBevToolsAttachment`, `BevToolsLoaderContext`, ...) through `[assembly: BevToolsEntryPoint]` |
+| `Bit.BevTools.Cli/` | The `bevtools` .NET tool: `check` (`BevToolsSessionCheck`) and `compare` (`BevToolsProfileComparison`) over export files for CI (Markdown, JSON, SARIF, GitHub annotations), and `mcp`, a read-only Model Context Protocol server over exports for coding agents; a thin shell, the logic lives in `Bit.BevTools`. Reads files only, never a running app |
 | `Bit.BevTools.Blex/` | bit Blex in the State panel, with restoring through Blex's time travel: an integration written against the public contract only, as a third party's would be |
 | `Bit.BevTools.Belemetry/` | bit Belemetry's production diagnostics: the Support panel (timeline, exception groups, the jump to a failure's component, bundle preview/export/import) and `IBelemetryComponentContextProvider` (ancestry and render counts of live components for Belemetry's captures), and `IBelemetryDiagnosticComponentFilter` (BevTools' own UI events kept off Belemetry's timeline, by the exact-namespace rule). It reads the component registry, so `Bit.BevTools` grants it internals, as it does `Bit.BevTools.Server`. Belemetry must never reference BevTools: the dependency only goes this way |
 | `Bit.BevTools.Extension/` | Manifest V3 browser extension (Chromium, Firefox): the companion in a DevTools panel over `inspectedWindow.eval`; no permissions, no content script. `node build.mjs` assembles `dist/` |
@@ -33,28 +33,28 @@ measured overhead - keep all of them accurate when behaviour changes.
 
 ## Principles that every change must respect
 
-1. **Never fake data.** If something cannot be observed reliably, show that it cannot (see `CapabilityReport`), do
+1. **Never fake data.** If something cannot be observed reliably, show that it cannot (see `BevToolsCapabilityReport`), do
    not approximate it. Every number in the UI has a documented source.
 2. **Never observe yourself.** BevTools' own components, events, interop calls and WebSocket
    reports must not appear as application activity, nor work BevTools does through application code
-   (`SessionResolver.BeginBevToolsWork`, e.g. asking the `AuthenticationStateProvider`). `PanelInteractionTests.BevTools_own_ui_never_appears_as_application_activity` guards this. Ownership is
+   (`BevToolsSessionResolver.BeginBevToolsWork`, e.g. asking the `AuthenticationStateProvider`). `PanelInteractionTests.BevTools_own_ui_never_appears_as_application_activity` guards this. Ownership is
    decided by assembly and by namespace: every BevTools component lives directly in `Bit.BevTools` (the server
    package's included), and only there - `Bit.BevTools.Demo.*`, `Bit.BevTools.Tests` or an application's
    `Bit.BevTools.Anything` is application code. Never match the product namespace as a prefix. The one other owner is a
    panel an extension contributes (`BevToolsPanelDescriptor`), with what it renders: the framework's activities and
-   meters name only a component type, so `ComponentRegistry.IsBevToolsOnlyType` tells their measurements apart
+   meters name only a component type, so `BevToolsComponentRegistry.IsBevToolsOnlyType` tells their measurements apart
    (`ExtensibilityTests.An_extension_panel_is_never_recorded_as_application_activity`).
-3. **Never leak secrets.** Redaction happens at capture time (`BevRedactor`: names, `[BevToolsSensitive]`, credential
-   shapes, sensitive pairs; browser-side storage and URL redaction), and `BevObjectInspector` never walks configuration
+3. **Never leak secrets.** Redaction happens at capture time (`BevToolsRedactor`: names, `[BevToolsSensitive]`, credential
+   shapes, sensitive pairs; browser-side storage and URL redaction), and `BevToolsObjectInspector` never walks configuration
    or key material. Every application value reaches a panel, export, trace or protocol answer through the inspector,
    which applies `ValueAccess` (`None` by default outside Development in a server process). Exports, traces and the
    protocol may never show more than the panels do; a new frontend reads through `BevToolsProtocol`, never around it.
    Production inspection is opt-in: outside Development in a server process it takes `AllowInMultiUserHost` and an
    `Authorize` callback (`BevToolsAttachPolicy`).
-4. **Bounded and cheap.** Every buffer is a ring buffer; the per-render hot path (`RenderTracker.BeginRender` /
+4. **Bounded and cheap.** Every buffer is a ring buffer; the per-render hot path (`BevToolsRenderTracker.BeginRender` /
    `EndRender`) formats no strings and allocates one sample plus one event. Run the benchmark before and after touching
    it: `dotnet run -c Release --project Tests/Bit.BevTools.Benchmarks`.
-5. **Optional reflection.** Every accessor over Blazor internals lives in `BlazorReflection`, is null when the member
+5. **Optional reflection.** Every accessor over Blazor internals lives in `BevToolsBlazorReflection`, is null when the member
    is missing, and degrades to a reported capability gap rather than an exception. The assembly is deliberately not
    trim- or AOT-safe (`IsTrimmable`/`IsAotCompatible` are off); it is a development tool, and keeps itself whole in an
    app that trims and uses it (the embedded `ILLink.Descriptors.xml`; the loader's `DynamicDependency` reaches it when
@@ -68,9 +68,10 @@ starts with a BOM). Comments explain *why* a thing is shaped the way it is, not 
 
 - **One namespace**: everything in all four packages (the CLI included) is in `Bit.BevTools`, whatever folder it sits in; razor files
   declare `@namespace Bit.BevTools`. Tests use `Bit.BevTools.Tests`, the demo `Bit.BevTools.Demo.Client` / `.Server`.
-- **Prefixed public types**: `BevTools*` for the types that are the tool itself (`BevToolsSession`, `BevToolsPanel`,
-  `IBevToolsExtension`), `Bev*` for the rest (`BevComponentRecord`, `BevDiagnostic`, `BevFmt`), and razor components
-  too, since the Razor SDK makes them public. A consumer importing `Bit.BevTools` must never get a bare common name.
+- **Prefixed types**: every type, public or internal and razor components included, starts with `BevTools`
+  (`BevToolsSession`, `BevToolsPanel`, `IBevToolsExtension`, `BevToolsComponentRecord`, `BevToolsFmt`), and lives in a
+  file of its own named after it, as [../CLAUDE.md](../CLAUDE.md) says. `Bev` alone is not the prefix. A consumer
+  importing `Bit.BevTools` must never get a bare common name.
 - **Multi-targeting**: APIs newer than .NET 10 go behind `NET11_0_OR_GREATER`, with a fallback that is reported, not hidden.
 
 ## Tests
@@ -87,7 +88,7 @@ Every behaviour has a test at the level where it can fail for real:
 A test that asserts on the exact activity, meter and tag names of `Microsoft.AspNetCore.Components` is deliberate: a
 framework rename should break a test, not silently degrade every render cause to *StateHasChanged*. Tests
 share process-wide state (the activity/meter listeners, the session resolver), so the assembly runs them sequentially,
-and a test that needs that state in a particular shape sets it up itself (`ActivityObserver.MarkBatchMetricsObserved`)
+and a test that needs that state in a particular shape sets it up itself (`BevToolsActivityObserver.MarkBatchMetricsObserved`)
 instead of relying on whichever test ran before it.
 
 | Suite | Run |

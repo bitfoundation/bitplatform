@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Bit.Blex.Query;
+namespace Bit.Blex;
 
 /// <summary>
 /// The data of an <see cref="BlexInfiniteQuery{TPage, TParam}"/>: the pages loaded so far, in order, and the page

@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace Bit.BlazeDb.EntityFrameworkCore.Query;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Splits the collected <c>Where</c> bodies into individual AND-ed tests and puts the survivors

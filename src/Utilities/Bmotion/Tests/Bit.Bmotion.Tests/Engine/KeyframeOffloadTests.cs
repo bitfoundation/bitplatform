@@ -86,7 +86,7 @@ public class KeyframeOffloadTests
         // opacity is a scalar (eased once over the whole tween); y is a 3-frame sequence (eased per segment).
         await engine.AnimateToAsync("el",
             new Dictionary<string, object?> { ["opacity"] = 0.5, ["y"] = new double[] { 0, -20, 0 } },
-            Bm.Tween(0.5, ease: BmEase.Linear).ToConfig());
+            Bm.Tween(0.5, ease: BmotionEase.Linear).ToConfig());
 
         var kf = Recorded(interop);
         Assert.AreEqual(0.75, WebAnimationKeyframes.At(kf, 0.5, k => WebAnimationKeyframes.Number(k, "opacity")), 2e-3,

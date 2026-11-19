@@ -72,7 +72,10 @@ public class DxTests
         CollectionAssert.AreEquivalent(new[] { "color", "backgroundColor" },
             ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").BrowserProperties.ToArray());
 
-        cts.Cancel();
+        // Cancelled on the renderer's context, where the animation started, so the stop runs inline. Cancelled from
+        // the test thread it would be posted to that context and race the assertion below (AsyncLifecycleTests
+        // covers the cross-thread case).
+        await cut.InvokeAsync(() => cts.Cancel());
 
         // The cancellation stops just the properties that call animated, not the whole element.
         CollectionAssert.AreEquivalent(new[] { "color" },

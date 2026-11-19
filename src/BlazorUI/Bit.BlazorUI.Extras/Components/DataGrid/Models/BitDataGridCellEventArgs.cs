@@ -10,12 +10,16 @@ namespace Bit.BlazorUI;
 /// <typeparam name="TItem">The row item type.</typeparam>
 public sealed class BitDataGridCellEventArgs<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>
 {
+    /// <summary>The item of the row the cell is in.</summary>
     public required TItem Item { get; init; }
 
     // Holds a live reference to the column so handlers can reach the full column instance. The
     // identity-level metadata (ColumnId/ColumnTitle) is snapshotted at event-build time below so an
     // async handler always observes a consistent payload even if the column's title changes after dispatch.
     private readonly BitDataGridColumn<TItem> _column = default!;
+
+    /// <summary>The column of the cell, as it is now; <see cref="ColumnId"/> and <see cref="ColumnTitle"/> keep what
+    /// it was when the event was raised.</summary>
     public required BitDataGridColumn<TItem> Column
     {
         get => _column;

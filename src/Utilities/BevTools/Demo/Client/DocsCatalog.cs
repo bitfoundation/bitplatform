@@ -122,7 +122,7 @@ public static class DocsCatalog
                 typeof(Orders)),
             new("/checkout", "Checkout",
                 "A cart and two forms: named state changes with before/after diffs, what validates each form, and an accessibility problem to find.",
-                "state CartState AppState IBevStateProvider AddBevToolsStateProvider diff history form validation EditForm DataAnnotationsValidator forms accessibility a11y label",
+                "state CartState AppState IBevToolsStateProvider AddBevToolsStateProvider diff history form validation EditForm DataAnnotationsValidator forms accessibility a11y label",
                 typeof(Checkout)),
             new("/routing", "Routing & sign-in",
                 "Route values, a query string with a token in it, a sign-in, a navigation guard and a redirect loop: the Routing panel and the authentication state.",

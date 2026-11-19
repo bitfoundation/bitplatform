@@ -12,22 +12,22 @@ public class XmlDocsTests
     [TestMethod]
     public void GetSummary_FindsTheDocumentationOfAKnownType()
     {
-        var summary = BmotionXmlDocs.GetSummary($"T:{typeof(BmSpring).FullName}");
+        var summary = BmotionXmlDocs.GetSummary($"T:{typeof(BmotionSpring).FullName}");
 
-        Assert.IsFalse(string.IsNullOrWhiteSpace(summary), "BmSpring has no summary, so the XML file was not loaded.");
+        Assert.IsFalse(string.IsNullOrWhiteSpace(summary), "BmotionSpring has no summary, so the XML file was not loaded.");
     }
 
     [TestMethod]
     public void GetSummary_FindsTheDocumentationOfAMember()
     {
-        var summary = BmotionXmlDocs.GetSummary($"P:{typeof(BmSpring).FullName}.{nameof(BmSpring.Stiffness)}");
+        var summary = BmotionXmlDocs.GetSummary($"P:{typeof(BmotionSpring).FullName}.{nameof(BmotionSpring.Stiffness)}");
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(summary));
     }
 
     [TestMethod]
     [DataRow("T:Bit.Bmotion.NoSuchType")]
-    [DataRow("P:Bit.Bmotion.BmSpring.NoSuchMember")]
+    [DataRow("P:Bit.Bmotion.BmotionSpring.NoSuchMember")]
     [DataRow("")]
     [DataRow("nonsense")]
     public void GetSummary_AnUnknownId_IsNullRatherThanAThrow(string id)
@@ -37,8 +37,8 @@ public class XmlDocsTests
     }
 
     /// <summary>
-    /// A cref is a fully qualified id in the file and a name in the sentence: "BmSpring", not
-    /// "T:Bit.Bmotion.BmSpring".
+    /// A cref is a fully qualified id in the file and a name in the sentence: "BmotionSpring", not
+    /// "T:Bit.Bmotion.BmotionSpring".
     /// </summary>
     [TestMethod]
     public void GetSummary_CrefReferences_ReadAsNames()
@@ -116,7 +116,7 @@ public class XmlDocsTests
     [TestMethod]
     public void GetSummary_TheProseIsUnwrapped_NotLeftAtTheSourcesLineWidth()
     {
-        var summary = BmotionXmlDocs.GetSummary($"T:{typeof(BmSpring).FullName}")!;
+        var summary = BmotionXmlDocs.GetSummary($"T:{typeof(BmotionSpring).FullName}")!;
 
         // Source comments wrap at around a hundred columns; a summary that still has single newlines
         // in the middle of sentences was not unwrapped.

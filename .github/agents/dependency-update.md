@@ -85,7 +85,7 @@ floor, so once a new major ships, a range that starts at its preview or release 
 prerelease bound also makes nuget.org list the package as SemVer 2.0.0, which older clients' searches leave out. An
 EF Core range is the exception, see the EF Core rule below.
 
-**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-20`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-22`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -162,6 +162,12 @@ names, together with every package that requires it (`Microsoft.EntityFrameworkC
 rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was missed. A shipped library's EF Core
 floor in the band the Boilerplate uses can't go above that version either: one that raises the offline database's
 Sqlite above it fails the project's restore with NU1605.
+
+**The Boilerplate's Aspire stays on 13.** Aspire 17 builds every project it starts itself, in MSBuild's multithreaded
+mode on .NET 11, and the WebAssembly SDK's `ReadWasmProps` task can't run in that mode, so the web app never comes up
+under `aspire start` or a `dotnet run` of the app host. Aspire 13 builds that way only when the dashboard rebuilds a
+project. Move once a new project's web app starts under the newer major, checked with `aspire start` and test-platform's
+`aspire` stage, since CI doesn't build through Aspire; the `CommunityToolkit.Aspire.*` packages move with it.
 
 **Linux runners are on `ubuntu-26.04`** in the GitHub workflows. It
 defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11

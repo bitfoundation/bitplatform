@@ -32,7 +32,7 @@ public class WastedRenderTests : BunitContext
         var child = Session.Components.All.Single(r => r.Type == typeof(ListChild));
         Assert.AreEqual(3, child.RenderCount);
         var last = child.LastRender!;
-        Assert.AreEqual(BevRenderCause.ParentRender, last.Cause);
+        Assert.AreEqual(BevToolsRenderCause.ParentRender, last.Cause);
         Assert.IsTrue(last.ParametersCompared);
         Assert.IsEmpty(last.ChangedParameters!);
         Assert.IsTrue(last.IsWastedRender);
@@ -51,7 +51,7 @@ public class WastedRenderTests : BunitContext
 
         var child = Session.Components.All.Single(r => r.Type == typeof(ListChild));
         var last = child.LastRender!;
-        Assert.AreEqual(BevRenderCause.ParentRender, last.Cause);
+        Assert.AreEqual(BevToolsRenderCause.ParentRender, last.Cause);
         Assert.IsFalse(last.IsWastedRender);
         // The most specific path wins (the parent "Items" entry collapses into it), same as state-provider diffs.
         Assert.AreEqual("Items[2]: ∅ → \"c\"", Assert.ContainsSingle(last.ChangedParameters!));
@@ -79,14 +79,14 @@ public class WastedRenderTests : BunitContext
         Assert.DoesNotContain(c => c.Contains("plain-", StringComparison.Ordinal), changed);
 
         // The inspector's State section describes fields with the same member.
-        var (_, _, member) = ComponentStateReader.Fields(typeof(SecretHost)).Single(f => f.Name == "RecoveryPhrase");
-        Assert.AreEqual(BevNodeKind.Redacted, Session.Inspector.Describe("RecoveryPhrase", "plain-recovery-2", "", member).Kind);
+        var (_, _, member) = BevToolsComponentStateReader.Fields(typeof(SecretHost)).Single(f => f.Name == "RecoveryPhrase");
+        Assert.AreEqual(BevToolsNodeKind.Redacted, Session.Inspector.Describe("RecoveryPhrase", "plain-recovery-2", "", member).Kind);
 
         // The child's [BevToolsSensitive] parameter changed too; redacted values compare equal, which is the safe
         // direction: over-redaction never leaks, and the "forced" verdict is documented as observable-only.
         Assert.IsTrue(child.LastRender!.ParametersCompared);
         Assert.DoesNotContain(c => c.Contains("plain-", StringComparison.Ordinal), child.LastRender.ChangedParameters ?? []);
-        Assert.AreEqual(BevRedactor.RedactedValue, child.LastParameterSnapshot!["Passphrase"]);
+        Assert.AreEqual(BevToolsRedactor.RedactedValue, child.LastParameterSnapshot!["Passphrase"]);
         Assert.DoesNotContain(k => k.StartsWith("Passphrase.", StringComparison.Ordinal), child.LastParameterSnapshot.Keys);
         Assert.DoesNotContain(e => e.Detail?.Contains("plain-", StringComparison.Ordinal) == true, Session.Timeline.Snapshot());
     }
@@ -138,7 +138,7 @@ public class WastedRenderTests : BunitContext
         Session.Diagnostics.Evaluate(force: true);
 
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "render.parent-driven" && f.Diagnostic.Title.StartsWith("ListChild", StringComparison.Ordinal), Session.Diagnostics.Findings);
-        Assert.AreEqual(BevDiagnosticSeverity.Warning, finding.Diagnostic.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Warning, finding.Diagnostic.Severity);
         Assert.Contains("identical to the previous render", finding.Diagnostic.Evidence, StringComparison.Ordinal);
     }
 
@@ -157,7 +157,7 @@ public class WastedRenderTests : BunitContext
         session.Diagnostics.Evaluate(force: true);
 
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "render.parent-driven" && f.Diagnostic.Title.StartsWith("ListChild", StringComparison.Ordinal), session.Diagnostics.Findings);
-        Assert.AreEqual(BevDiagnosticSeverity.Info, finding.Diagnostic.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Info, finding.Diagnostic.Severity);
         Assert.Contains("Select the component in the inspector", finding.Diagnostic.Evidence, StringComparison.Ordinal);
     }
 
@@ -177,7 +177,7 @@ public class WastedRenderTests : BunitContext
 
         var child = Session.Components.All.Single(r => r.Type == typeof(ContentChild));
         var last = child.LastRender!;
-        Assert.AreEqual(BevRenderCause.ParentRender, last.Cause);
+        Assert.AreEqual(BevToolsRenderCause.ParentRender, last.Cause);
         Assert.IsFalse(last.IsWastedRender);
         Assert.AreEqual("ChildContent: new RenderFragment instance (its output cannot be compared)", Assert.ContainsSingle(last.ChangedParameters!));
         Assert.AreEqual(0, child.ParentRendersWithUnchangedParameters);
@@ -186,7 +186,7 @@ public class WastedRenderTests : BunitContext
 
         Session.Diagnostics.Evaluate(force: true);
         var finding = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "render.parent-driven" && f.Diagnostic.Title.StartsWith("ContentChild", StringComparison.Ordinal), Session.Diagnostics.Findings);
-        Assert.AreEqual(BevDiagnosticSeverity.Info, finding.Diagnostic.Severity);
+        Assert.AreEqual(BevToolsDiagnosticSeverity.Info, finding.Diagnostic.Severity);
         Assert.Contains("0 of 12 compared renders received identical parameter values", finding.Diagnostic.Evidence, StringComparison.Ordinal);
     }
 
@@ -245,14 +245,14 @@ public class WastedRenderTests : BunitContext
         Assert.AreEqual(13, child.RenderCount);
         Assert.AreEqual(12, child.RendersWithComparedParameters);
         Assert.AreEqual(12, child.ParentRendersWithUnchangedParameters);
-        Assert.AreEqual(12, child.RendersByCause(BevRenderCause.ParentRender));
-        Assert.AreEqual(1, child.RendersByCause(BevRenderCause.Initial));
-        Assert.Contains("| 12 of 12 compared |", BevSessionExporter.ToMarkdownReport(session), StringComparison.Ordinal);
+        Assert.AreEqual(12, child.RendersByCause(BevToolsRenderCause.ParentRender));
+        Assert.AreEqual(1, child.RendersByCause(BevToolsRenderCause.Initial));
+        Assert.Contains("| 12 of 12 compared |", BevToolsSessionExporter.ToMarkdownReport(session), StringComparison.Ordinal);
 
         session.Components.MarkBaseline();
         cut.InvokeAsync(() => cut.Instance.Bump());
-        Assert.AreEqual(1, child.RendersByCause(BevRenderCause.ParentRender, sinceBaseline: true));
-        Assert.AreEqual(0, child.RendersByCause(BevRenderCause.Initial, sinceBaseline: true));
+        Assert.AreEqual(1, child.RendersByCause(BevToolsRenderCause.ParentRender, sinceBaseline: true));
+        Assert.AreEqual(0, child.RendersByCause(BevToolsRenderCause.Initial, sinceBaseline: true));
     }
 
     /// <summary>Passes child content in three shapes: rebuilt per render, static, or cached in a field.</summary>

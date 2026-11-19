@@ -45,7 +45,7 @@ Read these carefully:
   the fixed per-render bookkeeping dominates. In absolute terms BevTools adds roughly **0.4 µs and ~0.4 KB per
   component render**; a real component that formats text, evaluates conditions or renders children costs far more
   than that, and the relative overhead falls accordingly. The About panel in the demo reports 10–40 µs per *batch*.
-* **The cost is one object graph per render**, by design: one `BevRenderSample` (kept in the component's bounded render
+* **The cost is one object graph per render**, by design: one `BevToolsRenderSample` (kept in the component's bounded render
   history) plus one timeline event (kept in the bounded timeline). Nothing is formatted into a string on the hot
   path — titles are pre-built per component, cause descriptions come from a cache, and the timeline event's data bag
   is projected from the sample instead of copied into a dictionary.
@@ -134,7 +134,7 @@ None of these run per render; each is bounded and runs only when asked or at a f
   component's ancestors and scans each parent's frames up to the child; measured on the demo's `/products` (132
   components, a 120-row list): 0.03 ms per lookup on a Server circuit, 0.38 ms on WebAssembly (interpreted), every one
   of the 132 located and 400 of 400 sampled elements resolved back. *Flash renders* is opt-in and locates at most 60
-  components per refresh tick through one `BevDomMapBatch`, which walks each parent's frames once, so a list's rows cost
+  components per refresh tick through one `BevToolsDomMapBatch`, which walks each parent's frames once, so a list's rows cost
   one scan of the list, not one per row. In the browser the cost is the outline itself (a layout read per component).
   All of it is reported as *page mapping* in About.
 * **HTTP senders** (`CaptureHttpCallers`, on by default): one stack walk per recorded request (none while capture is

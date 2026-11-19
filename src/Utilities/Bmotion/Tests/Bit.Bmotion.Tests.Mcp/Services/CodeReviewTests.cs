@@ -76,20 +76,20 @@ public class CodeReviewTests
 
         ["frame-loop-only-transition"] = """
             <Bmotion Animate="Bm.To(x: 100)"
-                     Transition="Bm.Tween(1, repeat: BmRepeat.Reverse())">
+                     Transition="Bm.Tween(1, repeat: BmotionRepeat.Reverse())">
                 <div class="box" />
             </Bmotion>
             """,
 
         ["drag-without-capability-guard"] = """
-            <Bmotion Drag="true" DragConstraints="new BmDragConstraints { Left = -100, Right = 100 }">
+            <Bmotion Drag="true" DragConstraints="new BmotionDragConstraints { Left = -100, Right = 100 }">
                 <div class="handle" />
             </Bmotion>
             """,
 
         ["eased-infinite-rotation"] = """
             <Bmotion Animate="Bm.To(rotate: 360)"
-                     Transition="Bm.Tween(1, repeat: BmRepeat.Forever)">
+                     Transition="Bm.Tween(1, repeat: BmotionRepeat.Forever)">
                 <div class="spinner" />
             </Bmotion>
             """,
@@ -221,14 +221,14 @@ public class CodeReviewTests
             // A mirror repeats forever as one recorded cycle the browser loops - nothing to report.
             ["frame-loop-only-transition"] = """
                 <Bmotion Animate="Bm.To(x: 100)"
-                         Transition="Bm.Tween(1, repeat: BmRepeat.Mirror())">
+                         Transition="Bm.Tween(1, repeat: BmotionRepeat.Mirror())">
                     <div class="box" />
                 </Bmotion>
                 """,
 
             ["eased-infinite-rotation"] = """
                 <Bmotion Animate="Bm.To(rotate: 360)"
-                         Transition="Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever)">
+                         Transition="Bm.Tween(1, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                     <div class="spinner" />
                 </Bmotion>
                 """,
@@ -240,7 +240,7 @@ public class CodeReviewTests
                 """,
 
             ["reduced-motion-not-configured"] = """
-                builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmReducedMotionMode.User);
+                builder.Services.AddBitBmotionServices(o => o.ReducedMotion = BmotionReducedMotionMode.User);
                 """,
 
             ["drag-without-capability-guard"] = """
@@ -294,14 +294,14 @@ public class CodeReviewTests
         var offender = """
             protected override void OnInitialized() => Services.ConfigureBmotionServices(o =>
             {
-                o.Prerender = BmPrerenderMode.Animate;
+                o.Prerender = BmotionPrerenderMode.Animate;
             });
             """;
         var clean = """
             protected override void OnInitialized() => Services.ConfigureBmotionServices(o =>
             {
-                o.ReducedMotion = BmReducedMotionMode.User;
-                o.Prerender = BmPrerenderMode.Animate;
+                o.ReducedMotion = BmotionReducedMotionMode.User;
+                o.Prerender = BmotionPrerenderMode.Animate;
             });
             """;
 
@@ -473,7 +473,7 @@ public class CodeReviewTests
     {
         var transition = """
             <Bmotion Animate="Bm.To(x: 100)"
-                     Transition="new BmTween { Duration = 0.4, OnUpdate = v => { _progress = v; } }">
+                     Transition="new BmotionTween { Duration = 0.4, OnUpdate = v => { _progress = v; } }">
                 <div class="box" />
             </Bmotion>
             """;
@@ -503,7 +503,7 @@ public class CodeReviewTests
     public void Review_ARepeatThatUnrollsPastTenSeconds_IsReported_ButALongTimelineIsNot()
     {
         var tooLong = """
-            <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmRepeat.Mirror(2))">
+            <Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmotionRepeat.Mirror(2))">
                 <div class="box" />
             </Bmotion>
             """;
@@ -516,9 +516,9 @@ public class CodeReviewTests
         foreach (var fine in new[]
         {
             """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(12)"><div /></Bmotion>""",
-            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmRepeat.Loop(5))"><div /></Bmotion>""",
-            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(1, repeat: BmRepeat.Reverse(2))"><div /></Bmotion>""",
-            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmRepeat.Mirror())"><div /></Bmotion>""",
+            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmotionRepeat.Loop(5))"><div /></Bmotion>""",
+            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(1, repeat: BmotionRepeat.Reverse(2))"><div /></Bmotion>""",
+            """<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(4, repeat: BmotionRepeat.Mirror())"><div /></Bmotion>""",
         })
         {
             Assert.IsFalse(BmotionCodeReview.Review(fine).Findings.Any(entry => entry.Rule == "frame-loop-only-transition"),
@@ -527,10 +527,10 @@ public class CodeReviewTests
     }
 
     [TestMethod]
-    [DataRow("BmRepeat.Reverse()")]
-    [DataRow("BmRepeat.Reverse(delay: 0.5)")]
-    [DataRow("BmRepeat.Reverse(-1)")]
-    [DataRow("BmRepeat.Reverse(count: -1, delay: 0.2)")]
+    [DataRow("BmotionRepeat.Reverse()")]
+    [DataRow("BmotionRepeat.Reverse(delay: 0.5)")]
+    [DataRow("BmotionRepeat.Reverse(-1)")]
+    [DataRow("BmotionRepeat.Reverse(count: -1, delay: 0.2)")]
     public void Review_AnEndlessReverse_IsReportedHoweverItIsWritten(string repeat)
     {
         var code = $"""<Bmotion Animate="Bm.To(x: 100)" Transition="Bm.Tween(1, repeat: {repeat})"><div /></Bmotion>""";
@@ -554,7 +554,7 @@ public class CodeReviewTests
             </Bmotion>
             """,
             """
-            <Bmotion Timeline="BmScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
+            <Bmotion Timeline="BmotionScrollTimeline.Page()" Animate="Bm.To(scaleX: [0, 1])">
                 <div class="progress-bar" />
             </Bmotion>
             """,

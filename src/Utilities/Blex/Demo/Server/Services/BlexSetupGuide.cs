@@ -127,7 +127,6 @@ public static partial class BlexSetupGuide
 
         ```csharp
         using Bit.Blex;
-        using Bit.Blex.Blazor;
 
         public static class MauiProgram
         {
@@ -182,7 +181,6 @@ public static partial class BlexSetupGuide
 
             ```csharp
             using Bit.Blex;
-            using Bit.Blex.Blazor;
 
             var builder = WebApplication.CreateBuilder(args);
 

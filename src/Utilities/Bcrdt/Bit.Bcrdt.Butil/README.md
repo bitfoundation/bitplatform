@@ -18,7 +18,7 @@ dotnet add package Bit.Butil          # referenced directly, so its script and b
 ```
 
 ```csharp
-using Bit.Bcrdt.Butil;
+using Bit.Bcrdt;
 
 builder.Services.AddBitBcrdtServices(collaboration => collaboration
     .UseTransport(new BcrdtSignalRTransportFactory(hubUrl))

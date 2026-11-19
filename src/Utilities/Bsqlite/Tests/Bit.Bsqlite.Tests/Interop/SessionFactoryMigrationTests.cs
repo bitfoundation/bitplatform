@@ -1,9 +1,4 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
-using Bit.Bsqlite.Storage.InMemory;
-using Bit.Bsqlite.Testing;
-
-namespace Bit.Bsqlite.Interop.Tests;
+﻿namespace Bit.Bsqlite.Interop.Tests;
 
 /// <summary>
 /// How an application that changes the backend it prefers keeps its users' data while new users start on the

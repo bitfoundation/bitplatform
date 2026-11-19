@@ -68,9 +68,9 @@ public class SetupGuideTests
 
         StringAssert.Contains(guide, "AddBitBmageHeadlessServices");
         StringAssert.Contains(guide, "processor.Identify(bytes)");
-        StringAssert.Contains(guide, "ImageCapabilityException");
+        StringAssert.Contains(guide, "BmageImageCapabilityException");
         Assert.IsFalse(guide.Contains("bit-bmage-editor.css", StringComparison.Ordinal), "The headless guide tells a server to link a stylesheet.");
-        Assert.IsFalse(guide.Contains("ImageFormat.Avif", StringComparison.Ordinal), "The headless guide encodes AVIF, which it cannot.");
+        Assert.IsFalse(guide.Contains("BmageImageFormat.Avif", StringComparison.Ordinal), "The headless guide encodes AVIF, which it cannot.");
         StringAssert.Contains(guide, "Lossless = true");
     }
 
@@ -80,7 +80,7 @@ public class SetupGuideTests
         var guide = BmageSetupGuide.Get("hybrid")!;
 
         StringAssert.Contains(guide, "AddMauiBlazorWebView()");
-        StringAssert.Contains(guide, "ImageEnvironment.BrowserServer");
+        StringAssert.Contains(guide, "BmageImageEnvironment.BrowserServer");
         StringAssert.Contains(guide, "wwwroot/index.html");
         StringAssert.Contains(guide, "Share.Default.RequestAsync");
         StringAssert.Contains(guide, "UseInterpreter");

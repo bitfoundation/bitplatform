@@ -7,6 +7,7 @@
          because EF Core is a dependency most Blazor apps (every WebAssembly one) do not want in their telemetry SDK. -->
 
     <PropertyGroup>
+        <RootNamespace>Bit.Belemetry</RootNamespace>
         <TargetFrameworks>net11.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>

@@ -8,7 +8,7 @@ namespace Bit.BbScanner.Demo.Server.Services;
 /// <summary>
 /// Renders a real symbol, puts it through the camera-like transforms asked for, and runs Bit.BbScanner's own
 /// decoder over it - first with the live camera defaults, then with <see cref="BbScannerOptions.ForStillImages"/> -
-/// so an agent sees the <see cref="BbBarcodeResult"/> the library actually produces for a payload: its text,
+/// so an agent sees the <see cref="BbScannerBarcodeResult"/> the library actually produces for a payload: its text,
 /// raw bytes, corners, metadata and timings.
 /// <para>
 /// The symbol is drawn with the encoders of the test kit, the same ones the unit tests round trip against and the
@@ -32,7 +32,7 @@ public static class BbScannerDecodeLab
 
     private const int MaxFrameEdge = 4096;
 
-    private static readonly PropertyInfo[] _metadataProperties = typeof(BbBarcodeResultMetadata).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+    private static readonly PropertyInfo[] _metadataProperties = typeof(BbScannerBarcodeResultMetadata).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
     public static BbScannerDecodeReportDto Inspect(string? format, string? text, int moduleSize, double rotation, double blur)
     {
@@ -49,7 +49,7 @@ public static class BbScannerDecodeLab
             };
         }
 
-        var symbology = Enum.Parse<BbBarcodeFormat>(dto.Name);
+        var symbology = Enum.Parse<BbScannerBarcodeFormat>(dto.Name);
         var payload = string.IsNullOrEmpty(text) ? dto.SampleText : text;
 
         if (payload.Length > MaxTextLength)
@@ -61,7 +61,7 @@ public static class BbScannerDecodeLab
         rotation = double.IsFinite(rotation) ? Math.Clamp(rotation, -360, 360) : 0;
         blur = double.IsFinite(blur) ? Math.Clamp(blur, 0, 5) : 0;
 
-        BbBitMatrix? matrix;
+        BbScannerBitMatrix? matrix;
         bool[]? modules;
         try
         {
@@ -138,43 +138,43 @@ public static class BbScannerDecodeLab
     /// Adds the check digit an EAN or UPC payload is usually written without, so "400638133393" works as well as
     /// "4006381333931". A payload that already has one is left alone, and a wrong one is the encoder's to reject.
     /// </summary>
-    private static string Complete(BbBarcodeFormat format, string payload)
+    private static string Complete(BbScannerBarcodeFormat format, string payload)
     {
         if (payload.All(char.IsAsciiDigit) is false) return payload;
 
         return format switch
         {
-            BbBarcodeFormat.Ean13 when payload.Length == 12 => payload + LinearEncoders.EanCheckDigit(payload),
-            BbBarcodeFormat.Ean8 when payload.Length == 7 => payload + LinearEncoders.EanCheckDigit(payload),
-            BbBarcodeFormat.UpcA when payload.Length == 11 => payload + LinearEncoders.EanCheckDigit("0" + payload),
+            BbScannerBarcodeFormat.Ean13 when payload.Length == 12 => payload + LinearEncoders.EanCheckDigit(payload),
+            BbScannerBarcodeFormat.Ean8 when payload.Length == 7 => payload + LinearEncoders.EanCheckDigit(payload),
+            BbScannerBarcodeFormat.UpcA when payload.Length == 11 => payload + LinearEncoders.EanCheckDigit("0" + payload),
             // DataBar reads back as the GS1 element string: application identifier 01 and the GTIN-14.
-            BbBarcodeFormat.DataBar or BbBarcodeFormat.DataBarLimited when payload.Length == 13 => "01" + payload + LinearEncoders.EanCheckDigit(payload),
-            BbBarcodeFormat.DataBar or BbBarcodeFormat.DataBarLimited when payload.Length == 14 => "01" + payload,
+            BbScannerBarcodeFormat.DataBar or BbScannerBarcodeFormat.DataBarLimited when payload.Length == 13 => "01" + payload + LinearEncoders.EanCheckDigit(payload),
+            BbScannerBarcodeFormat.DataBar or BbScannerBarcodeFormat.DataBarLimited when payload.Length == 14 => "01" + payload,
             _ => payload
         };
     }
 
-    private static (BbBitMatrix? Matrix, bool[]? Modules) Encode(BbBarcodeFormat format, string payload) => format switch
+    private static (BbScannerBitMatrix? Matrix, bool[]? Modules) Encode(BbScannerBarcodeFormat format, string payload) => format switch
     {
-        BbBarcodeFormat.QrCode => (QrEncoder.Encode(payload, BbQrErrorCorrectionLevel.M, maskPattern: 2), null),
-        BbBarcodeFormat.DataMatrix => (DataMatrixEncoder.Encode(payload), null),
-        BbBarcodeFormat.Pdf417 => (Pdf417Encoder.Encode(payload, rowHeightModules: 4), null),
-        BbBarcodeFormat.Aztec => (AztecEncoder.Encode(payload), null),
-        BbBarcodeFormat.MaxiCode => (MaxiCodeEncoder.Encode(payload), null),
-        BbBarcodeFormat.MicroQrCode => (MicroQrEncoder.Encode(payload), null),
-        BbBarcodeFormat.MicroPdf417 => (MicroPdf417Encoder.Encode(payload), null),
-        BbBarcodeFormat.Code128 => (null, LinearEncoders.Code128(payload)),
-        BbBarcodeFormat.Code39 => (null, LinearEncoders.Code39(payload)),
-        BbBarcodeFormat.Ean13 => (null, LinearEncoders.Ean13(payload)),
-        BbBarcodeFormat.Ean8 => (null, LinearEncoders.Ean8(payload)),
-        BbBarcodeFormat.UpcA => (null, LinearEncoders.UpcA(payload)),
-        BbBarcodeFormat.UpcE => (null, LinearEncoders.UpcE(payload)),
-        BbBarcodeFormat.Itf => (null, LinearEncoders.Itf(payload)),
-        BbBarcodeFormat.Codabar => (null, LinearEncoders.Codabar(payload)),
-        BbBarcodeFormat.Code93 => (null, LinearEncoders.Code93(payload)),
-        BbBarcodeFormat.DataBar => (null, LinearEncoders.DataBar(Gtin(payload))),
-        BbBarcodeFormat.DataBarLimited => (null, LinearEncoders.DataBarLimited(Gtin(payload))),
-        BbBarcodeFormat.DataBarExpanded => (null, LinearEncoders.DataBarExpanded(payload)),
+        BbScannerBarcodeFormat.QrCode => (QrEncoder.Encode(payload, BbScannerQrErrorCorrectionLevel.M, maskPattern: 2), null),
+        BbScannerBarcodeFormat.DataMatrix => (DataMatrixEncoder.Encode(payload), null),
+        BbScannerBarcodeFormat.Pdf417 => (Pdf417Encoder.Encode(payload, rowHeightModules: 4), null),
+        BbScannerBarcodeFormat.Aztec => (AztecEncoder.Encode(payload), null),
+        BbScannerBarcodeFormat.MaxiCode => (MaxiCodeEncoder.Encode(payload), null),
+        BbScannerBarcodeFormat.MicroQrCode => (MicroQrEncoder.Encode(payload), null),
+        BbScannerBarcodeFormat.MicroPdf417 => (MicroPdf417Encoder.Encode(payload), null),
+        BbScannerBarcodeFormat.Code128 => (null, LinearEncoders.Code128(payload)),
+        BbScannerBarcodeFormat.Code39 => (null, LinearEncoders.Code39(payload)),
+        BbScannerBarcodeFormat.Ean13 => (null, LinearEncoders.Ean13(payload)),
+        BbScannerBarcodeFormat.Ean8 => (null, LinearEncoders.Ean8(payload)),
+        BbScannerBarcodeFormat.UpcA => (null, LinearEncoders.UpcA(payload)),
+        BbScannerBarcodeFormat.UpcE => (null, LinearEncoders.UpcE(payload)),
+        BbScannerBarcodeFormat.Itf => (null, LinearEncoders.Itf(payload)),
+        BbScannerBarcodeFormat.Codabar => (null, LinearEncoders.Codabar(payload)),
+        BbScannerBarcodeFormat.Code93 => (null, LinearEncoders.Code93(payload)),
+        BbScannerBarcodeFormat.DataBar => (null, LinearEncoders.DataBar(Gtin(payload))),
+        BbScannerBarcodeFormat.DataBarLimited => (null, LinearEncoders.DataBarLimited(Gtin(payload))),
+        BbScannerBarcodeFormat.DataBarExpanded => (null, LinearEncoders.DataBarExpanded(payload)),
         _ => throw new ArgumentException($"The lab has no encoder for {format}.", nameof(format)),
     };
 
@@ -199,7 +199,7 @@ public static class BbScannerDecodeLab
     }
 
     // The quiet zones and the linear height match the defaults Render draws with.
-    private static (int Width, int Height) SymbolSize(BbBitMatrix? matrix, bool[]? modules, int moduleSize) => matrix is not null
+    private static (int Width, int Height) SymbolSize(BbScannerBitMatrix? matrix, bool[]? modules, int moduleSize) => matrix is not null
         ? ((matrix.Width + 8) * moduleSize, (matrix.Height + 8) * moduleSize)
         : ((modules!.Length + 24) * moduleSize, LinearHeight(moduleSize));
 
@@ -215,14 +215,14 @@ public static class BbScannerDecodeLab
         return ((int)Math.Ceiling((width * cos) + (height * sin)), (int)Math.Ceiling((width * sin) + (height * cos)));
     }
 
-    private static BbLuminanceBuffer Render(BbBarcodeFormat format, BbBitMatrix? matrix, bool[]? modules, int moduleSize)
+    private static BbScannerLuminanceBuffer Render(BbScannerBarcodeFormat format, BbScannerBitMatrix? matrix, bool[]? modules, int moduleSize)
     {
         if (matrix is not null)
         {
             using (matrix)
             {
                 // MaxiCode's modules are hexagons round a bullseye, a module size the width of one.
-                return format == BbBarcodeFormat.MaxiCode
+                return format == BbScannerBarcodeFormat.MaxiCode
                     ? SyntheticImage.FromMaxiCode(matrix, moduleWidth: moduleSize, quietZoneModules: 4)
                     : SyntheticImage.FromMatrix(matrix, scale: moduleSize);
             }
@@ -231,9 +231,9 @@ public static class BbScannerDecodeLab
         return SyntheticImage.FromLinear(modules!, scale: moduleSize, height: LinearHeight(moduleSize));
     }
 
-    private static BbScannerDecodeAttemptDto Decode(BbLuminanceBuffer frame, BbScannerOptions options, string name, string payload)
+    private static BbScannerDecodeAttemptDto Decode(BbScannerLuminanceBuffer frame, BbScannerOptions options, string name, string payload)
     {
-        using var decoder = new BbBarcodeDecoder(options);
+        using var decoder = new BbScannerBarcodeDecoder(options);
 
         var result = decoder.Decode(frame.View, suppressDuplicates: false);
         var timings = decoder.LastFrame;
@@ -271,7 +271,7 @@ public static class BbScannerDecodeLab
         };
     }
 
-    private static Dictionary<string, string> Metadata(BbBarcodeResultMetadata metadata)
+    private static Dictionary<string, string> Metadata(BbScannerBarcodeResultMetadata metadata)
     {
         var values = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -286,16 +286,16 @@ public static class BbScannerDecodeLab
         return values;
     }
 
-    private static string[] Notes(BbScannerFormatDto dto, BbBarcodeFormat format, string payload, double rotation, BbScannerDecodeAttemptDto[] attempts)
+    private static string[] Notes(BbScannerFormatDto dto, BbScannerBarcodeFormat format, string payload, double rotation, BbScannerDecodeAttemptDto[] attempts)
     {
         var notes = new List<string>();
         var (live, still) = (attempts[0], attempts[1]);
 
         if (dto.Active is false)
         {
-            notes.Add("BbBarcodeDecoder does not create its PDF417 reader while the registered symbol character table is not the " +
+            notes.Add("BbScannerBarcodeDecoder does not create its PDF417 reader while the registered symbol character table is not the " +
                       "specification's, so neither attempt can read this symbol. That is deliberate - see GetBbScannerGuideSection(heading: " +
-                      "\"PDF417 status\"); BbPdf417SymbolTable.Register(BbPdf417SymbolTable.Specification) restores the shipped table.");
+                      "\"PDF417 status\"); BbScannerPdf417SymbolTable.Register(BbScannerPdf417SymbolTable.Specification) restores the shipped table.");
         }
         else if (live.Decoded && still.Decoded)
         {
@@ -339,13 +339,13 @@ public static class BbScannerDecodeLab
                       "frames, which this single live attempt may not show. ForStillImages sweeps every ten degrees.");
         }
 
-        if (format == BbBarcodeFormat.Itf && new BbScannerOptions().ItfLengths is { Count: > 0 } lengths && lengths.Contains(payload.Length) is false)
+        if (format == BbScannerBarcodeFormat.Itf && new BbScannerOptions().ItfLengths is { Count: > 0 } lengths && lengths.Contains(payload.Length) is false)
         {
             notes.Add($"ITF results of {payload.Length} digits are rejected by the default ItfLengths [{string.Join(", ", lengths)}]: set " +
                       "BbScannerOptions.ItfLengths to the lengths the application uses (an empty collection accepts any even length).");
         }
 
-        if (format == BbBarcodeFormat.Code39)
+        if (format == BbScannerBarcodeFormat.Code39)
         {
             notes.Add("Code 39 has an optional modulo 43 check character and an optional full ASCII mode; both are off by default " +
                       "(Code39CheckDigit, Code39ExtendedMode), so the text is returned exactly as the bars spell it.");
@@ -354,7 +354,7 @@ public static class BbScannerDecodeLab
         if (attempts.Any(a => a.Decoded))
         {
             notes.Add("Corners and BoundingBox are in the pixel coordinates of the whole frame the decoder was given, whatever Region was searched. " +
-                      "An application receives exactly this object as BbBarcodeResult from OnScan or BbBarcodeDecoder.Decode.");
+                      "An application receives exactly this object as BbScannerBarcodeResult from OnScan or BbScannerBarcodeDecoder.Decode.");
         }
 
         return [.. notes];

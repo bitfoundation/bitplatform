@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Bit.Bcrdt.Blazor;
+namespace Bit.Bcrdt;
 
 /// <summary>
 /// Says where a document's connection stands - synced, syncing, connecting, reconnecting, offline, or local only when no

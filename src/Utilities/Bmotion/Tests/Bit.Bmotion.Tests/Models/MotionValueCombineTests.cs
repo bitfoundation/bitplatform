@@ -1,6 +1,6 @@
 namespace Bit.Bmotion.Tests.Models;
 
-/// <summary><see cref="Bm.Combine"/> and <see cref="BmValue{T}.Previous"/>.</summary>
+/// <summary><see cref="Bm.Combine"/> and <see cref="BmotionValue{T}.Previous"/>.</summary>
 [TestClass]
 public class MotionValueCombineTests
 {
@@ -94,10 +94,10 @@ public class MotionValueCombineTests
     }
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    private static WeakReference DropCombined(BmValue<double> a) => new(Bm.Combine(() => a.Value * 2, a));
+    private static WeakReference DropCombined(BmotionValue<double> a) => new(Bm.Combine(() => a.Value * 2, a));
 
     [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
-    private static WeakReference DropTemplate(BmValue<double> a) => new(Bm.Template(() => $"{a.Value}px", a));
+    private static WeakReference DropTemplate(BmotionValue<double> a) => new(Bm.Template(() => $"{a.Value}px", a));
 
     [TestMethod]
     public void ANullInput_IsRejected()

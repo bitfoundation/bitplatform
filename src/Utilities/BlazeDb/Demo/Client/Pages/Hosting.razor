@@ -97,7 +97,7 @@
         <CodeBlock Title="Or: open it only once the component runs in the browser" Code="@AfterRenderSnippet" />
     </div>
     <Callout Tone="warn" Title="The browser backends throw outside the browser.">
-        Every type in <code>Bit.BlazeDb.Browser</code> is <code>[SupportedOSPlatform("browser")]</code> - the rest of the
+        Every browser backend - OPFS, IndexedDB, Web Locks, WebCrypto, tabs - is <code>[SupportedOSPlatform("browser")]</code> - the rest of the
         engine is not. Under <code>InteractiveAuto</code> the same applies to the first visit, which renders on the server
         while the runtime downloads. This site turns prerendering off for the whole app, since every one of its pages
         opens the database.

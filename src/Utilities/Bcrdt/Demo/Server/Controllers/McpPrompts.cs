@@ -50,7 +50,7 @@ public static class McpPrompts
             3. Give the transport an absolute address - the .NET SignalR client rejects "/hub/bcrdt" - and on the server
                call `AddBitBcrdtHub` (not a bare AddSignalR, whose 32 KB limit drops clients once a document grows) and map
                `BcrdtHub`; for the WebSocket relay, call `UseWebSockets` before `MapBitBcrdtWebSocket`.
-            4. Add `@using Bit.Bcrdt` and `@using Bit.Bcrdt.Blazor` to `_Imports.razor`, open documents with
+            4. Add `@using Bit.Bcrdt` to `_Imports.razor`, open documents with
                `BcrdtCollaborationScope` (or `OpenAsync` paired with `CloseAsync`), and only once the component is
                interactive wherever pages are prerendered.
             5. Before modelling any data, read `GetBcrdtGuideSection(heading: "Choosing a data type")`: a field people type

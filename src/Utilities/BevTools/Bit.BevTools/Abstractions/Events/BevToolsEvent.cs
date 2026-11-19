@@ -1,33 +1,5 @@
 ﻿namespace Bit.BevTools;
 
-/// <summary>Broad classification of a timeline entry. Extensions use <see cref="Custom"/> with their own <see cref="BevToolsEvent.Category"/>.</summary>
-public enum BevToolsEventKind
-{
-    Render,
-    RenderBatch,
-    Lifecycle,
-    UiEvent,
-    StateChange,
-    Navigation,
-    Http,
-    JsInterop,
-    Error,
-    Circuit,
-    Browser,
-    Diagnostic,
-    Custom,
-
-    /// <summary>An entry an <c>ILogger</c> of the application wrote (Logs panel).</summary>
-    Log,
-}
-
-public enum BevToolsSeverity
-{
-    Info,
-    Warning,
-    Error,
-}
-
 /// <summary>
 /// One entry of the unified activity timeline. Instances are immutable from the point of view of extensions,
 /// except for <see cref="DurationMs"/>, <see cref="Detail"/> and <see cref="Severity"/> which the runtime may

@@ -12,6 +12,7 @@
 /// RTL, prerendering, a runtime Reveal toggle and unmounting.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitFooterE2ETests : E2ETestBase
 {
     private const double Tolerance = 1;

@@ -1,0 +1,318 @@
+﻿@typeparam TItem
+@namespace Bit.BlazorUI
+
+<div class="@RowClass" role="row" style="@RowStyle" @onclick="OnRowClick" @ondblclick="OnRowDoubleClick"
+     aria-rowindex="@Grid.AriaRowIndex(Item)"
+     data-ri="@(Grid.RowReorderEnabled ? Grid.RowDataIndex(Item) : null)"
+     aria-selected="@(Grid.SelectionEnabled ? (Selected ? "true" : "false") : null)"
+     aria-level="@TreeLevel"
+     aria-expanded="@RowExpandedState"
+     tabindex="@(RowKeyboardToggle ? 0 : (int?)null)"
+     @onkeydown="HandleRowKeyDown"
+     @ondragover:preventDefault="@(Grid.RowReorderEnabled && !Editing)"
+     @ondrop="() => Grid.DropRowAsync(Item)">
+
+    @{ var specialColIndex = 0; }
+    @if (Grid.HasRowNumberColumn)
+    {
+        specialColIndex++;
+        @* The row's position in the whole dataset, so the numbering keeps counting across pages and
+           virtualized windows instead of restarting. A row the index map doesn't know (the pending
+           new row) simply renders no number. *@
+        <div class="bit-dtg-cell bit-dtg-cell-rownumber bit-dtg-sticky" style="@Grid.RowNumberStickyStyle" role="@Grid.CellRole" aria-colindex="@specialColIndex">
+            <span class="bit-dtg-cell-text">@(Grid.RowDataIndex(Item) + 1)</span>
+        </div>
+    }
+    @* The grid's own control cells - reorder, detail, select, command - keep their clicks from the row. Their
+       double-clicks and right-clicks are not stopped, so a handler of the page around the grid hears them: the
+       script tells the row they are not its own (see BitDataGrid.ts, reportCellControlClick). *@
+    @if (Grid.RowReorderEnabled)
+    {
+        specialColIndex++;
+        <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="@Grid.CellRole" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+            @{ var reorderDisabled = Editing || Grid.Disabled; }
+            <button type="button" class="bit-dtg-drag-handle"
+                    draggable="@(!Editing && Grid.Disabled is false ? "true" : null)"
+                    disabled="@reorderDisabled"
+                    aria-disabled="@(reorderDisabled ? "true" : null)"
+                    @ondragstart="() => Grid.StartRowDrag(Item)"
+                    title="@(Editing ? null : Grid.Strings.ReorderRowTitle)"
+                    aria-label="@(Editing ? null : Grid.Strings.ReorderRowLabel)"
+                    @onkeydown="HandleReorderKeyDown">⠿</button>
+        </div>
+    }
+
+    @* aria-expanded is written as a string on both toggles: a bool renders an empty attribute when true and none at all
+       when false, which tells assistive tech neither state. *@
+    @if (Grid.HasDetailColumn)
+    {
+        specialColIndex++;
+        <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="@Grid.CellRole" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+            <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn" tabindex="@CellControlTabIndex"
+                    @onclick="() => Grid.ToggleDetailAsync(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@(Grid.IsDetailExpanded(Item) ? "true" : "false")">
+                <span class="@(Grid.IsDetailExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsDetailExpanded(Item) ? "▾" : "▸")</span>
+            </button>
+        </div>
+    }
+
+    @if (Grid.HasSelectColumn)
+    {
+        specialColIndex++;
+        <div class="bit-dtg-cell bit-dtg-cell-select bit-dtg-sticky" style="@Grid.SelectStickyStyle" role="@Grid.CellRole" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+            @* Shift+click extends the selection from the last plainly-clicked row. The modifier is read
+               on mousedown because the change event that carries the new value exposes no modifier
+               keys, and mousedown is dispatched before it. *@
+            @{ var selectDisabled = Grid.Disabled || !Grid.CanSelectRow(Item); }
+            <input type="checkbox" checked="@Selected" disabled="@selectDisabled" aria-disabled="@(selectDisabled ? "true" : null)"
+                   tabindex="@CellControlTabIndex" aria-label="@SelectRowLabel"
+                   @onmousedown="e => Grid.SetRangeSelectPending(Item, e.ShiftKey)"
+                   @onchange="e => Grid.ToggleRowSelectionAsync(Item, (bool)e.Value!)" />
+        </div>
+    }
+
+    @{ var skip = 0; }
+    @foreach (var slot in Grid.ColumnSlots)
+    {
+        @* A spacer stands in for a run of horizontally scrolled-out columns (column virtualization);
+           spans never coexist with spacers (ColSpan disables column virtualization). *@
+        if (slot.Column is null)
+        {
+            <div class="bit-dtg-cell" role="@Grid.CellRole" aria-hidden="true"></div>
+            continue;
+        }
+        if (skip > 0) { skip--; continue; }
+        var column = slot.Column;
+        var colIndex = slot.ColIndex;
+        var span = Grid.ResolveColSpan(column, Item);
+        if (span > 1) skip = span - 1;
+        var cellStyle = AppendStyle(AppendStyle(Grid.FrozenStyle(column) + (span > 1 ? $"grid-column:span {span};" : ""), Grid.Styles?.Cell),
+                                    column.CellStyleSelector?.Invoke(Item));
+
+        <_BitDataGridCell TItem="TItem" Grid="Grid" Item="Item" Column="column" ColIndex="colIndex" ColSpan="span"
+                            CssClass="@CellClass(column)" Style="@cellStyle" Title="@CellTitle(column)">
+            @CellContent(column, colIndex)
+        </_BitDataGridCell>
+    }
+
+    @if (Grid.HasCommandColumn)
+    {
+        <div class="bit-dtg-cell bit-dtg-cell-command" role="@Grid.CellRole" aria-colindex="@Grid.AriaCommandColIndex" @onclick:stopPropagation="true">
+            @if (Grid.IsCellEditMode)
+            {
+                @* A cell opens and commits on its own (Enter, F2, a double-click; Enter or leaving it), so the row keeps only Delete. *@
+                <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" tabindex="@CellControlTabIndex" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
+            }
+            else if (Editing)
+            {
+                var saveDisabled = Grid.Disabled || Grid.HasEditErrors;
+                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" disabled="@saveDisabled" aria-disabled="@(saveDisabled ? "true" : null)" @onclick="() => Grid.CommitEditFromCommandAsync(Item)">@Grid.Strings.SaveText</button>
+                <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="() => Grid.CancelEditFromCommandAsync(Item)">@Grid.Strings.CancelText</button>
+            }
+            else
+            {
+                <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-btn" tabindex="@CellControlTabIndex" @onclick="() => Grid.BeginEditFromCommand(Item)">@Grid.Strings.EditText</button>
+                <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" tabindex="@CellControlTabIndex" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
+            }
+        </div>
+    }
+</div>
+
+@if (Grid.HasDetailTemplate && Grid.IsDetailExpanded(Item))
+{
+    <div class="bit-dtg-detail-row" role="row">
+        <div class="bit-dtg-detail-content @Grid.Classes?.DetailRow" style="@Grid.Styles?.DetailRow" role="@Grid.CellRole" aria-colindex="1" aria-colspan="@Grid.TotalColumnSpan">
+            @Grid.DetailTemplate?.Invoke(Item)
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public BitDataGrid<TItem> Grid { get; set; } = default!;
+    [Parameter, EditorRequired] public TItem Item { get; set; } = default!;
+
+    private bool Selected => Grid.IsRowSelected(Item);
+    private bool Editing => Grid.IsEditing(Item);
+
+    // The row itself acts as the detail toggle, so it carries the expanded state (and the pointer
+    // affordance) that would otherwise live on the toggle button alone. An edited row is excluded:
+    // HandleRowClickAsync refuses to toggle while an edit is open (expanding would shift the editors
+    // out from under the pointer), so advertising aria-expanded, the pointer cursor or a tab stop
+    // there would promise an interaction that cannot happen.
+    private bool RowExpandable => Grid.HasDetailTemplate && Grid.ExpandDetailOnRowClick && !Editing;
+
+    // With the toggle column hidden and cell navigation off, the row is the only detail affordance and
+    // nothing inside it is focusable, so an expansion that announces itself through aria-expanded would
+    // be reachable by pointer only. Make the row the keyboard control in exactly that case: the toggle
+    // column is already a button, and cell navigation already routes Enter through the focused cell.
+    private bool RowKeyboardToggle => RowExpandable && !Grid.HasDetailColumn && !Grid.CellNavigationActive;
+
+    // In a treegrid the row - not the toggle button inside it - is what carries the node's depth, so
+    // assistive tech can report "level 3" while moving between rows. 1-based per ARIA; absent outside
+    // tree mode, where every row is at the same level and the attribute would say nothing.
+    private int? TreeLevel => Grid.IsTreeMode ? Grid.TreeLevel(Item) + 1 : null;
+
+    // The row's expanded state: its tree node's when the row has children (a treegrid puts the state on
+    // the row), otherwise its detail content's. A row that expands neither way reports nothing rather
+    // than advertising a collapsed state that cannot be opened.
+    private string? RowExpandedState
+        => Grid.IsTreeMode && Grid.TreeHasChildren(Item) ? (Grid.IsTreeRowExpanded(Item) ? "true" : "false")
+         : RowExpandable ? (Grid.IsDetailExpanded(Item) ? "true" : "false")
+         : null;
+
+    // With cell navigation the cells are the grid's one tab stop (the APG grid pattern), so the per-row controls whose
+    // job a key on the focused cell already does - Space selects, Enter opens the detail or the editor, the arrows open
+    // a tree node, Delete deletes - leave the tab order instead of adding a stop or two to every row. They stay
+    // clickable, and reachable by a screen reader's own cursor. The Save/Cancel of an open row edit keep theirs.
+    private string? CellControlTabIndex => Grid.CellNavigationActive ? "-1" : null;
+
+    // Gives the row-selection checkbox an accessible name so screen readers can identify which row is
+    // being selected: the value of the column that heads the rows (RowHeader), else of the first visible one.
+    private string SelectRowLabel
+    {
+        get
+        {
+            var cols = Grid.VisibleColumns;
+            var header = cols.FirstOrDefault(c => c.RowHeader) ?? (cols.Count > 0 ? cols[0] : null);
+            var context = header?.GetFormattedValue(Item);
+            return string.IsNullOrWhiteSpace(context) ? Grid.Strings.SelectRowLabel : string.Format(Grid.Strings.SelectRowFormat, context);
+        }
+    }
+
+    private RenderFragment CellContent(BitDataGridColumn<TItem> column, int colIndex) => @<text>
+        @if (Grid.IsTreeMode && colIndex == 0)
+        {
+            <span class="bit-dtg-tree-indent" style="--bit-dtg-tree-level:@Grid.TreeLevel(Item);"></span>
+            @if (Grid.TreeHasChildren(Item))
+            {
+                var toggleDisabled = Grid.Disabled || Grid.IsTreeNodeLoading(Item);
+                <button type="button" class="bit-dtg-icon-btn bit-dtg-tree-toggle" tabindex="@CellControlTabIndex"
+                        @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
+                        @onkeydown:stopPropagation="true"
+                        disabled="@toggleDisabled"
+                        aria-disabled="@(toggleDisabled ? "true" : null)"
+                        aria-label="@Grid.Strings.ToggleChildrenLabel" aria-expanded="@(Grid.IsTreeRowExpanded(Item) ? "true" : "false")"
+                        aria-busy="@(Grid.IsTreeNodeLoading(Item) ? "true" : null)">
+                    <span class="@(Grid.IsTreeNodeLoading(Item) || Grid.IsTreeRowExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsTreeNodeLoading(Item) ? "…" : Grid.IsTreeRowExpanded(Item) ? "▾" : "▸")</span>
+                </button>
+            }
+            else
+            {
+                <span class="bit-dtg-tree-leaf"></span>
+            }
+        }
+        @if (Grid.IsEditingCell(Item, column) && Grid.ColumnEditable(column))
+        {
+            @if (column.EditTemplate is not null)
+            {
+                @column.EditTemplate(Item)
+            }
+            else
+            {
+                <_BitDataGridCellEditor TItem="TItem" Grid="Grid" Column="column" Item="Item" />
+            }
+        }
+        else if (column.Template is not null)
+        {
+            @column.Template(Item)
+        }
+        else
+        {
+            @* Wrapped rather than emitted as bare text: the cell is a flex container, where text-overflow
+               can only ellipsise a real element (see .bit-dtg-cell-text). *@
+            <span class="bit-dtg-cell-text">@column.GetFormattedValue(Item)</span>
+        }
+    </text>;
+
+    private string RowClass
+    {
+        get
+        {
+            var c = "bit-dtg-row";
+            if (Selected) c += " bit-dtg-selected";
+            if (Editing && !Grid.IsCellEditMode) c += " bit-dtg-editing";
+            if (RowExpandable) c += " bit-dtg-row-expandable";
+            if (Grid.Classes?.Row is { Length: > 0 } row) c += " " + row;
+            if (Selected && Grid.Classes?.SelectedRow is { Length: > 0 } selected) c += " " + selected;
+            // The grid's conditional row styling comes last so a caller's class can win over the
+            // built-in state classes it may need to override.
+            if (Grid.RowClass?.Invoke(Item) is { Length: > 0 } custom) c += " " + custom;
+            return c;
+        }
+    }
+
+    private string RowStyle
+    {
+        get
+        {
+            var s = "grid-template-columns:var(--bit-dtg-template);" + Grid.RowHeightStyle(Grid.ResolveRowHeight(Item));
+            s = AppendStyle(s, Grid.Styles?.Row);
+            if (Selected) s = AppendStyle(s, Grid.Styles?.SelectedRow);
+            // Appended after the layout declarations so a caller's style wins on any property it repeats.
+            return AppendStyle(s, Grid.RowStyle?.Invoke(Item));
+        }
+    }
+
+    private static string AppendStyle(string style, string? extra)
+    {
+        if (string.IsNullOrWhiteSpace(extra)) return style;
+
+        return extra.TrimEnd().EndsWith(';') ? style + extra : style + extra + ";";
+    }
+
+    private string CellClass(BitDataGridColumn<TItem> column)
+    {
+        var c = "bit-dtg-cell " + BitDataGrid<TItem>.AlignClass(column.Align) + BitDataGrid<TItem>.FrozenClass(column);
+        if (Grid.ColumnWrapsText(column)) c += " bit-dtg-cell-wrap";
+        if (Grid.IsCellEditMode && Grid.IsEditingCell(Item, column)) c += " bit-dtg-cell-editing";
+        if (Grid.Classes?.Cell is { Length: > 0 } cell) c += " " + cell;
+        if (!string.IsNullOrEmpty(column.CellClass)) c += " " + column.CellClass;
+        if (column.CellClassSelector?.Invoke(Item) is { Length: > 0 } selected) c += " " + selected;
+        return c;
+    }
+
+    // The full cell text as a native tooltip, so a value the column is too narrow to render stays
+    // readable. Only for cells rendering the column's own value: a Template owns its markup - and any
+    // tooltip it wants - and an editor's input must not be covered by one.
+    private string? CellTitle(BitDataGridColumn<TItem> column)
+        => Grid.ColumnShowsTooltip(column) && column.Template is null && !(Grid.IsEditingCell(Item, column) && Grid.ColumnEditable(column))
+            ? column.GetFormattedValue(Item)
+            : null;
+
+    // A click on a control in a cell - a template's Edit or Delete button, say - is the control's, not the row's
+    // (see BitDataGrid.ClickOnCellControl). Only the pointer is gated: the row's own Enter and Space go on below.
+    private Task OnRowClick() => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleRowClickAsync(Item);
+
+    private Task OnRowDoubleClick() => Grid.ClickOnCellControl ? Task.CompletedTask : Grid.HandleRowDoubleClickAsync(Item);
+
+    // Keyboard activation of the row-as-toggle: Enter and Space do exactly what a click does (so the
+    // edit guard, the single-selection and the expansion all stay in one place, and aria-expanded keeps
+    // tracking the same state). Inert unless the row is the keyboard control - otherwise the focused
+    // cell or the toggle button owns these keys and would fire twice. Space's page-scroll default is
+    // cancelled by the capture-phase guard in BitDataGrid.ts, which (unlike
+    // @onkeydown:preventDefault, evaluated at render time) can decide on the key actually pressed.
+    private async Task HandleRowKeyDown(KeyboardEventArgs e)
+    {
+        if (!RowKeyboardToggle) return;
+        // A key pressed in a dialog, a panel or a modal of a cell's template is that surface's.
+        if (Grid.KeyInNestedSurface) return;
+        if (e.Key != "Enter" && e.Key != " ") return;
+        await Grid.HandleRowClickAsync(Item);
+    }
+
+    // Lets keyboard users reorder rows without drag-and-drop: ArrowUp/ArrowDown move the focused row
+    // one position toward the start/end, reusing the same reorder pipeline as the pointer drag path.
+    // The browser's default for the arrow keys (scrolling the page/grid) is cancelled by a capture-phase
+    // keydown guard installed in BitDataGrid.ts, which decides per-key *before* the event reaches this
+    // .NET callback. We can't do that with @onkeydown:preventDefault because Blazor evaluates it at
+    // render time, which can't know the upcoming key and lags a keystroke behind (so the first arrow
+    // press still scrolled and a stale "true" could swallow the next Tab).
+    private async Task HandleReorderKeyDown(KeyboardEventArgs e)
+    {
+        if (!Grid.RowReorderEnabled) return;
+        // Mirror the draggable guard above: keyboard reordering must be inert while the row is being
+        // edited, otherwise ArrowUp/ArrowDown would move the row out from under an in-progress edit.
+        if (Editing) return;
+        if (e.Key == "ArrowUp") await Grid.MoveRowAsync(Item, -1);
+        else if (e.Key == "ArrowDown") await Grid.MoveRowAsync(Item, 1);
+    }
+}

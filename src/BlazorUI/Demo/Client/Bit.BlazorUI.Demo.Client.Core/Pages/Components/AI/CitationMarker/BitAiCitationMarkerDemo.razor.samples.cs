@@ -86,7 +86,7 @@ private BitAiCitation? activated;
 @if (streamedText.Length > 0)
 {
     <BitAiStreamingMarkdown Text="@streamedText"
-                            IsStreaming="isStreaming"
+                            Streaming="isStreaming"
                             Citations="markdownCitations"
                             OnCitationClick="c => markdownActivated = c" />
 

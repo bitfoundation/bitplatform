@@ -45,7 +45,7 @@ public static class FakeCameraVideo
     /// <param name="framesPerSymbol">How many frames each symbol is held for.</param>
     public static void WriteRotatingSymbols(string path, int width = 640, int height = 480, int framesPerSymbol = 12)
     {
-        using var qr = SyntheticImage.FromMatrix(QrEncoder.Encode(QrPayload, BbQrErrorCorrectionLevel.M, 2), scale: 6);
+        using var qr = SyntheticImage.FromMatrix(QrEncoder.Encode(QrPayload, BbScannerQrErrorCorrectionLevel.M, 2), scale: 6);
         using var dm = SyntheticImage.FromMatrix(DataMatrixEncoder.Encode(DataMatrixPayload), scale: 8);
         // The demo's scan region is a centred square of 70 % of the 480 pixel edge, 336 pixels a side; at three
         // pixels a module this Code 128's bars alone are 336 pixels wide and leave no quiet zone inside it.
@@ -64,7 +64,7 @@ public static class FakeCameraVideo
         using var stream = File.Create(path);
         WriteHeader(stream, width, height);
 
-        var frame = BbLuminanceBuffer.Rent(width, height);
+        var frame = BbScannerLuminanceBuffer.Rent(width, height);
         try
         {
             foreach (var symbol in new[] { qr, dm, c128, ean, pdf417, aztec })
@@ -99,7 +99,7 @@ public static class FakeCameraVideo
         using var stream = File.Create(path);
         WriteHeader(stream, width, height);
 
-        var frame = BbLuminanceBuffer.Rent(width, height);
+        var frame = BbScannerLuminanceBuffer.Rent(width, height);
         try
         {
             for (var i = 0; i < 8; i++)
@@ -121,11 +121,11 @@ public static class FakeCameraVideo
     /// <param name="height">Frame height.</param>
     public static void WriteSingleQr(string path, string payload, int width = 640, int height = 480)
     {
-        using var qr = SyntheticImage.FromMatrix(QrEncoder.Encode(payload, BbQrErrorCorrectionLevel.M, 2), scale: 6);
+        using var qr = SyntheticImage.FromMatrix(QrEncoder.Encode(payload, BbScannerQrErrorCorrectionLevel.M, 2), scale: 6);
         using var stream = File.Create(path);
         WriteHeader(stream, width, height);
 
-        var frame = BbLuminanceBuffer.Rent(width, height);
+        var frame = BbScannerLuminanceBuffer.Rent(width, height);
         try
         {
             for (var i = 0; i < 8; i++)
@@ -140,7 +140,7 @@ public static class FakeCameraVideo
         }
     }
 
-    private static void Compose(BbLuminanceBuffer frame, BbLuminanceBuffer symbol, int width, int height)
+    private static void Compose(BbScannerLuminanceBuffer frame, BbScannerLuminanceBuffer symbol, int width, int height)
     {
         frame.Pixels.Fill(235);
         ImageTransforms.Paste(symbol, frame, (width - symbol.Width) / 2, (height - symbol.Height) / 2);
@@ -152,7 +152,7 @@ public static class FakeCameraVideo
         stream.Write(System.Text.Encoding.ASCII.GetBytes(header));
     }
 
-    private static void WriteFrame(Stream stream, BbLuminanceBuffer frame, int width, int height)
+    private static void WriteFrame(Stream stream, BbScannerLuminanceBuffer frame, int width, int height)
     {
         stream.Write("FRAME\n"u8);
 

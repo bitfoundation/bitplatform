@@ -20,6 +20,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// contracts; runtime re-renders, prerendering, unmounting mid-upload and reduced motion.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitFileUploadE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/file-upload";

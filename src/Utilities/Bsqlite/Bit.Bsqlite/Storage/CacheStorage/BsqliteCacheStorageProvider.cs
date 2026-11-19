@@ -1,7 +1,6 @@
-﻿using Bit.Bsqlite.Storage;
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 
-namespace Bit.Bsqlite.Storage.CacheStorage;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// Persists SQLite databases in the Cache Storage API as 4096-byte pages.

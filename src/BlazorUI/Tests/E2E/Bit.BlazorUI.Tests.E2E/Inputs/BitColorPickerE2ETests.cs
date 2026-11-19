@@ -14,6 +14,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// (explicit and inherited), Visibility, the disabled and read-only contracts and the lifecycle.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitColorPickerE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/color-picker";

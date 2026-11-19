@@ -8,7 +8,7 @@ dotnet add package Bit.Bcrdt.SignalR
 ```
 
 ```csharp
-using Bit.Bcrdt.SignalR;
+using Bit.Bcrdt;
 
 // The .NET SignalR client needs an absolute hub URL; in WebAssembly resolve it against the host page.
 string hubUrl = new Uri(new Uri(builder.HostEnvironment.BaseAddress), "hub/bcrdt").ToString();

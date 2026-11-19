@@ -1,66 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Bit.Bsqlite.Interop;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.Bsqlite.EntityFrameworkCore;
-
-/// <summary>
-/// Creates contexts bound to the application's <see cref="BsqliteDatabase"/>, opening it on
-/// first use and - when asked - applying migrations once per session.
-/// </summary>
-/// <typeparam name="TContext">A context with a constructor taking <see cref="DbContextOptions{TContext}"/>.</typeparam>
-/// <remarks>
-/// Opening a database is asynchronous in the browser, so the factory's main entry point is
-/// <see cref="CreateDbContextAsync"/>. The synchronous <c>CreateDbContext</c> works only once an
-/// earlier <see cref="CreateDbContextAsync"/> has opened the session and run the first-use step on
-/// it, and says so otherwise.
-/// </remarks>
-public interface IBsqliteDbContextFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TContext> : IDbContextFactory<TContext>
-    where TContext : DbContext
-{
-    /// <summary>The database every context this factory creates is bound to.</summary>
-    BsqliteDatabase Database { get; }
-
-    /// <summary>Opens the database if needed, runs the configured first-use step, and returns a context.</summary>
-    new Task<TContext> CreateDbContextAsync(CancellationToken cancellationToken = default);
-}
-
-/// <summary>How <see cref="IBsqliteDbContextFactory{TContext}"/> prepares the schema the first time a session opens.</summary>
-public enum BsqliteSchemaStrategy
-{
-    /// <summary>Do nothing; the application manages the schema itself.</summary>
-    None,
-
-    /// <summary>Call <c>Database.MigrateAsync()</c> once per session, applying pending migrations.</summary>
-    Migrate,
-
-    /// <summary>Call <c>Database.EnsureCreatedAsync()</c> once per session.</summary>
-    EnsureCreated,
-}
-
-/// <summary>Options for <see cref="IBsqliteDbContextFactory{TContext}"/>.</summary>
-public sealed class BsqliteDbContextOptions<TContext>
-    where TContext : DbContext
-{
-    /// <summary>
-    /// The registered database (<c>AddDatabase</c>) the contexts are bound to. Required when more
-    /// than one is registered; with exactly one, that one is used.
-    /// </summary>
-    public string? DatabaseName { get; set; }
-
-    /// <summary>What to do to the schema the first time a context is created per session.</summary>
-    public BsqliteSchemaStrategy Schema { get; set; } = BsqliteSchemaStrategy.Migrate;
-
-    /// <summary>Further configuration of the options every context is built with.</summary>
-    public Action<IServiceProvider, DbContextOptionsBuilder<TContext>>? Configure { get; set; }
-
-    /// <summary>
-    /// Runs after the schema step, once per session, with a context of its own: the place to seed
-    /// demo data or run integrity checks.
-    /// </summary>
-    public Func<TContext, CancellationToken, Task>? OnFirstUse { get; set; }
-}
+namespace Bit.Bsqlite;
 
 internal sealed class BsqliteDbContextFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TContext> : IBsqliteDbContextFactory<TContext>
     where TContext : DbContext

@@ -1,8 +1,4 @@
-﻿using Bit.BlazeDb;
-using Bit.BlazeDb.Querying;
-using Bit.BlazeDb.Storage;
-
-namespace Bit.BlazeDb.Tests;
+﻿namespace Bit.BlazeDb.Tests;
 
 /// <summary>The README's quick-start table, as the guide declares it.</summary>
 [BlazeDbTable("readme-todos")]

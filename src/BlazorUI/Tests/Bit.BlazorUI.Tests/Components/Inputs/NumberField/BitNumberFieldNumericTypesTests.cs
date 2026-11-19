@@ -1237,11 +1237,11 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
     [TestMethod]
     public void BitNumberFieldShouldNotDisableTheSpinButtonsWhenOnlyTheInputIsReadOnly()
     {
-        // IsInputReadOnly only protects the text box; the spin buttons stay the way to change the value.
+        // InputReadOnly only protects the text box; the spin buttons stay the way to change the value.
         var component = RenderComponent<BitNumberField<int>>(parameters =>
         {
             parameters.Add(p => p.Mode, BitSpinButtonMode.Compact);
-            parameters.Add(p => p.IsInputReadOnly, true);
+            parameters.Add(p => p.InputReadOnly, true);
             parameters.Add(p => p.DefaultValue, 5);
         });
 

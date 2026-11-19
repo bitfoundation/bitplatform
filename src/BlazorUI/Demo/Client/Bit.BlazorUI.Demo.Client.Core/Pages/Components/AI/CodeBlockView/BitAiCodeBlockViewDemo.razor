@@ -72,14 +72,14 @@
 
         <DemoExample Title="Streaming" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
             <div>
-                While <b>IsStreaming</b> is true the code is shown as plain text, however much of it has arrived; it is highlighted
-                once, the moment <b>IsStreaming</b> turns false. A BitAiMarkdownView sets it while the closing fence of a block has
+                While <b>Streaming</b> is true the code is shown as plain text, however much of it has arrived; it is highlighted
+                once, the moment <b>Streaming</b> turns false. A BitAiMarkdownView sets it while the closing fence of a block has
                 not arrived yet.
             </div>
             <br />
             <BitButton OnClick="StreamAsync" Disabled="isStreaming" IconName="@BitIconName.Play">Stream the code</BitButton>
             <br /><br />
-            <BitAiCodeBlockView Language="python" Code="@streamedCode" IsStreaming="isStreaming" />
+            <BitAiCodeBlockView Language="python" Code="@streamedCode" Streaming="isStreaming" />
         </DemoExample>
 
         <DemoExample Title="Line numbers & copy" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">

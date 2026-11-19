@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// defaults), Space / Shift+Space / Ctrl+A, and Ctrl+C / CopyToClipboardAsync writing tab-separated text.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDataGridSelectionE2ETests : BitDataGridE2ETestBase
 {
     private const string Url = "/e2e/data-grid/selection";

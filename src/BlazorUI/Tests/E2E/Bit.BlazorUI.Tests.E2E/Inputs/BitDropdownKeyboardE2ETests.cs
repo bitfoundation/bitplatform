@@ -10,6 +10,7 @@
 /// dropdown before the dialog.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownKeyboardE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown/keyboard";

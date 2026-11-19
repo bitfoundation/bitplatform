@@ -17,9 +17,9 @@ public class PresenceSwitchTests
     {
         b.OpenComponent<Bmotion>(0);
         b.AddComponentParameter(1, nameof(Bmotion.Id), $"page-{item}");
-        b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmTarget?)Bm.To(opacity: 0));
-        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 1));
-        b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmTarget?)Bm.To(opacity: 0));
+        b.AddComponentParameter(2, nameof(Bmotion.Initial), (BmotionTarget?)Bm.To(opacity: 0));
+        b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(opacity: 1));
+        b.AddComponentParameter(4, nameof(Bmotion.Exit), (BmotionTarget?)Bm.To(opacity: 0));
         b.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
         {
             leaf.OpenElement(0, "section");
@@ -30,7 +30,7 @@ public class PresenceSwitchTests
     };
 
     private IRenderedComponent<BmotionPresenceSwitch<int>> RenderSwitch(
-        BmotionTestContext ctx, BmPresenceMode mode, Action onExitComplete)
+        BmotionTestContext ctx, BmotionPresenceMode mode, Action onExitComplete)
         => ctx.Render<BmotionPresenceSwitch<int>>(ps => ps
             .Add(p => p.Item, 1)
             .Add(p => p.Mode, mode)
@@ -45,7 +45,7 @@ public class PresenceSwitchTests
     {
         using var ctx = new BmotionTestContext();
         int exits = 0;
-        var cut = RenderSwitch(ctx, BmPresenceMode.Wait, () => exits++);
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Wait, () => exits++);
         await ctx.FinishWaapiAsync("page-1");
 
         cut.Render(ps => ps.Add(p => p.Item, 2));
@@ -65,7 +65,7 @@ public class PresenceSwitchTests
     public void SyncMode_EntersTheNewItemWhileTheOldOneExits()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.Sync, () => { });
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Sync, () => { });
 
         cut.Render(ps => ps.Add(p => p.Item, 2));
 
@@ -79,7 +79,7 @@ public class PresenceSwitchTests
     {
         using var ctx = new BmotionTestContext();
         int exits = 0;
-        var cut = RenderSwitch(ctx, BmPresenceMode.Sync, () => exits++);
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Sync, () => exits++);
 
         cut.Render(ps => ps.Add(p => p.Item, 2));
         await ctx.FinishWaapiAsync("page-1");
@@ -92,7 +92,7 @@ public class PresenceSwitchTests
     public void SettingTheSameItem_IsNotASwitch()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.Wait, () => { });
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Wait, () => { });
         int playsBefore = ctx.Interop.CountOf("playWaapiAnimation");
 
         cut.Render(ps => ps.Add(p => p.Item, 1));
@@ -105,7 +105,7 @@ public class PresenceSwitchTests
     public async Task WaitMode_RapidSwitches_EnterOnlyTheLatestItem()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.Wait, () => { });
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.Wait, () => { });
 
         // 1 → 2 → 3 while page 1 is still exiting: the pending item is replaced, not queued.
         cut.Render(ps => ps.Add(p => p.Item, 2));
@@ -121,7 +121,7 @@ public class PresenceSwitchTests
     public async Task PopLayoutMode_PopsTheOutgoingItem()
     {
         using var ctx = new BmotionTestContext();
-        var cut = RenderSwitch(ctx, BmPresenceMode.PopLayout, () => { });
+        var cut = RenderSwitch(ctx, BmotionPresenceMode.PopLayout, () => { });
         await ctx.FinishWaapiAsync("page-1");
 
         cut.Render(ps => ps.Add(p => p.Item, 2));

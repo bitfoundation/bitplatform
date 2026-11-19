@@ -1,9 +1,7 @@
-﻿using Bit.Bsqlite.Data;
-using Bit.Bsqlite.Storage;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Bit.Bsqlite.Interop;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// The transport factory <c>AddBitBsqliteServices</c> registers: the native transport for a backend whose

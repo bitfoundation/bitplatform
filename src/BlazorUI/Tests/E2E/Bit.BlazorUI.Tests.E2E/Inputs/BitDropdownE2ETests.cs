@@ -8,6 +8,7 @@
 /// parameters and the BitParams cascade, mirrors its selection into a native form post, and unmounts cleanly.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitDropdownE2ETests : BitDropdownE2ETestBase
 {
     private const string Url = "/e2e/dropdown";

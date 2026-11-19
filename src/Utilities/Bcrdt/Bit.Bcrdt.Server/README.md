@@ -9,7 +9,7 @@ dotnet add package Bit.Bcrdt.Server
 ```
 
 ```csharp
-using Bit.Bcrdt.Server;
+using Bit.Bcrdt;
 
 builder.Services.AddBitBcrdtHub();   // AddSignalR, with a receive limit sized for sync messages
 // ...

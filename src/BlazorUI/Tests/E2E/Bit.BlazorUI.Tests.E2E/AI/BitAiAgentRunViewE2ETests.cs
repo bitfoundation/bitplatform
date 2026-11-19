@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// the accessibility of the live DOM and the glyph of the header.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiAgentRunViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiagentrunview";

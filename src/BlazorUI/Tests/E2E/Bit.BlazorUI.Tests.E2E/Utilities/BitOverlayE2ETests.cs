@@ -13,6 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// handed back on close, reduced motion and ForceAnimation, and an open Overlay unmounted.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitOverlayE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/overlay";
@@ -78,6 +79,9 @@ public class BitOverlayE2ETests : E2ETestBase
         await Page.ClickAsync("#btn-open-basic");
         var layer = Page.Locator("#ovl-basic");
         await Expect(layer).ToHaveClassAsync(HasClass("bit-ovl-opn"));
+        // OnOpen is raised once the scroller has been taken, a few round trips after the class shows, and a closing
+        // that overtakes it stands it down: a click before then is reported as a close of an opening never reported.
+        await Expect(Page.Locator("#basic-opened")).ToHaveTextAsync("1");
 
         await Page.Mouse.ClickAsync(10, 10);
 

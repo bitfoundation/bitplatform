@@ -2,9 +2,9 @@
 
 /// <summary>
 /// A state container the State panel lists by name, with a snapshot and a diff for every named action. Implementing
-/// <see cref="IBevStateProvider"/> is all it takes; IServiceCollectionExtensions registers it.
+/// <see cref="IBevToolsStateProvider"/> is all it takes; IServiceCollectionExtensions registers it.
 /// </summary>
-public sealed class CartState : IBevStateProvider
+public sealed class CartState : IBevToolsStateProvider
 {
     public List<CartLine> Lines { get; } = [];
 
@@ -16,7 +16,7 @@ public sealed class CartState : IBevStateProvider
 
     public string? Description => "scoped: one per circuit, WebAssembly app or BlazorWebView";
 
-    public event Action<BevStateChangeInfo>? Changed;
+    public event Action<BevToolsStateChangeInfo>? Changed;
 
     public object? GetSnapshot() => this;
 
@@ -32,26 +32,26 @@ public sealed class CartState : IBevStateProvider
             line.Quantity++;
         }
 
-        Changed?.Invoke(new BevStateChangeInfo("Add", product.Name));
+        Changed?.Invoke(new BevToolsStateChangeInfo("Add", product.Name));
     }
 
     public void Remove(int productId)
     {
         Lines.RemoveAll(l => l.Product.Id == productId);
-        Changed?.Invoke(new BevStateChangeInfo("Remove", "product " + productId));
+        Changed?.Invoke(new BevToolsStateChangeInfo("Remove", "product " + productId));
     }
 
     public void ApplyCoupon(string code)
     {
         CouponCode = code;
-        Changed?.Invoke(new BevStateChangeInfo("ApplyCoupon", code));
+        Changed?.Invoke(new BevToolsStateChangeInfo("ApplyCoupon", code));
     }
 
     public void Clear()
     {
         Lines.Clear();
         CouponCode = null;
-        Changed?.Invoke(new BevStateChangeInfo("Clear"));
+        Changed?.Invoke(new BevToolsStateChangeInfo("Clear"));
     }
 }
 

@@ -1,15 +1,5 @@
 ﻿namespace Bit.Bonboarding;
 
-/// <summary>How serious a <see cref="BonboardingValidationIssue"/> is.</summary>
-public enum BonboardingValidationSeverity
-{
-    /// <summary>The tour runs, but probably not the way its author meant. Logged when the tour starts.</summary>
-    Warning,
-
-    /// <summary>The tour cannot run correctly; <c>StartAsync</c> refuses it with a <see cref="BonboardingException"/>.</summary>
-    Error,
-}
-
 /// <summary>One problem <see cref="BonboardingTourDefinition.Validate"/> found in a tour definition.</summary>
 /// <param name="Severity">Whether the tour can still run.</param>
 /// <param name="Code">A stable identifier for the kind of problem, e.g. <c>"duplicate-step-id"</c>, for tests and tooling.</param>

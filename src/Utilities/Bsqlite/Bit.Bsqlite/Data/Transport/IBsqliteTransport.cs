@@ -1,4 +1,4 @@
-﻿namespace Bit.Bsqlite.Data;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// Executes SQLite work on behalf of the ADO.NET layer. Implementations decide where the engine

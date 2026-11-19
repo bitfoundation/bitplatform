@@ -521,6 +521,8 @@
 
     private const string EfCoreCode = """
         // dotnet add package Bit.Belemetry.EntityFrameworkCore
+        using Bit.Belemetry;   // UseBitBelemetry
+
         services.AddDbContext<AppDbContext>(options => options
             .UseSqlServer(connectionString)
             .UseBitBelemetry(o =>
@@ -532,6 +534,8 @@
 
     private const string HangfireCode = """
         // dotnet add package Bit.Belemetry.Hangfire
+        using Bit.Belemetry;   // UseBitBelemetry
+
         services.AddHangfire(configuration => configuration
             .UseSqlServerStorage(connectionString)
             .UseBitBelemetry(o =>

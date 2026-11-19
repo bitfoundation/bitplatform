@@ -23,7 +23,7 @@
                               MaxLength="100"
                               Disabled="isSubmitting" />
             }
-            <BitButton Class="lp-waitlist-submit" OnClick="Submit" IsLoading="isSubmitting" LoadingLabel="@Localizer[nameof(LandingStrings.WaitlistSubmitting)]">
+            <BitButton Class="lp-waitlist-submit" OnClick="Submit" Loading="isSubmitting" LoadingLabel="@Localizer[nameof(LandingStrings.WaitlistSubmitting)]">
                 @(SubmitText ?? Localizer[nameof(LandingStrings.WaitlistSubmit)])
             </BitButton>
         </div>

@@ -9,8 +9,8 @@ namespace Bit.Bmotion;
 /// scope.
 /// <para>
 /// Blazor doesn't hydrate prerendered markup: the interactive renderer throws it away and renders
-/// every component again. An element prerendered at rest (<see cref="BmPrerenderMode.Final"/> /
-/// <see cref="BmPrerenderMode.Animate"/>) would therefore jump back to <c>Initial</c> and play its
+/// every component again. An element prerendered at rest (<see cref="BmotionPrerenderMode.Final"/> /
+/// <see cref="BmotionPrerenderMode.Animate"/>) would therefore jump back to <c>Initial</c> and play its
 /// enter animation a second time. To prevent that, each such element persists an entry through
 /// <see cref="PersistentComponentState"/>, and an element mounting in the runtime's first render
 /// claims one and renders straight into its resting state.
@@ -57,7 +57,7 @@ internal sealed class BmotionPrerenderState : IDisposable
     }
 
     /// <summary>The signature elements resting alike share: what they render at rest, and how.</summary>
-    internal static string Signature(BmPrerenderMode mode, string settledStyle)
+    internal static string Signature(BmotionPrerenderMode mode, string settledStyle)
         => $"{(int)mode}|{settledStyle}";
 
     // ── Prerendering pass ──────────────────────────────────────────────────────

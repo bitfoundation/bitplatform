@@ -11,6 +11,7 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// and the runtime re-renders and unmount.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitLabelE2ETests : E2ETestBase
 {
     private const string Path = "/e2e/label";

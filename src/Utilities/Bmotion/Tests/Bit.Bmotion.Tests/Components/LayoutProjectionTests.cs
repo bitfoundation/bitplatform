@@ -39,7 +39,7 @@ public class LayoutProjectionTests
         using var ctx = new BmotionTestContext();
         ctx.Interop.BoundingRectProvider = GrowingRect();
         var cut = ctx.Render<Bmotion>(ps => ps
-            .Add(p => p.Id, "box").Add(p => p.Layout, BmLayout.Full).Add(p => p.ChildContent, Div));
+            .Add(p => p.Id, "box").Add(p => p.Layout, BmotionLayout.Full).Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
 
         var call = LastFlip(ctx)!;
@@ -56,8 +56,8 @@ public class LayoutProjectionTests
         ctx.Interop.BoundingRectProvider = GrowingRect();
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
-            .Add(p => p.LayoutAnchor, BmLayoutAnchor.Center)
+            .Add(p => p.Layout, BmotionLayout.Full)
+            .Add(p => p.LayoutAnchor, BmotionLayoutAnchor.Center)
             .Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
 
@@ -72,7 +72,7 @@ public class LayoutProjectionTests
     [TestMethod]
     public void Anchor_OutOfRangeOrNonFinite_IsClamped()
     {
-        var sanitized = new BmLayoutAnchor(double.NaN, 5).Sanitized();
+        var sanitized = new BmotionLayoutAnchor(double.NaN, 5).Sanitized();
 
         Assert.AreEqual(0, sanitized.X);
         Assert.AreEqual(1, sanitized.Y);
@@ -86,7 +86,7 @@ public class LayoutProjectionTests
         using var ctx = new BmotionTestContext();
         ctx.Interop.BoundingRectProvider = GrowingRect();
         var cut = ctx.Render<Bmotion>(ps => ps
-            .Add(p => p.Id, "box").Add(p => p.Layout, BmLayout.Full).Add(p => p.ChildContent, Div));
+            .Add(p => p.Id, "box").Add(p => p.Layout, BmotionLayout.Full).Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
 
         var measure = (BmotionMeasureOptions)ctx.Interop.Calls
@@ -101,7 +101,7 @@ public class LayoutProjectionTests
         ctx.Interop.BoundingRectProvider = GrowingRect();
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Layout, BmotionLayout.Full)
             .Add(p => p.LayoutScroll, true)
             .Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
@@ -122,7 +122,7 @@ public class LayoutProjectionTests
         ctx.Interop.BoundingRectProvider = GrowingRect();
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Layout, BmotionLayout.Full)
             .Add(p => p.LayoutRoot, true)
             .Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
@@ -141,7 +141,7 @@ public class LayoutProjectionTests
         using var ctx = new BmotionTestContext();
         ctx.Interop.BoundingRectProvider = _ => new BmotionBoundingRect { Width = 100, Height = 100 };
         var cut = ctx.Render<Bmotion>(ps => ps
-            .Add(p => p.Id, "box").Add(p => p.Layout, BmLayout.Full).Add(p => p.ChildContent, Div));
+            .Add(p => p.Id, "box").Add(p => p.Layout, BmotionLayout.Full).Add(p => p.ChildContent, Div));
 
         int before = ctx.Interop.CountOf("getBoundingRect");
         cut.Render(ps => ps.Add(p => p.Custom, "a"));
@@ -156,7 +156,7 @@ public class LayoutProjectionTests
         ctx.Interop.BoundingRectProvider = _ => new BmotionBoundingRect { Width = 100, Height = 100 };
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Layout, BmotionLayout.Full)
             .Add(p => p.LayoutDependency, "same")
             .Add(p => p.ChildContent, Div));
 
@@ -174,7 +174,7 @@ public class LayoutProjectionTests
         ctx.Interop.BoundingRectProvider = _ => new BmotionBoundingRect { Width = 100, Height = 100 };
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Layout, BmotionLayout.Full)
             .Add(p => p.LayoutDependency, "first")
             .Add(p => p.ChildContent, Div));
 
@@ -199,9 +199,9 @@ public class LayoutProjectionTests
         bool started = false;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Layout, BmotionLayout.Full)
             .Add(p => p.Animate, Bm.To(x: 0))
-            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmProps?>(this, _ => pushedDown += 12))
+            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmotionProps?>(this, _ => pushedDown += 12))
             .Add(p => p.OnLayoutAnimationStart, EventCallback.Factory.Create(this, () => started = true))
             .Add(p => p.ChildContent, Div));
 
@@ -224,9 +224,9 @@ public class LayoutProjectionTests
         };
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Layout, BmotionLayout.Full)
             .Add(p => p.Animate, Bm.To(x: 0))
-            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmProps?>(this, _ => pushedDown += 12))
+            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmotionProps?>(this, _ => pushedDown += 12))
             .Add(p => p.ChildContent, Div));
 
         cut.Render(ps => ps.Add(p => p.Animate, Bm.To(x: -50)));
@@ -246,7 +246,7 @@ public class LayoutProjectionTests
         bool started = false;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Layout, BmotionLayout.Full)
             .Add(p => p.OnLayoutAnimationStart, EventCallback.Factory.Create(this, () => started = true))
             .Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
@@ -262,7 +262,7 @@ public class LayoutProjectionTests
         bool started = false;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Layout, BmotionLayout.Full)
             .Add(p => p.OnLayoutAnimationStart, EventCallback.Factory.Create(this, () => started = true))
             .Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
@@ -278,7 +278,7 @@ public class LayoutProjectionTests
         bool completed = false;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Layout, BmotionLayout.Full)
             .Add(p => p.OnLayoutAnimationComplete, EventCallback.Factory.Create(this, () => completed = true))
             .Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
@@ -294,7 +294,7 @@ public class LayoutProjectionTests
         using var ctx = new BmotionTestContext();
         ctx.Interop.BoundingRectProvider = GrowingRect();
         var cut = ctx.Render<Bmotion>(ps => ps
-            .Add(p => p.Id, "box").Add(p => p.Layout, BmLayout.Full).Add(p => p.ChildContent, Div));
+            .Add(p => p.Id, "box").Add(p => p.Layout, BmotionLayout.Full).Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
 
         Assert.IsFalse(ctx.Interop.FlipRefs.ContainsKey("box"),

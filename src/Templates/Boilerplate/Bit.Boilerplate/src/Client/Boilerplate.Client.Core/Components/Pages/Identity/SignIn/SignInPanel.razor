@@ -86,7 +86,7 @@
                                     {
                                         <BitButton IconOnly
                                                    Size="BitSize.Large"
-                                                   IsLoading="isWaiting"
+                                                   Loading="isWaiting"
                                                    Variant="BitVariant.Text"
                                                    Color="BitColor.Tertiary"
                                                    ButtonType="BitButtonType.Button"
@@ -108,7 +108,7 @@
                                                 @Localizer[nameof(AppStrings.SignInPasswordMessage2)]
                                             </BitText>
                                         }
-                                        <BitButton IsLoading="isWaiting"
+                                        <BitButton Loading="isWaiting"
                                                    ButtonType="BitButtonType.Submit">
                                             @Localizer[nameof(AppStrings.Continue)]
                                         </BitButton>
@@ -117,7 +117,7 @@
 
                                 @if (internalSignInPanelType is SignInPanelType.Full or SignInPanelType.Otp)
                                 {
-                                    <BitButton IsLoading="isWaiting"
+                                    <BitButton Loading="isWaiting"
                                                ButtonType="BitButtonType.Button"
                                                OnClick="WrapHandled(() => SendOtp(resend: true))"
                                                Variant="@(internalSignInPanelType is SignInPanelType.Otp ? BitVariant.Fill : BitVariant.Outline)"

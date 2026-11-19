@@ -1,6 +1,4 @@
-﻿using Bit.Bsqlite.Storage;
-
-namespace Bit.Bsqlite.Interop;
+﻿namespace Bit.Bsqlite;
 
 /// <summary>
 /// A transport factory that can hold a lock on a database's name before any transport is open, shared with

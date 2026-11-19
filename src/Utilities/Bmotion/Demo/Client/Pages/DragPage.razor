@@ -17,7 +17,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Axes and constraints</h3>
     <p>
-        <code>Drag="BmDrag.X"</code> or <code>BmDrag.Y</code> locks the gesture to one axis, and
+        <code>Drag="BmotionDrag.X"</code> or <code>BmotionDrag.Y</code> locks the gesture to one axis, and
         <strong>DragConstraints</strong> bounds how far it may travel, in pixels from where the element rests:
         <code>Horizontal(left, right)</code> for x, <code>Vertical(top, bottom)</code> for y,
         <code>Box(left, right, top, bottom)</code> for both, or the <code>Left</code> / <code>Right</code> /
@@ -42,8 +42,8 @@
 
         <div class="demo-card drag-stage">
             <span class="stage-note">X only &middot; constrained to &plusmn;120 px</span>
-            <Bmotion Drag="BmDrag.X"
-                    DragConstraints="BmDragConstraints.Horizontal(-120, 120)"
+            <Bmotion Drag="BmotionDrag.X"
+                    DragConstraints="BmotionDragConstraints.Horizontal(-120, 120)"
                     DragElastic="0.3"
                     WhileDrag="Bm.To(scale: 1.15)">
                 <div class="box box-sm drag-centred-sm" />
@@ -52,8 +52,8 @@
 
         <div class="demo-card drag-stage">
             <span class="stage-note">Y only &middot; Vertical(-45, 45)</span>
-            <Bmotion Drag="BmDrag.Y"
-                    DragConstraints="BmDragConstraints.Vertical(-45, 45)"
+            <Bmotion Drag="BmotionDrag.Y"
+                    DragConstraints="BmotionDragConstraints.Vertical(-45, 45)"
                     DragElastic="0.3"
                     WhileDrag="Bm.To(scale: 1.15)">
                 <div class="box box-sm drag-centred-sm" />
@@ -63,7 +63,7 @@
         <div class="demo-card drag-stage">
             <span class="stage-note">Box(-90, 90, -45, 45) &middot; both axes</span>
             <Bmotion Drag="true"
-                    DragConstraints="BmDragConstraints.Box(-90, 90, -45, 45)"
+                    DragConstraints="BmotionDragConstraints.Box(-90, 90, -45, 45)"
                     DragElastic="0.3"
                     WhileDrag="Bm.To(scale: 1.15)">
                 <div class="box box-sm drag-centred-sm" />
@@ -78,8 +78,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Constrain to an element</h3>
     <p>
         Numeric bounds mean re-deriving them every time the layout changes. Element bounds do not:
-        <strong>BmDragConstraints.Parent()</strong> keeps the element inside its parent and
-        <code>BmDragConstraints.Within(".selector")</code> inside any element you name - here the dashed zone,
+        <strong>BmotionDragConstraints.Parent()</strong> keeps the element inside its parent and
+        <code>BmotionDragConstraints.Within(".selector")</code> inside any element you name - here the dashed zone,
         which is not the box's parent. Either is measured at each drag start - and re-measured live if the
         container resizes mid-drag - so a responsive layout needs no extra work.
     </p>
@@ -88,7 +88,7 @@
         <div class="demo-card drag-stage tall">
             <span class="stage-note">Parent() &middot; the whole stage</span>
             <Bmotion Drag="true"
-                    DragConstraints="BmDragConstraints.Parent()"
+                    DragConstraints="BmotionDragConstraints.Parent()"
                     DragElastic="0.2"
                     WhileDrag="Bm.To(scale: 1.1)">
                 <div class="box box-sm grabbable" />
@@ -99,7 +99,7 @@
             <span class="stage-note">Within(".drag-zone") &middot; the dashed zone</span>
             <div class="drag-zone" aria-hidden="true"></div>
             <Bmotion Drag="true"
-                    DragConstraints='BmDragConstraints.Within(".drag-zone")'
+                    DragConstraints='BmotionDragConstraints.Within(".drag-zone")'
                     DragElastic="0.2"
                     WhileDrag="Bm.To(scale: 1.1)">
                 <div class="box box-sm drag-centred-sm" />
@@ -127,7 +127,7 @@
         <div class="demo-card drag-stage tall">
             <span class="stage-note">Fling it &middot; momentum on</span>
             <Bmotion Drag="true"
-                    DragConstraints="BmDragConstraints.Parent()"
+                    DragConstraints="BmotionDragConstraints.Parent()"
                     DragMomentum="true"
                     DragTransition="Bm.Inertia(timeConstant: 500, power: 0.9)"
                     WhileDrag="Bm.To(scale: 1.1)">
@@ -150,7 +150,7 @@
             <span class="stage-note">Direction lock &middot; first move wins</span>
             <Bmotion Drag="true"
                     DragDirectionLock="true"
-                    DragConstraints="BmDragConstraints.Parent()"
+                    DragConstraints="BmotionDragConstraints.Parent()"
                     OnDirectionLock="@(axis => _lockedAxis = axis.ToString())"
                     WhileDrag="Bm.To(scale: 1.1)">
                 <div class="box box-sm grabbable" />
@@ -178,9 +178,9 @@
         <div class="demo-card drag-stage">
             <span class="stage-note">Grid &middot; settles every 60 px</span>
             <div class="snap-grid" aria-hidden="true"></div>
-            <Bmotion Drag="BmDrag.X"
-                    DragConstraints="BmDragConstraints.Horizontal(-120, 120)"
-                    DragElastic="BmDragElastic.None"
+            <Bmotion Drag="BmotionDrag.X"
+                    DragConstraints="BmotionDragConstraints.Horizontal(-120, 120)"
+                    DragElastic="BmotionDragElastic.None"
                     DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo(60))"
                     WhileDrag="Bm.To(scale: 1.15)">
                 <div class="box box-sm drag-centred-sm" />
@@ -190,8 +190,8 @@
         <div class="demo-card drag-stage">
             <span class="stage-note">Pages &middot; snaps to 1 of 3</span>
             <div class="snap-window">
-                <Bmotion Drag="BmDrag.X"
-                        DragConstraints="BmDragConstraints.Horizontal(-200, 0)"
+                <Bmotion Drag="BmotionDrag.X"
+                        DragConstraints="BmotionDragConstraints.Horizontal(-200, 0)"
                         DragElastic="0.15"
                         DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo([0, -100, -200]))"
                         WhileDrag="Bm.To(scale: 1.05)">
@@ -211,10 +211,10 @@
     <p>
         Making a whole row draggable costs you every click and text selection inside it.
         <strong>DragHandle</strong> restricts the gesture to a grip within the element and leaves
-        the rest alone. <strong>BmDragControls</strong> inverts the relationship: some
+        the rest alone. <strong>BmotionDragControls</strong> inverts the relationship: some
         <em>other</em> element starts the drag - pair it with <code>DragListener="false"</code> so
         the controls are the only trigger, and pressing anywhere on a track grabs its thumb.
-        <strong>BmDragElastic.Edges</strong> tunes the give per edge, so a panel can be rigid where
+        <strong>BmotionDragElastic.Edges</strong> tunes the give per edge, so a panel can be rigid where
         it docks and springy where it does not.
     </p>
 
@@ -222,7 +222,7 @@
         <div class="demo-card drag-stage">
             <Bmotion Drag="true"
                     DragHandle=".grip"
-                    DragConstraints="BmDragConstraints.Parent()"
+                    DragConstraints="BmotionDragConstraints.Parent()"
                     WhileDrag="Bm.To(scale: 1.05)">
                 <div class="handle-row">
                     <span class="grip">⠿</span>
@@ -233,11 +233,11 @@
 
         <div class="demo-card drag-stage">
             <div class="thumb-track" @onpointerdown="@(e => _thumbControls.StartAsync(e))">
-                <Bmotion Drag="BmDrag.X"
+                <Bmotion Drag="BmotionDrag.X"
                         DragControls="_thumbControls"
                         DragListener="false"
-                        DragConstraints="BmDragConstraints.Parent()"
-                        DragElastic="BmDragElastic.None"
+                        DragConstraints="BmotionDragConstraints.Parent()"
+                        DragElastic="BmotionDragElastic.None"
                         WhileDrag="Bm.To(scale: 1.2)">
                     <div class="thumb" />
                 </Bmotion>
@@ -247,8 +247,8 @@
         <div class="demo-card drag-stage">
             <span class="stage-note">Rigid left/top &middot; elastic right/bottom</span>
             <Bmotion Drag="true"
-                    DragConstraints="BmDragConstraints.Parent()"
-                    DragElastic="BmDragElastic.Edges(right: 0.9, bottom: 0.9)">
+                    DragConstraints="BmotionDragConstraints.Parent()"
+                    DragElastic="BmotionDragElastic.Edges(right: 0.9, bottom: 0.9)">
                 <div class="box box-sm grabbable" />
             </Bmotion>
         </div>
@@ -296,9 +296,9 @@
         <div class="demo-card stack">
             <div class="autoscroll-window" tabindex="0" role="region" aria-label="Scrolling track">
                 <div class="autoscroll-track">
-                    <Bmotion Drag="BmDrag.Y"
+                    <Bmotion Drag="BmotionDrag.Y"
                              DragAutoScroll="true"
-                             DragConstraints="BmDragConstraints.Parent()"
+                             DragConstraints="BmotionDragConstraints.Parent()"
                              DragMomentum="false"
                              WhileDrag="Bm.To(scale: 1.1)">
                         <div class="box box-sm grabbable" />
@@ -323,9 +323,9 @@
     <div class="demo-row">
         <div class="demo-card drag-stage taller">
             <span class="stage-note">child isolates (default)</span>
-            <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()" DragElastic="0.2">
+            <Bmotion Drag="true" DragConstraints="BmotionDragConstraints.Parent()" DragElastic="0.2">
                 <div class="drag-parent">
-                    <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+                    <Bmotion Drag="true" DragConstraints="BmotionDragConstraints.Parent()">
                         <div class="drag-child" />
                     </Bmotion>
                 </div>
@@ -334,9 +334,9 @@
 
         <div class="demo-card drag-stage taller">
             <span class="stage-note">child propagates</span>
-            <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()" DragElastic="0.2">
+            <Bmotion Drag="true" DragConstraints="BmotionDragConstraints.Parent()" DragElastic="0.2">
                 <div class="drag-parent">
-                    <Bmotion Drag="true" DragPropagation="true" DragConstraints="BmDragConstraints.Parent()">
+                    <Bmotion Drag="true" DragPropagation="true" DragConstraints="BmotionDragConstraints.Parent()">
                         <div class="drag-child" />
                     </Bmotion>
                 </div>
@@ -351,7 +351,7 @@
     private string _dragInfo = "Drag the box";
     private int _dragMoves;
     private string _lockedAxis = "none yet";
-    private readonly BmDragControls _thumbControls = new();
+    private readonly BmotionDragControls _thumbControls = new();
 
     private const string _dragCode = """
         @using Bit.Bmotion
@@ -383,8 +383,8 @@
 
         @* One axis, bounded in pixels from where the element rests. *@
         <div class="demo-card">
-            <Bmotion Drag="BmDrag.X"
-                     DragConstraints="BmDragConstraints.Horizontal(-120, 120)"
+            <Bmotion Drag="BmotionDrag.X"
+                     DragConstraints="BmotionDragConstraints.Horizontal(-120, 120)"
                      DragElastic="0.3"
                      WhileDrag="Bm.To(scale: 1.15)">
                 <div class="box" />
@@ -392,11 +392,11 @@
         </div>
 
         @* The other axis, and both at once: Box(left, right, top, bottom). *@
-        <Bmotion Drag="BmDrag.Y" DragConstraints="BmDragConstraints.Vertical(-45, 45)">...</Bmotion>
-        <Bmotion Drag="true" DragConstraints="BmDragConstraints.Box(-90, 90, -45, 45)">...</Bmotion>
+        <Bmotion Drag="BmotionDrag.Y" DragConstraints="BmotionDragConstraints.Vertical(-45, 45)">...</Bmotion>
+        <Bmotion Drag="true" DragConstraints="BmotionDragConstraints.Box(-90, 90, -45, 45)">...</Bmotion>
 
         @* Any mix of edges, the rest unbounded - here only the left and the top: *@
-        <Bmotion Drag="true" DragConstraints="new BmDragConstraints { Left = -40, Top = 0 }">...</Bmotion>
+        <Bmotion Drag="true" DragConstraints="new BmotionDragConstraints { Left = -40, Top = 0 }">...</Bmotion>
         """;
 
     private const string _dragParentCode = """
@@ -406,7 +406,7 @@
            the container resizes mid-drag), so a responsive layout needs no extra work. *@
         <div class="demo-card">
             <Bmotion Drag="true"
-                     DragConstraints="BmDragConstraints.Parent()"
+                     DragConstraints="BmotionDragConstraints.Parent()"
                      DragElastic="0.2"
                      WhileDrag="Bm.To(scale: 1.1)">
                 <div class="box" />
@@ -418,7 +418,7 @@
         <div class="demo-card" style="position:relative">
             <div class="drag-zone" style="position:absolute;inset:2.5rem 25%;border:2px dashed #1276C6"></div>
             <Bmotion Drag="true"
-                     DragConstraints='BmDragConstraints.Within(".drag-zone")'
+                     DragConstraints='BmotionDragConstraints.Within(".drag-zone")'
                      DragElastic="0.2">
                 <div class="box" />
             </Bmotion>
@@ -431,7 +431,7 @@
         @* 1 - Momentum (on by default): the release velocity feeds an inertia animation
            that decelerates on its own. DragTransition replaces the settle. *@
         <Bmotion Drag="true"
-                 DragConstraints="BmDragConstraints.Parent()"
+                 DragConstraints="BmotionDragConstraints.Parent()"
                  DragMomentum="true"
                  DragTransition="Bm.Inertia(timeConstant: 500, power: 0.9)">
             <div class="box" />
@@ -450,7 +450,7 @@
            OnDirectionLock reports that decision the moment it is made. *@
         <Bmotion Drag="true"
                  DragDirectionLock="true"
-                 DragConstraints="BmDragConstraints.Parent()"
+                 DragConstraints="BmotionDragConstraints.Parent()"
                  OnDirectionLock="@(axis => _lockedAxis = axis.ToString())">
             <div class="box" />
         </Bmotion>
@@ -467,9 +467,9 @@
            modifyTarget, which decides WHERE the coast comes to rest. *@
 
         @* 1 - Grid: round the projected resting position to the nearest 60px. *@
-        <Bmotion Drag="BmDrag.X"
-                 DragConstraints="BmDragConstraints.Horizontal(-120, 120)"
-                 DragElastic="BmDragElastic.None"
+        <Bmotion Drag="BmotionDrag.X"
+                 DragConstraints="BmotionDragConstraints.Horizontal(-120, 120)"
+                 DragElastic="BmotionDragElastic.None"
                  DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo(60))">
             <div class="box" />
         </Bmotion>
@@ -477,8 +477,8 @@
         @* 2 - Pages: snap to whichever of the fixed stops the fling was heading for. The pages sit
            100px apart, inside a window one page wide (overflow: hidden). *@
         <div class="window">
-            <Bmotion Drag="BmDrag.X"
-                     DragConstraints="BmDragConstraints.Horizontal(-200, 0)"
+            <Bmotion Drag="BmotionDrag.X"
+                     DragConstraints="BmotionDragConstraints.Horizontal(-200, 0)"
                      DragElastic="0.15"
                      DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo([0, -100, -200]))">
                 <div class="pages">
@@ -496,7 +496,7 @@
 
         @* 1 - Drag handle: only the grip starts the drag, so the rest of the row keeps
            its clicks and text selection. *@
-        <Bmotion Drag="true" DragHandle=".grip" DragConstraints="BmDragConstraints.Parent()">
+        <Bmotion Drag="true" DragHandle=".grip" DragConstraints="BmotionDragConstraints.Parent()">
             <div class="row">
                 <span class="grip">⠿</span>
                 <span>Drag me by the grip only</span>
@@ -506,11 +506,11 @@
         @* 2 - Drag controls: another element starts the gesture. DragListener="false"
            makes the controls the ONLY trigger, so the thumb itself is inert. *@
         <div class="track" @onpointerdown="@(e => _thumbControls.StartAsync(e))">
-            <Bmotion Drag="BmDrag.X"
+            <Bmotion Drag="BmotionDrag.X"
                      DragControls="_thumbControls"
                      DragListener="false"
-                     DragConstraints="BmDragConstraints.Parent()"
-                     DragElastic="BmDragElastic.None">
+                     DragConstraints="BmotionDragConstraints.Parent()"
+                     DragElastic="BmotionDragElastic.None">
                 <div class="thumb" />
             </Bmotion>
         </div>
@@ -518,13 +518,13 @@
         @* 3 - Per-edge elasticity: rigid left/top, springy right/bottom.
            Unspecified edges are rigid. *@
         <Bmotion Drag="true"
-                 DragConstraints="BmDragConstraints.Parent()"
-                 DragElastic="BmDragElastic.Edges(right: 0.9, bottom: 0.9)">
+                 DragConstraints="BmotionDragConstraints.Parent()"
+                 DragElastic="BmotionDragElastic.Edges(right: 0.9, bottom: 0.9)">
             <div class="box" />
         </Bmotion>
 
         @code {
-            private readonly BmDragControls _thumbControls = new();
+            private readonly BmotionDragControls _thumbControls = new();
         }
         """;
 
@@ -532,7 +532,7 @@
         @using Bit.Bmotion
 
         @* OnDragStart / OnDragEnd bracket the gesture and OnDrag fires as it moves. For the
-           pointer's actual coordinates and velocity, use OnPan and its BmPanInfo instead. *@
+           pointer's actual coordinates and velocity, use OnPan and its BmotionPanInfo instead. *@
         <Bmotion Drag="true"
                  OnDragStart='@(() => { _dragInfo = "Dragging…"; _moves = 0; })'
                  OnDrag="@(() => _moves++)"
@@ -560,9 +560,9 @@
            and the box travels with it. Parent() keeps it inside the whole track, scrolled or not. *@
         <div class="window">
             <div class="track">
-                <Bmotion Drag="BmDrag.Y"
+                <Bmotion Drag="BmotionDrag.Y"
                          DragAutoScroll="true"
-                         DragConstraints="BmDragConstraints.Parent()"
+                         DragConstraints="BmotionDragConstraints.Parent()"
                          DragMomentum="false">
                     <div class="box" />
                 </Bmotion>
@@ -574,18 +574,18 @@
         @using Bit.Bmotion
 
         @* Default: the child's drag stops propagation - only the child moves. *@
-        <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+        <Bmotion Drag="true" DragConstraints="BmotionDragConstraints.Parent()">
             <div class="drag-parent">
-                <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+                <Bmotion Drag="true" DragConstraints="BmotionDragConstraints.Parent()">
                     <div class="drag-child" />
                 </Bmotion>
             </div>
         </Bmotion>
 
         @* Opt in with DragPropagation="true" - dragging the child moves both. *@
-        <Bmotion Drag="true" DragConstraints="BmDragConstraints.Parent()">
+        <Bmotion Drag="true" DragConstraints="BmotionDragConstraints.Parent()">
             <div class="drag-parent">
-                <Bmotion Drag="true" DragPropagation="true" DragConstraints="BmDragConstraints.Parent()">
+                <Bmotion Drag="true" DragPropagation="true" DragConstraints="BmotionDragConstraints.Parent()">
                     <div class="drag-child" />
                 </Bmotion>
             </div>

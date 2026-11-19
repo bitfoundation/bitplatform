@@ -6,14 +6,14 @@
 <HarnessHeader Title="Strict options" Ready="Ready" OnLog="BindLog" />
 
 @* No Prerender parameter: the global option decides. *@
-<Bmotion Initial="Bm.To(opacity: 0)" Animate="Bm.To(opacity: 1)" Transition="Bm.Tween(2, BmEase.Linear)"
+<Bmotion Initial="Bm.To(opacity: 0)" Animate="Bm.To(opacity: 1)" Transition="Bm.Tween(2, BmotionEase.Linear)"
          OnAnimationStart='_ => Log("global:start")'>
     <div id="global" class="small"></div>
 </Bmotion>
 
 @* Outside any BmotionConfig: only a global ReducedMotion of User consults the OS. *@
 <button id="go" @onclick="() => Change(() => _go = true)">go</button>
-<Bmotion Animate="Bm.To(x: _go ? 100 : 0)" Transition="Bm.Tween(1, BmEase.Linear)">
+<Bmotion Animate="Bm.To(x: _go ? 100 : 0)" Transition="Bm.Tween(1, BmotionEase.Linear)">
     <div id="unconfigured" class="small"></div>
 </Bmotion>
 

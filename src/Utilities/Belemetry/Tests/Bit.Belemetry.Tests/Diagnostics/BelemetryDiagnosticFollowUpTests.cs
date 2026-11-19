@@ -40,6 +40,9 @@ public class BelemetryDiagnosticFollowUpTests
             BelemetryDiagnosticEventFactory.InferComponent(new BelemetryDiagnosticException { Type = "E", Anchor = BelemetryExceptionFingerprint.Anchor(stack) }));
         Assert.IsTrue(BelemetryExceptionFingerprint.IsFrameworkFrame("Bit.Belemetry.BelemetryPipeline.Enqueue"));
         Assert.IsTrue(BelemetryExceptionFingerprint.IsFrameworkFrame("Bit.Belemetry.IBelemetry.TrackException"));
+        // The EF Core and Hangfire integrations are in Bit.Belemetry too: their frames are the library's.
+        Assert.IsTrue(BelemetryExceptionFingerprint.IsFrameworkFrame("Bit.Belemetry.BelemetryDbCommandInterceptor.ReaderExecuting"));
+        Assert.IsTrue(BelemetryExceptionFingerprint.IsFrameworkFrame("Bit.Belemetry.BelemetryHangfireFilter.OnPerforming"));
         Assert.IsFalse(BelemetryExceptionFingerprint.IsFrameworkFrame("Bit.Belemetry.Demo.Client.Pages.DiagnosticsPage.FailInHandler"));
     }
 

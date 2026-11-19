@@ -4,7 +4,7 @@
 /// A MicroPDF417 encoder used to generate test and sample symbols.
 /// </summary>
 /// <remarks>
-/// It writes with the same size and row address pattern tables the reader reads with (<c>BbMicroPdf417Tables</c>), and
+/// It writes with the same size and row address pattern tables the reader reads with (<c>BbScannerMicroPdf417Tables</c>), and
 /// with PDF417's symbol character table and compaction: a round trip checks the reader's geometry, its error correction
 /// and the bit stream, not the tables. Those are checked against the symbols BWIPP writes, in the reference fixtures.
 /// </remarks>
@@ -17,7 +17,7 @@ public static class MicroPdf417Encoder
     /// <param name="columns">The data columns, 1 to 4, or 0 for the narrowest symbol the content fits.</param>
     /// <param name="minimumRows">The fewest rows, to choose a taller symbol than the content needs.</param>
     /// <param name="macro">Writes a Macro PDF417 control block after the data, as <see cref="Pdf417Encoder.Encode"/> does.</param>
-    public static BbBitMatrix Encode(
+    public static BbScannerBitMatrix Encode(
         string content,
         int columns = 0,
         int minimumRows = 0,
@@ -43,7 +43,7 @@ public static class MicroPdf417Encoder
     /// <param name="dataCodewords">The data codewords, without a symbol length descriptor; padded to the symbol's capacity.</param>
     /// <param name="columns">The data columns, 1 to 4, or 0 for the narrowest symbol the codewords fit.</param>
     /// <param name="minimumRows">The fewest rows, to choose a taller symbol than the codewords need.</param>
-    public static BbBitMatrix EncodeCodewords(IEnumerable<int> dataCodewords, int columns = 0, int minimumRows = 0)
+    public static BbScannerBitMatrix EncodeCodewords(IEnumerable<int> dataCodewords, int columns = 0, int minimumRows = 0)
     {
         ArgumentNullException.ThrowIfNull(dataCodewords);
         ArgumentOutOfRangeException.ThrowIfNegative(columns);
@@ -51,8 +51,8 @@ public static class MicroPdf417Encoder
 
         var data = new List<int>(dataCodewords);
 
-        BbMicroPdf417Tables.Variant? chosen = null;
-        foreach (var variant in BbMicroPdf417Tables.Variants)
+        BbScannerMicroPdf417Tables.Variant? chosen = null;
+        foreach (var variant in BbScannerMicroPdf417Tables.Variants)
         {
             if ((columns == 0 || variant.Columns == columns) &&
                 variant.Rows >= minimumRows &&
@@ -73,9 +73,9 @@ public static class MicroPdf417Encoder
         var codewords = new List<int>(data);
         codewords.AddRange(Pdf417Encoder.GenerateErrorCorrection(data, size.EcCodewords));
 
-        var width = BbMicroPdf417Tables.RowModules(size.Columns);
-        var matrix = new BbBitMatrix(width, size.Rows * 2);
-        var table = BbPdf417SymbolTable.Specification;
+        var width = BbScannerMicroPdf417Tables.RowModules(size.Columns);
+        var matrix = new BbScannerBitMatrix(width, size.Rows * 2);
+        var table = BbScannerPdf417SymbolTable.Specification;
         for (var row = 0; row < size.Rows; row++)
         {
             var x = 0;
@@ -94,28 +94,28 @@ public static class MicroPdf417Encoder
             void Codeword(int column)
             {
                 table.TryGetPattern(size.Cluster(row), codewords[(row * size.Columns) + column], out var pattern);
-                Put(pattern, BbPdf417SymbolTable.ModulesPerCodeword);
+                Put(pattern, BbScannerPdf417SymbolTable.ModulesPerCodeword);
             }
 
-            void Rap(BbMicroPdf417RapKind kind)
+            void Rap(BbScannerMicroPdf417RapKind kind)
             {
-                var patterns = kind == BbMicroPdf417RapKind.Centre ? BbMicroPdf417Tables.CentrePatterns : BbMicroPdf417Tables.SidePatterns;
-                Put(patterns[size.RapIndex(kind, row)], BbMicroPdf417Tables.RapModules);
+                var patterns = kind == BbScannerMicroPdf417RapKind.Centre ? BbScannerMicroPdf417Tables.CentrePatterns : BbScannerMicroPdf417Tables.SidePatterns;
+                Put(patterns[size.RapIndex(kind, row)], BbScannerMicroPdf417Tables.RapModules);
             }
 
-            Rap(BbMicroPdf417RapKind.Left);
+            Rap(BbScannerMicroPdf417RapKind.Left);
             for (var column = 0; column < size.Columns; column++)
             {
                 // Three and four column symbols carry a centre pattern after their first and second column.
                 if (column == size.Columns - 2 && size.Columns >= 3)
                 {
-                    Rap(BbMicroPdf417RapKind.Centre);
+                    Rap(BbScannerMicroPdf417RapKind.Centre);
                 }
 
                 Codeword(column);
             }
 
-            Rap(BbMicroPdf417RapKind.Right);
+            Rap(BbScannerMicroPdf417RapKind.Right);
             Put(1, 1);
         }
 

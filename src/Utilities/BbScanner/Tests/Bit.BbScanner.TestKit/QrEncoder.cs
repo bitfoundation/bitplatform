@@ -27,9 +27,9 @@ public static class QrEncoder
     /// Writes a structured append header ahead of the data: the symbol's position from 0, the number of symbols, and
     /// the parity byte of the whole message.
     /// </param>
-    public static BbBitMatrix Encode(
+    public static BbScannerBitMatrix Encode(
         string content,
-        BbQrErrorCorrectionLevel level = BbQrErrorCorrectionLevel.M,
+        BbScannerQrErrorCorrectionLevel level = BbScannerQrErrorCorrectionLevel.M,
         int maskPattern = 0,
         int minimumVersion = 1,
         (int Index, int Count, int Parity)? structuredAppend = null)
@@ -59,7 +59,7 @@ public static class QrEncoder
 
         bits.Append(mode, 4);
         var characterCount = mode == ModeByte ? payload.Length : content.Length;
-        bits.Append(characterCount, BbQrBitStreamParser.GetCharacterCountBits(version, mode));
+        bits.Append(characterCount, BbScannerQrBitStreamParser.GetCharacterCountBits(version, mode));
 
         switch (mode)
         {
@@ -100,7 +100,7 @@ public static class QrEncoder
         var dataCodewords = bits.ToBytes();
         var interleaved = InterleaveWithEcBytes(dataCodewords, version, ecBlocks);
 
-        var matrix = new BbBitMatrix(version.DimensionForVersion, version.DimensionForVersion);
+        var matrix = new BbScannerBitMatrix(version.DimensionForVersion, version.DimensionForVersion);
         EmbedFunctionPatterns(matrix, version);
         EmbedFormatInformation(matrix, level, maskPattern);
         EmbedVersionInformation(matrix, version);
@@ -134,14 +134,14 @@ public static class QrEncoder
         return alphanumeric && content.Length > 0 ? ModeAlphanumeric : ModeByte;
     }
 
-    private static BbQrVersion? ChooseVersion(
-        string content, byte[] payload, int mode, BbQrErrorCorrectionLevel level, int minimumVersion, int headerBits)
+    private static BbScannerQrVersion? ChooseVersion(
+        string content, byte[] payload, int mode, BbScannerQrErrorCorrectionLevel level, int minimumVersion, int headerBits)
     {
         for (var number = Math.Max(1, minimumVersion); number <= 40; number++)
         {
-            var version = BbQrVersion.GetVersionForNumber(number);
+            var version = BbScannerQrVersion.GetVersionForNumber(number);
             var capacityBits = version.GetEcBlocksForLevel(level).TotalDataCodewords * 8;
-            var countBits = BbQrBitStreamParser.GetCharacterCountBits(version, mode);
+            var countBits = BbScannerQrBitStreamParser.GetCharacterCountBits(version, mode);
 
             var dataBits = mode switch
             {
@@ -201,9 +201,9 @@ public static class QrEncoder
         }
     }
 
-    private static byte[] InterleaveWithEcBytes(byte[] dataCodewords, BbQrVersion version, BbQrEcBlocks ecBlocks)
+    private static byte[] InterleaveWithEcBytes(byte[] dataCodewords, BbScannerQrVersion version, BbScannerQrEcBlocks ecBlocks)
     {
-        var encoder = new ReedSolomonEncoder(BbGenericGF.QrCodeField256);
+        var encoder = new ReedSolomonEncoder(BbScannerGenericGF.QrCodeField256);
 
         var blocks = new List<(byte[] Data, byte[] Ec)>();
         var offset = 0;
@@ -263,7 +263,7 @@ public static class QrEncoder
         return result;
     }
 
-    private static void EmbedFunctionPatterns(BbBitMatrix matrix, BbQrVersion version)
+    private static void EmbedFunctionPatterns(BbScannerBitMatrix matrix, BbScannerQrVersion version)
     {
         var dimension = matrix.Width;
 
@@ -298,7 +298,7 @@ public static class QrEncoder
         }
     }
 
-    private static void EmbedFinderPattern(BbBitMatrix matrix, int left, int top)
+    private static void EmbedFinderPattern(BbScannerBitMatrix matrix, int left, int top)
     {
         for (var y = 0; y < 7; y++)
         {
@@ -311,7 +311,7 @@ public static class QrEncoder
         }
     }
 
-    private static void EmbedAlignmentPattern(BbBitMatrix matrix, int left, int top)
+    private static void EmbedAlignmentPattern(BbScannerBitMatrix matrix, int left, int top)
     {
         for (var y = 0; y < 5; y++)
         {
@@ -331,10 +331,10 @@ public static class QrEncoder
         (7, 8), (5, 8), (4, 8), (3, 8), (2, 8), (1, 8), (0, 8),
     ];
 
-    private static void EmbedFormatInformation(BbBitMatrix matrix, BbQrErrorCorrectionLevel level, int maskPattern)
+    private static void EmbedFormatInformation(BbScannerBitMatrix matrix, BbScannerQrErrorCorrectionLevel level, int maskPattern)
     {
         var dimension = matrix.Width;
-        var formatBits = BbQrFormatInformation.EncodeFormatBits((((int)level) << 3) | maskPattern);
+        var formatBits = BbScannerQrFormatInformation.EncodeFormatBits((((int)level) << 3) | maskPattern);
 
         for (var i = 0; i < 15; i++)
         {
@@ -355,7 +355,7 @@ public static class QrEncoder
         }
     }
 
-    private static void EmbedVersionInformation(BbBitMatrix matrix, BbQrVersion version)
+    private static void EmbedVersionInformation(BbScannerBitMatrix matrix, BbScannerQrVersion version)
     {
         if (version.VersionNumber < 7)
         {
@@ -363,7 +363,7 @@ public static class QrEncoder
         }
 
         var dimension = matrix.Width;
-        var versionBits = BbQrFormatInformation.EncodeVersionBits(version.VersionNumber);
+        var versionBits = BbScannerQrFormatInformation.EncodeVersionBits(version.VersionNumber);
 
         var bitIndex = 17;
         for (var i = 0; i < 6; i++)
@@ -379,7 +379,7 @@ public static class QrEncoder
         }
     }
 
-    private static void EmbedData(BbBitMatrix matrix, BbQrVersion version, byte[] codewords, int maskPattern)
+    private static void EmbedData(BbScannerBitMatrix matrix, BbScannerQrVersion version, byte[] codewords, int maskPattern)
     {
         using var functionPattern = version.BuildFunctionPattern();
 
@@ -412,7 +412,7 @@ public static class QrEncoder
                         bitIndex++;
                     }
 
-                    if (BbQrDataMask.IsMasked(maskPattern, i, x))
+                    if (BbScannerQrDataMask.IsMasked(maskPattern, i, x))
                     {
                         bit = !bit;
                     }

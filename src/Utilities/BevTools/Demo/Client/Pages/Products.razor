@@ -164,7 +164,7 @@
     // The Add buttons belong to ProductList, so only it re-renders after a click; the cart summary above lives here.
     protected override void OnInitialized() => Cart.Changed += OnCartChanged;
 
-    private void OnCartChanged(BevStateChangeInfo change) => _ = InvokeAsync(StateHasChanged);
+    private void OnCartChanged(BevToolsStateChangeInfo change) => _ = InvokeAsync(StateHasChanged);
 
     public void Dispose() => Cart.Changed -= OnCartChanged;
 }

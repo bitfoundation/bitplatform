@@ -11,7 +11,7 @@
     <button id="fade-start" @onclick="() => Change(() => _faded = true)">fade</button>
     <Bmotion Drag="true" DragMomentum="false"
              Animate="@(_faded ? Bm.To(opacity: 0.1) : Bm.To(opacity: 1))"
-             Transition="Bm.Tween(2, BmEase.Linear)"
+             Transition="Bm.Tween(2, BmotionEase.Linear)"
              OnAnimationStart='_ => Log("armed:fading")'
              OnDragEnd='() => Log("fading:end")'>
         <div id="fading" class="small"></div>
@@ -30,7 +30,7 @@
 </div>
 
 <div class="track">
-    <Bmotion Drag="BmDrag.X" DragMomentum="false"
+    <Bmotion Drag="BmotionDrag.X" DragMomentum="false"
              Animate="Bm.To(opacity: 1)"
              OnAnimationStart='_ => Log("armed:axis-x")'
              OnDragEnd='() => Log("axis-x:end")'>
@@ -39,8 +39,8 @@
 </div>
 
 <div class="track">
-    <Bmotion Drag="BmDrag.X" DragMomentum="false"
-             DragConstraints="BmDragConstraints.Horizontal(-50, 50)"
+    <Bmotion Drag="BmotionDrag.X" DragMomentum="false"
+             DragConstraints="BmotionDragConstraints.Horizontal(-50, 50)"
              DragElastic="0"
              Animate="Bm.To(opacity: 1)"
              OnAnimationStart='_ => Log("armed:pixels")'
@@ -50,8 +50,8 @@
 </div>
 
 <div class="track">
-    <Bmotion Drag="BmDrag.X" DragMomentum="false"
-             DragConstraints="BmDragConstraints.Horizontal(0, 50)"
+    <Bmotion Drag="BmotionDrag.X" DragMomentum="false"
+             DragConstraints="BmotionDragConstraints.Horizontal(0, 50)"
              DragElastic="0.5"
              Animate="Bm.To(opacity: 1)"
              OnAnimationStart='_ => Log("armed:elastic")'
@@ -62,7 +62,7 @@
 
 <div class="track" id="parent-track">
     <Bmotion Drag="true" DragMomentum="false"
-             DragConstraints="BmDragConstraints.Parent()"
+             DragConstraints="BmotionDragConstraints.Parent()"
              DragElastic="0"
              Animate="Bm.To(opacity: 1)"
              OnAnimationStart='_ => Log("armed:parent")'
@@ -82,7 +82,7 @@
 </div>
 
 <div class="track">
-    <Bmotion Drag="BmDrag.X" DragMomentum="false" DragHandle=".grip"
+    <Bmotion Drag="BmotionDrag.X" DragMomentum="false" DragHandle=".grip"
              Animate="Bm.To(opacity: 1)"
              OnAnimationStart='_ => Log("armed:handle")'
              OnDragStart='() => Log("handle:start")'>
@@ -91,7 +91,7 @@
 </div>
 
 <div class="track" id="controls-track" @onpointerdown="StartControlledDragAsync">
-    <Bmotion Drag="BmDrag.X" DragMomentum="false" DragControls="_controls" DragListener="false"
+    <Bmotion Drag="BmotionDrag.X" DragMomentum="false" DragControls="_controls" DragListener="false"
              Animate="Bm.To(opacity: 1)"
              OnAnimationStart='_ => Log("armed:controls")'
              OnDragStart='() => Log("controls:start")'
@@ -122,8 +122,8 @@
 </div>
 
 <div class="track">
-    <Bmotion Drag="BmDrag.X"
-             DragConstraints="BmDragConstraints.Horizontal(0, 300)"
+    <Bmotion Drag="BmotionDrag.X"
+             DragConstraints="BmotionDragConstraints.Horizontal(0, 300)"
              DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo(100))"
              Animate="Bm.To(opacity: 1)"
              OnAnimationStart='_ => Log("armed:momentum")'
@@ -134,8 +134,8 @@
 
 @* Thrown at its bound: it keeps its speed until it gets there, bounces off it and settles on it. *@
 <div class="track">
-    <Bmotion Drag="BmDrag.X"
-             DragConstraints="BmDragConstraints.Horizontal(0, 150)"
+    <Bmotion Drag="BmotionDrag.X"
+             DragConstraints="BmotionDragConstraints.Horizontal(0, 150)"
              DragElastic="0"
              Animate="Bm.To(opacity: 1)"
              OnAnimationStart='_ => Log("armed:bounce")'
@@ -148,7 +148,7 @@
    inside a selection would start a native drag-and-drop that takes the pointer over). *@
 <div class="track" id="texty-track">
     Text before it
-    <Bmotion Drag="BmDrag.X" DragMomentum="false"
+    <Bmotion Drag="BmotionDrag.X" DragMomentum="false"
              Animate="Bm.To(opacity: 1)"
              OnAnimationStart='_ => Log("armed:texty")'
              OnDragEnd='() => Log("texty:end")'>
@@ -158,7 +158,7 @@
 </div>
 
 @code {
-    private readonly BmDragControls _controls = new();
+    private readonly BmotionDragControls _controls = new();
     private bool _faded;
 
     private async Task StartControlledDragAsync(PointerEventArgs e)

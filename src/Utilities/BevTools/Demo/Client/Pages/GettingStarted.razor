@@ -210,7 +210,7 @@ builder.Services.AddBitBevToolsLoaderServices(o =&gt;
 builder.Services.AddBitBevToolsServerServices(o =&gt;
 {
     o.Enabled = <span class="k">true</span>;
-    o.ValueAccess = BevValueAccess.Full;
+    o.ValueAccess = BevToolsValueAccess.Full;
     o.Extensions.Add(<span class="k">new</span> DemoBevToolsExtension());
 });
 

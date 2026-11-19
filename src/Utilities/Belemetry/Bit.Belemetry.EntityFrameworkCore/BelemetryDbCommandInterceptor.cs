@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
-namespace Bit.Belemetry.EntityFrameworkCore;
+namespace Bit.Belemetry;
 
 /// <summary>
 /// Starts a client span on the <see cref="SourceName"/> source around every command Entity Framework Core executes,

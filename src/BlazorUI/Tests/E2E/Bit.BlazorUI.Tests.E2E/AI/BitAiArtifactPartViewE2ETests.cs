@@ -9,6 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.AI;
 /// Styles and Classes handed down to the panel and the placeholder; RTL.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitAiArtifactPartViewE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/aiartifactpartview";

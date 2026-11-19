@@ -63,7 +63,7 @@ internal sealed record ReferenceSymbol
     public string[]? Rows { get; init; }
 
     [JsonIgnore]
-    public BbBarcodeFormat BarcodeFormat => Enum.Parse<BbBarcodeFormat>(Format);
+    public BbScannerBarcodeFormat BarcodeFormat => Enum.Parse<BbScannerBarcodeFormat>(Format);
 
     [JsonIgnore]
     public bool IsLinear => Widths is not null;
@@ -101,10 +101,10 @@ internal sealed record ReferenceSymbol
     }
 
     /// <summary>The module grid of a matrix symbol.</summary>
-    public BbBitMatrix ToMatrix()
+    public BbScannerBitMatrix ToMatrix()
     {
         var rows = Rows ?? throw new InvalidOperationException($"{Id} is a linear symbol.");
-        var matrix = new BbBitMatrix(Width, rows.Length);
+        var matrix = new BbScannerBitMatrix(Width, rows.Length);
         for (var y = 0; y < rows.Length; y++)
         {
             for (var x = 0; x < Width; x++)
@@ -124,7 +124,7 @@ internal sealed record ReferenceSymbol
     /// Renders the symbol with its quiet zone, at <paramref name="scale"/> pixels per module - MaxiCode's hexagons at
     /// twice that, the smallest that are hexagons at all being several pixels wide.
     /// </summary>
-    public BbLuminanceBuffer Render(int scale)
+    public BbScannerLuminanceBuffer Render(int scale)
     {
         if (IsLinear)
         {
@@ -132,7 +132,7 @@ internal sealed record ReferenceSymbol
         }
 
         using var matrix = ToMatrix();
-        return BarcodeFormat == BbBarcodeFormat.MaxiCode
+        return BarcodeFormat == BbScannerBarcodeFormat.MaxiCode
             ? SyntheticImage.FromMaxiCode(matrix, moduleWidth: 2 * scale)
             : SyntheticImage.FromMatrix(matrix, scale);
     }

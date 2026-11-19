@@ -1,5 +1,3 @@
-using Bit.Blex.Query;
-
 namespace Bit.Blex.Tests.Query;
 
 public enum Filter { All, Done }

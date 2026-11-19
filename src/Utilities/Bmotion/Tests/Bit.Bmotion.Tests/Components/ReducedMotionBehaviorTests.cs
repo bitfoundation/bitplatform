@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Components;
 namespace Bit.Bmotion.Tests.Components;
 
 /// <summary>
-/// <see cref="Bmotion.ReducedMotion"/> / <see cref="BmPreset.ReducedMotion"/>: how one element answers reduced motion -
+/// <see cref="Bmotion.ReducedMotion"/> / <see cref="BmotionPreset.ReducedMotion"/>: how one element answers reduced motion -
 /// the default reduction, everything at once, or the animation in full.
 /// </summary>
 [TestClass]
@@ -18,7 +18,7 @@ public class ReducedMotionBehaviorTests
     };
 
     private static async Task<BmotionTestContext> AnimateAsync(
-        BmReducedMotionMode mode, BmReducedMotionBehavior? behavior, BmProps target, BmPreset? preset = null)
+        BmotionReducedMotionMode mode, BmotionReducedMotionBehavior? behavior, BmotionProps target, BmotionPreset? preset = null)
     {
         var ctx = new BmotionTestContext();
         ctx.Options.ReducedMotion = mode;
@@ -37,18 +37,18 @@ public class ReducedMotionBehaviorTests
     [TestMethod]
     public async Task ByDefault_AReducedMoveLandsAtOnce_AndAFadeStillPlays()
     {
-        using var moved = await AnimateAsync(BmReducedMotionMode.Always, null, Bm.To(x: 100));
+        using var moved = await AnimateAsync(BmotionReducedMotionMode.Always, null, Bm.To(x: 100));
         Assert.AreEqual(0, BrowserAnimations(moved), "the move landed");
         Assert.AreEqual(100.0, moved.Engine.GetDiagnostics().Single().Transforms["x"]);
 
-        using var faded = await AnimateAsync(BmReducedMotionMode.Always, null, Bm.To(opacity: 0));
+        using var faded = await AnimateAsync(BmotionReducedMotionMode.Always, null, Bm.To(opacity: 0));
         Assert.AreEqual(1, BrowserAnimations(faded), "the fade played");
     }
 
     [TestMethod]
     public async Task Full_KeepsTheWholeAnimation_UnderReducedMotion()
     {
-        using var ctx = await AnimateAsync(BmReducedMotionMode.Always, BmReducedMotionBehavior.Full, Bm.To(x: 100));
+        using var ctx = await AnimateAsync(BmotionReducedMotionMode.Always, BmotionReducedMotionBehavior.Full, Bm.To(x: 100));
 
         Assert.AreEqual(1, BrowserAnimations(ctx));
         var timing = (Dictionary<string, object?>)ctx.Interop.ArgsOf("playWaapiAnimation")[0][3]!;
@@ -58,7 +58,7 @@ public class ReducedMotionBehaviorTests
     [TestMethod]
     public async Task Instant_LandsFadesToo_UnderReducedMotion()
     {
-        using var ctx = await AnimateAsync(BmReducedMotionMode.Always, BmReducedMotionBehavior.Instant, Bm.To(opacity: 0, x: 50));
+        using var ctx = await AnimateAsync(BmotionReducedMotionMode.Always, BmotionReducedMotionBehavior.Instant, Bm.To(opacity: 0, x: 50));
 
         Assert.AreEqual(0, BrowserAnimations(ctx), "nothing played");
         var el = ctx.Engine.GetDiagnostics().Single();
@@ -69,7 +69,7 @@ public class ReducedMotionBehaviorTests
     [TestMethod]
     public async Task Instant_ChangesNothing_WhenMotionIsNotReduced()
     {
-        using var ctx = await AnimateAsync(BmReducedMotionMode.Never, BmReducedMotionBehavior.Instant, Bm.To(opacity: 0));
+        using var ctx = await AnimateAsync(BmotionReducedMotionMode.Never, BmotionReducedMotionBehavior.Instant, Bm.To(opacity: 0));
 
         Assert.AreEqual(1, BrowserAnimations(ctx), "it says how to reduce, not whether to");
     }
@@ -77,23 +77,23 @@ public class ReducedMotionBehaviorTests
     [TestMethod]
     public async Task APresetsBehaviour_Applies_AndTheElementsOwnWins()
     {
-        var decorative = BmPresets.Fade() with { ReducedMotion = BmReducedMotionBehavior.Instant };
+        var decorative = BmotionPresets.Fade() with { ReducedMotion = BmotionReducedMotionBehavior.Instant };
 
-        using var fromPreset = await AnimateAsync(BmReducedMotionMode.Always, null, Bm.To(opacity: 0.5), decorative);
+        using var fromPreset = await AnimateAsync(BmotionReducedMotionMode.Always, null, Bm.To(opacity: 0.5), decorative);
         Assert.AreEqual(0, BrowserAnimations(fromPreset), "the preset's Instant landed the fade");
 
-        using var overridden = await AnimateAsync(BmReducedMotionMode.Always, BmReducedMotionBehavior.Reduce, Bm.To(opacity: 0.5), decorative);
+        using var overridden = await AnimateAsync(BmotionReducedMotionMode.Always, BmotionReducedMotionBehavior.Reduce, Bm.To(opacity: 0.5), decorative);
         Assert.IsTrue(BrowserAnimations(overridden) > 0, "the element's own Reduce keeps the fade (the enter and the call)");
     }
 
     [TestMethod]
     public void ComposedPresets_KeepTheRightHandBehaviour()
     {
-        var a = BmPresets.Fade() with { ReducedMotion = BmReducedMotionBehavior.Instant };
-        var b = BmPresets.Scale() with { ReducedMotion = BmReducedMotionBehavior.Full };
+        var a = BmotionPresets.Fade() with { ReducedMotion = BmotionReducedMotionBehavior.Instant };
+        var b = BmotionPresets.Scale() with { ReducedMotion = BmotionReducedMotionBehavior.Full };
 
-        Assert.AreEqual(BmReducedMotionBehavior.Full, (a + b).ReducedMotion);
-        Assert.AreEqual(BmReducedMotionBehavior.Instant, (a + BmPresets.Scale()).ReducedMotion, "unset on the right keeps the left's");
+        Assert.AreEqual(BmotionReducedMotionBehavior.Full, (a + b).ReducedMotion);
+        Assert.AreEqual(BmotionReducedMotionBehavior.Instant, (a + BmotionPresets.Scale()).ReducedMotion, "unset on the right keeps the left's");
     }
 }
 
@@ -103,32 +103,32 @@ public class PresetCompositionTests
     [TestMethod]
     public void Composition_CoversEveryProperty()
     {
-        // A property added to BmPreset but forgotten in operator + would silently vanish from composed presets.
-        var properties = typeof(BmPreset).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+        // A property added to BmotionPreset but forgotten in operator + would silently vanish from composed presets.
+        var properties = typeof(BmotionPreset).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
             .Where(p => p.CanWrite).ToArray();
-        var full = new BmPreset();
+        var full = new BmotionPreset();
         foreach (var property in properties)
             property.SetValue(full, SampleOf(property.PropertyType));
 
-        var composed = new BmPreset() + full;
+        var composed = new BmotionPreset() + full;
 
         foreach (var property in properties)
-            Assert.IsNotNull(property.GetValue(composed), $"BmPreset + drops {property.Name}");
+            Assert.IsNotNull(property.GetValue(composed), $"BmotionPreset + drops {property.Name}");
     }
 
     private static object SampleOf(Type type)
     {
-        if (type == typeof(BmProps)) return Bm.To(opacity: 1);
-        if (type == typeof(BmViewport)) return new BmViewport();
-        if (type == typeof(BmTransition)) return Bm.Tween(0.1);
-        if (type == typeof(BmReducedMotionBehavior?)) return BmReducedMotionBehavior.Full;
+        if (type == typeof(BmotionProps)) return Bm.To(opacity: 1);
+        if (type == typeof(BmotionViewport)) return new BmotionViewport();
+        if (type == typeof(BmotionTransition)) return Bm.Tween(0.1);
+        if (type == typeof(BmotionReducedMotionBehavior?)) return BmotionReducedMotionBehavior.Full;
         throw new AssertFailedException($"Add a sample for {type.Name} to Composition_CoversEveryProperty.");
     }
 
     [TestMethod]
     public void Expand_GrowsToItsNaturalHeight_AndShrinksBackOnExit()
     {
-        var expand = BmPresets.Expand();
+        var expand = BmotionPresets.Expand();
 
         Assert.AreEqual("0px", expand.Initial!.Height!.Last);
         Assert.AreEqual("auto", expand.Animate!.Height!.Last);

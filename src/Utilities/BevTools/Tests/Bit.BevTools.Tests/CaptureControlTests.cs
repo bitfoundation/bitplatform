@@ -53,7 +53,7 @@ public class CaptureControlTests : BunitContext
         cut.InvokeAsync(() => cut.Instance.Refresh());
         Assert.AreEqual(2, parent.RenderCount);
         // Not "Initial": the instance rendered while paused, and that must not be forgotten.
-        Assert.AreEqual(BevRenderCause.StateHasChanged, parent.LastRender!.Cause);
+        Assert.AreEqual(BevToolsRenderCause.StateHasChanged, parent.LastRender!.Cause);
     }
 
     [TestMethod]
@@ -169,7 +169,7 @@ public class CaptureControlTests : BunitContext
     {
         var cut = Render<ClickCallback>();
         var clicks = 0;
-        BevErrorRecord? error = null;
+        BevToolsErrorRecord? error = null;
         cut.Instance.OnClicked = () => error = Session.Errors.Record(new InvalidOperationException("click " + ++clicks), "test");
 
         Session.PauseCapture();

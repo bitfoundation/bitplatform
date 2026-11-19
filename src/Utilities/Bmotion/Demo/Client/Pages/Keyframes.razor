@@ -26,7 +26,7 @@
         <div class="demo-card stack">
             <span class="demo-label">Evenly spaced &middot; scale + rotate together</span>
             <Bmotion Animate="Bm.To(scale: [1, 1.3, 0.8, 1.1, 1], rotate: [0, 15, -10, 5, 0])"
-                    Transition="Bm.Tween(1.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+                    Transition="Bm.Tween(1.2, BmotionEase.InOut, repeat: BmotionRepeat.Mirror())">
                 <div class="box" />
             </Bmotion>
         </div>
@@ -34,7 +34,7 @@
         <div class="demo-card stack">
             <span class="demo-label">times: [0, 0.2, 0.5, 0.8, 1]</span>
             <Bmotion Animate="Bm.To(x: [0, 100, 60, 120, 0])"
-                    Transition="Bm.Tween(2, BmEase.InOut, repeat: BmRepeat.Forever, times: [0, 0.2, 0.5, 0.8, 1])">
+                    Transition="Bm.Tween(2, BmotionEase.InOut, repeat: BmotionRepeat.Forever, times: [0, 0.2, 0.5, 0.8, 1])">
                 <div class="box keyframe-bar" />
             </Bmotion>
         </div>
@@ -53,7 +53,7 @@
     <div class="demo-row">
         <div class="demo-card">
             <Bmotion Animate='Bm.To(backgroundColor: ["#1276C6", "#FD7F36", "#8A4FD6", "#1276C6"])'
-                    Transition="Bm.Tween(3, BmEase.Linear, repeat: BmRepeat.Forever)">
+                    Transition="Bm.Tween(3, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
                 <div class="box color-orb" />
             </Bmotion>
         </div>
@@ -75,8 +75,8 @@
     <div class="demo-row">
         <div class="demo-card ball-stage">
             <Bmotion Animate="Bm.To(y: [0, -120, 0, -50, 0])"
-                    Transition="Bm.Tween(2, repeat: BmRepeat.Forever,
-                                         eases: [BmEase.CircOut, BmEase.CircIn, BmEase.CircOut, BmEase.BackOut])">
+                    Transition="Bm.Tween(2, repeat: BmotionRepeat.Forever,
+                                         eases: [BmotionEase.CircOut, BmotionEase.CircIn, BmotionEase.CircOut, BmotionEase.BackOut])">
                 <div class="box ball" />
             </Bmotion>
         </div>
@@ -88,12 +88,12 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> What happens at the end</h3>
     <p>
-        <code>repeat</code> takes a <strong>BmRepeat</strong>, and its type decides what each run after the first
+        <code>repeat</code> takes a <strong>BmotionRepeat</strong>, and its type decides what each run after the first
         does. <code>Loop</code> jumps back to the start and plays forwards again. <code>Mirror</code> plays the
         motion back the way it came, so it ping-pongs. <code>Reverse</code> plays forwards once, then backwards
         every time after that, jumping to the end before each pass. The number is how many runs follow the first
         - all three below play three times - and <code>delay</code> pauses between runs.
-        <code>BmRepeat.Forever</code> never stops, and a bare number (<code>repeat: 2</code>) is a
+        <code>BmotionRepeat.Forever</code> never stops, and a bare number (<code>repeat: 2</code>) is a
         <code>Loop</code>. The same repeats work on springs, tweens and keyframe sequences alike.
     </p>
 
@@ -105,7 +105,7 @@
                 <div class="current-track">
                     <Bmotion @key="@($"{_repeatRun}-{r.Label}")"
                              Animate="Bm.To(x: [0, 140])"
-                             Transition="@Bm.Tween(0.7, BmEase.InOut, repeat: r.Repeat)">
+                             Transition="@Bm.Tween(0.7, BmotionEase.InOut, repeat: r.Repeat)">
                         <div class="box box-sm" />
                     </Bmotion>
                 </div>
@@ -136,7 +136,7 @@
             <span class="demo-label">x: [0, 140] &middot; snaps home first</span>
             <div class="current-track">
                 <Bmotion Animate="@(_pulse ? Bm.To(x: [0, 140]) : Bm.To(x: 0))"
-                        Transition="Bm.Tween(1.4, BmEase.InOut)">
+                        Transition="Bm.Tween(1.4, BmotionEase.InOut)">
                     <div class="box box-sm" />
                 </Bmotion>
             </div>
@@ -146,7 +146,7 @@
             <span class="demo-label">x: [Bm.Current, 140] &middot; continues</span>
             <div class="current-track">
                 <Bmotion Animate="@(_pulse ? Bm.To(x: [Bm.Current, 140]) : Bm.To(x: 0))"
-                        Transition="Bm.Tween(1.4, BmEase.InOut)">
+                        Transition="Bm.Tween(1.4, BmotionEase.InOut)">
                     <div class="box box-sm" />
                 </Bmotion>
             </div>
@@ -165,13 +165,13 @@
     private int _repeatRun;
 
     /// <summary>One repeat stage: its caption, the repeat it plays and where it comes to rest.</summary>
-    private sealed record RepeatDemo(string Label, BmRepeat Repeat, string Note);
+    private sealed record RepeatDemo(string Label, BmotionRepeat Repeat, string Note);
 
     private readonly RepeatDemo[] _repeats =
     [
-        new("BmRepeat.Loop(2, delay: 0.3)", BmRepeat.Loop(2, delay: 0.3), "0→140 three times, ends at 140"),
-        new("BmRepeat.Mirror(2, delay: 0.3)", BmRepeat.Mirror(2, delay: 0.3), "there, back, there - ends at 140"),
-        new("BmRepeat.Reverse(2, delay: 0.3)", BmRepeat.Reverse(2, delay: 0.3), "forwards, then backwards twice - ends at 0"),
+        new("BmotionRepeat.Loop(2, delay: 0.3)", BmotionRepeat.Loop(2, delay: 0.3), "0→140 three times, ends at 140"),
+        new("BmotionRepeat.Mirror(2, delay: 0.3)", BmotionRepeat.Mirror(2, delay: 0.3), "there, back, there - ends at 140"),
+        new("BmotionRepeat.Reverse(2, delay: 0.3)", BmotionRepeat.Reverse(2, delay: 0.3), "forwards, then backwards twice - ends at 0"),
     ];
 
     private const string _keyframesCode = """
@@ -193,7 +193,7 @@
         <div class="demo-card">
             @* Any property takes a sequence; several can run at once, stop for stop. *@
             <Bmotion Animate="Bm.To(scale: [1, 1.3, 0.8, 1.1, 1], rotate: [0, 15, -10, 5, 0])"
-                     Transition="Bm.Tween(1.2, BmEase.InOut, repeat: BmRepeat.Mirror())">
+                     Transition="Bm.Tween(1.2, BmotionEase.InOut, repeat: BmotionRepeat.Mirror())">
                 <div class="box" />
             </Bmotion>
         </div>
@@ -201,7 +201,7 @@
         <div class="demo-card">
             @* times places each stop explicitly in 0..1 instead of spacing them evenly. *@
             <Bmotion Animate="Bm.To(x: [0, 100, 60, 120, 0])"
-                     Transition="Bm.Tween(2, BmEase.InOut, repeat: BmRepeat.Forever,
+                     Transition="Bm.Tween(2, BmotionEase.InOut, repeat: BmotionRepeat.Forever,
                                           times: [0, 0.2, 0.5, 0.8, 1])">
                 <div class="box" style="height:30px;border-radius:4px" />
             </Bmotion>
@@ -214,7 +214,7 @@
         @* Colors interpolate as colors. First and last entries match so the loop arrives
            at its start rather than jumping back to it. *@
         <Bmotion Animate='Bm.To(backgroundColor: ["#1276C6", "#FD7F36", "#8A4FD6", "#1276C6"])'
-                 Transition="Bm.Tween(3, BmEase.Linear, repeat: BmRepeat.Forever)">
+                 Transition="Bm.Tween(3, BmotionEase.Linear, repeat: BmotionRepeat.Forever)">
             <div style="width:120px;height:120px;border-radius:50%" />
         </Bmotion>
         """;
@@ -237,8 +237,8 @@
             @* One ease per segment: launch, fall, small bounce, settle. A single curve
                across all four would read as a wobble rather than a bounce. *@
             <Bmotion Animate="Bm.To(y: [0, -120, 0, -50, 0])"
-                     Transition="Bm.Tween(2, repeat: BmRepeat.Forever,
-                                          eases: [BmEase.CircOut, BmEase.CircIn, BmEase.CircOut, BmEase.BackOut])">
+                     Transition="Bm.Tween(2, repeat: BmotionRepeat.Forever,
+                                          eases: [BmotionEase.CircOut, BmotionEase.CircIn, BmotionEase.CircOut, BmotionEase.BackOut])">
                 <div class="ball" />
             </Bmotion>
         </div>
@@ -250,22 +250,22 @@
         @* The count is the runs AFTER the first, so each of these plays three times;
            delay is the pause between runs. *@
         <Bmotion Animate="Bm.To(x: [0, 140])"
-                 Transition="Bm.Tween(0.7, BmEase.InOut, repeat: BmRepeat.Loop(2, delay: 0.3))">
+                 Transition="Bm.Tween(0.7, BmotionEase.InOut, repeat: BmotionRepeat.Loop(2, delay: 0.3))">
             <div class="box" />   @* jumps back to 0 and replays: ends at 140 *@
         </Bmotion>
 
         <Bmotion Animate="Bm.To(x: [0, 140])"
-                 Transition="Bm.Tween(0.7, BmEase.InOut, repeat: BmRepeat.Mirror(2, delay: 0.3))">
+                 Transition="Bm.Tween(0.7, BmotionEase.InOut, repeat: BmotionRepeat.Mirror(2, delay: 0.3))">
             <div class="box" />   @* there, back, there: ends at 140 *@
         </Bmotion>
 
         <Bmotion Animate="Bm.To(x: [0, 140])"
-                 Transition="Bm.Tween(0.7, BmEase.InOut, repeat: BmRepeat.Reverse(2, delay: 0.3))">
+                 Transition="Bm.Tween(0.7, BmotionEase.InOut, repeat: BmotionRepeat.Reverse(2, delay: 0.3))">
             <div class="box" />   @* forwards once, then backwards from the end: ends at 0 *@
         </Bmotion>
 
-        @* Also: BmRepeat.Forever, BmRepeat.Mirror() (forever), BmRepeat.Times(3, BmRepeatType.Mirror),
-           and a bare count - repeat: 2 is BmRepeat.Loop(2). *@
+        @* Also: BmotionRepeat.Forever, BmotionRepeat.Mirror() (forever), BmotionRepeat.Times(3, BmotionRepeatType.Mirror),
+           and a bare count - repeat: 2 is BmotionRepeat.Loop(2). *@
         """;
 
     private const string _currentCode = """
@@ -273,14 +273,14 @@
 
         @* Without the wildcard, a sequence snaps to its first entry before it plays. *@
         <Bmotion Animate="@(_on ? Bm.To(x: [0, 140]) : Bm.To(x: 0))"
-                 Transition="Bm.Tween(1.4, BmEase.InOut)">
+                 Transition="Bm.Tween(1.4, BmotionEase.InOut)">
             <div class="box" />
         </Bmotion>
 
         @* Bm.Current means "wherever this element is right now", so an interrupted
            animation continues from the live value instead of teleporting. *@
         <Bmotion Animate="@(_on ? Bm.To(x: [Bm.Current, 140]) : Bm.To(x: 0))"
-                 Transition="Bm.Tween(1.4, BmEase.InOut)">
+                 Transition="Bm.Tween(1.4, BmotionEase.InOut)">
             <div class="box" />
         </Bmotion>
 

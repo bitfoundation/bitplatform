@@ -1,4 +1,4 @@
-namespace Bit.BlazeDb.Bcrdt;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// One stored update of a Bcrdt document, as a row of the <c>bcrdt_records</c> table. Register the table with

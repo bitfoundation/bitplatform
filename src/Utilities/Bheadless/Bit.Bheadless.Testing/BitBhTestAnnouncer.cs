@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Bit.Bheadless.Testing;
+namespace Bit.Bheadless;
 
 /// <summary>
 /// An <see cref="IBitBhAnnouncer"/> that records announcements instead of sending them

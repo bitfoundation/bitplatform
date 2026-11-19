@@ -1,5 +1,4 @@
 ﻿using Bit.Blex;
-using Bit.Blex.Blazor;
 using Bit.Blex.Demo.Client.Services;
 using Bit.Blex.Demo.Client.Stores;
 

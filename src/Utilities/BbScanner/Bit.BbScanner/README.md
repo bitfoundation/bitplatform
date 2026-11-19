@@ -23,15 +23,15 @@ No services to register and no stylesheet to reference: the package's Blazor ini
 ```razor
 @rendermode InteractiveWebAssembly
 
-<BbScanner Formats="BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13"
-           Region="BbScanRegion.CenteredSquare(0.7)"
+<BbScanner Formats="BbScannerBarcodeFormat.QrCode | BbScannerBarcodeFormat.Ean13"
+           Region="BbScannerScanRegion.CenteredSquare(0.7)"
            OnScan="HandleScan"
            OnError="e => _error = e" />
 
 @code {
     private BbScannerException? _error;
 
-    private void HandleScan(BbBarcodeResult result)
+    private void HandleScan(BbScannerBarcodeResult result)
         => Console.WriteLine($"{result.Format}: {result.Text}");
 }
 ```
@@ -46,8 +46,8 @@ default interpreter a 640x480 frame took about 100 ms in Chromium on a desktop, 
 itself runs anywhere .NET runs:
 
 ```csharp
-using var decoder = new BbBarcodeDecoder(BbScannerOptions.ForStillImages());
-var result = decoder.Decode(rgbaPixels, width, height, BbPixelFormat.Rgba32);
+using var decoder = new BbScannerBarcodeDecoder(BbScannerOptions.ForStillImages());
+var result = decoder.Decode(rgbaPixels, width, height, BbScannerPixelFormat.Rgba32);
 ```
 
 ## Features

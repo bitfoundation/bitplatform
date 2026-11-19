@@ -58,7 +58,7 @@
 
 <h2>Instance methods</h2>
 <section class="row">
-    <button id="ref-animate" @onclick="() => _box.AnimateAsync(Bm.To(x: 120), Bm.Tween(0.6, BmEase.Linear))">animate</button>
+    <button id="ref-animate" @onclick="() => _box.AnimateAsync(Bm.To(x: 120), Bm.Tween(0.6, BmotionEase.Linear))">animate</button>
     <button id="ref-cancel" @onclick="RefAnimateThenCancelAsync">animate then cancel</button>
     <button id="ref-set" @onclick='() => _box.Set(Bm.To(y: 20))'>set</button>
     <button id="ref-set-async" @onclick='() => _box.SetAsync(Bm.To(opacity: 0.4))'>set async</button>
@@ -71,14 +71,14 @@
 </section>
 
 @code {
-    private BmAnimationControls? _controls;
+    private BmotionAnimationControls? _controls;
     private ElementReference _refTarget;
     private Readout _count = default!;
     private Bmotion _box = default!;
 
     private async Task AnimateSelectorAsync()
     {
-        _controls = await Motion.AnimateAsync(".prog", Bm.To(x: 200), Bm.Tween(1, BmEase.Linear), stagger: Bm.Stagger(0.3));
+        _controls = await Motion.AnimateAsync(".prog", Bm.To(x: 200), Bm.Tween(1, BmotionEase.Linear), stagger: Bm.Stagger(0.3));
         Log("selector:started");
         await _controls;
         Log("selector:done");
@@ -100,14 +100,14 @@
     {
         await await Motion.AnimateAsync("#twice-target", Bm.To(x: 100, scale: 1.5), Bm.Tween(0.2));
         Log("twice:first");
-        await await Motion.AnimateAsync("#twice-target", Bm.To(x: 200), Bm.Tween(0.6, BmEase.Linear));
+        await await Motion.AnimateAsync("#twice-target", Bm.To(x: 200), Bm.Tween(0.6, BmotionEase.Linear));
         Log("twice:second");
     }
 
     private async Task CancelMidFlightAsync()
     {
         using var cts = new CancellationTokenSource();
-        var controls = await Motion.AnimateAsync("#cancel-target", Bm.To(x: 300), Bm.Tween(1.5, BmEase.Linear), cancellationToken: cts.Token);
+        var controls = await Motion.AnimateAsync("#cancel-target", Bm.To(x: 300), Bm.Tween(1.5, BmotionEase.Linear), cancellationToken: cts.Token);
         await Task.Delay(400);
         cts.Cancel();
         await controls;
@@ -116,7 +116,7 @@
 
     private async Task SequenceAsync()
     {
-        var sequence = new BmSequence()
+        var sequence = new BmotionSequence()
             .Add("#seq-a", Bm.To(x: 100), Bm.Tween(0.3))
             .Add("#seq-a", Bm.To(y: 40), Bm.Tween(0.3), at: "-0.1")
             .Label("burst")
@@ -125,13 +125,13 @@
         Log("sequence:done");
     }
 
-    private BmAnimationControls? _seekable;
+    private BmotionAnimationControls? _seekable;
     private Readout _seekState = default!;
     private Readout _seekTime = default!;
 
     private async Task StartSeekableAsync()
     {
-        _seekable = await Motion.AnimateAsync("#seek-target", Bm.To(x: 200), Bm.Tween(1, BmEase.Linear));
+        _seekable = await Motion.AnimateAsync("#seek-target", Bm.To(x: 200), Bm.Tween(1, BmotionEase.Linear));
         _seekable.Pause();
         ShowSeekable();
         Log("seek:ready");
@@ -141,7 +141,7 @@
     private void SeekTo(double seconds)
     {
         if (_seekable is null) return;
-        bool wasOver = _seekable.State == BmPlaybackState.Finished;
+        bool wasOver = _seekable.State == BmotionPlaybackState.Finished;
         _seekable.Seek(seconds);
         ShowSeekable();
         Log($"seek:{seconds.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
@@ -165,7 +165,7 @@
     private async Task RefAnimateThenCancelAsync()
     {
         using var cts = new CancellationTokenSource();
-        await _box.AnimateAsync(Bm.To(x: 300), Bm.Tween(1.5, BmEase.Linear), cts.Token);
+        await _box.AnimateAsync(Bm.To(x: 300), Bm.Tween(1.5, BmotionEase.Linear), cts.Token);
         await Task.Delay(400);
         cts.Cancel();
         Log("ref-cancel:cancelled");

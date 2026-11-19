@@ -3,62 +3,6 @@ using System.Text.RegularExpressions;
 
 namespace Bit.Bcrdt;
 
-/// <summary>Who a participant is, for display purposes.</summary>
-/// <param name="Id">The application's identifier for the person. Distinct from a client session id.</param>
-/// <param name="Name">The name to show.</param>
-/// <param name="Color">
-/// A CSS colour used for their cursor and selection highlight. For participants read through
-/// <see cref="BcrdtPresenceService"/> this is always a hex colour (<c>#rgb</c>, <c>#rgba</c>,
-/// <c>#rrggbb</c> or <c>#rrggbbaa</c>): anything else a peer publishes is replaced with a suggested
-/// colour, so the value is safe to place in a style attribute.
-/// </param>
-/// <param name="AvatarUrl">An optional avatar image.</param>
-public sealed record BcrdtCollaboratorInfo(string Id, string Name, string Color, string? AvatarUrl = null);
-
-/// <summary>
-/// Where a participant's cursor and selection are, anchored to content rather than to indices.
-/// </summary>
-/// <param name="Field">The root type the selection lies in.</param>
-/// <param name="Anchor">Where the selection was started.</param>
-/// <param name="Head">Where the selection currently ends. Equal to the anchor for a plain caret.</param>
-public sealed record BcrdtCollaboratorSelection(string Field, BcrdtRelativePosition Anchor, BcrdtRelativePosition Head)
-{
-    /// <summary>Whether this is a caret rather than a range.</summary>
-    public bool IsCaret => ReferenceEquals(Anchor, Head) || Anchor.Encode().AsSpan().SequenceEqual(Head.Encode());
-
-    /// <summary>Resolves the selection to indices in the document as it stands now.</summary>
-    /// <returns>
-    /// The resolved range, or <see langword="null"/> if the anchored content has not arrived yet.
-    /// </returns>
-    public (int Start, int End)? Resolve(BcrdtDocument doc)
-    {
-        BcrdtAbsolutePosition? anchor = Anchor.Resolve(doc);
-        BcrdtAbsolutePosition? head = Head.Resolve(doc);
-        if (anchor is null || head is null) return null;
-
-        int start = Math.Min(anchor.Value.Index, head.Value.Index);
-        int end = Math.Max(anchor.Value.Index, head.Value.Index);
-        return (start, end);
-    }
-}
-
-/// <summary>Everything currently known about one participant.</summary>
-/// <param name="ClientId">Their session identity.</param>
-/// <param name="User">Who they are.</param>
-/// <param name="Selection">Where their cursor is, if they have published one.</param>
-/// <param name="Activity">What they are doing, for example <c>typing</c>.</param>
-/// <param name="IsLocal">Whether this is the local participant.</param>
-/// <param name="LastSeen">When we last heard from them.</param>
-/// <param name="Custom">Any application-specific fields they published.</param>
-public sealed record BcrdtCollaborator(
-    ulong ClientId,
-    BcrdtCollaboratorInfo User,
-    BcrdtCollaboratorSelection? Selection,
-    string? Activity,
-    bool IsLocal,
-    DateTimeOffset LastSeen,
-    IReadOnlyDictionary<string, object?> Custom);
-
 /// <summary>
 /// A typed view over awareness for the things collaborative applications always need.
 /// </summary>

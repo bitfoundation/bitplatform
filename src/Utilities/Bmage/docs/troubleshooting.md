@@ -3,7 +3,7 @@
 ## "Could not load the Bmage browser module"
 
 ```
-ImageCapabilityException: Could not load the Bmage browser module from
+BmageImageCapabilityException: Could not load the Bmage browser module from
 './_content/Bit.Bmage.Blazor/bit-bmage.js'.
 ```
 
@@ -41,7 +41,7 @@ The stylesheet is not referenced:
 
 ## Photos appear sideways
 
-Something has bypassed the orientation handling. `AutoOrient` is on by default in `DecodeOptions`, and the browser
+Something has bypassed the orientation handling. `AutoOrient` is on by default in `BmageDecodeOptions`, and the browser
 decoder applies EXIF orientation while decoding. If you set `AutoOrient = false`, apply it yourself:
 
 ```csharp
@@ -56,35 +56,35 @@ EXIF orientation into an exported image whose pixels are already upright; the me
 JPEG has no alpha channel, and browsers composite over black. Set the background explicitly:
 
 ```csharp
-new ImageExportOptions { Format = ImageFormat.Jpeg, Background = Rgba32.White }
+new BmageImageExportOptions { Format = BmageImageFormat.Jpeg, Background = BmageRgba32.White }
 ```
 
 ## "This browser cannot encode Avif"
 
 ```
-ImageCapabilityException: This browser cannot encode Avif; it produced image/png instead.
+BmageImageCapabilityException: This browser cannot encode Avif; it produced image/png instead.
 ```
 
 Working as intended. Browsers silently substitute PNG for formats they cannot write, and the library refuses to pass that
 off as what you asked for. Either check first or ask for a fallback chain:
 
 ```csharp
-await exporter.EncodeWithFallbackAsync(image, [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg], options);
+await exporter.EncodeWithFallbackAsync(image, [BmageImageFormat.Avif, BmageImageFormat.WebP, BmageImageFormat.Jpeg], options);
 ```
 
 ## "Cannot reach the target size"
 
 ```
-ImageEncodeException: Cannot reach 5000 bytes for this image (smallest attempt was 8421 bytes).
+BmageImageEncodeException: Cannot reach 5000 bytes for this image (smallest attempt was 8421 bytes).
 ```
 
 The budget is not achievable within the constraints given. Raise `MaxFileSize`, lower `MinQuality`, reduce the
-dimensions, or allow `MaxFileSizeStrategy.QualityThenDimensions` so the encoder may shrink the image.
+dimensions, or allow `BmageMaxFileSizeStrategy.QualityThenDimensions` so the encoder may shrink the image.
 
 ## Remote images fail to load
 
 ```
-ImageDecodeException: Could not fetch 'https://example.com/photo.jpg'. The most common cause is a
+BmageImageDecodeException: Could not fetch 'https://example.com/photo.jpg'. The most common cause is a
 missing CORS header on the remote server...
 ```
 
@@ -118,9 +118,9 @@ Memory pressure. In order of effect:
 
 1. Lower `MaxInteractiveDimension` to 1200 or 1500.
 2. Set batch `MaxConcurrency` to 1.
-3. Dispose every `ImageBuffer` promptly; `using` is your friend.
-4. Use `DecodeOptions.MaxSize` so the browser downscales during decoding, before the full-size pixels ever exist.
-5. Lower `ImageLimits.MaxPixels` so oversized uploads are refused with a clear message rather than attempted.
+3. Dispose every `BmageImageBuffer` promptly; `using` is your friend.
+4. Use `BmageDecodeOptions.MaxSize` so the browser downscales during decoding, before the full-size pixels ever exist.
+5. Lower `BmageImageLimits.MaxPixels` so oversized uploads are refused with a clear message rather than attempted.
 
 ## Processing feels slow
 
@@ -144,12 +144,12 @@ See [performance.md](performance.md) for measured numbers.
 `oninput` and debounce it; you get a live preview as well. The demo application includes a small `Debouncer` for exactly
 this.
 
-## `ObjectDisposedException: ImageBuffer`
+## `ObjectDisposedException: BmageImageBuffer`
 
 Something is using a buffer after disposing it. The usual causes:
 
 - A `using` on a buffer that is still referenced by a component parameter.
-- Disposing a buffer the library owns. `ImageEditSession.Preview` and `ImageEditSession.Original` belong to the session.
+- Disposing a buffer the library owns. `BmageImageEditSession.Preview` and `BmageImageEditSession.Original` belong to the session.
 - Disposing a buffer you passed to `BmageEditor.Image` with `takeOwnership: true`.
 
 The rule is simple: you own what you are returned from `LoadAsync`, `ExecuteAsync`, `RenderFullAsync`, `Clone` and
@@ -157,20 +157,20 @@ The rule is simple: you own what you are returned from `LoadAsync`, `ExecuteAsyn
 
 ## Text renders as blank boxes, or not at all
 
-Using `FontTextRasterizer` with no font registered throws a clear exception. Using it with a CFF (PostScript) OpenType
+Using `BmageFontTextRasterizer` with no font registered throws a clear exception. Using it with a CFF (PostScript) OpenType
 font also throws, because only `glyf` outlines are supported. Either register a TrueType font, or, for text you draw
-yourself, use `BrowserTextRasterizer` in a browser, which uses the platform's own text engine and needs no font file.
+yourself, use `BmageBrowserTextRasterizer` in a browser, which uses the platform's own text engine and needs no font file.
 
 `BmageEditor` draws text and step numbers as outlines, so its text tools need a TrueType font registered with the
-`FontTextRasterizer` the services provide (or one passed as its `TextRasterizer`); until then it says so when the Text
+`BmageFontTextRasterizer` the services provide (or one passed as its `TextRasterizer`); until then it says so when the Text
 tool is used, and step markers have no number. Fetching the font in the background is fine: text appears from the
 next render once it is registered. The demo site does exactly that:
 
 ```csharp
-// fonts: the FontTextRasterizer from dependency injection. The first family is what "sans-serif" means; a character it
+// fonts: the BmageFontTextRasterizer from dependency injection. The first family is what "sans-serif" means; a character it
 // lacks, such as every Persian letter, comes from the next family that has it.
-fonts.Register("Noto Sans", FontFile.Load(await http.GetByteArrayAsync("fonts/NotoSans-Regular.ttf")))
-     .Register("Vazirmatn", FontFile.Load(await http.GetByteArrayAsync("fonts/Vazirmatn-Regular.ttf")));
+fonts.Register("Noto Sans", BmageFontFile.Load(await http.GetByteArrayAsync("fonts/NotoSans-Regular.ttf")))
+     .Register("Vazirmatn", BmageFontFile.Load(await http.GetByteArrayAsync("fonts/Vazirmatn-Regular.ttf")));
 await editor.RefreshAsync();   // redraws text added before the fonts arrived
 ```
 
@@ -185,7 +185,7 @@ overlay rather than in the document.
 
 ## Undo does not restore my image
 
-`EditHistory` tracks the document, not the source image. Replacing the source with `ReplaceSource` clears the history
+`BmageEditHistory` tracks the document, not the source image. Replacing the source with `ReplaceSource` clears the history
 deliberately: an undo across two different images would be meaningless.
 
 ## Browser tests are all skipped
@@ -199,15 +199,15 @@ pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Debug/net10.0/playwright.
 
 The fixture also falls back to a system Chrome or Edge automatically.
 
-## The published app fails to render after enabling `TrimMode=full`
+## The published app fails to render after enabling `BmageTrimMode=full`
 
 Symptom: the app works with `dotnet run` and with a normal `dotnet publish -c Release`, but a publish with
-`-p:TrimMode=full` shows *An unhandled error has occurred*, and the browser console reports
+`-p:BmageTrimMode=full` shows *An unhandled error has occurred*, and the browser console reports
 `No element is currently associated with component`.
 
 This is not caused by Bmage. A stock `dotnet new blazorwasm` application with no packages added fails in exactly
-the same way under `-p:TrimMode=full`, because full trimming removes members that Blazor's reflective component
-instantiation needs. That is why `TrimMode=full` is not the Blazor default, and the SDK prints
+the same way under `-p:BmageTrimMode=full`, because full trimming removes members that Blazor's reflective component
+instantiation needs. That is why `BmageTrimMode=full` is not the Blazor default, and the SDK prints
 *Optimizing assemblies for size may change the behavior of the app* when you enable it.
 
 **Use the default trimming that `dotnet publish -c Release` already applies.** It trims Bmage well: on a

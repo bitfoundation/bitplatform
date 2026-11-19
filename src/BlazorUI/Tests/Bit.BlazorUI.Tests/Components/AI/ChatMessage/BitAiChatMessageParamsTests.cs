@@ -23,7 +23,7 @@ public class BitAiChatMessageParamsTests : BitAiTestBase
         nameof(BitAiChatMessage.Animate),
         nameof(BitAiChatMessage.ChildContent),
         nameof(BitAiChatMessage.Conversation),
-        nameof(BitAiChatMessage.IsLatest),
+        nameof(BitAiChatMessage.Latest),
         nameof(BitAiChatMessage.Message),
         nameof(BitAiChatMessage.MessageActionsTemplate),
         nameof(BitAiChatMessage.OnCitationClick),

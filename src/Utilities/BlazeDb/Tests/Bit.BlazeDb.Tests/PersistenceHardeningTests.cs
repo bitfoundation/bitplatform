@@ -1,6 +1,4 @@
 using System.Diagnostics.Metrics;
-using Bit.BlazeDb;
-using Bit.BlazeDb.Storage;
 
 namespace Bit.BlazeDb.Tests;
 

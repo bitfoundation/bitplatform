@@ -9,5 +9,5 @@ public sealed class BevToolsBelemetryExtension : IBevToolsExtension
     public string Name => "Belemetry production diagnostics";
 
     public void Configure(IBevToolsExtensionBuilder builder) =>
-        builder.AddPanel(new BevToolsPanelDescriptor(PanelId, "Support", typeof(BevBelemetryPanel), Order: 60));
+        builder.AddPanel(new BevToolsPanelDescriptor(PanelId, "Support", typeof(BevToolsBelemetryPanel), Order: 60));
 }

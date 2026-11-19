@@ -8,8 +8,8 @@ public class SentryEnvelopeSerializerTests
 {
     private const string Dsn = "https://abc123@o1.ingest.sentry.io/42";
 
-    private static SentryEnvelopeSerializer.Context Context(BelemetrySeverity? minimum = BelemetrySeverity.Error, string? release = null, bool includeUnhandled = true, bool maskIp = true) =>
-        new(SentryDsn.Parse(Dsn), release, minimum, includeUnhandled, maskIp);
+    private static BelemetrySentryEnvelopeSerializer.Context Context(BelemetrySeverity? minimum = BelemetrySeverity.Error, string? release = null, bool includeUnhandled = true, bool maskIp = true) =>
+        new(BelemetrySentryDsn.Parse(Dsn), release, minimum, includeUnhandled, maskIp);
 
     private sealed record Envelope(JsonElement Header, JsonElement Item, JsonElement Event, int EventBytes);
 
@@ -25,10 +25,10 @@ public class SentryEnvelopeSerializerTests
         return new(header.RootElement.Clone(), item.RootElement.Clone(), e.RootElement.Clone(), Encoding.UTF8.GetByteCount(lines[2]));
     }
 
-    private static List<JsonElement> Events(BelemetryBatch batch, SentryEnvelopeSerializer.Context? context = null) =>
-        SentryEnvelopeSerializer.Serialize(batch, context ?? Context()).Select(b => Parse(b).Event).ToList();
+    private static List<JsonElement> Events(BelemetryBatch batch, BelemetrySentryEnvelopeSerializer.Context? context = null) =>
+        BelemetrySentryEnvelopeSerializer.Serialize(batch, context ?? Context()).Select(b => Parse(b).Event).ToList();
 
-    private static JsonElement Single(BelemetryLogRecord log, SentryEnvelopeSerializer.Context? context = null, BelemetryResource? resource = null) =>
+    private static JsonElement Single(BelemetryLogRecord log, BelemetrySentryEnvelopeSerializer.Context? context = null, BelemetryResource? resource = null) =>
         Events(new BelemetryBatch(resource ?? Records.Resource(), logs: [log]), context).Single();
 
     private static BelemetryLogRecord Error(Exception? exception = null, string scope = "MyApp.Orders", string? body = "Order failed")
@@ -57,7 +57,7 @@ public class SentryEnvelopeSerializerTests
         var log = Error();
         log.Attributes.Set(BelemetrySemanticConventions.ExceptionMessage, "café ☕");
 
-        var envelope = Parse(SentryEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), logs: [log]), Context()).Single());
+        var envelope = Parse(BelemetrySentryEnvelopeSerializer.Serialize(new BelemetryBatch(Records.Resource(), logs: [log]), Context()).Single());
 
         Assert.AreEqual(Str(envelope.Event, "event_id"), Str(envelope.Header, "event_id"));
         StringAssert.Matches(Str(envelope.Header, "event_id"), new System.Text.RegularExpressions.Regex("^[0-9a-f]{32}$"));
@@ -121,7 +121,7 @@ public class SentryEnvelopeSerializerTests
         var image = images[int.Parse(Str(frame, "addr_mode")!["rel:".Length..])];
         Assert.AreEqual("pe_dotnet", Str(image, "type"));
         Assert.AreEqual(typeof(SentryStackTraceTests.Thrower).Assembly.Location, Str(image, "code_file"));
-        Assert.AreEqual(SentryDebugImage.Of(typeof(SentryStackTraceTests.Thrower).Module)!.DebugId, Str(image, "debug_id"));
+        Assert.AreEqual(BelemetrySentryDebugImage.Of(typeof(SentryStackTraceTests.Thrower).Module)!.DebugId, Str(image, "debug_id"));
 
         var contexts = e.GetProperty("contexts");
         Assert.AreEqual(Records.TraceId, Str(contexts, "trace", "trace_id"));
@@ -281,7 +281,7 @@ public class SentryEnvelopeSerializerTests
         Assert.HasCount(1, events);
         Assert.AreEqual("Payment declined", Str(events[0], "message", "formatted"));
         Assert.IsFalse(events[0].TryGetProperty("exception", out _));
-        Assert.AreEqual(1, SentryEnvelopeSerializer.Count(batch, Context()));
+        Assert.AreEqual(1, BelemetrySentryEnvelopeSerializer.Count(batch, Context()));
 
         Assert.HasCount(2, Events(batch, Context(BelemetrySeverity.Warn)));
         Assert.AreEqual("warning", Str(Events(batch, Context(BelemetrySeverity.Warn))[1], "level"));
@@ -319,7 +319,7 @@ public class SentryEnvelopeSerializerTests
         var events = Events(batch);
         CollectionAssert.AreEqual(new[] { "plain", "logged as a warning", "logged and dropped" },
                                   events.Select(e => Str(e.GetProperty("exception").GetProperty("values")[0], "value")).ToArray());
-        Assert.AreEqual(3, SentryEnvelopeSerializer.Count(batch, Context()));
+        Assert.AreEqual(3, BelemetrySentryEnvelopeSerializer.Count(batch, Context()));
 
         var e = events[0];
         Assert.AreEqual("GET /orders/{id}", Str(e, "transaction"));
@@ -417,7 +417,7 @@ public class SentryEnvelopeSerializerTests
         // The same record as sentry.test.js ("keeps the frames of a JS interop error that carries .NET text").
         var resource = new BelemetryResource(new BelemetryAttributes().Set("service.name", "shop").Set("telemetry.sdk.language", "webjs"));
         var log = Records.Log("unhandled", BelemetrySemanticConventions.ExceptionEvent, BelemetrySeverity.Error);
-        log.Scope = new BelemetryScope(SentryEnvelopeSerializer.BrowserErrorsScope);
+        log.Scope = new BelemetryScope(BelemetrySentryEnvelopeSerializer.BrowserErrorsScope);
         log.Attributes.Set("exception.type", "Error").Set("exception.message", "System.InvalidOperationException: boom")
             .Set("exception.stacktrace", "Error: System.InvalidOperationException: boom\n   at Shop.Interop.Save() in /src/Shop/Interop.cs:line 9\n" +
                                          "    at Object.invokeMethodAsync (https://shop.test/_framework/blazor.webassembly.js:1:3000)\n    at save (https://shop.test/app.js:10:15)");
@@ -470,19 +470,19 @@ public class SentryEnvelopeSerializerTests
         Assert.IsNull(Exporter(new() { Dsn = Dsn, MinimumEventLevel = Microsoft.Extensions.Logging.LogLevel.Trace }).MinimumSeverity);
     }
 
-    private static BelemetrySentryExporter Exporter(BelemetrySentryExporterOptions options) => new(options, SentryDsn.Parse(options.Dsn!), "sentry");
+    private static BelemetrySentryExporter Exporter(BelemetrySentryExporterOptions options) => new(options, BelemetrySentryDsn.Parse(options.Dsn!), "sentry");
 
     [TestMethod]
     public void Dsn_NamesTheEnvelopeEndpoint()
     {
-        var dsn = SentryDsn.Parse(Dsn);
+        var dsn = BelemetrySentryDsn.Parse(Dsn);
         Assert.AreEqual("abc123", dsn.PublicKey);
         Assert.AreEqual("42", dsn.ProjectId);
         Assert.AreEqual("https://o1.ingest.sentry.io/api/42/envelope/", dsn.EnvelopeEndpoint);
         Assert.AreEqual("https://o1.ingest.sentry.io/api/42/envelope/?sentry_key=abc123&sentry_version=7", dsn.EnvelopeUrl);
         Assert.AreEqual(Dsn, dsn.PublicDsn);
 
-        var selfHosted = SentryDsn.Parse("http://abc:s3cr3t@sentry.local:9000/sentry/7/");
+        var selfHosted = BelemetrySentryDsn.Parse("http://abc:s3cr3t@sentry.local:9000/sentry/7/");
         Assert.AreEqual("http://sentry.local:9000/sentry/api/7/envelope/", selfHosted.EnvelopeEndpoint);
         Assert.AreEqual("http://abc@sentry.local:9000/sentry/7", selfHosted.PublicDsn, "A legacy secret key is dropped.");
     }
@@ -493,5 +493,5 @@ public class SentryEnvelopeSerializerTests
     [DataRow("https://o1.ingest.sentry.io/42")]
     [DataRow("https://abc@o1.ingest.sentry.io")]
     [DataRow("ftp://abc@host/1")]
-    public void Dsn_RejectsWhatIsNotOne(string value) => Assert.ThrowsExactly<FormatException>(() => SentryDsn.Parse(value));
+    public void Dsn_RejectsWhatIsNotOne(string value) => Assert.ThrowsExactly<FormatException>(() => BelemetrySentryDsn.Parse(value));
 }

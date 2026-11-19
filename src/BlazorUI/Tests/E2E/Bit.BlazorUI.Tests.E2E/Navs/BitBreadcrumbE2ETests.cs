@@ -17,6 +17,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// wide screen is covered here, its sheet on a phone by BitBreadcrumbMobileE2ETests.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitBreadcrumbE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/breadcrumb";

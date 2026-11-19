@@ -1522,8 +1522,10 @@
                 const m = ScrollablePane.measure(this._element);
                 const left = this._element.scrollLeft;
                 const top = this._element.scrollTop;
+                const dx = vx * elapsed;
+                const dy = vy * elapsed;
 
-                ScrollablePane.apply(this._element, m.x + vx * elapsed, m.y + vy * elapsed, m, false);
+                ScrollablePane.apply(this._element, m.x + dx, m.y + dy, m, false);
 
                 const decay = Math.pow(BitScrollablePane._glideFriction, elapsed / 16);
 
@@ -1532,9 +1534,13 @@
 
                 // The glide is over once it has run out of speed, or out of anywhere to go - and the pane
                 // not having moved at all is what says the second of those, since the browser clamps a
-                // move it cannot make.
+                // move it cannot make. Only of a step of a whole pixel, though: a shorter one is rounded
+                // away by the engine, and a frame that came in the very millisecond of the release (Firefox
+                // reads the clock to the millisecond) is a step of none at all - which ended the glide
+                // before it began.
                 if (Math.hypot(vx, vy) < BitScrollablePane._glideFloor) return;
-                if (this._element.scrollLeft === left && this._element.scrollTop === top) return;
+                if ((Math.abs(dx) >= 1 || Math.abs(dy) >= 1)
+                    && this._element.scrollLeft === left && this._element.scrollTop === top) return;
 
                 this._glideFrame = requestAnimationFrame(step);
             };

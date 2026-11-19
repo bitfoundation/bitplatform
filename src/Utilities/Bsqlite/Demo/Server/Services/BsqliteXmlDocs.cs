@@ -8,7 +8,7 @@ namespace Bit.Bsqlite.Demo.Server.Services;
 /// <summary>
 /// Reads the XML documentation the Bit.Bsqlite builds emit next to their assemblies - the library and
 /// the testing kit - and flattens each entry into plain text:
-/// <c>&lt;see cref="T:Bit.Bsqlite.Storage.IBsqliteStorageProvider"/&gt;</c> becomes
+/// <c>&lt;see cref="T:Bit.Bsqlite.IBsqliteStorageProvider"/&gt;</c> becomes
 /// <c>IBsqliteStorageProvider</c>, <c>&lt;c&gt;</c> spans become their content, and paragraphs become
 /// blank lines. That text is the same prose a developer reads in IntelliSense, which makes it the most
 /// accurate answer an MCP client can get about a member - no second copy to keep in sync.
@@ -220,7 +220,7 @@ public static partial class BsqliteXmlDocs
         var kind = target.Length > 2 && target[1] == ':' ? target[0] : '\0';
         if (kind != '\0') target = target[2..];
 
-        // A method cref carries its parameter list ("M:Bit.Bsqlite.Interop.BsqliteDatabase.OpenAsync(System.Threading.CancellationToken)").
+        // A method cref carries its parameter list ("M:Bit.Bsqlite.BsqliteDatabase.OpenAsync(System.Threading.CancellationToken)").
         // Fully qualified argument types read as noise in prose, and the '.'s inside them would
         // otherwise be split on below - which would keep the arguments and drop the owning type.
         var arguments = target.IndexOf('(', StringComparison.Ordinal);

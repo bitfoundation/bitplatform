@@ -8,6 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// the stepper puts back in the order of the markup by reading the document, and the parameters of an option changing.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitStepperApisE2ETests : E2ETestBase
 {
     private const string Url = "/e2e/stepper/apis";

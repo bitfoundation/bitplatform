@@ -123,7 +123,7 @@ public class AnimateServiceStateTests
         {
             b.OpenComponent<Bmotion>(0);
             b.AddComponentParameter(1, nameof(Bmotion.Id), "box");
-            b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmTarget?)Bm.To(x: 100));
+            b.AddComponentParameter(2, nameof(Bmotion.Animate), (BmotionTarget?)Bm.To(x: 100));
             b.AddComponentParameter(3, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
             {
                 leaf.OpenElement(0, "div");
@@ -147,13 +147,13 @@ public class AnimateServiceStateTests
 
     // A colour tween on an element something else also holds (as a <Bmotion> would), so the
     // element - and its playback rate - outlive the controls.
-    private static async Task<(BmotionAnimationEngine Engine, BmAnimationControls Controls)> StartOnSharedElement()
+    private static async Task<(BmotionAnimationEngine Engine, BmotionAnimationControls Controls)> StartOnSharedElement()
     {
         var (service, engine, interop) = Create();
         interop.WebAnimationsSupported = false; // ticked by hand on the frame loop
         interop.SelectorResolver = _ => ["el"];
         engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
-        var controls = await service.AnimateAsync("#el", Bm.To(backgroundColor: "#ffffff"), Bm.Tween(0.5, ease: BmEase.Linear));
+        var controls = await service.AnimateAsync("#el", Bm.To(backgroundColor: "#ffffff"), Bm.Tween(0.5, ease: BmotionEase.Linear));
         engine.ComputeFrame(0);
         return (engine, controls);
     }

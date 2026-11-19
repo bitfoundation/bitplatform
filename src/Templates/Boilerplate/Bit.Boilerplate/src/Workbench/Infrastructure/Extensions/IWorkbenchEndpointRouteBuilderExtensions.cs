@@ -1,6 +1,6 @@
 using System.Text;
 using System.IO.Compression;
-using Bit.Bcrdt.Server;
+using Bit.Bcrdt;
 using Microsoft.Extensions.Localization;
 using Boilerplate.Shared.Features.Attachments;
 

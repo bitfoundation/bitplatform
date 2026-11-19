@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Bit.Bcrdt.SignalR;
+namespace Bit.Bcrdt;
 
 /// <summary>Registers the SignalR transport with a dependency injection container.</summary>
 public static class BitBcrdtSignalR

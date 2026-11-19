@@ -53,7 +53,7 @@ public class ErrorCenterTests
         using (scope)
         {
             session.Errors.Record(new InvalidOperationException("boom"), "test");
-            var request = new BevHttpRecord
+            var request = new BevToolsHttpRecord
             {
                 Id = session.Http.NextId(),
                 StartedAt = DateTimeOffset.UtcNow,
@@ -156,7 +156,7 @@ public class ErrorCenterTests
 
             Assert.AreEqual(System.IO.Path.GetFileName(withLines.GetFileName()) + ":" + withLines.GetFileLineNumber(), record.SourceLocation);
             // Grouped by the stack's own frame, as before: whether the symbols had arrived yet must not split a failure.
-            Assert.EndsWith("|" + BevErrorGroups.StackAnchor(textOnly).Frame, record.Group);
+            Assert.EndsWith("|" + BevToolsErrorGroups.StackAnchor(textOnly).Frame, record.Group);
         }
     }
 
@@ -176,7 +176,7 @@ public class ErrorCenterTests
         throw new AssertFailedException("did not throw");
     }
 
-    private static BevHttpRecord Request(BevToolsSession session, int statusCode) => new()
+    private static BevToolsHttpRecord Request(BevToolsSession session, int statusCode) => new()
     {
         Id = session.Http.NextId(),
         StartedAt = DateTimeOffset.UtcNow,

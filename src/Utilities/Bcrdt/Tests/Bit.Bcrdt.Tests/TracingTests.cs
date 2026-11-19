@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using Bit.Bcrdt.Server;
 
 namespace Bit.Bcrdt.Tests;
 

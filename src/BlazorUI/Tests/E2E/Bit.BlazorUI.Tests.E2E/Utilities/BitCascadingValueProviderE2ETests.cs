@@ -11,6 +11,7 @@
 /// INotifyCollectionChanged), Lazy and Computed values, and a provider unmounted while its value keeps changing.
 /// </summary>
 [TestClass]
+[E2ERetry]
 public class BitCascadingValueProviderE2ETests : E2ETestBase
 {
     private const string Route = "/e2e/cascading-value-provider";

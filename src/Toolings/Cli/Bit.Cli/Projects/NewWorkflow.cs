@@ -199,7 +199,7 @@ public sealed partial class NewWorkflow(CliServices cli)
 
             if (ide is not IdeLocator.None)
             {
-                await RunProjectStepAsync(steps, context, "open", "Opening the IDE", (progress, ct) => projectSteps.OpenIdeAsync(ide, progress, ct), cancellationToken);
+                await RunProjectStepAsync(steps, context, "open", "Opening the IDE", (progress, ct) => projectSteps.OpenIdeAsync(ide, progress, ct, isTrusted: request.NoTrust is false), cancellationToken);
             }
 
             WriteSummary(cli, steps, context, selection, stopwatch.Elapsed, request.NoSetup);

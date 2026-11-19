@@ -31,7 +31,7 @@ instrumentation), a **protocol** it answers (`BevToolsProtocol`), and **frontend
 
 ```
  .NET runtime (circuit / WebAssembly)        page                           frontends
- BevToolsSession ── BevJsBridge ──────────► page hub (bit-bevtools.js) ──► in-app panel (Razor, same runtime)
+ BevToolsSession ── BevToolsJsBridge ──────────► page hub (bit-bevtools.js) ──► in-app panel (Razor, same runtime)
    stores, rules     Protocol(method,args)    window.__BIT_BEVTOOLS__  ──► companion window (window.opener)
    inspection        page reports in          targets · traffic        ──► extension (inspectedWindow.eval)
 ```
@@ -53,17 +53,17 @@ bare `Diagnostic` or `CommandPalette` into an application's scope.
 
 | Piece | Mechanism | Notes |
 |---|---|---|
-| `BevToolsComponentActivator` | Public `IComponentActivator` registered in DI (scoped). Wraps a previously registered activator (custom ones, bUnit) as inner. | Registers a `BevComponentRecord` and instruments the instance. Types under `[BevToolsIgnore]` or matching ignore predicates are skipped. BevTools' own components are recognised by assembly and by extension panel descriptor; see *Never observing itself*. |
-| `RenderTracker` | Replaces `ComponentBase._renderFragment` with a measuring wrapper (`FieldInfo.SetValue` on the readonly field). | Measures `BuildRenderTree`, detects batch boundaries through `RenderBatchBuilder.UpdatedComponentDiffs.Count`, attributes causes, captures optional field diffs, and patches `[Inject] IJSRuntime` on the first render (the earliest point after the framework injects it). Batch diff measurements that arrive late — on Blazor Server the framework records them when the browser acknowledges the render — are matched back to the batch that produced them through a queue of batches still awaiting one. |
-| `BlazorReflection` | Expression-compiled accessors created once; each is null when the member is missing. | The capability report reflects which accessors work. |
-| `ActivityObserver` | Static `ActivityListener` on `Microsoft.AspNetCore.Components` and `MeterListener` on the two components meters. `AddBitBevToolsServices` also registers the framework's own `ComponentsActivitySource`/`ComponentsMetrics` (public `AddComponentsTracing`/`AddComponentsMetrics`), which only server-side rendering registers on its own. | Events are attached to activities via `Activity.SetCustomProperty`; sessions are resolved with `SessionResolver`. The framework tags its activities on *stop*, so the component type is read from the display name while the handler is still running and corrected from the tags afterwards. Interactions with the BevTools UI itself are recognised and never recorded. |
-| `SessionResolver` | Ambient session lookup: explicit ambient scope → the renderer synchronization context (an O(1) map, which is the common case) → `Dispatcher.CheckAccess()` over live sessions → the session whose UI event or navigation the current `Activity` descends from (`ActivityObserver.SessionOfCurrentActivity`: the activity flowed with the execution context from that session's own event, so work that left the dispatcher after a library's `ConfigureAwait(false)` is still provably its; under one of BevTools' own events, nobody's) → the only live session, **never in a server process** (a host with an ASP.NET Core `IServer`, whatever the session's platform reports). | Lets process-wide hooks (HTTP handler pool, logger provider, meters) find the right session without per-session registration. The server exclusion is deliberate: "the only circuit connected right now" is not evidence that background work belongs to that user. It is decided by the host rather than by `Platform`, which stays unknown for a circuit until something reports it and is never reported by a request scope that renders nothing. |
+| `BevToolsComponentActivator` | Public `IComponentActivator` registered in DI (scoped). Wraps a previously registered activator (custom ones, bUnit) as inner. | Registers a `BevToolsComponentRecord` and instruments the instance. Types under `[BevToolsIgnore]` or matching ignore predicates are skipped. BevTools' own components are recognised by assembly and by extension panel descriptor; see *Never observing itself*. |
+| `BevToolsRenderTracker` | Replaces `ComponentBase._renderFragment` with a measuring wrapper (`FieldInfo.SetValue` on the readonly field). | Measures `BuildRenderTree`, detects batch boundaries through `RenderBatchBuilder.UpdatedComponentDiffs.Count`, attributes causes, captures optional field diffs, and patches `[Inject] IJSRuntime` on the first render (the earliest point after the framework injects it). Batch diff measurements that arrive late — on Blazor Server the framework records them when the browser acknowledges the render — are matched back to the batch that produced them through a queue of batches still awaiting one. |
+| `BevToolsBlazorReflection` | Expression-compiled accessors created once; each is null when the member is missing. | The capability report reflects which accessors work. |
+| `BevToolsActivityObserver` | Static `ActivityListener` on `Microsoft.AspNetCore.Components` and `MeterListener` on the two components meters. `AddBitBevToolsServices` also registers the framework's own `ComponentsActivitySource`/`ComponentsMetrics` (public `AddComponentsTracing`/`AddComponentsMetrics`), which only server-side rendering registers on its own. | Events are attached to activities via `Activity.SetCustomProperty`; sessions are resolved with `BevToolsSessionResolver`. The framework tags its activities on *stop*, so the component type is read from the display name while the handler is still running and corrected from the tags afterwards. Interactions with the BevTools UI itself are recognised and never recorded. |
+| `BevToolsSessionResolver` | Ambient session lookup: explicit ambient scope → the renderer synchronization context (an O(1) map, which is the common case) → `Dispatcher.CheckAccess()` over live sessions → the session whose UI event or navigation the current `Activity` descends from (`BevToolsActivityObserver.SessionOfCurrentActivity`: the activity flowed with the execution context from that session's own event, so work that left the dispatcher after a library's `ConfigureAwait(false)` is still provably its; under one of BevTools' own events, nobody's) → the only live session, **never in a server process** (a host with an ASP.NET Core `IServer`, whatever the session's platform reports). | Lets process-wide hooks (HTTP handler pool, logger provider, meters) find the right session without per-session registration. The server exclusion is deliberate: "the only circuit connected right now" is not evidence that background work belongs to that user. It is decided by the host rather than by `Platform`, which stays unknown for a circuit until something reports it and is never reported by a request scope that renders nothing. |
 | `BevToolsHttpMessageHandler` + `BevToolsHttpFilter` | `IHttpMessageHandlerBuilderFilter` appends the handler as the **innermost** `DelegatingHandler` of every `IHttpClientFactory` pipeline, next to the primary handler, and inserts a small handler at the **outermost** end that resolves the issuing session and passes it in `HttpRequestMessage.Options`. | Every attempt a retry/resilience handler makes is a real network request and is recorded as one; sitting outermost would hide retries behind a single record. Handlers are pooled across scopes, hence session resolution at send time - at the outer end, while the caller's synchronization context is still current: a handler in between that awaits with `ConfigureAwait(false)` (a retry delay, a token fetch) runs the recorder on the thread pool, where the session can no longer be inferred. |
-| `BevTrackingJSRuntime` / `BevTrackingJSObjectReference` | Decorators with in-process variants so `IJSInProcessRuntime` casts keep working. | Applied per component; global DI decoration is unsafe because `CircuitFactory` casts `IJSRuntime` to `RemoteJSRuntime`. |
-| `BevToolsLoggerProvider` | `ILoggerProvider` (alias `BevTools`, `ISupportExternalScope`) capturing Warning+ from `Microsoft.AspNetCore.Components*`, `Microsoft.JSInterop`, SignalR into Errors, and - with `TrackLogs` - every entry at `MinimumLogLevel` or above into the session's `BevLogStore`; an application entry at Error or above is an error too. | Catches unhandled circuit exceptions, event-handler exceptions and ErrorBoundary logs without touching the renderer, and gives the application's own logging a panel. `IsEnabled` decides from the options alone, so a level nothing records costs the logger what a disabled provider costs. Everything is captured as text when it is logged: the structured pairs through the inspector (value access, redaction by name and shape), the message rebuilt from the template when a value was redacted by name or the access is below Full, scopes from the factory's scope provider. A `[ThreadStatic]` guard keeps what a value's `ToString` logs during the capture out, and every failure is swallowed: the factory would otherwise throw it to the code that logged. |
+| `BevToolsTrackingJSRuntime` / `BevToolsTrackingJSObjectReference` | Decorators with in-process variants so `IJSInProcessRuntime` casts keep working. | Applied per component; global DI decoration is unsafe because `CircuitFactory` casts `IJSRuntime` to `RemoteJSRuntime`. |
+| `BevToolsLoggerProvider` | `ILoggerProvider` (alias `BevTools`, `ISupportExternalScope`) capturing Warning+ from `Microsoft.AspNetCore.Components*`, `Microsoft.JSInterop`, SignalR into Errors, and - with `TrackLogs` - every entry at `MinimumLogLevel` or above into the session's `BevToolsLogStore`; an application entry at Error or above is an error too. | Catches unhandled circuit exceptions, event-handler exceptions and ErrorBoundary logs without touching the renderer, and gives the application's own logging a panel. `IsEnabled` decides from the options alone, so a level nothing records costs the logger what a disabled provider costs. Everything is captured as text when it is logged: the structured pairs through the inspector (value access, redaction by name and shape), the message rebuilt from the template when a value was redacted by name or the access is below Full, scopes from the factory's scope provider. A `[ThreadStatic]` guard keeps what a value's `ToString` logs during the capture out, and every failure is swallowed: the factory would otherwise throw it to the code that logged. |
 | Page hub (`bit-bevtools.js`) | ES module imported by each panel; one instance per page, whatever the number of runtimes; `DotNetObjectReference` callbacks per target. | See *The page hub* below. |
-| `BevComponentWiringReader` | The component's latest frames (`ComponentState.CurrentRenderTree` → `RenderTreeBuilder.GetFrames()`), read on demand by the inspector. | Lists DOM event handlers (attribute frames with an event handler id), `@bind` change handlers (`AttributeEventUpdatesAttributeName`) and callbacks passed to child component frames; handlers are named by method, lambdas by the method declaring them. Never on the render path. |
-| `BevRoutingReader`, `BevAuthenticationStateProvider`, `BevRuntimeInfo` | Public parameters of tracked `RouteView`/`Router` instances; the scope's `AuthenticationStateProvider` (by name); public runtime APIs. | Routing is read on demand; the authentication state is a built-in state provider, so its changes get history, diffs and timeline rows like any state. |
+| `BevToolsComponentWiringReader` | The component's latest frames (`ComponentState.CurrentRenderTree` → `RenderTreeBuilder.GetFrames()`), read on demand by the inspector. | Lists DOM event handlers (attribute frames with an event handler id), `@bind` change handlers (`AttributeEventUpdatesAttributeName`) and callbacks passed to child component frames; handlers are named by method, lambdas by the method declaring them. Never on the render path. |
+| `BevToolsRoutingReader`, `BevToolsAuthenticationStateProvider`, `BevToolsRuntimeInfo` | Public parameters of tracked `RouteView`/`Router` instances; the scope's `AuthenticationStateProvider` (by name); public runtime APIs. | Routing is read on demand; the authentication state is a built-in state provider, so its changes get history, diffs and timeline rows like any state. |
 
 ### Why render causes are trustworthy
 
@@ -76,7 +76,7 @@ A render sample's cause is decided in this order, and the label says which rule 
    *Ancestor* when a component the tree shows does.
 3. A `HandleEvent`/`Navigate` activity is running on the session, or it has stopped and this batch renders what it had
    queued → *Event: onclick → Type.Method* / *Navigation*. The second half exists because the framework stops a
-   synchronous handler's activity before it renders the components the handler queued; `ActivityObserver` reads the
+   synchronous handler's activity before it renders the components the handler queued; `BevToolsActivityObserver` reads the
    renderer's queue (`RenderBatchBuilder.ComponentRenderQueue`) when the activity stops, and the trigger keeps the one
    batch - the one in progress or the next - that renders one of them. Nothing else counts once the activity stopped:
    `Activity.Current` flows with the execution context, so a timer, background loop or fire-and-forget task started
@@ -89,11 +89,11 @@ A render sample's cause is decided in this order, and the label says which rule 
 ### Needed or forced?
 
 A parent-caused render answers *why*; the follow-up is whether the child got anything new. For the component that is
-being inspected (or every component when `CaptureComponentStateOnRender` is on) `RenderTracker` flattens the
+being inspected (or every component when `CaptureComponentStateOnRender` is on) `BevToolsRenderTracker` flattens the
 `[Parameter]`, `[CascadingParameter]` and `[SupplyParameterFrom*]` values before each render — display value plus two
 levels of members, bounded to 25 collection items and one wall-clock budget per render — and diffs them against the
 previous captured render. A parent-caused render with no observable difference is a **forced re-render**
-(`BevRenderSample.IsWastedRender`): Blazor only skips re-rendering when every parameter is a primitive it can compare, so
+(`BevToolsRenderSample.IsWastedRender`): Blazor only skips re-rendering when every parameter is a primitive it can compare, so
 a recreated list, lambda or anonymous object forces the child every time. The verdict is deliberately
 *observable-only*: delegates compare by target method, redacted parameters compare equal, and the first captured render
 is never judged - nor the first after renders that were not compared (the component was not inspected, or capture was
@@ -131,18 +131,18 @@ Ownership is decided in two steps, because one is not enough:
 * **By position, once the hierarchy resolves**: a record whose parent is BevTools-owned becomes BevTools-owned.
   The panels render `Virtualize`, `CascadingValue` and `DynamicComponent`, which an application renders too, so their
   type says nothing about whose they are — only the tree does. The parent is unknown at activation (the instance is not
-  attached to the renderer yet), and known by the first render, which is early enough: `RenderTracker` resolves the
+  attached to the renderer yet), and known by the first render, which is early enough: `BevToolsRenderTracker` resolves the
   renderer and hierarchy before it decides to sample a render or to wrap the component's `IJSRuntime`.
 
 Browser-side, `bit-bevtools.js` recognises its own `DotNetObjectReference` and skips it when wrapping `DotNet.invokeMethod*`,
-and `ActivityObserver` marks `HandleEvent` activities raised by BevTools components as ignored.
+and `BevToolsActivityObserver` marks `HandleEvent` activities raised by BevTools components as ignored.
 
 ### Session stores (`Bit.BevTools/Session`)
 
 `BevToolsSession` (scoped) owns: `Timeline` (ring buffer of `BevToolsEvent`, monotonic ids, O(log n) lookup by id),
-`ComponentRegistry` (weak identity map + lazily resolved hierarchy + disposal detection + cached tree), `ErrorCenter` (fingerprint dedupe),
-`HttpStore`, `JsInteropStore` (records + per-identifier aggregates), `BevLogStore` (log entries + session-long counts per level), `StateStore` (providers, flattened snapshots,
-diffs, history), `DiagnosticsEngine`, `CommandRegistry`, `BevToolsUiState`, `BevOverheadMeter`, `BevBrowserState`.
+`BevToolsComponentRegistry` (weak identity map + lazily resolved hierarchy + disposal detection + cached tree), `BevToolsErrorCenter` (fingerprint dedupe),
+`BevToolsHttpStore`, `BevToolsJsInteropStore` (records + per-identifier aggregates), `BevToolsLogStore` (log entries + session-long counts per level), `BevToolsStateStore` (providers, flattened snapshots,
+diffs, history), `BevToolsDiagnosticsEngine`, `BevToolsCommandRegistry`, `BevToolsUiState`, `BevToolsOverheadMeter`, `BevToolsBrowserState`.
 Every mutation bumps `Session.Version`; the UI polls the version on a timer (250 ms open, 1 s closed) and re-renders
 only on change, so idle BevTools costs a comparison per tick. Opening the panel forces a refresh immediately rather
 than waiting for the next tick. Built-in tabs snapshot in `OnParametersSet` and have no other parameters, so the
@@ -157,14 +157,14 @@ tracked components is capped by `MaxTrackedComponents` with the truncation repor
 
 ### Inspection (`Bit.BevTools/Inspection`)
 
-`BevObjectInspector` describes values as `BevInspectedNode`s and resolves children by re-walking a path from the root, so
+`BevToolsObjectInspector` describes values as `BevToolsInspectedNode`s and resolves children by re-walking a path from the root, so
 nothing is serialized eagerly. It handles cycles along the expansion path, throwing getters, depth/size caps, special
 types (delegates, `RenderFragment`, `EventCallback`, tasks, streams, service providers), extension formatters and
-redaction (`BevRedactor`: name patterns + `[BevToolsSensitive]`, applied to members, dictionary keys and component fields
+redaction (`BevToolsRedactor`: name patterns + `[BevToolsSensitive]`, applied to members, dictionary keys and component fields
 - an auto-property's backing field is judged by its property, which is where the attribute is written). `Flatten`/`Diff`
 produce bounded path→display maps for state and component-field change detection.
 
-`BevLambdaTargets` names inline handlers. The framework reports a lambda by its compiled name; BevTools finds the
+`BevToolsLambdaTargets` names inline handlers. The framework reports a lambda by its compiled name; BevTools finds the
 lambda (on the component, or in a nested closure class), decodes its IL with the `OpCodes` table - or its async state
 machine's `MoveNext` - and keeps the call targets that are methods of the component's own types, not properties and not
 the framework's. Exactly one is a name; anything else is "lambda in X.BuildRenderTree". Results are cached per method
@@ -172,7 +172,7 @@ the framework's. Exactly one is a name; anything else is "lambda in X.BuildRende
 
 ### Export (`Bit.BevTools/Export`)
 
-`BevSessionExporter` turns a session into a `bit-bevtools/1` JSON document (`ToJson`) or a short Markdown report
+`BevToolsSessionExporter` turns a session into a `bit-bevtools/1` JSON document (`ToJson`) or a short Markdown report
 (`ToMarkdownReport`). It is written with `Utf8JsonWriter` rather than the reflection serializer so that arbitrary
 values an extension put into an event's `Data` bag can never make an export fail: primitives and string lists are
 written as themselves, everything else as the bounded display the inspector gives it in the timeline panel. Every value
@@ -181,15 +181,15 @@ fill with every member), is no more visible in the file than in the panel. The e
 already redacted at capture time — and omits browser storage previews. `IBevToolsCommandContext.DownloadTextAsync` /
 `CopyTextAsync` hand the result to the browser bridge (`downloadText`, `copyText` in `bit-bevtools.js`).
 
-The `profile` section (`BevRenderProfile`) is what two recordings are compared on: renders, render time, max and p95
+The `profile` section (`BevToolsRenderProfile`) is what two recordings are compared on: renders, render time, max and p95
 per component *type*, since instance ids mean nothing across recordings. It is counted from the session-long per-instance
 counters, plus per-type totals the registry keeps for components it let go after `DisposedComponentRetentionSeconds`
-(`ComponentRegistry.GoneTotals`, reset with the baseline and cleared with *Clear*), so a page navigated away from a
-minute ago still counts. `BevProfileComparison` compares two profiles; the Profiler runs it against the live session
+(`BevToolsComponentRegistry.GoneTotals`, reset with the baseline and cleared with *Clear*), so a page navigated away from a
+minute ago still counts. `BevToolsProfileComparison` compares two profiles; the Profiler runs it against the live session
 and keeps the uploaded profile to compare again after another try. Protocol snapshots leave the section out unless they
 name it, as building it reads every retained sample.
 
-`BevSessionCheck` is the other CI half: it reads an export's `diagnostics` (and counts its errors and failed
+`BevToolsSessionCheck` is the other CI half: it reads an export's `diagnostics` (and counts its errors and failed
 requests) and decides what fails. Both read only what an export carries, which is why the exporter runs the rules first
 when anything was captured since their last run - and why that is not enough on its own: most rules look back a fixed
 window from when they run, so a run that is checked sets `Diagnostics.EvaluateWhileClosed` to have them run as data
@@ -198,7 +198,7 @@ over files: exit codes, Markdown out, no connection to a running app.
 
 ### Diagnostics (`Bit.BevTools/Diagnostics`)
 
-Rules implement `IBevDiagnosticRule.Evaluate(IBevDiagnosticContext)` over component snapshots and recent events; findings are
+Rules implement `IBevToolsDiagnosticRule.Evaluate(IBevToolsDiagnosticContext)` over component snapshots and recent events; findings are
 deduplicated by fingerprint, dismissable, mirrored into the timeline once and bounded by `MaxFindings` (the ones no rule
 has reported for the longest time go first, since several rules report one finding per occurrence). Built-ins: render storm (with cause
 breakdown), renders driven only by the parent (the steady avoidable re-render that no rate threshold catches; one finding
@@ -206,7 +206,7 @@ per component type and ancestor, so the rows of a list are one finding), render 
 batches it caused), slow render, slow event handler, duplicate HTTP, slow HTTP, repeated HTTP failure, slow JS interop, excessive
 JS interop, repeated error; the server package adds circuit instability/blocking; the DI
 graph adds captive dependency, cycle, transient-disposable and large-constructor findings. Thresholds live in
-`BevDiagnosticsOptions`; rules can be disabled by id. The rate rules (render storm, excessive JS interop, duplicate
+`BevToolsDiagnosticsOptions`; rules can be disabled by id. The rate rules (render storm, excessive JS interop, duplicate
 HTTP) report the busiest window of the last 30 s rather than the window that ends when they run: the rules run when the
 panel is shown, usually after the burst a developer opened it to look at.
 
@@ -218,7 +218,7 @@ as the `IBevToolsCommandContext` to panels, hosts the refresh loop and the brows
 command palette are keyboard-navigable; theme follows `prefers-color-scheme` unless overridden. Extension panels are
 rendered with `DynamicComponent` and can be restricted to a platform (`RequiredPlatform = "Server"`).
 
-### Attaching to a running app (`Bit.BevTools.Loader`, `RuntimeAttachment`)
+### Attaching to a running app (`Bit.BevTools.Loader`, `BevToolsRuntimeAttacher`)
 
 Everything above assumes BevTools was registered while the app started. An app that lazy loads `Bit.BevTools.wasm`
 cannot do that: registering references the assembly. Four things are only reachable while the app starts, so a
@@ -234,7 +234,7 @@ second, trimmable and AOT compatible assembly, `Bit.BevTools.Loader`, installs t
 The loader never references `Bit.BevTools`; `Bit.BevTools` references the loader. They meet once, through
 `[assembly: BevToolsEntryPoint]` on the loaded assembly, and talk through internal interfaces (`IBevToolsEntryPoint`,
 `IBevToolsAttachment`, `IBevToolsHttpRecorder`). `BevToolsLoader.OpenAsync` loads the assembly (from the startup
-assemblies, else through `LazyAssemblyLoader`), and `RuntimeAttachment` creates a session outside DI keyed by the scope's
+assemblies, else through `LazyAssemblyLoader`), and `BevToolsRuntimeAttacher` creates a session outside DI keyed by the scope's
 `IServiceProvider`. The first `BevToolsPanel` of that scope attaches it to its renderer: it steps into the activator hook,
 reads the existing components from the renderer's state map, and marks those that already rendered so their next render
 is not reported as their first. The loader's scoped service disposes the session with the scope. Every scope the loader
@@ -244,8 +244,8 @@ opens shares one `BevToolsRegistry`, and with it one service graph, as the sessi
 replaces the renderer's activator (`ComponentFactory._componentActivator`) and wraps the handler of the `HttpClient`
 registered in DI (`HttpMessageInvoker._handler`), unless it is transient or its pipeline already records (a factory
 client carries the loader's hook). In an app that installed the loader's hooks it uses them, and the collection the
-loader kept. Each accessor lives in `BlazorReflection`/`RuntimeAttachment`, degrades to a reported gap, and
-`CapabilityReport` says which path a session took.
+loader kept. Each accessor lives in `BevToolsBlazorReflection`/`BevToolsRuntimeAttacher`, degrades to a reported gap, and
+`BevToolsCapabilityReport` says which path a session took.
 
 Attaching is enabled, being the app's decision, except in a process that serves many users outside Development, where
 the panel would show any visitor the server side objects of their circuit. `BevToolsAttachPolicy` in the loader holds
@@ -253,7 +253,7 @@ that rule and both `BevToolsLoader.CanOpen` and the attach apply it, telling a s
 registration, so the button an app offers never leads to a refused attach. A session registered at startup and left off
 gives way to an attached one. Nothing tells BevTools when a scope ends - a panel can be gone long before its circuit
 closes, or never rendered - so every attach, and a timer while attached sessions are left, disposes those whose scope
-refuses to resolve services any more; otherwise `SessionResolver` would keep them, and their scopes, for good.
+refuses to resolve services any more; otherwise `BevToolsSessionResolver` would keep them, and their scopes, for good.
 
 ### The page hub (`Scripts/bit-bevtools.ts`)
 
@@ -305,46 +305,46 @@ the bridge is a page-level hub with one *target* per attached runtime rather tha
 URLs the hub shows itself (sockets, failed resources, CSP reports) are redacted in the browser with the patterns .NET
 sends on attach, plus SignalR's connection id (`id`) and SAS signatures (`sig`).
 
-### Logs (`Instrumentation/BevToolsLoggerProvider.cs`, `Session/BevLogStore.cs`)
+### Logs (`Instrumentation/BevToolsLoggerProvider.cs`, `Session/BevToolsLogStore.cs`)
 
 One provider for the process (or per logger factory, when attached at runtime), alias `BevTools`. `IsEnabled` answers
 from the options alone, so an entry below `MinimumLogLevel` is refused before the logger formats anything. An entry is
 read once, as text: the structured pairs through the session's inspector, the message rebuilt from its template when
 a value was redacted by its name or the access is below Full (the logger's own text would carry the raw value), scopes
-from the factory's external scope provider. The session is the ambient one (`SessionResolver`), which now includes the
+from the factory's external scope provider. The session is the ambient one (`BevToolsSessionResolver`), which now includes the
 UI event or navigation the current `Activity` descends from - the reason an entry written after a library's
 `ConfigureAwait(false)` on a circuit is still attributed. Blazor's own warnings and errors keep their Errors path, and
 an entry that became an error points at it instead of adding a second timeline row.
 
-### Allocations per render (`RenderTracker`, `BevRenderSample`)
+### Allocations per render (`BevToolsRenderTracker`, `BevToolsRenderSample`)
 
 The render wrapper reads `GC.GetAllocatedBytesForCurrentThread()` right around the original fragment, after BevTools'
-own work for the render; `BevAllocations.IsMeasurable` probes once that the counter moves. The bytes share an `int`
+own work for the render; `BevToolsAllocations.IsMeasurable` probes once that the counter moves. The bytes share an `int`
 with the sample's failed flag: samples are the most numerous objects BevTools keeps, and a `long?` grew the render
 path's allocations by 6 MB in the benchmark. Profiles carry the bytes per type; comparisons judge them per render.
 
-### Memory over time (`Session/BevMemoryTrend.cs`)
+### Memory over time (`Session/BevToolsMemoryTrend.cs`)
 
 Read from the panel component's refresh loop at most once a second, so it costs nothing where no panel is rendered.
 Full collections are the highest generation's (`GC.MaxGeneration`: 2 on CoreCLR, 1 on Mono). Mono's `GCMemoryInfo` is a
 default whose members throw, so each is read guarded and the heap at the next reading stands in for the heap after the
 collection. WebAssembly's linear memory comes from the hub through the in-process module.
 
-### State restoring (`IBevStateRestorer`, `StateStore.RestoreAsync`)
+### State restoring (`IBevToolsStateRestorer`, `BevToolsStateStore.RestoreAsync`)
 
 BevTools still never writes application objects. A provider that can restore itself names the state after each change
-(`BevStateChangeInfo.RestoreToken`); the store keeps the token only for such a provider, asks with it only where
+(`BevToolsStateChangeInfo.RestoreToken`); the store keeps the token only for such a provider, asks with it only where
 `AllowsStateRestore` (as forced collections: Development or a single-user process), and never blocks the dispatcher
 for it (the protocol reports a provider still restoring as started).
 
-### Database commands (`Model/BevDbCommands.cs`)
+### Database commands (`Model/BevToolsDbCommands.cs`)
 
 Read from EF Core's own log entries in the logger provider, while the structured pairs are still objects: the
 `commandText` and `elapsed` values of events 20101 and 20102. Nothing references EF, nothing intercepts a command,
 and an app that filters the category out simply has none. The rules group by the SQL with its whitespace collapsed,
 which is EF's parameterized text, so one query per row is one group whatever its parameter values.
 
-### Request and response bodies (`Instrumentation/BevHttpBodies.cs`)
+### Request and response bodies (`Instrumentation/BevToolsHttpBodies.cs`)
 
 Off by default and honoured only at Full value access where a forced collection is allowed. The rule is that capture
 never changes what crosses the wire or what the app reads: a request body only from content that can be read again
@@ -355,15 +355,15 @@ server-sent events are left alone, and the record says why.
 ### Integrations as packages (`Bit.BevTools.Blex`)
 
 An integration is a small package that references `Bit.BevTools` and the library, and implements the public contract
-only (`IBevStateProvider`, `IBevStateRestorer`): nothing internal, so it is the shape a third party's integration has.
-`Bit.BevTools.Blex` hands each action's arguments over as `BevStateChangeInfo.Arguments`, which the store reads through
+only (`IBevToolsStateProvider`, `IBevToolsStateRestorer`): nothing internal, so it is the shape a third party's integration has.
+`Bit.BevTools.Blex` hands each action's arguments over as `BevToolsStateChangeInfo.Arguments`, which the store reads through
 the inspector when the change is raised, and keeps the last hundred global states by action sequence - each read and
 serialized once, when BevTools asks for the snapshot of a change it records, so nothing is kept while capture is
 paused - and restores through `BlexManager.RestoreGlobalState` on Blex's dispatcher. The inspector flattens JSON member
 by member for it (and for any provider that snapshots as JSON) at `Full`, names redacted as for objects; below `Full`,
 JSON is its type and size, as an object is.
 
-### Responsiveness (`Session/BevResponsiveness.cs`, the hub's *responsiveness* section)
+### Responsiveness (`Session/BevToolsResponsiveness.cs`, the hub's *responsiveness* section)
 
 The hub observes the browser's own timing entries - `long-animation-frame` (or `longtask` where that is all there is)
 and Event Timing's `event` - and reports them once a second as ages, never as the browser's timestamps: the page's
@@ -391,7 +391,7 @@ eval returns only synchronous values), and a file (an export, read only). It pol
 visible, merges timeline increments by id, and renders application strings as text nodes only. The extension has no
 permissions and no content script; everything it evaluates passes request data as JSON string literals.
 
-### Components in the page (`Inspection/BevDomMap.cs`, the hub's *components in the page* section)
+### Components in the page (`Inspection/BevToolsDomMap.cs`, the hub's *components in the page* section)
 
 Blazor exposes no component-to-DOM map, but its browser renderer builds one implicitly: every node it inserts carries,
 under `Symbol()` keys, the array of its logical children and a pointer to its logical parent, and every interactive
@@ -399,7 +399,7 @@ root container carries a `true` marker while its component is attached. Each fra
 tree becomes exactly one logical child - an element, a text node, or a comment that contains a child component or a
 markup block - regions are flattened, attributes and reference captures produce nothing (`BrowserRenderer.insertFrame`).
 
-So `BevDomMap.Locate` walks a component's `ParentComponentState` chain to its root and, for each parent, finds the
+So `BevToolsDomMap.Locate` walks a component's `ParentComponentState` chain to its root and, for each parent, finds the
 child's component frame in the parent's latest frames, recording each step as *(logical index, kind)*. The hub starts
 at the root container and follows the steps, comparing every node's tag (or `#text`, `#c`) with the step; the first
 mismatch ends the walk with an error. `Resolve` is the inverse: the hub climbs from a node to its root container
@@ -432,7 +432,7 @@ An outline follows its component on scroll and resize. *Flash renders* is driven
 components that rendered since the previous tick (at most 60) are located and outlined, coloured by how many times
 they rendered; the request travels after the render batch on the same connection, so the browser has the DOM first.
 
-### Forms (`Session/BevFormTracker.cs`)
+### Forms (`Session/BevToolsFormTracker.cs`)
 
 An EditForm's render fragment gets one extra step at activation: after its first render, when its EditContext exists,
 the form is watched. Other EditContexts (an input under a hand-made cascading EditContext) are found when the tree is
@@ -444,7 +444,7 @@ field-change handler reads the context from its sender, and nothing BevTools kee
 or input is disposed is forgotten and its handlers removed, and an EditForm that gets a new EditContext is watched again. Everything reported about the form's events leaves BevTools' own handlers out, and the framework's
 form-mapping subscription is not counted as a validator (found on a Server circuit: an EditForm with a `FormName` has it).
 
-### Source locations (`Inspection/BevSourceLocator.cs`)
+### Source locations (`Inspection/BevToolsSourceLocator.cs`)
 
 Read on demand from portable PDBs with `System.Reflection.Metadata` (part of the shared framework): a method's first
 sequence point (an async method's in its state machine's `MoveNext`), and for a type the documents its members are
@@ -456,7 +456,7 @@ answers `sourcesPending` meanwhile). Readers are cached per assembly for the lif
 stack trace names no file is located by its first application frame: its method and IL offset map to the sequence
 point at or before that offset (`At`), and on WebAssembly recording the error is what asks for the PDB.
 
-### Leaks (`Session/BevLeakTracker.cs`, `Inspection/BevRetentionAnalyzer.cs`)
+### Leaks (`Session/BevToolsLeakTracker.cs`, `Inspection/BevToolsRetentionAnalyzer.cs`)
 
 When the registry notices a disposal it hands the component to the leak tracker, which keeps a weak reference, the
 time, and the number of full collections so far. *Retained* means alive after two full collections since then and a
@@ -482,10 +482,10 @@ bUnit context keeps every component it rendered until it is disposed. The findin
 
 ### Value access and redaction (`Inspection/`)
 
-`BevObjectInspector` is the single path every application value takes to a panel, an export, a trace or a protocol
+`BevToolsObjectInspector` is the single path every application value takes to a panel, an export, a trace or a protocol
 answer, so the rules live there and at capture:
 
-* **Access level** (`BevValueAccess`, resolved per session): `None` hides every value but keeps its type; `Shallow`
+* **Access level** (`BevToolsValueAccess`, resolved per session): `None` hides every value but keeps its type; `Shallow`
   shows scalars and stops at objects (no members, no `ToString`, which a record would fill with every member); `Full`
   walks with redaction. The default reads nothing outside Development in a process that serves many users: there a
   circuit's objects can reach shared state holding other users' data. BevTools' own event metadata (causes, ids) is
@@ -494,7 +494,7 @@ answer, so the rules live there and at capture:
   then. `EventDataItems` decides which lists in an event's `Data` the timeline panel and both exporters write item by
   item, so none shows more than another. Forced-render detection is skipped below `Full` - with
   values hidden every render would look unchanged - so those renders read *not compared*, never *forced*.
-* **Redaction by shape** (`BevRedactor.LooksLikeSecret` / `RedactText`) complements names: JWTs, bearer tokens, PEM
+* **Redaction by shape** (`BevToolsRedactor.LooksLikeSecret` / `RedactText`) complements names: JWTs, bearer tokens, PEM
   keys, credential key/value text, provider token formats. Free text keeps its readable part; text that still looks
   like a secret after redaction is hidden whole.
 * **Pairs** (a `KeyValuePair`, a claim, a cookie: a `Key`/`Name`/`Type` beside a `Value`) redact the value when the name
@@ -502,7 +502,7 @@ answer, so the rules live there and at capture:
 * **Never walked**: configuration (`IConfiguration`, its providers and sources, `IOptions*<T>`) and credentials or key
   material. Configuration is where secrets sit under names no pattern predicts, so it is not read rather than filtered.
 
-### The prerendering handoff (`WebApp/BevPrerender.cs`)
+### The prerendering handoff (`WebApp/BevToolsPrerenderHandoff.cs`)
 
 Prerendering runs in a session of its own that ends with the response, so the interactive session cannot see it. While
 prerendering, the panel registers a `PersistentComponentState` callback, for the interactive render mode that applies
@@ -512,7 +512,7 @@ the requests made, the errors - and the interactive panel takes it back. The *Da
 summary's requests with the interactive session's first 30 s. Only under `Full` access, since the summary travels in
 the page's HTML.
 
-### Performance traces (`Export/BevTraceExporter.cs`)
+### Performance traces (`Export/BevToolsTraceExporter.cs`)
 
 The timeline as Chrome Trace Event JSON: complete events on a renderer track, each batch spanning its renders (its own
 event holds only the summed build time), so renders nest in their batch; UI events, HTTP and JS interop on lanes
@@ -523,7 +523,7 @@ except for events recorded after they happened (adopted on stop, reported in bat
 ### Multi-circuit behaviour (Server)
 
 Everything per circuit is scoped. Process-wide pieces (activity/meter listeners, HTTP handler pool, logger provider,
-`BevCircuitRegistry`) attribute work to a session through `SessionResolver`; when the session cannot be inferred (background
+`BevToolsCircuitRegistry`) attribute work to a session through `BevToolsSessionResolver`; when the session cannot be inferred (background
 threads with several live circuits) the data is dropped rather than misattributed, and `session.UseAmbient()` lets
 application code attribute such work explicitly. Other circuits are visible only as aggregates (truncated id, state,
 counts).
@@ -534,20 +534,20 @@ Three tiers, because a developer tool that breaks its integrators is not infrast
 
 | Tier | What | Promise |
 |---|---|---|
-| **Contract** — `Bit.BevTools/Abstractions` | `IBevToolsExtension`, `IBevDiagnosticRule`, `IBevToolsCommand`, `IBevStateProvider`, `IBevToolsTimeline`, `BevToolsEvent`, `BevDiagnostic`, `BevComponentSnapshot`, the attributes. No Blazor types. | Treated as versioned public API. Additions are additive; removals are breaking changes. |
-| **Setup** | `AddBitBevToolsServices`, `AddBitBevToolsServerServices`, `BitBevToolsOptions`, `<BevToolsPanel />`, `BitBevTools.Attach`; in `Bit.BevTools.Loader`: `AddBitBevToolsLoaderServices`, `BitBevToolsLoaderOptions`, `BevToolsLoader`, `<BevToolsLoaderPanel />`, `BevToolsHttpHookHandler`. | Stable. Options gain properties; defaults change only with a reason stated in the release notes (this release: `ValueAccess` defaults to `None` outside Development in a server process, and `AllowInMultiUserHost` takes `Authorize`). |
-| **Read models** — the `Model/` and `Session/` types, `BevObjectInspector`, `BevSessionExporter`, `BevTraceExporter`, `BevFmt`, `BevValueTree` | What the built-in panels read and render. Public so an extension panel can present the same data the same way. | Usable, but shaped by the UI's needs; expect additive change and occasional refinement. The JSON export format is versioned (`format` field) so readers can tell versions apart, and so is the trace (`otherData.format`). |
+| **Contract** — `Bit.BevTools/Abstractions` | `IBevToolsExtension`, `IBevToolsDiagnosticRule`, `IBevToolsCommand`, `IBevToolsStateProvider`, `IBevToolsTimeline`, `BevToolsEvent`, `BevToolsDiagnostic`, `BevToolsComponentSnapshot`, the attributes. No Blazor types. | Treated as versioned public API. Additions are additive; removals are breaking changes. |
+| **Setup** | `AddBitBevToolsServices`, `AddBitBevToolsServerServices`, `BevToolsOptions`, `<BevToolsPanel />`, `BitBevTools.Attach`; in `Bit.BevTools.Loader`: `AddBitBevToolsLoaderServices`, `BevToolsLoaderOptions`, `BevToolsLoader`, `<BevToolsLoaderPanel />`, `BevToolsHttpHookHandler`. | Stable. Options gain properties; defaults change only with a reason stated in the release notes (this release: `ValueAccess` defaults to `None` outside Development in a server process, and `AllowInMultiUserHost` takes `Authorize`). |
+| **Read models** — the `Model/` and `Session/` types, `BevToolsObjectInspector`, `BevToolsSessionExporter`, `BevToolsTraceExporter`, `BevToolsFmt`, `BevToolsValueTree` | What the built-in panels read and render. Public so an extension panel can present the same data the same way. | Usable, but shaped by the UI's needs; expect additive change and occasional refinement. The JSON export format is versioned (`format` field) so readers can tell versions apart, and so is the trace (`otherData.format`). |
 | **Protocol** — `BevToolsProtocol`, `window.__BIT_BEVTOOLS__` | What external frontends speak: methods, their arguments, their answers (a snapshot is the export). | Versioned (`BevToolsProtocol.Version`, the hook's `protocol`); additions are additive, a frontend checks `hello` before it relies on anything newer. |
 
 Razor components other than `BevToolsPanel` are public because the Razor SDK makes them so, not because they are a
-supported surface. Depend on `BevValueTree`, `BevInspectorSection` and `BevFmt` if they help; treat the panels themselves as
+supported surface. Depend on `BevToolsValueTree`, `BevToolsInspectorSection` and `BevToolsFmt` if they help; treat the panels themselves as
 internal.
 
 ## Deliberate non-goals
 
 * Request/response bodies by default (opt-in, bounded and redacted - see above), DI instance values, full circuit ids (security).
 * BevTools restoring application state itself (unsafe for arbitrary graphs): snapshot history is provided, and a
-  provider that knows how to restore itself offers it through `IBevStateRestorer` (round 21), where restoring is allowed.
+  provider that knows how to restore itself offers it through `IBevToolsStateRestorer` (round 21), where restoring is allowed.
 * Recreating browser DevTools panels (network waterfall, DOM, WebSocket frame payloads): the WebSockets view counts
   sizes and SignalR message kinds, which is the Blazor-specific part, and leaves the frames themselves to the browser.
 * Editing component state from the inspector: setting a field of a live component behind the app's back is a way to

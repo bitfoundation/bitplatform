@@ -32,7 +32,7 @@ public class BlexIntegrationTests
             var manager = new BlexManager();
             var store = new BevCartStore();
             manager.Register(store);
-            using var provider = new BevBlexStateProvider(manager);
+            using var provider = new BevToolsBlexStateProvider(manager);
             session.State.Register(provider);
 
             store.Add(2, "hunter2");
@@ -82,7 +82,7 @@ public class BlexIntegrationTests
     [TestMethod]
     public void An_actions_arguments_are_shown_at_the_sessions_value_access()
     {
-        string?[] Details(BevValueAccess access)
+        string?[] Details(BevToolsValueAccess access)
         {
             var (session, scope) = TestHelpers.CreateSession(o => o.ValueAccess = access);
             using (scope)
@@ -90,7 +90,7 @@ public class BlexIntegrationTests
                 var manager = new BlexManager();
                 var store = new BevCartStore();
                 manager.Register(store);
-                using var provider = new BevBlexStateProvider(manager);
+                using var provider = new BevToolsBlexStateProvider(manager);
                 session.State.Register(provider);
                 store.Add(2, "hunter2");
                 store.ApplyCoupon("SPRING");
@@ -98,9 +98,9 @@ public class BlexIntegrationTests
             }
         }
 
-        CollectionAssert.AreEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevValueAccess.Full));
-        CollectionAssert.AreEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevValueAccess.Shallow));
-        CollectionAssert.AreEqual(new[] { "count, password", "code" }, Details(BevValueAccess.None), "names only, as for every other value");
+        CollectionAssert.AreEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevToolsValueAccess.Full));
+        CollectionAssert.AreEqual(new[] { "count=2, password=«redacted»", "code=\"SPRING\"" }, Details(BevToolsValueAccess.Shallow));
+        CollectionAssert.AreEqual(new[] { "count, password", "code" }, Details(BevToolsValueAccess.None), "names only, as for every other value");
     }
 
     [TestMethod]
@@ -114,13 +114,13 @@ public class BlexIntegrationTests
             manager.OnError = heard.Add;
             var store = new BevCartStore();
             manager.Register(store);
-            using var provider = new BevBlexStateProvider(manager);
+            using var provider = new BevToolsBlexStateProvider(manager);
             session.State.Register(provider);
             store.Add(1, "x");
             var change = Assert.ContainsSingle(session.State.Entries.Single().Changes);
 
             // A state the store's slice cannot be read back from, under the token of a change BevTools recorded.
-            var states = (System.Collections.IDictionary)typeof(BevBlexStateProvider).GetField("_states", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(provider)!;
+            var states = (System.Collections.IDictionary)typeof(BevToolsBlexStateProvider).GetField("_states", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(provider)!;
             var broken = manager.CaptureGlobalState();
             var cart = (System.Text.Json.Nodes.JsonObject)broken["cart"]!;
             cart[cart.First(p => p.Key.Equals("items", StringComparison.OrdinalIgnoreCase)).Key] = "not a number";
@@ -149,8 +149,8 @@ public class BlexIntegrationTests
         services.AddBevToolsBlex();
         using var provider = services.BuildServiceProvider();
         using var scope = provider.CreateScope();
-        var blex = scope.ServiceProvider.GetServices<IBevStateProvider>().OfType<BevBlexStateProvider>().Single();
-        Assert.AreEqual(150, typeof(BevBlexStateProvider).GetField("_maxStates", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(blex));
+        var blex = scope.ServiceProvider.GetServices<IBevToolsStateProvider>().OfType<BevToolsBlexStateProvider>().Single();
+        Assert.AreEqual(150, typeof(BevToolsBlexStateProvider).GetField("_maxStates", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(blex));
     }
 
     [TestMethod]
@@ -162,7 +162,7 @@ public class BlexIntegrationTests
             var manager = new BlexManager();
             var store = new BevCartStore();
             manager.Register(store);
-            using var provider = new BevBlexStateProvider(manager);
+            using var provider = new BevToolsBlexStateProvider(manager);
             session.State.Register(provider);
 
             session.PauseCapture();

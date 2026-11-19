@@ -2,7 +2,7 @@
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Bit.Bsqlite.Data;
+namespace Bit.Bsqlite;
 
 /// <summary>
 /// ADO.NET connection whose work is carried out by an <see cref="IBsqliteTransport"/>.
@@ -156,7 +156,7 @@ public sealed class BsqliteConnection : DbConnection
     public override string DataSource => _database;
 
     /// <summary>The SQLite version of the vendored engine; see <c>engine/wa-sqlite.lock.props</c>.</summary>
-    public override string ServerVersion => EntityFrameworkCore.BsqlitePclProvider.EngineVersion;
+    public override string ServerVersion => BsqlitePclProvider.EngineVersion;
 
     public override ConnectionState State => _state;
 

@@ -1,7 +1,7 @@
 ﻿using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 
-namespace Bit.BlazeDb.Browser;
+namespace Bit.BlazeDb;
 
 /// <summary>
 /// Keeps read-only replica tabs in step with the writer tab. The writer announces each checkpoint

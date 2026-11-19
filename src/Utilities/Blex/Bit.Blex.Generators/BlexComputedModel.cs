@@ -1,4 +1,4 @@
-﻿namespace Bit.Blex.Generators;
+﻿namespace Bit.Blex;
 
 /// <summary>A <c>[BlexComputed]</c> method and what its body reads.</summary>
 /// <param name="MethodName">Name of the computed method.</param>

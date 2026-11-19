@@ -30,10 +30,10 @@ public sealed class BmotionPresenceSwitch<TItem> : ComponentBase
     [Parameter] public RenderFragment<TItem>? ChildContent { get; set; }
 
     /// <summary>
-    /// <see cref="BmPresenceMode.Wait"/> (default): the new item enters only after the old
-    /// one finished exiting. <see cref="BmPresenceMode.Sync"/>: both animate simultaneously.
+    /// <see cref="BmotionPresenceMode.Wait"/> (default): the new item enters only after the old
+    /// one finished exiting. <see cref="BmotionPresenceMode.Sync"/>: both animate simultaneously.
     /// </summary>
-    [Parameter] public BmPresenceMode Mode { get; set; } = BmPresenceMode.Wait;
+    [Parameter] public BmotionPresenceMode Mode { get; set; } = BmotionPresenceMode.Wait;
 
     /// <summary>Fires each time an outgoing item finishes its exit animation.</summary>
     [Parameter] public EventCallback OnExitComplete { get; set; }
@@ -71,7 +71,7 @@ public sealed class BmotionPresenceSwitch<TItem> : ComponentBase
         foreach (var entry in _entries.Where(e => !e.Exiting).ToArray())
             BeginExit(entry);
 
-        if (Mode != BmPresenceMode.Wait || _entries.Count == 0)
+        if (Mode != BmotionPresenceMode.Wait || _entries.Count == 0)
         {
             // Sync/PopLayout overlap exit and enter; and when nothing is actually exiting (e.g.
             // the old subtree had no animatable children) the new item can enter immediately.
@@ -104,7 +104,7 @@ public sealed class BmotionPresenceSwitch<TItem> : ComponentBase
             return;
         }
         entry.Exiting = true;
-        entry.Ctx.PopLayout = Mode == BmPresenceMode.PopLayout;
+        entry.Ctx.PopLayout = Mode == BmotionPresenceMode.PopLayout;
         entry.Ctx.IsExiting = true;
     }
 

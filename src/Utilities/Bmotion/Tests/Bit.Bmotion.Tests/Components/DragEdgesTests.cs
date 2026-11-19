@@ -27,7 +27,7 @@ public class DragEdgesTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.Drag, BmotionDrag.Both)
             .Add(p => p.DragPropagation, true)
             .Add(p => p.ChildContent, Div));
 
@@ -42,7 +42,7 @@ public class DragEdgesTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.Drag, BmotionDrag.Both)
             .Add(p => p.ChildContent, Div));
 
         var flags = AttachedFlags(ctx.Interop);
@@ -57,7 +57,7 @@ public class DragEdgesTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.Drag, BmotionDrag.Both)
             .Add(p => p.ChildContent, Div));
 
         Assert.AreEqual(false, AttachedFlags(ctx.Interop)["dragMoveEvents"]);
@@ -69,7 +69,7 @@ public class DragEdgesTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.Drag, BmotionDrag.Both)
             .Add(p => p.OnDrag, EventCallback.Factory.Create(this, () => { }))
             .Add(p => p.ChildContent, Div));
 
@@ -82,38 +82,38 @@ public class DragEdgesTests
     public async Task OnDirectionLocked_ReportsTheResolvedAxis()
     {
         using var ctx = new BmotionTestContext();
-        BmDragAxis? locked = null;
+        BmotionDragAxis? locked = null;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.Drag, BmotionDrag.Both)
             .Add(p => p.DragDirectionLock, true)
-            .Add(p => p.OnDirectionLock, EventCallback.Factory.Create<BmDragAxis>(this, a => locked = a))
+            .Add(p => p.OnDirectionLock, EventCallback.Factory.Create<BmotionDragAxis>(this, a => locked = a))
             .Add(p => p.ChildContent, Div));
 
         var element = (Bmotion)ctx.Interop.EventListenerRefs["box"];
 
         await cut.InvokeAsync(() => element.OnDirectionLocked("y"));
-        Assert.AreEqual(BmDragAxis.Y, locked);
+        Assert.AreEqual(BmotionDragAxis.Y, locked);
 
         await cut.InvokeAsync(() => element.OnDirectionLocked("x"));
-        Assert.AreEqual(BmDragAxis.X, locked);
+        Assert.AreEqual(BmotionDragAxis.X, locked);
     }
 
     [TestMethod]
     public async Task OnDirectionLocked_UnknownAxis_FallsBackToX_InsteadOfThrowing()
     {
         using var ctx = new BmotionTestContext();
-        BmDragAxis? locked = null;
+        BmotionDragAxis? locked = null;
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.Drag, BmotionDrag.Both)
             .Add(p => p.DragDirectionLock, true)
-            .Add(p => p.OnDirectionLock, EventCallback.Factory.Create<BmDragAxis>(this, a => locked = a))
+            .Add(p => p.OnDirectionLock, EventCallback.Factory.Create<BmotionDragAxis>(this, a => locked = a))
             .Add(p => p.ChildContent, Div));
 
         await cut.InvokeAsync(() => ((Bmotion)ctx.Interop.EventListenerRefs["box"]).OnDirectionLocked("?"));
 
-        Assert.AreEqual(BmDragAxis.X, locked);
+        Assert.AreEqual(BmotionDragAxis.X, locked);
     }
 
     [TestMethod]
@@ -122,7 +122,7 @@ public class DragEdgesTests
         using var ctx = new BmotionTestContext();
         var cut = ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.Drag, BmotionDrag.Both)
             .Add(p => p.DragDirectionLock, true)
             .Add(p => p.ChildContent, Div));
 
@@ -179,7 +179,7 @@ public class DragEdgesTests
         using var ctx = new BmotionTestContext();
         ctx.Render<Bmotion>(ps => ps
             .Add(p => p.Id, "box")
-            .Add(p => p.Drag, BmDrag.Both)
+            .Add(p => p.Drag, BmotionDrag.Both)
             .Add(p => p.DragDirectionLock, true)
             .Add(p => p.ChildContent, Div));
 

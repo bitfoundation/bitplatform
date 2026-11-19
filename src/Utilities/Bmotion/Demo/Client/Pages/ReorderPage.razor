@@ -54,7 +54,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-success"></span> Horizontal lists</h3>
     <p>
-        <code>Axis="BmDragAxis.X"</code> runs the same machinery sideways for a row of tabs, a
+        <code>Axis="BmotionDragAxis.X"</code> runs the same machinery sideways for a row of tabs, a
         toolbar or a card rail. Only the axis changes - the displacement, the commit and the binding
         all behave identically.
     </p>
@@ -62,7 +62,7 @@
     <div class="demo-row">
         <div class="demo-card">
             <div class="chip-rail">
-                <BmotionReorderGroup @bind-Items="_stages" Axis="BmDragAxis.X" Context="stage">
+                <BmotionReorderGroup @bind-Items="_stages" Axis="BmotionDragAxis.X" Context="stage">
                     <div class="rail-chip">@stage</div>
                 </BmotionReorderGroup>
             </div>
@@ -77,7 +77,7 @@
 <section class="bb-card">
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-primary"></span> Grids</h3>
     <p>
-        <code>Axis="BmDragAxis.Both"</code> reorders a layout that wraps - a CSS grid, a
+        <code>Axis="BmotionDragAxis.Both"</code> reorders a layout that wraps - a CSS grid, a
         <code>flex-wrap</code> row. The dragged tile takes the cell nearest its centre and the others close up
         around it in reading order. From the keyboard, <kbd>←</kbd>/<kbd>→</kbd> move a held tile one place and
         <kbd>↑</kbd>/<kbd>↓</kbd> a row.
@@ -86,7 +86,7 @@
     <div class="demo-row">
         <div class="demo-card">
             <div class="tile-grid">
-                <BmotionReorderGroup @bind-Items="_tiles" Axis="BmDragAxis.Both" Context="tile">
+                <BmotionReorderGroup @bind-Items="_tiles" Axis="BmotionDragAxis.Both" Context="tile">
                     <div class="tile">@tile</div>
                 </BmotionReorderGroup>
             </div>
@@ -150,7 +150,7 @@
         to a row and press <kbd>Space</kbd> or <kbd>Enter</kbd> to pick it up. The arrow keys move it while the
         others make way, <kbd>Space</kbd> drops it - so does moving focus away - and <kbd>Escape</kbd> puts it
         back. Each step is announced to screen readers through a live region. <code>Announce</code> words those
-        announcements: it is handed a <strong>BmReorderAnnouncement</strong> - the <code>Event</code> (picked up,
+        announcements: it is handed a <strong>BmotionReorderAnnouncement</strong> - the <code>Event</code> (picked up,
         moved, dropped, cancelled), the <code>Item</code>, its 1-based <code>Position</code> and the
         <code>Count</code> - and returns the sentence, so it can name the item or speak another language.
         <code>DefaultText</code> is the library's own English wording. The list below names the track, and shows
@@ -214,13 +214,13 @@
 
     // What a screen reader hears at each keyboard step: the track's own name in front of the library's
     // wording. Kept here as well so the page can print it - the group's live region is visually hidden.
-    private string AnnounceTrack(BmReorderAnnouncement<Track> a)
+    private string AnnounceTrack(BmotionReorderAnnouncement<Track> a)
     {
         _announcement = a.Event switch
         {
-            BmReorderEvent.PickedUp => $"{a.Item.Title}, picked up. Position {a.Position} of {a.Count}.",
-            BmReorderEvent.Moved => $"{a.Item.Title}, position {a.Position} of {a.Count}.",
-            BmReorderEvent.Dropped => $"{a.Item.Title}, dropped at position {a.Position} of {a.Count}.",
+            BmotionReorderEvent.PickedUp => $"{a.Item.Title}, picked up. Position {a.Position} of {a.Count}.",
+            BmotionReorderEvent.Moved => $"{a.Item.Title}, position {a.Position} of {a.Count}.",
+            BmotionReorderEvent.Dropped => $"{a.Item.Title}, dropped at position {a.Position} of {a.Count}.",
             _ => $"{a.Item.Title}: {a.DefaultText}",
         };
         _ = InvokeAsync(StateHasChanged);
@@ -282,9 +282,9 @@
     private const string _horizontalCode = """
         @using Bit.Bmotion
 
-        @* Same machinery, sideways. For a layout that wraps, see Axis="BmDragAxis.Both" below. *@
+        @* Same machinery, sideways. For a layout that wraps, see Axis="BmotionDragAxis.Both" below. *@
         <div style="display:flex;gap:.5rem;flex-wrap:nowrap">
-            <BmotionReorderGroup @bind-Items="_stages" Axis="BmDragAxis.X" Context="stage">
+            <BmotionReorderGroup @bind-Items="_stages" Axis="BmotionDragAxis.X" Context="stage">
                 <div class="chip">@stage</div>
             </BmotionReorderGroup>
         </div>
@@ -304,7 +304,7 @@
         </style>
 
         <div class="tile-grid">
-            <BmotionReorderGroup @bind-Items="_tiles" Axis="BmDragAxis.Both" Context="tile">
+            <BmotionReorderGroup @bind-Items="_tiles" Axis="BmotionDragAxis.Both" Context="tile">
                 <div class="tile">@tile</div>
             </BmotionReorderGroup>
         </div>
@@ -365,11 +365,11 @@
 
             // Event is PickedUp, Moved, Dropped or Cancelled; Position is 1-based, out of Count.
             // DefaultText is the library's own English sentence for the same step.
-            private string AnnounceTrack(BmReorderAnnouncement<Track> a) => a.Event switch
+            private string AnnounceTrack(BmotionReorderAnnouncement<Track> a) => a.Event switch
             {
-                BmReorderEvent.PickedUp => $"{a.Item.Title}, picked up. Position {a.Position} of {a.Count}.",
-                BmReorderEvent.Moved    => $"{a.Item.Title}, position {a.Position} of {a.Count}.",
-                BmReorderEvent.Dropped  => $"{a.Item.Title}, dropped at position {a.Position} of {a.Count}.",
+                BmotionReorderEvent.PickedUp => $"{a.Item.Title}, picked up. Position {a.Position} of {a.Count}.",
+                BmotionReorderEvent.Moved    => $"{a.Item.Title}, position {a.Position} of {a.Count}.",
+                BmotionReorderEvent.Dropped  => $"{a.Item.Title}, dropped at position {a.Position} of {a.Count}.",
                 _                       => $"{a.Item.Title}: {a.DefaultText}",
             };
 

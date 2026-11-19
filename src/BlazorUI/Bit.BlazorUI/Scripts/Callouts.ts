@@ -1108,13 +1108,18 @@
         // page somewhere outside of them. Every other callout is dismissed by the click landing on the
         // overlay that covers the page for it; one that was asked to leave the page its own clicks has
         // nothing between it and the page to hear them, so the page tells it instead.
-        export function dismissOnOutsideInteraction(target: Node | null) {
+        export function dismissOnOutsideInteraction(target: Node | null, openAtTheTime?: ReadonlySet<string>) {
             // Innermost first, since a callout without an overlay can still have been opened from inside
             // one that has one, and only down to the first callout that speaks for itself: an overlay of
             // its own takes the interaction before the page ever sees it, and a callout that asked not to
-            // be dismissed from outside covers everything it is nested in as well.
+            // be dismissed from outside covers everything it is nested in as well. An interaction judged
+            // after the fact (a right-click, see below) is about the callouts open when it happened, so it
+            // stops at one opened since - by whatever came after it - and leaves it, and what it is nested
+            // in, alone.
             while (Callouts._stack.length > 0) {
                 const top = Callouts.current;
+
+                if (openAtTheTime && openAtTheTime.has(top.calloutId) === false) return;
 
                 if (top.overlayId || top.noDismiss) return;
 
@@ -2167,12 +2172,18 @@ namespace BitBlazorUI {
     // that opens a context menu of its own calls preventDefault on it - since that is the page moving its own
     // menu to the new point rather than the user leaving it. Whether the click was taken is only known once
     // the event has been dispatched, which is what the deferral is for: the handlers that take it, Blazor's
-    // among them, all run before the task queued here does.
+    // among them, all run before the task queued here does. Only the callouts open as the click was made are
+    // its to dismiss: the task can run late, after a right-click that came next opened a context menu, which
+    // the earlier click had nothing to do with.
     document.addEventListener('contextmenu', (e: MouseEvent) => {
+        if (BitBlazorUI.Callouts._stack.length === 0) return;
+
+        const open = new Set(BitBlazorUI.Callouts._stack.map(entry => entry.calloutId));
+
         setTimeout(() => {
             if (e.defaultPrevented) return;
 
-            BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
+            BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node, open);
         });
     }, true);
 

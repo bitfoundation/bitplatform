@@ -25,7 +25,7 @@ Only the .NET 10 runtime is installed on this machine; the net8.0/net9.0 test bu
   style), presence components (`BmotionAnimatePresence`, `BmotionPresenceSwitch`, `BmotionPresenceGroup`),
   `BmotionReorderGroup`, `BmotionSplitText`, `BmotionLayoutGroup`, `BmotionConfig`, `BmotionInspector`; the `Bm`
   facade (`Bm.To`, `Bm.Spring`, `Bm.Tween`, `Bm.Inertia`, `Bm.Stagger`, `Bm.Value`, ...); `BmotionAnimateService`
-  (selector / `ElementReference` / motion value / number / `BmSequence`), `BmotionScrollTracker`,
+  (selector / `ElementReference` / motion value / number / `BmotionSequence`), `BmotionScrollTracker`,
   `BmotionViewTransition`, `BmotionCapabilities`.
 * **Engine**: all animation maths in C# (`BmotionAnimationEngine` + one `BmotionElementAnimationState` per element,
   drivers for tween / spring / inertia / keyframes / colour / arc). Two execution paths:
@@ -37,7 +37,7 @@ Only the .NET 10 runtime is installed on this machine; the net8.0/net9.0 test bu
 * **Bridge** (`Scripts/bit-bmotion.ts`, ~1400 lines): rAF loop, style application, pointer/focus/keyboard listeners,
   drag maths, IntersectionObserver pooling, FLIP playback, WAAPI playback, scroll timelines (native + scrub
   fallback), scroll tracking, view transitions.
-* **Prerendering**: `BmPrerenderMode` (`Initial` / `Final` / `Animate` = pure-CSS enter animation), with persisted
+* **Prerendering**: `BmotionPrerenderMode` (`Initial` / `Final` / `Animate` = pure-CSS enter animation), with persisted
   state so the interactive runtime takes over at rest.
 
 ## 2. Feature inventory
@@ -49,7 +49,7 @@ Status legend: **V** implemented and verified (unit + browser), **T** implemente
 |---|---|---|---|
 | Core | transform components, opacity | V | |
 | Core | colours (hex, rgb(), hsl()) | V | sRGB and OKLab spaces; OKLab goes to the browser only where it interpolates in OKLab (round 4: Firefox parses `oklab()` but mixes in sRGB, so it gets the frame loop) |
-| Core | named colours, `rgb(r g b / a)`, `oklch()`/`oklab()`, `lab()`/`lch()`/`hwb()`/`color()` | V (round 1) | was: parser returned null, so these snapped although `BmProps` documented named colours |
+| Core | named colours, `rgb(r g b / a)`, `oklch()`/`oklab()`, `lab()`/`lch()`/`hwb()`/`color()` | V (round 1) | was: parser returned null, so these snapped although `BmotionProps` documented named colours |
 | Core | same-unit dimensions, complex strings (filters, shadows) | V | browser-played on both runtimes (round 2); to/from `none` and stylesheet shadows in the page's own form mix (round 3) |
 | Core | implicit starting values (no `Initial`) for non-transform properties | V (round 2) | was: unknown colours started from `rgba(0,0,0,0)`, unknown dimensions snapped. Now read off the computed style (AD-2) |
 | Core | `height`/`width: "auto"` (accordion) | V (round 3) | was: snaps. Measured, played to, lands on `auto`; from `auto` starts at the size on screen |
@@ -69,12 +69,12 @@ Status legend: **V** implemented and verified (unit + browser), **T** implemente
 | Hosting | Blazor Server: drag | V (round 4) | was: one round trip behind the pointer. The bridge shows the drag with CSS `translate` until .NET's transform catches up; cleared once .NET has the final position (backlog 17) |
 | Hosting | Blazor Server: layout animations (FLIP) | V (round 4) | was: the element showed at its new place for the round trip before the FLIP (Firefox and WebKit: one frame, 340 px away). The bridge holds it at the FLIP's first frame from the moment the render lands |
 | Declarative | Initial / Animate / Exit / While* / variants / State | V | |
-| Declarative | presets / reusable effects | V (round 3) | was: none. `BmPresets` (23), `Preset` parameter, `+` composition |
+| Declarative | presets / reusable effects | V (round 3) | was: none. `BmotionPresets` (23), `Preset` parameter, `+` composition |
 | Orchestration | variants, stagger (from, grid), delayChildren, when | V | |
 | Orchestration | sequences (`at`, labels), one playhead | V | |
 | Presence | Sync / Wait / PopLayout, keyed switch, keyed list, re-entry | V | |
-| Presence | exiting content inert (not focusable / clickable) | V (round 3) | `BitBmotionOptions.InertWhileExiting`, default on |
-| Presence | custom components taking part in presence (`usePresence`) | V (round 3) | was: only `<Bmotion>` children registered. `BmotionPresenceContext.Register()` → `BmPresenceRegistration.SafeToRemove()` |
+| Presence | exiting content inert (not focusable / clickable) | V (round 3) | `BmotionOptions.InertWhileExiting`, default on |
+| Presence | custom components taking part in presence (`usePresence`) | V (round 3) | was: only `<Bmotion>` children registered. `BmotionPresenceContext.Register()` → `BmotionPresenceRegistration.SafeToRemove()` |
 | Layout | FLIP (position / size), anchor, scroll, root, dependency, LayoutId | V | |
 | Layout | LayoutId crossfade while both holders are mounted | V (round 4) | was: the new holder flipped from the old one's last recorded rect, the old one just exited. Now the pair crossfade (`filter: opacity()`, multiplying with their own opacity) and the old one travels onto the new box; `LayoutCrossfade` |
 | Gestures | hover, tap (+ keyboard), focus, pan, drag (axis, constraints, elastic, momentum, snap, handles, controls) | V | |
@@ -86,11 +86,11 @@ Status legend: **V** implemented and verified (unit + browser), **T** implemente
 | Gestures | keyboard tap on native `<button>` | V (round 1) | was: Space was `preventDefault`ed on every tappable element, so Space on a `<button>` inside `WhileTap` did not click it |
 | Gestures | `WhileFocus` on keyboard focus only (`:focus-visible`, motion.dev) | V (round 3) | was: any focus, a mouse click included |
 | Scroll | native scroll timelines + scrub fallback | V | |
-| Scroll | smoothed scroll-linked animation (`useSpring(scrollYProgress)`) | V (round 4) | `BmScrollTimeline.Smoothed()`: a spring in the bridge between the scroll and the scrub - both runtimes, no per-frame interop |
+| Scroll | smoothed scroll-linked animation (`useSpring(scrollYProgress)`) | V (round 4) | `BmotionScrollTimeline.Smoothed()`: a spring in the bridge between the scroll and the scrub - both runtimes, no per-frame interop |
 | Scroll | `BmotionScrollTracker` | V (round 3) | was: one interop call per scroll event, queueing behind a Server round trip. Now one call in flight, latest wins; a slow callback no longer holds the motion values back |
 | Gestures | pan | V (round 3) | was: one interop call per pointermove. Now one in flight, the moves meanwhile folded (deltas summed); the last one always arrives before the end |
 | SVG | path drawing, `d` morph (same commands), motion path, arc | V | browser-played on both runtimes except the `d`/`points` morph (an attribute), which needs the frame loop |
-| Values | `BmValue`, transform, velocity, spring follower, template | V | |
+| Values | `BmotionValue`, transform, velocity, spring follower, template | V | |
 | View transitions | `BmotionViewTransition.StartAsync` | V (round 3) | was: ignores reduced motion, no types. Now types + reduced-motion policy; no ready/finished split yet |
 | A11y | reduced motion policy | V | default kept at `IgnoreUnlessConfigured` (AD-3); what is kept under reduction widened (round 3) |
 | Diagnostics | inspector, server-degradation warning, CSS safe mode | V | |
@@ -222,11 +222,11 @@ checked against a build with inheritance disabled (fails 6/6) and passes 9/9 wit
 
 ### Round 3 - declarative API, sizes, fidelity of strings, accessibility
 
-* **Presets** (backlog 11): `BmPreset` (Initial / Animate / Exit / While* / Viewport / Transition) and 23 `BmPresets`
+* **Presets** (backlog 11): `BmotionPreset` (Initial / Animate / Exit / While* / Viewport / Transition) and 23 `BmotionPresets`
   factories - enter/exit (Fade, Slide, Scale, Pop, Blur, Rotate, Flip), overlays (Modal, Drawer, Popover, Tooltip,
   Toast), gestures (HoverLift, HoverScale, Press), attention (Pulse, Shake, Wiggle, Jump, Heartbeat), Reveal, Spin,
   Shimmer. `<Bmotion Preset>` supplies only what the element leaves unset; presets compose with `+` target by target
-  (`BmProps` gained `With` / `+`, with a reflection guard that `Merge` covers every property). Every built-in renders
+  (`BmotionProps` gained `With` / `+`, with a reflection guard that `Merge` covers every property). Every built-in renders
   and plays on WebAssembly and Server (unit).
 * **`width`/`height` to and from `"auto"`** (backlog 10): the natural size is measured (inline size set to `auto` for
   an instant, in the same read as the starting values), played to, and the element then lands on `auto` itself so it
@@ -241,15 +241,15 @@ checked against a build with inheritance disabled (fails 6/6) and passes 9/9 wit
   `none` ends now play through the other end's neutral values (CSS semantics: `blur(0px)`, `brightness(1)` /
   `100%`, transparent zero-size shadows), shadows are aligned to one form and padded to the same count, and the
   element ends on the authored value (`none` included). Both E2E tests fail with the alignment disabled.
-* **View transitions**: `BmViewTransitionOptions.Types` (typed transitions, untyped fallback) and the reduced-motion
+* **View transitions**: `BmotionViewTransitionOptions.Types` (typed transitions, untyped fallback) and the reduced-motion
   policy (skipped when motion is reduced; `ReduceMotion` overrides per call).
 * **Reduced motion** keeps `filter`, `backdropFilter`, `boxShadow` and `textShadow` fades, like opacity and colour.
 * **Drag** no longer starts from a press on a form field inside the draggable element.
 * **Exiting content is `inert`** (backlog 12) while its exit plays, set by the bridge (rendering it would re-create
   static child content mid-exit); a cancelled exit makes it interactive again; an app's own `inert` is kept. Opt out
-  with `BitBmotionOptions.InertWhileExiting = false`. *Behaviour change*: exiting content used to stay interactive.
+  with `BmotionOptions.InertWhileExiting = false`. *Behaviour change*: exiting content used to stay interactive.
 * **Inertia bounces off its bounds** (backlog 14, motion.dev semantics): the coast heads for the (snapped) projection
-  at the speed it was thrown with, and a spring (`BmInertia.BounceStiffness`/`BounceDamping`, default 500/10) takes
+  at the speed it was thrown with, and a spring (`BmotionInertia.BounceStiffness`/`BounceDamping`, default 500/10) takes
   over with its velocity where it crosses `Min`/`Max`; released outside them it springs straight back. Before, the
   projection was clamped first, so a throw at a nearby bound braked from the release onwards - in the E2E a flick
   released at 100px towards a bound at 150px crept to 143px in 1.5 s, where it now reaches the bound moving, bounces
@@ -260,7 +260,7 @@ checked against a build with inheritance disabled (fails 6/6) and passes 9/9 wit
   `Bm.Spring(damping: 5000)` or a hard inertia wall). Damping is applied implicitly where explicit damping would be
   unstable; ordinary springs keep their exact trajectories (every existing test unchanged).
 * **Presence participation** (backlog 13, motion.dev's `usePresence`): `BmotionPresenceContext` is public, and a
-  component of the app's own registers with it (`Register()` → `BmPresenceRegistration`: `IsPresent`,
+  component of the app's own registers with it (`Register()` → `BmotionPresenceRegistration`: `IsPresent`,
   `SafeToRemove()`, `Dispose()`), so an exit that isn't a `<Bmotion>` (a CSS transition, a canvas) keeps the content
   mounted - in every presence component and mode; a re-entry cancels it, a late `SafeToRemove` completes nothing.
 * **`WhileFocus` follows keyboard focus** (`:focus-visible`, motion.dev semantics): a button clicked with the mouse
@@ -308,7 +308,7 @@ fix (velocity, shadows/filters, inert, bounce, focus-visible, rejected replay): 
 3. *New gaps found while testing*: Server's implicit start from `auto`, computed `none` and computed shadows, a
    reorder enumeration race, the rejected-animation replay and the spring integrator's instability under heavy
    damping. All five are fixed.
-4. *API consistency*: presets compose with `+`, as `BmProps` now does. `BmotionPresenceContext` was made public
+4. *API consistency*: presets compose with `+`, as `BmotionProps` now does. `BmotionPresenceContext` was made public
    rather than adding a parallel type, and the bounce settings are nullable so that "unset" can mean the context's
    own default (a drag's snap spring). No API was renamed.
 5. *Browser-native alternatives*: `inert` and `:focus-visible` are native. `interpolate-size` (for `auto`) was
@@ -379,14 +379,14 @@ fix (velocity, shadows/filters, inert, bounce, focus-visible, rejected replay): 
   for itself and the list scrolled forever - auto-scroll is capped at the extent the drag started with; and a
   compensation on the scroll event trailed a step (18-20 px) behind - it now runs with each step, on WebAssembly in a
   new before-frame hook of the tick, ahead of `ComputeFrame`, so a step and the position it leads to share a frame.
-* **Reorder grids** (backlog 19): `Axis = BmDragAxis.Both` takes the cell nearest the dragged item's centre; ↑/↓ move a
+* **Reorder grids** (backlog 19): `Axis = BmotionDragAxis.Both` takes the cell nearest the dragged item's centre; ↑/↓ move a
   held item a row from the keyboard.
 * **LayoutId crossfade** (backlog 21): when the old holder is still mounted on its way out (presence), the new one grows
   out of the old one's live box and fades in while the old one travels onto the new box and fades out. The fade is a
   `filter: opacity()`, so it multiplies with the elements' own opacity instead of overriding their enter and exit
   fades; a re-entry takes the old one back off it; `LayoutCrossfade = false` opts out. The registry tracks the holder
   now, so a leaving holder that re-renders no longer overwrites the new holder's rect.
-* **Smoothed scroll timelines** (backlog 22): `BmScrollTimeline.Smoothed(spring)` - motion.dev's
+* **Smoothed scroll timelines** (backlog 22): `BmotionScrollTimeline.Smoothed(spring)` - motion.dev's
   `useSpring(scrollYProgress)`, default stiffness 100 / damping 30. A native timeline can't be smoothed, so a smoothed
   one plays through the scrub with a spring stepped in the bridge - on both runtimes, with no per-frame interop.
 * **Lengths across units** (backlog 23): `"100px"` → `"50%"` used to snap. It now plays through `calc()` of both ends,
@@ -467,14 +467,14 @@ The round started from a new, much wider plan. Its gap analysis, section by sect
 [Bmotion-Completion-Report.md](Bmotion-Completion-Report.md). In short:
 
 * **Why an animation plays where it does** is now reported at run time: `BmotionAnimationEngine.AnimationEvent`
-  (per part: `BmPlaybackStrategy`, properties, reason, outcome) and the BCL meter `Bit.Bmotion`; the inspector shows
+  (per part: `BmotionPlaybackStrategy`, properties, reason, outcome) and the BCL meter `Bit.Bmotion`; the inspector shows
   both. Raised from `PlayAsync`, so every start path reports alike (AD-1). Free while nobody listens.
-* **Springs by name and by measurement**: `BmSprings` (seven) and `BmSpring.Analyze()`, which steps the engine's own
+* **Springs by name and by measurement**: `BmotionSprings` (seven) and `BmotionSpring.Analyze()`, which steps the engine's own
   driver at 60 Hz - an MCP test checks it against the whole engine run off-screen.
-* **Per-element reduced motion**: `Bmotion.ReducedMotion` / `BmPreset.ReducedMotion` (`Reduce`, `Instant`, `Full`).
-* `Bm.Combine`, `BmValue.Previous`, boxing-free velocity tracking; `BmPresets.Expand`.
+* **Per-element reduced motion**: `Bmotion.ReducedMotion` / `BmotionPreset.ReducedMotion` (`Reduce`, `Instant`, `Full`).
+* `Bm.Combine`, `BmotionValue.Previous`, boxing-free velocity tracking; `BmotionPresets.Expand`.
 * Fixed: a sequence segment after a physical spring was placed 0.8 s in whatever the spring; the MCP search ranked
-  `BmSprings` over an exact `BmSpring`.
+  `BmotionSprings` over an exact `BmotionSpring`.
 * Deferred with a design: reverse playback (it touches the mirror, the bridge's commit and the finish handling, and
   needs all three browser engines to verify).
 
@@ -509,8 +509,8 @@ is the state after the latest round; **bold** marks a gap still open.
 | Reduced motion | `MotionConfig reducedMotion` (default `never`) | `matchMedia` (opt-in) | media query | policy option (default `IgnoreUnlessConfigured`), and per element `ReducedMotion` = reduce / instant / full (round 5) |
 | Text splitting | Motion+ `splitText` | SplitText (free) | - | `BmotionSplitText` |
 | Number animation | Motion+ `AnimateNumber` | - | `@property` counters | programmatic only |
-| Presets / reusable effects | - (user land) | - | - | `BmPresets`, 24 composable presets (round 3, `Expand` round 5); `BmSprings`, 7 named springs (round 5) |
-| Spring prediction (settle time, overshoot) | - (internal `calcGeneratorDuration`) | - | - | `BmSpring.Analyze()` on the engine's own driver (round 5) |
+| Presets / reusable effects | - (user land) | - | - | `BmotionPresets`, 24 composable presets (round 3, `Expand` round 5); `BmotionSprings`, 7 named springs (round 5) |
+| Spring prediction (settle time, overshoot) | - (internal `calcGeneratorDuration`) | - | - | `BmotionSpring.Analyze()` on the engine's own driver (round 5) |
 | Runtime playback diagnostics / metrics | - | - | DevTools Animations panel | `AnimationEvent` + `Bit.Bmotion` meter, strategy and reason per part (round 5) |
 | Blazor Server parity | n/a | n/a | n/a | everything except per-frame callbacks and `d` morphs (round 2); drag shown locally (round 4) |
 | Browsers verified by the suite | all evergreen | all evergreen | - | Chromium, Firefox, WebKit (round 4) |
@@ -538,7 +538,7 @@ Round 4 (uncommitted on top of the branch):
   doesn't fling the element and a pointer held still before letting go throws nothing.
 * **Reorder grids** (`Axis = Both`) by pointer and keyboard.
 * **LayoutId crossfade** while the old holder is still leaving.
-* **Smoothed scroll-linked animations** (`BmScrollTimeline.Smoothed()`), on both runtimes, without per-frame interop.
+* **Smoothed scroll-linked animations** (`BmotionScrollTimeline.Smoothed()`), on both runtimes, without per-frame interop.
 * **Lengths across units** (`100px` → `50%`) animate through `calc()` instead of snapping, and keep the unit given.
 * **Firefox and WebKit** run the whole suite. Firefox now gets correct OKLab colour mixing, and WebKit no longer
   leaves an element at its starting style when its `commitStyles()` writes nothing.
@@ -588,8 +588,8 @@ Round 4 (`git status` has the exact list, 56 files):
 * Library: `Components/Bmotion.cs`, `Components/BmotionReorderGroup.cs`, `Engine/BmotionAnimationEngine.cs`,
   `Engine/BmotionElementAnimationState.cs`, the seven drivers (`Tween`, `Spring`, `Inertia`, `NumericKeyframes`,
   `ColorTween`, `ColorKeyframes`, `WaapiContinuation`), `Interop/IBmotionInterop.cs`, `Interop/BmotionInterop.cs`,
-  `Models/BmPlaybackState.cs` (new), `Models/BmScrollTimeline.cs`, `Models/BmotionTransitionConfig.cs`,
-  `Services/BmAnimationControls.cs`, `Services/BmotionAnimateService.cs`, `Services/BmotionLayoutRegistry.cs`,
+  `Models/BmotionPlaybackState.cs` (new), `Models/BmotionScrollTimeline.cs`, `Models/BmotionTransitionConfig.cs`,
+  `Services/BmotionAnimationControls.cs`, `Services/BmotionAnimateService.cs`, `Services/BmotionLayoutRegistry.cs`,
   `Scripts/bit-bmotion.ts`, `README.md`.
 * Tests: unit `ControlsTimeTests`, `LayoutCrossfadeTests`, `MixedUnitLengthTests` (new), `LayoutModeTests` (holds),
   `GestureLifecycleTests` (an overlay at the press), `ReorderGroupTests`,
@@ -697,7 +697,7 @@ says otherwise.
 | During a drag, the containers around it don't scroll past the extent they had when it started | 4 | None needed (only the dragged element's own overflow lies beyond) |
 | On Blazor Server an element is held where it was through the render that moves it, until its FLIP | 4 | None needed (bug fix) |
 | On WebAssembly a `WhileDrag` overlay plays on the frame loop, composed with the drag | 4 | None needed (bug fix) |
-| Exiting content is `inert` while its exit plays | 3 | `BitBmotionOptions.InertWhileExiting = false` |
+| Exiting content is `inert` while its exit plays | 3 | `BmotionOptions.InertWhileExiting = false` |
 | `WhileFocus` / `OnFocusStart` / `OnFocusEnd` follow keyboard focus (`:focus-visible`) | 3 | For "any focus", handle `@onfocusin` |
 | Inertia with `Min`/`Max` coasts at its own speed and bounces | 3 | `BounceDamping` ≈ `2·√BounceStiffness` for no bounce |
 | Reorder items become focusable and take Space/Enter/arrows | 3 | `Keyboard="false"` |

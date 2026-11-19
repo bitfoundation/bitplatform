@@ -1,9 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using Bit.Bmage.Capabilities;
-using Bit.Bmage.Input;
-using Bit.Bmage.Interop;
-using Bit.Bmage.Output;
-using Bit.Bmage.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.JSInterop;
@@ -38,41 +33,41 @@ public static class BitBmageBlazor
     /// <code>
     /// builder.Services.AddBitBmageServices(options =>
     /// {
-    ///     options.Limits = ImageLimits.Default with { MaxPixels = 40_000_000 };
+    ///     options.Limits = BmageImageLimits.Default with { MaxPixels = 40_000_000 };
     ///     options.MaxSourceBytes = 32 * 1024 * 1024;
     /// });
     /// </code>
     /// </example>
-    public static IServiceCollection AddBitBmageServices(this IServiceCollection services, Action<BitBmageOptions>? configure = null)
+    public static IServiceCollection AddBitBmageServices(this IServiceCollection services, Action<BmageOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        var options = new BitBmageOptions();
+        var options = new BmageOptions();
         configure?.Invoke(options);
         services.TryAddSingleton(options);
 
-        services.TryAddScoped<BrowserImageInterop>();
-        services.TryAddScoped<BrowserCapabilityProvider>();
-        services.TryAddScoped<IImageCapabilityProvider>(sp => sp.GetRequiredService<BrowserCapabilityProvider>());
-        services.TryAddScoped(sp => new ImageProcessorFactory(
-            sp.GetRequiredService<BrowserImageInterop>(),
-            sp.GetRequiredService<IImageCapabilityProvider>(),
-            sp.GetRequiredService<BitBmageOptions>()));
+        services.TryAddScoped<BmageBrowserImageInterop>();
+        services.TryAddScoped<BmageBrowserCapabilityProvider>();
+        services.TryAddScoped<IBmageImageCapabilityProvider>(sp => sp.GetRequiredService<BmageBrowserCapabilityProvider>());
+        services.TryAddScoped(sp => new BmageImageProcessorFactory(
+            sp.GetRequiredService<BmageBrowserImageInterop>(),
+            sp.GetRequiredService<IBmageImageCapabilityProvider>(),
+            sp.GetRequiredService<BmageOptions>()));
         services.TryAddScoped(sp =>
         {
-            var loader = new ImageLoader(
-                sp.GetRequiredService<ImageProcessorFactory>(),
-                sp.GetRequiredService<BrowserImageInterop>(),
-                sp.GetRequiredService<IImageCapabilityProvider>());
-            loader.MaxSourceBytes = sp.GetRequiredService<BitBmageOptions>().MaxSourceBytes;
+            var loader = new BmageImageLoader(
+                sp.GetRequiredService<BmageImageProcessorFactory>(),
+                sp.GetRequiredService<BmageBrowserImageInterop>(),
+                sp.GetRequiredService<IBmageImageCapabilityProvider>());
+            loader.MaxSourceBytes = sp.GetRequiredService<BmageOptions>().MaxSourceBytes;
             return loader;
         });
-        services.TryAddScoped<ImageExporter>();
-        services.TryAddScoped(sp => new BrowserTextRasterizer(sp.GetRequiredService<BrowserImageInterop>())
+        services.TryAddScoped<BmageImageExporter>();
+        services.TryAddScoped(sp => new BmageBrowserTextRasterizer(sp.GetRequiredService<BmageBrowserImageInterop>())
         {
-            Limits = sp.GetRequiredService<BitBmageOptions>().Limits,
+            Limits = sp.GetRequiredService<BmageOptions>().Limits,
         });
-        services.TryAddScoped<FontTextRasterizer>();
+        services.TryAddScoped<BmageFontTextRasterizer>();
         return services;
     }
 
@@ -84,16 +79,16 @@ public static class BitBmageBlazor
     /// The second case is what lets a WebAssembly app lazy load Bit.Bmage and Bit.Bmage.Blazor: the assemblies are not
     /// there yet when <c>Program.cs</c> runs, so they cannot be registered. The choice is made once for every service
     /// rather than per service, so a partial registration (for example <see cref="BitBmage.AddBitBmageHeadlessServices"/>
-    /// alone) never mixes the application's services with Bmage's defaults; its <see cref="BitBmageOptions"/> are still
+    /// alone) never mixes the application's services with Bmage's defaults; its <see cref="BmageOptions"/> are still
     /// honoured.
     /// </remarks>
     internal static IServiceProvider GetEditorServices(IServiceProvider services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        if (services.GetService<ImageLoader>() is not null) return services;
+        if (services.GetService<BmageImageLoader>() is not null) return services;
 
         var jsRuntime = services.GetRequiredService<IJSRuntime>();
-        var options = services.GetService<BitBmageOptions>();
+        var options = services.GetService<BmageOptions>();
         return _ownServices.GetValue(jsRuntime, js =>
         {
             var own = new ServiceCollection().AddSingleton(js);
