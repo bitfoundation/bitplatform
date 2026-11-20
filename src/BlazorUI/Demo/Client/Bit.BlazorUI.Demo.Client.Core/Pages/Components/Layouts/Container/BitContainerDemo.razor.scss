@@ -1,0 +1,45 @@
+﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+
+// A BitContainer root is rendered by the component, so it does not carry this file's scope attribute and every
+// class handed to one has to live in ::deep, under the plain div the page is wrapped in.
+::deep {
+    // The room the container is given: the part of it the container leaves on its two sides is what
+    // MaxWidth centers it in.
+    .band {
+        background: $bit-color-background-secondary;
+        border: 1px solid $bit-color-border-secondary;
+    }
+
+    // The container itself is tinted, so the gutters show up as the strips between its edges and the content.
+    .container {
+        background: color-mix(in srgb, $bit-color-primary 16%, transparent);
+    }
+
+    .content {
+        padding: 0.5rem;
+        text-align: center;
+        color: $bit-color-primary-text;
+        background: $bit-color-primary;
+    }
+
+    .hero {
+        padding-block: 1.5rem;
+        color: $bit-color-primary-text;
+        background: $bit-color-primary;
+    }
+
+    .hero-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .section {
+        padding-block: 1rem;
+        border-inline: 1px dashed $bit-color-border-secondary;
+    }
+
+    .custom-class {
+        outline: 2px dashed tomato;
+        outline-offset: -2px;
+    }
+}
