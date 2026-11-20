@@ -254,6 +254,43 @@ public class BitStepperE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task AResponsiveCompactStepper_ShowsTheRowWhenWideEnough_AndTheCurrentStepAloneInANarrowContainer()
+    {
+        await OpenAsync("/e2e/stepper/responsive");
+
+        Assert.IsTrue(Page.ViewportSize!.Width >= 600, $"a wide screen ({Page.ViewportSize.Width}px).");
+
+        // Wide enough: the row of steps, and no compact part.
+        await Expect(Page.Locator("#stp-compact > .bit-str-lst")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#stp-compact > .bit-str-lst")).ToHaveCSSAsync("flex-direction", "row");
+        await Expect(Page.Locator("#stp-compact > .bit-str-sum")).ToBeHiddenAsync();
+
+        // In a narrow container on the same screen: the compact part in place of the column.
+        await Expect(Page.Locator("#stp-compact-narrow > .bit-str-lst")).ToBeHiddenAsync();
+        await Expect(Page.Locator("#stp-compact-narrow .bit-str-pos")).ToHaveTextAsync("Step 2 of 3");
+        await Expect(Page.Locator("#stp-compact-narrow .bit-str-ctx")).ToHaveTextAsync("Destination");
+
+        // A segment per step, side by side across the stepper, the way already come in the active color.
+        var segments = Page.Locator("#stp-compact-narrow .bit-str-seg");
+        await Expect(segments).ToHaveCountAsync(3);
+
+        var first = await segments.Nth(0).BoxAsync();
+        var last = await segments.Nth(2).BoxAsync();
+        Near(first.Y, last.Y, "the segments in one row");
+        Near(first.Width, last.Width, "the segments equally wide");
+
+        var colors = await segments.EvaluateAllAsync<string[]>("els => els.map(e => getComputedStyle(e).backgroundColor)");
+        Assert.AreEqual(colors[0], colors[1], "the completed and the current segment in the active color.");
+        Assert.AreNotEqual(colors[1], colors[2], "an upcoming segment in another color.");
+
+        var widths = await Page.EvaluateAsync<double[]>(@"() => [
+            document.querySelector('#compact-narrow-box').getBoundingClientRect().width,
+            document.querySelector('#stp-compact-narrow').scrollWidth
+        ]");
+        Assert.IsTrue(widths[1] <= widths[0] + 1, $"the stepper ({widths[1]}px) fits its container ({widths[0]}px).");
+    }
+
+    [TestMethod]
     public async Task ARightToLeftStepper_RunsFromTheRight()
     {
         await OpenAsync(Url);

@@ -4,13 +4,25 @@
 @using Microsoft.AspNetCore.Components.Rendering
 
 @* A Responsive horizontal stepper is laid out by its own width rather than by the screen's, and an element cannot be
-   queried against its own width: the list stands in a wrapper that is the query container of its layout (the
-   stylesheet's bit-str-rsw). Every other stepper renders the list alone. *@
+   queried against its own width: the stepper stands in a wrapper that is the query container of its layout (the
+   stylesheet's bit-str-rsw). Every other stepper renders alone. A Compact stepper renders the compact layout, which
+   also holds the list when the stepper is Responsive and horizontal, for the layout it takes while it is wide enough. *@
 @if (IsResponsiveRow)
 {
     <div class="bit-str-rsw">
-        @{ RenderList(__builder); }
+        @if (Compact)
+        {
+            RenderCompact(__builder);
+        }
+        else
+        {
+            RenderList(__builder);
+        }
     </div>
+}
+else if (Compact)
+{
+    RenderCompact(__builder);
 }
 else
 {
@@ -37,81 +49,155 @@ else
             @if (Options is not null || ChildContent is not null)
             {
                 <li hidden aria-hidden="true" style="display:none" id="@_optionsContainerId">
-                    <CascadingValue Value="this" IsFixed="true">
-                        @(Options ?? ChildContent)
-                    </CascadingValue>
+                    @{ RenderOptions(__builder); }
                 </li>
             }
-            @for (int i = 0; i < _items.Count; i++)
-            {
-                var index = i;
-                var item = _items[index];
-                var state = GetState(item, index);
-                var disabled = Disabled || GetIsDisabled(item);
-                var icon = GetIndicatorIcon(item, state);
-                var text = GetText(item);
-                var description = GetDescription(item);
-                var stateText = GetStateText(state);
-                var ariaCurrent = state == BitStepperStepState.Current || (state == BitStepperStepState.Error && index == CurrentIndex) ? "step" : null;
+            @{ RenderSteps(__builder); }
+        </ol>
+    }
 
-                RenderFragment content = @<text>
-                    <span aria-hidden="true" style="@Styles?.Indicator" class="bit-str-ind @Classes?.Indicator">
-                        @if (icon is not null)
-                        {
-                            <i style="@Styles?.Icon" class="bit-str-ico @icon.GetCssClasses() @Classes?.Icon" />
-                        }
-                        else
-                        {
-                            <span style="@Styles?.Number" class="bit-str-num @Classes?.Number">@GetNumber(index)</span>
-                        }
-                    </span>
-                    <span style="@Styles?.Label" class="bit-str-lbl @Classes?.Label">
-                        @if (text.HasValue())
-                        {
-                            <span style="@Styles?.Text" class="bit-str-txt @Classes?.Text">@text</span>
-                        }
-                        @if (description.HasValue())
-                        {
-                            <span style="@Styles?.Description" class="bit-str-dsc @Classes?.Description">@description</span>
-                        }
-                    </span>
-                    @if (stateText.HasValue())
-                    {
-                        <span class="bit-str-sts">@stateText</span>
-                    }
-                </text>;
+    private void RenderOptions(RenderTreeBuilder __builder)
+    {
+        <CascadingValue Value="this" IsFixed="true">
+            @(Options ?? ChildContent)
+        </CascadingValue>
+    }
 
-                <li @key="GetItemKey(item, index)" style="@GetStepStyle(item, state)" class="@GetStepClass(item, state, disabled)">
-                    @if (IsButton(item, index))
+    // The steps, as the items of the list they are rendered in.
+    private void RenderSteps(RenderTreeBuilder __builder)
+    {
+        for (int i = 0; i < _items.Count; i++)
+        {
+            var index = i;
+            var item = _items[index];
+            var state = GetState(item, index);
+            var disabled = Disabled || GetIsDisabled(item);
+            var icon = GetIndicatorIcon(item, state);
+            var text = GetText(item);
+            var description = GetDescription(item);
+            var stateText = GetStateText(state);
+            var ariaCurrent = state == BitStepperStepState.Current || (state == BitStepperStepState.Error && index == CurrentIndex) ? "step" : null;
+
+            RenderFragment content = @<text>
+                <span aria-hidden="true" style="@Styles?.Indicator" class="bit-str-ind @Classes?.Indicator">
+                    @if (icon is not null)
                     {
-                        <button type="button"
-                                @onclick="() => HandleOnStepClick(item, index)"
-                                title="@GetTitle(item)"
-                                disabled="@disabled"
-                                aria-disabled="@(disabled ? "true" : null)"
-                                aria-current="@ariaCurrent"
-                                aria-label="@GetAriaLabel(item)"
-                                style="@Styles?.Button"
-                                class="bit-str-btn @Classes?.Button">
-                            @content
-                        </button>
+                        <i style="@Styles?.Icon" class="bit-str-ico @icon.GetCssClasses() @Classes?.Icon" />
                     }
                     else
                     {
-                        <div title="@GetTitle(item)"
-                             aria-current="@ariaCurrent"
-                             style="@Styles?.Button"
-                             class="bit-str-btn @Classes?.Button">
-                            @content
-                        </div>
+                        <span style="@Styles?.Number" class="bit-str-num @Classes?.Number">@GetNumber(index)</span>
                     }
-
-                    @if (index < _items.Count - 1)
+                </span>
+                <span style="@Styles?.Label" class="bit-str-lbl @Classes?.Label">
+                    @if (text.HasValue())
                     {
-                        <span aria-hidden="true" style="@Styles?.Connector" class="bit-str-con @Classes?.Connector"></span>
+                        <span style="@Styles?.Text" class="bit-str-txt @Classes?.Text">@text</span>
                     }
-                </li>
+                    @if (description.HasValue())
+                    {
+                        <span style="@Styles?.Description" class="bit-str-dsc @Classes?.Description">@description</span>
+                    }
+                </span>
+                @if (stateText.HasValue())
+                {
+                    <span class="bit-str-sts">@stateText</span>
+                }
+            </text>;
+
+            <li @key="GetItemKey(item, index)" style="@GetStepStyle(item, state)" class="@GetStepClass(item, state, disabled)">
+                @if (IsButton(item, index))
+                {
+                    <button type="button"
+                            @onclick="() => HandleOnStepClick(item, index)"
+                            title="@GetTitle(item)"
+                            disabled="@disabled"
+                            aria-disabled="@(disabled ? "true" : null)"
+                            aria-current="@ariaCurrent"
+                            aria-label="@GetAriaLabel(item)"
+                            style="@Styles?.Button"
+                            class="bit-str-btn @Classes?.Button">
+                        @content
+                    </button>
+                }
+                else
+                {
+                    <div title="@GetTitle(item)"
+                         aria-current="@ariaCurrent"
+                         style="@Styles?.Button"
+                         class="bit-str-btn @Classes?.Button">
+                        @content
+                    </div>
+                }
+
+                @if (index < _items.Count - 1)
+                {
+                    <span aria-hidden="true" style="@Styles?.Connector" class="bit-str-con @Classes?.Connector"></span>
+                }
+            </li>
+        }
+    }
+
+    private void RenderCompact(RenderTreeBuilder __builder)
+    {
+        @* The compact layout shows the current step alone, so the steps are no list there: the root is a group, named as the
+           list is, which says the position of the current step in words ("Step 2 of 4") before the text of the step, and a
+           step in error says so in a visually hidden word after it, as in the list. The bar of a segment per step only
+           draws what the words say, so it is hidden from a screen reader. A Responsive horizontal stepper also holds the
+           list of the steps, which the stylesheet shows in place of the compact part while the stepper is wide enough. *@
+        <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+             id="@_Id"
+             role="group"
+             style="@StyleBuilder.Value"
+             class="@ClassBuilder.Value"
+             aria-label="@ResolveAriaLabel()"
+             dir="@Dir?.ToString().ToLower()">
+            @if (Options is not null || ChildContent is not null)
+            {
+                <div hidden aria-hidden="true" style="display:none" id="@_optionsContainerId">
+                    @{ RenderOptions(__builder); }
+                </div>
             }
-        </ol>
+            @if (IsResponsiveRow)
+            {
+                <ol role="list" class="bit-str-lst bit-str-hrz">
+                    @{ RenderSteps(__builder); }
+                </ol>
+            }
+            <div style="@Styles?.Compact" class="bit-str-sum @Classes?.Compact">
+                @{ var current = GetCurrentItem(); }
+                @if (CompactTemplate is not null)
+                {
+                    @CompactTemplate(new BitStepperCompactContext<TItem>(CurrentIndex, _items.Count, current))
+                }
+                else
+                {
+                    if (current is not null)
+                    {
+                        var text = GetText(current);
+                        var error = GetIsError(current);
+
+                        <span style="@Styles?.Position" class="bit-str-pos @Classes?.Position">@GetPositionText()</span>
+                        if (text.HasValue())
+                        {
+                            <span style="@Styles?.CompactText" class="@GetCompactTextClass(error)">@text</span>
+                        }
+                        if (error)
+                        {
+                            <span class="bit-str-sts">@BitStrings.Current.StepError</span>
+                        }
+                    }
+                    if (_items.Count > 0)
+                    {
+                        <span aria-hidden="true" style="@Styles?.Progress" class="bit-str-prg @Classes?.Progress">
+                            @for (int i = 0; i < _items.Count; i++)
+                            {
+                                <span style="@Styles?.Segment" class="@GetSegmentClass(_items[i], i)"></span>
+                            }
+                        </span>
+                    }
+                }
+            </div>
+        </div>
     }
 }
