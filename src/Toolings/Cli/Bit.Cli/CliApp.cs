@@ -16,7 +16,7 @@ public static class CliApp
 
     private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline", "api"];
 
-    private static readonly Dictionary<string, string> projectFolders = new() { ["setup"] = "folder-or-repository", ["diff"] = "--project", ["clean"] = "path", ["rename"] = "path" };
+    private static readonly Dictionary<string, string> projectFolders = new() { ["setup"] = "folder-or-repository", ["clean"] = "path", ["rename"] = "path" };
 
     public static RootCommand BuildRootCommand(Func<CliServices> services)
     {
@@ -59,7 +59,7 @@ public static class CliApp
 
     private static string? ProjectFolder(RootCommand root, ParseResult parseResult, CliServices services, string[] args)
     {
-        if (args.Length == 0 || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version"))
+        if (args.Length == 0 || AsksAboutBit(parseResult, args))
             return null;
 
         var current = services.Environment.CurrentDirectory;
@@ -74,7 +74,9 @@ public static class CliApp
 
         try
         {
-            if (projectFolders.TryGetValue(command, out var symbol) is false || parseResult.GetValue<string?>(symbol) is not { } folder)
+            var symbol = projectFolders.GetValueOrDefault(command) ?? parseResult.CommandResult.Command.Options.FirstOrDefault(o => o.Name is ProjectOptions.ProjectName)?.Name;
+
+            if (symbol is null || parseResult.GetValue<string?>(symbol) is not { Length: > 0 } folder)
                 return current;
 
             var given = Path.GetFullPath(folder, current);
@@ -86,6 +88,9 @@ public static class CliApp
             return command is "setup" ? null : current;
         }
     }
+
+    private static bool AsksAboutBit(ParseResult parseResult, string[] args) => args.Any(a => a is "--help" or "-h" or "-?" or "/?")
+        || (args.Contains("--version") && (parseResult.CommandResult.Command is RootCommand || parseResult.CommandResult.Command.Options.Any(o => o.Name is "--version") is false));
 
     public static async Task<int> RunAsync(string[] args)
     {
@@ -113,7 +118,7 @@ public static class CliApp
         services = new CliServices(environment, console, log: log);
         log.Write($"bit {BuildInfo.Version} ({BuildInfo.Commit ?? "local build"}) on {environment.Os} {environment.Architecture}: {string.Join(' ', args.Select(ProcessSpec.Quote))}");
 
-        var isMeta = parseResult.Errors.Count > 0 || command == root || commandName is Tools.AdministratorSession.CommandName || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version");
+        var isMeta = parseResult.Errors.Count > 0 || command == root || commandName is Tools.AdministratorSession.CommandName || AsksAboutBit(parseResult, args);
         var decision = TelemetryDecision.Resolve(environment, services.Settings, BuildInfo.TelemetryConnectionString);
 
         if (isMeta is false && commandName is not "telemetry" && TelemetryNotice.ShouldShow(decision, services.Settings))

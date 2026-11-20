@@ -29,6 +29,9 @@ public static class SetupCommand
 
         shared.AddTo(command);
 
+        var projectOptions = new ProjectOptions();
+        projectOptions.AddTo(command, projectOptions.ServerApi, projectOptions.ServerWeb, projectOptions.AppHost, projectOptions.ClientCore, projectOptions.Web, projectOptions.Maui, projectOptions.Windows, projectOptions.Workbench, projectOptions.LandingPage);
+
         command.SetAction(async (parseResult, cancellationToken) =>
         {
             var cli = services();
@@ -95,6 +98,13 @@ public static class SetupCommand
                 return cli.UsageError(error is null ? "properties-invalid" : "platforms-invalid", usageError);
             }
 
+            var (parts, partsError) = repository is null ? projectOptions.Read(parseResult, cli, directory) : (ProjectParts.None, null);
+
+            if (partsError is not null)
+            {
+                return cli.UsageError("project-part-missing", partsError);
+            }
+
             NewWorkflow.WriteHeader(cli);
 
             var askedPlatforms = false;
@@ -141,17 +151,31 @@ public static class SetupCommand
                 {
                     return cli.UsageError("not-a-project", $"{repository.Url} is cloned in {directory}, but it isn't a bit Boilerplate project (no *.Web.slnf or *.slnx at its root). If git couldn't check its files out, finish that first: cd {ProcessSpec.Quote(directory)} && git restore --source=HEAD :/ && bit setup");
                 }
+
+                (parts, partsError) = projectOptions.Read(parseResult, cli, directory);
+
+                if (partsError is not null)
+                {
+                    return cli.UsageError("project-part-missing", partsError);
+                }
             }
 
-            if (Platforms.BuildsSolution(platforms) && ProjectContext.ReadAppId(directory, name!) is { } appId && ProjectName.IsValidAppId(appId) is false)
+            var context = new ProjectContext { Name = name!, Directory = directory, Platforms = platforms, BuildProperties = properties, Parts = parts };
+
+            if (Platforms.BuildsSolution(platforms) && context.AppId is { } appId && ProjectName.IsValidAppId(appId) is false)
             {
-                return cli.UsageError("app-id-invalid", $"{ProjectContext.FindMauiProject(directory, name!)} gives the native apps the app id {appId}, and each part of an app id must start with a Latin letter and have only Latin letters, digits and underscores. Set a valid <ApplicationId> there, or leave the native apps out of --platforms.");
+                return cli.UsageError("app-id-invalid", $"{context.MauiProject} gives the native apps the app id {appId}, and each part of an app id must start with a Latin letter and have only Latin letters, digits and underscores. Set a valid <ApplicationId> there, or leave the native apps out of --platforms.");
             }
 
-            var context = new ProjectContext { Name = name!, Directory = directory, Platforms = platforms, BuildProperties = properties };
             var aspire = Directory.Exists(context.AppHostDirectory);
-            var requirements = TemplateRequirements.FromProject(directory, name!);
-            var needs = new ToolNeeds { Aspire = aspire, ContainersRequired = aspire && context.NeedsContainers, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+            var requirements = TemplateRequirements.FromProject(context);
+            var needs = new ToolNeeds { Aspire = aspire, ContainersRequired = aspire && context.NeedsContainers, NativeWebAssembly = context.UsesNativeWebAssembly, Platforms = platforms, Ide = IdeLocator.None, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+
+            foreach (var note in context.PartsNotFound(settingUp: true))
+            {
+                cli.Console.Warn(note);
+            }
+
             var hardware = NewWorkflow.ProbeHardwareAsync(cli, directory, cancellationToken);
             var tools = parseResult.GetValue(shared.NoTools)
                 ? []

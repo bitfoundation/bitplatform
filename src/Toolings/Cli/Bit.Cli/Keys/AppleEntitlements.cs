@@ -99,15 +99,15 @@ public sealed partial class AppleEntitlements
     /// <summary>
     /// Finds and reads the entitlements the iOS app of a project's Client.Maui signs with outside Development. Null when it names none.
     /// </summary>
-    public static AppleEntitlements? ForProject(string directory, string projectName) => Find(directory, projectName) is { } path ? Read(path) : null;
+    public static AppleEntitlements? ForProject(ProjectContext project) => Find(project) is { } path ? Read(path) : null;
 
     /// <summary>
     /// The CodesignEntitlements the csproj of a project's Client.Maui sets for iOS outside Development, like bit Boilerplate's
     /// Platforms/iOS/Entitlements.Production.plist, or else Platforms/iOS/Entitlements.plist, which .NET MAUI signs with when it exists.
     /// </summary>
-    public static string? Find(string directory, string projectName)
+    public static string? Find(ProjectContext context)
     {
-        var project = Path.Combine(directory, ProjectContext.FindMauiProject(directory, projectName));
+        var project = Path.Combine(context.Directory, context.MauiProject);
         var folder = Path.GetDirectoryName(project)!;
         string? named;
 
