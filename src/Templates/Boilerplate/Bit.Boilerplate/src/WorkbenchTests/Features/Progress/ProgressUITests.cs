@@ -340,4 +340,58 @@ public class ProgressSamplesUITests : ProgressPageTest
 
         Assert.IsTrue((await Server.Services.GetRequiredService<WorkbenchProgressAgent>().GetTasks(CancellationToken.None)).All(t => t.Id.StartsWith("sample-", StringComparison.Ordinal) is false), "A sample never reaches the review.");
     }
+
+    [TestMethod, EverySurface]
+    public async Task AChoiceQuestion_Should_OfferTheAgentsSuggestionAndTakeAnAnswerInWordsAlone(WorkbenchSurface surface)
+    {
+        await OpenProgress($"progress/{WorkbenchSampleTasks.DeployId}");
+
+        var email = Ask("email");
+        var field = email.GetByRole(AriaRole.Textbox);
+        var send = email.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ProgressSendAnswer });
+        var useSuggestion = email.GetByRole(AriaRole.Button, new() { Name = WorkbenchStrings.ProgressUseSuggestion });
+        var suggestion = WorkbenchStrings.SampleDeployAskEmailSuggestion;
+
+        await Expect(field).ToHaveAttributeAsync("placeholder", suggestion);
+        await Expect(field).ToHaveValueAsync(string.Empty);
+        await Expect(send).ToBeDisabledAsync();
+
+        if (await Page.EvaluateAsync<bool>("() => !!(window.SpeechRecognition || window.webkitSpeechRecognition)"))
+        {
+            var sendBox = (await send.BoundingBoxAsync())!;
+            var microphoneBox = (await email.Locator(".dictation").BoundingBoxAsync())!;
+
+            Assert.IsLessThan(24d, Math.Abs(microphoneBox.X - (sendBox.X + sendBox.Width)), "The microphone sits right beside Send.");
+        }
+
+        if (IsPhone)
+        {
+            await Press(useSuggestion);
+        }
+        else
+        {
+            await field.FocusAsync();
+            await Page.Keyboard.PressAsync("Tab");
+
+            await Expect(field).ToBeFocusedAsync();
+        }
+
+        await Expect(field).ToHaveValueAsync(suggestion);
+        await Expect(useSuggestion).ToHaveCountAsync(0);
+        await Expect(send).ToBeEnabledAsync();
+
+        if (IsPhone is false)
+        {
+            await Page.Keyboard.PressAsync("Tab");
+
+            await Expect(field).Not.ToBeFocusedAsync();
+        }
+
+        await field.FillAsync($"{suggestion}, for a week");
+        await Press(send);
+
+        await Expect(Page.GetByText(WorkbenchStrings.ProgressSampleSentTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(email).ToHaveCountAsync(0);
+        await Expect(Page.Locator(".feed .from-you").First).ToContainTextAsync($"{suggestion}, for a week");
+    }
 }

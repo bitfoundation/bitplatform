@@ -63,9 +63,19 @@
     align-items: center;
 }
 
-// The microphone sits at the far end of the answer's buttons.
-.ask-actions ::deep .ask-dictation {
+// The suggestion's button sits at the far end of the answer's buttons.
+.ask-actions ::deep .ask-suggestion {
     margin-inline-start: auto;
+}
+
+.ask-suggestion kbd {
+    font-size: 12px;
+    padding: 0 0.375rem;
+    font-family: inherit;
+    margin-inline-start: 0.25rem;
+    border-radius: $bit-shape-radius-xs;
+    color: $bit-color-foreground-secondary;
+    border: 1px solid $bit-color-border-secondary;
 }
 
 .ask-where {
