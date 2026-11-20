@@ -349,6 +349,89 @@ public class ProjectBitTests
     }
 
     [TestMethod]
+    public async Task BitDiffWithABitOlderThanTheProject_Should_LookForTheNewestEveryTimeToo()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host, "1.3.0");
+        WriteBitJson(host.WorkingDirectory, "1.4.0", null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.3.0", "1.4.2"));
+        var first = WriteCopy(host, "1.4.2", "bit");
+        RunsCopy(host, 0);
+
+        Assert.AreEqual(0, await host.RunAsync("diff"), host.Output);
+
+        Assert.AreEqual(Path.Combine(first, "bit"), host.Runner.Calls[^1].FileName);
+
+        host.Runner.On("dotnet", "package search", 0, Search("1.3.0", "1.4.2", "1.6.2"));
+        var newest = InstallsCopy(host, "1.6.2", "bit");
+        Official(host, "1.3.0");
+
+        Assert.AreEqual(0, await host.RunAsync("diff"), host.Output);
+
+        Assert.AreEqual(Path.Combine(newest, "bit"), host.Runner.Calls[^1].FileName, "A copy that fits and a lookup made today don't keep bit diff from the newest bit.");
+    }
+
+    [TestMethod]
+    public async Task ANewerBitThatCouldntBeGot_Should_BeTriedAgainBeforeTheNextDay()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var copies = Official(host).CopiesDirectory;
+        WriteBitJson(host.WorkingDirectory, "1.6.0", null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.6.2", "1.7.0"));
+        host.Runner.On("dotnet", "tool install", 1, "error NU1301: Unable to load the service index.");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Couldn't get bit 1.7.0, so bit 1.6.2 goes on.");
+        StringAssert.Contains(host.FlatOutput, "isn't a bit Boilerplate project folder");
+
+        Official(host);
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        Assert.HasCount(2, host.Runner.Calls, "A download that just failed isn't tried again by the next command.");
+
+        foreach (var missed in Directory.GetFiles(copies, ".missed-*"))
+        {
+            File.SetLastWriteTimeUtc(missed, DateTime.UtcNow - SelfUpdate.LookupPause - TimeSpan.FromMinutes(1));
+        }
+
+        var copy = InstallsCopy(host, "1.7.0", "bit");
+        RunsCopy(host, 0);
+        Official(host);
+
+        Assert.AreEqual(0, await host.RunAsync("run"), host.Output);
+
+        Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls[^1].FileName, "It doesn't wait a day for a download that failed once.");
+    }
+
+    [TestMethod]
+    public async Task BitNew_Should_LeaveTodaysLookupsAsTheyAre()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+        var copies = Official(host).CopiesDirectory;
+        WriteBitJson(host.WorkingDirectory, "1.6.0", null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.6.2"));
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        var looked = Directory.GetFiles(copies, ".newest-*").Single();
+        File.SetLastWriteTimeUtc(looked, DateTime.UtcNow - SelfUpdate.LookupPause - TimeSpan.FromMinutes(5));
+
+        Official(host);
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
+
+        Assert.IsTrue(File.Exists(looked), "bit new clears what is older than a day, not the lookup a project made today.");
+
+        File.SetLastWriteTimeUtc(looked, DateTime.UtcNow - SelfUpdate.NewerBitPause - TimeSpan.FromMinutes(5));
+
+        Official(host);
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
+
+        Assert.IsFalse(File.Exists(looked));
+    }
+
+    [TestMethod]
     public async Task BitDiff_Should_LookForTheNewestBitEveryTime()
     {
         using var host = new TestHost(HostOs.Linux);

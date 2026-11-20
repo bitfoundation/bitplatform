@@ -72,9 +72,9 @@ theirs, the rules are already complete.
 
 bit CLI runs a project's commands with the newest bit that works with the template version the project is on. A bit
 older than that version updates itself, so that way around needs no record. The other way around does: `OldestProjects`
-in `src/Toolings/Cli` says from which bit version on a project has to be on which template version at least, and in a
-project older than that, the newest bit from before that version runs the commands. A line is written by hand, in the
-change that leaves older projects behind, so a change can forget it.
+in bit CLI's `ProjectBit.cs` says from which bit version on a project has to be on which template version at least, and
+in a project older than that, the newest bit from before that version runs the commands. A line is written by hand, in
+the change that leaves older projects behind, so a change can forget it.
 
 Read what changed in `src/Toolings/Cli` since the last bump, the commit that moved `ReleaseVersion` to the current
 version: that is what the version being bumped to ships. Then answer one question: does bit as it is now still work on
@@ -82,11 +82,13 @@ every project it worked on at that commit? It does not when bit dropped or renam
 that an older template's skills, docs, workflows or scripts use, when it now looks for a part of the project only where
 the template has it today, or when it no longer reads what an older `bit.json` holds.
 
-- It still works: add nothing. What bit gained, and what it fixed, leaves older projects as they were.
+- It still works: add nothing. What bit gained, what it fixed and what it now only warns about leave older projects as
+  they were.
 - It does not, and no line says so: add one, in the bump's PR. Its bit version is the version being bumped to. Its
   template version is the oldest one whose projects still work: the version being bumped to when the template changed
   in the same period, an older one when the template had already stopped using what bit dropped, which the template's
-  history shows.
+  history shows. Name in the report what bit dropped: bringing it back, such as an option's old name, may be cheaper
+  than leaving older projects on an older bit.
 - A line names a version above the version being bumped to, a wrong guess at the next version: set it to that version,
   since no bit that new exists.
 

@@ -161,6 +161,7 @@ public sealed partial class SelfUpdate(CliServices cli)
         if (executable is null)
         {
             Touch(Note("missed", project));
+            Forget(Note("newest", project));
             cli.Console.Warn($"Couldn't get bit {target}, so bit {CurrentVersion} goes on.");
             return null;
         }
@@ -229,7 +230,7 @@ public sealed partial class SelfUpdate(CliServices cli)
             return null;
         }
 
-        var target = fits ? await FindNewerAsync(project, newestOfAll, cancellationToken) : await FindFittingAsync(project, tooOld, cancellationToken);
+        var target = fits ? await FindNewerAsync(project, newestOfAll, cancellationToken) : await FindFittingAsync(project, tooOld, newestOfAll, cancellationToken);
 
         if (target is null && fits is false)
         {
@@ -239,7 +240,7 @@ public sealed partial class SelfUpdate(CliServices cli)
         return target;
     }
 
-    private async Task<string?> FindFittingAsync(ProjectBit project, bool tooOld, CancellationToken cancellationToken)
+    private async Task<string?> FindFittingAsync(ProjectBit project, bool tooOld, bool now, CancellationToken cancellationToken)
     {
         var comparer = Comparer<string>.Create(CompareVersions);
         var stableOnly = IsPrerelease(CurrentVersion) is false;
@@ -254,7 +255,7 @@ public sealed partial class SelfUpdate(CliServices cli)
         var copies = Copies();
         var copy = Newest(copies);
 
-        if (IsRecent(Note(copy is null ? "missed" : "newest", project), copy is null ? LookupPause : NewerBitPause))
+        if (now is false && LookedLately(project, copy is not null))
             return copy;
 
         var found = await cli.Console.RunWithStatusAsync(tooOld ? "Looking for a newer bit" : "Looking for an older bit", _ => FindVersionsAsync(prerelease: true, CopiesDirectory, cancellationToken));
@@ -276,17 +277,18 @@ public sealed partial class SelfUpdate(CliServices cli)
             .FirstOrDefault();
 
         var copies = Copies();
-        var note = Note("newest", project);
 
-        if (now is false && IsRecent(note, NewerBitPause))
+        if (now is false && LookedLately(project, hasOne: true))
             return Newest(copies);
 
-        Touch(note);
+        Touch(Note("newest", project));
 
         var found = await cli.Console.RunWithStatusAsync("Looking for a newer bit", _ => FindVersionsAsync(prerelease, CopiesDirectory, cancellationToken));
 
         return Newest(found.Concat(copies));
     }
+
+    private bool LookedLately(ProjectBit project, bool hasOne) => IsRecent(Note("missed", project), LookupPause) || (hasOne && IsRecent(Note("newest", project), NewerBitPause));
 
     private string Note(string kind, ProjectBit project) => Path.Combine(CopiesDirectory, $".{kind}-{project.MinVersion ?? "any"}-to-{project.MaxVersion ?? "any"}{(project.TooOldFor is null ? "" : $"-before-{project.TooOldFor}")}");
 
@@ -587,15 +589,20 @@ public sealed partial class SelfUpdate(CliServices cli)
             }
         }
 
-        foreach (var note in Directory.EnumerateFiles(CopiesDirectory, ".*-to-*").Where(file => IsRecent(file, LookupPause) is false).ToList())
+        foreach (var note in Directory.EnumerateFiles(CopiesDirectory, ".*-to-*").Where(file => IsRecent(file, NewerBitPause) is false).ToList())
         {
-            try
-            {
-                File.Delete(note);
-            }
-            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
-            {
-            }
+            Forget(note);
+        }
+    }
+
+    private static void Forget(string file)
+    {
+        try
+        {
+            File.Delete(file);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
         }
     }
 
