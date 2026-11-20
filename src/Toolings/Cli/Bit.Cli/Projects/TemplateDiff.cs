@@ -24,8 +24,6 @@ public sealed record DiffRequest
 
 public sealed record ProjectRecord(string? Version, string? Name, IReadOnlyDictionary<string, string> Options)
 {
-    public string? CliMinVersion { get; init; }
-
     public string? CliMaxVersion { get; init; }
 }
 
@@ -268,7 +266,7 @@ public sealed class TemplateDiff(CliServices cli)
                 }
             }
 
-            return new ProjectRecord(Text("version"), Text("name"), options) { CliMinVersion = TextOf(cli, "minVersion"), CliMaxVersion = TextOf(cli, "maxVersion") };
+            return new ProjectRecord(Text("version"), Text("name"), options) { CliMaxVersion = TextOf(cli, "maxVersion") };
         }
         catch (JsonException)
         {

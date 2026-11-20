@@ -51,7 +51,8 @@ public static class CliApp
     {
         services.Arguments = args;
 
-        if (ProjectFolder(root, parseResult, services, args) is { } folder && await services.SelfUpdate.HandOffToProjectBitAsync(folder, args, CancellationToken.None) is { } exitCode)
+        if (ProjectFolder(root, parseResult, services, args) is { } folder
+            && await services.SelfUpdate.HandOffToProjectBitAsync(folder, args, CancellationToken.None, CommandPath(parseResult.CommandResult, root).FirstOrDefault()) is { } exitCode)
             return exitCode;
 
         return await parseResult.InvokeAsync(configuration);

@@ -8,6 +8,8 @@ namespace Bit.Cli.Tests;
 [TestClass]
 public class ProjectBitTests
 {
+    private static readonly OldestProject[] oldestProjects = [new(SinceBit: "1.5.0", Template: "1.5.0"), new(SinceBit: "1.6.0", Template: "1.5.3")];
+
     [TestMethod]
     [DataRow("1.7.0", null, "1.6.2", false)]
     [DataRow("1.7.0", null, "1.7.0-pre-03", false)]
@@ -26,7 +28,7 @@ public class ProjectBitTests
         using var host = new TestHost();
         WriteBitJson(host.WorkingDirectory, min, max);
 
-        var project = ProjectBit.Find(host.WorkingDirectory);
+        var project = ProjectBit.Find(host.WorkingDirectory, []);
 
         Assert.IsNotNull(project);
         Assert.AreEqual(fits, project.Fits(version));
@@ -40,53 +42,129 @@ public class ProjectBitTests
         var inner = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "src", "Server", "Contoso.Server.Api")).FullName;
         WriteBitJson(host.Root, "1.7.0", null);
 
-        Assert.AreEqual(Path.Combine(host.Root, "bit.json"), ProjectBit.Find(inner)!.FilePath);
+        Assert.AreEqual(Path.Combine(host.Root, "bit.json"), ProjectBit.Find(inner, [])!.FilePath);
 
         WriteBitJson(host.WorkingDirectory, "1.9.0", null);
 
-        Assert.AreEqual("1.9.0", ProjectBit.Find(inner)!.MinVersion);
+        Assert.AreEqual("1.9.0", ProjectBit.Find(inner, [])!.MinVersion);
 
-        File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "version": "1.9.0", "name": "Contoso" }""");
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "name": "Contoso" }""");
 
-        Assert.IsNull(ProjectBit.Find(inner), "A project that names no bit versions takes any bit, whatever a folder above it says.");
+        Assert.IsNull(ProjectBit.Find(inner, []), "A project that doesn't say which version it is on takes any bit, whatever a folder above it says.");
     }
 
     [TestMethod]
-    [DataRow("""{ "cli": { "minVersion": "the newest" } }""")]
-    [DataRow("""{ "cli": { "minVersion": 2 } }""")]
+    [DataRow("""{ "version": "the newest" }""")]
+    [DataRow("""{ "version": 2 }""")]
     [DataRow("""{ "cli": "1.7.0" }""")]
-    [DataRow("""{ "cli": { "minVersion": "1.7.0", "maxVersion": "1.5.0" } }""")]
-    [DataRow("""{ "cli": { "minVersion": "1.7.0" """)]
+    [DataRow("""{ "cli": { "minVersion": "1.7.0" } }""")]
+    [DataRow("""{ "version": "1.7.0" """)]
     [DataRow("")]
     public void ABitJsonThatCantBeRead_Should_TakeAnyBit(string json)
     {
         using var host = new TestHost();
         File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), json);
 
-        Assert.IsNull(ProjectBit.Find(host.WorkingDirectory));
+        Assert.IsNull(ProjectBit.Find(host.WorkingDirectory, []));
     }
 
     [TestMethod]
     public void ABoundThatCantBeRead_Should_LeaveTheOtherOne()
     {
         using var host = new TestHost();
-        File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "cli": { "minVersion": " 1.7.0 ", "maxVersion": "newest" } }""");
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "version": " 1.7.0 ", "cli": { "maxVersion": "newest" } }""");
 
-        var project = ProjectBit.Find(host.WorkingDirectory)!;
+        var project = ProjectBit.Find(host.WorkingDirectory, [])!;
 
         Assert.AreEqual("1.7.0", project.MinVersion);
         Assert.IsNull(project.MaxVersion);
     }
 
     [TestMethod]
-    public void TheTemplatesBitJson_Should_NameTheOldestBitItWorksWith()
+    [DataRow("1.4.0", "1.4.9", true)]
+    [DataRow("1.4.0", "1.5.0-pre-01", true)]
+    [DataRow("1.4.0", "1.5.0", false)]
+    [DataRow("1.4.0", "1.6.2", false)]
+    [DataRow("1.5.0-pre-02", "1.5.0", false)]
+    [DataRow("1.5.0", "1.5.9", true)]
+    [DataRow("1.5.0", "1.6.0-pre-01", true)]
+    [DataRow("1.5.0", "1.6.0", false)]
+    [DataRow("1.5.1", "1.6.2", false)]
+    [DataRow("1.5.3", "1.6.2", true)]
+    [DataRow("1.6.0", "2.0.0", true)]
+    public void TheTemplateAProjectIsOn_Should_SayWhichBitIsTooNewForIt(string template, string version, bool fits)
+    {
+        using var host = new TestHost();
+        WriteBitJson(host.WorkingDirectory, template, null);
+
+        var project = ProjectBit.Find(host.WorkingDirectory, oldestProjects)!;
+
+        Assert.AreEqual(fits, project.Fits(version));
+        Assert.AreEqual(fits is false, project.IsTooOldFor(version));
+        Assert.IsFalse(project.NeedsNewerThan(version));
+    }
+
+    [TestMethod]
+    public void WhatBitJsonSaysAndWhatBitKnows_Should_BothCount()
+    {
+        using var host = new TestHost();
+
+        WriteBitJson(host.WorkingDirectory, "1.4.0", "1.4.5");
+        var project = ProjectBit.Find(host.WorkingDirectory, oldestProjects)!;
+
+        Assert.AreEqual("1.4.0", project.TemplateVersion);
+        Assert.AreEqual("1.5.0", project.TooOldFor);
+        Assert.IsTrue(project.Fits("1.4.5"));
+        Assert.IsFalse(project.Fits("1.4.9"), "The lower of the two is the one that counts.");
+        Assert.IsFalse(project.Fits("1.3.9"), "A bit is never older than the template the project is on.");
+
+        WriteBitJson(host.WorkingDirectory, "1.4.0", "1.9.0");
+
+        Assert.IsFalse(ProjectBit.Find(host.WorkingDirectory, oldestProjects)!.Fits("1.5.0"), "A maxVersion written by hand doesn't make a newer bit work with the project.");
+
+        WriteBitJson(host.WorkingDirectory, "1.4.0", "1.3.5");
+        project = ProjectBit.Find(host.WorkingDirectory, oldestProjects)!;
+
+        Assert.IsTrue(project.Fits("1.3.5"), "A maxVersion below the project's own version was written on purpose, so it's the one that counts.");
+        Assert.IsFalse(project.Fits("1.4.0"));
+        Assert.IsNull(project.MinVersion);
+
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "version": "the newest", "name": "Contoso" }""");
+
+        Assert.IsNull(ProjectBit.Find(host.WorkingDirectory, oldestProjects));
+
+        WriteBitJson(host.WorkingDirectory, "1.4.0", null);
+
+        Assert.IsNull(ProjectBit.Find(host.WorkingDirectory, [new(SinceBit: "soon", Template: "1.5.0"), new(SinceBit: "1.5.0", Template: "later"), new(SinceBit: "1.3.0", Template: "1.5.0")])!.TooOldFor);
+    }
+
+    [TestMethod]
+    public void TheOldestProjectsBitWorksWith_Should_BeVersionsInTheOrderTheyCameOut()
+    {
+        var comparer = Comparer<string>.Create(SelfUpdate.CompareVersions);
+
+        foreach (var oldest in ProjectBit.OldestProjects)
+        {
+            Assert.IsTrue(SelfUpdate.IsValidVersion(oldest.SinceBit), $"{oldest.SinceBit} isn't a bit version.");
+            Assert.IsTrue(SelfUpdate.IsValidVersion(oldest.Template), $"{oldest.Template} isn't a bit Boilerplate version.");
+            Assert.IsTrue(SelfUpdate.CompareVersions(oldest.Template, oldest.SinceBit) <= 0, $"bit {oldest.SinceBit} works with the template of its own version, so the oldest one it works with can't be {oldest.Template}.");
+        }
+
+        CollectionAssert.AreEqual(ProjectBit.OldestProjects.OrderBy(o => o.SinceBit, comparer).ToList(), ProjectBit.OldestProjects.ToList());
+        CollectionAssert.AreEqual(ProjectBit.OldestProjects.OrderBy(o => o.Template, comparer).ToList(), ProjectBit.OldestProjects.ToList(), "A newer bit can't work with an older template than the bit before it did.");
+    }
+
+    [TestMethod]
+    public void TheTemplatesBitJson_Should_SayWhichVersionAProjectIsOn()
     {
         var template = Path.GetDirectoryName(TestHost.RepositoryFile("src", "Templates", "Boilerplate", "Bit.Boilerplate", "bit.json"))!;
 
         var project = ProjectBit.Find(template);
 
-        Assert.IsNotNull(project?.MinVersion, "bit.json of bit Boilerplate needs cli.minVersion, the oldest bit CLI that understands the template.");
-        Assert.IsNull(project.MaxVersion, "The template works with every newer bit.");
+        Assert.IsNotNull(project?.TemplateVersion, "bit.json of bit Boilerplate needs version: it is how bit knows which bit CLI versions work with the project.");
+        Assert.AreEqual(project.TemplateVersion, project.MinVersion);
+        Assert.IsNull(project.MaxVersion, "The template works with every newer bit, until bit says otherwise.");
+        Assert.IsFalse(project.IsTooOldFor(BuildInfo.Version), "The template is never too old for the bit of its own version.");
     }
 
     [TestMethod]
@@ -147,32 +225,343 @@ public class ProjectBitTests
     }
 
     [TestMethod]
-    public async Task ABitThatFitsTheProject_Should_RunTheCommandItself()
+    [DataRow("1.4.0", "1.5.0", "1.4.9")]
+    [DataRow("1.5.1", "1.6.0", "1.5.3")]
+    public async Task ABitTooNewForTheTemplateAProjectIsOn_Should_HandTheCommandToTheNewestThatStillWorksWithIt(string template, string tooOldFor, string target)
     {
         using var host = new TestHost(HostOs.Linux);
-        Official(host);
-        WriteBitJson(host.WorkingDirectory, "1.6.0", "1.6.2");
+        Official(host, oldestProjects: oldestProjects);
+        WriteBitJson(host.WorkingDirectory, template, null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.3.0", "1.4.9", "1.5.0-pre-01", "1.5.0", "1.5.3", "1.6.0-pre-01", "1.6.0", "1.6.2", "1.7.0"));
+        var copy = InstallsCopy(host, target, "bit");
+        RunsCopy(host, 3);
+
+        Assert.AreEqual(3, await host.RunAsync("run", "android"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, $"This project is on bit Boilerplate {template}, too old for bit {tooOldFor} and newer, so bit {target} runs this.");
+        StringAssert.Contains(host.FlatOutput, $"This project is on bit Boilerplate {template}, and 1.6.2 is out. bit diff shows what changed.");
+        CollectionAssert.AreEqual(new[] { "run", "android" }, host.Runner.Calls.Single(c => c.FileName == Path.Combine(copy, "bit") && c.Arguments is not ["--version"]).Arguments.ToArray());
+        Assert.IsEmpty(host.Runner.Detached, "The installed bit is the one newer projects take, so it stays.");
+    }
+
+    [TestMethod]
+    public async Task TheNewestBitAnOlderProjectWorksWith_Should_RunTheCommandItself()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host, "1.4.9", oldestProjects: oldestProjects);
+        WriteBitJson(host.WorkingDirectory, "1.4.0", null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.4.9", "1.5.0", "1.6.2"));
 
         Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
 
+        Assert.IsFalse(host.Output.Contains("runs this", StringComparison.Ordinal), host.Output);
+        Assert.IsFalse(host.Output.Contains("too old", StringComparison.Ordinal), host.Output);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["tool", "install", ..]));
+    }
+
+    [TestMethod]
+    [DataRow("1.6.0", null, true)]
+    [DataRow("1.6.2", null, false)]
+    [DataRow("1.6.0", "GITHUB_ACTIONS", false)]
+    [DataRow("1.6.0", SelfUpdate.OptOutVariable, true)]
+    public async Task AProjectOnAnOlderTemplateThanBit_Should_BeToldThatANewerOneIsOut(string template, string? variable, bool told)
+    {
+        using var host = new TestHost(HostOs.Linux, variable is null ? null : new Dictionary<string, string> { [variable] = "true" });
+        Official(host);
+        WriteBitJson(host.WorkingDirectory, template, null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.6.2"));
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        Assert.AreEqual(told, host.FlatOutput.Contains($"This project is on bit Boilerplate {template}, and 1.6.2 is out. bit diff shows what changed.", StringComparison.Ordinal), host.Output);
         StringAssert.Contains(host.FlatOutput, "isn't a bit Boilerplate project folder");
-        Assert.IsFalse(host.Output.Contains("This project", StringComparison.Ordinal), host.Output);
+    }
+
+    [TestMethod]
+    public async Task NoOlderBitToBeFound_Should_LeaveTheCommandToThisOne()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host, oldestProjects: oldestProjects);
+        WriteBitJson(host.WorkingDirectory, "1.4.0", null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.5.0", "1.6.2"));
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "This project is on bit Boilerplate 1.4.0, too old for bit 1.5.0 and newer, and bit couldn't find an older one, so bit 1.6.2 goes on.");
+        StringAssert.Contains(host.FlatOutput, "isn't a bit Boilerplate project folder");
+    }
+
+    [TestMethod]
+    public async Task WhereBitRunsTheVersionItWasGiven_Should_OnlySayTheProjectIsTooOldForIt()
+    {
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
+        Official(host, oldestProjects: oldestProjects);
+        WriteBitJson(host.WorkingDirectory, "1.4.0", null);
+        WriteCopy(host, "1.4.9", "bit");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "This project is on bit Boilerplate 1.4.0, too old for bit 1.5.0 and newer, and this is bit 1.6.2.");
         Assert.IsEmpty(host.Runner.Calls);
     }
 
     [TestMethod]
-    public async Task ACopyThatFits_Should_RunTheCommandWithoutLookingForANewerOne()
+    [DataRow("1.4.0", null)]
+    [DataRow("1.6.0", "1.6.1")]
+    public async Task BitDiff_Should_NeverBeHandedToAnOlderBit(string template, string? max)
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host, oldestProjects: oldestProjects);
+        WriteBitJson(host.WorkingDirectory, template, max);
+        WriteCopy(host, "1.4.9", "bit");
+        WriteCopy(host, "1.6.1", "bit");
+        RunsCopy(host, 0);
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("diff", "--yes"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "'--yes' isn't a bit Boilerplate version", "It upgrades the project to the version of the bit that runs it, so an older bit would stop at its own.");
+        Assert.IsFalse(host.Output.Contains("This project", StringComparison.Ordinal), host.Output);
+        Assert.IsTrue(host.Runner.Calls.All(c => c.Arguments is ["package", "search", ..]), "It only looks whether a newer bit is out.");
+
+        Official(host, oldestProjects: oldestProjects);
+        Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "This project", "Every other command of that project is the older bit's.");
+    }
+
+    [TestMethod]
+    [DataRow("clean", "1.4.2")]
+    [DataRow("diff", "1.6.2")]
+    public async Task BitDiffInAProjectThatNeedsANewerBit_Should_GoToTheNewestOne(string command, string target)
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host, "1.3.0", oldestProjects: oldestProjects);
+        WriteBitJson(host.WorkingDirectory, "1.4.0", "1.4.5");
+        host.Runner.On("dotnet", "package search", 0, Search("1.3.0", "1.4.2", "1.4.9", "1.6.2"));
+        var copy = InstallsCopy(host, target, "bit");
+        RunsCopy(host, 0);
+
+        Assert.AreEqual(0, await host.RunAsync(command), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, $"This project needs bit 1.4.0 or newer, so bit {target} runs this");
+        Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls[^1].FileName, host.Output);
+        CollectionAssert.AreEqual(new[] { command }, host.Runner.Calls[^1].Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task BitDiffWithABitOlderThanTheProject_Should_LookForTheNewestEveryTimeToo()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host, "1.3.0");
+        WriteBitJson(host.WorkingDirectory, "1.4.0", null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.3.0", "1.4.2"));
+        var first = WriteCopy(host, "1.4.2", "bit");
+        RunsCopy(host, 0);
+
+        Assert.AreEqual(0, await host.RunAsync("diff"), host.Output);
+
+        Assert.AreEqual(Path.Combine(first, "bit"), host.Runner.Calls[^1].FileName);
+
+        host.Runner.On("dotnet", "package search", 0, Search("1.3.0", "1.4.2", "1.6.2"));
+        var newest = InstallsCopy(host, "1.6.2", "bit");
+        Official(host, "1.3.0");
+
+        Assert.AreEqual(0, await host.RunAsync("diff"), host.Output);
+
+        Assert.AreEqual(Path.Combine(newest, "bit"), host.Runner.Calls[^1].FileName, "A copy that fits and a lookup made today don't keep bit diff from the newest bit.");
+    }
+
+    [TestMethod]
+    public async Task ANewerBitThatCouldntBeGot_Should_BeTriedAgainBeforeTheNextDay()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var copies = Official(host).CopiesDirectory;
+        WriteBitJson(host.WorkingDirectory, "1.6.0", null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.6.2", "1.7.0"));
+        host.Runner.On("dotnet", "tool install", 1, "error NU1301: Unable to load the service index.");
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "Couldn't get bit 1.7.0, so bit 1.6.2 goes on.");
+        StringAssert.Contains(host.FlatOutput, "isn't a bit Boilerplate project folder");
+
+        Official(host);
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        Assert.HasCount(2, host.Runner.Calls, "A download that just failed isn't tried again by the next command.");
+
+        foreach (var missed in Directory.GetFiles(copies, ".missed-*"))
+        {
+            File.SetLastWriteTimeUtc(missed, DateTime.UtcNow - SelfUpdate.LookupPause - TimeSpan.FromMinutes(1));
+        }
+
+        var copy = InstallsCopy(host, "1.7.0", "bit");
+        RunsCopy(host, 0);
+        Official(host);
+
+        Assert.AreEqual(0, await host.RunAsync("run"), host.Output);
+
+        Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls[^1].FileName, "It doesn't wait a day for a download that failed once.");
+    }
+
+    [TestMethod]
+    public async Task BitNew_Should_LeaveTodaysLookupsAsTheyAre()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.AllToolsInstalled();
+        var copies = Official(host).CopiesDirectory;
+        WriteBitJson(host.WorkingDirectory, "1.6.0", null);
+        host.Runner.On("dotnet", "package search", 0, Search("1.6.2"));
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        var looked = Directory.GetFiles(copies, ".newest-*").Single();
+        File.SetLastWriteTimeUtc(looked, DateTime.UtcNow - SelfUpdate.LookupPause - TimeSpan.FromMinutes(5));
+
+        Official(host);
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
+
+        Assert.IsTrue(File.Exists(looked), "bit new clears what is older than a day, not the lookup a project made today.");
+
+        File.SetLastWriteTimeUtc(looked, DateTime.UtcNow - SelfUpdate.NewerBitPause - TimeSpan.FromMinutes(5));
+
+        Official(host);
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
+
+        Assert.IsFalse(File.Exists(looked));
+    }
+
+    [TestMethod]
+    public async Task BitDiff_Should_LookForTheNewestBitEveryTime()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host, oldestProjects: oldestProjects);
+        WriteBitJson(host.WorkingDirectory, "1.4.0", "1.4.5");
+        host.Runner.On("dotnet", "package search", 0, Search("1.4.2", "1.6.2"));
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("diff", "--yes"), host.Output);
+
+        host.Runner.On("dotnet", "package search", 0, Search("1.4.2", "1.6.2", "1.7.0"));
+        var copy = InstallsCopy(host, "1.7.0", "bit");
+        RunsCopy(host, 0);
+        Official(host, oldestProjects: oldestProjects);
+
+        Assert.AreEqual(0, await host.RunAsync("diff", "--yes"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "bit 1.7.0 is out, so it runs this, and your installed bit updates to it when the run ends.");
+        Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls[^1].FileName);
+        CollectionAssert.AreEqual(new[] { "diff", "--yes" }, host.Runner.Calls[^1].Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task ABitThatFitsTheProject_Should_RunTheCommandItselfAndLookForANewerOneOnceADay()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        var copies = Official(host).CopiesDirectory;
+        WriteBitJson(host.WorkingDirectory, "1.6.0", "1.6.2");
+        host.Runner.On("dotnet", "package search", 0, Search("1.6.0", "1.6.2", "1.6.3-pre-01", "1.7.0"));
+
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "isn't a bit Boilerplate project folder");
+        Assert.IsFalse(host.Output.Contains("runs this", StringComparison.Ordinal), host.Output);
+
+        var search = host.Runner.Calls.Single();
+        CollectionAssert.AreEqual(new[] { "package", "search", "Bit.Cli", "--exact-match", "--format", "json" }, search.Arguments.ToArray(), "A stable bit looks among the stable ones.");
+        Assert.AreEqual(copies, search.WorkingDirectory);
+
+        Official(host);
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        Assert.HasCount(1, host.Runner.Calls, "It looked today, so the next command doesn't wait for it.");
+
+        foreach (var looked in Directory.GetFiles(copies, ".newest-*"))
+        {
+            File.SetLastWriteTimeUtc(looked, DateTime.UtcNow - SelfUpdate.NewerBitPause - TimeSpan.FromMinutes(1));
+        }
+
+        Official(host);
+        Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+        Assert.HasCount(2, host.Runner.Calls, "A day later it looks again.");
+    }
+
+    [TestMethod]
+    [DataRow("1.6.2", "1.6.0", null, "1.7.0")]
+    [DataRow("1.4.2", "1.4.0", null, "1.4.9")]
+    [DataRow("1.6.2", "1.6.0", "1.6.5", "1.6.4")]
+    [DataRow("1.7.0-pre-01", "1.6.0", null, "1.8.0-pre-01")]
+    public async Task ANewerBitTheProjectWorksWith_Should_RunTheCommandAndReplaceTheInstalledOne(string version, string template, string? max, string target)
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host, version, oldestProjects: oldestProjects);
+        WriteBitJson(host.WorkingDirectory, template, max);
+        host.Runner.On("dotnet", "package search", 0, Search("1.4.2", "1.4.9", "1.5.0", "1.6.2", "1.6.4", "1.7.0", "1.8.0-pre-01"));
+        var copy = InstallsCopy(host, target, "bit");
+        RunsCopy(host, 0);
+
+        Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, $"bit {target} is out, so it runs this, and your installed bit updates to it when the run ends.");
+        StringAssert.Contains(host.FlatOutput, $"This project is on bit Boilerplate {template}, and {target} is out. bit diff shows what changed.");
+        Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls[^1].FileName);
+        CollectionAssert.AreEqual(new[] { "clean" }, host.Runner.Calls[^1].Arguments.ToArray());
+        StringAssert.Contains(host.Runner.Detached.Single().Arguments[^1], $"tool update --global Bit.Cli --version {target}");
+    }
+
+    [TestMethod]
+    public async Task ANewerCopyThatIsAlreadyHere_Should_RunTheCommand()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        Official(host);
+        WriteBitJson(host.WorkingDirectory, "1.6.0", null);
+        WriteCopy(host, "1.6.9-pre-01", "bit");
+        var copy = WriteCopy(host, "1.6.5", "bit");
+        RunsCopy(host, 0);
+
+        Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
+
+        Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls[^1].FileName, "A stable bit doesn't move to a prerelease.");
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["tool", "install", ..]));
+    }
+
+    [TestMethod]
+    public async Task WhereBitRunsTheVersionItWasGiven_Should_NeverLookForANewerOne()
+    {
+        await AssertStaysAsync(h => Official(h), new() { ["GITHUB_ACTIONS"] = "true" });
+        await AssertStaysAsync(h => Official(h), new() { [SelfUpdate.OptOutVariable] = "1" });
+        await AssertStaysAsync(h => Official(h, install: "dnx"));
+        await AssertStaysAsync(h => Official(h, install: "tool-path"));
+
+        static async Task AssertStaysAsync(Action<TestHost> update, Dictionary<string, string>? variables = null)
+        {
+            using var host = new TestHost(HostOs.Linux, variables);
+            update(host);
+            WriteBitJson(host.WorkingDirectory, "1.6.0", null);
+            WriteCopy(host, "1.7.0", "bit");
+
+            Assert.AreEqual(CliApp.ExitUsage, await host.RunAsync("run"), host.Output);
+
+            Assert.IsFalse(host.Output.Contains("runs this", StringComparison.Ordinal), host.Output);
+            Assert.IsEmpty(host.Runner.Calls);
+        }
+    }
+
+    [TestMethod]
+    public async Task ACopyThatFits_Should_RunTheCommandWithoutLookingAgainThatDay()
     {
         using var host = new TestHost(HostOs.Linux);
         WriteBitJson(host.WorkingDirectory, "1.7.0", null);
         var older = WriteCopy(host, "1.6.9", "bit");
         var copy = WriteCopy(host, "1.7.1", "bit");
+        host.Runner.On("dotnet", "package search", 0, Search("1.6.9", "1.7.1"));
         RunsCopy(host, 0);
 
         Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
 
         StringAssert.Contains(host.FlatOutput, "This project needs bit 1.7.0 or newer, so bit 1.7.1 runs this, and your installed bit updates to it when the run ends.");
-        Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls.Single().FileName);
+        Assert.HasCount(2, host.Runner.Calls, "It looks once whether a newer one is out.");
+        Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls[^1].FileName);
         StringAssert.Contains(host.Runner.Detached.Single().Arguments[^1], "tool update --global Bit.Cli --version 1.7.1");
         Assert.IsTrue(File.Exists(Path.Combine(copy, SelfUpdate.ProjectMarker)));
         Assert.IsFalse(File.Exists(Path.Combine(older, SelfUpdate.ProjectMarker)));
@@ -180,9 +569,9 @@ public class ProjectBitTests
         Official(host);
         Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
 
-        Assert.HasCount(2, host.Runner.Calls);
+        Assert.HasCount(3, host.Runner.Calls, "It looked today, so the copy runs the next command right away.");
         Assert.HasCount(1, host.Runner.Detached, "The update that was just started isn't started again by the next command.");
-        StringAssert.EndsWith(host.FlatOutput.TrimEnd(), "so bit 1.7.1 runs this.");
+        StringAssert.Contains(host.FlatOutput, "so bit 1.7.1 runs this. ");
 
         File.SetLastWriteTimeUtc(Path.Combine(copy, SelfUpdate.UpdateMarker), DateTime.UtcNow - SelfUpdate.UpdatePause - TimeSpan.FromMinutes(1));
         Official(host);
@@ -214,9 +603,9 @@ public class ProjectBitTests
         Assert.HasCount(1, host.Runner.Calls.Where(c => c.Arguments is ["package", "search", ..]).ToList(), "It doesn't look again right away.");
         Assert.AreEqual(Path.Combine(prerelease, "bit"), host.Runner.Calls[^1].FileName);
 
-        foreach (var lookedUp in Directory.GetFiles(Official(host).CopiesDirectory, ".looked-up-*"))
+        foreach (var lookedUp in Directory.GetFiles(Official(host).CopiesDirectory, ".newest-*"))
         {
-            File.SetLastWriteTimeUtc(lookedUp, DateTime.UtcNow - SelfUpdate.LookupPause - TimeSpan.FromMinutes(1));
+            File.SetLastWriteTimeUtc(lookedUp, DateTime.UtcNow - SelfUpdate.NewerBitPause - TimeSpan.FromMinutes(1));
         }
 
         Assert.AreEqual(0, await host.RunAsync("clean"), host.Output);
@@ -374,7 +763,7 @@ public class ProjectBitTests
 
         await Assert.ThrowsAsync<OperationCanceledException>(() => host.Services.SelfUpdate.HandOffToProjectBitAsync(host.WorkingDirectory, ["clean"], stopped.Token));
 
-        Assert.IsEmpty(host.Runner.Calls);
+        Assert.IsFalse(host.Runner.Calls.Any(c => Path.GetFileNameWithoutExtension(c.FileName) is "bit"));
         Assert.IsEmpty(host.Runner.Detached);
     }
 
@@ -420,7 +809,7 @@ public class ProjectBitTests
 
         Assert.AreEqual(0, await host.RunAsync(command.Split(' ')), host.Output);
 
-        var handOff = host.Runner.Calls.Single();
+        var handOff = host.Runner.Calls.Single(c => c.FileName == Path.Combine(copy, "bit"));
         Assert.AreEqual(Path.Combine(copy, "bit"), handOff.FileName);
         CollectionAssert.AreEqual(command.Split(' '), handOff.Arguments.ToArray());
     }
@@ -450,7 +839,7 @@ public class ProjectBitTests
 
         Assert.AreEqual(0, await host.RunAsync(arguments), host.Output);
 
-        var handOff = host.Runner.Calls.Single();
+        var handOff = host.Runner.Calls.Single(c => c.FileName == Path.Combine(copy, "bit"));
         Assert.AreEqual(Path.Combine(copy, "bit"), handOff.FileName);
         Assert.AreEqual(host.WorkingDirectory, handOff.WorkingDirectory);
         CollectionAssert.AreEqual(arguments, handOff.Arguments.ToArray());
@@ -585,9 +974,9 @@ public class ProjectBitTests
         Assert.AreEqual(Path.Combine(copy, "bit"), host.Runner.Calls[^1].FileName);
     }
 
-    private static SelfUpdate Official(TestHost host, string version = "1.6.2", string install = "tool")
+    private static SelfUpdate Official(TestHost host, string version = "1.6.2", string install = "tool", IReadOnlyList<OldestProject>? oldestProjects = null)
     {
-        return host.Services.SelfUpdate = new SelfUpdate(host.Services) { CurrentVersion = version, IsOfficialBuild = true, InstallMethod = install };
+        return host.Services.SelfUpdate = new SelfUpdate(host.Services) { CurrentVersion = version, IsOfficialBuild = true, InstallMethod = install, OldestProjects = oldestProjects ?? [] };
     }
 
     private static void RunsCopy(TestHost host, int exitCode)
@@ -601,21 +990,21 @@ public class ProjectBitTests
         host.Runner.On("bit", "--version", 0);
     }
 
-    private static void WriteBitJson(string directory, string? min, string? max)
+    private static void WriteBitJson(string directory, string? version, string? max)
     {
         Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, "bit.json"), JsonSerializer.Serialize(new Dictionary<string, object>
+        File.WriteAllText(Path.Combine(directory, "bit.json"), JsonSerializer.Serialize(new Dictionary<string, object?>
         {
             ["template"] = "bit-bp",
-            ["version"] = "1.6.0",
-            ["cli"] = new Dictionary<string, string?> { ["minVersion"] = min, ["maxVersion"] = max }.Where(v => v.Value is not null).ToDictionary(),
+            ["version"] = version,
+            ["cli"] = max is null ? null : new Dictionary<string, string> { ["maxVersion"] = max },
             ["name"] = "Contoso"
-        }));
+        }.Where(v => v.Value is not null).ToDictionary()));
     }
 
-    private static void WriteProject(string directory, string min)
+    private static void WriteProject(string directory, string version)
     {
-        WriteBitJson(directory, min, null);
+        WriteBitJson(directory, version, null);
         File.WriteAllText(Path.Combine(directory, "Contoso.slnx"), "<Solution />");
     }
 

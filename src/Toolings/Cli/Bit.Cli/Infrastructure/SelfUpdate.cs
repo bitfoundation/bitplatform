@@ -24,9 +24,15 @@ public sealed partial class SelfUpdate(CliServices cli)
 
     public static readonly IReadOnlySet<string> CommandsWithoutAProject = new HashSet<string> { "new", "remove", "decode", "trust", "update", "about", "telemetry", Tools.AdministratorSession.CommandName };
 
+    public static readonly TimeSpan NewerBitPause = TimeSpan.FromDays(1);
+
+    public static readonly IReadOnlySet<string> CommandsOfTheNewestBit = new HashSet<string> { "diff" };
+
     private readonly HashSet<string> checkedProjects = new(cli.Environment.IsLinux ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase);
 
     public string CurrentVersion { get; init; } = BuildInfo.Version;
+
+    public IReadOnlyList<OldestProject> OldestProjects { get; init; } = ProjectBit.OldestProjects;
 
     public bool IsOfficialBuild { get; init; } = BuildInfo.IsOfficialBuild;
 
@@ -94,11 +100,11 @@ public sealed partial class SelfUpdate(CliServices cli)
         return result.NotFound ? null : result.ExitCode;
     }
 
-    public async Task<int?> HandOffToProjectBitAsync(string directory, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    public async Task<int?> HandOffToProjectBitAsync(string directory, IReadOnlyList<string> arguments, CancellationToken cancellationToken, string? command = null)
     {
         try
         {
-            return await HandOffToFittingBitAsync(directory, arguments, cancellationToken);
+            return await HandOffToFittingBitAsync(directory, arguments, command, cancellationToken);
         }
         catch (Exception exp) when (exp is not OperationCanceledException)
         {
@@ -108,52 +114,54 @@ public sealed partial class SelfUpdate(CliServices cli)
         }
     }
 
-    private async Task<int?> HandOffToFittingBitAsync(string directory, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    private async Task<int?> HandOffToFittingBitAsync(string directory, IReadOnlyList<string> arguments, string? command, CancellationToken cancellationToken)
     {
         if (IsOfficialBuild is false || cli.Environment.GetVariable(HandedOffVariable) is not null)
             return null;
 
-        if (ProjectBit.Find(directory) is not { } project || project.Fits(CurrentVersion) || checkedProjects.Add(project.FilePath) is false)
+        var project = ProjectBit.Find(directory, OldestProjects);
+        var newestOfAll = command is not null && CommandsOfTheNewestBit.Contains(command);
+
+        if (newestOfAll)
+        {
+            project = (project ?? new ProjectBit(directory, null, null)) with { MaxVersion = null, TooOldFor = null };
+        }
+
+        if (project is null || checkedProjects.Add(project.FilePath) is false)
             return null;
 
+        var fits = project.Fits(CurrentVersion);
         var tooOld = project.NeedsNewerThan(CurrentVersion);
-        var needs = tooOld ? $"needs bit {project.MinVersion} or newer" : $"works with bit up to {project.MaxVersion}";
+        var needs = tooOld ? $"needs bit {project.MinVersion} or newer"
+            : project.IsTooOldFor(CurrentVersion) ? $"is on bit Boilerplate {project.TemplateVersion}, too old for bit {project.TooOldFor} and newer"
+            : $"works with bit up to {project.MaxVersion}";
 
-        cli.Log.Write($"{project.FilePath}: this project {needs}, and this is bit {CurrentVersion}");
+        var target = await FindOtherBitAsync(project, fits, tooOld, needs, newestOfAll, cancellationToken);
+        var updateInstalled = target is not null && CompareVersions(target, CurrentVersion) > 0 && (IsPrerelease(CurrentVersion) || IsPrerelease(target) is false) && IsRecent(Path.Combine(CopiesDirectory, target, UpdateMarker), UpdatePause) is false;
 
-        if (InstallMethod is not "tool" || cli.Environment.IsCI || cli.Environment.IsVariableTrue(OptOutVariable))
+        if (target is not null)
         {
-            cli.Console.Warn($"This project {needs}, and this is bit {CurrentVersion}.");
-            return null;
+            var andUpdates = updateInstalled ? ", and your installed bit updates to it when the run ends" : "";
+
+            cli.Console.Text(fits ? $"bit {target} is out, so it runs this{andUpdates}." : $"This project {needs}, so bit {target} runs this{andUpdates}.");
         }
 
-        try
-        {
-            Directory.CreateDirectory(CopiesDirectory);
-        }
-        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
-        {
-            cli.Console.Warn($"This project {needs}, and bit can't write to {CopiesDirectory}, so bit {CurrentVersion} goes on.");
-            return null;
-        }
+        var newest = target is not null && CompareVersions(target, CurrentVersion) > 0 ? target : CurrentVersion;
 
-        var target = await FindFittingAsync(project, tooOld, cancellationToken);
+        if (newestOfAll is false && cli.Environment.IsCI is false && project.TemplateVersion is { } on && CompareVersions(on, newest) < 0)
+        {
+            cli.Console.Warn($"This project is on bit Boilerplate {on}, and {newest} is out. bit diff shows what changed.");
+        }
 
         if (target is null)
-        {
-            cli.Console.Warn($"This project {needs}, and bit couldn't find one, so bit {CurrentVersion} goes on.");
             return null;
-        }
-
-        var updateInstalled = tooOld && (IsPrerelease(CurrentVersion) || IsPrerelease(target) is false) && IsRecent(Path.Combine(CopiesDirectory, target, UpdateMarker), UpdatePause) is false;
-
-        cli.Console.Text($"This project {needs}, so bit {target} runs this{(updateInstalled ? ", and your installed bit updates to it when the run ends" : "")}.");
 
         var executable = await GetCopyAsync(target, CopiesDirectory, cancellationToken);
 
         if (executable is null)
         {
             Touch(Note("missed", project));
+            Forget(Note("newest", project));
             cli.Console.Warn($"Couldn't get bit {target}, so bit {CurrentVersion} goes on.");
             return null;
         }
@@ -191,30 +199,98 @@ public sealed partial class SelfUpdate(CliServices cli)
         return result.ExitCode;
     }
 
-    private async Task<string?> FindFittingAsync(ProjectBit project, bool tooOld, CancellationToken cancellationToken)
+    private async Task<string?> FindOtherBitAsync(ProjectBit project, bool fits, bool tooOld, string needs, bool newestOfAll, CancellationToken cancellationToken)
     {
-        var comparer = Comparer<string>.Create(CompareVersions);
-        var stableOnly = IsPrerelease(CurrentVersion) is false;
-        var copies = Copies().Where(project.Fits).OrderDescending(comparer).ToList();
-        var copy = (stableOnly ? copies.FirstOrDefault(v => IsPrerelease(v) is false) : null) ?? copies.FirstOrDefault();
+        if (fits is false)
+        {
+            cli.Log.Write($"{project.FilePath}: this project {needs}, and this is bit {CurrentVersion}");
+        }
 
-        if (copy is not null && (stableOnly is false || IsPrerelease(copy) is false))
-            return copy;
+        if (InstallMethod is not "tool" || cli.Environment.IsCI || cli.Environment.IsVariableTrue(OptOutVariable))
+        {
+            if (fits is false)
+            {
+                cli.Console.Warn($"This project {needs}, and this is bit {CurrentVersion}.");
+            }
 
-        if (IsRecent(Note(copy is null ? "missed" : "looked-up", project), LookupPause))
-            return copy;
+            return null;
+        }
 
-        var found = (await cli.Console.RunWithStatusAsync(tooOld ? "Looking for a newer bit" : "Looking for an older bit", _ => FindVersionsAsync(prerelease: true, CopiesDirectory, cancellationToken)))
-            .Where(project.Fits).OrderDescending(comparer).ToList();
+        try
+        {
+            Directory.CreateDirectory(CopiesDirectory);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            if (fits is false)
+            {
+                cli.Console.Warn($"This project {needs}, and bit can't write to {CopiesDirectory}, so bit {CurrentVersion} goes on.");
+            }
 
-        var target = (stableOnly ? found.FirstOrDefault(v => IsPrerelease(v) is false) : null) ?? copy ?? found.FirstOrDefault();
+            return null;
+        }
 
-        Touch(Note(target is null ? "missed" : "looked-up", project));
+        var target = fits ? await FindNewerAsync(project, newestOfAll, cancellationToken) : await FindFittingAsync(project, tooOld, newestOfAll, cancellationToken);
+
+        if (target is null && fits is false)
+        {
+            cli.Console.Warn($"This project {needs}, and bit couldn't find {(tooOld ? "one" : "an older one")}, so bit {CurrentVersion} goes on.");
+        }
 
         return target;
     }
 
-    private string Note(string kind, ProjectBit project) => Path.Combine(CopiesDirectory, $".{kind}-{project.MinVersion ?? "any"}-to-{project.MaxVersion ?? "any"}");
+    private async Task<string?> FindFittingAsync(ProjectBit project, bool tooOld, bool now, CancellationToken cancellationToken)
+    {
+        var comparer = Comparer<string>.Create(CompareVersions);
+        var stableOnly = IsPrerelease(CurrentVersion) is false;
+
+        string? Newest(IEnumerable<string> versions)
+        {
+            var fitting = versions.Where(project.Fits).OrderDescending(comparer).ToList();
+
+            return (stableOnly ? fitting.FirstOrDefault(v => IsPrerelease(v) is false) : null) ?? fitting.FirstOrDefault();
+        }
+
+        var copies = Copies();
+        var copy = Newest(copies);
+
+        if (now is false && LookedLately(project, copy is not null))
+            return copy;
+
+        var found = await cli.Console.RunWithStatusAsync(tooOld ? "Looking for a newer bit" : "Looking for an older bit", _ => FindVersionsAsync(prerelease: true, CopiesDirectory, cancellationToken));
+        var target = Newest(found.Concat(copies));
+
+        Touch(Note(target is null ? "missed" : "newest", project));
+
+        return target;
+    }
+
+    private async Task<string?> FindNewerAsync(ProjectBit project, bool now, CancellationToken cancellationToken)
+    {
+        var comparer = Comparer<string>.Create(CompareVersions);
+        var prerelease = IsPrerelease(CurrentVersion);
+
+        string? Newest(IEnumerable<string> versions) => versions
+            .Where(v => project.Fits(v) && CompareVersions(v, CurrentVersion) > 0 && (prerelease || IsPrerelease(v) is false))
+            .OrderDescending(comparer)
+            .FirstOrDefault();
+
+        var copies = Copies();
+
+        if (now is false && LookedLately(project, hasOne: true))
+            return Newest(copies);
+
+        Touch(Note("newest", project));
+
+        var found = await cli.Console.RunWithStatusAsync("Looking for a newer bit", _ => FindVersionsAsync(prerelease, CopiesDirectory, cancellationToken));
+
+        return Newest(found.Concat(copies));
+    }
+
+    private bool LookedLately(ProjectBit project, bool hasOne) => IsRecent(Note("missed", project), LookupPause) || (hasOne && IsRecent(Note("newest", project), NewerBitPause));
+
+    private string Note(string kind, ProjectBit project) => Path.Combine(CopiesDirectory, $".{kind}-{project.MinVersion ?? "any"}-to-{project.MaxVersion ?? "any"}{(project.TooOldFor is null ? "" : $"-before-{project.TooOldFor}")}");
 
     private async Task<bool> ClaimInstalledUpdateAsync(string version, CancellationToken cancellationToken)
     {
@@ -513,15 +589,20 @@ public sealed partial class SelfUpdate(CliServices cli)
             }
         }
 
-        foreach (var note in Directory.EnumerateFiles(CopiesDirectory, ".*-to-*").Where(file => IsRecent(file, LookupPause) is false).ToList())
+        foreach (var note in Directory.EnumerateFiles(CopiesDirectory, ".*-to-*").Where(file => IsRecent(file, NewerBitPause) is false).ToList())
         {
-            try
-            {
-                File.Delete(note);
-            }
-            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
-            {
-            }
+            Forget(note);
+        }
+    }
+
+    private static void Forget(string file)
+    {
+        try
+        {
+            File.Delete(file);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
         }
     }
 

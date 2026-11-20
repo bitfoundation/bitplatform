@@ -586,11 +586,11 @@ When you open the project in VS Code, you'll be prompted to install these extens
 
 **Location**: [`/bit.json`](/bit.json)
 
-**Purpose**: Records how the project was created, for the [bit CLI](https://www.nuget.org/packages/Bit.Cli) and for you: the template (`bit-bp`), its version, the bit CLI versions the project works with, the project's name, and the value of every template option.
+**Purpose**: Records how the project was created, for the [bit CLI](https://www.nuget.org/packages/Bit.Cli) and for you: the template (`bit-bp`), its version, the project's name, and the value of every template option.
 
 **Who uses it**: `bit diff` and the `template-diff` skill read the version and the options to create the project again on either side of a change: the old and the new template version, the old and the new .NET version, or one feature switched off and on. The skill updates what changed in it - the version, the framework or the feature's option - and new options arrive through the diff like any other change. `Boilerplate.Server.Api`'s build reads the version too, and the app serves it as `bit_template_version` in its OAuth protected resource metadata, so a monitor can tell which template version an app is on.
 
-**The bit CLI it works with**: `cli.minVersion` is the oldest bit CLI that understands the project, and `cli.maxVersion`, when you add it, the newest. In the project's folder, a bit outside them hands the command to one that fits, so everyone on the team runs the project's commands with a bit that understands it.
+**The bit CLI it works with**: in the project's folder, bit runs the project's commands with the newest bit CLI that works with the version recorded here, so everyone on the team runs them with the same one. A bit CLI older than that version updates itself, and one that has become too new for it runs them with an older one until the project is upgraded. When a bit CLI turns out not to work with the project, add `"cli": { "maxVersion": "..." }` with the newest one that does.
 
 **Keep it**: the bit CLI may keep more of what it needs to know about the project here. Edit an option's value when you change the project in a way that matches another option, such as removing Aspire, so the next upgrade compares the right templates.
 
