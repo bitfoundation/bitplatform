@@ -3,8 +3,10 @@
 public sealed record ProductLink(string Title, string Description, string Url, bool External = false, bool Disabled = false);
 
 /// <summary>
-/// The one list of bit platform products, shared by the header Products menu and the products page,
-/// so adding, renaming or re-describing an entry is a single edit and the two can never disagree.
+/// The one list of bit platform products. The header Products menu, the footer and the products
+/// page (its Core and Utilities accordions, and its Toolings cards) all list exactly these entries,
+/// in this order, so adding, renaming or re-linking a product is a single edit. The accordions only
+/// add their long-form copy on top, matched by URL, and fall back to the description here.
 /// </summary>
 public static class ProductCatalog
 {
@@ -48,4 +50,9 @@ public static class ProductCatalog
         new("Code Analyzers", "Best practices checked as you type", Urls.CodeAnalyzers),
         new("Source Generators", "Less code to write and review", Urls.SourceGenerators),
     ];
+
+    /// <summary>
+    /// Every entry above, in order. Declared last, as static fields initialize in declaration order.
+    /// </summary>
+    public static readonly ProductLink[] All = [.. Main, .. Utilities, .. Toolings];
 }

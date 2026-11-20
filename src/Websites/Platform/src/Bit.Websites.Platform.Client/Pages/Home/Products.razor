@@ -21,7 +21,7 @@
             <ChildContent>
                 <div class="content-container">
                     @product.Body
-                    <BitLink Class="template-link" Href="@product.LinkUrl" Target="@(product.External ? "_blank" : null)" NoColor NoUnderline>
+                    <BitLink Class="template-link" Href="@product.Product.Url" Target="@(product.Product.External ? "_blank" : null)" NoColor NoUnderline>
                         Learn more <span class="template-link-arrow"></span>
                     </BitLink>
                 </div>
@@ -31,6 +31,17 @@
 </div>
 
 @code {
+    // A catalog entry with no hand-written accordion yet still gets listed, with its catalog description.
+    private ProductAccordionItem CreateFallbackProduct(ProductLink product) => new()
+    {
+        Title = product.Title,
+        Subtitle = $"bit {product.Title} · {product.Description}",
+        LinkUrl = product.Url,
+        Body = @<text>
+            <BitText Typography="BitTypography.Subtitle1" Gutter>@product.Description</BitText>
+        </text>
+    };
+
     private ProductAccordionItem[] CreateCoreProducts() =>
     [
         new()
@@ -61,7 +72,6 @@
             Title = "100+ components, from inputs to data grids",
             Subtitle = "bit BlazorUI · Blazor components with built-in theming",
             LinkUrl = Urls.BlazorUI,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit BlazorUI covers everything from inputs and date pickers to a data grid, charts, maps, a PDF viewer, a rich text editor
@@ -82,7 +92,6 @@
             Title = "130+ browser APIs, called from C#",
             Subtitle = "bit Butil · browser APIs as typed C# services",
             LinkUrl = Urls.Butil,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Butil turns storage, clipboard, geolocation, camera, Bluetooth, passkeys, crypto, workers and more into injectable,
@@ -107,7 +116,6 @@
             Title = "Offline-ready, with updates users can see",
             Subtitle = "bit Bswup · service worker with update progress",
             LinkUrl = Urls.Bswup,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bswup caches your Blazor app for offline use and shows real download progress on the first load and on every update.
@@ -129,7 +137,6 @@
             Title = "Routing with guards and data loaders",
             Subtitle = "bit Brouter · nested, declarative Blazor router",
             LinkUrl = Urls.Brouter,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Brouter adds what the built-in router lacks: async and leave guards, cached data loaders with link preloading,
@@ -155,7 +162,6 @@
             Title = "Fluid animation, declared in Razor",
             Subtitle = "bit Bmotion · Motion-style animation for Blazor",
             LinkUrl = Urls.Bmotion,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bmotion brings springs, gestures, drag, exit and layout animations to your markup the way Motion (Framer Motion) does.
@@ -176,7 +182,6 @@
             Title = "Edit and shrink images before upload",
             Subtitle = "bit Bmage · image editor and processing engine",
             LinkUrl = Urls.Bmage,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bmage crops, resizes, adjusts and annotates images with its own C# codecs, then exports them to a file-size budget
@@ -198,7 +203,6 @@
             Title = "Your EF Core model, client-side",
             Subtitle = "bit Bsqlite · SQLite and EF Core in the browser",
             LinkUrl = Urls.Bsqlite,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bsqlite runs SQLite and the stock EF Core provider inside the browser - or on a device file in Blazor Hybrid -
@@ -221,7 +225,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "From signature pad to whiteboard",
             Subtitle = "bit Bink · drawing and ink engine",
             LinkUrl = Urls.Bink,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bink turns pressure-sensitive pen, touch and mouse input into an editable vector document - with brushes, shapes,
@@ -242,7 +245,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "A Ctrl+K command palette for your app",
             Subtitle = "bit Balette · keyboard-first command palette",
             LinkUrl = Urls.Balette,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Balette gives your app the Ctrl+K / ⌘K box from VS Code, Linear and Raycast: fuzzy, typo-tolerant search over every
@@ -260,7 +262,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "Scan barcodes without an SDK",
             Subtitle = "bit BbScanner · camera and image barcode scanner",
             LinkUrl = Urls.BbScanner,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit BbScanner reads 19 symbologies - QR, Data Matrix, PDF417, Aztec, EAN/UPC, GS1 DataBar and more - from the camera
@@ -279,7 +280,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "Drag and drop for every input",
             Subtitle = "bit Bdnd · typed drag and drop for Blazor",
             LinkUrl = Urls.Bdnd,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bdnd turns drag sources and drop targets into components that pass strongly typed items, matched by type. Mouse,
@@ -299,7 +299,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "Instant queries, no SQL or interop",
             Subtitle = "bit BlazeDb · in-memory database for Blazor WebAssembly",
             LinkUrl = Urls.BlazeDb,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit BlazeDb keeps rows in memory as your own typed objects, so a read is an index lookup - no JS interop, no SQL.
@@ -315,7 +314,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "Build node editors and workflows",
             Subtitle = "bit Blow · node-based editors and flow charts",
             LinkUrl = Urls.Blow,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Blow is a Blazor counterpart to React Flow: pan, zoom, connect, group and auto-lay out nodes, with undo/redo and
@@ -334,7 +332,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "Describe a form once, render it anywhere",
             Subtitle = "bit Borm · schema-driven forms for Blazor",
             LinkUrl = Urls.Borm,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Borm builds a working form from a C# type, a fluent builder or a JSON Schema the server sends. It handles validation,
@@ -351,7 +348,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "Shared editing, online or offline",
             Subtitle = "bit Bcrdt · real-time collaboration for Blazor",
             LinkUrl = Urls.Bcrdt,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bcrdt lets several people edit the same text, list or form at once, and every copy ends up identical - even after
@@ -370,7 +366,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "Guide new users step by step",
             Subtitle = "bit Bonboarding · product tours, hints and checklists",
             LinkUrl = Urls.Bonboarding,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bonboarding builds multi-step tours, spotlights, beacons and self-checking checklists in Razor. Steps can wait for
@@ -392,7 +387,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "Drag to reorder, by mouse or keyboard",
             Subtitle = "bit Bortable · drag-and-drop lists and boards",
             LinkUrl = Urls.Bortable,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bortable reorders a list, or moves items between lists that share a group - kanban boards, palettes, nested trees.
@@ -414,7 +408,6 @@ _open = await _live.RefreshAsync();</CodeBox>
             Title = "State management without the boilerplate",
             Subtitle = "bit Blex · reactive state for Blazor and .NET MAUI",
             LinkUrl = Urls.Blex,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     Mark fields and methods with attributes and the bit Blex source generator writes the store - reactive properties,
@@ -437,7 +430,6 @@ public partial class CounterStore
             Title = "Browser and .NET telemetry, one SDK",
             Subtitle = "bit Belemetry · OpenTelemetry-compatible telemetry for Blazor",
             LinkUrl = Urls.Belemetry,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Belemetry collects page views, web vitals, JS errors and fetch calls from the browser, plus ILogger, Activity and
@@ -458,7 +450,6 @@ public partial class CounterStore
             Title = "Accessible components, your styles",
             Subtitle = "bit Bheadless · unstyled, accessible UI primitives",
             LinkUrl = Urls.Bheadless,
-            External = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit Bheadless gives you menus, comboboxes, dialogs, date pickers, data grids and more, with keyboard interaction, focus,

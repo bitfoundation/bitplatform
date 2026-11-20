@@ -201,12 +201,9 @@
         justify-content: center;
 
         .theme-icon {
-            transition: transform 300ms $MotionEase 0ms;
-        }
-
-        .bit-img-img {
             width: 19px;
             height: 19px;
+            transition: transform 300ms $MotionEase 0ms;
         }
     }
 

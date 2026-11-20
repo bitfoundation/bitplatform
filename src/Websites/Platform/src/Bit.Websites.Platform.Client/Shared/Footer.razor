@@ -10,39 +10,17 @@
         </div>
         <div class="footer-links-container">
             <div class="footer-col footer-products">
-                <BitText Typography="BitTypography.Inherit" Element="h3" Class="footer-col-title">Products</BitText>
+                <BitText Typography="BitTypography.Inherit" Element="h3" Class="footer-col-title" Color="BitColor.PrimaryForeground">Products</BitText>
                 <div class="footer-product-links">
-                    <BitLink Class="footer-link" Href="@Urls.Butil" NoColor NoUnderline>Butil</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bswup" NoColor NoUnderline>Bswup</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Brouter" NoColor NoUnderline>Brouter</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bmotion" NoColor NoUnderline>Bmotion</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bmage" NoColor NoUnderline>Bmage</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bsqlite" NoColor NoUnderline>Bsqlite</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bink" NoColor NoUnderline>Bink</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Balette" NoColor NoUnderline>Balette</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.BbScanner" NoColor NoUnderline>BbScanner</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bdnd" NoColor NoUnderline>Bdnd</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.BlazeDb" NoColor NoUnderline>BlazeDb</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Blow" NoColor NoUnderline>Blow</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Borm" NoColor NoUnderline>Borm</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bcrdt" NoColor NoUnderline>Bcrdt</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bonboarding" NoColor NoUnderline>Bonboarding</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bortable" NoColor NoUnderline>Bortable</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Blex" NoColor NoUnderline>Blex</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Belemetry" NoColor NoUnderline>Belemetry</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Bheadless" NoColor NoUnderline>Bheadless</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.BlazorUI" NoColor NoUnderline>BlazorUI</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Templates" NoColor NoUnderline>Project templates</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Cli" NoColor NoUnderline>bit CLI</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.Minifier" NoColor NoUnderline>Minifier</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.BlazorES2019" NoColor NoUnderline>BlazorES2019</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.CodeAnalyzers" NoColor NoUnderline>Code Analyzers</BitLink>
-                    <BitLink Class="footer-link" Href="@Urls.SourceGenerators" NoColor NoUnderline>Source Generators</BitLink>
+                    @foreach (var product in ProductCatalog.All)
+                    {
+                        <BitLink Class="footer-link" Href="@product.Url" NoColor NoUnderline>@product.Title</BitLink>
+                    }
                 </div>
             </div>
 
             <div class="footer-col">
-                <BitText Typography="BitTypography.Inherit" Element="h3" Class="footer-col-title">Community</BitText>
+                <BitText Typography="BitTypography.Inherit" Element="h3" Class="footer-col-title" Color="BitColor.PrimaryForeground">Community</BitText>
                 <BitLink Class="footer-link" Href="@Urls.AboutUs" NoColor NoUnderline>About us</BitLink>
                 <BitLink Class="footer-link" Href="@Urls.ContactUs" NoColor NoUnderline>Contact us</BitLink>
                 <BitLink Class="footer-link" Href="@Urls.GithubIssues" Target="_blank" NoColor NoUnderline>Issues</BitLink>
@@ -51,12 +29,12 @@
             </div>
 
             <div class="footer-col">
-                <BitText Typography="BitTypography.Inherit" Element="h3" Class="footer-col-title">Media</BitText>
+                <BitText Typography="BitTypography.Inherit" Element="h3" Class="footer-col-title" Color="BitColor.PrimaryForeground">Media</BitText>
                 <BitText Typography="BitTypography.Inherit" Element="span" Class="footer-link coming-soon">Blogs (coming soon)</BitText>
                 <BitLink Class="footer-link" Href="@Urls.YouTube" Target="_blank" NoColor NoUnderline>Videos (YouTube)</BitLink>
             </div>
 
-            <BitButton Class="go-to-top" Variant="BitVariant.Text" OnClick="WrapHandled(GoToTop)">Go to top</BitButton>
+            <button type="button" class="go-to-top" onclick="goToTop()">Go to top</button>
         </div>
     </section>
 
@@ -73,7 +51,7 @@
                 <BitLink Class="social-link youtube-link" Href="@Urls.YouTube" Target="_blank" AriaLabel="bit platform on YouTube" NoColor NoUnderline></BitLink>
                 <BitLink Class="social-link linkedin-link" Href="@Urls.Linkedin" Target="_blank" AriaLabel="bit platform on LinkedIn" NoColor NoUnderline></BitLink>
             </div>
-            <BitText Typography="BitTypography.Inherit" Element="div" Class="copyright-txt">Copyright © @DateTimeOffset.UtcNow.Year bit platform | All Rights Reserved </BitText>
+            <BitText Typography="BitTypography.Inherit" Element="div" Class="copyright-txt" Color="BitColor.SecondaryForeground">Copyright © @DateTimeOffset.UtcNow.Year bit platform | All Rights Reserved </BitText>
         </div>
     </section>
 </footer>

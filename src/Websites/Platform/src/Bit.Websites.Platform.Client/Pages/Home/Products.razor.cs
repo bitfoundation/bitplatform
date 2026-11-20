@@ -17,12 +17,24 @@ public partial class Products
         if (builtGroup != Group)
         {
             builtGroup = Group;
-            visibleProducts = Group switch
+
+            var (catalog, accordions) = Group switch
             {
-                ProductGroup.Core => CreateCoreProducts(),
-                ProductGroup.Utilities => CreateUtilityProducts(),
+                ProductGroup.Core => (ProductCatalog.Main, CreateCoreProducts()),
+                ProductGroup.Utilities => (ProductCatalog.Utilities, CreateUtilityProducts()),
                 _ => throw new ArgumentOutOfRangeException(nameof(Group), Group, "Unknown product group.")
             };
+
+            // ProductCatalog decides which products are listed, in which order, and where they link, so this
+            // list can never disagree with the header Products menu and the footer; the accordions only add
+            // the long-form copy, matched to their catalog entry by URL.
+            var accordionsByUrl = accordions.ToDictionary(a => a.LinkUrl, StringComparer.OrdinalIgnoreCase);
+            visibleProducts = catalog.Select(product =>
+            {
+                var item = accordionsByUrl.GetValueOrDefault(product.Url) ?? CreateFallbackProduct(product);
+                item.Product = product;
+                return item;
+            }).ToArray();
         }
 
         await base.OnParamsSetAsync();
@@ -32,8 +44,11 @@ public partial class Products
     {
         public required string Title { get; init; }
         public required string Subtitle { get; init; }
+        /// <summary>
+        /// Matches the item to its ProductCatalog entry; the rendered link comes from <see cref="Product"/>.
+        /// </summary>
         public required string LinkUrl { get; init; }
-        public bool External { get; init; }
+        public ProductLink Product { get; set; } = default!;
         public bool IsExpanded { get; set; }
         public required RenderFragment Body { get; init; }
     }

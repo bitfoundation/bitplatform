@@ -252,23 +252,6 @@
         min-width: 5em;
         font-weight: bold;
     }
-
-    a {
-        margin: 0.5em;
-        border: 1px solid;
-        border-radius: 2em;
-        padding: 0.25em 0.75em;
-        text-decoration: none;
-        color: $bit-color-primary-dark;
-        border-color: color-mix(in srgb, $bit-color-primary-dark 50%, transparent);
-        background-color: color-mix(in srgb, $bit-color-primary 6%, transparent);
-        transition: background-color 0.2s $MotionEase, border-color 0.2s $MotionEase;
-
-        &:hover {
-            border-color: $bit-color-primary-dark;
-            background-color: color-mix(in srgb, $bit-color-primary 12%, transparent);
-        }
-    }
 }
 
 .highlight-1 {

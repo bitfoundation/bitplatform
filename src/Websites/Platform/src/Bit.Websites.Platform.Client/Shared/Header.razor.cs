@@ -165,17 +165,11 @@ public partial class Header : IDisposable
 
     private string GetActiveRouteName()
     {
-        var routeName = navMenuService.CurrentUrl.ToLowerInvariant() switch
-        {
-            Urls.Home => "Home",
-            Urls.Demos => "Demos",
-            Urls.Pricing => "Pricing",
-            Urls.AboutUs => "About us",
-            Urls.ContactUs => "Contact us",
-            _ => null,
-        };
-
-        if (routeName is not null) return routeName;
+        if (navMenuService.IsCurrentUrl(Urls.Home)) return "Home";
+        if (navMenuService.IsCurrentUrl(Urls.Demos)) return "Demos";
+        if (navMenuService.IsCurrentUrl(Urls.Pricing)) return "Pricing";
+        if (navMenuService.IsCurrentUrl(Urls.AboutUs)) return "About us";
+        if (navMenuService.IsCurrentUrl(Urls.ContactUs)) return "Contact us";
 
         if (navMenuService.CurrentUrl.StartsWith(Urls.NotFound, StringComparison.OrdinalIgnoreCase)) return "404";
 

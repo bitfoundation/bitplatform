@@ -54,7 +54,8 @@ public class NavMenuService
 
         CurrentUrl = currentUrl.Length == 0 ? "/" : currentUrl;
 
-        IsTemplateDocRoute = currentUrl.Contains("/templates") || currentUrl.Contains("/boilerplate");
-        IsToolingsDocRoute = currentUrl.Contains("/toolings");
+        // Case-insensitive like IsCurrentUrl, since the router serves /Templates the same page as /templates.
+        IsTemplateDocRoute = currentUrl.Contains("/templates", StringComparison.OrdinalIgnoreCase) || currentUrl.Contains("/boilerplate", StringComparison.OrdinalIgnoreCase);
+        IsToolingsDocRoute = currentUrl.Contains("/toolings", StringComparison.OrdinalIgnoreCase);
     }
 }

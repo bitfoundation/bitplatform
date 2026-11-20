@@ -100,28 +100,21 @@ footer {
     padding-top: rem2(10px);
 }
 
-.footer-links-container ::deep .go-to-top {
-    gap: 0;
-    bottom: rem2(16px);
+// A plain button with an inline JS handler, so it works on the prerendered page before the
+// WebAssembly runtime has booted.
+.go-to-top {
     font: inherit;
-    min-width: 0;
-    min-height: 0;
     cursor: pointer;
+    bottom: rem2(16px);
     right: rem2(20px);
     position: absolute;
     font-size: rem2(14px);
     border-radius: 2rem;
-    letter-spacing: inherit;
-    text-transform: none;
     padding: rem2(6px) rem2(14px);
     color: $bit-color-foreground-secondary;
     border: 1px solid var(--app-hairline);
     background-color: $bit-color-background-secondary;
     transition: color 0.2s $MotionEase, border-color 0.2s $MotionEase;
-
-    .bit-btn-prt {
-        font-size: inherit;
-    }
 
     &:hover {
         color: $bit-color-foreground-primary;
@@ -186,7 +179,6 @@ footer {
     letter-spacing: 0.08em;
     font-size: rem2(12px);
     text-transform: uppercase;
-    color: $bit-color-foreground-primary;
 }
 
 .footer-col ::deep .footer-link {
@@ -223,7 +215,6 @@ footer {
     letter-spacing: 0;
     font-size: rem2(13px);
     margin-top: rem2(16px);
-    color: $bit-color-foreground-secondary;
 }
 
 .social-link-group {
