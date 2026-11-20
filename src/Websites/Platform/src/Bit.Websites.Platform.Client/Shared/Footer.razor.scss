@@ -1,4 +1,5 @@
-﻿@import '../Styles/abstracts/_colors.scss';
+﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
@@ -11,6 +12,7 @@ footer {
     box-sizing: border-box;
     flex-flow: column nowrap;
     justify-content: flex-start;
+    border-top: 1px solid var(--app-hairline);
     background-color: $bit-color-background-primary;
 }
 
@@ -89,25 +91,34 @@ footer {
     columns: 2;
     column-gap: rem2(20px);
     align-self: stretch;
-
-    .footer-link {
-        margin-top: 0;
-        display: block;
-        break-inside: avoid;
-        padding-top: rem2(10px);
-    }
 }
 
+.footer-products .footer-product-links ::deep .footer-link {
+    margin-top: 0;
+    display: block;
+    break-inside: avoid;
+    padding-top: rem2(10px);
+}
+
+// A plain button with an inline JS handler, so it works on the prerendered page before the
+// WebAssembly runtime has booted.
 .go-to-top {
-    bottom: 0;
+    font: inherit;
     cursor: pointer;
-    right: rem2(2px);
+    bottom: rem2(16px);
+    right: rem2(20px);
     position: absolute;
-    padding: rem2(8px) rem2(12px);
+    font-size: rem2(14px);
+    border-radius: 2rem;
+    padding: rem2(6px) rem2(14px);
+    color: $bit-color-foreground-secondary;
+    border: 1px solid var(--app-hairline);
     background-color: $bit-color-background-secondary;
+    transition: color 0.2s $MotionEase, border-color 0.2s $MotionEase;
 
     &:hover {
-        background-color: $bit-color-background-secondary-hover;
+        color: $bit-color-foreground-primary;
+        border-color: var(--app-hairline-strong);
     }
 }
 
@@ -120,17 +131,13 @@ footer {
         margin-bottom: rem2(30px);
     }
 
-    a {
-        text-decoration: none;
-    }
-
-    .address, .tel, .country {
+    ::deep .address, ::deep .tel, ::deep .country {
         padding-left: rem2(20px);
         background-repeat: no-repeat;
         background-position-y: rem2(4px);
     }
 
-    .address, .tel {
+    ::deep .address, ::deep .tel {
         color: $bit-color-primary;
 
         &:hover {
@@ -138,15 +145,15 @@ footer {
         }
     }
 
-    .address {
+    ::deep .address {
         background-image: url('/images/footer/location-icon.svg');
     }
 
-    .country {
+    ::deep .country {
         line-height: 2;
     }
 
-    .tel {
+    ::deep .tel {
         background-image: url('/images/footer/tel-icon.svg');
     }
 }
@@ -161,41 +168,52 @@ footer {
     background-image: url('/images/bit-blue-icon.svg');
 }
 
-.footer-col-title {
+// Quiet column headings and links that take the brand color and an underline on hover - the footer
+// stays calm and the brand color is kept for the things that are actually actionable in the page
+// above. Links sit in the primary foreground and the not-yet-live entries in the dimmer, italic
+// tertiary one, so what is a link still reads at rest (and on touch, with no hover).
+.footer-col ::deep .footer-col-title {
     margin: 0;
     line-height: 1.5;
-    letter-spacing: 0;
-    font-size: rem2(14px);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    font-size: rem2(12px);
+    text-transform: uppercase;
 }
 
-.footer-link {
+.footer-col ::deep .footer-link {
     line-height: 1.5;
     font-weight: 400;
     letter-spacing: 0;
     font-size: rem2(14px);
     text-decoration: none;
     margin-top: rem2(10px);
-    color: $bit-color-primary;
+    text-underline-offset: 0.2em;
+    color: $bit-color-foreground-primary;
+    transition: color 0.15s $MotionEase;
 
     &:hover {
+        color: $bit-color-primary;
         text-decoration: underline;
     }
 
     &.coming-soon {
         cursor: default;
-        color: $bit-color-foreground-secondary;
+        font-style: italic;
+        color: $bit-color-foreground-tertiary;
 
         &:hover {
             text-decoration: none;
+            color: $bit-color-foreground-tertiary;
         }
     }
 }
 
-.copyright-txt {
+.footer-section ::deep .copyright-txt {
     line-height: 1.5;
     font-weight: 400;
     letter-spacing: 0;
-    font-size: rem2(14px);
+    font-size: rem2(13px);
     margin-top: rem2(16px);
 }
 
@@ -210,19 +228,24 @@ footer {
     }
 }
 
-.social-link {
+.social-link-group ::deep .social-link {
     cursor: pointer;
-    width: rem2(32px);
-    height: rem2(32px);
-    margin: 0 rem2(10px);
+    width: rem2(36px);
+    height: rem2(36px);
+    margin: 0 rem2(6px);
     border-radius: 50%;
-    background-color: #a19f9d;
+    background-color: #8a93a5;
     background-size: rem2(18px);
     background-position: center;
     background-repeat: no-repeat;
+    transition: background-color 0.2s $MotionEase, transform 0.2s $MotionEase;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
 }
 
-.twitter-link {
+.social-link-group ::deep .twitter-link {
     background-image: url('/images/footer/twitter-icon.svg');
 
     &:hover {
@@ -230,7 +253,7 @@ footer {
     }
 }
 
-.github-link {
+.social-link-group ::deep .github-link {
     background-image: url('/images/footer/github-icon.svg');
 
     &:hover {
@@ -238,7 +261,7 @@ footer {
     }
 }
 
-.youtube-link {
+.social-link-group ::deep .youtube-link {
     background-image: url('/images/footer/youtube-icon.svg');
 
     &:hover {
@@ -246,7 +269,7 @@ footer {
     }
 }
 
-.linkedin-link {
+.social-link-group ::deep .linkedin-link {
     background-image: url('/images/footer/linkedin-icon.svg');
 
     &:hover {

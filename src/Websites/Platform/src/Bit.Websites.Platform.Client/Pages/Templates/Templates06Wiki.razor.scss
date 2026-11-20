@@ -43,10 +43,6 @@
     width: rem2(300px);
 }
 
-::deep a {
-    color: $bit-color-primary;
-}
-
 .docs-image-scroll {
     width: 100%;
     margin: 0 auto;
@@ -54,16 +50,26 @@
     white-space: nowrap;
 }
 
-.docs-image {
+.docs-image-scroll ::deep .docs-image {
     width: 100%;
     height: auto;
     max-width: none;
     display: inline-block;
     box-shadow: $bit-box-shadow-callout;
+
+    img {
+        width: 100%;
+        height: auto;
+    }
 }
 
 .wiki-item {
     scroll-margin-top: 5rem;
+
+    ::deep p {
+        margin: 1em 0;
+    }
+
     @include lt-lg {
         scroll-margin-top: 8rem;
     }

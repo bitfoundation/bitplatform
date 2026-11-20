@@ -73,6 +73,7 @@ public static class Urls
 
     public const string Ask = "/ask";
     public const string Demos = "/demos";
+    public const string Products = "/products";
     public const string Pricing = "/pricing";
     public const string AboutUs = "/about-us";
     public const string ContactUs = "/contact-us";

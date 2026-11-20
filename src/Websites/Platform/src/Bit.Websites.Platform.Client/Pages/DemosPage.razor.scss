@@ -36,6 +36,7 @@
 
 .mid-section {
     padding-block: 4rem;
+    border-block: 1px solid var(--app-hairline);
     background: $bit-color-background-secondary;
 
     .mid-container {
@@ -79,67 +80,77 @@
             width: unset;
         }
     }
-}
 
-// Visibility (dark-image/light-image classes) is owned by the global themed utilities in app.scss.
-.template-img {
-    width: 100%;
-    border: 1px solid $bit-color-border-secondary;
-}
+    ::deep {
+        // Visibility (dark-image/light-image classes) is owned by the global themed utilities in app.scss.
+        .template-img {
+            width: 100%;
+            height: auto;
+            @include SurfaceCard($radius: var(--app-radius-md), $background: null);
 
-.primary-btn {
-    border: 0;
-    outline: 0;
-    width: 100%;
-    cursor: pointer;
-    font-weight: 600;
-    line-height: 1.2;
-    position: relative;
-    align-items: center;
-    font-size: rem2(16px);
-    min-width: rem2(64px);
-    display: inline-flex;
-    text-decoration: none;
-    justify-content: center;
-    border-radius: rem2(4px);
-    margin-bottom: rem2(8px);
-    padding: rem2(12px) rem2(16px);
-    color: $bit-color-primary-text;
-    background-color: $bit-color-primary;
+            img {
+                width: 100%;
+                height: auto;
+            }
+        }
 
-    &:hover {
-        background-color: $bit-color-primary-hover;
-    }
-}
+        .primary-btn {
+            border: 0;
+            width: 100%;
+            cursor: pointer;
+            font-weight: 600;
+            line-height: 1.2;
+            position: relative;
+            align-items: center;
+            font-size: rem2(16px);
+            min-width: rem2(64px);
+            display: inline-flex;
+            text-decoration: none;
+            justify-content: center;
+            border-radius: var(--app-radius-sm);
+            margin-bottom: rem2(8px);
+            padding: rem2(12px) rem2(16px);
+            color: $bit-color-primary-text;
+            background-color: $bit-color-primary;
+            transition: background-color 0.2s $MotionEase, transform 0.2s $MotionEase;
 
-.secondary-btn {
-    outline: 0;
-    width: 100%;
-    cursor: pointer;
-    font-weight: 600;
-    line-height: 1.2;
-    position: relative;
-    align-items: center;
-    display: inline-flex;
-    font-size: rem2(16px);
-    min-width: rem2(64px);
-    text-decoration: none;
-    box-sizing: border-box;
-    border-radius: rem2(4px);
-    margin-bottom: rem2(8px);
-    justify-content: center;
-    padding: rem2(12px) rem2(16px);
-    color: $bit-color-primary;
-    background-color: $bit-color-background-primary;
-    border: rem2(1px) solid $bit-color-border-secondary;
+            &:hover {
+                transform: translateY(-1px);
+                background-color: $bit-color-primary-hover;
+            }
+        }
 
-    &.disabled {
-        cursor: default;
-        color: $bit-color-foreground-secondary;
-    }
+        .secondary-btn {
+            width: 100%;
+            cursor: pointer;
+            font-weight: 600;
+            line-height: 1.2;
+            position: relative;
+            align-items: center;
+            display: inline-flex;
+            font-size: rem2(16px);
+            min-width: rem2(64px);
+            text-decoration: none;
+            box-sizing: border-box;
+            border-radius: var(--app-radius-sm);
+            margin-bottom: rem2(8px);
+            justify-content: center;
+            padding: rem2(12px) rem2(16px);
+            color: $bit-color-primary;
+            background-color: $bit-color-background-primary;
+            border: rem2(1px) solid var(--app-hairline);
+            transition: background-color 0.2s $MotionEase, border-color 0.2s $MotionEase;
 
-    &:hover {
-        background-color: $bit-color-background-primary-hover;
+            &.disabled {
+                cursor: default;
+                color: $bit-color-foreground-secondary;
+            }
+
+            &:hover {
+                border-color: var(--app-hairline-strong);
+                background-color: $bit-color-background-primary-hover;
+            }
+        }
     }
 }
 
@@ -197,6 +208,7 @@
 
     video {
         width: 100%;
+        border-radius: var(--app-radius-md);
     }
 }
 
@@ -235,27 +247,13 @@
     line-height: 2.5em;
     margin-bottom: 2em;
 
-    span {
+    ::deep span {
         display: block;
         min-width: 5em;
         font-weight: bold;
     }
-
-    a {
-        margin: 0.5em;
-        border: 1px solid;
-        border-radius: 0.5em;
-        padding: 0.25em 0.5em;
-        text-decoration: none;
-        color: $bit-color-primary-dark;
-        border-color: $bit-color-primary-dark;
-        background-color: rgb(150 150 250 / 0.05);
-    }
 }
 
 .highlight-1 {
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
+    @include BrandGradientText;
 }

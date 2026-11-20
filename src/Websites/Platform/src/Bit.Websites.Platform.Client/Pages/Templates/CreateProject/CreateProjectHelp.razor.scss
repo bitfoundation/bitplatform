@@ -7,7 +7,7 @@
     font-size: rem2(14px);
 }
 
-.cp-help-lead {
+.cp-help ::deep .cp-help-lead {
     margin: 0;
     line-height: 1.6;
 }
@@ -22,7 +22,7 @@
         gap: rem2(4px);
     }
 
-    span {
+    ::deep span {
         color: $bit-color-foreground-secondary;
     }
 }
@@ -41,10 +41,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: rem2(8px) rem2(20px);
-
-    a {
-        color: $bit-color-primary;
-    }
 }
 
 .cp-faqs {
@@ -55,7 +51,7 @@
     border-top: 1px dashed $bit-color-border-secondary;
 }
 
-.cp-faqs-title {
+.cp-faqs ::deep .cp-faqs-title {
     margin: 0;
     font-size: rem2(13px);
     font-weight: 600;
@@ -114,7 +110,7 @@
     transform: translateY(rem2(-4px)) rotate(45deg);
 }
 
-.cp-faq-answer {
+.cp-faq ::deep .cp-faq-answer {
     margin: 0 0 rem2(10px);
     padding-inline-start: rem2(18px);
     font-size: rem2(14px);
@@ -122,11 +118,7 @@
     color: $bit-color-foreground-secondary;
 }
 
-.cp-help-contact {
+.cp-help ::deep .cp-help-contact {
     margin: 0;
     color: $bit-color-foreground-secondary;
-
-    a {
-        color: $bit-color-primary;
-    }
 }

@@ -1,0 +1,112 @@
+﻿@import '../Styles/abstracts/_vars.scss';
+@import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_mixins.scss';
+@import '../Styles/abstracts/_functions.scss';
+
+.page-container {
+    width: 100%;
+    display: flex;
+    overflow: hidden;
+    box-sizing: border-box;
+    flex-flow: column nowrap;
+    justify-content: flex-start;
+    padding-top: rem2($HeaderHeight);
+
+    @include lt-lg {
+        padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
+    }
+}
+
+.page-section {
+    @include PageSection;
+}
+
+.page-section-content {
+    padding-block: rem2(48px);
+    @include PageSectionContent;
+
+    @include lt-md {
+        padding-block: rem2(32px);
+    }
+}
+
+.intro-section {
+    text-align: center;
+
+    .page-section-content {
+        padding-top: rem2(80px);
+
+        @include lt-md {
+            padding-top: rem2(48px);
+        }
+    }
+
+    ::deep {
+        .page-title {
+            font-weight: 600;
+            line-height: 1.1;
+            letter-spacing: -0.025em;
+            font-family: $FontDisplay;
+            font-size: clamp(2.5rem, 7vw, 5rem);
+            @include BrandGradientText;
+        }
+
+        .page-subtitle {
+            margin: 0 auto;
+            line-height: 1.5;
+            text-wrap: pretty;
+            max-width: rem2(720px);
+            color: $bit-color-foreground-secondary;
+        }
+    }
+}
+
+@include SectionTitle;
+
+::deep .section-subtitle {
+    text-align: center;
+    margin: 1rem 0 2rem;
+    color: $bit-color-foreground-secondary;
+}
+
+.tooling-list {
+    gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(rem2(260px), 1fr));
+
+    ::deep .tooling-card {
+        gap: 0.5rem;
+        display: flex;
+        padding: 1.5rem;
+        text-decoration: none;
+        flex-flow: column nowrap;
+        @include SurfaceCard($interactive: true);
+
+        .tooling-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .tooling-desc {
+            flex-grow: 1;
+        }
+
+        .tooling-link {
+            @include ArrowLink('.tooling-link-arrow');
+        }
+
+        .tooling-link-arrow {
+            transition: transform 0.2s $MotionEase;
+        }
+
+        &:hover .tooling-link-arrow {
+            transform: translateX(5px);
+        }
+
+        &:focus-visible {
+            outline: 2px solid $bit-color-primary;
+            outline-offset: 2px;
+            --bit-focus-ring-own: none;
+        }
+    }
+}

@@ -16,7 +16,7 @@
     gap: rem2(6px);
 }
 
-.cp-getit-title {
+.cp-getit-head ::deep .cp-getit-title {
     margin: 0;
     font-size: rem2(22px);
     font-weight: 700;
@@ -29,7 +29,7 @@
     }
 }
 
-.cp-getit-lead {
+.cp-getit-head ::deep .cp-getit-lead {
     margin: 0;
     font-size: rem2(14px);
     color: $bit-color-foreground-secondary;
@@ -52,7 +52,7 @@
     gap: rem2(6px);
     font-size: rem2(14px);
 
-    span {
+    > ::deep span {
         color: $bit-color-foreground-secondary;
     }
 }
@@ -100,12 +100,8 @@
     padding-top: rem2(3px);
     font-size: rem2(14px);
 
-    > span {
+    > ::deep span {
         color: $bit-color-foreground-secondary;
-    }
-
-    a {
-        color: $bit-color-primary;
     }
 }
 
@@ -124,7 +120,7 @@
     }
 }
 
-.cp-line-safety {
+.cp-howto-text ::deep .cp-line-safety {
     display: inline-flex;
     align-items: center;
     gap: rem2(6px);
@@ -159,7 +155,7 @@
     gap: rem2(4px) rem2(18px);
 }
 
-.cp-needs-title {
+.cp-needs ::deep .cp-needs-title {
     margin: 0;
     font-size: rem2(17px);
     font-weight: 600;

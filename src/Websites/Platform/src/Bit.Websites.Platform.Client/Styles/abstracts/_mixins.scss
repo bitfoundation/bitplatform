@@ -31,17 +31,36 @@
     color: $bit-color-foreground-secondary;
 }
 
+// The site's one card surface: a hairline border, soft corners and a quiet layered shadow, the same
+// in both themes (the tokens live in app.scss). Pass $interactive to lift it on hover. $radius and
+// $shadow take other --app-* tokens (popups use --app-shadow-popup); null leaves the property out, as
+// does a null $background for surfaces that paint their own.
+@mixin SurfaceCard($interactive: false, $radius: var(--app-radius-lg), $shadow: var(--app-shadow-card), $background: $bit-color-background-primary) {
+    border-radius: $radius;
+    border: 1px solid var(--app-hairline);
+    box-shadow: $shadow;
+    background-color: $background;
+
+    @if $interactive {
+        transition: transform 0.2s $MotionEase, box-shadow 0.2s $MotionEase, border-color 0.2s $MotionEase;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--app-shadow-card-hover);
+            border-color: var(--app-hairline-strong);
+        }
+    }
+}
+
 @mixin SectionCard {
+    @include SurfaceCard;
     width: 100%;
     overflow: auto;
     position: relative;
     padding: rem2(28px);
     word-wrap: break-word;
-    border-radius: rem2(4px);
     margin-bottom: rem2(28px);
     background-clip: padding-box;
-    box-shadow: $bit-box-shadow-callout;
-    background-color: $bit-color-background-primary;
 }
 
 @mixin SectionCardTitle {
@@ -112,14 +131,89 @@
         }
     }
 
+    // The CTAs are BitLinks: their own outline replaces BitLink's box-shadow ring, so focus shows one ring.
     &:focus-visible {
         outline: 2px solid $bit-color-primary;
         outline-offset: 2px;
+        --bit-focus-ring-own: none;
+    }
+}
+
+// The brand gradient (azure to indigo) as a text fill: page titles, highlighted words, stat numbers.
+@mixin BrandGradientText {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
+}
+
+// A full-width page band that centers its content column; each page sets its own vertical rhythm.
+@mixin PageSection {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+// The centered, max-width content column inside a PageSection.
+@mixin PageSectionContent {
+    width: 100%;
+    box-sizing: border-box;
+    max-width: rem2(1200px);
+    padding-inline: rem2(20px);
+}
+
+// The small uppercase section title between two gradient lines that fade outwards. Emits the rules
+// for .section-title-container, .section-title (a BitText, hence ::deep) and .section-title-line
+// (.reversed for the left one), so include it at the root of a page's scoped stylesheet.
+@mixin SectionTitle {
+    .section-title-container {
+        gap: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    ::deep .section-title {
+        font-size: 1rem;
+        font-weight: 600;
+        white-space: nowrap;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: $bit-color-foreground-secondary;
+    }
+
+    .section-title-line {
+        height: 2px;
+        flex-grow: 1;
+        background-image: linear-gradient(351deg, transparent 20%, #8c85ff 100%);
+
+        &.reversed {
+            background-image: linear-gradient(9deg, transparent 20%, #8c85ff 100%);
+        }
+    }
+}
+
+// The bold "Learn more" link with its right arrow; $arrow is the selector of the arrow element inside it.
+@mixin ArrowLink($arrow) {
+    display: flex;
+    font-weight: 700;
+    align-items: center;
+    font-size: rem2(14px);
+    color: $bit-color-primary;
+
+    #{$arrow} {
+        width: rem2(16px);
+        height: rem2(16px);
+        margin-left: rem2(8px);
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-image: url('/images/arrow-right-blue-icon.svg');
     }
 }
 
 @mixin HighLightText {
-    background-color: $B11Color;
+    // A tint of the brand color rather than a fixed light blue, so it reads on the dark theme too.
+    background-color: color-mix(in srgb, $bit-color-primary 14%, transparent);
     border-radius: rem2(4px);
     padding: rem2(4px);
     margin: rem2(2px) 0;

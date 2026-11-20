@@ -18,15 +18,15 @@
             <span class="answer-mark" aria-hidden="true"></span>
             <span class="answer-body">
                 <span class="answer-head">
-                    <span class="answer-text">@item.Text</span>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="answer-text">@item.Text</BitText>
                     @if (item.Badge is not null)
                     {
-                        <span class="answer-badge">@item.Badge</span>
+                        <BitText Typography="BitTypography.Inherit" Element="span" Class="answer-badge">@item.Badge</BitText>
                     }
                 </span>
                 @if (item.Description is not null)
                 {
-                    <span class="answer-hint" id="@hintId">@item.Description</span>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="answer-hint" Id="@hintId">@item.Description</BitText>
                 }
             </span>
         </div>

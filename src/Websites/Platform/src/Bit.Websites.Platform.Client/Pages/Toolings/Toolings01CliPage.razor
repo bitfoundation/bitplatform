@@ -26,7 +26,7 @@ bit new MyApp</CodeBox>
             <BitText Typography="BitTypography.H5" Gutter>Made for building with AI</BitText>
             An AI assistant writes good code in a project that's set up well, and stalls in one that isn't. The bit CLI takes care of the setup, so the assistant can start on your app:
             <ul>
-                <li>Answer a few questions on the <a href="/templates/create-project">Create project</a> page, and it builds the <code>bit new</code> command for you.</li>
+                <li>Answer a few questions on the <BitLink Href="/templates/create-project">Create project</BitLink> page, and it builds the <code>bit new</code> command for you.</li>
                 <li>Every project comes ready for Claude Code, GitHub Copilot, Codex, Gemini CLI and Cursor, with the instructions, skills and MCP servers they work with.</li>
                 <li><code>bit new</code> trusts the project folder for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts, and installs the VS Code extensions the project recommends. All that's left is signing in to Claude or Copilot.</li>
                 <li>Later, <code>bit diff</code> shows what changed in bit Boilerplate between two versions, and the project's <code>upgrade</code> skill has your assistant bring those changes into your code.</li>
@@ -67,7 +67,7 @@ bit new MyApp</CodeBox>
 bit new Contoso.Shop --database PostgreSQL --module Admin --redis
 bit new Contoso.Shop --platforms web,android
 bit new Contoso.Shop --dry-run</CodeBox>
-            Every option of bit Boilerplate works the same way. Pick them on the <a href="/templates/create-project">Create project</a> page to get the command for your project,
+            Every option of bit Boilerplate works the same way. Pick them on the <BitLink Href="/templates/create-project">Create project</BitLink> page to get the command for your project,
             or run <code>bit new --help</code>.
         </div>
     </section>
@@ -84,7 +84,7 @@ bit new Contoso.Shop --dry-run</CodeBox>
                 <li><code>bit remove</code> deletes any folder for good, even while an app or a build process still holds its files, and takes a git worktree off its repository too.</li>
                 <li><code>bit api check</code> fails when a change to the api breaks the app versions your users still run, and <code>bit api release</code> keeps the api each release ships to compare with.</li>
                 <li><code>bit translate</code> fills in the missing translations of <code>.resx</code> files with any OpenAI-compatible LLM, and keeps the existing ones.</li>
-                <li><code>bit decode</code> reads a stack trace of an app shrunk by <a href="@Urls.Minifier">bit Minifier</a> back into the names its source has.</li>
+                <li><code>bit decode</code> reads a stack trace of an app shrunk by <BitLink Href="@Urls.Minifier">bit Minifier</BitLink> back into the names its source has.</li>
                 <li><code>bit aot-profile</code> records which code a Blazor WebAssembly app really runs, so ahead-of-time compilation makes that code fast and leaves the download small.</li>
                 <li><code>bit trust</code> trusts a cloned repository for VS Code and the AI coding tools.</li>
                 <li><code>bit telemetry</code>, <code>bit update</code> and <code>bit about</code> show and change what bit sends, update it, and show which build you run.</li>
@@ -127,7 +127,7 @@ bit setup --platforms android --no-browsers --yes</CodeBox>
                 <li><code>BIT_CLI_TELEMETRY=off</code>, <code>DO_NOT_TRACK=1</code> or <code>DOTNET_CLI_TELEMETRY_OPTOUT=1</code> turn it off in CI or a container.</li>
                 <li><code>BIT_CLI_TELEMETRY=log</code> prints everything that would be sent, and sends nothing.</li>
             </ul>
-            The full reference is in the <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli" target="_blank" rel="noopener">bit CLI's README</a>.
+            The full reference is in the <BitLink Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli" Target="_blank">bit CLI's README</BitLink>.
         </div>
     </section>
 </div>

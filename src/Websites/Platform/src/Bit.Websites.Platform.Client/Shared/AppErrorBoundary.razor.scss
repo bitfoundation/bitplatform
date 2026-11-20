@@ -17,11 +17,17 @@
     text-align: right;
 }
 
-.title {
+.main ::deep .error-image .bit-img-img {
+    margin-inline: auto;
+}
+
+.main ::deep .title {
+    font-size: 2em;
+    font-weight: bold;
     color: $bit-color-error;
 }
 
-.exception {
+.main ::deep .exception {
     overflow: auto;
     text-align: left;
     white-space: pre;

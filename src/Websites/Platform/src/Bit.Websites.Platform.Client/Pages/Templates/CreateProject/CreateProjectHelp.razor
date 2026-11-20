@@ -15,7 +15,7 @@
         <div class="cp-help">
             @if (content.Lead is not null)
             {
-                <p class="cp-help-lead">@content.Lead</p>
+                <BitText Typography="BitTypography.Inherit" Element="p" Class="cp-help-lead">@content.Lead</BitText>
             }
 
             @if (content.Advice is not null)
@@ -23,7 +23,7 @@
                 <div class="cp-help-card">
                     <div>
                         <b>Our advice</b>
-                        <span>@content.Advice</span>
+                        <BitText Typography="BitTypography.Inherit" Element="span">@content.Advice</BitText>
                     </div>
                 </div>
             }
@@ -33,7 +33,7 @@
                 <div class="cp-help-card">
                     <div>
                         <b>Changed your mind later?</b>
-                        <span>Ask the AI in your project, in your own words, for example:</span>
+                        <BitText Typography="BitTypography.Inherit" Element="span">Ask the AI in your project, in your own words, for example:</BitText>
                         <q class="cp-help-prompt">@content.Later</q>
                     </div>
                 </div>
@@ -44,7 +44,7 @@
                 <div class="cp-help-demos">
                     @foreach (var (text, url) in content.Demos)
                     {
-                        <a href="@url" target="_blank" rel="noopener">@text</a>
+                        <BitLink Href="@url" Target="_blank">@text</BitLink>
                     }
                 </div>
             }
@@ -52,7 +52,7 @@
             @if (content.Faq.Count > 0)
             {
                 <div class="cp-faqs">
-                    <h3 class="cp-faqs-title">Common questions</h3>
+                    <BitText Typography="BitTypography.Inherit" Element="h3" Class="cp-faqs-title">Common questions</BitText>
                     <div class="cp-faq-list">
                         @for (var i = 0; i < content.Faq.Count; i++)
                         {
@@ -66,7 +66,7 @@
                                 </button>
                                 @if (open)
                                 {
-                                    <p class="cp-faq-answer">@answer</p>
+                                    <BitText Typography="BitTypography.Inherit" Element="p" Class="cp-faq-answer">@answer</BitText>
                                 }
                             </div>
                         }
@@ -74,9 +74,9 @@
                 </div>
             }
 
-            <p class="cp-help-contact">
-                Still not sure? <a href="mailto:info@bitplatform.dev">Write to us</a>, a person answers.
-            </p>
+            <BitText Typography="BitTypography.Inherit" Element="p" Class="cp-help-contact">
+                Still not sure? <BitLink Href="mailto:info@bitplatform.dev">Write to us</BitLink>, a person answers.
+            </BitText>
         </div>
     }
 </BitPanel>

@@ -10,50 +10,28 @@
         </div>
         <div class="footer-links-container">
             <div class="footer-col footer-products">
-                <h3 class="footer-col-title">Products</h3>
+                <BitText Typography="BitTypography.Inherit" Element="h3" Class="footer-col-title" Color="BitColor.PrimaryForeground">Products</BitText>
                 <div class="footer-product-links">
-                    <a class="footer-link" href="@Urls.Butil">Butil</a>
-                    <a class="footer-link" href="@Urls.Bswup">Bswup</a>
-                    <a class="footer-link" href="@Urls.Brouter">Brouter</a>
-                    <a class="footer-link" href="@Urls.Bmotion">Bmotion</a>
-                    <a class="footer-link" href="@Urls.Bmage">Bmage</a>
-                    <a class="footer-link" href="@Urls.Bsqlite">Bsqlite</a>
-                    <a class="footer-link" href="@Urls.Bink">Bink</a>
-                    <a class="footer-link" href="@Urls.Balette">Balette</a>
-                    <a class="footer-link" href="@Urls.BbScanner">BbScanner</a>
-                    <a class="footer-link" href="@Urls.Bdnd">Bdnd</a>
-                    <a class="footer-link" href="@Urls.BlazeDb">BlazeDb</a>
-                    <a class="footer-link" href="@Urls.Blow">Blow</a>
-                    <a class="footer-link" href="@Urls.Borm">Borm</a>
-                    <a class="footer-link" href="@Urls.Bcrdt">Bcrdt</a>
-                    <a class="footer-link" href="@Urls.Bonboarding">Bonboarding</a>
-                    <a class="footer-link" href="@Urls.Bortable">Bortable</a>
-                    <a class="footer-link" href="@Urls.Blex">Blex</a>
-                    <a class="footer-link" href="@Urls.Belemetry">Belemetry</a>
-                    <a class="footer-link" href="@Urls.Bheadless">Bheadless</a>
-                    <a class="footer-link" href="@Urls.BlazorUI">BlazorUI</a>
-                    <a class="footer-link" href="@Urls.Templates">Project templates</a>
-                    <a class="footer-link" href="@Urls.Cli">bit CLI</a>
-                    <a class="footer-link" href="@Urls.Minifier">Minifier</a>
-                    <a class="footer-link" href="@Urls.BlazorES2019">BlazorES2019</a>
-                    <a class="footer-link" href="@Urls.CodeAnalyzers">Code Analyzers</a>
-                    <a class="footer-link" href="@Urls.SourceGenerators">Source Generators</a>
+                    @foreach (var product in ProductCatalog.All)
+                    {
+                        <BitLink Class="footer-link" Href="@product.Url" NoColor NoUnderline>@product.Title</BitLink>
+                    }
                 </div>
             </div>
 
             <div class="footer-col">
-                <h3 class="footer-col-title">Community</h3>
-                <a class="footer-link" href="@Urls.AboutUs">About us</a>
-                <a class="footer-link" href="@Urls.ContactUs">Contact us</a>
-                <a class="footer-link" target="_blank" rel="noopener" href="@Urls.GithubIssues">Issues</a>
-                <a class="footer-link" target="_blank" rel="noopener" href="@Urls.GithubOrg">GitHub org</a>
-                <a class="footer-link" target="_blank" rel="noopener" href="@Urls.GithubRepo">GitHub repo</a>
+                <BitText Typography="BitTypography.Inherit" Element="h3" Class="footer-col-title" Color="BitColor.PrimaryForeground">Community</BitText>
+                <BitLink Class="footer-link" Href="@Urls.AboutUs" NoColor NoUnderline>About us</BitLink>
+                <BitLink Class="footer-link" Href="@Urls.ContactUs" NoColor NoUnderline>Contact us</BitLink>
+                <BitLink Class="footer-link" Href="@Urls.GithubIssues" Target="_blank" NoColor NoUnderline>Issues</BitLink>
+                <BitLink Class="footer-link" Href="@Urls.GithubOrg" Target="_blank" NoColor NoUnderline>GitHub org</BitLink>
+                <BitLink Class="footer-link" Href="@Urls.GithubRepo" Target="_blank" NoColor NoUnderline>GitHub repo</BitLink>
             </div>
 
             <div class="footer-col">
-                <h3 class="footer-col-title">Media</h3>
-                <span class="footer-link coming-soon">Blogs (coming soon)</span>
-                <a class="footer-link" target="_blank" rel="noopener" href="@Urls.YouTube">Videos (YouTube)</a>
+                <BitText Typography="BitTypography.Inherit" Element="h3" Class="footer-col-title" Color="BitColor.PrimaryForeground">Media</BitText>
+                <BitText Typography="BitTypography.Inherit" Element="span" Class="footer-link coming-soon">Blogs (coming soon)</BitText>
+                <BitLink Class="footer-link" Href="@Urls.YouTube" Target="_blank" NoColor NoUnderline>Videos (YouTube)</BitLink>
             </div>
 
             <button type="button" class="go-to-top" onclick="goToTop()">Go to top</button>
@@ -62,18 +40,18 @@
 
     <section class="footer-section">
         <div class="address-info">
-            <a class="address" target="_blank" rel="noopener" href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6">Sixmastraat 15, 8932 PA Leeuwarden,</a>
-            <div class="country">Netherlands</div>
-            <a class="tel" href="tel:+31684207362">+31 6 84207362</a>
+            <BitLink Class="address" Href="https://maps.app.goo.gl/W8vtWHQ13YhYpksy6" Target="_blank" NoColor NoUnderline>Sixmastraat 15, 8932 PA Leeuwarden,</BitLink>
+            <BitText Typography="BitTypography.Inherit" Element="div" Class="country">Netherlands</BitText>
+            <BitLink Class="tel" Href="tel:+31684207362" NoColor NoUnderline>+31 6 84207362</BitLink>
         </div>
         <div>
             <div class="social-link-group">
-                <a class="social-link twitter-link" target="_blank" rel="noopener" aria-label="bit platform on X (Twitter)" href="@Urls.Twitter"></a>
-                <a class="social-link github-link" target="_blank" rel="noopener" aria-label="bit platform on GitHub" href="@Urls.GithubRepo"></a>
-                <a class="social-link youtube-link" target="_blank" rel="noopener" aria-label="bit platform on YouTube" href="@Urls.YouTube"></a>
-                <a class="social-link linkedin-link" target="_blank" rel="noopener" aria-label="bit platform on LinkedIn" href="@Urls.Linkedin"></a>
+                <BitLink Class="social-link twitter-link" Href="@Urls.Twitter" Target="_blank" AriaLabel="bit platform on X (Twitter)" NoColor NoUnderline></BitLink>
+                <BitLink Class="social-link github-link" Href="@Urls.GithubRepo" Target="_blank" AriaLabel="bit platform on GitHub" NoColor NoUnderline></BitLink>
+                <BitLink Class="social-link youtube-link" Href="@Urls.YouTube" Target="_blank" AriaLabel="bit platform on YouTube" NoColor NoUnderline></BitLink>
+                <BitLink Class="social-link linkedin-link" Href="@Urls.Linkedin" Target="_blank" AriaLabel="bit platform on LinkedIn" NoColor NoUnderline></BitLink>
             </div>
-            <div class="copyright-txt">Copyright © @DateTimeOffset.UtcNow.Year bit platform | All Rights Reserved </div>
+            <BitText Typography="BitTypography.Inherit" Element="div" Class="copyright-txt" Color="BitColor.SecondaryForeground">Copyright © @DateTimeOffset.UtcNow.Year bit platform | All Rights Reserved </BitText>
         </div>
     </section>
 </footer>
