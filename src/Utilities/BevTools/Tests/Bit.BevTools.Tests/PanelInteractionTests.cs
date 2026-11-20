@@ -324,13 +324,13 @@ public class PanelInteractionTests : BunitContext
             .Add(p => p.ChildrenOnly, true));
 
         var rows = cut.FindAll(".bev-vt-row");
-        Assert.Contains(r => r.TextContent.Contains("Theme:", StringComparison.Ordinal) && r.GetAttribute("style")!.Contains("padding-left:0px", StringComparison.Ordinal), rows);
+        Assert.Contains(r => r.TextContent.Contains("Theme:", StringComparison.Ordinal) && r.GetAttribute("style")!.Contains("padding-left:calc(0 * var(--bev-indent))", StringComparison.Ordinal), rows);
         Assert.DoesNotContain(r => r.TextContent.Contains("SnapshotSample:", StringComparison.Ordinal), rows);
 
         rows.First(r => r.TextContent.Contains("Nested:", StringComparison.Ordinal)).QuerySelector(".bev-caret")!.Click();
 
         var depth = cut.FindAll(".bev-vt-row").First(r => r.TextContent.Contains("Depth:", StringComparison.Ordinal));
-        Assert.Contains("padding-left:14px", depth.GetAttribute("style")!, StringComparison.Ordinal);
+        Assert.Contains("padding-left:calc(1 * var(--bev-indent))", depth.GetAttribute("style")!, StringComparison.Ordinal);
     }
 
     private sealed class SnapshotSample

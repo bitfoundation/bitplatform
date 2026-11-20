@@ -61,6 +61,29 @@ do not pack, so the tests and the demo pass and nothing says so until someone bu
 - After a change that touches public API, a plain `dotnet build -c Release` of each of the four projects passes with
   no `error CP` - that is the check.
 
+## A removed or renamed name goes into BreakingChanges.json
+
+`Bit.BlazorUI.Analyzers` is a Roslyn analyzer the Bit.BlazorUI package ships (under `bit-analyzers\`, added to an app's
+compilation by `buildTransitive\Bit.BlazorUI.targets` unless the app sets `BitBlazorUIBreakingChangeAnalyzer` to `false`).
+It fails an app's build on a name removed or renamed since 10.5.0 that the app still uses - BITBC001 for a parameter or
+member, BITBC002 for a component or type - with what to write instead. Most of those breaks are silent otherwise: a
+component renders an attribute it does not take as an HTML attribute, and a removed component's tag as an unknown
+element. The MCP server's `GetBitBlazorUIBreakingChanges` answers from the same list.
+
+- **The list is data: `Bit.BlazorUI.Analyzers/BreakingChanges.json`**, one entry per name. A change that removes or
+  renames a public `[Parameter]`, a public member of a `Bit*Params`, `Bit*ClassStyles`, `Bit*NameSelectors`, item or
+  option class, a component or a public type adds its entry in the same change as its `BreakingChanges.md` entry and its
+  `CompatibilitySuppressions.xml` entries: `kind` (`member` or `type`), `name` (the old one), `on` (for a member: every
+  type it was on - the component and its `Bit*Params`, a base class covering its subclasses), `component` (for a type
+  that was a component, whose tag is then matched in markup), `use` (the new name, or empty), `hint` (the fix, ending
+  with a period; say when the value turns around, as `IsEnabled` to `Disabled` does) and `since` (the version it ships
+  in). A change of behaviour, markup or CSS with no name gone gets none.
+- **Never the analyzer's code for a new change.** It reads names off the generated code of the markup and off C#; a
+  new kind of break the data cannot express is the one reason to touch it, with its tests.
+- `BitBreakingChangesDataTests` reads every entry against the compiled packages - each type in `on` exists, the old
+  name is gone from it, the `use` name is there - and `BitBreakingChangesAnalyzerTests` runs the analyzer over the C#
+  the Razor compiler generates. `Tests/Bit.BlazorUI.Tests.Mcp`'s `BreakingChangesToolTests` covers the MCP tool.
+
 ## The scripts and stylesheets are trimmed at publish
 
 Every package's bundles (`bit.blazorui.js`, `bit.blazorui.css` and its Fluent variants, the Extras', AI's, Legacy's and
@@ -699,10 +722,12 @@ components exist and what they are also called, the loaded assemblies which pack
 what it is generic over, the demo pages the hand-written parameter tables and worked examples, the
 iconography page's `IconCatalog` the glyphs with their categories and the everyday words that point at
 MDL2's own (so `FindBitBlazorUIIcons` finds a house by teaching the page's search box, never by
-growing a second table), the XML documentation everything else. So **adding a component to the nav is
+growing a second table), the analyzer's `BreakingChanges.json` the names removed or renamed since 10.5.0
+(`GetBitBlazorUIBreakingChanges`, and the `upgrade-bit-blazorui` prompt that works through them), the XML
+documentation everything else. So **adding a component to the nav is
 all it takes for it to appear in the catalog, the search index and the completions.**
 
-- **Seven tools, and the count is the design** - every description is paid for in every request. A
+- **Eight tools, and the count is the design** - every description is paid for in every request. A
   listing is not a tool but what a retrieval tool answers with no argument
   (`GetBitBlazorUIComponent`, `GetBitBlazorUIType`, `GetBitBlazorUIThemingGuide`); a single-item
   lookup is not a tool when one taking a set already resolves each member.

@@ -51,7 +51,12 @@ public sealed class ScriptedPrompter : IPrompter
     {
         Record(question, [], [defaultValue ? "yes" : "no"]);
 
-        return AnswerFor(question) is bool answer ? answer : defaultValue;
+        return AnswerFor(question) switch
+        {
+            bool answer => answer,
+            Func<bool> answer => answer(),
+            _ => defaultValue
+        };
     }
 
     public string Secret(string question)

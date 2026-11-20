@@ -3,8 +3,10 @@ using System.Security.Cryptography;
 using AspNet.Security.OAuth.Apple;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Facebook;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.FileProviders.Physical;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Boilerplate.Server.Api.Infrastructure.Services;
 using Boilerplate.Server.Api.Features.Identity.Services;
 using Boilerplate.Server.Api.Features.Identity.HealthChecks;
 
@@ -128,6 +130,25 @@ public class ExternalSignInHealthChecksTests
         {
             File.Delete(keyPath);
         }
+    }
+
+    /// <summary>
+    /// A deployed server gets the key from Authentication:Apple:PrivateKey, which a CD secret carries on one line.
+    /// </summary>
+    [TestMethod]
+    [DataRow(false, DisplayName = "The whole .p8")]
+    [DataRow(true, DisplayName = "Its body on one line")]
+    public async Task AppleCheck_Should_SignWithTheKeyFromConfiguration(bool bodyOnly)
+    {
+        using var key = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+        var pem = key.ExportPkcs8PrivateKeyPem().ReplaceLineEndings("\r\n");
+        var body = AppleP8Key.Body(pem);
+        var handler = new RoutingHandler((_, _) => Task.FromResult(Json(HttpStatusCode.OK, "{}")));
+
+        var result = await RunAppleCheck(handler, keyPath: null, privateKey: bodyOnly ? body : pem);
+
+        Assert.AreEqual(HealthStatus.Healthy, result.Status, result.Exception?.ToString());
+        Assert.MatchesRegex(new Regex("^[A-Za-z0-9+/=]+$"), body);
     }
 
     [TestMethod]
@@ -296,7 +317,7 @@ public class ExternalSignInHealthChecksTests
         return await Run(ActivatorUtilities.CreateInstance<EntraIdHealthCheck>(serviceProvider));
     }
 
-    private async Task<HealthCheckResult> RunAppleCheck(RoutingHandler handler, string? keyPath)
+    private async Task<HealthCheckResult> RunAppleCheck(RoutingHandler handler, string? keyPath, string? privateKey = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -307,7 +328,11 @@ public class ExternalSignInHealthChecksTests
             options.ClientId = "com.example.test";
             options.KeyId = "TESTKEYID1";
             options.TeamId = "TESTTEAM01";
-            if (keyPath is not null)
+            if (privateKey is not null)
+            {
+                options.UsePrivateKey(privateKey, new NullFileProvider());
+            }
+            else if (keyPath is not null)
             {
                 options.UsePrivateKey(_ => new PhysicalFileInfo(new FileInfo(keyPath)));
             }

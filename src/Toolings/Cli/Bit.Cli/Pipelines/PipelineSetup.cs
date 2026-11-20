@@ -7,7 +7,21 @@ using Spectre.Console;
 
 namespace Bit.Cli.Pipelines;
 
-public sealed record PipelineOptions(IReadOnlyList<string> Environments, bool Check, bool Yes, bool RotateCertificate);
+public sealed record PipelineOptions(IReadOnlyList<string> Environments, bool Check, bool Yes, bool RotateCertificate)
+{
+    // What only Google and Apple give, for push notifications and Sign in with Apple. Each one is stored even where it's set.
+    public string? FirebaseServiceAccount { get; init; }
+
+    public string? GoogleServicesJson { get; init; }
+
+    public string? ApnsKey { get; init; }
+
+    public string? SignInWithAppleKey { get; init; }
+
+    public string? AppleServicesId { get; init; }
+
+    public string? AppleTeamId { get; init; }
+}
 
 public sealed partial class PipelineSetup(CliServices cli, PipelineOptions options, HttpMessageHandler? appleHttp = null)
 {
@@ -37,9 +51,10 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     /// <summary>
     /// The retired certificate, and the settings of a service: the CD of a project made from an older template reads
     /// <c>&lt;SERVICE&gt;_SETTINGS</c> for each service the Compose project has, whatever it is called, and an empty one is fine.
-    /// A newer one reads a secret per setting through <c>toJSON(secrets)</c>, which the workflow scan doesn't list.
+    /// A newer one reads a secret per setting through <c>toJSON(secrets)</c>, of which bit lists only the optional ones of push
+    /// notifications and Sign in with Apple (See PushAndSignInSecrets.cs).
     /// </summary>
-    private static bool IsOptional(string name) => name is RetiredAppCertificate || name.EndsWith("_SETTINGS", StringComparison.OrdinalIgnoreCase);
+    private static bool IsOptional(string name) => name is RetiredAppCertificate || name.EndsWith("_SETTINGS", StringComparison.OrdinalIgnoreCase) || pushAndSignIn.ContainsKey(name);
 
     private static readonly Dictionary<string, string> hints = new(StringComparer.Ordinal)
     {
@@ -124,7 +139,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             }
         }
 
-        var wanted = scan.Secrets.Where(s => s.Environment is null || options.Environments.Count == 0 || options.Environments.Contains(s.Environment, StringComparer.Ordinal)).ToList();
+        var wanted = scan.Secrets.Concat(ServerSettingsSecrets(scan)).Where(s => s.Environment is null || options.Environments.Count == 0 || options.Environments.Contains(s.Environment, StringComparer.Ordinal)).ToList();
 
         if (wanted.Count == 0)
         {
@@ -156,7 +171,8 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             }
         }
 
-        bool IsSet(WorkflowSecret secret) => repositorySecrets.Contains(secret.Name) || (secret.Environment is { } environment && existing[environment].Contains(secret.Name));
+        bool Has(string? environment, string name) => repositorySecrets.Contains(name) || (environment is not null && existing[environment].Contains(name));
+        bool IsSet(WorkflowSecret secret) => SameSetting(secret.Name).Any(name => Has(secret.Environment, name));
 
         var missing = wanted.Where(s => IsSet(s) is false).ToList();
         Show(wanted, IsSet);
@@ -165,8 +181,9 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             return missing.Any(s => IsOptional(s.Name) is false) || settingsOff.Count > 0 || settingsUnread ? CliApp.ExitCheckFailed : CliApp.ExitOk;
 
         var rotating = options.RotateCertificate ? wanted.Where(s => s.Name is AppCertificate && IsSet(s)).ToList() : [];
+        var filling = wanted.Where(s => pushAndSignIn.TryGetValue(s.Name, out var given) && (given(options) is not null || (CanAsk && IsSet(s) is false))).ToList();
 
-        if (missing.All(s => IsOptional(s.Name)) && rotating.Count == 0)
+        if (missing.All(s => IsOptional(s.Name)) && rotating.Count == 0 && filling.Count == 0)
         {
             cli.Console.Out.MarkupLine($"Every secret the workflows use is set in {Markup.Escape(repository)}.");
             return failed ? CliApp.ExitFailed : CliApp.ExitOk;
@@ -205,6 +222,8 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
                 await RotateAsync(scope.Key, used, cancellationToken);
             }
         }
+
+        await FillPushAndSignInAsync(filling, Has, cancellationToken);
 
         if (keystore is not null)
         {

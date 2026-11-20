@@ -1,0 +1,46 @@
+@using Boilerplate.Shared.Features.Tenants.Dtos
+@inherits AppComponentBase
+
+@* As wide as the not-authorized page's buttons, without the min-width that page gives them. *@
+<BitStack FitHeight Gap="0.5rem" Style="width:min(300px, 100%);--bit-Button-min-width:initial">
+    @if (invitations.Length > 0)
+    {
+        <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(AppStrings.PendingInvitations)]</BitText>
+
+        @foreach (var tenant in invitations)
+        {
+            <BitStack @key="tenant.Id" Horizontal FitHeight VerticalAlign="BitAlignment.Center">
+                <BitIcon IconName="@BitIconName.Mail" Color="BitColor.Warning" />
+                @* A tenant's name has no space to wrap at, so a long one would push Accept out of the row. *@
+                <BitText BreakWord Style="flex-grow:1">@GetDisplayName(tenant)</BitText>
+                @* Switching in is what accepts the invitation (See IdentityController.Refresh). *@
+                <BitButton Color="BitColor.Success"
+                           IconName="@BitIconName.Accept"
+                           Loading="IsSwitching(tenant)"
+                           Disabled="IsWaiting(tenant)"
+                           OnClick="WrapHandled(() => SwitchTo(tenant))">
+                    @Localizer[nameof(AppStrings.AcceptInvitation)]
+                </BitButton>
+            </BitStack>
+        }
+    }
+
+    @if (switchTargets.Length > 0)
+    {
+        <BitText Typography="BitTypography.Subtitle2" Element="h3">@Localizer[nameof(AppStrings.SwitchTenant)]</BitText>
+
+        @foreach (var tenant in switchTargets)
+        {
+            <BitButton @key="tenant.Id"
+                       FullWidth
+                       Variant="BitVariant.Outline"
+                       IconName="@BitIconName.Org"
+                       Styles="@(new() { Primary = "overflow-wrap:anywhere" })"
+                       Loading="IsSwitching(tenant)"
+                       Disabled="IsWaiting(tenant)"
+                       OnClick="WrapHandled(() => SwitchTo(tenant))">
+                @GetDisplayName(tenant)
+            </BitButton>
+        }
+    }
+</BitStack>

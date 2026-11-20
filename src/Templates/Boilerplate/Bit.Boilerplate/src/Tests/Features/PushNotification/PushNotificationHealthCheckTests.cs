@@ -36,6 +36,21 @@ public class PushNotificationHealthCheckTests
         Assert.AreEqual(expectedStatus, result.Status, result.Exception?.Message);
     }
 
+    /// <summary>
+    /// The sandbox answers a TestFlight or App Store install's token with BadDeviceToken, which the check would pass.
+    /// </summary>
+    [TestMethod]
+    public async Task ApnsCheck_Should_ReportDegraded_OnTheSandboxOutsideDevelopment()
+    {
+        var adsPushSender = A.Fake<IAdsPushSender>();
+
+        var result = await Check(adsPushSender, AdsPushTarget.Ios, apnsSandboxOutsideDevelopment: true);
+
+        Assert.AreEqual(HealthStatus.Degraded, result.Status);
+        Assert.Contains("EnvironmentType", result.Description!);
+        A.CallTo(adsPushSender).MustNotHaveHappened();
+    }
+
     [TestMethod]
     public async Task Check_Should_ReportTheRegisteredFailureStatus_OnAnUnexpectedException()
     {
@@ -115,9 +130,9 @@ public class PushNotificationHealthCheckTests
         return await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = registration }, TestContext.CancellationToken);
     }
 
-    private async Task<HealthCheckResult> Check(IAdsPushSender adsPushSender, AdsPushTarget target)
+    private async Task<HealthCheckResult> Check(IAdsPushSender adsPushSender, AdsPushTarget target, bool apnsSandboxOutsideDevelopment = false)
     {
-        var healthCheck = new PushNotificationHealthCheck(adsPushSender, target);
+        var healthCheck = new PushNotificationHealthCheck(adsPushSender, target, apnsSandboxOutsideDevelopment);
         var registration = new HealthCheckRegistration(target is AdsPushTarget.Ios ? "apns" : "firebase", healthCheck, failureStatus: HealthStatus.Degraded, tags: null);
 
         return await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = registration }, TestContext.CancellationToken);

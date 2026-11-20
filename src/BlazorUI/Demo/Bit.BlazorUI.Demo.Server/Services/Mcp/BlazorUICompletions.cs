@@ -55,6 +55,7 @@ public static class BlazorUICompletions
             // goes wrong - are prose, and offering a menu of prose would be worse than silence.
             "add-bit-blazorui-to-app" when argument is "hostingModel" => [.. BlazorUISetupGuide.HostingModels, "unknown"],
             "migrate-to-bit-blazorui" when argument is "current" => ["MudBlazor", "Radzen", "Syncfusion", "Telerik", "Bootstrap markup", "hand-written HTML and CSS"],
+            "upgrade-bit-blazorui" when argument is "fromVersion" => [.. BlazorUIBreakingChanges.FromVersions, "unknown"],
             _ => []
         },
 

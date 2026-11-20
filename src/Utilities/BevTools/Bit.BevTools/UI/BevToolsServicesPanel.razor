@@ -168,7 +168,7 @@
         {
             var d = dep;
             var captive = service.Lifetime == ServiceLifetime.Singleton && d.Lifetime != ServiceLifetime.Singleton;
-            <div style="padding-left:@(depth * 14)px">
+            <div style="padding-left:calc(@(depth) * var(--bev-indent))">
                 <button type="button" class="bev-link bev-mono" @onclick="() => { _selected = d; OnParametersSet(); }">@d.ServiceTypeName</button>
                 <span class="bev-chip bev-@BevToolsFmt.Lifetime(d.Lifetime)">@BevToolsFmt.Lifetime(d.Lifetime)</span>
                 @if (captive) { <span class="bev-chip bev-err">captive</span> }

@@ -24,13 +24,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-		<PackageReference Include="Bit.Belemetry" Version="11.0.0-pre-22" />
-		<PackageReference Include="Bit.BlazorES2019" Version="11.0.0-pre-22" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-22">
+		<PackageReference Include="Bit.Belemetry" Version="11.0.0-pre-23" />
+		<PackageReference Include="Bit.BlazorES2019" Version="11.0.0-pre-23" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="11.0.0-pre-23">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-22">
+        <PackageReference Include="Bit.SourceGenerators" Version="11.0.0-pre-23">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -77,6 +77,14 @@
             <Generator>PublicResXFileCodeGenerator</Generator>
             <LastGenOutput>%(Filename).Designer.cs</LastGenOutput>
         </EmbeddedResource>
+    </ItemGroup>
+
+    <!-- The names removed or renamed since 10.5.0 that GetBitBlazorUIBreakingChanges answers with: the analyzer's own
+         list, read by the analyzer's own parser (BitBreakingChanges, off the BreakingChanges.json its assembly embeds), so
+         the tool and an app's build always read the same entries the same way and say the same fix. Only those two
+         classes are used here, which touch nothing of Roslyn: the analyzer keeps Microsoft.CodeAnalysis to itself. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazorUI.Analyzers\Bit.BlazorUI.Analyzers.csproj" />
     </ItemGroup>
 
     <!-- The demo pages the MCP server reads to answer with each component's examples: their titles,

@@ -3,14 +3,14 @@
 Create [bit platform](https://bitplatform.dev) projects that are ready to run on Windows, macOS and Linux, translate `.resx` files with an LLM, decode stack traces minified by Bit.Minifier, and write the profiles that compile Blazor WebAssembly apps ahead of time.
 
 ```bash
-dotnet tool install --global Bit.Cli --version 11.0.0-pre-22
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-23
 bit new MyApp
 ```
 
 Or run it without installing anything:
 
 ```bash
-dnx Bit.Cli --version 11.0.0-pre-22 -- new MyApp
+dnx Bit.Cli --version 11.0.0-pre-23 -- new MyApp
 ```
 
 It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package.
@@ -162,6 +162,7 @@ bit pipeline
 bit pipeline --check
 bit pipeline --env Production
 bit pipeline --rotate-certificate
+bit pipeline --env Production --yes --apns-key AuthKey_2X9R4HXF34.p8 --apple-team-id A1B2C3D4E5
 ```
 
 - It reads the secrets from the workflows themselves, so a pipeline you changed is read as it is. It follows the reusable workflows they call, in the repository or in another one, with the inputs and secrets they're given, and finds the environment each job deploys to, like `environment: ${{ inputs.ENV_NAME }}` with `ENV_NAME: Production` from its caller.
@@ -169,7 +170,14 @@ bit pipeline --rotate-certificate
 - It creates what it can: a VAPID key pair (`PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY`), an app certificate (`APP_CERTIFICATE`), the passwords of the database and Redis containers the server's Docker Compose project runs (`DATABASE_PASSWORD`, `REDIS_CACHE_PASSWORD`, `REDIS_PERSISTENT_PASSWORD`, in letters and digits) and an Android signing key (`ANDROID_RELEASE_KEYSTORE_FILE_BASE64` and its two passwords), whose fingerprint it adds to the project's `assetlinks.json`. With an App Store Connect API key you give it, it also creates the iOS app's signing, as `bit keys apple` does, with the capabilities the app's entitlements need turned on for its bundle id, once for every environment that needs it, and adds the app to `apple-app-site-association.json`. It asks for the rest; `@file` reads the value from a file, and an empty answer skips it. `--yes` skips what only you can give.
 - Values go to the GitHub CLI through its input, never on a command line, and bit keeps a copy of the keys it creates in `~/.bitplatform/keys`, since GitHub doesn't give a secret back. Google Play only takes updates signed with the same key, so save the keystore and its password somewhere safe too.
 - It lets only collaborators open pull requests, makes the workflows' `GITHUB_TOKEN` read-only and unable to approve pull requests, lets the `Production` environment deploy only from `main`, and turns on Dependabot alerts. On a public repository it also makes every outside contributor's workflows wait for approval, and warns when a workflow runs on a self-hosted runner. `--yes` turns them on without asking; `bit new --github-repo` sets the pull request and Dependabot ones when it creates the repository.
-- `--check` changes nothing: it lists the secrets and these settings, and exits with code 3 when a secret is missing or a setting is off. `APP_CERTIFICATE_RETIRED`, `SERVERWEB_SETTINGS` and `SERVERAPI_SETTINGS` are optional, and never asked for.
+- For push notifications and Sign in with Apple, which need files only you can make at Google and Apple, it asks for each file in every environment whose deployment reads a secret per setting through `toJSON(secrets)`, as bit Boilerplate's does, when the project's server has the settings. An empty answer skips it, and the options give them without asking, even where they're set:
+  - `--firebase-service-account <file>`: the Firebase service account key the server sends Android pushes with, stored as `SERVERAPI__ADSPUSHFIREBASE__PROJECTID`, `__PRIVATEKEYID`, `__PRIVATEKEY` (its line breaks written as `\n`, since the deployment refuses one), `__CLIENTEMAIL`, `__CLIENTID` and `__CLIENTX509CERTURL`.
+  - `--google-services-json <file>`: the Android app's `google-services.json`, stored in base64 as `GOOGLE_SERVICES_JSON_FILE_BASE64`, with a warning when it has no app for the environment's `APP_ID`.
+  - `--apns-key <file>`: the APNs key's `AuthKey_<key id>.p8`, stored as `SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEY` (its body on one line), `__P8PRIVATEKEYID` and `__TEAMID`.
+  - `--sign-in-with-apple-key <file>` and `--apple-services-id <id>`: Sign in with Apple's key and Services ID, stored as `SERVERAPI__AUTHENTICATION__APPLE__PRIVATEKEY`, `__KEYID`, `__TEAMID` and `__CLIENTID`. It prints the domain and return URL the Services ID needs for the environment.
+
+  The key id comes from the `.p8` file's name. The team id comes from `--apple-team-id` or the App Store signing created in the same run, and is asked for otherwise, offering the App ID prefix of the app's entry in `apple-app-site-association.json`. A setting stored as `SERVERWEB__...` counts as set, and is replaced under that name.
+- `--check` changes nothing: it lists the secrets and these settings, and exits with code 3 when a secret is missing or a setting is off. `APP_CERTIFICATE_RETIRED`, `SERVERWEB_SETTINGS` and `SERVERAPI_SETTINGS` are optional, and never asked for; push notifications' and Sign in with Apple's are optional too.
 - `--rotate-certificate` gives each environment a new app certificate and keeps the old one as `APP_CERTIFICATE_RETIRED`, so tokens it signed keep working.
 
 It needs the GitHub CLI, signed in with admin rights on the repository. For another pipeline, `bit keys` creates the same keys for you to store yourself.
@@ -179,7 +187,7 @@ It needs the GitHub CLI, signed in with admin rights on the repository. For anot
 `bit new` and `bit setup` prepare CI machines too, so a pipeline needs no steps of its own for Node.js, workloads, Playwright or the development certificate. The pipelines bit Boilerplate ships install bit once per job and run it before they publish:
 
 ```bash
-dotnet tool install --global Bit.Cli --version 11.0.0-pre-22
+dotnet tool install --global Bit.Cli --version 11.0.0-pre-23
 bit setup --platforms android --no-browsers --yes
 ```
 
@@ -251,14 +259,17 @@ Then review the changes with `git diff`, and run `bit setup` to restore and buil
 ```bash
 bit remove
 bit remove ../Contoso.Shop --yes
+bit remove ../Contoso.Shop-cart --yes
 ```
 
-Deletes a project's folder for good. On Windows that fails while the app, a build process or Node.js still holds its files, so:
+Deletes a folder for good, any folder: a project, a repository `bit diff` created, a git worktree. On Windows that fails while an app, a build process or Node.js still holds its files, so:
 
-- It asks first, and says when the project has changes that aren't committed or commits that aren't pushed. Without a terminal to ask in, it needs `--yes`.
+- It asks first, and says what would be lost: changes that aren't committed, commits that aren't pushed, and, when the folder holds the repository itself, its other branches' commits that aren't pushed, its stashes and its other worktrees. Without a terminal to ask in, it needs `--yes`.
 - It stops the apps that run from the folder, the same way `bit clean` does, then deletes the folder, read-only files like git's included. When a file is still in use, it stops the build process that holds it, if one does, like `bit clean` does, and tries once more. The failure names any other app that still holds a file.
+- When the folder is a linked git worktree (`git worktree add`), it also takes it off its repository's worktrees, the way `git worktree remove` does, so its branch can be deleted or checked out elsewhere and its path used again. Only that worktree: `git worktree prune` isn't needed, and isn't run, since it also clears every other worktree of the repository whose folder is gone. The branch stays in the repository, and when it has commits that aren't pushed, or no upstream, it says so first.
 - When a terminal is still in the folder, everything in it is deleted and the empty folder stays. Delete it after leaving it.
-- The project's Aspire containers and volumes stay in Docker. Remove them in Docker when you no longer need their data.
+- It never deletes a drive's root, your home folder, a folder of your account like Documents or AppData, a system folder like Program Files, bit's own folder or the .NET it runs on, or a folder that holds one of them. Run in a git worktree, it doesn't delete the folder that holds that worktree's repository either.
+- A project's Aspire containers and volumes stay in Docker. Remove them in Docker when you no longer need their data.
 
 ## bit migration
 
@@ -331,7 +342,7 @@ In a pipeline:
 
 ```yaml
 - name: Install the bit CLI
-  run: dotnet tool install --global Bit.Cli --version 11.0.0-pre-22
+  run: dotnet tool install --global Bit.Cli --version 11.0.0-pre-23
 
 - name: Translate .resx files
   env:
@@ -362,6 +373,7 @@ bit keys certificate --production -o ../keys
 bit keys certificate --rotate -o ../keys
 bit keys android
 bit keys apple --issuer-id 57246542-96fe-1a63-e053-0824d011072a --key-id 2X9R4HXF34 --private-key AuthKey_2X9R4HXF34.p8
+bit keys apple --issuer-id 57246542-96fe-1a63-e053-0824d011072a --key-id 2X9R4HXF34 --private-key AuthKey_2X9R4HXF34.p8 --sign-in-with-apple
 ```
 
 `bit keys vapid` prints a new key pair for web push notifications: the public key goes in `AdsPushVapid:PublicKey` of Client.Web, the private key in `AdsPushVapid:PrivateKey` of the server.
@@ -382,6 +394,7 @@ bit keys apple --issuer-id 57246542-96fe-1a63-e053-0824d011072a --key-id 2X9R4HX
 - Creates a new private key, an Apple Distribution certificate for it, and an App Store provisioning profile for the bundle id and that certificate, named `<bundle id> App Store` or `--profile-name`. A profile with that name is replaced. When the profile can't be created, the new certificate is revoked again.
 - Writes `<bundle id>.p12`, the certificate with its private key behind a generated password, and `<bundle id>.mobileprovision` to the current folder or `-o <folder>`. It never overwrites a `.p12`, which may be the only copy of a certificate's private key.
 - Prints the password, only this once, the team id, and the CD secret or variable each value goes in: `APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64` (the `.p12` in base64), `APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD`, `APPSTORE_API_KEY_ISSUER_ID`, `APPSTORE_API_KEY_ID`, `APPSTORE_API_KEY_PRIVATE_KEY`, `IOS_CODE_SIGN_PROVISION` and `APP_ID`.
+- `--sign-in-with-apple` also makes the bundle id a primary App ID with Sign in with Apple (`APPLE_ID_AUTH` with `PRIMARY_APP_CONSENT`) before the profile is made, which bit Boilerplate's Sign in with Apple needs although the app's entitlements don't ask for it: it is Apple's web flow, whose Services ID needs a primary App ID. The App Store Connect API can't create a Services ID or a key, so it prints what to do for them at the Apple Developer site: the Services ID to add, its primary App ID, and each GitHub environment's domain and return URL (`<SERVER_API_ADDRESS or SERVER_ADDRESS>/signin-apple`), read with the GitHub CLI when it's signed in to the repository.
 
 Apple allows a team only a few distribution certificates. When the team has them all, `bit keys apple` lists them: revoke one that no build signs with anymore in the [Apple Developer site](https://developer.apple.com/account/resources/certificates/list) and run it again. Apps already in the App Store keep working.
 
@@ -474,5 +487,5 @@ When a step fails, bit says right under it what it was doing: the exact command 
 
 | Before | Now |
 |---|---|
-| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --version 11.0.0-pre-22 -- translate`, or `bit translate` |
-| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --version 11.0.0-pre-22 -- decode map trace`, or `bit decode map trace` |
+| `dnx Bit.ResxTranslator` | `dnx Bit.Cli --version 11.0.0-pre-23 -- translate`, or `bit translate` |
+| `dnx Bit.Minifier.Cli --decode map trace` | `dnx Bit.Cli --version 11.0.0-pre-23 -- decode map trace`, or `bit decode map trace` |

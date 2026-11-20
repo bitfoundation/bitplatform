@@ -105,6 +105,7 @@ public class HybridHostHardeningTests
     [DataRow("*.keystore")]
     [DataRow("*.jks")]
     [DataRow("*.p12")]
+    [DataRow("*.p8")]
     [DataRow("*.pfx")]
     public void GitIgnore_Should_CoverSigningMaterial(string pattern)
     {

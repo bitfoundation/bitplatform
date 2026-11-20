@@ -450,7 +450,7 @@ The Boilerplate project supports **push notifications** across all platforms:
 
 One of the most powerful features of push notifications in this project is **deep linking**. When you send a push notification, you can specify what happens when a user clicks on it.
 
-**Using the `pageUrl` parameter**, you can:
+**Using `PageUrl`**, you can:
 - Open a specific page in your app when the notification is clicked
 - Navigate users to relevant content (e.g., a new product, a promotion, an announcement)
 - Create targeted marketing campaigns
@@ -459,12 +459,12 @@ One of the most powerful features of push notifications in this project is **dee
 **Example**:
 
 ```csharp
-await pushNotificationService.RequestPush(
-    title: "New Product Available!",
-    message: "Check out our latest product",
-    pageUrl: "/products/123",  // Opens product detail page
-    cancellationToken: cancellationToken
-);
+await pushNotificationService.RequestPush(new()
+{
+    Title = "New Product Available!",
+    Message = "Check out our latest product",
+    PageUrl = "/products/123" // Opens product detail page
+}, cancellationToken: cancellationToken);
 ```
 
 When the user clicks this notification:
@@ -519,6 +519,30 @@ Each platform has its own implementation:
 The server posts each web push to the address in the browser's subscription, so `Subscribe` only accepts an `https` address of a browser push service (Google, Mozilla, Microsoft or Apple). The push endpoints are rate limited.
 
 Each account signed in on a device has a row of its own, so a push about an account reaches the device even while another account is active there. The device still gets a push once however many accounts it holds, and on a device with several accounts a push about one of them names the account and opens the app with it.
+<!--#if (notification == true)-->
+
+### Turning Push Notifications On
+
+Each platform needs credentials of its own, none of them in the repository. For Test and Production, `bit pipeline` asks for them and stores them as the environment's secrets, which the CD writes into the server's settings (`.docs/16`). In development, set the same settings with `dotnet user-secrets set "<Section>:<Key>" "<value>"` in the server project. Each `.p8` and service account file can be downloaded only once, so keep them somewhere safe, outside the repository.
+
+**Web**: nothing to make. `bit pipeline` creates the VAPID key pair (`PUBLIC_VAPIDKEY`, `PRIVATE_VAPIDKEY`) and asks for `VAPID_SUBJECT`; `bit keys vapid` prints a pair for elsewhere. On iPhone and iPad, web push reaches only a web app added to the Home Screen, on iOS and iPadOS 16.4 or later, and the app asks for permission only after a tap ([WebKit](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/)). A page in a Safari tab gets none.
+
+**Android** (Firebase Cloud Messaging):
+
+1. In the [Firebase console](https://console.firebase.google.com), create a project and add an Android app for each environment's `APP_ID`, its package name.
+2. Download the app's `google-services.json` (Project settings, Your apps). In development it goes to `src/Client/Boilerplate.Client.Maui/Platforms/Android/google-services.json`, which git ignores. The CD writes it there from the `GOOGLE_SERVICES_JSON_FILE_BASE64` secret, and without it warns that the app gets no push notifications.
+3. Generate a service account key for the server (Project settings, Service accounts, Generate new private key).
+4. Run `bit pipeline` and give it both files when it asks, or pass `--google-services-json <file> --firebase-service-account <file>`. It stores `GOOGLE_SERVICES_JSON_FILE_BASE64`, the file in base64, and the server's `SERVERAPI__ADSPUSHFIREBASE__PROJECTID`, `__PRIVATEKEYID`, `__PRIVATEKEY`, `__CLIENTEMAIL`, `__CLIENTID` and `__CLIENTX509CERTURL`, the private key with its line breaks written as `\n`, since a secret with a line break stops the deployment.
+
+**iOS** (and the Mac Catalyst app, through the same settings):
+
+1. The bundle id needs Push Notifications on, which `bit keys apple` and `bit pipeline` turn on with the App Store signing, since the app's entitlements ask for it.
+2. At [Certificates, Identifiers & Profiles, Keys](https://developer.apple.com/account/resources/authkeys/list), add a key with Apple Push Notifications service (APNs) and download its `AuthKey_<key id>.p8`. Where Apple asks, let it serve both the sandbox and production, for the whole team.
+3. Run `bit pipeline` and give it the `.p8` when it asks, or pass `--apns-key <file>`. It reads the key id from the file's name, and the team id from the App Store signing when you gave it an App Store Connect API key in the same run; otherwise it asks, or takes `--apple-team-id`. It stores `SERVERAPI__ADSPUSHAPNS__P8PRIVATEKEY`, the key's body on one line, `__P8PRIVATEKEYID` and `__TEAMID`.
+4. Nothing else: the CD sets `AdsPushAPNS:AppBundleIdentifier` to the environment's `APP_ID`, and `AdsPushAPNS:EnvironmentType` is `Production`, the APNs environment of TestFlight and App Store installs, everywhere but in `appsettings.Development.json`, which sets `Development`, the sandbox of apps signed for development. The `apns` health check reports Degraded when a deployed server is set to the sandbox.
+
+Making the keys and files stays manual, since Apple has no API for its keys and bit doesn't sign in to Firebase; bit takes it from there. See Apple's [Sending notification requests to APNs](https://developer.apple.com/documentation/usernotifications/sending-notification-requests-to-apns) and Firebase's [Add the Firebase Admin SDK to your server](https://firebase.google.com/docs/admin/setup).
+<!--#endif-->
 
 ---
 

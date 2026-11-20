@@ -182,6 +182,59 @@
         <_BitBlazorUITargetsImported>true</_BitBlazorUITargetsImported>
     </PropertyGroup>
 
+    <!--
+    The breaking-change analyzer (Bit.BlazorUI.Analyzers, BITBC001 / BITBC002): fails the build on a name of the packages
+    that was removed or renamed since 10.5.0 and is still used - a parameter written on a component, a component's tag, a
+    type or a member in C# - and says what to write instead. Most of these do not fail a build on their own: a component
+    passes an attribute it does not take on to its element, so a removed parameter compiles and does nothing, and a
+    removed component's tag renders as an unknown HTML element with only the warning RZ10012. The list of changes is the
+    analyzer's BreakingChanges.json (and BreakingChanges.md for the prose).
+
+      BitBlazorUIBreakingChangeAnalyzer  true   (default) The analyzer runs in every build of a project referencing the
+                                                packages, directly or through another package.
+                                         false  It is not added to the compilation.
+
+    A single rule is turned down in a .globalconfig instead (is_global = true, then dotnet_diagnostic.BITBC001.severity =
+    warning), or off with <NoWarn>$(NoWarn);BITBC001</NoWarn>. Not in an .editorconfig: the errors of the markup are
+    located in the .razor file, which is no C# file of the compilation, so only the global options reach them.
+
+    The analyzer ships in the package's bit-analyzers\ folder rather than analyzers\, which NuGet would hand the compiler
+    by itself, so that this switch can leave it out - and under a name that does not start with "analyzers" either: the
+    .NET SDK takes any package file whose path starts with that word for an analyzer of the package.
+
+    Found and added as the compile is about to run, never while the project is evaluated: the build that restores the
+    package for the first time evaluates the project before the package is extracted, and MSBuild may answer an Exists
+    of the evaluation from what it saw then. A project referencing the source tree (this repository's own) gets the build
+    of it that its ProjectReferences have just made.
+    -->
+    <PropertyGroup>
+        <BitBlazorUIBreakingChangeAnalyzer Condition="'$(BitBlazorUIBreakingChangeAnalyzer)' == ''">true</BitBlazorUIBreakingChangeAnalyzer>
+    </PropertyGroup>
+
+    <!-- The analyzers are not among what tells the SDK a compile is up to date, so the switch is: turned on or off from
+         the command line (-p:), the next build compiles again rather than keeping what the other setting produced. -->
+    <ItemGroup>
+        <CoreCompileCache Remove="BitBlazorUIBreakingChangeAnalyzer=true;BitBlazorUIBreakingChangeAnalyzer=false" />
+        <CoreCompileCache Include="BitBlazorUIBreakingChangeAnalyzer=$(BitBlazorUIBreakingChangeAnalyzer)" />
+    </ItemGroup>
+
+    <Target Name="_BitBlazorUIAddBreakingChangeAnalyzer" BeforeTargets="CoreCompile" Condition="'$(BitBlazorUIBreakingChangeAnalyzer)' == 'true' and '$(Language)' == 'C#'">
+        <PropertyGroup>
+            <_BitBlazorUIAnalyzerAssembly>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\bit-analyzers\Bit.BlazorUI.Analyzers.dll'))</_BitBlazorUIAnalyzerAssembly>
+            <_BitBlazorUIAnalyzerProject>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\Bit.BlazorUI.Analyzers\Bit.BlazorUI.Analyzers.csproj'))</_BitBlazorUIAnalyzerProject>
+        </PropertyGroup>
+        <!-- The source tree: wherever the analyzer project builds to, asked of the project as the package's pack asks it. -->
+        <MSBuild Condition="!Exists('$(_BitBlazorUIAnalyzerAssembly)') and Exists('$(_BitBlazorUIAnalyzerProject)')"
+                 Projects="$(_BitBlazorUIAnalyzerProject)" Targets="GetTargetPath" Properties="Configuration=$(Configuration)"
+                 RemoveProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier">
+            <Output TaskParameter="TargetOutputs" PropertyName="_BitBlazorUIAnalyzerAssembly" />
+        </MSBuild>
+        <ItemGroup Condition="Exists('$(_BitBlazorUIAnalyzerAssembly)')">
+            <Analyzer Remove="$(_BitBlazorUIAnalyzerAssembly)" />
+            <Analyzer Include="$(_BitBlazorUIAnalyzerAssembly)" />
+        </ItemGroup>
+    </Target>
+
     <PropertyGroup Condition="'$(_BitBlazorUITargetsAlreadyImported)' != 'true'">
         <_BitBlazorUIIsWebAssembly Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">true</_BitBlazorUIIsWebAssembly>
 

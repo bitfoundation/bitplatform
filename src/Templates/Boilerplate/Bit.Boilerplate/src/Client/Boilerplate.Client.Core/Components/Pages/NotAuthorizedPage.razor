@@ -3,6 +3,10 @@
 @* - src/Workbench/Components/Pages/AppPages/NotAuthorizedPage.razor *@
 @attribute [Route(PageUrls.NotAuthorized)]
 @attribute [Route("{culture?}" + PageUrls.NotAuthorized)]
+@*#if (multitenant == true)*@
+@using Boilerplate.Shared.Features.Tenants.Dtos
+@using Boilerplate.Client.Core.Components.Pages.Tenants
+@*#endif*@
 @inherits AppPageBase
 
 <AppPageData Title="@Localizer[nameof(AppStrings.NotAuthorizedPageTitle)]" />
@@ -16,7 +20,8 @@ else
     <AuthorizeView>
         <Authorized>
             <section>
-                <BitStack HorizontalAlign="BitAlignment.Center" Style="--bit-Button-min-width:min(300px, 100%)">
+                @* NoShrinkContent: on a small screen the page scrolls instead of squeezing the image. *@
+                <BitStack NoShrinkContent HorizontalAlign="BitAlignment.Center" Style="--bit-Button-min-width:min(300px, 100%)">
                     <BitImage Alt="" Src="_content/Boilerplate.Client.Core/images/403.svg" Width="100%" Style="max-width:600px" />
 
                     <BitText Typography="BitTypography.H5" Element="h2" Color="BitColor.SevereWarning" Align="BitTextAlign.Center">
@@ -29,6 +34,13 @@ else
                     @if (lacksSelectedTenant)
                     {
                         <BitText Align="BitTextAlign.Center">@Localizer[nameof(AppStrings.SelectTenantMessage)]</BitText>
+
+                        @if (tenants.Count > 0)
+                        {
+                            <TenantSwitchList Tenants="tenants"
+                                              IsGlobalAdmin="isGlobalAdmin"
+                                              OnSwitch="WrapHandled((TenantDto tenant) => SwitchTenant(tenant))" />
+                        }
 
                         <BitButton Href="@PageUrls.ManageMyTenants">
                             @Localizer[nameof(AppStrings.ManageMyTenants)]

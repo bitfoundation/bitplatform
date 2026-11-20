@@ -1840,6 +1840,9 @@ After reaching {0}, extra sign-ins will have reduced functions.</value>
     <data name="PendingInvitation" xml:space="preserve">
     <value>Pending invitation</value>
   </data>
+    <data name="PendingInvitations" xml:space="preserve">
+    <value>Pending invitations</value>
+  </data>
     <data name="CurrentTenant" xml:space="preserve">
     <value>Current tenant</value>
   </data>

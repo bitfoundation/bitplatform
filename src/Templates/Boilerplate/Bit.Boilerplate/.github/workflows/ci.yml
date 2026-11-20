@@ -47,7 +47,7 @@ jobs:
     # This step and the other long ones have a time limit of their own, well past their usual time (about 10 minutes for
     # this one), so a step that gets stuck fails under its own name instead of running to the job's limit.
     - name: Set up and build with bit setup
-      uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-22
+      uses: bitfoundation/bitplatform/.github/actions/bit-bp/bit-setup@v-11.0.0-pre-23
       timeout-minutes: 25
       with:
         arguments: --platforms android -p:EnforceCodeStyleInBuild=true

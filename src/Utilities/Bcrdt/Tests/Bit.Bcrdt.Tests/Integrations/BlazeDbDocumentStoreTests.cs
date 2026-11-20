@@ -513,7 +513,7 @@ public class BlazeDbDocumentStoreTests
         Assert.AreEqual(expected, BcrdtConvergenceHarness.Describe(reloaded));
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_replica_kept_in_BlazeDb_reopens_offline_and_converges_with_a_second_replica()
     {
         var network = new BcrdtInMemoryNetwork();

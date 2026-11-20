@@ -18,6 +18,12 @@ public sealed record AppleCapability(string Type, string? SettingKey = null, str
 public sealed partial class AppleEntitlements
 {
     /// <summary>
+    /// Sign in with Apple on a primary App ID, which a Services ID for the web flow needs whether or not the app's
+    /// entitlements ask for it.
+    /// </summary>
+    public static readonly AppleCapability SignInWithApple = new("APPLE_ID_AUTH", "APPLE_ID_AUTH_APP_CONSENT", "PRIMARY_APP_CONSENT");
+
+    /// <summary>
     /// Each entitlement as Apple's reference names it (https://developer.apple.com/documentation/bundleresources/entitlements),
     /// whose page names the capability it needs, and that capability's type in the App Store Connect API.
     /// </summary>
@@ -155,7 +161,7 @@ public sealed partial class AppleEntitlements
 
     private static AppleCapability Capability(string type, string? value) => type switch
     {
-        "APPLE_ID_AUTH" => new(type, "APPLE_ID_AUTH_APP_CONSENT", "PRIMARY_APP_CONSENT"),
+        "APPLE_ID_AUTH" => SignInWithApple,
         "ICLOUD" => new(type, "ICLOUD_VERSION", "XCODE_6"),
         "DATA_PROTECTION" when value is not null && dataProtectionLevels.TryGetValue(value, out var level) => new(type, "DATA_PROTECTION_PERMISSION_LEVEL", level),
         _ => new(type)

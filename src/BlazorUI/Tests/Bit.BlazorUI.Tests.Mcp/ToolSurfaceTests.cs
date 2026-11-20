@@ -5,13 +5,13 @@ using Bit.BlazorUI.Tests.Mcp.Infrastructure;
 namespace Bit.BlazorUI.Tests.Mcp;
 
 /// <summary>
-/// What a client is handed before it calls anything: the seven tools, their annotations, their
+/// What a client is handed before it calls anything: the eight tools, their annotations, their
 /// descriptions, and the instructions the server writes into the model's context at
 /// <c>initialize</c>.
 /// <para>
 /// This is the part of the server that is paid for on every request of every session, so it is the
 /// part worth pinning. A tool that appears without an annotation is a tool a client will stop to
-/// ask a person about; an eighth tool that appears without anyone deciding it should is the cost
+/// ask a person about; a ninth tool that appears without anyone deciding it should is the cost
 /// this server's design was spent avoiding.
 /// </para>
 /// </summary>
@@ -21,7 +21,7 @@ public class ToolSurfaceTests : McpTestBase
     private async Task<IList<McpClientTool>> ToolsAsync() => await OncePerFixtureAsync<IList<McpClientTool>>(async () => await Mcp.ListToolsAsync(cancellationToken: Ct));
 
     [TestMethod]
-    public async Task Publishes_exactly_the_seven_tools()
+    public async Task Publishes_exactly_the_eight_tools()
     {
         var tools = await ToolsAsync();
 

@@ -30,7 +30,7 @@ public class BrowserLifecycleTests
             transports,
             store);
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Coming_back_online_reconnects_a_document_waiting_out_its_backoff_at_once()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -58,7 +58,7 @@ public class BrowserLifecycleTests
         Assert.AreEqual(BcrdtConnectionStatus.Disconnected, stopped.ConnectionStatus);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task A_failed_attempt_on_coming_back_online_leaves_one_reconnection_loop()
     {
         var link = new SwitchableNetwork(new BcrdtInMemoryNetwork()) { Up = false };
@@ -80,7 +80,7 @@ public class BrowserLifecycleTests
         Assert.AreEqual(BcrdtConnectionStatus.Reconnecting, document.ConnectionStatus);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Being_shown_again_reconnects_unless_the_browser_is_offline()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -118,7 +118,7 @@ public class BrowserLifecycleTests
         await WaitUntilAsync(() => document.IsSynced);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Turning_reconnection_off_leaves_the_backoff_alone()
     {
         var link = new SwitchableNetwork(new BcrdtInMemoryNetwork()) { Up = false };
@@ -217,7 +217,7 @@ public class BrowserLifecycleTests
         Assert.IsInstanceOfType<InvalidOperationException>(errors[1]);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Leaving_the_page_withdraws_presence_and_coming_back_restores_it()
     {
         var network = new BcrdtInMemoryNetwork();
@@ -301,7 +301,7 @@ public class BrowserLifecycleTests
         Assert.IsNull(lifecycle.IsStoragePersistent);
     }
 
-    [TestMethod]
+    [SingleThreadTestMethod]
     public async Task Signals_after_disposal_are_ignored()
     {
         var link = new SwitchableNetwork(new BcrdtInMemoryNetwork()) { Up = false };

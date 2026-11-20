@@ -164,8 +164,8 @@ public class ProfilerTests : BunitContext
         Assert.AreEqual(2, rows.Length);
         Assert.StartsWith("ParentComponent", rows[0].QuerySelector("td")!.TextContent.Trim());
         Assert.StartsWith("ChildComponent", rows[1].QuerySelector("td")!.TextContent.Trim());
-        Assert.Contains("padding-left:6px", rows[0].QuerySelector("td")!.GetAttribute("style")!, StringComparison.Ordinal);
-        Assert.Contains("padding-left:20px", rows[1].QuerySelector("td")!.GetAttribute("style")!, StringComparison.Ordinal);
+        Assert.Contains("padding-left:calc(0 * var(--bev-indent) + 6px)", rows[0].QuerySelector("td")!.GetAttribute("style")!, StringComparison.Ordinal);
+        Assert.Contains("padding-left:calc(1 * var(--bev-indent) + 6px)", rows[1].QuerySelector("td")!.GetAttribute("style")!, StringComparison.Ordinal);
 
         var parentSelf = parent.Renders.Where(s => s.BatchId == batchId).Sum(s => s.DurationMs);
         var childSelf = child.Renders.Where(s => s.BatchId == batchId).Sum(s => s.DurationMs);

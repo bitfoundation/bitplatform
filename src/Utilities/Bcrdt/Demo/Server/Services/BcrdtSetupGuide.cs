@@ -192,7 +192,8 @@ public static partial class BcrdtSetupGuide
                 thread-safe while a transport raises its events on I/O threads, so a peer that edits owns the document from
                 one loop, as below. A peer that only listens - an archiver, an indexer - can use `BcrdtSyncProvider`, which
                 adds reconnection with backoff and presence: without a synchronization context to capture it serializes its
-                own access to the document, and the application must then not edit the document concurrently with it.
+                own access to the document under a lock, and the application then reads and edits the document only through
+                `provider.InvokeAsync(...)`, which runs its work under that same lock.
                 """,
                 ConsoleChecklist,
                 ["Working with documents", "The synchronization protocol"],
