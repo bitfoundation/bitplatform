@@ -31,8 +31,10 @@ Three kinds of place:
   dependency-update skill's note on our own version.
 - **Core**: only major.minor.patch, moved only when that changes (from a stable release to the next version's first pre,
   or to a patch). These are the `bitplatform.dev/mcp?v=` URLs in the coding agents' MCP configs.
-- **Kept**: a version written down on purpose, never moved. The Boilerplate's `specs/workarounds.md` names the bit
-  package version a defect was seen in; whoever comes back to the entry checks it again and updates it.
+- **Kept**: a version written down on purpose, which the helper never moves. The Boilerplate's `specs/workarounds.md`
+  names the bit package version a defect was seen in; whoever comes back to the entry checks it again and updates it.
+  Its `bit.json` names under `cli` the oldest bit CLI the template works with: a change to the template that an older
+  bit can't handle sets it to the next version, the one that change ships in, and every bump checks that none forgot.
 
 A plain search and replace only works while the version is a unique prerelease string. A stable `X.Y.Z` is shared with
 Microsoft packages of the same major after its GA, version ranges, changelog headings, examples and test data, and the
@@ -65,6 +67,21 @@ Run the helper with `scan` and make it clean before bumping:
 Doing this on every prerelease is the point: by the stable release, where a plain search no longer tells ours from
 theirs, the rules are already complete.
 
+## Check the oldest bit CLI the template works with
+
+`cli.minVersion` in the Boilerplate's `bit.json` moves by hand, so a change can forget it. Read what changed in
+`src/Toolings/Cli` and in the Boilerplate since the last bump, the commit that moved `ReleaseVersion` to the current
+version: that is what the version being bumped to ships. Then answer one question: does bit as it was at that commit
+still work on a project made from the template as it is now? It does not when the template's skills, docs, workflows
+or scripts now use a command, an option or an output bit only got since, when the template moved or renamed something
+that only the new bit finds, or when its `bit.json` holds something the older bit reads wrongly.
+
+- It still works: leave the line. What bit gained and the template does not use is no reason, since a minimum higher
+  than needed only makes a bit that would have worked replace itself.
+- It does not, and `minVersion` is older than the version being bumped to: set it to that version, in the bump's PR.
+- `minVersion` is above the version being bumped to, a wrong guess at the next version: set it to that version, since
+  no bit that new exists.
+
 ## Bump
 
 Run `bump -To <version>`, with `-DryRun` first when in doubt. It refuses while anything is uncovered, and while
@@ -96,4 +113,5 @@ title must start with Prerelease or Release: that is what starts All Release Bui
 ## Done when
 
 The scan was clean before the bump, the PR is open with only version lines (plus any rule or list updates), and the
-report names the issue and the PR, how many files and lines moved, and which places came or went since the last bump.
+report names the issue and the PR, how many files and lines moved, which places came or went since the last bump, and
+what the check of the oldest bit CLI read and decided.

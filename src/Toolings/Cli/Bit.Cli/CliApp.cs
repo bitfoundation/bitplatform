@@ -16,6 +16,8 @@ public static class CliApp
 
     private static readonly string[] longRunningCommands = ["new", "setup", "run", "diff", "translate", "doctor", "clean", "aot-profile", "migration", "pipeline", "api"];
 
+    private static readonly Dictionary<string, string> projectFolders = new() { ["setup"] = "folder-or-repository", ["diff"] = "--project", ["clean"] = "path", ["rename"] = "path" };
+
     public static RootCommand BuildRootCommand(Func<CliServices> services)
     {
         var root = new RootCommand("bit CLI: create bit platform projects that are ready to run, translate .resx files and decode minified stack traces.")
@@ -43,6 +45,46 @@ public static class CliApp
         };
 
         return root;
+    }
+
+    public static async Task<int> InvokeAsync(RootCommand root, ParseResult parseResult, CliServices services, string[] args, InvocationConfiguration configuration)
+    {
+        services.Arguments = args;
+
+        if (ProjectFolder(root, parseResult, services, args) is { } folder && await services.SelfUpdate.HandOffToProjectBitAsync(folder, args, CancellationToken.None) is { } exitCode)
+            return exitCode;
+
+        return await parseResult.InvokeAsync(configuration);
+    }
+
+    private static string? ProjectFolder(RootCommand root, ParseResult parseResult, CliServices services, string[] args)
+    {
+        if (args.Length == 0 || args.Any(a => a is "--help" or "-h" or "-?" or "/?" or "--version"))
+            return null;
+
+        var current = services.Environment.CurrentDirectory;
+        var command = CommandPath(parseResult.CommandResult, root).FirstOrDefault();
+        var unread = parseResult.Errors.Count > 0;
+
+        if (command is null)
+            return unread ? current : null;
+
+        if (SelfUpdate.CommandsWithoutAProject.Contains(command) || (command is "setup" && unread is false))
+            return null;
+
+        try
+        {
+            if (projectFolders.TryGetValue(command, out var symbol) is false || parseResult.GetValue<string?>(symbol) is not { } folder)
+                return current;
+
+            var given = Path.GetFullPath(folder, current);
+
+            return command is "setup" && Directory.Exists(given) is false ? null : given;
+        }
+        catch (Exception exp) when (exp is InvalidOperationException or ArgumentException or NotSupportedException)
+        {
+            return command is "setup" ? null : current;
+        }
     }
 
     public static async Task<int> RunAsync(string[] args)
@@ -95,7 +137,7 @@ public static class CliApp
 
         try
         {
-            exitCode = await parseResult.InvokeAsync(new InvocationConfiguration { EnableDefaultExceptionHandler = false, ProcessTerminationTimeout = TimeSpan.FromSeconds(10) });
+            exitCode = await InvokeAsync(root, parseResult, services, args, new InvocationConfiguration { EnableDefaultExceptionHandler = false, ProcessTerminationTimeout = TimeSpan.FromSeconds(10) });
             return exitCode;
         }
         catch (OperationCanceledException)
