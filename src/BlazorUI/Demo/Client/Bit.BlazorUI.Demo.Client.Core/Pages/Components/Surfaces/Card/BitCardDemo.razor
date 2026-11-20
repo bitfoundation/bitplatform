@@ -414,7 +414,41 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Accent" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Accent</b> draws a bar in a theme role along the inline-start edge of the card, the look of a callout. The bar is laid over
+            that edge, so it moves nothing inside the card, follows its corners, runs over a cover and moves to the right in right-to-left.
+            It goes along with every other look of the card, and a disabled card dims it.
+        </div>
+        <br /><br />
+        <div class="card-row">
+            <BitCard Accent="BitColor.Primary" Title="Primary" Subtitle="The callout look" Width="14rem">
+                <BitText Typography="BitTypography.Body2">A note set apart from the cards around it.</BitText>
+            </BitCard>
+            <BitCard Accent="BitColor.Success" Outlined Title="Success" Subtitle="On an outlined card" Width="14rem" />
+            <BitCard Accent="BitColor.Warning" Square Title="Warning" Subtitle="On a square card" Width="14rem" />
+            <BitCard Accent="BitColor.Error" Disabled Title="Error" Subtitle="Disabled" Width="14rem" />
+        </div>
+        <br />
+        <div class="card-row">
+            <BitCard Accent="BitColor.Info" Horizontal Width="26rem" CoverWidth="8rem" Title="Mount Rainier" Subtitle="Over a cover"
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg">
+                <BitText Typography="BitTypography.Body2">The bar runs over the edge of the thumbnail.</BitText>
+            </BitCard>
+        </div>
+        <br />
+        <div>
+            <b>--bit-Card-accent-color</b> draws the bar on its own, in any color, on every card it reaches - an Accent on the card still
+            wins over it. <b>--bit-Card-accent-width</b> sets how thick the bar is, and draws nothing on its own.
+        </div>
+        <br />
+        <div class="card-row" style="--bit-Card-accent-color: #8b5cf6; --bit-Card-accent-width: 0.5rem;">
+            <BitCard Title="Any color" Subtitle="From the variable alone" Width="14rem" />
+            <BitCard Accent="BitColor.Success" Title="Accent wins" Subtitle="Over the variable" Width="14rem" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
             <b>Color</b> paints the card in a theme role and <b>Variant</b> decides how: <b>Fill</b> (the default) paints the surface,
             <b>Outline</b> the border and the text, <b>Text</b> tints the surface. A disabled card uses the role's disabled colors.
@@ -456,7 +490,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Icon</b> takes a <b>BitIconInfo</b> from an external library such as FontAwesome or Bootstrap Icons; the glyph is sized to the title
             beside it.
@@ -481,7 +515,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div><b>Size</b> scales the padding, the gaps and the header type together. Medium is the default.</div>
         <br /><br />
         <div class="card-row">
@@ -497,7 +531,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part - the link, the floating actions,
             the cover and its image, the main column, the header with its icon, text, title and subtitle, the actions, the body, the footer and the
@@ -528,7 +562,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>Use <b>Dir="BitDir.Rtl"</b> to mirror the whole card: the icon, the actions and a horizontal cover all swap sides.</div>
         <br /><br />
         <div class="card-row">

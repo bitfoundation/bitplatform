@@ -23,8 +23,77 @@ public partial class BitCardStylesheetTests
 
         foreach (var name in documented)
         {
+            // The accent color is the one read with no fallback, on purpose: the bar is only drawn where it, or an
+            // Accent, gives it a color (see BitCardShouldOnlyDrawTheAccentBarWhereItHasAColor).
+            if (name == AccentColorVariable)
+            {
+                StringAssert.Contains(stylesheet, $"var({name})", $"{name} is documented but never read.");
+                continue;
+            }
+
             StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
         }
+    }
+
+    [TestMethod]
+    public void BitCardShouldOnlyDrawTheAccentBarWhereItHasAColor()
+    {
+        var stylesheet = ReadStylesheet();
+
+        var bar = Block(stylesheet, ".bit-crd::after");
+
+        // A layer over the whole surface, taking the corner of the card and letting the pointer through, whose
+        // inline-start border is the bar: it moves nothing inside the card and follows the direction it is laid out in.
+        StringAssert.Contains(bar, "inset: 0;");
+        StringAssert.Contains(bar, "position: absolute;");
+        StringAssert.Contains(bar, "pointer-events: none;");
+        StringAssert.Contains(bar, "border-radius: inherit;");
+
+        // The Accent first, then the public variable - and no fallback after them, so a card given neither has the whole
+        // declaration invalid at computed-value time and draws no bar, rather than a bar in some default color.
+        StringAssert.Contains(bar, "border-inline-start: var(--bit-Card-accent-width, calc(2 * #{$shp-border-width-thick})) solid var(--bit-crd-acc, var(--bit-Card-accent-color));");
+        Assert.IsFalse(stylesheet.Contains($"var({AccentColorVariable}, "), "The accent color is given a fallback, which would draw a bar on every card.");
+
+        // Nothing but the bar's own rule draws it: the other rules touching it set its color alone, which a card with no
+        // bar has no border style to show.
+        foreach (Match match in Regex.Matches(SourceFiles.StripScssComments(stylesheet), @"border-inline-start(-[a-z]+)?\s*:"))
+        {
+            Assert.IsTrue(match.Value.StartsWith("border-inline-start:") || match.Value.StartsWith("border-inline-start-color"),
+                          $"A rule sets {match.Value} on the card.");
+        }
+
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"border-inline-start:").Count, "The bar is drawn by more than one rule.");
+    }
+
+    [TestMethod]
+    public void BitCardShouldPublishTheAccentOnlyWhereItIsSet()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // Like the Color, the Accent publishes the role it names, and the root resets it so a nested card never draws the
+        // bar of the card it sits in.
+        StringAssert.Contains(stylesheet, """
+            @each $role, $tokens in $bit-color-roles {
+                .bit-crd-acc-#{$role} {
+                    --bit-crd-acc: #{role($tokens, main)};
+                }
+            }
+            """.Replace("\r\n", "\n"));
+
+        StringAssert.Contains(Block(stylesheet, ".bit-crd"), "--bit-crd-acc: initial;");
+    }
+
+    [TestMethod]
+    public void BitCardShouldDimTheAccentBarOfADisabledCardAndKeepItInForcedColors()
+    {
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Contains(Block(stylesheet, ".bit-crd.bit-dis::after"), "border-inline-start-color: currentcolor;");
+
+        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(forced, "    .bit-crd::after {"), "border-inline-start-color: CanvasText;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(forced, "    .bit-crd.bit-dis::after {"), "border-inline-start-color: GrayText;");
     }
 
     [TestMethod]
@@ -323,6 +392,8 @@ public partial class BitCardStylesheetTests
         StringAssert.Contains(fallback, ".bit-crd.bit-rtl .bit-crd-skb::after {\n        animation-direction: reverse;");
         Assert.AreEqual(1, Regex.Matches(stylesheet, @"\.bit-rtl \.bit-crd-skb").Count, "The class is read outside the @supports fallback.");
     }
+
+    private const string AccentColorVariable = "--bit-Card-accent-color";
 
     private static string[] DocumentedVariables(string stylesheet)
     {
