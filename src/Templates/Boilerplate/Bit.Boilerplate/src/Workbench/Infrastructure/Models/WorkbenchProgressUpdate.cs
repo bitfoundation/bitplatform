@@ -28,8 +28,11 @@ public sealed record WorkbenchProgressNoteUpdate(string? Id, string? Kind, strin
 /// <summary>A link, matched by its label; <c>remove</c> takes it away.</summary>
 public sealed record WorkbenchProgressLinkUpdate(string Label, string? Url, bool Remove = false);
 
-/// <summary>A question to ask or change while it is unanswered; <c>withdraw</c> takes back one that no longer matters.</summary>
-public sealed record WorkbenchProgressAskUpdate(string Id, string? Question, string? Detail, string? Kind, string[]? Options, string? Placeholder, bool Withdraw = false, WorkbenchProgressSecretUpdate? Secret = null);
+/// <summary>
+/// A question to ask or change while it is unanswered; <c>withdraw</c> takes back one that no longer matters, and
+/// <c>suggestion</c> is the answer the agent expects, which the user takes with Tab.
+/// </summary>
+public sealed record WorkbenchProgressAskUpdate(string Id, string? Question, string? Detail, string? Kind, string[]? Options, string? Placeholder, bool Withdraw = false, WorkbenchProgressSecretUpdate? Secret = null, string? Suggestion = null);
 
 /// <summary>
 /// Where a secret question's answer goes: <c>to</c> is <c>github</c>, with the secret's <c>name</c> and its <c>environment</c>

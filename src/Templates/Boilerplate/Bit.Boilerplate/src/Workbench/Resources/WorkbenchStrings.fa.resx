@@ -5085,6 +5085,9 @@
     <data name="ProgressSendAnswer" xml:space="preserve">
         <value>ارسال جواب</value>
     </data>
+    <data name="ProgressUseSuggestion" xml:space="preserve">
+        <value>استفاده از پیشنهاد</value>
+    </data>
     <data name="ProgressAnswerFailed" xml:space="preserve">
         <value>این سؤال در این فاصله جواب داده یا پس گرفته شده.</value>
     </data>
@@ -5252,6 +5255,9 @@
     </data>
     <data name="SampleDeployAskEmailOption3" xml:space="preserve">
         <value>فعلاً هیچ‌کدام: ایمیل‌ها در لاگ‌ها دیده شوند</value>
+    </data>
+    <data name="SampleDeployAskEmailSuggestion" xml:space="preserve">
+        <value>یک سرویس ایمیل رایگان تا وقتی دامنه آماده شود</value>
     </data>
     <data name="SampleDeployAskSsh" xml:space="preserve">
         <value>بعد از راه افتادن تونل، پورت SSH سرور بسته شود؟</value>

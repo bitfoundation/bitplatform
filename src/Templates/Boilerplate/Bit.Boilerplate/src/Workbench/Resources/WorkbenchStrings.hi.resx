@@ -5085,6 +5085,9 @@
     <data name="ProgressSendAnswer" xml:space="preserve">
         <value>जवाब भेजें</value>
     </data>
+    <data name="ProgressUseSuggestion" xml:space="preserve">
+        <value>सुझाव इस्तेमाल करें</value>
+    </data>
     <data name="ProgressAnswerFailed" xml:space="preserve">
         <value>इस बीच इस सवाल का जवाब दे दिया गया या इसे वापस ले लिया गया।</value>
     </data>
@@ -5252,6 +5255,9 @@
     </data>
     <data name="SampleDeployAskEmailOption3" xml:space="preserve">
         <value>अभी कोई नहीं: ईमेल लॉग में दिखाएँ</value>
+    </data>
+    <data name="SampleDeployAskEmailSuggestion" xml:space="preserve">
+        <value>डोमेन तैयार होने तक कोई मुफ़्त ईमेल सेवा</value>
     </data>
     <data name="SampleDeployAskSsh" xml:space="preserve">
         <value>टनल चलने लगे तो सर्वर का SSH पोर्ट बंद कर दूँ?</value>

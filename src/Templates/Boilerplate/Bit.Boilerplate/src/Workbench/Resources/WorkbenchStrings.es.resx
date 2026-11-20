@@ -5085,6 +5085,9 @@
     <data name="ProgressSendAnswer" xml:space="preserve">
         <value>Enviar respuesta</value>
     </data>
+    <data name="ProgressUseSuggestion" xml:space="preserve">
+        <value>Usar la sugerencia</value>
+    </data>
     <data name="ProgressAnswerFailed" xml:space="preserve">
         <value>Esa pregunta ya se respondió o se retiró mientras tanto.</value>
     </data>
@@ -5252,6 +5255,9 @@
     </data>
     <data name="SampleDeployAskEmailOption3" xml:space="preserve">
         <value>Ninguno por ahora: mostrar los correos en los registros</value>
+    </data>
+    <data name="SampleDeployAskEmailSuggestion" xml:space="preserve">
+        <value>Un servicio de correo gratuito hasta que el dominio esté listo</value>
     </data>
     <data name="SampleDeployAskSsh" xml:space="preserve">
         <value>¿Cerrar el puerto SSH del servidor cuando funcione el túnel?</value>
