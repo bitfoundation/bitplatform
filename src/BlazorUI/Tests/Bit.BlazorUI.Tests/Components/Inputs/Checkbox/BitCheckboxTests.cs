@@ -2005,6 +2005,90 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual("true", component.Find("input").GetAttribute("aria-invalid"));
     }
 
+    [TestMethod,
+        DataRow(BitVariant.Outline, "bit-chb-otl"),
+        DataRow(BitVariant.Fill, "bit-chb-fil")
+    ]
+    public void BitCheckboxShouldApplyTheCardVariantClass(BitVariant variant, string expectedClass)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Push notifications");
+            parameters.Add(p => p.Description, "On phones, computers and browsers.");
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        var root = component.Find(".bit-chb");
+
+        Assert.IsTrue(root.ClassList.Contains(expectedClass));
+
+        // Exactly one variant class, so a re-render never leaves the previous one behind.
+        Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-chb-otl" or "bit-chb-fil"));
+
+        // The card is the root itself: the markup inside it - the input, the label and the lines under it - is the
+        // markup of the bare checkbox, which the stylesheet stretches the label over.
+        Assert.AreEqual(1, component.FindAll(".bit-chb-inp").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-chb-lbl").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-chb-des").Count);
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitVariant.Text)
+    ]
+    public void BitCheckboxShouldRenderNoVariantClassForTheTextLook(BitVariant? variant)
+    {
+        var bare = RenderComponent<BitCheckbox>(parameters => parameters.Add(p => p.Label, "Push notifications"));
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Push notifications");
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        var root = component.Find(".bit-chb");
+
+        // Text is the bare box and label the checkbox has always been, so it renders exactly what it rendered before.
+        Assert.IsFalse(root.ClassList.Any(c => c is "bit-chb-otl" or "bit-chb-fil"));
+        Assert.AreEqual(bare.Find(".bit-chb").GetAttribute("class"), root.GetAttribute("class"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxShouldSwapTheVariantClassOnARerender()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters => parameters.Add(p => p.Variant, BitVariant.Outline));
+
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-otl"));
+
+        component.Render(parameters => parameters.Add(p => p.Variant, BitVariant.Fill));
+
+        var root = component.Find(".bit-chb");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-chb-fil"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chb-otl"));
+
+        component.Render(parameters => parameters.Add(p => p.Variant, null));
+
+        Assert.IsFalse(component.Find(".bit-chb").ClassList.Any(c => c is "bit-chb-otl" or "bit-chb-fil"));
+    }
+
+    [TestMethod]
+    public void BitCheckboxCardShouldToggleThroughItsLabel()
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Push notifications");
+            parameters.Add(p => p.Variant, BitVariant.Fill);
+        });
+
+        // The label is still the one element that hands a click to the input, and it still labels the input.
+        Assert.AreEqual(component.Find("input").Id, component.Find(".bit-chb-lbl").GetAttribute("for"));
+
+        component.Find("input").Click();
+
+        Assert.IsTrue(component.Instance.Value);
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains("bit-chb-ckd"));
+    }
+
     private void HandleValueChanged(bool isChecked) => BitCheckBoxIsChecked = isChecked;
 
     private void HandleIsIndeterminateChanged(bool isIndeterminate) => BitCheckBoxIsIndeterminate = isIndeterminate;

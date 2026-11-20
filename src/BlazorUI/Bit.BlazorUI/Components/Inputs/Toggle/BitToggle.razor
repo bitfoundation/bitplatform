@@ -109,6 +109,17 @@
             }
         </button>
 
+        @if (IsCard)
+        {
+            @* The hit area of a card: a label of the switch stretched over the whole card, so a click anywhere on it -
+               the description and the error line included - is handed to the switch the way a click on the label is.
+               It carries no text, so it adds nothing to the name the switch takes from aria-labelledby, and it is
+               hidden from assistive technologies, which already reach the switch itself. It follows the switch, so
+               its focus ring - drawn around the card instead of around the track - is styled through a sibling
+               selector. *@
+            <label for="@_buttonId" aria-hidden="true" class="bit-tgl-hit"></label>
+        }
+
         @if (_stateText.HasValue())
         {
             <label id="@_stateTextId" style="@Styles?.Text" class="bit-tgl-stx @Classes?.Text" for="@_buttonId">

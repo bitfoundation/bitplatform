@@ -55,11 +55,32 @@
 //   --bit-Toggle-content-font-size           the content carried inside the track          (default: $tg-fs-xs)
 //   --bit-Toggle-transition-duration         how long the knob takes to cross the track,
 //                                            and every color with it                       (default: $mot-duration-short, which is already 0 under reduced motion)
+//                                            The card the Outline and Fill variants draw around the whole toggle:
+//   --bit-Toggle-card-background             the card at rest                              (default: per variant)
+//   --bit-Toggle-card-hover-background       a hovered card                                (default: per variant)
+//   --bit-Toggle-card-checked-background     the card of a toggle that is on               (default: per variant, a tint of the checked track)
+//   --bit-Toggle-card-border-color           border of the card at rest                    (default: per variant)
+//   --bit-Toggle-card-hover-border-color     border of a hovered card                      (default: the checked hover track fill)
+//   --bit-Toggle-card-checked-border-color   border of the card of a toggle that is on     (default: the checked track fill)
+//   --bit-Toggle-card-border-width           border stroke of the card                     (default: $shp-border-width)
+//   --bit-Toggle-card-padding                padding inside the card                       (default: spacing(1.5))
+//   --bit-Toggle-card-radius                 corner radius of the card and its focus ring  (default: $shp-radius-surface)
+//                                            The card surfaces have a twin per variant, read ahead of the shared one,
+//                                            so a theme can set one look apart from the other:
+//   --bit-Toggle-fill-card-background             card at rest, Fill variant          (default: --bit-Toggle-card-background)
+//   --bit-Toggle-fill-card-hover-background       hovered card, Fill variant          (default: --bit-Toggle-card-hover-background)
+//   --bit-Toggle-fill-card-checked-background     card while on, Fill variant         (default: --bit-Toggle-card-checked-background)
+//   --bit-Toggle-fill-card-border-color           card border at rest, Fill variant   (default: --bit-Toggle-card-border-color)
+//   --bit-Toggle-outline-card-background          card at rest, Outline variant       (default: --bit-Toggle-card-background)
+//   --bit-Toggle-outline-card-hover-background    hovered card, Outline variant       (default: --bit-Toggle-card-hover-background)
+//   --bit-Toggle-outline-card-checked-background  card while on, Outline variant      (default: --bit-Toggle-card-checked-background)
+//   --bit-Toggle-outline-card-border-color        card border at rest, Outline variant(default: --bit-Toggle-card-border-color)
 //
 // A parameter written on the toggle wins over the variable that restyles what it sets: an explicit Color over
-// the colors of the checked state it paints - the track fill, its hover, the knob and the track content - and
-// over the focus ring, and an explicit Size over the track and knob geometry, the content padding and every
-// font size above. The variables restyle the default, not a choice - which is why Color and Size publish
+// the colors of the checked state it paints - the track fill, its hover, the knob, the track content and the
+// border and tint of the card - and over the focus ring, and an explicit Size over the track and knob geometry,
+// the content padding, the card padding and every font size above. The card surface and border at rest are the
+// Variant's, not the Color's. The variables restyle the default, not a choice - which is why Color and Size publish
 // nothing while they are left unset: a class that always carried the default would be indistinguishable from
 // one that was asked for. What a Color leaves alone - the whole unchecked look, the checked stroke, the glyph
 // and spinner colors that follow the track unless set, the disabled and error colors of the states - stays
@@ -67,7 +88,8 @@
 // before.
 
 $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, trk-h-base, thb-size-base, trk-w-ico,
-                         trk-h-ico, thb-size-ico, cnn-fontsize, cnn-pad, lbl-fontsize, stx-fontsize, des-fontsize;
+                         trk-h-ico, thb-size-ico, cnn-fontsize, cnn-pad, lbl-fontsize, stx-fontsize, des-fontsize,
+                         card-padding;
 
 .bit-tgl {
     // The containing block of the visually hidden .bit-tgl-dsc inside it, which is absolutely positioned: held
@@ -142,6 +164,13 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     // The spinner takes the color the glyph it replaces would have had. Resolved here, on the root, where
     // every state that recolors the glyph declares its own value.
     --bit-tgl-spn-clr: var(--bit-Toggle-spinner-color, var(--bit-tgl-ico-clr));
+    // The accent the card variants tint the card of a toggle that is on with when nothing else does: the checked fill
+    // of the track. It is the fill of every variant, so it is no variant's to read and is resolved here, on the card
+    // the root is.
+    --bit-tgl-acc: var(--bit-tgl-clr, var(--bit-Toggle-checked-background, #{$clr-pri}));
+    // What the hover of a card moves, started out unset so a card nested in another one never inherits its hover.
+    --bit-tgl-crd-sbg: initial;
+    --bit-tgl-crd-sbrd: initial;
 
     &.bit-dis {
         --bit-tgl-trk-clr-bg: var(--bit-Toggle-disabled-color, #{$clr-bg-dis});
@@ -156,7 +185,7 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
             color: var(--bit-Toggle-disabled-text-color, #{$clr-fg-dis});
         }
 
-        .bit-tgl-lbl, .bit-tgl-btn, .bit-tgl-stx {
+        .bit-tgl-lbl, .bit-tgl-btn, .bit-tgl-stx, .bit-tgl-hit {
             cursor: default;
         }
 
@@ -357,7 +386,7 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
 
 // A read-only or loading toggle stays focusable and legible, but nothing about it invites a click anymore.
 .bit-tgl-rdl, .bit-tgl-ldg {
-    .bit-tgl-lbl, .bit-tgl-btn, .bit-tgl-stx {
+    .bit-tgl-lbl, .bit-tgl-btn, .bit-tgl-stx, .bit-tgl-hit {
         cursor: default;
     }
 }
@@ -587,6 +616,7 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     --bit-tgl-lbl-fontsize: #{$tg-fs-xs};
     --bit-tgl-stx-fontsize: #{$tg-fs-xs};
     --bit-tgl-des-fontsize: #{$tg-fs-2xs};
+    --bit-tgl-card-padding: #{spacing(1)};
 }
 
 .bit-tgl-md {
@@ -605,6 +635,7 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     // than the font size.
     --bit-tgl-stx-fontsize: 1em;
     --bit-tgl-des-fontsize: #{$tg-fs-xs};
+    --bit-tgl-card-padding: #{spacing(1.5)};
 }
 
 .bit-tgl-lg {
@@ -620,6 +651,7 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     --bit-tgl-lbl-fontsize: #{$tg-fs-md};
     --bit-tgl-stx-fontsize: #{$tg-fs-md};
     --bit-tgl-des-fontsize: #{$tg-fs-sm};
+    --bit-tgl-card-padding: #{spacing(2)};
 }
 
 // A knob holding a glyph needs room for it, so the icon variant is a floor under the geometry rather
@@ -654,12 +686,150 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     }
 }
 
+// ---- Card variants ----
+// Outline and Fill turn the whole toggle into a selectable card, the way BitChoiceGroup's Variant turns each of its
+// items into one. The surface is drawn on the root, around the label, the switch, the state text, the error line and
+// the description. The switch is a button, which takes a click from a label of its own, so the card renders one more
+// label of it (.bit-tgl-hit) stretched over the whole card: every part of the card is then the click target, the
+// description included, and the same label carries the focus ring, so the ring outlines the card instead of the
+// track inside it. The row of the switch is taken out of the positioning chain for that, so the hit area is laid out
+// against the root, border included.
+// Text - the default - draws no surface at all and is the bare switch and label the toggle has always been.
+.bit-tgl-otl,
+.bit-tgl-fil {
+    box-sizing: border-box;
+    padding: var(--bit-tgl-card-padding, var(--bit-Toggle-card-padding, #{spacing(1.5)}));
+    border-radius: var(--bit-Toggle-card-radius, #{$shp-radius-surface});
+    background-color: var(--bit-tgl-crd-sbg, var(--bit-tgl-crd-bg));
+    border: var(--bit-Toggle-card-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tgl-crd-sbrd, var(--bit-tgl-crd-brd));
+    transition: border-color var(--bit-tgl-dur) $mot-easing, background-color var(--bit-tgl-dur) $mot-easing;
+
+    .bit-tgl-cnt {
+        position: static;
+    }
+
+    .bit-tgl-btn:focus-visible ~ .bit-tgl-hit {
+        @include focus-ring-own(var(--bit-tgl-clr-focus, var(--bit-Toggle-focus-color)));
+    }
+
+    &.bit-inv:not(.bit-dis) .bit-tgl-btn:focus-visible ~ .bit-tgl-hit {
+        @include focus-ring(var(--bit-Toggle-error-color, #{$clr-err-focus}));
+    }
+
+    &.bit-dis .bit-tgl-btn:focus-visible ~ .bit-tgl-hit {
+        @include focus-ring(var(--bit-Toggle-disabled-text-color, #{$clr-fg-dis}));
+    }
+}
+
+// The hit area of a card. It is rendered for a card alone, and lies over everything in it.
+.bit-tgl-hit {
+    cursor: pointer;
+    user-select: none;
+    position: absolute;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    inset: calc(-1 * var(--bit-Toggle-card-border-width, #{$shp-border-width}));
+    border-radius: var(--bit-Toggle-card-radius, #{$shp-radius-surface});
+}
+
+// Whatever in the card answers the pointer on its own - a link in a DescriptionTemplate, a button in an
+// ErrorMessageTemplate or a LabelTemplate - is lifted above the hit area and keeps working, while the rest of the card
+// flips the switch. Written at no weight, so the page's own positioning of such an element still wins.
+:where(.bit-tgl-otl, .bit-tgl-fil) :where(.bit-tgl-lbl, .bit-tgl-des, .bit-tgl-erm) :where(a, button, input, select, textarea, summary, [tabindex]) {
+    z-index: 1;
+    position: relative;
+}
+
+// The ring outlines the card, so the track inside it draws none of its own - in any state, which the root class and
+// the row of the switch carried along let this outweigh.
+.bit-tgl.bit-tgl-otl .bit-tgl-cnt .bit-tgl-btn:focus-visible,
+.bit-tgl.bit-tgl-fil .bit-tgl-cnt .bit-tgl-btn:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+// The card of a toggle that is on swaps its border for the accent and tints its surface. An explicit Color comes
+// first for the border, then the public variable, then the checked fill of the track. The tint of an explicit Color
+// is a value of its own, which is left unset - and so falls through to the public checked background, then to the
+// tint of the checked fill - while the Color is: a color-mix() over an unset property is invalid, and an invalid
+// custom property reads as unset. Each reads the variable the hover moves first, so a hovered card answers the
+// pointer in both states.
+.bit-tgl-otl.bit-tgl-chk,
+.bit-tgl-fil.bit-tgl-chk {
+    border-color: var(--bit-tgl-crd-sbrd, var(--bit-tgl-clr, var(--bit-Toggle-card-checked-border-color, var(--bit-Toggle-checked-background, #{$clr-pri}))));
+    background-color: var(--bit-tgl-crd-sbg, var(--bit-tgl-crd-tint, var(--bit-tgl-crd-bg-checked)));
+}
+
+// The error color the track's stroke takes carries the invalid state on the card too; the hover leaves an invalid
+// card alone, so nothing has to be read ahead of it.
+.bit-tgl-otl.bit-inv,
+.bit-tgl-fil.bit-inv {
+    border-color: var(--bit-Toggle-error-color, #{$clr-err});
+}
+
+// Declared after the checked and the invalid card, so a disabled card says it is disabled whatever else it is -
+// disabled wins over invalid here as everywhere else on the toggle.
+.bit-tgl-otl.bit-dis,
+.bit-tgl-fil.bit-dis {
+    border-color: var(--bit-Toggle-disabled-color, #{$clr-brd-dis});
+}
+
+// The hover of a card leaves out the states the hover of the switch leaves out: a disabled, read-only or busy card
+// must not promise a change no click can make, and an invalid one keeps the error border that is the point of the
+// state.
+@media (hover: hover) {
+    :is(.bit-tgl-otl, .bit-tgl-fil):hover:not(.bit-dis):not(.bit-inv):not(.bit-tgl-rdl):not(.bit-tgl-ldg) {
+        --bit-tgl-crd-sbrd: var(--bit-tgl-clr-hover, var(--bit-Toggle-card-hover-border-color, var(--bit-Toggle-checked-hover-background, #{$clr-pri-hover})));
+        --bit-tgl-crd-sbg: var(--bit-tgl-crd-bg-hover);
+    }
+}
+
+// Outline states the card with a border on a transparent surface; the card of a toggle that is on swaps that border
+// for the accent and tints the surface just enough to read as chosen without competing with Fill. Each variant
+// resolves its surface and border here, reading its own tier of the card variables (--bit-Toggle-outline-card-*,
+// -fill-card-*) ahead of the shared one, so a theme can give outline and filled cards different colors from :root
+// while a shared variable still re-skins both at once. They are resolved on the root, which is the card that paints
+// them.
+.bit-tgl-otl {
+    --bit-tgl-crd-bg: var(--bit-Toggle-outline-card-background, var(--bit-Toggle-card-background, transparent));
+    --bit-tgl-crd-brd: var(--bit-Toggle-outline-card-border-color, var(--bit-Toggle-card-border-color, #{$clr-brd-sec}));
+    --bit-tgl-crd-bg-hover: var(--bit-Toggle-outline-card-hover-background, var(--bit-Toggle-card-hover-background, #{$clr-bg-sec-hover}));
+    --bit-tgl-crd-tint: #{translucent(var(--bit-tgl-clr), 8%)};
+    --bit-tgl-crd-bg-checked: var(--bit-Toggle-outline-card-checked-background, var(--bit-Toggle-card-checked-background, #{translucent(var(--bit-tgl-acc), 8%)}));
+}
+
+// Fill states the card with a surface instead of a border; the card of a toggle that is on is the accent at an alpha
+// low enough to keep the label above the 4.5:1 contrast of WCAG 1.4.3 in both schemes.
+.bit-tgl-fil {
+    --bit-tgl-crd-bg: var(--bit-Toggle-fill-card-background, var(--bit-Toggle-card-background, #{$clr-bg-sec}));
+    --bit-tgl-crd-brd: var(--bit-Toggle-fill-card-border-color, var(--bit-Toggle-card-border-color, transparent));
+    --bit-tgl-crd-bg-hover: var(--bit-Toggle-fill-card-hover-background, var(--bit-Toggle-card-hover-background, #{$clr-bg-ter}));
+    --bit-tgl-crd-tint: #{translucent(var(--bit-tgl-clr), 14%)};
+    --bit-tgl-crd-bg-checked: var(--bit-Toggle-fill-card-checked-background, var(--bit-Toggle-card-checked-background, #{translucent(var(--bit-tgl-acc), 14%)}));
+}
+
 // Windows High Contrast / forced-colors: author backgrounds are stripped to Canvas, which would
 // leave the thumb invisible and the on/off tracks identical. Repaint with system colors so the
 // checked state reads as a Highlight-filled track (matching native toggles); GrayText when disabled.
 @media (forced-colors: active) {
     .bit-tgl-btn {
         border-color: ButtonText;
+    }
+
+    // A card states its state with a background the mode strips, so its border carries it instead.
+    .bit-tgl-otl,
+    .bit-tgl-fil {
+        border-color: ButtonBorder;
+    }
+
+    .bit-tgl-otl.bit-tgl-chk,
+    .bit-tgl-fil.bit-tgl-chk {
+        border-color: Highlight;
+    }
+
+    .bit-tgl-otl.bit-dis,
+    .bit-tgl-fil.bit-dis {
+        border-color: GrayText;
     }
 
     .bit-tgl-sta {

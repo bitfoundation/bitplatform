@@ -365,7 +365,16 @@ public partial class BitCheckboxDemo
             Type = "string?",
             DefaultValue = "null",
             Description = "The name of the built-in icon to render in the unchecked state. By default the unchecked box is empty and previews the check icon on hover.",
-        }
+        },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual style of the checkbox: Text (the default) renders the bare box and label, Outline and Fill render the whole checkbox - box, label, error message and description - as a selectable card that is clickable across its full area.",
+            Href = "#variant-enum",
+            LinkType = LinkType.Link,
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -517,7 +526,7 @@ public partial class BitCheckboxDemo
         {
             Name = "--bit-Checkbox-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the keyboard focus ring, drawn around the box - or around the whole face of a checkbox given a ChildContent. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
+            Description = "Color of the keyboard focus ring, drawn around the box - or around the whole face of a checkbox given a ChildContent, and around the card of the Outline and Fill variants. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {
@@ -645,13 +654,142 @@ public partial class BitCheckboxDemo
             DefaultValue = "The box size, never below spacing(3)",
             Description = "Smallest height and width of the click target, which is the label rather than the box. It is what keeps every size above the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8), and it is a floor rather than a size: a wrapped label still grows the row. Set it to 0 for a checkbox that has to sit on the line of the running text around it.",
         },
+        new()
+        {
+            Name = "--bit-Checkbox-card-background",
+            DefaultValue = "Per variant: transparent for Outline, --bit-clr-bg-sec for Fill",
+            Description = "Background of the card the Outline and Fill variants draw, at rest. Shared by the variants: --bit-Checkbox-fill-card-background and --bit-Checkbox-outline-card-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-card-hover-background",
+            DefaultValue = "Per variant: --bit-clr-bg-sec-hover for Outline, --bit-clr-bg-ter for Fill",
+            Description = "Background of a hovered card (pointer devices only). Shared by the variants: --bit-Checkbox-fill-card-hover-background and --bit-Checkbox-outline-card-hover-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-card-checked-background",
+            DefaultValue = "Per variant, a tint of --bit-Checkbox-checked-background",
+            Description = "Background of the checked card. The Color parameter wins over it. Shared by the variants: --bit-Checkbox-fill-card-checked-background and --bit-Checkbox-outline-card-checked-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-card-border-color",
+            DefaultValue = "Per variant: --bit-clr-brd-sec for Outline, transparent for Fill",
+            Description = "Border of the card at rest. Shared by the variants: --bit-Checkbox-fill-card-border-color and --bit-Checkbox-outline-card-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-card-hover-border-color",
+            DefaultValue = "--bit-Checkbox-checked-hover-background",
+            Description = "Border of a hovered card (pointer devices only). The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-card-checked-border-color",
+            DefaultValue = "--bit-Checkbox-checked-background",
+            Description = "Border of the checked card. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-card-border-width",
+            DefaultValue = "--bit-shp-brd-width",
+            Description = "Border stroke of the card.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-card-padding",
+            DefaultValue = "spacing(1.5)",
+            Description = "Padding inside the card. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-card-radius",
+            DefaultValue = "--bit-shp-radius-surface",
+            Description = "Corner radius of the card and of the focus ring that outlines it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-fill-card-background",
+            DefaultValue = "--bit-Checkbox-card-background",
+            Description = "Background of the card at rest of a Fill checkbox alone, read ahead of --bit-Checkbox-card-background so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-fill-card-hover-background",
+            DefaultValue = "--bit-Checkbox-card-hover-background",
+            Description = "Background of a hovered card of a Fill checkbox alone, read ahead of --bit-Checkbox-card-hover-background so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-fill-card-checked-background",
+            DefaultValue = "--bit-Checkbox-card-checked-background",
+            Description = "Background of the checked card of a Fill checkbox alone, read ahead of --bit-Checkbox-card-checked-background so a theme can set this variant apart from the other. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-fill-card-border-color",
+            DefaultValue = "--bit-Checkbox-card-border-color",
+            Description = "Border of the card at rest of a Fill checkbox alone, read ahead of --bit-Checkbox-card-border-color so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-outline-card-background",
+            DefaultValue = "--bit-Checkbox-card-background",
+            Description = "Background of the card at rest of an Outline checkbox alone, read ahead of --bit-Checkbox-card-background so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-outline-card-hover-background",
+            DefaultValue = "--bit-Checkbox-card-hover-background",
+            Description = "Background of a hovered card of an Outline checkbox alone, read ahead of --bit-Checkbox-card-hover-background so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-outline-card-checked-background",
+            DefaultValue = "--bit-Checkbox-card-checked-background",
+            Description = "Background of the checked card of an Outline checkbox alone, read ahead of --bit-Checkbox-card-checked-background so a theme can set this variant apart from the other. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Checkbox-outline-card-border-color",
+            DefaultValue = "--bit-Checkbox-card-border-color",
+            Description = "Border of the card at rest of an Outline checkbox alone, read ahead of --bit-Checkbox-card-border-color so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
     ];
 
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitPlacement(),
-        DemoSharedEnums.BitSize()
+        DemoSharedEnums.BitSize(),
+        new()
+        {
+            Id = "variant-enum",
+            Name = "BitVariant",
+            Description = "Determines how the checkbox is drawn: as a bare box and label or as a selectable card.",
+            Items =
+            [
+                new()
+                {
+                    Name= "Fill",
+                    Description="The checkbox is a selectable card drawn as a filled surface.",
+                    Value="0",
+                },
+                new()
+                {
+                    Name= "Outline",
+                    Description="The checkbox is a selectable card drawn as a border.",
+                    Value="1",
+                },
+                new()
+                {
+                    Name= "Text",
+                    Description="The bare box and label, with no surface of their own.",
+                    Value="2",
+                }
+            ]
+        }
     ];
 
 
