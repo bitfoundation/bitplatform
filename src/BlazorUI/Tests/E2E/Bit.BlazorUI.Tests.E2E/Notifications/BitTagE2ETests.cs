@@ -787,8 +787,13 @@ public class BitTagE2ETests : E2ETestBase
 
         await content.HoverAsync();
         await Expect(content).ToHaveCSSAsync("background-color", "rgb(221, 214, 254)");
+        await Expect(content).ToHaveCSSAsync("color", "rgb(76, 29, 149)");
+        // The rule is the root's, which the hovered and pressed content moves.
+        await Expect(root).ToHaveCSSAsync("border-top-color", "rgb(139, 92, 246)");
         await Page.Mouse.DownAsync();
         await Expect(content).ToHaveCSSAsync("background-color", "rgb(200, 190, 250)");
+        await Expect(content).ToHaveCSSAsync("color", "rgb(46, 16, 101)");
+        await Expect(root).ToHaveCSSAsync("border-top-color", "rgb(109, 40, 217)");
         await Page.Mouse.UpAsync();
 
         // Clicked off the tag rather than only moved off it: WebKit starts the keyboard from the spot last pressed while
