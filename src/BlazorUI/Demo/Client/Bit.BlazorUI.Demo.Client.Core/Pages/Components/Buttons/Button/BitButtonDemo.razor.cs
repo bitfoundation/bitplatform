@@ -140,6 +140,13 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Gradient",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Fills the button with a gradient instead of a flat color: any CSS background-image value (a linear-gradient, a radial-gradient, a conic-gradient, or several layered). It covers the whole box, border included, over the background color, and wins over the background and border color variables. Under the pointer and while pressed it is washed with the button's foreground. Only the Fill variant has a fill, so the Outline and Text variants ignore it; a disabled button and a forced-colors palette drop it.",
+        },
+        new()
+        {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
@@ -541,13 +548,13 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-fill-background",
             DefaultValue = "--bit-Button-background",
-            Description = "Background in the rest state of a Fill button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Background in the rest state of a Fill button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter wins over it, and a Gradient is painted over it.",
         },
         new()
         {
             Name = "--bit-Button-fill-border-color",
             DefaultValue = "--bit-Button-border-color",
-            Description = "Border color in the rest state of a Fill button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Border color in the rest state of a Fill button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it, and a Gradient takes its place with a transparent border it shows through.",
         },
         new()
         {
@@ -770,6 +777,18 @@ public partial class BitButtonDemo
             Name = "--bit-Button-shadow",
             DefaultValue = "none",
             Description = "Elevation of the box, for a design system whose buttons are raised rather than flat. A Float or FloatAbsolute button is lifted by --bit-Button-float-shadow instead.",
+        },
+        new()
+        {
+            Name = "--bit-Button-hover-shadow",
+            DefaultValue = "The resting shadow",
+            Description = "Elevation of the box under the pointer, on every variant - a glow under a call to action. It falls back to --bit-Button-shadow, or to --bit-Button-float-shadow for a Float or FloatAbsolute button, and a press settles the button back to that resting shadow. The focus ring is a shadow too and replaces it while the button is focused.",
+        },
+        new()
+        {
+            Name = "--bit-Button-hover-translate",
+            DefaultValue = "none",
+            Description = "How far the box moves under the pointer, on every variant, as a CSS translate value: 0 -2px lifts it by 2px. A press settles it back. It is the translate property rather than a transform, so it composes with a transform of the button's own, and under reduced motion it steps there instead of gliding.",
         },
         new()
         {

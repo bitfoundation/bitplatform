@@ -170,6 +170,28 @@ public partial class BitButton : BitComponentBase
     public bool FullWidth { get; set; }
 
     /// <summary>
+    /// Fills the button with a gradient instead of a flat color.
+    /// </summary>
+    /// <remarks>
+    /// The value is painted as the <c>background-image</c> of the button, so anything a <c>background-image</c> accepts
+    /// is accepted here - a <c>linear-gradient</c>, a <c>radial-gradient</c>, a <c>conic-gradient</c>, or several of them
+    /// layered over each other. It covers the whole box, the border included, and the background color stays under it
+    /// as the fallback wherever the gradient is transparent.
+    /// <br />
+    /// A gradient is a fill, and the Fill variant is the only one that has one: the Outline and Text variants draw their
+    /// label in the role's color over the page, which a fill would hide, so they ignore it. The label keeps the
+    /// on-color of the Fill variant (the <see cref="Color"/>'s, or the <c>--bit-Button-*color</c> variables'), so check
+    /// its contrast against both ends of the gradient.
+    /// <br />
+    /// The hover and pressed backgrounds would be hidden under the gradient, so the pointer states wash it with the
+    /// button's own foreground instead. A disabled button drops it for its disabled fill, and so does a forced-colors
+    /// palette, which paints the button as a native one. It wins over the background and border color variables, which
+    /// restyle the default fill and not a chosen one.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? Gradient { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
     [Parameter]
@@ -375,7 +397,7 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The visual variant of the button.
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public BitVariant? Variant { get; set; }
 
 
@@ -461,6 +483,10 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => FullWidth ? "bit-btn-flw" : string.Empty);
 
+        // The class carries the layering, the border and the states of a gradient fill, while the gradient itself is
+        // the one thing about it the stylesheet cannot know and is written inline (see RegisterCssStyles).
+        ClassBuilder.Register(() => PaintsGradient ? "bit-btn-grd" : string.Empty);
+
         ClassBuilder.Register(() => NoWrap ? "bit-btn-nwr" : string.Empty);
 
         ClassBuilder.Register(() => FloatAbsolute ? "bit-btn-fab"
@@ -495,7 +521,14 @@ public partial class BitButton : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-Button-float-offset:{NormalizeFloatOffset(FloatOffset!)}" : string.Empty);
+
+        // Published as a private variable rather than as an inline background-image, which would outrank the rules
+        // that take the gradient away again - a disabled button's and the forced-colors palette's.
+        StyleBuilder.Register(() => PaintsGradient ? $"--bit-btn-grd:{Gradient}" : string.Empty);
     }
+
+    // Only the Fill variant has a fill to paint the gradient into; an unset Variant is the Fill one.
+    private bool PaintsGradient => Gradient.HasValue() && Variant is not (BitVariant.Outline or BitVariant.Text);
 
     // A bare number is not a CSS length, and an invalid value takes down every inset that reads it - the
     // button stops being pinned at all and drifts off with the content. A number is also what an offset

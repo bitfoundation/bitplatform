@@ -119,6 +119,12 @@ public partial class BitButtonParams : BitComponentBaseParams, IBitComponentPara
     public bool? FullWidth { get; set; }
 
     /// <summary>
+    /// Fills the button with a gradient (any CSS background-image value) instead of a flat color; the Outline and Text
+    /// variants have no fill and ignore it.
+    /// </summary>
+    public string? Gradient { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the link rendered by the button.
     /// If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
@@ -342,6 +348,11 @@ public partial class BitButtonParams : BitComponentBaseParams, IBitComponentPara
         if (FullWidth.HasValue)
         {
             bitButton.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static b => b.FullWidth, static (b, v) => b.FullWidth = v);
+        }
+
+        if (Gradient.HasValue())
+        {
+            bitButton.TakeFromCascade(nameof(Gradient), Gradient, static b => b.Gradient, static (b, v) => b.Gradient = v);
         }
 
         if (Href.HasValue())

@@ -490,6 +490,20 @@ private readonly BitButtonParams[] buttonParams =
 ];";
 
     private readonly string example14RazorCode = @"
+<BitButton Rounded Gradient=""linear-gradient(96deg, #524add 10%, #0d71bf 90%)"">Get started</BitButton>
+<BitButton Rounded Gradient=""linear-gradient(135deg, #c2185b, #6a1b9a)"" IconName=""@BitIconName.Heart"">Favorite</BitButton>
+<BitButton Rounded Disabled Gradient=""linear-gradient(96deg, #524add 10%, #0d71bf 90%)"">Disabled</BitButton>
+
+
+<div style=""--bit-Button-hover-translate: 0 -2px;"">
+    <BitButton Rounded Gradient=""linear-gradient(96deg, #524add 10%, #0d71bf 90%)""
+               Style=""--bit-Button-shadow: 0 8px 24px -8px rgb(82 74 221 / 0.6); --bit-Button-hover-shadow: 0 12px 28px -8px rgb(82 74 221 / 0.8);"">
+        Explore products
+    </BitButton>
+    <BitButton Rounded Variant=""BitVariant.Outline"">Get started with templates</BitButton>
+</div>";
+
+    private readonly string example15RazorCode = @"
 <BitButton Color=""BitColor.Primary"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Outline"">Primary</BitButton>
 <BitButton Color=""BitColor.Primary"" Variant=""BitVariant.Text"">Primary</BitButton>
@@ -561,7 +575,7 @@ private readonly BitButtonParams[] buttonParams =
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitButton>
 <BitButton Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Text"">TertiaryBorder</BitButton>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -575,7 +589,7 @@ private readonly BitButtonParams[] buttonParams =
 <BitButton Icon=""@BitIconInfo.Bi(""github"")"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"">GitHub</BitButton>
 <BitButton Icon=""@BitIconInfo.Bi(""gear-fill"")"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"">Gear</BitButton>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitButton Size=""BitSize.Small"" IconOnly AriaLabel=""Emoji"" IconName=""@BitIconName.Emoji2"" />
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"">Fill</BitButton>
 <BitButton Size=""BitSize.Small"" IconName=""@BitIconName.Emoji2"" Variant=""BitVariant.Outline"">Outline</BitButton>
@@ -597,7 +611,7 @@ private readonly BitButtonParams[] buttonParams =
 <BitButton Size=""BitSize.Large"" Loading LoadingLabel=""Loading..."" Variant=""BitVariant.Outline"">Loading</BitButton>
 <BitButton Size=""BitSize.Large"" SecondaryText=""this is the secondary text"" IconName=""@BitIconName.Emoji2"">Compound</BitButton>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitButton Style=""background-color: transparent; border-color: blueviolet; color: blueviolet;""
            SecondaryText=""this is the secondary text""
            Variant=""BitVariant.Outline"">
@@ -653,7 +667,7 @@ private readonly BitButtonParams[] buttonParams =
     Raised & tracked
 </BitButton>";
 
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private bool stylesLoading;
 private async Task LoadingStylesClick()
 {
@@ -670,7 +684,7 @@ private async Task LoadingClassesClick()
     classesLoading = false;
 }";
 
-    private const string example17ScssCode = @"
+    private const string example18ScssCode = @"
 .compact-buttons {
     --bit-Button-gap: 0.25rem;
     --bit-Button-font-size: 0.75rem;
@@ -715,12 +729,12 @@ private async Task LoadingClassesClick()
     }
 }";
 
-    private readonly DemoCodeFile[] example17CodeFiles =
+    private readonly DemoCodeFile[] example18CodeFiles =
     [
-        new("BitButtonDemo.razor.scss", example17ScssCode),
+        new("BitButtonDemo.razor.scss", example18ScssCode),
     ];
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.Emoji"" Variant=""BitVariant.Fill"">
     دکمه با آیکن
 </BitButton>
