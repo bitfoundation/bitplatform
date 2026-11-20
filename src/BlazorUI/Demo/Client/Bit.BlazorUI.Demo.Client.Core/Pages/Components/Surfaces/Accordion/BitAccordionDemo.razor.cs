@@ -566,6 +566,42 @@ public partial class BitAccordionDemo
         },
         new()
         {
+            Name = "--bit-Accordion-hover-background",
+            DefaultValue = "The expanded fill, then the fill at rest",
+            Description = "Fill of the whole accordion while the pointer is over it. The Background parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-hover-border-color",
+            DefaultValue = "The expanded outline, then the outline at rest",
+            Description = "Color of the outline while the pointer is over the accordion. The Border parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-hover-shadow",
+            DefaultValue = "The expanded elevation, then --bit-Accordion-shadow",
+            Description = "Elevation of the accordion while the pointer is over it (e.g. var(--bit-shd-card-hover)).",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-expanded-background",
+            DefaultValue = "The fill at rest",
+            Description = "Fill of the whole accordion while it is expanded. The Background parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-expanded-border-color",
+            DefaultValue = "The outline at rest",
+            Description = "Color of the outline while the accordion is expanded. The Border parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Accordion-expanded-shadow",
+            DefaultValue = "--bit-Accordion-shadow",
+            Description = "Elevation of the accordion while it is expanded.",
+        },
+        new()
+        {
             Name = "--bit-Accordion-font-size",
             DefaultValue = "--bit-tpg-fs-sm",
             Description = "Text size of the panel and the description. The Size parameter wins over it.",
