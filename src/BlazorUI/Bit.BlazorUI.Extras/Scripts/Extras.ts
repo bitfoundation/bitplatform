@@ -404,13 +404,21 @@
         // Puts text on the clipboard, throwing when it could not be done so that the caller can tell.
         // The async Clipboard API is the only one that works without a user gesture heuristic, but it
         // is unavailable outside a secure context and in a few older browsers, so a hidden textarea and
-        // the deprecated execCommand stand in for it there rather than leaving the copy silently undone.
+        // the deprecated execCommand stand in for it there rather than leaving the copy silently undone - and
+        // wherever the API refuses (a permission the page was not given), its refusal being what is thrown
+        // when the stand-in fails too.
         public static async copyToClipboard(text: string) {
             text ??= '';
 
+            let refusal: unknown;
+
             if (navigator.clipboard && window.isSecureContext) {
-                await navigator.clipboard.writeText(text);
-                return;
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return;
+                } catch (e) {
+                    refusal = e;
+                }
             }
 
             const textarea = document.createElement('textarea');
@@ -437,7 +445,7 @@
             try {
                 textarea.select();
                 if (!document.execCommand('copy')) {
-                    throw new Error('the copy command was rejected');
+                    throw refusal ?? new Error('the copy command was rejected');
                 }
             } finally {
                 document.body.removeChild(textarea);
