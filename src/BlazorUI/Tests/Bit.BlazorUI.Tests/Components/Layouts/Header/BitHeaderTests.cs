@@ -908,10 +908,10 @@ public class BitHeaderTests : BunitTestContext
 
         var header = component.Find(".bit-hdr");
 
-        // A header that is always lifted has nothing left to gain from a scroll, so it stays elevated
-        // and no shadow transition is armed for it.
+        // A header that is always lifted has no shadow left to gain from a scroll, so it stays elevated - but the
+        // scrolled state can still restyle it (the --bit-Header-scrolled-* variables), so that transition stays armed.
         Assert.IsTrue(header.ClassList.Contains("bit-hdr-elv"));
-        Assert.IsFalse(header.ClassList.Contains("bit-hdr-esc"));
+        Assert.IsTrue(header.ClassList.Contains("bit-hdr-esc"));
 
         // The shadow is settled, but the scroll state is still a documented output of its own, so the
         // listener stays attached and OnScrolledChanged/IsScrolled keep working.
@@ -1076,6 +1076,150 @@ public class BitHeaderTests : BunitTestContext
         // One listener drives both states, so the two behaviors never cost two scroll subscriptions.
         Assert.AreEqual(true, invocation.Arguments[4]);
         Assert.AreEqual(true, invocation.Arguments[5]);
+    }
+
+    [TestMethod]
+    [DataRow("none", false)]
+    [DataRow("ElevateOnScroll", true)]
+    [DataRow("OnScrolledChanged", true)]
+    [DataRow("Classes.Scrolled", true)]
+    [DataRow("Styles.Scrolled", true)]
+    public void BitHeaderShouldTrackItsScrolledStateOnlyWhenSomethingUsesIt(string user, bool tracked)
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Sticky, true);
+
+            switch (user)
+            {
+                case "ElevateOnScroll": parameters.Add(p => p.ElevateOnScroll, true); break;
+                case "OnScrolledChanged": parameters.Add(p => p.OnScrolledChanged, (bool _) => { }); break;
+                case "Classes.Scrolled": parameters.Add(p => p.Classes, new BitHeaderClassStyles { Scrolled = "scrolled" }); break;
+                case "Styles.Scrolled": parameters.Add(p => p.Styles, new BitHeaderClassStyles { Scrolled = "color: red" }); break;
+            }
+        });
+
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Headers.setup").ToArray();
+
+        // A header that nothing asks the scrolled state of gets no scroll listener for it.
+        Assert.AreEqual(tracked ? 1 : 0, setups.Length);
+
+        if (tracked)
+        {
+            Assert.AreEqual(false, setups[0].Arguments[4]);
+            Assert.AreEqual(true, setups[0].Arguments[5]);
+        }
+
+        // Whatever the scrolled state restyles fades in, so the transition is armed for every header tracking it.
+        Assert.AreEqual(tracked, component.Find(".bit-hdr").ClassList.Contains("bit-hdr-esc"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotTrackTheScrolledStateOfAHeaderInTheNormalFlow()
+    {
+        RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Scrolled = "scrolled" });
+            parameters.Add(p => p.OnScrolledChanged, (bool _) => { });
+        });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
+    }
+
+    [TestMethod]
+    public async Task BitHeaderShouldApplyTheScrolledPartOnlyWhileScrolled()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Root = "root-class", Scrolled = "scrolled-class" });
+            parameters.Add(p => p.Styles, new BitHeaderClassStyles { Root = "padding: 1px", Scrolled = "color: red" });
+        });
+
+        var header = component.Find(".bit-hdr");
+
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
+        Assert.IsFalse(header.ClassList.Contains("scrolled-class"));
+        Assert.AreEqual("padding: 1px", header.GetAttribute("style"));
+
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(true));
+
+        header = component.Find(".bit-hdr");
+
+        Assert.IsTrue(component.Instance.IsScrolled);
+        Assert.IsTrue(header.ClassList.Contains("bit-hdr-scr"));
+        Assert.IsTrue(header.ClassList.Contains("scrolled-class"));
+        Assert.IsTrue(header.ClassList.Contains("root-class"));
+        Assert.AreEqual("padding: 1px;color: red", header.GetAttribute("style"));
+
+        // The part works without the shadow: only ElevateOnScroll casts one.
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-elv"));
+
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(false));
+
+        header = component.Find(".bit-hdr");
+
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
+        Assert.IsFalse(header.ClassList.Contains("scrolled-class"));
+        Assert.AreEqual("padding: 1px", header.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task BitHeaderShouldRaiseOnScrolledChangedWithoutElevateOnScroll()
+    {
+        var scrolledStates = new List<bool>();
+
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.OnScrolledChanged, (bool v) => scrolledStates.Add(v));
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(true));
+
+        Assert.IsTrue(component.Instance.IsScrolled);
+        Assert.IsTrue(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-scr"));
+        Assert.IsFalse(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-elv"));
+
+        CollectionAssert.AreEqual(new[] { true }, scrolledStates);
+    }
+
+    [TestMethod]
+    public async Task BitHeaderShouldNotStayScrolledOnceNothingUsesTheScrolledState()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Scrolled = "scrolled-class" });
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(true));
+
+        Assert.IsTrue(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-scr"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles());
+        });
+
+        // The script stays attached for Reveal but stops reporting the scrolled state, so the header lets go of it
+        // rather than staying scrolled for good.
+        var setups = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Headers.setup").ToArray();
+
+        Assert.AreEqual(2, setups.Length);
+        CollectionAssert.AreEqual(new object[] { true, false }, setups.Select(i => i.Arguments[5]).ToArray());
+
+        component.WaitForAssertion(() =>
+        {
+            var header = component.Find(".bit-hdr");
+
+            Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
+            Assert.IsFalse(header.ClassList.Contains("bit-hdr-esc"));
+            Assert.IsFalse(component.Instance.IsScrolled);
+        });
     }
 
     [TestMethod]

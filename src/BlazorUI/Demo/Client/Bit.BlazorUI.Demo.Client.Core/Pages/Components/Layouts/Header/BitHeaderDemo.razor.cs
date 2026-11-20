@@ -64,7 +64,7 @@ public partial class BitHeaderDemo
             Name = "ElevateOffset",
             Type = "int?",
             DefaultValue = "null",
-            Description = "Gets or sets how far (in pixels) the scroll has to travel from the top before an ElevateOnScroll header lifts itself off the content.",
+            Description = "Gets or sets how far (in pixels) the scroll has to travel from the top before an ElevateOnScroll header lifts itself off the content. It is the point the header counts as scrolled at, so it is also where the Scrolled class-style part and the --bit-Header-scrolled-* variables start to apply and OnScrolledChanged fires.",
         },
         new()
         {
@@ -134,7 +134,7 @@ public partial class BitHeaderDemo
             Name = "OnScrolledChanged",
             Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "Callback for when the scrolled state of the header changes. The provided value is true once the scrolling area has travelled past the ElevateOffset. Only invoked while ElevateOnScroll is enabled.",
+            Description = "Callback for when the scrolled state of the header changes. The provided value is true once the scrolling area has travelled past the ElevateOffset. Handling it is enough for a Fixed or Sticky header to track its scrolled state, with or without ElevateOnScroll.",
         },
         new()
         {
@@ -251,7 +251,7 @@ public partial class BitHeaderDemo
             Name = "IsScrolled",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Gets a value indicating whether the scrolling area of the header has travelled past the ElevateOffset. It is always false unless ElevateOnScroll is enabled.",
+            Description = "Gets a value indicating whether the scrolling area of the header has travelled past the ElevateOffset. The state is only tracked for a Fixed or Sticky header that has a use for it - an ElevateOnScroll, an OnScrolledChanged handler or a Scrolled class or style - so it is always false otherwise.",
         },
     ];
 
@@ -290,6 +290,13 @@ public partial class BitHeaderDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the skip link of the BitHeader, which is only rendered when a SkipLinkHref is provided."
+                },
+                new()
+                {
+                    Name = "Scrolled",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles for the root element of the BitHeader while it is scrolled (past the ElevateOffset). Giving it is enough for a Fixed or Sticky header to track its scrolled state, with or without the shadow of ElevateOnScroll."
                 },
             ]
         },
@@ -478,6 +485,24 @@ public partial class BitHeaderDemo
             Name = "--bit-Header-fill-translucent-opacity",
             DefaultValue = "--bit-Header-translucent-opacity",
             Description = "Share of its fill a Translucent Fill header alone keeps, read ahead of --bit-Header-translucent-opacity, like every variable a variant reads.",
+        },
+        new()
+        {
+            Name = "--bit-Header-scrolled-background",
+            DefaultValue = "the fill at rest",
+            Description = "Fill of a scrolled header (past the ElevateOffset), in every variant - so an Outline or Text header, transparent at the top, can fill once scrolled. It applies to the headers tracking their scrolled state: an ElevateOnScroll one, or one with an OnScrolledChanged handler or a Scrolled class or style. The Color parameter wins over it on a Fill header, and a Translucent one softens it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-scrolled-border-color",
+            DefaultValue = "the color at rest",
+            Description = "Border of a scrolled Outline header and divider of a scrolled Bordered one, in every variant - a transparent --bit-Header-border-color lets a hairline appear only once scrolled, with no shift in the layout. It applies to the headers tracking their scrolled state. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-scrolled-backdrop-filter",
+            DefaultValue = "none",
+            Description = "Backdrop filter of a scrolled header (for example blur(12px), the frosted look), in every variant. It applies to the headers tracking their scrolled state. A Translucent Fill header keeps its own blur over it.",
         },
         new()
         {

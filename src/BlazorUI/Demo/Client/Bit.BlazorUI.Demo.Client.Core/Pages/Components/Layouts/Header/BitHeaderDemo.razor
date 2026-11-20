@@ -256,7 +256,7 @@
         <div>
             <b>ElevateOnScroll</b> keeps a pinned header flat at the top and fades its shadow in once content scrolls under it
             (after <b>ElevateOffset</b> pixels). <b>OnScrolledChanged</b> and <b>IsScrolled</b> expose the same state - here to
-            shrink the header and swap its title.
+            shrink the header and swap its title. The Style & Class section below restyles that state beyond the shadow.
         </div>
         <br />
         <div class="scroll-demo">
@@ -529,7 +529,8 @@
             Reach for the <b>--bit-Header-*</b> CSS variables first (listed in the API section): they inherit, so set them on
             <b>:root</b>, an ancestor or an instance's <b>Style</b>. They restyle the default, not a choice: an explicit
             <b>Color</b> or <b>Size</b> wins over the variables for what it sets. <b>Style</b>/<b>Class</b> reach the root, and
-            <b>Styles</b>/<b>Classes</b> each part (root, container, extension, skip link).
+            <b>Styles</b>/<b>Classes</b> each part (root, container, extension, skip link) - plus the root while it is
+            scrolled (<b>Scrolled</b>).
         </div>
         <br />
         <div><b>CSS variables</b>:</div>
@@ -574,6 +575,38 @@
             <BitHeader Classes="@(new() { Root = "custom-root", Container = "custom-container" })">
                 Classes
             </BitHeader>
+        </div>
+        <br />
+        <div><b>Scrolled state</b>:</div>
+        <br />
+        <div>
+            A Fixed or Sticky header tracks whether its scrolling area has passed the <b>ElevateOffset</b> whenever something
+            uses that state - <b>ElevateOnScroll</b>, an <b>OnScrolledChanged</b> handler, or the <b>Scrolled</b> part of
+            <b>Classes</b>/<b>Styles</b>. The <b>--bit-Header-scrolled-background</b>, <b>-border-color</b> and
+            <b>-backdrop-filter</b> variables restyle it then: here a Text header, transparent at the top, turns frosted with a
+            hairline. The <b>Scrolled</b> part needs no shadow at all.
+        </div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky ElevateOnScroll Bordered
+                       Variant="BitVariant.Text"
+                       Style="--bit-Header-border-color: transparent; --bit-Header-scrolled-border-color: var(--bit-clr-brd-pri); --bit-Header-scrolled-background: color-mix(in srgb, var(--bit-clr-bg-pri) 70%, transparent); --bit-Header-scrolled-backdrop-filter: blur(12px);">
+                Transparent at the top, frosted once you scroll
+            </BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row">Content behind the header - row @i</div>
+            }
+        </div>
+        <br />
+        <div class="scroll-demo">
+            <BitHeader Sticky Classes="@(new() { Scrolled = "custom-scrolled" })">
+                A Scrolled class, and no shadow
+            </BitHeader>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row">Row @i</div>
+            }
         </div>
     </DemoExample>
 

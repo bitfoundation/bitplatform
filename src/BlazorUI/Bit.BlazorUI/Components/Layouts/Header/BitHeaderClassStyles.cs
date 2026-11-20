@@ -23,4 +23,14 @@ public class BitHeaderClassStyles
     /// <see cref="BitHeader.SkipLinkHref"/> is provided.
     /// </summary>
     public string? SkipLink { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the root element of the BitHeader while it is scrolled: applied once its scrolling
+    /// area has travelled past the <see cref="BitHeader.ElevateOffset"/>, and taken off again back at the top.
+    /// </summary>
+    /// <remarks>
+    /// Giving it is enough for a <see cref="BitHeader.Fixed"/> or <see cref="BitHeader.Sticky"/> header to track its
+    /// scrolled state, with or without the shadow of <see cref="BitHeader.ElevateOnScroll"/>.
+    /// </remarks>
+    public string? Scrolled { get; set; }
 }

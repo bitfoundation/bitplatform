@@ -94,4 +94,10 @@
         color: blueviolet;
         justify-content: flex-end;
     }
+
+    // Only on the root while it is scrolled.
+    .custom-scrolled {
+        color: white;
+        background: linear-gradient(90deg, #7e57c2, #26c6da);
+    }
 }

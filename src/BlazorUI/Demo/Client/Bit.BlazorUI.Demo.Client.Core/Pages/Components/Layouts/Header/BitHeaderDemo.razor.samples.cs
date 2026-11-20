@@ -500,9 +500,43 @@ private readonly BitHeaderParams[] headerParams =
 
 <BitHeader Classes=""@(new() { Root = ""custom-root"", Container = ""custom-container"" })"">
     Classes
-</BitHeader>";
+</BitHeader>
+
+
+<div class=""scroll-demo"">
+    <BitHeader Sticky ElevateOnScroll Bordered
+               Variant=""BitVariant.Text""
+               Style=""--bit-Header-border-color: transparent; --bit-Header-scrolled-border-color: var(--bit-clr-brd-pri); --bit-Header-scrolled-background: color-mix(in srgb, var(--bit-clr-bg-pri) 70%, transparent); --bit-Header-scrolled-backdrop-filter: blur(12px);"">
+        Transparent at the top, frosted once you scroll
+    </BitHeader>
+    @for (var i = 1; i <= 12; i++)
+    {
+        <div class=""scroll-demo-row"">Content behind the header - row @i</div>
+    }
+</div>
+
+<div class=""scroll-demo"">
+    <BitHeader Sticky Classes=""@(new() { Scrolled = ""custom-scrolled"" })"">
+        A Scrolled class, and no shadow
+    </BitHeader>
+    @for (var i = 1; i <= 12; i++)
+    {
+        <div class=""scroll-demo-row"">Row @i</div>
+    }
+</div>";
 
     private const string example18ScssCode = @"
+// A box that scrolls on its own, for the header to stick to.
+.scroll-demo {
+    height: 10rem;
+    overflow: auto;
+    border: 1px solid gray;
+}
+
+.scroll-demo-row {
+    padding: 0.5rem 1rem;
+}
+
 // An ancestor re-skins every header under it: the variables inherit.
 .brand-headers {
     --bit-Header-background: #fdf4ff;
@@ -525,6 +559,12 @@ private readonly BitHeaderParams[] headerParams =
     .custom-container {
         color: blueviolet;
         justify-content: flex-end;
+    }
+
+    // Only on the root while it is scrolled.
+    .custom-scrolled {
+        color: white;
+        background: linear-gradient(90deg, #7e57c2, #26c6da);
     }
 }";
 

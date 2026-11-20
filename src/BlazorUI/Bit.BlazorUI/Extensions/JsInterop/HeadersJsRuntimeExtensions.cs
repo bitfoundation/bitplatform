@@ -2,9 +2,9 @@
 
 internal static class HeadersJsRuntimeExtensions
 {
-    internal static ValueTask BitHeadersSetup(this IJSRuntime jsRuntime, string id, DotNetObjectReference<BitHeader> obj, int revealOffset, int elevateOffset, bool reveal, bool elevate, string? scrollTarget, bool scrollPadding)
+    internal static ValueTask BitHeadersSetup(this IJSRuntime jsRuntime, string id, DotNetObjectReference<BitHeader> obj, int revealOffset, int elevateOffset, bool reveal, bool trackScrolled, string? scrollTarget, bool scrollPadding)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Headers.setup", id, obj, revealOffset, elevateOffset, reveal, elevate, scrollTarget, scrollPadding);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Headers.setup", id, obj, revealOffset, elevateOffset, reveal, trackScrolled, scrollTarget, scrollPadding);
     }
 
     internal static ValueTask BitHeadersDispose(this IJSRuntime jsRuntime, string id)
