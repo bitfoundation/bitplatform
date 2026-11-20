@@ -372,6 +372,16 @@ public class BitStrings
 
 
 
+    // ===== BitNavBar =====
+
+    /// <summary>
+    /// The name of the toggle button that opens the drawer of a navbar, and of the drawer itself: the fallback of
+    /// <see cref="BitNavBar{TItem}.ToggleAriaLabel"/>.
+    /// </summary>
+    public virtual string Menu => "Menu";
+
+
+
     // ===== BitStepper =====
 
     /// <summary>

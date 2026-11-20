@@ -1,4 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 // bit-trim: owners BitNavBar _BitNavBarChild _BitNavBarItem
 // The items of the nav bar and their children are drawn by components of their own, styled here with the nav bar.
@@ -30,6 +31,10 @@
 //   --bit-NavBar-badge-background        fill of a badge and a dot                         (default: $clr-err)
 //   --bit-NavBar-disabled-color          content color of a disabled item                  (default: $clr-pri-dis-text)
 //   --bit-NavBar-focus-color             color of the focus ring of an item                (default: $clr-pri-focus)
+//   --bit-NavBar-drawer-background       fill of the drawer the DrawerBreakpoint folds the items into (default: $clr-bg-pri)
+//   --bit-NavBar-drawer-width            width of that drawer, never wider than the screen (default: spacing(40))
+//   --bit-NavBar-drawer-shadow           elevation of that drawer                          (default: $box-shadow-sheet)
+//   --bit-NavBar-overlay-background      fill of the overlay behind the open drawer        (default: $clr-bg-overlay)
 //
 // A parameter written on the navbar wins over the variable that restyles what it sets: an explicit Color over the
 // hover, selected, indicator, disabled and focus colors it paints (the transparent hover and selected backgrounds
@@ -132,6 +137,7 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
 // rail, and the fill of the bar runs on under it. The fallback keeps it a no-op everywhere the inset is
 // not reported.
 .bit-nbr-sfa:not(.bit-nbr-vrt) > *,
+.bit-nbr-sfa:not(.bit-nbr-vrt) > .bit-nbr-drw > .bit-nbr-cnt,
 .bit-nbr-sfa.bit-nbr-vrt > :last-child {
     margin-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -398,7 +404,8 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
 // what a bar (or a rail) holding more destinations than it has room for needs. The scrollbar itself is
 // hidden: the bar is moved by its selection, its keyboard and a swipe rather than by dragging a bar around.
 .bit-nbr-scr {
-    > .bit-nbr-cnt {
+    > .bit-nbr-cnt,
+    > .bit-nbr-drw > .bit-nbr-cnt {
         overflow: auto;
         scrollbar-width: none;
         -ms-overflow-style: none;
@@ -426,7 +433,8 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
 
 // ForceAnimation (bit-fam) keeps the smooth scroll the way it keeps every other motion of the library.
 @media (prefers-reduced-motion: reduce) {
-    .bit-nbr-scr:not(.bit-fam):not(.bit-fam *) > .bit-nbr-cnt {
+    .bit-nbr-scr:not(.bit-fam):not(.bit-fam *) > .bit-nbr-cnt,
+    .bit-nbr-scr:not(.bit-fam):not(.bit-fam *) > .bit-nbr-drw > .bit-nbr-cnt {
         scroll-behavior: auto;
     }
 }
@@ -445,28 +453,257 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
 
 // How the items are distributed along the bar. Each one overrides the default of the layout it is used
 // in - space-around across a bar, packed at the top of a rail - in both directions at once.
-.bit-nbr-str > .bit-nbr-cnt {
+.bit-nbr-str > .bit-nbr-cnt,
+.bit-nbr-str > .bit-nbr-drw > .bit-nbr-cnt {
     justify-content: flex-start;
 }
 
-.bit-nbr-end > .bit-nbr-cnt {
+.bit-nbr-end > .bit-nbr-cnt,
+.bit-nbr-end > .bit-nbr-drw > .bit-nbr-cnt {
     justify-content: flex-end;
 }
 
-.bit-nbr-ctr > .bit-nbr-cnt {
+.bit-nbr-ctr > .bit-nbr-cnt,
+.bit-nbr-ctr > .bit-nbr-drw > .bit-nbr-cnt {
     justify-content: center;
 }
 
-.bit-nbr-sbt > .bit-nbr-cnt {
+.bit-nbr-sbt > .bit-nbr-cnt,
+.bit-nbr-sbt > .bit-nbr-drw > .bit-nbr-cnt {
     justify-content: space-between;
 }
 
-.bit-nbr-sar > .bit-nbr-cnt {
+.bit-nbr-sar > .bit-nbr-cnt,
+.bit-nbr-sar > .bit-nbr-drw > .bit-nbr-cnt {
     justify-content: space-around;
 }
 
-.bit-nbr-sev > .bit-nbr-cnt {
+.bit-nbr-sev > .bit-nbr-cnt,
+.bit-nbr-sev > .bit-nbr-drw > .bit-nbr-cnt {
     justify-content: space-evenly;
+}
+
+// The drawer a DrawerBreakpoint folds the items into, and the toggle button that opens it. The navbar has one of two
+// shapes, and the screen decides which: the bar it always is, or - on the screens the DrawerBreakpoint matches - a bar
+// holding only its header, the toggle button and its footer, with the very list of its items moved into a drawer that
+// slides in from the end edge of the screen. Which of them the navbar has is reported by the browser, from the live
+// theme breakpoints, and handed to the stylesheet as a class (bit-nbr-dsh) - the same answer the dialog role, the
+// scroll lock and the focus trap are decided by. Until the browser has answered (a prerendered page, the first
+// render), the query itself is the class (bit-nbr-dq-*), resolved here at the default breakpoints, so the page shows
+// the shape its screen calls for from the start. The drawer shape is a mixin, so both cases apply the very same rules.
+
+// Every BitScreenQuery, as the first and the last screen width it matches at the default breakpoints (null for an
+// open end), named the way the class of the query spells it.
+$nbr-drawer-queries: (
+    xs: (null, $mq-xs-max),
+    sm: ($mq-sm-min, $mq-sm-max),
+    md: ($mq-md-min, $mq-md-max),
+    lg: ($mq-lg-min, $mq-lg-max),
+    xl: ($mq-xl-min, $mq-xl-max),
+    xxl: ($mq-xxl-min, null),
+    ltsm: (null, $mq-xs-max),
+    ltmd: (null, $mq-sm-max),
+    ltlg: (null, $mq-md-max),
+    ltxl: (null, $mq-lg-max),
+    ltxxl: (null, $mq-xl-max),
+    gtxs: ($mq-sm-min, null),
+    gtsm: ($mq-md-min, null),
+    gtmd: ($mq-lg-min, null),
+    gtlg: ($mq-xl-min, null),
+    gtxl: ($mq-xxl-min, null),
+    smtomd: ($mq-sm-min, $mq-md-max),
+    smtolg: ($mq-sm-min, $mq-lg-max),
+    smtoxl: ($mq-sm-min, $mq-xl-max),
+    mdtolg: ($mq-md-min, $mq-lg-max),
+    mdtoxl: ($mq-md-min, $mq-xl-max),
+    lgtoxl: ($mq-lg-min, $mq-xl-max)
+);
+
+@mixin nbr-screen($min, $max) {
+    @if $min and $max {
+        @media screen and (min-width: #{$min}) and (max-width: #{$max}) {
+            @content;
+        }
+    } @else if $min {
+        @media screen and (min-width: #{$min}) {
+            @content;
+        }
+    } @else {
+        @media screen and (max-width: #{$max}) {
+            @content;
+        }
+    }
+}
+
+@mixin nbr-drawer {
+    > .bit-nbr-tgl {
+        display: inline-flex;
+    }
+
+    > .bit-nbr-ovl {
+        display: block;
+    }
+
+    > .bit-nbr-drw {
+        top: 0;
+        bottom: 0;
+        z-index: $zindex-callout;
+        display: flex;
+        position: fixed;
+        max-width: 100%;
+        box-sizing: border-box;
+        flex-direction: column;
+        overflow: hidden auto;
+        overscroll-behavior: contain;
+        inset-inline-end: 0;
+        width: var(--bit-NavBar-drawer-width, #{spacing(40)});
+        // The safe areas of the screen edges the drawer runs to - the status bar and the notch of a phone, its home
+        // indicator - are kept clear of its items.
+        padding-inline: spacing(1);
+        padding-top: max(#{spacing(1)}, env(safe-area-inset-top, 0px));
+        padding-bottom: max(#{spacing(1)}, env(safe-area-inset-bottom, 0px));
+        background-color: var(--bit-NavBar-drawer-background, #{$clr-bg-pri});
+        // The drawer is a surface lifted over the page, so it casts the shadow of one.
+        box-shadow: var(--bit-NavBar-drawer-shadow, #{$box-shadow-sheet});
+        // The drawer enters decelerating and leaves accelerating (see the closed state below): the transition that
+        // runs is the one of the state being entered.
+        transition: transform $mot-duration $mot-easing-decelerate;
+
+        // The open drawer takes the focus onto itself (it is only focusable then, with a tabindex of -1): it is not a
+        // control, and a ring drawn around the whole drawer would point at nothing.
+        &:focus {
+            outline: none;
+        }
+    }
+
+    // A drawer that is only moved off screen keeps its links in the tab order and in the accessibility tree, so the
+    // closed one is hidden outright once it has finished sliding away - to the end edge, which is the left of a
+    // right-to-left screen.
+    &:not(.bit-nbr-dop) > .bit-nbr-drw {
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateX(100%);
+        transition: transform $mot-duration $mot-easing-accelerate, visibility 0s linear $mot-duration;
+    }
+
+    &:not(.bit-nbr-dop):is(.bit-rtl, :dir(rtl)) > .bit-nbr-drw {
+        transform: translateX(-100%);
+    }
+
+    // The items run down the drawer from its top, each one a row of its icon and its text: the drawer scrolls them
+    // itself, whatever the bar does with them.
+    > .bit-nbr-drw > .bit-nbr-cnt {
+        flex: 0 0 auto;
+        overflow: visible;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+
+    > .bit-nbr-drw .bit-nbr-lit {
+        flex: 0 0 auto;
+    }
+
+    > .bit-nbr-drw .bit-nbr-itm {
+        text-align: start;
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+}
+
+// On a wide screen the drawer is no box of its own, so the list lays out in the bar as it does without one; the
+// toggle button and the overlay belong to the drawer alone.
+.bit-nbr-drw {
+    display: contents;
+}
+
+.bit-nbr-ovl {
+    inset: 0;
+    display: none;
+    position: fixed;
+    z-index: $zindex-overlay;
+    background-color: var(--bit-NavBar-overlay-background, #{$clr-bg-overlay});
+}
+
+// The toggle button sits at the end of the bar, ahead of the footer, and takes the look of an item: the content
+// color, the corners and the touch target. Its hover and press move a variable of its own, which the rule at rest
+// paints from, so a class an app hands it keeps its paint in every state.
+.bit-nbr-tgl {
+    --bit-nbr-tgl-bg: initial;
+    display: none;
+    flex-shrink: 0;
+    cursor: pointer;
+    font: inherit;
+    border: none;
+    align-self: center;
+    align-items: center;
+    justify-content: center;
+    margin-inline-start: auto;
+    padding: var(--bit-nbr-sec-pad);
+    min-width: var(--bit-nbr-min);
+    min-height: var(--bit-nbr-min);
+    color: var(--bit-NavBar-item-color, #{$clr-fg-pri});
+    background-color: var(--bit-nbr-tgl-bg, transparent);
+    border-radius: var(--bit-NavBar-item-border-radius, #{$shp-radius-control});
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    @media (hover: hover) {
+        &:not(:disabled):hover {
+            --bit-nbr-tgl-bg: #{$clr-bg-pri-hover};
+        }
+    }
+
+    &:not(:disabled):active {
+        --bit-nbr-tgl-bg: #{$clr-bg-pri-active};
+    }
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color)));
+    }
+
+    &:disabled {
+        cursor: default;
+        color: var(--bit-nbr-clr-dis, var(--bit-NavBar-disabled-color, #{$clr-pri-dis-text}));
+    }
+}
+
+.bit-nbr-tgi {
+    font-size: var(--bit-nbr-ico-fs);
+}
+
+// The three bars of a menu button, drawn rather than taken from the icon font: the outer two are the borders of the
+// box, the middle one a rule across its center. Borders are what a forced-colors mode keeps, in the text color.
+.bit-nbr-tgh {
+    display: block;
+    position: relative;
+    box-sizing: border-box;
+    width: var(--bit-nbr-ico-fs);
+    height: calc(var(--bit-nbr-ico-fs) * 0.75);
+    border-block: $shp-border-width-thick solid currentColor;
+
+    &::before {
+        content: "";
+        top: 50%;
+        position: absolute;
+        inset-inline: 0;
+        transform: translateY(-50%);
+        border-top: $shp-border-width-thick solid currentColor;
+    }
+}
+
+// The shape. The root is wrapped in :where() so it adds nothing to the weight of the rules it selects: a rule of the
+// open drawer weighs what the single class of its part does, so the class an app hands that part (Classes.Drawer,
+// Classes.ToggleButton) keeps winning over it.
+:where(.bit-nbr.bit-nbr-dsh) {
+    @include nbr-drawer;
+}
+
+@each $name, $range in $nbr-drawer-queries {
+    :where(.bit-nbr.bit-nbr-dq-#{$name}) {
+        @include nbr-screen(nth($range, 1), nth($range, 2)) {
+            @include nbr-drawer;
+        }
+    }
 }
 
 .bit-nbr-sel {
@@ -684,6 +921,17 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
     }
 
     .bit-nbr-dis {
+        color: GrayText;
+    }
+
+    // The fill, the shadow and the overlay tint are all that tell the open drawer apart from the page under it, and a
+    // forced-colors mode throws them away: the rule along the edge it turns to the page is drawn instead. A drawer of a
+    // wide screen is no box (display: contents), which draws no border either.
+    .bit-nbr-drw {
+        border-inline-start: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    .bit-nbr-tgl:disabled {
         color: GrayText;
     }
 

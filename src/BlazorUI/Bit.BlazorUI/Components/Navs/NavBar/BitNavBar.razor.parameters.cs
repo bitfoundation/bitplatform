@@ -61,6 +61,32 @@ public partial class BitNavBar<TItem>
     [Parameter] public string? DefaultSelectedKey { get; set; }
 
     /// <summary>
+    /// The screens on which the navbar folds its items into a drawer: while the screen matches this query, the bar
+    /// shows a toggle button in place of its items, and the button opens the very same items, stacked in a column, in
+    /// an off-canvas drawer docked to the end edge of the screen. On every other screen the navbar is the bar it
+    /// always is. While it is not set (the default) the navbar never folds.
+    /// </summary>
+    /// <remarks>
+    /// The query is built from the live theme breakpoints (the <c>--bit-bp-*</c> variables), the way
+    /// <see cref="BitMediaQuery.ScreenQuery"/> builds it, which only the browser can answer; until it has, the
+    /// stylesheet lays the navbar out at the default breakpoints, so a prerendered page shows the shape its screen
+    /// calls for from the start. The header and the footer stay in the bar on every screen.
+    /// <br />
+    /// The open drawer covers the page with an overlay: it reports itself as a modal dialog, holds the page behind
+    /// it from scrolling, takes the focus as it opens and keeps it inside, and hands it back once it closes - on a
+    /// click of an item, of the overlay or of the toggle button, and on the Escape key.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitScreenQuery? DrawerBreakpoint { get; set; }
+
+    /// <summary>
+    /// Whether the drawer of a navbar folded by its <see cref="DrawerBreakpoint"/> is open. It has no effect on the
+    /// screens the navbar is a bar on, and a screen that grows out of the drawer closes it.
+    /// </summary>
+    [Parameter, TwoWayBound, ResetClassBuilder]
+    public bool DrawerOpen { get; set; }
+
+    /// <summary>
     /// Fills the hovered and the selected item of the navbar with the <see cref="Color"/> of the navbar.
     /// While it is not enabled, the selection is conveyed by the color of the item alone.
     /// </summary>
@@ -291,6 +317,27 @@ public partial class BitNavBar<TItem>
     /// Custom CSS styles for different parts of the navbar.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitNavBarClassStyles? Styles { get; set; }
+
+    /// <summary>
+    /// The aria-label and the tooltip of the toggle button that opens and closes the drawer of the navbar (see
+    /// <see cref="DrawerBreakpoint"/>), which also names the drawer itself. Defaults to <see cref="BitStrings.Menu"/>
+    /// of <see cref="BitStrings.Current"/>.
+    /// </summary>
+    [Parameter] public string? ToggleAriaLabel { get; set; }
+
+    /// <summary>
+    /// The icon of the toggle button that opens and closes the drawer of the navbar (see <see cref="DrawerBreakpoint"/>).
+    /// Takes precedence over <see cref="ToggleIconName"/> when both are set.
+    /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.
+    /// While neither is set, the button draws the three bars of a menu button of its own.
+    /// </summary>
+    [Parameter] public BitIconInfo? ToggleIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the toggle button that opens and closes the drawer of the navbar (see
+    /// <see cref="DrawerBreakpoint"/>), from the built-in Fluent UI icons.
+    /// </summary>
+    [Parameter] public string? ToggleIconName { get; set; }
 
     /// <summary>
     /// Stacks the items of the navbar in a column, which turns it into a vertical navigation rail.

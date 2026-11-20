@@ -284,6 +284,10 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         });
 
         ClassBuilder.Register(() => Filled ? "bit-nbr-fil" : string.Empty);
+
+        // The shape of a navbar with a DrawerBreakpoint (see _DrawerShapeClass), and whether its drawer is open.
+        ClassBuilder.Register(() => _DrawerShapeClass);
+        ClassBuilder.Register(() => DrawerBreakpoint is not null && DrawerOpen ? "bit-nbr-dop" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -298,6 +302,8 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         CascadingParameters?.UpdateParameters(this);
 
         _containerId = $"BitNavBar-{UniqueId}-container";
+
+        InitDrawer();
 
         SyncItems();
 
@@ -332,6 +338,8 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        SyncDrawerBreakpoint();
 
         // The Items collection is re-read here rather than only when the parameter is assigned a new
         // instance, so a collection that is mutated in place (an item appended to the same list) is
@@ -414,6 +422,8 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
         await SetupWheel();
 
+        await OnAfterRenderDrawer();
+
         await base.OnAfterRenderAsync(firstRender);
     }
 
@@ -443,6 +453,10 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
             await OnItemClick.InvokeAsync(item);
         }
+
+        // The open drawer closes on any item clicked, the current destination included: the reader picked where to
+        // go, which is what the drawer was opened for.
+        await CloseDrawerOnItemClick();
     }
 
     // The keyboard navigation is wired to the item's own element rather than to the root of the navbar, so
@@ -971,6 +985,8 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         if (IsDisposed || disposing is false) return;
 
         _navigationManager.LocationChanged -= OnLocationChanged;
+
+        await DisposeDrawer();
 
         await base.DisposeAsync(disposing);
     }

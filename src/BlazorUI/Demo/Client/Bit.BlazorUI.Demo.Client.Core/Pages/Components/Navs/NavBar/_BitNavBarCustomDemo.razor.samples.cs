@@ -606,6 +606,50 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 ];";
 
     private readonly string example17RazorCode = @"
+<BitNavBar Items=""basicNavBarCustoms""
+           InlineText
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedItem=""basicNavBarCustoms[0]""
+           DrawerBreakpoint=""BitScreenQuery.LtMd""
+           @bind-DrawerOpen=""isDrawerOpen""
+           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
+                                    IconName = { Selector = item => item.ImageName } })"">
+    <HeaderTemplate>
+        <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""32"" Alt=""bit"" />
+    </HeaderTemplate>
+</BitNavBar>
+
+Drawer open: @isDrawerOpen
+
+
+<BitNavBar Items=""basicNavBarCustoms""
+           InlineText
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedItem=""basicNavBarCustoms[0]""
+           DrawerBreakpoint=""BitScreenQuery.LtXxl""
+           ToggleAriaLabel=""Site navigation""
+           ToggleIconName=""@BitIconName.CollapseMenu""
+           NameSelectors=""@(new() { Text = { Selector = item => item.Title },
+                                    IconName = { Selector = item => item.ImageName } })"">
+    <HeaderTemplate>
+        <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""32"" Alt=""bit"" />
+    </HeaderTemplate>
+    <FooterTemplate>
+        <BitButton Size=""BitSize.Small"">Sign in</BitButton>
+    </FooterTemplate>
+</BitNavBar>";
+    private readonly string example17CsharpCode = @"
+private bool isDrawerOpen;
+
+private static readonly List<MenuItem> basicNavBarCustoms =
+[
+    new() { Title = ""Home"", ImageName = BitIconName.Home  },
+    new() { Title = ""Products"", ImageName = BitIconName.ProductVariant },
+    new() { Title = ""Academy"", ImageName = BitIconName.LearningTools },
+    new() { Title = ""Profile"", ImageName = BitIconName.Contact },
+];";
+
+    private readonly string example18RazorCode = @"
 <BitNavBar Color=""BitColor.Primary"" Items=""basicNavBarCustoms"" DefaultSelectedItem=""basicNavBarCustoms[0]"" Mode=""BitNavMode.Manual""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName } })"" />
@@ -660,7 +704,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 <BitNavBar Color=""BitColor.TertiaryBorder"" Items=""basicNavBarCustoms"" DefaultSelectedItem=""basicNavBarCustoms[0]"" Mode=""BitNavMode.Manual""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName } })"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private static readonly List<MenuItem> basicNavBarCustoms =
 [
     new() { Title = ""Home"", ImageName = BitIconName.Home  },
@@ -669,13 +713,13 @@ private static readonly List<MenuItem> basicNavBarCustoms =
     new() { Title = ""Profile"", ImageName = BitIconName.Contact },
 ];";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitNavBar Items=""externalIconCustoms""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     Icon = { Selector = item => item.Image } })"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private static readonly List<MenuItem> externalIconCustoms =
 [
     new() { Title = ""Home"", Image = ""fa-solid fa-house"" },
@@ -684,7 +728,7 @@ private static readonly List<MenuItem> externalIconCustoms =
     new() { Title = ""Profile"", Image = BitIconInfo.Fa(""solid user"") },
 ];";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitNavBar Size=""BitSize.Small"" Items=""basicNavBarCustoms"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""basicNavBarCustoms[0]""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName } })"" />
@@ -694,7 +738,7 @@ private static readonly List<MenuItem> externalIconCustoms =
 <BitNavBar Size=""BitSize.Large"" Items=""basicNavBarCustoms"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""basicNavBarCustoms[0]""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName } })"" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private static readonly List<MenuItem> basicNavBarCustoms =
 [
     new() { Title = ""Home"", ImageName = BitIconName.Home  },
@@ -703,7 +747,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
     new() { Title = ""Profile"", ImageName = BitIconName.Contact },
 ];";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -787,7 +831,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
            DefaultSelectedItem=""basicNavBarCustoms[0]""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName } })"" />";
-    private readonly string example20CsharpCode = @"
+    private readonly string example21CsharpCode = @"
 private static readonly List<MenuItem> basicNavBarCustoms =
 [
     new() { Title = ""Home"", ImageName = BitIconName.Home  },
@@ -812,12 +856,12 @@ private static readonly List<MenuItem> badgeNavBarCustoms =
     new() { Title = ""Profile"", ImageName = BitIconName.Contact, Marker = true, CounterLabel = ""needs attention"" },
 ];";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitNavBar Dir=""BitDir.Rtl""
            Items=""rtlCustomsItems""
            NameSelectors=""@(new() { Text = { Selector = item => item.Title },
                                     IconName = { Selector = item => item.ImageName } })"" />";
-    private readonly string example21CsharpCode = @"
+    private readonly string example22CsharpCode = @"
 private static readonly List<MenuItem> rtlCustomsItems =
 [
     new() { Title = ""خانه"", ImageName = BitIconName.Home  },

@@ -84,8 +84,9 @@
                 if (e.ctrlKey || e.deltaY === 0 || Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
 
                 // The mode is read at the time of the event, so a navbar that stops being a horizontal
-                // scrolling one keeps the listener without it doing anything.
-                const root = container.parentElement;
+                // scrolling one keeps the listener without it doing anything. The list sits in the drawer of a
+                // navbar with a DrawerBreakpoint rather than right in the root, so the root is looked up.
+                const root = container.closest('.bit-nbr');
                 if (!root || !root.classList.contains('bit-nbr-scr') || root.classList.contains('bit-nbr-vrt')) return;
 
                 const max = container.scrollWidth - container.clientWidth;

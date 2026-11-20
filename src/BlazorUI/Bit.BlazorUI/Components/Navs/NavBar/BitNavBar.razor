@@ -2,6 +2,28 @@
 @inherits BitComponentBase
 @typeparam TItem
 
+@{
+    @* The destinations are marked up as the list they are, so a screen reader announces how many of them
+       the bar holds and which one it is on. The role is spelled out because a list whose bullets are
+       removed loses its list semantics in some browsers. *@
+    RenderFragment items =
+        @<ul id="@_containerId" role="list" style="@Styles?.Container" class="bit-nbr-cnt @Classes?.Container">
+            @if (Options is not null || ChildContent is not null)
+            {
+                <CascadingValue Value="this" IsFixed="true">
+                    @(Options ?? ChildContent)
+                </CascadingValue>
+            }
+            else
+            {
+                @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+                {
+                    <_BitNavBarItem @key="@GetItemKey(item, idx.ToString())" NavBar="this" Item="item" />
+                }
+            }
+        </ul>;
+}
+
 <nav @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      aria-label="@ResolveAriaLabel()"
@@ -14,24 +36,83 @@
         <div style="@Styles?.Header" class="bit-nbr-hdr @Classes?.Header">@HeaderTemplate</div>
     }
 
-    @* The destinations are marked up as the list they are, so a screen reader announces how many of them
-       the bar holds and which one it is on. The role is spelled out because a list whose bullets are
-       removed loses its list semantics in some browsers. *@
-    <ul id="@_containerId" role="list" style="@Styles?.Container" class="bit-nbr-cnt @Classes?.Container">
-        @if (Options is not null || ChildContent is not null)
-        {
-            <CascadingValue Value="this" IsFixed="true">
-                @(Options ?? ChildContent)
-            </CascadingValue>
-        }
-        else
-        {
-            @foreach (var (item, idx) in _items.Select((item, idx) => (item, idx)))
+    @if (DrawerBreakpoint is { } drawerBreakpoint)
+    {
+        @* Reports whether the screen is one the navbar is folded into its drawer on. Nothing is rendered through it -
+           the shape itself is CSS - but the page the open drawer covers and the focus it holds are decided in C#, and
+           only the browser knows the answer, built from the live theme breakpoints. It is plumbing that draws nothing,
+           so it is no visual part of another component the navbar would be rendering. *@
+        <BitMediaQuery NoWrapper ScreenQuery="drawerBreakpoint" OnChange="HandleScreenChange" />
+
+        var toggleIcon = BitIconInfo.From(ToggleIcon, ToggleIconName);
+        var toggleLabel = _ToggleLabel;
+        var isModal = _IsModalDrawer;
+
+        @* The button is only shown on the screens the navbar is folded on (see the stylesheet), and it comes right
+           before the drawer it controls, so the reading order goes from the one into the other.
+           data-bit-esc claims the Escape its keydown listener closes the open drawer with (see Utils.claimEscape). *@
+        <button @ref="_toggleRef"
+                type="button"
+                style="@Styles?.ToggleButton"
+                class="bit-nbr-tgl @Classes?.ToggleButton"
+                title="@toggleLabel"
+                aria-label="@toggleLabel"
+                aria-controls="@_drawerId"
+                aria-expanded="@(DrawerOpen ? "true" : "false")"
+                disabled="@Disabled"
+                aria-disabled="@(Disabled ? "true" : null)"
+                data-bit-esc="@_EscapeClaim"
+                @onclick="HandleOnToggleClick"
+                @onkeydown="_onToggleKeyDown">
+            @if (toggleIcon is not null)
             {
-                <_BitNavBarItem @key="@GetItemKey(item, idx.ToString())" NavBar="this" Item="item" />
+                <i aria-hidden="true" class="bit-nbr-tgi @toggleIcon.GetCssClasses()" />
             }
+            else
+            {
+                <span aria-hidden="true" class="bit-nbr-tgh"></span>
+            }
+        </button>
+
+        @* Only the drawer has an overlay, so once the browser has reported a bar there is none to render; until then
+           the stylesheet hides it on the screens the bar is on. It is a duplicate of what the Escape key and the
+           toggle button already do, so it is left out of the accessibility tree.
+           A tap is answered on its touchend as well: WebKit (iOS) makes no click of a tap on an element that only a
+           listener of the document answers, which every Blazor one is. The click the other engines make of the tap
+           is cancelled with it, so a tap closes the drawer once and lands on nothing under it. *@
+        @if (DrawerOpen && Disabled is false && (_screenChecked is false || _isDrawer))
+        {
+            <div style="@Styles?.Overlay"
+                 class="bit-nbr-ovl @Classes?.Overlay"
+                 aria-hidden="true"
+                 @onclick="HandleOnOverlayClick"
+                 @ontouchstart="_onOverlayTouchStart"
+                 @ontouchend="HandleOnOverlayTouchEnd"
+                 @ontouchend:preventDefault="true"></div>
         }
-    </ul>
+
+        @* The drawer holds the very list of the bar, laid out as a column off the edge of the screen: the items, their
+           element references and their keyboard navigation are the same ones on every screen. On the screens the
+           navbar is a bar on, the drawer is no box of its own (display: contents).
+           data-bit-esc claims the Escape its keydown listener closes the open drawer with; a part inside it that acts
+           on the key claims it first (see _OnEscapeVerdict). *@
+        <div @ref="_drawerRef"
+             id="@_drawerId"
+             style="@Styles?.Drawer"
+             class="bit-nbr-drw @Classes?.Drawer"
+             role="@(isModal ? "dialog" : null)"
+             aria-modal="@(isModal ? "true" : null)"
+             aria-label="@(isModal ? toggleLabel : null)"
+             tabindex="@(isModal ? "-1" : null)"
+             data-bit-esc="@_EscapeClaim"
+             @onkeydown="_onDrawerKeyDown">
+            @items
+        </div>
+    }
+    else
+    {
+        @items
+    }
 
     @if (FooterTemplate is not null)
     {
