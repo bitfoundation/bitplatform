@@ -1,4 +1,5 @@
 ﻿@import "functions.scss";
+@import "media-queries.scss";
 
 //accent roles (pri, sec, ter, inf, suc, wrn, swr, err) - 10 classes per role.
 @each $role, $tokens in $bit-semantic-color-roles {
@@ -325,4 +326,30 @@ $bit-radius-scale: (
 //focus ring utility - drop-in class to apply the global, theme-aware focus indicator.
 .bit-css-shd-focus-ring:focus-visible {
     @include focus-ring;
+}
+
+//visibility - hides an element from a breakpoint up (bit-css-hide-md: from md up, as Md="0" hides a BitGridItem, so
+//bit-css-hide-xs hides it at every width) or below one (bit-css-hide-lt-md: the widths of BitScreenQuery.LtMd), in CSS
+//alone, so a prerendered page shows the right content before the app starts. A media query cannot read a custom property, so these are written from the
+//breakpoints of media-queries.scss, which the --bit-bp-* defaults are built from too: a theme moving --bit-bp-* does not
+//move them. Important, since this stylesheet sits ahead of the components in the bundle and a component's own display
+//(.bit-stk { display: flex }) of the same weight would otherwise win over it.
+.bit-css-hide-xs {
+    display: none !important;
+}
+
+@each $name, $min in (sm: $mq-sm-min, md: $mq-md-min, lg: $mq-lg-min, xl: $mq-xl-min, xxl: $mq-xxl-min) {
+    @media (min-width: $min) {
+        .bit-css-hide-#{$name} {
+            display: none !important;
+        }
+    }
+}
+
+@each $name, $max in (sm: $mq-xs-max, md: $mq-sm-max, lg: $mq-md-max, xl: $mq-lg-max, xxl: $mq-xl-max) {
+    @media (max-width: $max) {
+        .bit-css-hide-lt-#{$name} {
+            display: none !important;
+        }
+    }
 }

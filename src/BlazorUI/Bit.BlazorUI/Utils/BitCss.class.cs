@@ -502,5 +502,26 @@ public static partial class BitCss
                 public const string Selection = "bit-css-shp-radius-selection";
             }
         }
+
+        /// <summary>
+        /// Hides an element per breakpoint in CSS alone, so a prerendered page is right before the app starts:
+        /// <c>Xs</c> to <c>Xxl</c> from that breakpoint up (<c>Xs</c> at every width), <c>LtSm</c> to <c>LtXxl</c> below it.
+        /// The breakpoints are the library's default ones; a theme that moves the <c>--bit-bp-*</c> variables does not move them.
+        /// </summary>
+        public static class Hide
+        {
+            public const string Xs = "bit-css-hide-xs";
+            public const string Sm = "bit-css-hide-sm";
+            public const string Md = "bit-css-hide-md";
+            public const string Lg = "bit-css-hide-lg";
+            public const string Xl = "bit-css-hide-xl";
+            public const string Xxl = "bit-css-hide-xxl";
+
+            public const string LtSm = "bit-css-hide-lt-sm";
+            public const string LtMd = "bit-css-hide-lt-md";
+            public const string LtLg = "bit-css-hide-lt-lg";
+            public const string LtXl = "bit-css-hide-lt-xl";
+            public const string LtXxl = "bit-css-hide-lt-xxl";
+        }
     }
 }
