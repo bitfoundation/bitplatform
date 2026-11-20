@@ -1,0 +1,29 @@
+﻿// The thumbnail of the click-to-load example fills the placeholder, which fills the frame, and the play icon sits in
+// its middle. Both are written in this page's markup, so the scoped rules reach them without ::deep.
+.thumbnail {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+
+.play-icon {
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    color: white;
+    position: absolute;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+// Handed to the component through Classes, so reached through ::deep from the plain div the example sits in.
+::deep {
+    .custom-root {
+        outline-offset: 0.25rem;
+        border-radius: 0.5rem;
+        outline: 2px dashed var(--bit-clr-pri);
+    }
+}

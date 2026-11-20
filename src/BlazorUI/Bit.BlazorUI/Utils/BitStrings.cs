@@ -416,4 +416,14 @@ public class BitStrings
     /// many there are.
     /// </summary>
     public virtual string PanelSizeFormat => "Resize, size {0} of {1}";
+
+
+
+    // ===== BitEmbed =====
+
+    /// <summary>
+    /// The name of the click-to-load placeholder of an embed, <c>{0}</c> being the title of the embed: the fallback of
+    /// <see cref="BitEmbed.PlaceholderAriaLabel"/>.
+    /// </summary>
+    public virtual string LoadFormat => "Load {0}";
 }

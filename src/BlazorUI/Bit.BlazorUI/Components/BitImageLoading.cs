@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents the values of the
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/loading">loading attribute</see>
-/// of an img element.
+/// of an img or an iframe element.
 /// </summary>
 public enum BitImageLoading
 {

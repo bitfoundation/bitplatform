@@ -1,7 +1,7 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Represents the img referrerpolicy attribute values explained here:
+/// Represents the img and iframe referrerpolicy attribute values explained here:
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy"/>
 /// </summary>
 /// <remarks>

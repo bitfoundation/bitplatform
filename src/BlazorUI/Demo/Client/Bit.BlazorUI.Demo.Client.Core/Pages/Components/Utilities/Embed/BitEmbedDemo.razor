@@ -1,0 +1,126 @@
+﻿@page "/components/embed"
+
+<PageOutlet Url="components/embed"
+            Title="Embed"
+            Description="BitEmbed frames a video, a map or another site in an iframe at an aspect ratio that scales with its container, with an optional click-to-load placeholder." />
+
+<DemoPage Name="Embed"
+          SecondaryNames="@(["Iframe", "VideoEmbed", "ResponsiveEmbed"])"
+          Description="BitEmbed frames embedded content - a YouTube video, a map, a page of another site - in an iframe kept at an aspect ratio that scales with its container, so it shrinks on a phone instead of keeping the fixed size an iframe has of its own. It is lazy by default, and a PlaceholderTemplate turns it into a click-to-load facade that requests nothing until the user asks for it."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          GitHubUrl="Utilities/Embed/BitEmbed.razor"
+          GitHubDemoUrl="Utilities/Embed/BitEmbedDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            An iframe needs a Title to be accessible - it is how a screen reader names the embedded content - so the
+            compiler warns about a BitEmbed written without one. Only an http or https Src, or a relative one, is rendered:
+            any other scheme (javascript:, data:, ...) is refused and the frame is left empty.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                Src is the address of the content and Title what a screen reader calls it. The frame takes the width of its
+                container and keeps the 16 / 9 shape of a video at any width - resize the window to see it scale.
+            </div>
+            <br />
+            <div>
+                <BitEmbed Src="https://www.youtube-nocookie.com/embed/79ssLqSInxc"
+                          Title="bit Boilerplate features overview" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="AspectRatio & MaxWidth" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                AspectRatio gives the frame another shape, as a CSS aspect-ratio value, and MaxWidth caps its width; below it
+                the frame still shrinks with its container.
+            </div>
+            <br />
+            <div>
+                <BitEmbed Src="https://www.youtube-nocookie.com/embed/79ssLqSInxc"
+                          Title="bit Boilerplate features overview"
+                          MaxWidth="560px" />
+                <br />
+                <BitEmbed Src="https://www.openstreetmap.org/export/embed.html?bbox=-0.1357%2C51.4985%2C-0.1157%2C51.5085"
+                          Title="A map of central London"
+                          AspectRatio="4 / 3"
+                          MaxWidth="400px" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Iframe attributes" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                Allow, AllowFullScreen, ReferrerPolicy and Sandbox are the iframe attributes of the same names, and Loading
+                is lazy unless it is set to Eager - for an embed on the first screen of a page.
+            </div>
+            <br />
+            <div>
+                <BitEmbed Src="https://www.youtube-nocookie.com/embed/79ssLqSInxc"
+                          Title="bit Boilerplate features overview"
+                          Allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          AllowFullScreen
+                          Loading="BitImageLoading.Eager"
+                          ReferrerPolicy="BitImageReferrerPolicy.StrictOriginWhenCrossOrigin"
+                          MaxWidth="560px" />
+                <br />
+                <BitEmbed Src="https://www.openstreetmap.org/export/embed.html?bbox=-0.1357%2C51.4985%2C-0.1157%2C51.5085"
+                          Title="A map of central London"
+                          Sandbox="allow-scripts allow-same-origin"
+                          AspectRatio="4 / 3"
+                          MaxWidth="400px" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Click to load" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                With a PlaceholderTemplate the iframe is not rendered - and nothing is requested from the site serving the
+                content - until the user clicks the placeholder or activates it with the keyboard; then the iframe takes its
+                place and its focus. The placeholder is a button named "Load" followed by the Title, or by PlaceholderAriaLabel.
+            </div>
+            <br />
+            <div>
+                <BitEmbed Src="https://www.youtube-nocookie.com/embed/79ssLqSInxc?autoplay=1"
+                          Title="bit Boilerplate features overview"
+                          Allow="autoplay; encrypted-media; picture-in-picture"
+                          AllowFullScreen
+                          MaxWidth="560px"
+                          PlaceholderAriaLabel="Play the bit Boilerplate features overview">
+                    <PlaceholderTemplate>
+                        <img class="thumbnail" src="https://i.ytimg.com/vi/79ssLqSInxc/hqdefault.jpg" alt="" />
+                        <span class="play-icon" aria-hidden="true">
+                            <svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+                        </span>
+                    </PlaceholderTemplate>
+                </BitEmbed>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                Classes and Styles reach the root (the frame), the placeholder and the iframe, and the --bit-Embed-*
+                variables restyle the defaults.
+            </div>
+            <br />
+            <div>
+                <BitEmbed Src="https://www.youtube-nocookie.com/embed/79ssLqSInxc"
+                          Title="bit Boilerplate features overview"
+                          MaxWidth="400px"
+                          Style="--bit-Embed-radius: 1rem;" />
+                <br />
+                <BitEmbed Src="https://www.youtube-nocookie.com/embed/79ssLqSInxc"
+                          Title="bit Boilerplate features overview"
+                          MaxWidth="400px"
+                          Classes="@(new() { Root = "custom-root" })" />
+                <br />
+                <BitEmbed Src="https://www.openstreetmap.org/export/embed.html?bbox=-0.1357%2C51.4985%2C-0.1157%2C51.5085"
+                          Title="A map of central London"
+                          AspectRatio="4 / 3"
+                          MaxWidth="400px"
+                          Styles="@(new() { Root = "border: 2px solid var(--bit-clr-pri);", Frame = "filter: grayscale(1);" })" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

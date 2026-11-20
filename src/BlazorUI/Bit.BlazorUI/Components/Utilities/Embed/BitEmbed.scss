@@ -1,0 +1,77 @@
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every embed and
+// one set on the Style of an instance re-skins that one:
+//   --bit-Embed-aspect-ratio   shape of the frame                                   (default: 16 / 9; the AspectRatio parameter wins)
+//   --bit-Embed-max-width      largest width of the frame                           (default: none; the MaxWidth parameter wins)
+//   --bit-Embed-radius         corner radius of the frame                           (default: 0)
+//   --bit-Embed-background     background of the frame, behind the content while
+//                              it loads                                             (default: $clr-bg-sec)
+//   --bit-Embed-focus-color    color of the keyboard focus ring of the placeholder  (default: $clr-pri-focus)
+//
+// A parameter written on the embed wins over the variable that restyles what it sets: AspectRatio and MaxWidth are
+// written to the private variables of the instance, which every read ranks ahead of the public ones. Left unset, they
+// publish nothing, so the variables restyle the default.
+
+$emb-private-properties: ar, mxw;
+
+// The frame. It takes the width of its container, up to its largest width, and the height its aspect ratio gives
+// that width, which is what makes the content scale with the page and what reserves its room before it has loaded.
+// Everything inside it is positioned against it and fills it, and it clips, so a rounded corner crops the content.
+.bit-emb {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+    max-width: var(--bit-emb-mxw, var(--bit-Embed-max-width, none));
+    aspect-ratio: var(--bit-emb-ar, var(--bit-Embed-aspect-ratio, 16 / 9));
+    border-radius: var(--bit-Embed-radius, 0);
+    background-color: var(--bit-Embed-background, #{$clr-bg-sec});
+
+    // Every value a parameter publishes starts out unset on every root, so an embed nested in the content of another
+    // one never inherits the outer one's choice; the inline AspectRatio and MaxWidth still win on the root that
+    // carries them.
+    @each $name in $emb-private-properties {
+        --bit-emb-#{$name}: initial;
+    }
+}
+
+.bit-emb-frm {
+    inset: 0;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: absolute;
+}
+
+// The click-to-load placeholder: a button stripped of the look of one, filling the frame, that shows whatever its
+// template draws. Its focus ring is drawn inwards, since the frame clips everything outside it, over a band of the page
+// background so it stands out on a thumbnail of any color.
+.bit-emb-plh {
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    overflow: hidden;
+    position: absolute;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+
+    &:focus-visible {
+        @include focus-ring-inset(var(--bit-Embed-focus-color, #{$clr-pri-focus}), $band: true);
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: default;
+        opacity: $opa-dis;
+    }
+}

@@ -1,0 +1,41 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@*  The frame. It takes the width of its container and the height its aspect ratio gives that width, so the content
+    framed in it scales with the page rather than keeping the fixed size an iframe has of its own. Everything inside
+    it fills it. *@
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLowerInvariant()">
+    @if (_ShowsPlaceholder)
+    {
+        @*  The click-to-load facade: nothing of the embedded page is requested until the user asks for it. A native
+            button, so the keyboard and a screen reader reach it like any other, named by what it does - the template
+            is mostly a picture, which says nothing to either. *@
+        <button @onclick="HandleOnPlaceholderClick"
+                type="button"
+                style="@Styles?.Placeholder"
+                class="bit-emb-plh @Classes?.Placeholder"
+                disabled="@Disabled"
+                aria-disabled="@(Disabled ? "true" : null)"
+                aria-label="@_PlaceholderAriaLabel">
+            @PlaceholderTemplate
+        </button>
+    }
+    else if (_src is not null)
+    {
+        <iframe @ref="_frameElement"
+                style="@Styles?.Frame"
+                class="bit-emb-frm @Classes?.Frame"
+                src="@_src"
+                title="@Title"
+                loading="@(Loading is BitImageLoading.Eager ? "eager" : "lazy")"
+                allow="@Allow"
+                allowfullscreen="@AllowFullScreen"
+                referrerpolicy="@GetReferrerPolicy()"
+                sandbox="@Sandbox"></iframe>
+    }
+</div>
