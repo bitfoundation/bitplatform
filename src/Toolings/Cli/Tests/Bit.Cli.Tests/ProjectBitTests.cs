@@ -432,6 +432,12 @@ public class ProjectBitTests
     [DataRow("setup {0} --platforms web,android -p:Configuration=Release --yes")]
     [DataRow("setup {0} --an-option-only-the-other-bit-knows")]
     [DataRow("clean {0} --an-option-only-the-other-bit-knows")]
+    [DataRow("run --project {0}")]
+    [DataRow("doctor --project {0}")]
+    [DataRow("migration add Initial --project {0}")]
+    [DataRow("api check --version 2.0.0 --project {0}")]
+    [DataRow("keys android --project {0}")]
+    [DataRow("pipeline --check --project {0}")]
     public async Task ACommandGivenAnotherFolder_Should_GoByThatProject(string command)
     {
         using var host = new TestHost(HostOs.Linux);
@@ -452,6 +458,7 @@ public class ProjectBitTests
 
     [TestMethod]
     [DataRow("clean {0}", CliApp.ExitUsage)]
+    [DataRow("api check --version 2.0.0 --project {0}", CliApp.ExitUsage)]
     [DataRow("clean {0} --not-an-option", CliApp.ExitFailed)]
     [DataRow("setup {0} --not-an-option", CliApp.ExitFailed)]
     [DataRow("setup https://github.com/contoso/Contoso --not-an-option", CliApp.ExitFailed)]

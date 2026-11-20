@@ -21,6 +21,10 @@ public sealed record PipelineOptions(IReadOnlyList<string> Environments, bool Ch
     public string? AppleServicesId { get; init; }
 
     public string? AppleTeamId { get; init; }
+
+    public string? Project { get; init; }
+
+    public ProjectParts Parts { get; init; } = ProjectParts.None;
 }
 
 public sealed partial class PipelineSetup(CliServices cli, PipelineOptions options, HttpMessageHandler? appleHttp = null)
@@ -84,16 +88,19 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     private readonly List<string> appleCertificates = [];
     private HashSet<string> repositorySecrets = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> changedFiles = [];
+    private readonly HashSet<string> saidMissing = new(StringComparer.Ordinal);
+    private ProjectContext? project;
     private bool failed;
 
     public async Task<int> RunAsync(CancellationToken cancellationToken)
     {
-        var top = await Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["rev-parse", "--show-toplevel"], WorkingDirectory = cli.Environment.CurrentDirectory, Timeout = TimeSpan.FromSeconds(30) }, cancellationToken);
+        var top = await Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["rev-parse", "--show-toplevel"], WorkingDirectory = options.Project ?? cli.Environment.CurrentDirectory, Timeout = TimeSpan.FromSeconds(30) }, cancellationToken);
 
         if (top.Succeeded is false)
-            return cli.UsageError("not-a-repository", "Run bit pipeline inside your project's git repository.");
+            return cli.UsageError("not-a-repository", options.Project is null ? "Run bit pipeline inside your project's git repository." : $"{options.Project} isn't inside a git repository, and bit pipeline fills the secrets of the project's repository.");
 
         root = Path.GetFullPath(top.Output.Trim());
+        project = FindProject();
 
         if (Directory.Exists(Path.Combine(root, ".github", "workflows")) is false)
             return cli.UsageError("no-github-workflows", "This repository has no GitHub Actions workflows. bit pipeline fills the secrets of GitHub Actions; for another pipeline, create the keys with bit keys.");
@@ -367,11 +374,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         absent.Remove(AppleCertificateFile);
         absent.Remove(AppleCertificatePassword);
 
-        var bundleId = await VariableAsync(environment, "APP_ID", cancellationToken) ?? (ProjectContext.FindProjectName(root) is { } projectName ? ProjectContext.ReadAppId(root, projectName) : null);
+        var bundleId = await VariableAsync(environment, "APP_ID", cancellationToken) ?? project?.AppId;
 
         if (string.IsNullOrWhiteSpace(bundleId))
         {
-            cli.Console.Step(StepStatus.Warning, "Skipped the App Store signing", $"bit doesn't know the app's bundle id; set the APP_ID variable of {Scope(environment)} and run bit pipeline again");
+            cli.Console.StepWarning("Skipped the App Store signing", $"bit doesn't know the app's bundle id: set the APP_ID variable of {Scope(environment)} and run bit pipeline again. {WhereTheAppIdIs}");
             return;
         }
 
@@ -384,7 +391,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
             try
             {
-                entitlements = ProjectContext.FindProjectName(root) is { } name ? AppleEntitlements.ForProject(root, name) : null;
+                entitlements = project is null ? null : AppleEntitlements.ForProject(project);
                 signing = await new AppleSigning(appleHttp).CreateAppStoreSigningAsync(appleKey, bundleId, profileName, entitlements, cancellationToken);
             }
             catch (AppleSigningException exp)
@@ -400,7 +407,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
             if (entitlements is null)
             {
-                cli.Console.StepWarning("bit didn't check the bundle id's capabilities", "it found no entitlements file the iOS app signs with in the repository");
+                cli.Console.StepWarning("bit didn't check the bundle id's capabilities", project is null
+                    ? $"it found no entitlements file the iOS app signs with in the repository. {NoProject}"
+                    : File.Exists(Path.Combine(project.Directory, project.MauiProject))
+                        ? $"{project.MauiProject} names no entitlements file for iOS"
+                        : $"{project.MauiProject}, which names the iOS app's entitlements, isn't there. --maui names the iOS app's .csproj.");
             }
             else if (signing.EnabledCapabilities.Count > 0)
             {
@@ -416,9 +427,9 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             KeyFolder.WriteSecret(copy, signing.Pkcs12);
             appleCertificates.Add($"The App Store certificate is kept in {copy} with the password {signing.Pkcs12Password}; it expires on {signing.CertificateExpiry:yyyy-MM-dd}.");
 
-            if (signing.TeamId is { } teamId && ProjectContext.FindProjectName(root) is { } project && WellKnownFiles.AddAppleApp(WellKnownFiles.AppleAppSiteAssociationPath(root, project), teamId, bundleId))
+            if (signing.TeamId is { } teamId)
             {
-                changedFiles.Add(WellKnownFiles.AppleAppSiteAssociationPath(root, project));
+                ChangeWellKnown(WellKnownFiles.AppleAppSiteAssociation, "the app", "its Universal Links", file => WellKnownFiles.AddAppleApp(file, teamId, bundleId));
             }
         }
 
@@ -458,7 +469,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
     private AndroidKeystore CreateKeystore()
     {
         var alias = workflowTexts.Select(t => KeyAliasRegex().Match(t)).FirstOrDefault(m => m.Success)?.Groups["alias"].Value
-            ?? ProjectContext.FindProjectName(root)
+            ?? project?.Name
             ?? "release";
 
         var created = AndroidKeystore.Create(alias);
@@ -475,16 +486,45 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
     private async Task AddFingerprintAsync(string? environment, AndroidKeystore created, CancellationToken cancellationToken)
     {
-        if (ProjectContext.FindProjectName(root) is not { } name)
-            return;
+        var packageName = await VariableAsync(environment, "APP_ID", cancellationToken) ?? project?.AppId;
 
-        var packageName = await VariableAsync(environment, "APP_ID", cancellationToken) ?? ProjectContext.ReadAppId(root, name);
-        var assetLinks = WellKnownFiles.AssetLinksPath(root, name);
-
-        if (packageName is { Length: > 0 } && WellKnownFiles.AddAndroidFingerprint(assetLinks, packageName, created.Sha256Fingerprint))
+        if (packageName is { Length: > 0 })
         {
-            changedFiles.Add(assetLinks);
+            ChangeWellKnown(WellKnownFiles.AssetLinks, "the key's fingerprint", "its Android App Links", file => WellKnownFiles.AddAndroidFingerprint(file, packageName, created.Sha256Fingerprint));
         }
+        else if (saidMissing.Add("APP_ID"))
+        {
+            cli.Console.StepWarning($"Didn't add the key's fingerprint to {WellKnownFiles.AssetLinks}", $"bit doesn't know the app's id: set the APP_ID variable of {Scope(environment)}. {WhereTheAppIdIs}");
+        }
+    }
+
+    private string NoProject => $"bit found no bit Boilerplate project in {root}, and --project names its folder.";
+
+    private string WhereTheAppIdIs => project is null
+        ? NoProject
+        : $"{project.MauiProject} {(File.Exists(Path.Combine(project.Directory, project.MauiProject)) ? "has no <ApplicationId>" : "isn't there")}, and --maui names the app's .csproj.";
+
+    private void ChangeWellKnown(string fileName, string what, string links, Func<string, bool> change)
+    {
+        var files = project is null ? [] : WellKnownFiles.Files(project, fileName);
+
+        if (files.Count == 0 && saidMissing.Add(fileName))
+        {
+            cli.Console.StepWarning($"Didn't add {what} to {fileName}", project is null
+                ? $"so {links} won't verify. {NoProject}"
+                : $"bit found none in {WellKnownFiles.DefaultPlace}, so {links} won't verify. {WellKnownFiles.Option} names its folder.");
+        }
+
+        changedFiles.AddRange(files.Where(change));
+    }
+
+    private ProjectContext? FindProject()
+    {
+        var directory = options.Project ?? (ProjectContext.FindProjectName(root) is not null ? root : ProjectContext.FindProjectDirectory(cli.Environment.CurrentDirectory));
+
+        return directory is not null && Path.GetRelativePath(root, directory) is var relative && relative.StartsWith("..", StringComparison.Ordinal) is false && Path.IsPathRooted(relative) is false && ProjectContext.FindProjectName(directory) is { } name
+            ? ProjectContext.At(directory, name, options.Parts)
+            : null;
     }
 
     private async Task<string?> AskAsync(string? environment, string name, CancellationToken cancellationToken)

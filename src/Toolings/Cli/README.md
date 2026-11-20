@@ -384,7 +384,7 @@ bit keys apple --issuer-id 57246542-96fe-1a63-e053-0824d011072a --key-id 2X9R4HX
 - `--rotate` renames the current pair to `AppCertificate.<date>.crt` and `.key`, which the server keeps trusting for what it signed, and creates a new one with the same subject.
 - `--pfx` also writes `AppCertificate.pfx` behind a generated password. `--list` shows the folder's certificates, which one is active, their key ids and when they expire.
 
-`bit keys android` creates the keystore that signs the Android app for Google Play: an RSA 2048 key valid for 30 years under the project's name as its alias, with one generated password for the keystore and the key. It goes to `~/.bitplatform/keys/<project>` or `-o <file>`, never into the repository, and in a project its SHA-256 fingerprint is added to `assetlinks.json` for the app's id. Google Play only takes updates signed with the same key, so save it and its password somewhere safe.
+`bit keys android` creates the keystore that signs the Android app for Google Play: an RSA 2048 key valid for 30 years under the project's name as its alias, with one generated password for the keystore and the key. It goes to `~/.bitplatform/keys/<project>` or `-o <file>`, never into the repository, and in a project its SHA-256 fingerprint is added to `assetlinks.json` for the app's id, in every `.well-known` folder [the project has](#the-parts-of-a-project). Google Play only takes updates signed with the same key, so save it and its password somewhere safe.
 
 `bit keys apple` creates the signing the CD needs to publish the iOS app, without a Mac, through the App Store Connect API:
 
@@ -416,6 +416,31 @@ The app needs no change for it. The browser is Playwright's Chromium when it's i
 
 Collect the profile in the job that publishes the app, right before the AOT publish, rather than keeping one in the repository: a profile describes one build of the app.
 
+## The parts of a project
+
+bit finds a project's parts where bit Boilerplate puts them. A project that renamed, moved or split one names it with an option, and a command that finds no part where it looked says so and names the option, instead of leaving that step out.
+
+| Part | Where bit looks | Option | On |
+|---|---|---|---|
+| The project | The current folder. `migration`, `api`, `keys` and `pipeline` take the nearest folder with a `*.Web.slnf` or `*.slnx`, it or one above it | `--project <folder>` | `run`, `doctor`, `migration`, `api`, `keys certificate`, `keys android`, `keys apple`, `pipeline`, `diff`. `setup`, `clean` and `rename` take the folder as an argument |
+| Server.Api | `src/Server/<name>.Server.Api` | `--server-api <csproj>` | `setup`, `run`, `migration`, `api`, `keys certificate`, `pipeline` |
+| Server.Web | `src/Server/<name>.Server.Web` | `--server-web <csproj>`, repeatable | `setup`, `run`, `migration` |
+| The Aspire AppHost | `src/Server/<name>.Server.AppHost` | `--apphost <csproj>` | `setup`, `run`, `doctor` |
+| Client.Core | `src/Client/<name>.Client.Core` | `--client-core <folder>` | `setup`, `doctor`, `migration` |
+| The web apps | Every Blazor WebAssembly project under `src/Client` | `--web <csproj>`, repeatable | `setup`, `doctor` |
+| Client.Maui | `src/Client/<name>.Client.Maui` | `--maui <csproj>` | `setup`, `run`, `rename`, `keys android`, `keys apple`, `pipeline` |
+| Client.Windows | `src/Client/<name>.Client.Windows` | `--windows <csproj>` | `setup`, `run` |
+| The Workbench | `src/Workbench/<name>.Workbench.csproj` | `--workbench <csproj>` | `setup` |
+| The landing page | `src/LandingPage/<name>.LandingPage.Server` | `--landing-page <csproj>` | `setup` |
+| `assetlinks.json` and `apple-app-site-association.json` | Every `wwwroot/.well-known` folder under `src/Client` that has one of the two | `--well-known <folder>`, repeatable | `keys android`, `pipeline` |
+| The api's documents | `openapi`, in the project's folder | `--openapi <folder>` | `api` |
+| The app's version | `<Version>` in `src/Directory.Build.props` | `--version <version>` | `api` |
+
+- A project that isn't at the template's path is still found when the project's `.slnx` lists one whose file name ends the same way, like `backend/Shop.Server.Api.csproj` for Server.Api. The option is for the rest: one with another name, or one of several.
+- An option that takes a `.csproj` takes its folder too, and a relative path is from the current folder, or else from the project's. A path that isn't there stops the command.
+- With more than one `--server-web`, `bit run` and `bit setup` start them all without Aspire, and open the first. With Aspire they wait for each one's resource, which bit reads from the AppHost: the `AddProject` call that names the project, or else the template's `serverweb` and `serverapi`.
+- `bit keys android` and `bit pipeline` add the Android key's fingerprint, and `bit pipeline` the iOS app, to every `.well-known` folder, since a project may serve more than one web app. When they find none, or don't know the app's id, they say that the app's links won't verify.
+
 ## Staying up to date
 
 `bit new` creates every project from the newest stable bit Boilerplate. As it starts, it looks up the newest `Bit.Cli` on this machine's NuGet sources. When a newer one is out, it installs it next to itself in `~/.bitplatform/cli`, and the same command carries on with it in the same terminal, so nothing is asked twice. When the run ends, the installed global tool updates to that version in the background, with its log in `~/.bitplatform/logs`.
@@ -442,7 +467,7 @@ In the project's folder, or any folder under it, bit reads the nearest `bit.json
 
 - Every command does this except `bit new`, which always takes the newest bit, and `bit remove`, `bit decode`, `bit trust`, `bit update`, `bit about` and `bit telemetry`, which don't read the project. `bit --version` and `--help` are the installed bit's own.
 - It happens before bit reads the command, so a command or an option that only the other bit knows still reaches it, exactly as it was typed.
-- `bit setup`, `bit clean`, `bit rename` and `bit diff --project` go by the folder they're given, not the one they run in. `bit setup` with a repository's address checks right after cloning it.
+- `bit setup`, `bit clean`, `bit rename` and a command with `--project` go by the folder they're given, not the one they run in. `bit setup` with a repository's address checks right after cloning it.
 - bit looks the other bit up, and downloads it, from its own folder, so the project's `global.json` and `NuGet.config` have no say in it: it works before the project's .NET SDK is installed.
 - A stable bit takes a stable version when one fits. While only a prerelease fits, it runs the command with that one and leaves the installed bit as it is.
 - When no bit that fits can be found or downloaded, such as without a connection, bit says so and goes on with the one you have. It doesn't try again for 15 minutes, so the commands in between don't wait for it. An update of the installed bit that didn't get through is tried again an hour later.

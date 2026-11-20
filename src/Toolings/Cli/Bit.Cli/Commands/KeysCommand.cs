@@ -8,7 +8,12 @@ using Spectre.Console;
 
 namespace Bit.Cli.Commands;
 
-public sealed record AppleKeysRequest(string IssuerId, string KeyId, string PrivateKeyPath, string? BundleId, string? ProfileName, string? Output, string? EntitlementsPath = null, bool SignInWithApple = false);
+public sealed record AppleKeysRequest(string IssuerId, string KeyId, string PrivateKeyPath, string? BundleId, string? ProfileName, string? Output, string? EntitlementsPath = null, bool SignInWithApple = false)
+{
+    public string? Project { get; init; }
+
+    public ProjectParts Parts { get; init; } = ProjectParts.None;
+}
 
 public static partial class KeysCommand
 {
@@ -48,6 +53,7 @@ public static partial class KeysCommand
         var rotateOption = new Option<bool>("--rotate") { Description = "Keep the current AppCertificate as a retired one, which still validates what it signed, and create a new one next to it." };
         var pfxOption = new Option<bool>("--pfx") { Description = "Also write AppCertificate.pfx, protected by a password bit creates." };
         var listOption = new Option<bool>("--list") { Description = "List the certificates in the folder: which one is active, their key ids and when they expire." };
+        var projectOptions = new ProjectOptions().SearchedAbove();
 
         var command = new Command("certificate", "Create, rotate or list the AppCertificate the server signs tokens and encrypts its Data Protection keys with.")
         {
@@ -58,14 +64,24 @@ public static partial class KeysCommand
             listOption
         };
 
+        projectOptions.AddTo(command, projectOptions.Project, projectOptions.ServerApi);
+
         command.SetAction(async (parseResult, cancellationToken) =>
         {
             var cli = services();
             var production = parseResult.GetValue(productionOption);
-            var project = FindProject(cli.Environment.CurrentDirectory);
-            var folder = parseResult.GetValue(outputOption) is { } output
+
+            if (FindProject(cli, parseResult, projectOptions, out var project) is { } projectError)
+                return projectError;
+
+            var given = parseResult.GetValue(outputOption);
+
+            if (given is null && production is false && project is not null && Directory.Exists(project.ServerApiDirectory) is false)
+                return cli.UsageError("server-api-missing", $"{project.Relative(project.ServerApiDirectory)} isn't there, and a development certificate goes in Server.Api's folder. Pass its .csproj with {projectOptions.ServerApi.Name}, or a folder with -o.");
+
+            var folder = given is { } output
                 ? Path.GetFullPath(output, cli.Environment.CurrentDirectory)
-                : production is false && project is { } found ? Path.Combine(found.Directory, "src", "Server", $"{found.Name}.Server.Api") : cli.Environment.CurrentDirectory;
+                : production is false && project is { } found ? found.ServerApiDirectory : cli.Environment.CurrentDirectory;
 
             if (parseResult.GetValue(listOption))
                 return List(cli, folder);
@@ -120,6 +136,7 @@ public static partial class KeysCommand
     {
         var outputOption = new Option<string?>("--output", "-o") { Description = "The keystore file to create. Default: ~/.bitplatform/keys/<project>/<alias>.keystore." };
         var aliasOption = new Option<string?>("--alias") { Description = "The key's alias. Default: the project's name." };
+        var projectOptions = new ProjectOptions().SearchedAbove();
 
         var command = new Command("android", "Create the keystore that signs the Android app for Google Play, and add its fingerprint to the project's assetlinks.json.")
         {
@@ -127,10 +144,15 @@ public static partial class KeysCommand
             aliasOption
         };
 
+        projectOptions.AddTo(command, projectOptions.Project, projectOptions.Maui, projectOptions.WellKnown);
+
         command.SetAction(async (parseResult, cancellationToken) =>
         {
             var cli = services();
-            var project = FindProject(cli.Environment.CurrentDirectory);
+
+            if (FindProject(cli, parseResult, projectOptions, out var project) is { } projectError)
+                return projectError;
+
             var alias = parseResult.GetValue(aliasOption) ?? project?.Name ?? "release";
             var path = parseResult.GetValue(outputOption) is { } output
                 ? Path.GetFullPath(output, cli.Environment.CurrentDirectory)
@@ -150,10 +172,28 @@ public static partial class KeysCommand
             cli.Console.Out.MarkupLine($"  [grey]Password[/]  {Markup.Escape(keystore.Password)}  [grey](the keystore's and the key's)[/]");
             cli.Console.Out.MarkupLine($"  [grey]SHA-256[/]   {keystore.Sha256Fingerprint}");
 
-            if (project is not null && ProjectContext.ReadAppId(project.Directory, project.Name) is { Length: > 0 } appId
-                && WellKnownFiles.AddAndroidFingerprint(WellKnownFiles.AssetLinksPath(project.Directory, project.Name), appId, keystore.Sha256Fingerprint))
+            if (project is not null)
             {
-                cli.Console.Step(StepStatus.Succeeded, "Added its fingerprint to assetlinks.json", appId);
+                const string skipped = "Didn't add its fingerprint to assetlinks.json";
+                var assetLinks = WellKnownFiles.Files(project, WellKnownFiles.AssetLinks);
+
+                if (project.AppId is not { Length: > 0 } appId)
+                {
+                    cli.Console.StepWarning(skipped, $"{project.MauiProject} isn't there or has no <ApplicationId>, so bit doesn't know the app's id. {projectOptions.Maui.Name} names the Android app's .csproj.");
+                }
+                else if (assetLinks.Count == 0)
+                {
+                    cli.Console.StepWarning(skipped, $"bit found none in {WellKnownFiles.DefaultPlace}, so the app's Android App Links won't verify. {WellKnownFiles.Option} names its folder.");
+                }
+                else if (assetLinks.Where(file => WellKnownFiles.AddAndroidFingerprint(file, appId, keystore.Sha256Fingerprint)).ToList() is { Count: > 0 } changed)
+                {
+                    cli.Console.Step(StepStatus.Succeeded, "Added its fingerprint to assetlinks.json", appId);
+
+                    if (assetLinks.Count > 1)
+                    {
+                        cli.Console.StepHint(string.Join(", ", changed.Select(project.Relative)));
+                    }
+                }
             }
 
             cli.Console.Out.MarkupLine("[grey]Save the file and its password somewhere safe, like a password manager: Google Play only takes updates signed with this key.[/]");
@@ -184,14 +224,24 @@ public static partial class KeysCommand
         return certificates.Any(c => c.Problem is not null) ? CliApp.ExitCheckFailed : CliApp.ExitOk;
     }
 
-    private static ProjectContext? FindProject(string directory)
+    private static int? FindProject(CliServices cli, ParseResult parseResult, ProjectOptions options, out ProjectContext? project)
     {
-        for (var current = new DirectoryInfo(directory); current is not null; current = current.Parent)
-        {
-            if (current.Exists && ProjectContext.FindProjectName(current.FullName) is { } name)
-                return new ProjectContext { Name = name, Directory = current.FullName, Platforms = new HashSet<Platform>() };
-        }
+        var folder = options.Folder(parseResult, cli);
+        var directory = ProjectContext.FindProjectDirectory(folder);
+        project = null;
 
+        if (directory is null && options.IsGiven(parseResult))
+            return cli.UsageError("not-a-project", $"{folder} isn't in a bit Boilerplate project: neither it nor a folder above it has a *.Web.slnf or *.slnx.");
+
+        var (parts, error) = options.Read(parseResult, cli, directory ?? folder);
+
+        if (error is not null)
+            return cli.UsageError("project-part-missing", error);
+
+        if (directory is null && parts.IsEmpty is false)
+            return cli.UsageError("not-a-project", $"{folder} isn't in a bit Boilerplate project, whose parts those options name: neither it nor a folder above it has a *.Web.slnf or *.slnx. {ProjectOptions.ProjectName} names the project's folder.");
+
+        project = directory is null ? null : ProjectContext.At(directory, ProjectContext.FindProjectName(directory)!, parts);
         return null;
     }
 
@@ -218,15 +268,32 @@ public static partial class KeysCommand
             signInWithAppleOption
         };
 
-        command.SetAction((parseResult, cancellationToken) => AppleAsync(services(), new AppleKeysRequest(
-            parseResult.GetValue(issuerIdOption)?.Trim() ?? "",
-            parseResult.GetValue(keyIdOption)?.Trim() ?? "",
-            parseResult.GetValue(privateKeyOption) ?? "",
-            parseResult.GetValue(bundleIdOption)?.Trim(),
-            parseResult.GetValue(profileNameOption)?.Trim(),
-            parseResult.GetValue(outputOption),
-            parseResult.GetValue(entitlementsOption),
-            parseResult.GetValue(signInWithAppleOption)), cancellationToken));
+        var projectOptions = new ProjectOptions();
+        projectOptions.AddTo(command, projectOptions.Project, projectOptions.Maui);
+
+        command.SetAction((parseResult, cancellationToken) =>
+        {
+            var cli = services();
+            var folder = projectOptions.Folder(parseResult, cli);
+            var (parts, error) = projectOptions.Read(parseResult, cli, folder);
+
+            if (error is not null)
+                return Task.FromResult(cli.UsageError("project-part-missing", error));
+
+            return AppleAsync(cli, new AppleKeysRequest(
+                parseResult.GetValue(issuerIdOption)?.Trim() ?? "",
+                parseResult.GetValue(keyIdOption)?.Trim() ?? "",
+                parseResult.GetValue(privateKeyOption) ?? "",
+                parseResult.GetValue(bundleIdOption)?.Trim(),
+                parseResult.GetValue(profileNameOption)?.Trim(),
+                parseResult.GetValue(outputOption),
+                parseResult.GetValue(entitlementsOption),
+                parseResult.GetValue(signInWithAppleOption))
+            {
+                Project = projectOptions.IsGiven(parseResult) ? folder : null,
+                Parts = parts
+            }, cancellationToken);
+        });
 
         return command;
     }
@@ -241,14 +308,24 @@ public static partial class KeysCommand
             return cli.UsageError("private-key-missing", $"No file at {privateKeyPath}. Pass the AuthKey_<key id>.p8 file App Store Connect gave when the key was created.");
         }
 
-        var projectName = Directory.Exists(directory) ? ProjectContext.FindProjectName(directory) : null;
-        var bundleId = request.BundleId ?? (projectName is null ? null : ProjectContext.ReadAppId(directory, projectName));
+        var projectDirectory = request.Project ?? directory;
+        var projectName = Directory.Exists(projectDirectory) ? ProjectContext.FindProjectName(projectDirectory) : null;
+
+        if (projectName is null && request.Project is not null)
+        {
+            return cli.UsageError("not-a-project", $"{projectDirectory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx).");
+        }
+
+        var project = projectName is null && request.Parts.Maui is null ? null : ProjectContext.At(projectDirectory, projectName ?? "", request.Parts);
+        var bundleId = request.BundleId ?? project?.AppId;
 
         if (string.IsNullOrEmpty(bundleId))
         {
-            return cli.UsageError("bundle-id-missing", projectName is null
-                ? "Pass the app's bundle id with --bundle-id, e.g. --bundle-id com.contoso.shop, or run this in a bit Boilerplate project's folder to use its app id."
-                : $"{ProjectContext.FindMauiProject(directory, projectName)} has no <ApplicationId>. Pass the app's bundle id with --bundle-id.");
+            return cli.UsageError("bundle-id-missing", project is null
+                ? "Pass the app's bundle id with --bundle-id, e.g. --bundle-id com.contoso.shop, or run this in a bit Boilerplate project's folder to use its app id. --project names that folder from elsewhere."
+                : File.Exists(Path.Combine(projectDirectory, project.MauiProject))
+                    ? $"{project.MauiProject} has no <ApplicationId>. Pass the app's bundle id with --bundle-id."
+                    : $"{project.MauiProject} isn't there. Pass the app's bundle id with --bundle-id, or the iOS app's .csproj with --maui.");
         }
 
         if (BundleIdRegex().IsMatch(bundleId) is false)
@@ -275,8 +352,8 @@ public static partial class KeysCommand
         try
         {
             entitlements = request.EntitlementsPath is { Length: > 0 } entitlementsPath ? AppleEntitlements.Read(Path.GetFullPath(entitlementsPath, directory))
-                : projectName is null ? null
-                : AppleEntitlements.ForProject(directory, projectName);
+                : project is null ? null
+                : AppleEntitlements.ForProject(project);
         }
         catch (AppleSigningException exp)
         {
@@ -325,9 +402,11 @@ public static partial class KeysCommand
 
         if (entitlements is null)
         {
-            console.Warn(projectName is null
+            console.Warn(project is null
                 ? "bit didn't check the bundle id's capabilities, since it had no entitlements to check them against. Pass the .plist the iOS app's Release build signs with as --entitlements, or run this in a bit Boilerplate project's folder."
-                : $"bit didn't check the bundle id's capabilities: {ProjectContext.FindMauiProject(directory, projectName)} names no entitlements file for iOS. Pass the .plist the iOS app's Release build signs with as --entitlements.");
+                : File.Exists(Path.Combine(projectDirectory, project.MauiProject))
+                    ? $"bit didn't check the bundle id's capabilities: {project.MauiProject} names no entitlements file for iOS. Pass the .plist the iOS app's Release build signs with as --entitlements."
+                    : $"bit didn't check the bundle id's capabilities: {project.MauiProject}, which names the iOS app's entitlements, isn't there. Pass the .plist the iOS app's Release build signs with as --entitlements, or the iOS app's .csproj with --maui.");
         }
         else if (forEntitlements.Count > 0)
         {
@@ -377,7 +456,7 @@ public static partial class KeysCommand
 
         if (request.SignInWithApple)
         {
-            await SignInWithAppleStepsAsync(cli, directory, bundleId, result.EnabledCapabilities.Contains(AppleEntitlements.SignInWithApple.Type), cancellationToken);
+            await SignInWithAppleStepsAsync(cli, projectDirectory, bundleId, result.EnabledCapabilities.Contains(AppleEntitlements.SignInWithApple.Type), cancellationToken);
         }
 
         return CliApp.ExitOk;

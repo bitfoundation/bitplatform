@@ -48,9 +48,13 @@ public sealed partial class PipelineSetup
     /// </summary>
     private IEnumerable<WorkflowSecret> ServerSettingsSecrets(WorkflowScan scan)
     {
-        var project = ProjectContext.FindProjectName(root);
-        var appSettings = project is null ? "" : Path.Combine(root, "src", "Server", $"{project}.Server.Api", "appsettings.json");
+        var appSettings = project is null ? "" : Path.Combine(project.ServerApiDirectory, "appsettings.json");
         var text = File.Exists(appSettings) ? File.ReadAllText(appSettings) : "";
+
+        if (scan.SettingsEnvironments.Count > 0 && File.Exists(appSettings) is false)
+        {
+            cli.Console.Warn($"bit didn't look for the secrets of the server's push notification and Sign in with Apple settings: {(project is null ? NoProject : $"{project.Relative(appSettings)} isn't there, and --server-api names Server.Api's .csproj.")}");
+        }
 
         var settings = new List<string>();
 
@@ -253,8 +257,8 @@ public sealed partial class PipelineSetup
         {
             // The app's entry in apple-app-site-association.json starts with its App ID prefix, which is the team id for all
             // but old teams, so it's only offered.
-            var offered = ProjectContext.FindProjectName(root) is { } project && await VariableAsync(environment, "APP_ID", cancellationToken) is { } appId
-                ? WellKnownFiles.AppIdPrefixOf(WellKnownFiles.AppleAppSiteAssociationPath(root, project), appId)
+            var offered = project is not null && await VariableAsync(environment, "APP_ID", cancellationToken) is { } appId
+                ? WellKnownFiles.Files(project, WellKnownFiles.AppleAppSiteAssociation).Select(file => WellKnownFiles.AppIdPrefixOf(file, appId)).FirstOrDefault(prefix => prefix is not null)
                 : null;
 
             if (cli.Prompter.Text($"Your Apple team id, under Membership details at {AppleSigning.AccountPage}", offered ?? "").Trim() is { Length: > 0 } answer)

@@ -149,7 +149,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> SdkAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        if (TemplateRequirements.FromProject(project.Directory, project.Name).Sdk is not { } required)
+        if (TemplateRequirements.FromProject(project).Sdk is not { } required)
             return StepResult.Skipped("Skipped the .NET SDK check", "the project has no global.json");
 
         if (await ToolCatalog.ResolveSdkAsync(Runner, project.Directory, cancellationToken) is { } version)
@@ -308,15 +308,20 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         => BuildAsync(Path.GetFileName(project.WebSolutionFilter), "the web app", progress, cancellationToken);
 
     public Task<StepResult> WorkbenchBuildAsync(Action<string> progress, CancellationToken cancellationToken)
-        => BuildOptionalPartAsync(project.WorkbenchDirectory, Templates.Platforms.WorkbenchProject(project.Name), "Workbench", progress, cancellationToken);
+        => BuildOptionalPartAsync(project.WorkbenchDirectory, project.Relative(project.WorkbenchProject), "Workbench", "--workbench", progress, cancellationToken);
 
     public Task<StepResult> LandingPageBuildAsync(Action<string> progress, CancellationToken cancellationToken)
-        => BuildOptionalPartAsync(project.LandingPageDirectory, Templates.Platforms.LandingPageProject(project.Name), "landing page", progress, cancellationToken);
+        => BuildOptionalPartAsync(project.LandingPageDirectory, project.Relative(project.LandingPageProject), "landing page", "--landing-page", progress, cancellationToken);
 
-    private Task<StepResult> BuildOptionalPartAsync(string directory, string path, string name, Action<string> progress, CancellationToken cancellationToken)
+    private Task<StepResult> BuildOptionalPartAsync(string directory, string path, string name, string option, Action<string> progress, CancellationToken cancellationToken)
         => System.IO.Directory.Exists(directory)
             ? BuildAsync(path, $"the {name}", progress, cancellationToken)
-            : Task.FromResult(StepResult.Skipped($"Didn't build the {name}", $"the project has no {name}"));
+            : Task.FromResult(NoPart($"Didn't build the {name}", name, directory, option));
+
+    private StepResult NoPart(string title, string name, string directory, string option) => StepResult.Skipped(title, $"the project has no {name}") with
+    {
+        Hint = project.Template is null ? $"{project.Relative(directory)} isn't there. {option} names the {name}'s .csproj when it's somewhere else." : null
+    };
 
     public Task<StepResult> BuildProjectAsync(string path, Action<string> progress, CancellationToken cancellationToken)
         => BuildAsync(path, Path.GetFileNameWithoutExtension(path), progress, cancellationToken);
@@ -446,7 +451,10 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         try
         {
-            foreach (var resource in AspireResourcesToWaitFor(project.AppHostDirectory))
+            var appHost = string.Join('\n', ProjectContext.FilesUnder(project.AppHostDirectory, "*.cs").Select(ProjectContext.ReadText));
+            var webResources = project.ServerWebProjects.Select(web => AspireResource(appHost, web, "serverweb")).ToList();
+
+            foreach (var resource in webResources.Append(AspireResource(appHost, project.ServerApiProject, "serverapi")).OfType<string>().Distinct(StringComparer.Ordinal))
             {
                 if (await WaitUntilHealthyAsync(resource, containerProblem is null, progress, cancellationToken) is { } reason)
                     return StepResult.Warning($"Aspire started, {resource} didn't get healthy", reason, followUp);
@@ -464,7 +472,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             Running = new RunningProject
             {
                 DashboardUrl = DashboardUrlRegex().Match(start.Output) is { Success: true } dashboard ? dashboard.Groups["url"].Value : null,
-                AppUrl = await AspireResourceUrlAsync("serverweb", cancellationToken) ?? ReadLaunchUrl(ServerWebDirectory),
+                AppUrl = await AspireResourceUrlAsync(webResources[0] ?? "serverweb", cancellationToken) ?? ReadLaunchUrl(ServerWebDirectory),
                 StopAsync = async detached =>
                 {
                     if (detached is false || Runner.StartDetached(stop) is false)
@@ -476,9 +484,13 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
             keep = true;
 
+            var noAddress = Running.AppUrl is null
+                ? $"bit doesn't know the app's address: the AppHost has no resource of {project.Relative(project.ServerWebProjects[0])}. --server-web names Server.Web's .csproj."
+                : null;
+
             return containerProblem is { } absent
-                ? StepResult.Succeeded("Started the project with Aspire", "without its containers", $"{absent.Detail}, so Keycloak, Mailpit and the other containers aren't running.{(absent.Fix is null ? "" : $" {absent.Fix}")}")
-                : StepResult.Succeeded("Started the project with Aspire");
+                ? StepResult.Succeeded("Started the project with Aspire", "without its containers", $"{absent.Detail}, so Keycloak, Mailpit and the other containers aren't running.{(absent.Fix is null ? "" : $" {absent.Fix}")}{(noAddress is null ? "" : $" {noAddress}")}")
+                : StepResult.Succeeded("Started the project with Aspire", hint: noAddress);
         }
         finally
         {
@@ -492,10 +504,14 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     public async Task<StepResult> DotnetRunAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         const string skipped = "Didn't start the project";
-        string[] servers = project.IsApiStandalone ? [project.ServerApiDirectory, ServerWebDirectory] : [ServerWebDirectory];
+        string[] webs = [.. project.ServerWebProjects.Select(web => Path.GetDirectoryName(web)!)];
+        string[] servers = project.IsApiStandalone ? [project.ServerApiDirectory, .. webs] : webs;
         var followUp = string.Join(" & ", servers.Select(server => $"dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, server))}"));
 
-        if (servers.FirstOrDefault(server => System.IO.Directory.Exists(server) is false || ReadLaunchUrl(server) is null) is { } missing)
+        if (servers.FirstOrDefault(server => System.IO.Directory.Exists(server) is false) is { } absent)
+            return StepResult.Skipped(skipped, $"{project.Relative(absent)} isn't there") with { Hint = $"{(webs.Contains(absent) ? "--server-web" : "--server-api")} names the server's .csproj when it's somewhere else." };
+
+        if (servers.FirstOrDefault(server => ReadLaunchUrl(server) is null) is { } missing)
             return StepResult.Skipped(skipped, $"{Path.GetFileName(missing)} has no URL in its launchSettings.json");
 
         var running = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -781,13 +797,24 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private static string Join(IEnumerable<string> items) => string.Join(", ", items);
 
-    public static IReadOnlyList<string> AspireResourcesToWaitFor(string appHostDirectory)
+    public static string? AspireResource(string appHost, string projectFile, string templateName)
     {
-        var program = Path.Combine(appHostDirectory, "Program.cs");
-        var text = File.Exists(program) ? File.ReadAllText(program) : "";
+        var fileName = Path.GetFileName(projectFile);
+        var typeName = NotInATypeNameRegex().Replace(Path.GetFileNameWithoutExtension(projectFile), "_");
 
-        return [.. new[] { "serverweb", "serverapi" }.Where(resource => text.Contains($"\"{resource}\"", StringComparison.Ordinal))];
+        return AddProjectRegex().Matches(appHost).FirstOrDefault(m => string.Equals(Path.GetFileName(m.Groups["path"].Value.Replace('\\', '/')), fileName, StringComparison.OrdinalIgnoreCase))?.Groups["name"].Value
+            ?? AddProjectTypeRegex().Matches(appHost).FirstOrDefault(m => m.Groups["type"].Value == typeName)?.Groups["name"].Value
+            ?? (appHost.Contains($"\"{templateName}\"", StringComparison.Ordinal) ? templateName : null);
     }
+
+    [GeneratedRegex(@"AddProject\(\s*""(?<name>[^""]+)""\s*,\s*@?""(?<path>[^""]+\.csproj)""")]
+    private static partial Regex AddProjectRegex();
+
+    [GeneratedRegex(@"AddProject<\s*Projects\.(?<type>\w+)\s*>\(\s*""(?<name>[^""]+)""")]
+    private static partial Regex AddProjectTypeRegex();
+
+    [GeneratedRegex(@"[^A-Za-z0-9_]")]
+    private static partial Regex NotInATypeNameRegex();
 
     private Task<ProcessResult> Aspire(string[] arguments, Action<string> progress, TimeSpan timeout, CancellationToken cancellationToken, IReadOnlyDictionary<string, string?>? environment = null)
     {
@@ -1344,7 +1371,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
                 </Project>
                 """);
 
-            if (TemplateRequirements.FromProject(project.Directory, project.Name).Sdk is { } sdk)
+            if (TemplateRequirements.FromProject(project).Sdk is { } sdk)
             {
                 File.WriteAllText(Path.Combine(folder, "global.json"), sdk.GlobalJson);
             }

@@ -19,33 +19,47 @@ public sealed partial class ProjectContext
 
     public IReadOnlyList<string> BuildProperties { get; init; } = [];
 
+    public ProjectParts Parts { get; init; } = ProjectParts.None;
+
+    public static ProjectContext At(string directory, string name, ProjectParts? parts = null) => new() { Name = name, Directory = directory, Platforms = new HashSet<Platform>(), Parts = parts ?? ProjectParts.None };
+
     public string Solution => Path.Combine(Directory, $"{Name}.slnx");
 
     public string WebSolutionFilter => Path.Combine(Directory, $"{Name}.Web.slnf");
 
     public bool BuildsSolution => Templates.Platforms.BuildsSolution(Platforms);
 
-    public string WorkbenchDirectory => Path.Combine(Directory, "src", "Workbench");
+    public string WorkbenchProject => Part(Parts.Workbench, Templates.Platforms.WorkbenchProject(Name), ".Workbench.csproj");
 
-    public string LandingPageDirectory => Path.Combine(Directory, "src", "LandingPage", $"{Name}.LandingPage.Server");
+    public string WorkbenchDirectory => Path.GetDirectoryName(WorkbenchProject)!;
+
+    public string LandingPageProject => Part(Parts.LandingPage, Templates.Platforms.LandingPageProject(Name), ".LandingPage.Server.csproj");
+
+    public string LandingPageDirectory => Path.GetDirectoryName(LandingPageProject)!;
 
     public IReadOnlyList<string> ProjectsOutsideWebFilter
     {
         get
         {
-            var built = ReadFilterProjects(WebSolutionFilter).Append(Templates.Platforms.WorkbenchProject(Name)).Select(FullProjectPath).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var built = ReadFilterProjects(WebSolutionFilter).Select(FullProjectPath).Append(WorkbenchProject).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
             return [.. ReadSolutionProjects(Solution).Where(project => built.Contains(FullProjectPath(project)) is false)];
         }
     }
 
-    public string ServerApiDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.Api");
+    public string ServerApiProject => Part(Parts.ServerApi, $"src/Server/{Name}.Server.Api/{Name}.Server.Api.csproj", ".Server.Api.csproj");
 
-    public string ServerWebDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.Web");
+    public string ServerApiDirectory => Path.GetDirectoryName(ServerApiProject)!;
 
-    public string ClientCoreDirectory => Path.Combine(Directory, "src", "Client", $"{Name}.Client.Core");
+    public IReadOnlyList<string> ServerWebProjects => Parts.ServerWeb.Count > 0 ? Parts.ServerWeb : [Part(null, $"src/Server/{Name}.Server.Web/{Name}.Server.Web.csproj", ".Server.Web.csproj")];
 
-    public string AppHostDirectory => Path.Combine(Directory, "src", "Server", $"{Name}.Server.AppHost");
+    public string ServerWebDirectory => Path.GetDirectoryName(ServerWebProjects[0])!;
+
+    public string ClientCoreDirectory => Parts.ClientCore ?? Path.GetDirectoryName(FullProjectPath(FindClientProject(Directory, Name, $"src/Client/{Name}.Client.Core/{Name}.Client.Core.csproj", ".Core.csproj")))!;
+
+    public string AppHostProject => Part(Parts.AppHost, $"src/Server/{Name}.Server.AppHost/{Name}.Server.AppHost.csproj", ".Server.AppHost.csproj");
+
+    public string AppHostDirectory => Path.GetDirectoryName(AppHostProject)!;
 
     public bool Exists => System.IO.Directory.Exists(Directory) && (File.Exists(Solution) || File.Exists(WebSolutionFilter));
 
@@ -59,11 +73,29 @@ public sealed partial class ProjectContext
 
     public string? SeedPassword { get; set; }
 
-    public string MauiProject => FindMauiProject(Directory, Name);
+    public string MauiProject => Parts.Maui is { } given ? Relative(given) : FindMauiProject(Directory, Name);
 
-    public string WindowsProject => FindWindowsProject(Directory, Name);
+    public string WindowsProject => Parts.Windows is { } given ? Relative(given) : FindWindowsProject(Directory, Name);
 
-    public string TargetFrameworkVersion => ReadTargetFramework(Directory, Name) ?? $"net{Environment.Version.Major}.0";
+    public string TargetFrameworkVersion => (Parts.ClientCore is { } core ? ReadTargetFrameworkOf(ProjectFileIn(core)) : ReadTargetFramework(Directory, Name)) ?? $"net{Environment.Version.Major}.0";
+
+    public string? AppId => AppIdRegex().Match(ReadText(FullProjectPath(MauiProject))) is { Success: true } match ? match.Groups["id"].Value.Trim() : null;
+
+    public IReadOnlyList<string> WebProjects => Parts.Web.Count > 0 ? Parts.Web : [.. FilesUnder(Path.Combine(Directory, "src", "Client"), "*.csproj").Where(IsWebProject)];
+
+    public bool UsesNativeWebAssembly => WebProjects.Any(csproj => NativeWebAssemblyRegex().IsMatch(ReadText(csproj)));
+
+    public IEnumerable<string> PartsNotFound(bool settingUp)
+    {
+        if (File.Exists(Path.Combine(ClientCoreDirectory, "package.json")) is false)
+            yield return $"bit doesn't know which Node.js {Name} needs: {Relative(ClientCoreDirectory)}/package.json isn't there. --client-core names Client.Core's folder.";
+
+        if (WebProjects.Count == 0)
+            yield return $"bit didn't check whether {Name} builds native WebAssembly: it found no Blazor WebAssembly project under src/Client. --web names its .csproj.";
+
+        if (settingUp && System.IO.Directory.Exists(ServerApiDirectory) is false)
+            yield return $"bit didn't look at the migrations of {Name}'s database: {Relative(ServerApiDirectory)} isn't there. --server-api names Server.Api's .csproj.";
+    }
 
     public static string FindMauiProject(string directory, string name) => FindClientProject(directory, name, Templates.Platforms.MauiProject(name), ".Maui.csproj");
 
@@ -73,26 +105,32 @@ public sealed partial class ProjectContext
     /// The path the template gives a client project, or, when a project has moved it, the one its solution lists:
     /// a project split into two apps may keep src/Client/Shop.Client.Operations.Maui, for example.
     /// </summary>
-    private static string FindClientProject(string directory, string name, string templatePath, string fileEnding) =>
+    private static string FindClientProject(string directory, string name, string templatePath, string fileEnding) => FindProject(directory, name, templatePath, fileEnding, "src/Client/");
+
+    private static string FindProject(string directory, string name, string templatePath, string fileEnding, string under = "") =>
         File.Exists(Path.Combine(directory, templatePath))
             ? templatePath
-            : ReadSolutionProjects(Path.Combine(directory, $"{name}.slnx")).FirstOrDefault(project => project.StartsWith("src/Client/", StringComparison.OrdinalIgnoreCase) && project.EndsWith(fileEnding, StringComparison.OrdinalIgnoreCase)) ?? templatePath;
+            : ReadSolutionProjects(Path.Combine(directory, $"{name}.slnx")).FirstOrDefault(project => project.StartsWith(under, StringComparison.OrdinalIgnoreCase) && project.EndsWith(fileEnding, StringComparison.OrdinalIgnoreCase)) ?? templatePath;
 
-    public static string? ReadTargetFramework(string directory, string name)
+    private string Part(string? given, string templatePath, string fileEnding) => given ?? FullProjectPath(FindProject(Directory, Name, templatePath, fileEnding));
+
+    public string Relative(string path) => Path.GetRelativePath(Directory, path).Replace('\\', '/');
+
+    public static string? ProjectFileIn(string folder)
     {
-        var core = Path.Combine(directory, FindClientProject(directory, name, $"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", ".Core.csproj"));
-
         try
         {
-            if (File.Exists(core) && TargetFrameworkRegex().Match(File.ReadAllText(core)) is { Success: true } match)
-                return match.Groups["tfm"].Value;
+            return System.IO.Directory.Exists(folder) ? System.IO.Directory.EnumerateFiles(folder, "*.csproj").Order(StringComparer.Ordinal).FirstOrDefault() : null;
         }
-        catch (IOException)
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
         {
+            return null;
         }
-
-        return null;
     }
+
+    public static string? ReadTargetFramework(string directory, string name) => ReadTargetFrameworkOf(Path.Combine(directory, FindClientProject(directory, name, $"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", ".Core.csproj")));
+
+    private static string? ReadTargetFrameworkOf(string? core) => core is not null && TargetFrameworkRegex().Match(ReadText(core)) is { Success: true } match ? match.Groups["tfm"].Value : null;
 
     public string? PackageVersion(string packageId)
     {
@@ -142,21 +180,54 @@ public sealed partial class ProjectContext
         return null;
     }
 
-    public static string? ReadAppId(string directory, string name)
-    {
-        var maui = Path.Combine(directory, FindMauiProject(directory, name));
+    private string FullProjectPath(string project) => Path.GetFullPath(Path.Combine(Directory, project));
 
-        try
+    private static readonly string[] skippedFolders = ["bin", "obj", "node_modules"];
+
+    public static IEnumerable<string> FilesUnder(string folder, string pattern)
+    {
+        var pending = new Stack<string>([folder]);
+
+        while (pending.Count > 0)
         {
-            return File.Exists(maui) && AppIdRegex().Match(File.ReadAllText(maui)) is { Success: true } match ? match.Groups["id"].Value.Trim() : null;
-        }
-        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
-        {
-            return null;
+            var current = pending.Pop();
+            string[] files, children;
+
+            try
+            {
+                files = System.IO.Directory.GetFiles(current, pattern);
+                children = System.IO.Directory.GetDirectories(current);
+            }
+            catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+            {
+                continue;
+            }
+
+            foreach (var file in files.Order(StringComparer.Ordinal))
+            {
+                yield return file;
+            }
+
+            foreach (var child in children.OrderDescending(StringComparer.Ordinal).Where(child => skippedFolders.Contains(Path.GetFileName(child), StringComparer.OrdinalIgnoreCase) is false))
+            {
+                pending.Push(child);
+            }
         }
     }
 
-    private string FullProjectPath(string project) => Path.GetFullPath(Path.Combine(Directory, project));
+    private static bool IsWebProject(string csproj) => csproj.EndsWith(".Client.Web.csproj", StringComparison.OrdinalIgnoreCase) || ReadText(csproj).Contains("Microsoft.NET.Sdk.BlazorWebAssembly", StringComparison.Ordinal);
+
+    public static string ReadText(string path)
+    {
+        try
+        {
+            return File.Exists(path) ? File.ReadAllText(path) : "";
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return "";
+        }
+    }
 
     private static IEnumerable<string> ReadSolutionProjects(string solution)
     {
@@ -194,7 +265,7 @@ public sealed partial class ProjectContext
 
     private string? ReadDatabaseFromProject()
     {
-        var api = Path.Combine(ServerApiDirectory, $"{Name}.Server.Api.csproj");
+        var api = ServerApiProject;
 
         try
         {
@@ -216,11 +287,11 @@ public sealed partial class ProjectContext
 
     private bool ServerWebReferencesServerApi()
     {
-        var web = Path.Combine(Directory, "src", "Server", $"{Name}.Server.Web", $"{Name}.Server.Web.csproj");
+        var web = ServerWebProjects[0];
 
         try
         {
-            return File.Exists(web) is false || File.ReadAllText(web).Contains($"{Name}.Server.Api.csproj", StringComparison.OrdinalIgnoreCase);
+            return File.Exists(web) is false || File.ReadAllText(web).Contains(Path.GetFileName(ServerApiProject), StringComparison.OrdinalIgnoreCase);
         }
         catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
         {
@@ -240,19 +311,6 @@ public sealed partial class ProjectContext
         catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
         {
             return true;
-        }
-    }
-
-    public static bool UsesNativeWebAssembly(string directory)
-    {
-        try
-        {
-            return System.IO.Directory.EnumerateFiles(Path.Combine(directory, "src", "Client"), "*.Client.Web.csproj", SearchOption.AllDirectories)
-                .Any(csproj => NativeWebAssemblyRegex().IsMatch(File.ReadAllText(csproj)));
-        }
-        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
-        {
-            return false;
         }
     }
 

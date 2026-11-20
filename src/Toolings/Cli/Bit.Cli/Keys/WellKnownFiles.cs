@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Nodes;
 using Bit.Cli.Infrastructure;
+using Bit.Cli.Projects;
 
 namespace Bit.Cli.Keys;
 
@@ -8,9 +9,23 @@ public static class WellKnownFiles
 {
     private static readonly JsonSerializerOptions indented = new() { WriteIndented = true, IndentSize = 4 };
 
-    public static string AssetLinksPath(string projectDirectory, string name) => Path.Combine(projectDirectory, "src", "Client", $"{name}.Client.Web", "wwwroot", ".well-known", "assetlinks.json");
+    public const string AssetLinks = "assetlinks.json";
 
-    public static string AppleAppSiteAssociationPath(string projectDirectory, string name) => Path.Combine(projectDirectory, "src", "Client", $"{name}.Client.Web", "wwwroot", ".well-known", "apple-app-site-association.json");
+    public const string AppleAppSiteAssociation = "apple-app-site-association.json";
+
+    public const string Option = "--well-known";
+
+    public const string DefaultPlace = "a wwwroot/.well-known folder under src/Client";
+
+    public static IReadOnlyList<string> Folders(ProjectContext project) => project.Parts.WellKnown.Count > 0
+        ? project.Parts.WellKnown
+        : [.. ProjectContext.FilesUnder(Path.Combine(project.Directory, "src", "Client"), "*.json")
+            .Where(file => Path.GetFileName(file) is AssetLinks or AppleAppSiteAssociation)
+            .Select(file => Path.GetDirectoryName(file)!)
+            .Where(folder => Path.GetFileName(folder) is ".well-known" && Path.GetFileName(Path.GetDirectoryName(folder)) is "wwwroot")
+            .Distinct(StringComparer.OrdinalIgnoreCase)];
+
+    public static IReadOnlyList<string> Files(ProjectContext project, string fileName) => [.. Folders(project).Select(folder => Path.Combine(folder, fileName)).Where(File.Exists)];
 
     public static bool AddAndroidFingerprint(string path, string packageName, string fingerprint)
     {
