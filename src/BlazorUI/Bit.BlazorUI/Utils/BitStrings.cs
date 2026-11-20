@@ -416,4 +416,12 @@ public class BitStrings
     /// many there are.
     /// </summary>
     public virtual string PanelSizeFormat => "Resize, size {0} of {1}";
+
+    // ===== BitScrollToTop =====
+
+    /// <summary>
+    /// The name of a <see cref="BitScrollToTop"/> that has no text to name it by: the fallback of its
+    /// <see cref="BitComponentBase.AriaLabel"/>.
+    /// </summary>
+    public virtual string ScrollToTop => "Scroll to top";
 }

@@ -1,0 +1,236 @@
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every scroll to top
+// button and one set on the Style of an instance re-skins that one:
+//   --bit-ScrollToTop-color                foreground (text and icon) at rest             (default: $clr-pri-text)
+//   --bit-ScrollToTop-background           background at rest                             (default: $clr-pri)
+//   --bit-ScrollToTop-border-color         border color                                    (default: the background at rest)
+//   --bit-ScrollToTop-border-width         thickness of the border                         (default: $shp-border-width)
+//   --bit-ScrollToTop-hover-color          foreground on hover                             (default: the foreground at rest)
+//   --bit-ScrollToTop-hover-background     background on hover                             (default: $clr-pri-hover)
+//   --bit-ScrollToTop-active-color         foreground while pressed                        (default: the foreground on hover)
+//   --bit-ScrollToTop-active-background    background while pressed                        (default: $clr-pri-active)
+//   --bit-ScrollToTop-disabled-color       foreground when disabled                        (default: $clr-pri-dis-text)
+//   --bit-ScrollToTop-disabled-background  background and border when disabled             (default: $clr-pri-dis)
+//   --bit-ScrollToTop-focus-color          focus ring color                                (default: $clr-pri-focus)
+//   --bit-ScrollToTop-radius               corner radius of the box and its focus ring     (default: $shp-radius-full)
+//   --bit-ScrollToTop-size                 height of the box, and the width of an
+//                                          icon-only one                                   (default: $siz-ctrl-lg)
+//   --bit-ScrollToTop-padding              padding of a button with a text                 (default: 0 $siz-ctrl-pad-x-md)
+//   --bit-ScrollToTop-gap                  room between the icon and the text              (default: spacing(1))
+//   --bit-ScrollToTop-font-size            size of the text                                (default: $tg-fs-sm)
+//   --bit-ScrollToTop-icon-size            size of the icon                                (default: $siz-icon-md)
+//   --bit-ScrollToTop-float-offset         inset of a floating button from the edge it is
+//                                          pinned to                                       (default: spacing(2), the FloatOffset parameter wins over it)
+//   --bit-ScrollToTop-float-shadow         elevation of a floating button                  (default: $box-shadow-card)
+//
+// The button cannot contain another one, so a value set on the Style of an instance restyles that one alone.
+
+$stt-private-properties: flo,
+                         // The colors the hover and press states move, unset at rest so the state of one button is never
+                         // inherited by anything inside it.
+                         sfg, sbg;
+
+.bit-stt {
+    @each $name in $stt-private-properties {
+        --bit-stt-#{$name}: initial;
+    }
+
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    align-items: center;
+    display: inline-flex;
+    box-sizing: border-box;
+    justify-content: center;
+    font-family: $tg-font-family;
+    font-weight: $tg-font-weight;
+    -webkit-tap-highlight-color: transparent;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    text-transform: $tg-ctrl-text-transform;
+    gap: var(--bit-ScrollToTop-gap, #{spacing(1)});
+    font-size: var(--bit-ScrollToTop-font-size, #{$tg-fs-sm});
+    min-height: var(--bit-ScrollToTop-size, #{$siz-ctrl-lg});
+    padding: var(--bit-ScrollToTop-padding, 0 #{$siz-ctrl-pad-x-md});
+    border-style: $shp-border-style;
+    border-width: var(--bit-ScrollToTop-border-width, #{$shp-border-width});
+    border-radius: var(--bit-ScrollToTop-radius, #{$shp-radius-full});
+    color: var(--bit-stt-sfg, var(--bit-ScrollToTop-color, #{$clr-pri-text}));
+    background-color: var(--bit-stt-sbg, var(--bit-ScrollToTop-background, #{$clr-pri}));
+    border-color: var(--bit-ScrollToTop-border-color, var(--bit-ScrollToTop-background, #{$clr-pri}));
+    // The revealing fades and grows the button in on the motion tokens, so it collapses under a reduced-motion preference
+    // and comes back under ForceAnimation with nothing written here for either. Visibility is delayed by the same
+    // duration on the way out, so the button stays visible while it fades and is out of reach once it has.
+    transition: color $mot-duration-short $mot-easing,
+                background-color $mot-duration-short $mot-easing,
+                opacity $mot-duration $mot-easing-decelerate,
+                scale $mot-duration $mot-easing-decelerate,
+                visibility $mot-duration $mot-easing-decelerate;
+
+    @media (hover: hover) {
+        &:not(.bit-dis):hover {
+            --bit-stt-sfg: var(--bit-ScrollToTop-hover-color, var(--bit-ScrollToTop-color, #{$clr-pri-text}));
+            --bit-stt-sbg: var(--bit-ScrollToTop-hover-background, #{$clr-pri-hover});
+        }
+    }
+
+    &:not(.bit-dis):active {
+        --bit-stt-sfg: var(--bit-ScrollToTop-active-color, var(--bit-ScrollToTop-hover-color, var(--bit-ScrollToTop-color, #{$clr-pri-text})));
+        --bit-stt-sbg: var(--bit-ScrollToTop-active-background, #{$clr-pri-active});
+    }
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-ScrollToTop-focus-color));
+    }
+
+    &.bit-dis {
+        cursor: default;
+        color: var(--bit-ScrollToTop-disabled-color, #{$clr-pri-dis-text});
+        background-color: var(--bit-ScrollToTop-disabled-background, #{$clr-pri-dis});
+        border-color: var(--bit-ScrollToTop-disabled-background, #{$clr-pri-dis});
+    }
+}
+
+// An icon-only button is a square of the control height, which a round radius turns into a circle.
+.bit-stt-ion {
+    padding: 0;
+    min-width: var(--bit-ScrollToTop-size, #{$siz-ctrl-lg});
+}
+
+.bit-stt-ico {
+    line-height: 1;
+    flex-shrink: 0;
+    font-size: var(--bit-ScrollToTop-icon-size, #{$siz-icon-md});
+}
+
+.bit-stt-txt {
+    white-space: nowrap;
+}
+
+// A button with a reveal offset is hidden until the script finds the scroll past it (data-bit-stt-shown): out of the
+// view, the tab order and the accessibility tree, and from the first render on, so a prerendered page shows no button
+// at its top before the script has run. The scale is a property of its own, so it adds to the transform that centers
+// a floating button rather than replacing it.
+.bit-stt-rvl:not([data-bit-stt-shown]) {
+    opacity: 0;
+    scale: 0.8;
+    visibility: hidden;
+}
+
+// A floating button sits over content rather than in it, so it is lifted off the surface the way every other floating
+// surface of the library is. The focus ring is a box-shadow too and replaces this one while the button is focused.
+.bit-stt-fab {
+    position: absolute;
+    z-index: $zindex-base;
+    box-shadow: var(--bit-ScrollToTop-float-shadow, #{$box-shadow-card});
+}
+
+.bit-stt-ffx {
+    position: fixed;
+    z-index: $zindex-base;
+    box-shadow: var(--bit-ScrollToTop-float-shadow, #{$box-shadow-card});
+}
+
+.bit-stt-tlf {
+    top: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+    left: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-tcr {
+    left: 50%;
+    transform: translateX(-50%);
+    top: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-trg {
+    top: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+    right: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-tst {
+    top: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+    inset-inline-start: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-ten {
+    top: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+    inset-inline-end: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-clf {
+    top: 50%;
+    transform: translateY(-50%);
+    left: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-ctr {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.bit-stt-crg {
+    top: 50%;
+    transform: translateY(-50%);
+    right: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-cst {
+    top: 50%;
+    transform: translateY(-50%);
+    inset-inline-start: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-cen {
+    top: 50%;
+    transform: translateY(-50%);
+    inset-inline-end: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-blf {
+    left: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+    bottom: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-bcr {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-brg {
+    right: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+    bottom: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-bst {
+    bottom: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+    inset-inline-start: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+.bit-stt-ben {
+    bottom: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+    inset-inline-end: var(--bit-stt-flo, var(--bit-ScrollToTop-float-offset, #{spacing(2)}));
+}
+
+// Windows High Contrast / forced-colors: painted as a native button, ButtonText on ButtonFace with a ButtonText edge,
+// which reads with the backplate Chromium draws behind text and without it; a disabled one in GrayText.
+@media (forced-colors: active) {
+    .bit-stt:not(.bit-dis) {
+        color: ButtonText;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    .bit-stt.bit-dis {
+        color: GrayText;
+        border-color: GrayText;
+    }
+}
+
+// The button only moves the reader around the screen, which a printout has no use for.
+@media print {
+    .bit-stt {
+        display: none;
+    }
+}

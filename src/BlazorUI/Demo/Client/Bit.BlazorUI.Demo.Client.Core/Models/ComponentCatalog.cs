@@ -250,6 +250,7 @@ public static class ComponentCatalog
         ["Button"] = BitIconName.ButtonControl,
         ["ButtonGroup"] = BitIconName.Group,
         ["MenuButton"] = BitIconName.ContextMenu,
+        ["ScrollToTop"] = BitIconName.Up,
         ["ToggleButton"] = BitIconName.PowerButton,
 
         // Inputs
@@ -440,6 +441,7 @@ public static class ComponentCatalog
         ["Button"] = "The primary way to trigger an action, in fill, outline and text variants, floating if needed.",
         ["ButtonGroup"] = "Joins related buttons into one unit, optionally single- or multi-select.",
         ["MenuButton"] = "A button that opens a menu of related actions, with submenus, check and choice items.",
+        ["ScrollToTop"] = "A button back to the top of the page or a pane, floating in a corner and revealed once the reader has scrolled away.",
         ["ToggleButton"] = "A button that stays pressed and reports its state through aria-pressed or the ARIA mode it is given.",
 
         // Inputs

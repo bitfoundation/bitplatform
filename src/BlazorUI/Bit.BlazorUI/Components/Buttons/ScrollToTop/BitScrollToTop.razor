@@ -1,0 +1,46 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@{
+    var icon = _Icon;
+    // A null written over a splatted attribute removes it (see BitComponentBase.GetSplattedAttribute), so what the page
+    // wrote by hand is kept where no parameter says otherwise. A button with a text is named by it; an icon-only one is
+    // named by the AriaLabel, or else by the words of BitStrings, since a glyph alone names nothing.
+    var ariaLabel = ResolveAriaLabel() ?? (Text.HasValue() ? null : BitStrings.Current.ScrollToTop);
+    var tabIndex = TabIndex ?? GetSplattedAttribute("tabindex");
+}
+
+@* The button does its work through the delegated listener of BitScrollToTop.ts, which the markup marker data-bit-stt keeps
+   in a trimmed app and loads as the app starts - so it scrolls and moves the focus on a prerendered page, before Blazor
+   is interactive, and with no handler of its own in .NET. The marker's value is the behavior of the scroll, the offset
+   (data-bit-stt-offset) is what the same script reveals the button by, and the target (data-bit-stt-target) the scroller
+   both read. A button rather than an href="#top" link: nothing is navigated, so the address, the history and the base
+   href of the app are left alone and the router never sees it, and it scrolls a pane as well as the page. *@
+<button @ref="RootElement"
+        @attributes="DisabledAwareHtmlAttributes"
+        id="@_Id"
+        type="button"
+        data-bit-stt="@(Smooth ? "smooth" : "instant")"
+        data-bit-stt-offset="@_RevealOffset"
+        data-bit-stt-target="@(ScrollTarget.HasValue() ? ScrollTarget : null)"
+        disabled="@Disabled"
+        aria-disabled="@(Disabled ? "true" : null)"
+        aria-label="@ariaLabel"
+        tabindex="@tabIndex"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        dir="@Dir?.ToString().ToLower()">
+    @if (icon is not null)
+    {
+        @* The glyph only decorates the name of the button, which the text or the aria-label says. A ligature set (Material
+           Icons, Material Symbols) names its glyph with the element's text, which a page translator must leave alone. *@
+        <i style="@Styles?.Icon"
+           class="bit-stt-ico @icon.GetCssClasses() @Classes?.Icon"
+           aria-hidden="true"
+           translate="@(icon.Content.HasValue() ? "no" : null)">@icon.Content</i>
+    }
+    @if (Text.HasValue())
+    {
+        <span style="@Styles?.Text" class="bit-stt-txt @Classes?.Text">@Text</span>
+    }
+</button>
