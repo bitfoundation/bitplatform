@@ -33,8 +33,9 @@ Three kinds of place:
   or to a patch). These are the `bitplatform.dev/mcp?v=` URLs in the coding agents' MCP configs.
 - **Kept**: a version written down on purpose, which the helper never moves. The Boilerplate's `specs/workarounds.md`
   names the bit package version a defect was seen in; whoever comes back to the entry checks it again and updates it.
-  Its `bit.json` names under `cli` the oldest bit CLI the template works with: a change to the template that an older
-  bit can't handle sets it to the next version, the one that change ships in, and every bump checks that none forgot.
+  bit CLI's `OldestProjects` names the oldest template each bit version works with: a change to bit that leaves older
+  projects behind adds a line with the next version, the one that change ships in, and every bump checks that none
+  forgot.
 
 A plain search and replace only works while the version is a unique prerelease string. A stable `X.Y.Z` is shared with
 Microsoft packages of the same major after its GA, version ranges, changelog headings, examples and test data, and the
@@ -67,20 +68,27 @@ Run the helper with `scan` and make it clean before bumping:
 Doing this on every prerelease is the point: by the stable release, where a plain search no longer tells ours from
 theirs, the rules are already complete.
 
-## Check the oldest bit CLI the template works with
+## Check that bit CLI still works with older projects
 
-`cli.minVersion` in the Boilerplate's `bit.json` moves by hand, so a change can forget it. Read what changed in
-`src/Toolings/Cli` and in the Boilerplate since the last bump, the commit that moved `ReleaseVersion` to the current
-version: that is what the version being bumped to ships. Then answer one question: does bit as it was at that commit
-still work on a project made from the template as it is now? It does not when the template's skills, docs, workflows
-or scripts now use a command, an option or an output bit only got since, when the template moved or renamed something
-that only the new bit finds, or when its `bit.json` holds something the older bit reads wrongly.
+bit CLI runs a project's commands with the newest bit that works with the template version the project is on. A bit
+older than that version updates itself, so that way around needs no record. The other way around does: `OldestProjects`
+in `src/Toolings/Cli` says from which bit version on a project has to be on which template version at least, and in a
+project older than that, the newest bit from before that version runs the commands. A line is written by hand, in the
+change that leaves older projects behind, so a change can forget it.
 
-- It still works: leave the line. What bit gained and the template does not use is no reason, since a minimum higher
-  than needed only makes a bit that would have worked replace itself.
-- It does not, and `minVersion` is older than the version being bumped to: set it to that version, in the bump's PR.
-- `minVersion` is above the version being bumped to, a wrong guess at the next version: set it to that version, since
-  no bit that new exists.
+Read what changed in `src/Toolings/Cli` since the last bump, the commit that moved `ReleaseVersion` to the current
+version: that is what the version being bumped to ships. Then answer one question: does bit as it is now still work on
+every project it worked on at that commit? It does not when bit dropped or renamed a command, an option or an output
+that an older template's skills, docs, workflows or scripts use, when it now looks for a part of the project only where
+the template has it today, or when it no longer reads what an older `bit.json` holds.
+
+- It still works: add nothing. What bit gained, and what it fixed, leaves older projects as they were.
+- It does not, and no line says so: add one, in the bump's PR. Its bit version is the version being bumped to. Its
+  template version is the oldest one whose projects still work: the version being bumped to when the template changed
+  in the same period, an older one when the template had already stopped using what bit dropped, which the template's
+  history shows.
+- A line names a version above the version being bumped to, a wrong guess at the next version: set it to that version,
+  since no bit that new exists.
 
 ## Bump
 
@@ -114,4 +122,4 @@ title must start with Prerelease or Release: that is what starts All Release Bui
 
 The scan was clean before the bump, the PR is open with only version lines (plus any rule or list updates), and the
 report names the issue and the PR, how many files and lines moved, which places came or went since the last bump, and
-what the check of the oldest bit CLI read and decided.
+what the check of bit CLI and older projects read and decided.
