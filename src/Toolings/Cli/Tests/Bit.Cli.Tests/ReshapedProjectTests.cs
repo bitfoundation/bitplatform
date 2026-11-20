@@ -191,7 +191,7 @@ public class ReshapedProjectTests
         Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes"), host.Output);
 
         StringAssert.Contains(host.FlatOutput, "Didn't add the key's fingerprint to assetlinks.json");
-        StringAssert.Contains(host.FlatOutput, "bit found none in a wwwroot/.well-known folder under src/Client, so its Android App Links won't verify. --well-known names its folder.");
+        StringAssert.Contains(host.FlatOutput, "bit found none in a wwwroot/.well-known folder under src/Client, so its Android App Links won't verify. --well-known names its folder. To add it by hand, the fingerprint of com.contoso.shop is ");
 
         using var split = Repository();
         AndroidWorkflow(split);
@@ -496,6 +496,7 @@ public class ReshapedProjectTests
             """;
 
         Assert.AreEqual("management", ProjectSteps.AspireResource(two, management, null, appHost), "Two projects may share a file name.");
+        Assert.IsNull(ProjectSteps.AspireResource("""builder.AddProject("operations", "../../Operations/Web/Web.csproj");""", management, null, appHost), "A project the AppHost doesn't add has no resource, whatever its file is called.");
     }
 
     [TestMethod]
@@ -588,6 +589,15 @@ public class ReshapedProjectTests
         Assert.AreEqual(Write(Path.Combine(directory, "src", "Web", "Web.csproj"), "<Project />"), Read("--server-api", Path.Combine("src", "Web")).Parts.ServerApi, "The one named after the folder is the folder's project.");
         StringAssert.Contains(Read("--client-core", backend).Error, "--client-core takes a folder");
         Assert.HasCount(2, Read("--well-known", "empty", "--well-known", Path.Combine("src", "Backend")).Parts.WellKnown);
+        Assert.HasCount(1, Read("--well-known", "empty", "--well-known", "empty").Parts.WellKnown);
+
+        Directory.CreateDirectory(Path.Combine(directory, "cased"));
+
+        if (Directory.Exists(Path.Combine(directory, "Cased")) is false)
+        {
+            Directory.CreateDirectory(Path.Combine(directory, "Cased"));
+            Assert.HasCount(2, Read("--well-known", "cased", "--well-known", "Cased").Parts.WellKnown, "On a file system that tells them apart, they are two folders.");
+        }
 
         Assert.AreEqual(CliApp.ExitUsage, await RunInAsync(host, directory, "keys", "certificate", "--server-api", "nowhere.csproj"));
         StringAssert.Contains(host.FlatOutput, "nowhere.csproj isn't there.");

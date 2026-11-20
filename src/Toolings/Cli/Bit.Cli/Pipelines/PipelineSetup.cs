@@ -429,7 +429,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
             if (signing.TeamId is { } teamId)
             {
-                ChangeWellKnown(WellKnownFiles.AppleAppSiteAssociation, "the app", "its Universal Links", file => WellKnownFiles.AddAppleApp(file, teamId, bundleId));
+                ChangeWellKnown(WellKnownFiles.AppleAppSiteAssociation, "the app", "its Universal Links", $"the app is {teamId}.{bundleId}", file => WellKnownFiles.AddAppleApp(file, teamId, bundleId));
             }
         }
 
@@ -490,11 +490,11 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         if (packageName is { Length: > 0 })
         {
-            ChangeWellKnown(WellKnownFiles.AssetLinks, "the key's fingerprint", "its Android App Links", file => WellKnownFiles.AddAndroidFingerprint(file, packageName, created.Sha256Fingerprint));
+            ChangeWellKnown(WellKnownFiles.AssetLinks, "the key's fingerprint", "its Android App Links", $"the fingerprint of {packageName} is {created.Sha256Fingerprint}", file => WellKnownFiles.AddAndroidFingerprint(file, packageName, created.Sha256Fingerprint));
         }
         else if (saidMissing.Add("APP_ID"))
         {
-            cli.Console.StepWarning($"Didn't add the key's fingerprint to {WellKnownFiles.AssetLinks}", $"bit doesn't know the app's id: set the APP_ID variable of {Scope(environment)}. {WhereTheAppIdIs}");
+            cli.Console.StepWarning($"Didn't add the key's fingerprint to {WellKnownFiles.AssetLinks}", $"bit doesn't know the app's id: set the APP_ID variable of {Scope(environment)}. {WhereTheAppIdIs} To add it by hand, the key's fingerprint is {created.Sha256Fingerprint}.");
         }
     }
 
@@ -504,13 +504,13 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
         ? NoProject
         : $"{project.MauiProject} {(File.Exists(Path.Combine(project.Directory, project.MauiProject)) ? "has no <ApplicationId>" : "isn't there")}, and --maui names the app's .csproj.";
 
-    private void ChangeWellKnown(string fileName, string what, string links, Func<string, bool> change)
+    private void ChangeWellKnown(string fileName, string what, string links, string byHand, Func<string, bool> change)
     {
         var files = project is null ? [] : WellKnownFiles.Files(project, fileName);
 
         if (files.Count == 0 && saidMissing.Add(fileName))
         {
-            cli.Console.StepWarning($"Didn't add {what} to {fileName}", project is null ? $"so {links} won't verify. {NoProject}" : WellKnownFiles.NoneIn(project, links));
+            cli.Console.StepWarning($"Didn't add {what} to {fileName}", $"{(project is null ? $"so {links} won't verify. {NoProject}" : WellKnownFiles.NoneIn(project, links))} To add it by hand, {byHand}.");
         }
 
         var (changed, unreadable) = WellKnownFiles.Change(files, change);
@@ -518,7 +518,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         foreach (var file in unreadable.Where(saidMissing.Add))
         {
-            cli.Console.StepWarning($"Didn't add {what} to {fileName}", $"{project!.Relative(file)} isn't the JSON bit expects, so bit left it as it is.");
+            cli.Console.StepWarning($"Didn't add {what} to {fileName}", $"{project!.Relative(file)} isn't the JSON bit expects, so bit left it as it is and {links} won't verify. To add it by hand, {byHand}.");
         }
     }
 

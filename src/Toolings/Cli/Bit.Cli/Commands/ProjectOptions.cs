@@ -112,7 +112,7 @@ public sealed class ProjectOptions
         string? One(Option<string?> option, bool folder = false) => added.Contains(option) ? Resolve(option, parseResult.GetValue(option), folder) : null;
 
         IReadOnlyList<string> Many(Option<string[]> option, bool folder = false) => added.Contains(option)
-            ? [.. (parseResult.GetValue(option) ?? []).Select(value => Resolve(option, value, folder)).OfType<string>().Distinct(cli.Environment.IsLinux ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase)]
+            ? [.. (parseResult.GetValue(option) ?? []).Select(value => Resolve(option, value, folder)).OfType<string>().Distinct(StringComparer.Ordinal)]
             : [];
 
         var parts = new ProjectParts

@@ -813,8 +813,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var typeName = NotInATypeNameRegex().Replace(Path.GetFileNameWithoutExtension(projectFile), "_");
         var added = AddProjectRegex().Matches(appHost).Select(m => (Name: m.Groups["name"].Value, Path: m.Groups["path"].Value.Replace('\\', '/'))).ToList();
 
-        return (appHostDirectory is null ? null : added.FirstOrDefault(a => string.Equals(Path.GetFullPath(a.Path, appHostDirectory), Path.GetFullPath(projectFile), StringComparison.OrdinalIgnoreCase)).Name)
-            ?? added.FirstOrDefault(a => string.Equals(Path.GetFileName(a.Path), fileName, StringComparison.OrdinalIgnoreCase)).Name
+        return (appHostDirectory is null
+                ? added.FirstOrDefault(a => string.Equals(Path.GetFileName(a.Path), fileName, StringComparison.OrdinalIgnoreCase)).Name
+                : added.FirstOrDefault(a => string.Equals(Path.GetFullPath(a.Path, appHostDirectory), Path.GetFullPath(projectFile), StringComparison.OrdinalIgnoreCase)).Name)
             ?? AddProjectTypeRegex().Matches(appHost).FirstOrDefault(m => m.Groups["type"].Value == typeName)?.Groups["name"].Value
             ?? (templateName is not null && appHost.Contains($"\"{templateName}\"", StringComparison.Ordinal) ? templateName : null);
     }
