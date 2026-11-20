@@ -129,6 +129,13 @@
     </div>
 </E2ESection>
 
+<E2ESection Id="horizontal-breakpoints" Title="HorizontalXs to HorizontalXxl">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-hrz-md" HorizontalMd Width="26rem" CoverWidth="8rem" Title="From md" ImageUrl="samples/surfaces-card-cover.svg">Beside the words from 960px up.</BitCard>
+        <BitCard Id="crd-hrz-lg-off" Horizontal HorizontalLg="false" Reversed Width="26rem" CoverWidth="8rem" Title="Below lg" ImageUrl="samples/surfaces-card-cover.svg">Beside the words below 1280px.</BitCard>
+    </div>
+</E2ESection>
+
 <E2ESection Id="click" Title="OnClick, Selected, Disabled, StopPropagation">
     <div class="e2e-crd-row">
         <BitCard @ref="_clickRef" Id="crd-click" OnClick="HandleClick" Title="Clickable" Subtitle="Press me" Width="14rem">

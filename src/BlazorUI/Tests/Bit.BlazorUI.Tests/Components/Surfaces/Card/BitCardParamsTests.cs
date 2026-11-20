@@ -198,6 +198,58 @@ public class BitCardParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardShouldApplyCascadedHorizontalBreakpoints()
+    {
+        var component = RenderWithParams(new BitCardParams
+        {
+            HorizontalXs = false,
+            HorizontalSm = true,
+            HorizontalMd = false,
+            HorizontalLg = true,
+            HorizontalXl = false,
+            HorizontalXxl = true,
+        }, builder => builder.AddAttribute(1, nameof(BitCard.ImageUrl), "/images/a.png"));
+
+        var card = component.FindComponent<BitCard>().Instance;
+        var root = component.Find(".bit-crd");
+
+        Assert.IsFalse(card.HorizontalXs);
+        Assert.IsTrue(card.HorizontalSm);
+        Assert.IsFalse(card.HorizontalMd);
+        Assert.IsTrue(card.HorizontalLg);
+        Assert.IsFalse(card.HorizontalXl);
+        Assert.IsTrue(card.HorizontalXxl);
+
+        Assert.IsFalse(root.ClassList.Contains("bit-crd-hrz-xs"));
+        Assert.IsTrue(root.ClassList.Contains("bit-crd-hrz-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-crd-hrz-md"));
+        Assert.IsTrue(root.ClassList.Contains("bit-crd-hrz-lg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-crd-hrz-xl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-crd-hrz-xxl"));
+    }
+
+    [TestMethod]
+    public void BitCardShouldKeepItsOwnHorizontalBreakpointsOverTheCascadedOnes()
+    {
+        // The card's own false at md opts it out of the cascaded true, and the cascaded sm still fills in what the
+        // card did not write - so the card is horizontal over the sm band alone.
+        var component = RenderWithParams(new BitCardParams
+        {
+            HorizontalSm = true,
+            HorizontalMd = true,
+        }, builder => builder.AddAttribute(1, nameof(BitCard.HorizontalMd), (bool?)false));
+
+        var card = component.FindComponent<BitCard>().Instance;
+        var root = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.HorizontalSm);
+        Assert.IsFalse(card.HorizontalMd);
+        Assert.IsTrue(root.ClassList.Contains("bit-crd-hrz-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-crd-hrz-md"));
+        Assert.IsFalse(root.ClassList.Contains("bit-crd-hrz-lg"));
+    }
+
+    [TestMethod]
     public void BitCardShouldApplyCascadedCoverWidthAndImageHeight()
     {
         var component = RenderWithParams(new BitCardParams

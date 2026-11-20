@@ -67,6 +67,52 @@ public partial class BitCard : BitComponentBase
 
     private bool _HasMain => _HasHeader || Footer is not null || Loading || ChildContent is not null;
 
+    // A card only needs a class per breakpoint when its orientation is not the same at every width.
+    private bool _IsResponsiveHorizontal => HorizontalXs.HasValue || HorizontalSm.HasValue || HorizontalMd.HasValue
+                                         || HorizontalLg.HasValue || HorizontalXl.HasValue || HorizontalXxl.HasValue;
+
+    // The orientation at each of the six breakpoints, carried up from the breakpoint below until a value of its own
+    // replaces it, with Horizontal as the base of the chain - the same mobile first chain as BitStack's. Each band the
+    // card is horizontal in is named as a class the stylesheet reads over that band alone, so a breakpoint that turns
+    // the card back has nothing to undo: the rules of a horizontal card simply stop matching there. A card that comes
+    // out the same at every width says so once, as a card that never asked for a breakpoint does.
+    private string _HorizontalClasses
+    {
+        get
+        {
+            if (_IsResponsiveHorizontal is false) return Horizontal ? "bit-crd-hrz" : string.Empty;
+
+            (string Breakpoint, bool? Horizontal)[] breakpoints =
+            [
+                ("xs", HorizontalXs),
+                ("sm", HorizontalSm),
+                ("md", HorizontalMd),
+                ("lg", HorizontalLg),
+                ("xl", HorizontalXl),
+                ("xxl", HorizontalXxl)
+            ];
+
+            var horizontal = Horizontal;
+            var bands = new List<string>(breakpoints.Length);
+
+            foreach (var (breakpoint, value) in breakpoints)
+            {
+                horizontal = value ?? horizontal;
+
+                if (horizontal)
+                {
+                    bands.Add(breakpoint);
+                }
+            }
+
+            if (bands.Count == 0) return string.Empty;
+
+            if (bands.Count == breakpoints.Length) return "bit-crd-hrz";
+
+            return string.Join(' ', bands.Select(b => $"bit-crd-hrz-{b}"));
+        }
+    }
+
     private bool _HasHeader => HeaderTemplate is not null
                             || Title.HasValue()
                             || Subtitle.HasValue()
@@ -163,8 +209,8 @@ public partial class BitCard : BitComponentBase
     /// over it. The picture carries no scrim unless it is given one through the <c>--bit-Card-scrim</c> variable, so
     /// give the card one - and a foreground to go with it, through <c>--bit-Card-color</c> - and give it a
     /// <see cref="Height"/> or a <see cref="MinHeight"/> - an overlaid cover is taken out of the flow and no
-    /// longer makes the card as tall as the picture. It wins over <see cref="Horizontal"/>, which lays the same
-    /// cover beside the content rather than behind it.
+    /// longer makes the card as tall as the picture. It wins over <see cref="Horizontal"/> and its breakpoints,
+    /// which lay the same cover beside the content rather than behind it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool CoverOverlay { get; set; }
@@ -185,7 +231,8 @@ public partial class BitCard : BitComponentBase
     /// The width of the cover of a horizontal card.
     /// </summary>
     /// <remarks>
-    /// It only means anything while <see cref="Horizontal"/> is set, since a cover above the content is as wide
+    /// It only means anything while the card is horizontal - through <see cref="Horizontal"/>, or at the widths
+    /// <see cref="HorizontalXs"/> to <see cref="HorizontalXxl"/> make it so - since a cover above the content is as wide
     /// as the card is. The default is a third of the width of the card.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
@@ -298,9 +345,76 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// It only changes anything on a card that has a cover, a header or a footer - a card that is only a
     /// padded box has nothing to lay out.
+    /// <br />
+    /// This is the orientation of the card at every width. <see cref="HorizontalXs"/> to <see cref="HorizontalXxl"/>
+    /// replace it from their own breakpoint upwards, which is what puts the picture above the words on a phone and
+    /// beside them on a desktop.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Horizontal { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HorizontalLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HorizontalMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HorizontalSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HorizontalXl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint
+    /// until another one replaces it - so a card whose picture sits above its words on a phone and beside them from a
+    /// tablet up is written as <see cref="HorizontalSm"/> alone, the same way a <see cref="BitStack"/> turns from a column
+    /// into a row.
+    /// <br />
+    /// <see cref="Horizontal"/> is the base of that chain and is what applies at any breakpoint none of these reach.
+    /// Everything a horizontal card does follows the orientation each breakpoint gives - the cover taking
+    /// <see cref="CoverWidth"/> of the card, the picture filling the height of the row, <see cref="Reversed"/> putting
+    /// the cover on the trailing edge rather than under the body - and <see cref="CoverOverlay"/> still wins over it at
+    /// every width.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HorizontalXs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HorizontalXxl { get; set; }
 
     /// <summary>
     /// Lifts the card while the pointer is over it.
@@ -694,7 +808,9 @@ public partial class BitCard : BitComponentBase
 
         ClassBuilder.Register(() => _IsSectioned ? "bit-crd-sct" : string.Empty);
 
-        ClassBuilder.Register(() => Horizontal ? "bit-crd-hrz" : string.Empty);
+        // A card whose orientation answers to the width of the window is handed one class per breakpoint band it is
+        // horizontal in instead, which the stylesheet reads inside that band alone.
+        ClassBuilder.Register(() => _HorizontalClasses);
 
         ClassBuilder.Register(() => Reversed ? "bit-crd-rev" : string.Empty);
 

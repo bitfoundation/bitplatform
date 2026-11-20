@@ -187,7 +187,9 @@
     <DemoExample Title="Horizontal" RazorCode="@example6RazorCode" Id="example6">
         <div>
             <b>Horizontal</b> puts the cover beside the content, a third of the card wide unless <b>CoverWidth</b> says otherwise;
-            <b>Reversed</b> moves it to the end. The layout mirrors in right-to-left.
+            <b>Reversed</b> moves it to the end. The layout mirrors in right-to-left. <b>HorizontalXs</b> to <b>HorizontalXxl</b>
+            change it from their own breakpoint up, the way BitStack's do: the last card keeps its picture above the words
+            below the medium breakpoint (960px) and lays it beside them from there up - resize the window to see it turn.
         </div>
         <br /><br />
         <div class="card-row">
@@ -204,6 +206,11 @@
             <BitCard Horizontal Reversed Width="26rem" CoverWidth="8rem" Title="Mount Rainier" Subtitle="A trailing cover"
                      ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
                 <BitText Typography="BitTypography.Body2">Reversed puts the thumbnail after the words.</BitText>
+            </BitCard>
+
+            <BitCard HorizontalMd Width="26rem" Title="Mount Rainier" Subtitle="Beside the words from 960px up"
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg">
+                <BitText Typography="BitTypography.Body2">HorizontalMd turns the card at the medium breakpoint.</BitText>
             </BitCard>
         </div>
     </DemoExample>

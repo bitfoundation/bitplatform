@@ -1367,6 +1367,87 @@ public class BitCardTests : BunitTestContext
         Assert.AreEqual(horizontal, component.Find(".bit-crd").ClassList.Contains("bit-crd-hrz"));
     }
 
+    // Each breakpoint carries the orientation of the one below it up until a value of its own replaces it, with
+    // Horizontal as the base, and the card names the bands it is horizontal in - or the one class of a card that
+    // comes out the same at every width.
+    [TestMethod]
+    [DataRow(false, null, true, null, null, null, null, "sm md lg xl xxl")]
+    [DataRow(true, null, null, false, null, null, null, "xs sm")]
+    [DataRow(false, true, null, false, null, true, null, "xs sm xl xxl")]
+    [DataRow(true, false, true, false, true, false, true, "sm lg xxl")]
+    [DataRow(false, null, null, null, null, null, true, "xxl")]
+    [DataRow(true, null, null, null, true, null, null, "all")]
+    [DataRow(false, null, null, false, null, null, null, "")]
+    public void BitCardHorizontalBreakpointsTest(bool horizontal, bool? xs, bool? sm, bool? md, bool? lg, bool? xl, bool? xxl, string expected)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Horizontal, horizontal);
+            parameters.Add(p => p.HorizontalXs, xs);
+            parameters.Add(p => p.HorizontalSm, sm);
+            parameters.Add(p => p.HorizontalMd, md);
+            parameters.Add(p => p.HorizontalLg, lg);
+            parameters.Add(p => p.HorizontalXl, xl);
+            parameters.Add(p => p.HorizontalXxl, xxl);
+        });
+
+        var classes = component.Find(".bit-crd").ClassList;
+        var bands = expected.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        Assert.AreEqual(expected == "all", classes.Contains("bit-crd-hrz"));
+
+        foreach (var band in new[] { "xs", "sm", "md", "lg", "xl", "xxl" })
+        {
+            Assert.AreEqual(Array.IndexOf(bands, band) >= 0, classes.Contains($"bit-crd-hrz-{band}"), band);
+        }
+    }
+
+    [TestMethod]
+    public void BitCardHorizontalBreakpointsShouldFollowAChangeOfTheirValue()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalMd, true);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-hrz-sm"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-hrz-md"));
+
+        component.Render(parameters => parameters.Add(p => p.HorizontalSm, true));
+
+        card = component.Find(".bit-crd");
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-hrz-sm"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-hrz-md"));
+
+        // Every breakpoint unset again leaves the base alone, which is the one class or none at all.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.HorizontalSm, null);
+            parameters.Add(p => p.HorizontalMd, null);
+        });
+
+        card = component.Find(".bit-crd");
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-hrz"));
+        Assert.IsFalse(card.ClassName!.Contains("bit-crd-hrz-"));
+    }
+
+    [TestMethod]
+    public void BitCardHorizontalBreakpointsShouldComposeWithReversed()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.HorizontalLg, true);
+            parameters.Add(p => p.Reversed, true);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-hrz-lg"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-rev"));
+    }
+
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
