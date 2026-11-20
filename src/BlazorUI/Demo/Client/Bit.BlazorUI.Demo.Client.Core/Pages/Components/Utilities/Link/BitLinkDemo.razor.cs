@@ -89,6 +89,13 @@ public partial class BitLinkDemo
         },
         new()
         {
+            Name = "IconUrl",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The url of a custom image rendered as the icon beside the content, sized to the text, used when neither Icon nor IconName is set.",
+        },
+        new()
+        {
             Name = "Match",
             Type = "BitNavMatch?",
             DefaultValue = "null",

@@ -38,7 +38,7 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 //   --bit-Card-title-font-weight     title text weight                              (default: $tg-fw-semibold)
 //   --bit-Card-subtitle-font-size    subtitle text size                             (default: $tg-fs-sm)
 //   --bit-Card-subtitle-color        subtitle text color                            (default: $clr-fg-sec)
-//   --bit-Card-icon-size             size of the header glyph                       (default: $siz-icon-md)
+//   --bit-Card-icon-size             size of the header glyph or IconUrl picture    (default: $siz-icon-md)
 //   --bit-Card-divider-color         color of the Divider hairlines                 (default: $clr-brd-sec)
 //   --bit-Card-selected-color        color of the Selected ring                     (default: $clr-pri)
 //   --bit-Card-focus-color           color of the keyboard focus ring               (default: the text color)
@@ -246,6 +246,14 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;
 i.bit-crd-hic {
     line-height: 1;
     font-size: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));
+}
+
+// The picture of an IconUrl is held to the size of the glyph it stands in for, and fitted inside that square
+// whatever its own proportions.
+img.bit-crd-hic {
+    object-fit: contain;
+    width: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));
+    height: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));
 }
 
 .bit-crd-htx {

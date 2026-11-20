@@ -230,6 +230,19 @@ public partial class BitLinkStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk-eic {"), "margin-inline-start: var(--bit-Link-icon-gap, ");
     }
 
+    [TestMethod]
+    public void BitLinkShouldSizeTheIconUrlPictureLikeTheGlyph()
+    {
+        var picture = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lnk-icu {");
+
+        // The glyph is 1em of the text beside it and lowered by an eighth of that; the picture standing in for it
+        // is the same square, lowered the same way.
+        StringAssert.Contains(picture, "width: 1em;");
+        StringAssert.Contains(picture, "height: 1em;");
+        StringAssert.Contains(picture, "object-fit: contain;");
+        StringAssert.Contains(picture, "vertical-align: -0.125em;");
+    }
+
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();

@@ -178,6 +178,15 @@ $lnk-private-properties: clr, clr-hover, clr-active, clr-focus, clr-dis, fs,
     vertical-align: -0.125em;
 }
 
+// The picture of an IconUrl takes the glyph's place at the glyph's size: a square of the size of the text beside
+// it, lowered the same way, with the picture fitted inside it whatever its own proportions.
+.bit-lnk-icu {
+    width: 1em;
+    height: 1em;
+    object-fit: contain;
+    vertical-align: -0.125em;
+}
+
 .bit-lnk-sic {
     margin-inline-end: var(--bit-Link-icon-gap, #{spacing(0.375)});
 }

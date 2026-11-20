@@ -65,9 +65,9 @@
 
     <DemoExample Title="Header" RazorCode="@example3RazorCode" Id="example3">
         <div>
-            <b>Title</b> and <b>Subtitle</b> make the header, led by <b>IconName</b> (or <b>Icon</b>). <b>HeadingLevel</b> (1-6) turns the title
-            into a real heading, so screen reader users can jump from card to card. <b>IconTemplate</b> replaces only the leading icon - an avatar,
-            a logo - while <b>HeaderTemplate</b> replaces the whole header text.
+            <b>Title</b> and <b>Subtitle</b> make the header, led by <b>IconName</b> (or <b>Icon</b>), or by an image through <b>IconUrl</b>.
+            <b>HeadingLevel</b> (1-6) turns the title into a real heading, so screen reader users can jump from card to card. <b>IconTemplate</b>
+            replaces only the leading icon - an avatar, a logo - while <b>HeaderTemplate</b> replaces the whole header text.
         </div>
         <br /><br />
         <div class="card-row">
@@ -77,6 +77,10 @@
 
             <BitCard Title="Deployment" Subtitle="Succeeded 2 minutes ago" IconName="@BitIconName.Rocket" HeadingLevel="3" Width="18rem">
                 <BitText Typography="BitTypography.Body2">An icon, and a title that is a level-3 heading.</BitText>
+            </BitCard>
+
+            <BitCard Title="bit platform" Subtitle="Open source" IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="18rem">
+                <BitText Typography="BitTypography.Body2">An image icon, sized like the glyph.</BitText>
             </BitCard>
 
             <BitCard Title="Ada Lovelace" Subtitle="Author" Width="18rem">

@@ -207,6 +207,13 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "IconUrl",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The url of a custom image rendered as the header icon, sized like the glyph, used when neither IconTemplate, Icon nor IconName is set.",
+        },
+        new()
+        {
             Name = "ImageAlt",
             Type = "string?",
             DefaultValue = "null",
@@ -484,7 +491,7 @@ public partial class BitCardDemo
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the leading icon of the header of the BitCard."
+                    Description = "Custom CSS classes/styles for the leading icon of the header of the BitCard (the glyph, or the image rendered for IconUrl)."
                 },
                 new()
                 {
@@ -694,7 +701,7 @@ public partial class BitCardDemo
         {
             Name = "--bit-Card-icon-size",
             DefaultValue = "--bit-siz-icon-md",
-            Description = "Size of the header icon. The Size parameter wins over it.",
+            Description = "Size of the header icon, the glyph and the IconUrl image alike. The Size parameter wins over it.",
         },
         new()
         {

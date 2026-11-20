@@ -195,6 +195,16 @@ public partial class BitLink : BitComponentBase
     public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
+    /// The url of a custom image rendered as the icon beside the link content, used when neither <see cref="Icon"/>
+    /// nor <see cref="IconName"/> is set.
+    /// </summary>
+    /// <remarks>
+    /// The picture is sized to the text beside it like the glyph is, sits where <see cref="IconPlacement"/> puts the
+    /// icon, and is drawn as decoration hidden from assistive technologies, so the link text has to say what it says.
+    /// </remarks>
+    [Parameter] public string? IconUrl { get; set; }
+
+    /// <summary>
     /// Follows the URL the app sits on and reports the link as the current one while its <see cref="Href"/>
     /// matches it, the way Blazor's <c>NavLink</c> does.
     /// </summary>

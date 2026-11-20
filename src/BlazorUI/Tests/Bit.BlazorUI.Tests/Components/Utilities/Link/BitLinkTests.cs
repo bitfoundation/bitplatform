@@ -1071,6 +1071,63 @@ public class BitLinkTests : BunitTestContext
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-lnk-icn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-lnk-icu").Count);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldRenderTheIconUrlBeforeTheContentByDefault()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IconUrl, "/images/logo.svg");
+            parameters.AddChildContent("bit");
+        });
+
+        // Like the glyph, the picture says nothing a reader has not already been told by the link text.
+        component.MarkupMatches(@"<a href=""https://bitplatform.dev"" class=""bit-lnk"" id:ignore>
+                                    <img src=""/images/logo.svg"" alt="""" class=""bit-lnk-icu bit-lnk-sic"" aria-hidden=""true"" />bit
+                                  </a>");
+    }
+
+    [TestMethod]
+    public void BitLinkShouldRenderTheIconUrlAfterTheContentAtTheEndPosition()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.IconUrl, "/images/logo.svg");
+            parameters.Add(p => p.IconPlacement, BitPlacement.End);
+            parameters.AddChildContent("bit");
+        });
+
+        component.MarkupMatches(@"<button type=""button"" class=""bit-lnk"" id:ignore>
+                                    bit<img src=""/images/logo.svg"" alt="""" class=""bit-lnk-icu bit-lnk-eic"" aria-hidden=""true"" />
+                                  </button>");
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitLinkIconAndIconNameShouldTakePrecedenceOverIconUrl(bool iconInfo)
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.IconUrl, "/images/logo.svg");
+
+            if (iconInfo)
+            {
+                parameters.Add(p => p.Icon, BitIconInfo.Css("fa-solid fa-house"));
+            }
+            else
+            {
+                parameters.Add(p => p.IconName, "Link");
+            }
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-lnk-icn").Count);
+        Assert.AreEqual(0, component.FindAll("img").Count);
     }
 
     [TestMethod,

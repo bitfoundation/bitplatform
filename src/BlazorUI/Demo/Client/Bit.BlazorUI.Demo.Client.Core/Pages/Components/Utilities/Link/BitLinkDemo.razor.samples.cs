@@ -14,7 +14,8 @@ public partial class BitLinkDemo
 
     private readonly string example3RazorCode = @"
 <BitLink IconName=""@BitIconName.Link"" Href=""https://github.com/bitfoundation/bitplatform"">Leading icon</BitLink>
-<BitLink IconName=""@BitIconName.ChevronRight"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">Trailing icon</BitLink>";
+<BitLink IconName=""@BitIconName.ChevronRight"" IconPlacement=""BitPlacement.End"" Href=""https://github.com/bitfoundation/bitplatform"">Trailing icon</BitLink>
+<BitLink IconUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Href=""https://bitplatform.dev"">Image icon</BitLink>";
 
     private readonly string example4RazorCode = @"
 <BitLink Target=""@BitLinkTarget.Blank"" Href=""https://github.com/bitfoundation/bitplatform"">Opens in a new tab</BitLink>

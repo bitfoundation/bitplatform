@@ -142,6 +142,16 @@ public partial class BitCardStylesheetTests
     }
 
     [TestMethod]
+    public void BitCardShouldSizeTheIconUrlPictureLikeTheGlyph()
+    {
+        var picture = SourceFiles.GetScssBlock(ReadStylesheet(), "\nimg.bit-crd-hic {");
+
+        StringAssert.Contains(picture, "width: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(picture, "height: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(picture, "object-fit: contain;");
+    }
+
+    [TestMethod]
     public void BitCardShouldPublishItsSizeOnlyWhereItIsSet()
     {
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-crd {");

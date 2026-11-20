@@ -52,6 +52,10 @@ public partial class BitCardDemo
     <BitText Typography=""BitTypography.Body2"">An icon, and a title that is a level-3 heading.</BitText>
 </BitCard>
 
+<BitCard Title=""bit platform"" Subtitle=""Open source"" IconUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""18rem"">
+    <BitText Typography=""BitTypography.Body2"">An image icon, sized like the glyph.</BitText>
+</BitCard>
+
 <BitCard Title=""Ada Lovelace"" Subtitle=""Author"" Width=""18rem"">
     <IconTemplate>
         <BitPersona Size=""BitPersonaSize.Size32"" HidePersonaDetails ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/persona/persona-female.png"" />

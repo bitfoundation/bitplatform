@@ -35,6 +35,7 @@ public class BitCardParamsTests : BunitTestContext
         nameof(BitCard.Icon),
         nameof(BitCard.IconName),
         nameof(BitCard.IconTemplate),
+        nameof(BitCard.IconUrl),
         nameof(BitCard.ImageAlt),
         nameof(BitCard.ImageUrl),
         nameof(BitCard.OnClick),

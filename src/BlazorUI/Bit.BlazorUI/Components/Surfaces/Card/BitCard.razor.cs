@@ -73,7 +73,8 @@ public partial class BitCard : BitComponentBase
                             || Actions is not null
                             || IconTemplate is not null
                             || Icon is not null
-                            || IconName.HasValue();
+                            || IconName.HasValue()
+                            || IconUrl.HasValue();
 
 
 
@@ -349,6 +350,17 @@ public partial class BitCard : BitComponentBase
     /// and with them the name a linked card gives its stretched anchor.
     /// </remarks>
     [Parameter] public RenderFragment? IconTemplate { get; set; }
+
+    /// <summary>
+    /// The url of a custom image rendered as the leading icon of the header of the card, used when neither
+    /// <see cref="IconTemplate"/>, <see cref="Icon"/> nor <see cref="IconName"/> is set.
+    /// </summary>
+    /// <remarks>
+    /// The picture is sized like the glyph is (<c>--bit-Card-icon-size</c>) and drawn as decoration hidden from
+    /// assistive technologies, beside the title that names the card.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? IconUrl { get; set; }
 
     /// <summary>
     /// The alternate text of the cover image of the card.

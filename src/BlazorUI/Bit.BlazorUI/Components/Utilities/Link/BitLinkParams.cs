@@ -115,6 +115,13 @@ public partial class BitLinkParams : BitComponentBaseParams, IBitComponentParams
     public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
+    /// The url of a custom image rendered as the icon beside the link content, used when neither Icon nor IconName is set.
+    /// <br />
+    /// <see cref="BitLink.IconUrl"/>.
+    /// </summary>
+    public string? IconUrl { get; set; }
+
+    /// <summary>
     /// Follows the URL the app sits on and reports the link as the current one while its href matches it.
     /// <br />
     /// <see cref="BitLink.Match"/>.
@@ -267,6 +274,11 @@ public partial class BitLinkParams : BitComponentBaseParams, IBitComponentParams
         if (IconPlacement.HasValue)
         {
             bitLink.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static l => l.IconPlacement, static (l, v) => l.IconPlacement = v);
+        }
+
+        if (IconUrl.HasValue())
+        {
+            bitLink.TakeFromCascade(nameof(IconUrl), IconUrl, static l => l.IconUrl, static (l, v) => l.IconUrl = v);
         }
 
         if (Match.HasValue)
