@@ -9,52 +9,55 @@
     width: 100%;
     display: flex;
     overflow: hidden;
+    position: relative;
     box-sizing: border-box;
     align-items: flex-start;
     flex-flow: column nowrap;
     justify-content: flex-start;
+    --hero-glow: rgba(127, 191, 255, 0.32);
+    --hero-glow-accent: rgba(82, 74, 221, 0.12);
 
-    // Visibility (dark-theme/light-theme classes) is owned by the global themed utilities in app.scss.
-    .hero-gradient {
+    // The hero glow: two soft radial gradients (brand azure plus a touch of indigo) painted once by the
+    // compositor - the same atmosphere the old blurred SVGs gave, without their 600px gaussian blur.
+    &::before {
         top: 0;
-        left: 50%;
-        max-width: 70rem;
+        left: 0;
+        right: 0;
+        content: '';
+        height: 64rem;
         position: absolute;
-        transform: translate(-50%, -10%);
-
-        @include lt-xl {
-            max-width: 65rem;
-        }
-
-        @include lt-lg {
-            max-width: 60rem;
-        }
+        pointer-events: none;
+        background: radial-gradient(ellipse 40rem 28rem at 50% 22rem, var(--hero-glow), transparent 70%),
+            radial-gradient(ellipse 28rem 20rem at 70% 14rem, var(--hero-glow-accent), transparent 70%);
 
         @include lt-md {
-            max-width: 50rem;
-            transform: translate(-50%, -5%);
-        }
-
-        @include lt-sm {
-            max-width: 40rem;
-            transform: translate(-50%, 10%);
+            background: radial-gradient(ellipse 22rem 20rem at 50% 18rem, var(--hero-glow), transparent 70%),
+                radial-gradient(ellipse 16rem 14rem at 75% 12rem, var(--hero-glow-accent), transparent 70%);
         }
     }
 
-    .hero-image {
+    ::deep .hero-image {
         width: 100%;
+        height: auto;
         margin: auto;
         padding: 1rem;
         max-width: rem2(800px);
         filter: drop-shadow(0 24px 48px rgba(24, 120, 253, 0.18));
+
+        img {
+            width: 100%;
+            height: auto;
+        }
     }
 }
 
+:root[bit-theme="dark"] .page-container {
+    --hero-glow: rgba(31, 57, 134, 0.7);
+    --hero-glow-accent: rgba(82, 74, 221, 0.22);
+}
+
 .highlight-1 {
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
+    @include BrandGradientText;
 }
 
 .highlight-2 {
@@ -65,51 +68,33 @@
 }
 
 .page-section {
-    width: 100%;
-    display: flex;
     padding-top: 5rem;
     padding-bottom: 5rem;
-    justify-content: center;
+    @include PageSection;
 }
 
 .page-section-content {
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    box-sizing: border-box;
-    max-width: rem2(1200px);
-    padding-left: rem2(20px);
-    padding-right: rem2(20px);
+    @include PageSectionContent;
 }
 
-.section-title-container {
-    gap: 1rem;
-    display: flex;
-    align-items: center;
-}
-
-::deep .section-title {
-    font-size: 1rem;
-    font-weight: 600;
-    white-space: nowrap;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: $bit-color-foreground-secondary;
-}
-
-.section-title-line {
-    height: 2px;
-    flex-grow: 1;
-    background-image: linear-gradient(351deg, transparent 20%, #8c85ff 100%);
-
-    &.reversed {
-        background-image: linear-gradient(9deg, transparent 20%, #8c85ff 100%);
-    }
-}
+@include SectionTitle;
 
 .hero-section {
     padding: 0;
+    position: relative;
     padding-top: rem2($HeaderHeight);
+
+    // A faint dot grid behind the hero that fades out toward the edges.
+    &::before {
+        inset: 0;
+        content: '';
+        position: absolute;
+        pointer-events: none;
+        background-size: 24px 24px;
+        background-image: radial-gradient(var(--app-hairline) 1px, transparent 1px);
+        mask-image: radial-gradient(ellipse 60% 55% at 50% 40%, #000 30%, transparent 75%);
+        -webkit-mask-image: radial-gradient(ellipse 60% 55% at 50% 40%, #000 30%, transparent 75%);
+    }
 
     @include lt-lg {
         padding-top: rem2(calc($HeaderHeight + $HeaderSecondRowHeight));
@@ -138,8 +123,11 @@
 
         ::deep {
             .hero-title {
-                font-size: 9rem;
                 font-weight: 600;
+                line-height: 1.05;
+                letter-spacing: -0.03em;
+                font-size: clamp(3.5rem, 12vw, 9rem);
+                font-family: $FontDisplay;
                 background-clip: text;
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -160,96 +148,102 @@
             justify-content: center;
         }
 
-        .hero-cta {
+        ::deep .hero-cta {
             @include GradientCtaButton;
+        }
+
+        // The release pill above the title.
+        ::deep .hero-eyebrow {
+            gap: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 2rem;
+            padding: 0.25rem 0.875rem 0.25rem 0.25rem;
+            color: $bit-color-foreground-secondary;
+            border: 1px solid var(--app-hairline);
+            background-color: color-mix(in srgb, $bit-color-background-primary 70%, transparent);
+            transition: border-color 0.2s $MotionEase, color 0.2s $MotionEase;
+
+            .hero-eyebrow-tag {
+                color: #fff;
+                font-weight: 600;
+                font-size: 0.75rem;
+                border-radius: 2rem;
+                padding: 0.125rem 0.5rem;
+                font-variant-numeric: tabular-nums;
+                background-image: linear-gradient(96deg, #524add 10%, #0D71BF 90%);
+            }
+
+            .hero-eyebrow-arrow {
+                transition: transform 0.2s $MotionEase;
+            }
+
+            &:hover {
+                color: $bit-color-foreground-primary;
+                border-color: var(--app-hairline-strong);
+
+                .hero-eyebrow-arrow {
+                    transform: translateX(3px);
+                }
+            }
         }
 
         @include lt-lg {
             padding-top: 4rem;
 
-            ::deep {
-                .hero-title {
-                    font-size: 6rem;
-                }
-
-                .hero-subtitle {
-                    font-size: 1.5rem;
-                }
+            ::deep .hero-subtitle {
+                font-size: 1.5rem;
             }
         }
 
         @include lt-md {
-            ::deep {
-                .hero-title {
-                    font-size: 4rem;
-                }
-
-                .hero-subtitle {
-                    font-size: 1.25rem;
-                }
+            ::deep .hero-subtitle {
+                font-size: 1.25rem;
             }
         }
 
         @include lt-sm {
-            ::deep {
-                .hero-title {
-                    font-size: 3.5rem;
-                }
-
-                .hero-subtitle {
-                    font-size: 1rem;
-                }
+            ::deep .hero-subtitle {
+                font-size: 1rem;
             }
         }
     }
 }
 
 ::deep {
+    // Fluid type: one clamp() per heading scales smoothly with the viewport and lands close to the
+    // sizes the old per-breakpoint steps used, without the jumps between them.
     .text-title {
-        font-size: 6rem;
         line-height: 1.1;
         font-weight: 600;
         text-align: center;
         margin-bottom: 2rem;
-        letter-spacing: -0.02em;
-
-        @include lt-xl {
-            font-size: 5rem;
-        }
+        letter-spacing: -0.025em;
+        font-size: clamp(1.75rem, 6vw, 6rem);
+        font-family: $FontDisplay;
 
         @include lt-lg {
-            font-size: 3.25rem;
             margin-bottom: 1rem;
         }
 
         @include lt-md {
-            font-size: 2.1rem;
             margin-bottom: 0.5rem;
         }
 
         @include lt-sm {
             margin-bottom: 0;
-            font-size: 1.75rem;
         }
     }
 
     .text-subtitle {
         line-height: 1.5;
-        font-size: 2.25rem;
         text-align: center;
+        text-wrap: pretty;
+        font-size: clamp(1rem, 0.25rem + 2.2vw, 2.25rem);
         color: $bit-color-foreground-secondary;
-
-        @include lt-xl {
-            font-size: 2rem;
-        }
-
-        @include lt-lg {
-            font-size: 1.25rem;
-        }
-
-        @include lt-md {
-            font-size: 1rem;
-        }
     }
 }
 
@@ -266,47 +260,70 @@
     padding-top: 2rem;
     padding-bottom: 2rem;
 
+    // A strip of equal hairline tiles: four across, two by two on phones.
     .stats-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 2rem 4rem;
-        justify-content: center;
+        gap: 1rem;
+        display: grid;
+        margin-inline: auto;
+        max-width: rem2(960px);
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+
+        @include lt-md {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
     }
 
     .stats-item {
         gap: 0.5rem;
         display: flex;
+        padding: 1.5rem 1rem;
         align-items: center;
         flex-flow: column nowrap;
+        // A flat tile: the strip reads as one band, so the tiles cast no shadow of their own.
+        @include SurfaceCard($shadow: null, $background: color-mix(in srgb, $bit-color-background-secondary 60%, transparent));
     }
 
-    .stats-number {
-        font-size: 3rem;
-        font-weight: 700;
-        line-height: 1.1;
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-image: linear-gradient(351deg, #31b3ec 23%, #524add 87%);
-
-        @include lt-md {
-            font-size: 2rem;
+    ::deep {
+        .stats-number {
+            // Scales with the viewport so the four-across tiles just above the md breakpoint (about 96px
+            // of content each) still hold "1.4K+"; 2rem from there down, 3rem on wide screens.
+            font-size: clamp(2rem, 4.5vw, 3rem);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+            @include BrandGradientText;
         }
-    }
 
-    .stats-label {
-        font-size: 1rem;
-        color: $bit-color-foreground-secondary;
+        .stats-label {
+            font-size: 0.875rem;
+            text-align: center;
+        }
     }
 }
 
 .cta-section {
     text-align: center;
+    padding-inline: rem2(20px);
 
     .page-section-content {
         display: flex;
         align-items: center;
         flex-flow: column nowrap;
+    }
+
+    // The closing call to action sits on its own glowing panel, so the page ends on one clear ask.
+    .cta-card {
+        overflow: hidden;
+        position: relative;
+        padding-block: 4rem;
+        @include SurfaceCard($radius: var(--app-radius-xl), $shadow: null, $background: null);
+        background: radial-gradient(ellipse 70% 60% at 50% 0%, var(--hero-glow), transparent 70%),
+            color-mix(in srgb, $bit-color-background-secondary 70%, transparent);
+
+        @include lt-md {
+            padding-block: 2.5rem;
+        }
     }
 
     .cta-command {
@@ -323,7 +340,7 @@
         justify-content: center;
     }
 
-    .cta-btn {
+    ::deep .cta-btn {
         @include GradientCtaButton;
     }
 }
@@ -331,6 +348,32 @@
 .products-section {
     padding-top: 0;
     scroll-margin: 5rem;
+
+    &:focus {
+        outline: none;
+    }
+
+    // The home page lists only the core products; the rest live on the products page.
+    .products-more {
+        display: flex;
+        margin-top: 2.5rem;
+        justify-content: center;
+    }
+
+    ::deep .products-more-btn {
+        gap: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        @include GradientCtaButton;
+
+        .products-more-arrow {
+            transition: transform 0.2s $MotionEase;
+        }
+
+        &:hover .products-more-arrow {
+            transform: translateX(3px);
+        }
+    }
 }
 
 .tech-section {
@@ -340,6 +383,14 @@
 
     @include lt-md {
         margin: 0;
+    }
+
+    .tech-list {
+        width: 100%;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+        justify-content: center;
     }
 
     ::deep {
@@ -352,91 +403,97 @@
                 font-size: 1rem;
             }
         }
-    }
 
-    .tech-list {
-        width: 100%;
-        display: flex;
-        flex-flow: row wrap;
-        align-items: center;
-        justify-content: center;
-    }
+        .tech-item {
+            width: rem2(70px);
+            height: rem2(70px);
+            margin: rem2(20px);
+            border-radius: 0.5rem;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            // A quiet, monochrome logo wall that comes to color under the pointer or keyboard focus.
+            opacity: 0.75;
+            filter: grayscale(1);
+            transition: transform 0.2s $MotionEase, filter 0.2s $MotionEase, opacity 0.2s $MotionEase;
 
-    .tech-item {
-        width: rem2(70px);
-        height: rem2(70px);
-        margin: rem2(20px);
-        border-radius: 0.5rem;
-        background-size: contain;
-        background-position: center;
-        background-repeat: no-repeat;
-        transition: transform 0.2s $MotionEase, filter 0.2s $MotionEase;
+            &:hover,
+            &:focus-visible {
+                opacity: 1;
+                transform: translateY(-6px) scale(1.08);
+                filter: grayscale(0) drop-shadow(0 10px 16px rgba(82, 74, 221, 0.35));
+            }
 
-        &:hover,
-        &:focus-visible {
-            transform: translateY(-6px) scale(1.08);
-            filter: drop-shadow(0 10px 16px rgba(82, 74, 221, 0.35));
+            &:focus-visible {
+                outline: 2px solid $bit-color-primary;
+                outline-offset: 4px;
+                --bit-focus-ring-own: none;
+            }
         }
 
-        &:focus-visible {
-            outline: 2px solid $bit-color-primary;
-            outline-offset: 4px;
+        .blazor-item {
+            background-image: url('/images/home/tech/blazor-logo.webp');
         }
-    }
 
-    .blazor-item {
-        background-image: url('/images/home/tech/blazor-logo.webp');
-    }
+        .csharp-item {
+            background-image: url('/images/home/tech/csharp-logo.webp');
+        }
 
-    .csharp-item {
-        background-image: url('/images/home/tech/csharp-logo.webp');
-    }
+        .sass-item {
+            background-image: url('/images/home/tech/sass-logo.webp');
+        }
 
-    .sass-item {
-        background-image: url('/images/home/tech/sass-logo.webp');
-    }
+        .vs-item {
+            background-image: url('/images/home/tech/visual-studio-logo.webp');
+        }
 
-    .vs-item {
-        background-image: url('/images/home/tech/visual-studio-logo.webp');
-    }
+        .git-item {
+            background-image: url('/images/home/tech/git-logo.webp');
+        }
 
-    .git-item {
-        background-image: url('/images/home/tech/git-logo.webp');
-    }
-
-    .github-item {
-        svg path {
-            fill: $bit-color-foreground-primary;
+        .github-item {
+            svg path {
+                fill: $bit-color-foreground-primary;
+            }
         }
     }
 }
 
 // animate-intro is off on the render that replaces the prerendered markup: that DOM already played the
 // intro, so replaying it there would show the whole hero fade in twice (see HomePage.razor.cs).
-.hero-section-content.animate-intro {
+@media (prefers-reduced-motion: no-preference) {
+    .hero-section-content.animate-intro {
 
-    ::deep .hero-title,
-    ::deep .hero-subtitle,
-    .hero-cta-container {
-        animation: hero-enter 0.7s ease-out both;
-    }
+        ::deep .hero-eyebrow,
+        ::deep .hero-title,
+        ::deep .hero-subtitle,
+        .hero-cta-container {
+            animation: hero-enter 0.7s ease-out both;
+        }
 
-    ::deep .hero-subtitle {
-        animation-delay: 0.15s;
-    }
+        ::deep .hero-title {
+            animation-delay: 0.08s;
+        }
 
-    .hero-cta-container {
-        animation-delay: 0.3s;
+        ::deep .hero-subtitle {
+            animation-delay: 0.2s;
+        }
+
+        .hero-cta-container {
+            animation-delay: 0.32s;
+        }
     }
 }
 
+// Scroll-driven reveals ignore animation-duration, so the reduced-motion opt-out has to be explicit.
 @supports (animation-timeline: view()) {
-
-    .page-container .hero-image,
-    .page-section:not(.hero-section) .page-section-content {
-        animation: section-reveal linear both;
-        animation-timeline: view();
-        animation-range: entry 5% entry 45%;
+    @media (prefers-reduced-motion: no-preference) {
+        .page-container ::deep .hero-image,
+        .page-section:not(.hero-section) .page-section-content {
+            animation: section-reveal linear both;
+            animation-timeline: view();
+            animation-range: entry 5% entry 45%;
+        }
     }
 }
 

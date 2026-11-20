@@ -1,5 +1,6 @@
 ﻿@import '../Styles/abstracts/_vars.scss';
 @import '../Styles/abstracts/_colors.scss';
+@import '../Styles/abstracts/_mixins.scss';
 @import '../Styles/abstracts/_functions.scss';
 @import '../Styles/abstracts/_media-queries.scss';
 @import '../Styles/abstracts/_bit-css-variables.scss';
@@ -12,9 +13,37 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     padding-top: var(--bit-status-bar-height);
+    border-bottom: 1px solid transparent;
 }
 
-.skip-link {
+// At the top of the page the bar stays fully see-through (the home hero glow runs under it); over
+// the first few pixels of scrolling it frosts up with a tint of the page background and a hairline
+// underneath. Driven by the scroll position on the compositor - no scroll listener, no re-render.
+// It stays on under reduced motion: it is a state tied to the scroll position (nothing moves or
+// plays on its own), and without it page content scrolls under the nav links with no backdrop.
+// Browsers without scroll-driven animations keep the plain blurred bar.
+@supports (animation-timeline: scroll()) {
+    .main-header {
+        animation: header-scrolled linear both;
+        animation-timeline: scroll(root block);
+        animation-range: 0 rem2(64px);
+
+        // Out of app.scss's reduced-motion reset, which squeezes every animation to 0.01ms: a
+        // scroll-driven one spans its scroll range whatever its time, but auto states that plainly.
+        @media (prefers-reduced-motion: reduce) {
+            animation-duration: auto !important;
+        }
+    }
+}
+
+@keyframes header-scrolled {
+    to {
+        border-bottom-color: var(--app-hairline);
+        background-color: color-mix(in srgb, $bit-color-background-primary 85%, transparent);
+    }
+}
+
+.main-header ::deep .skip-link {
     position: absolute;
     z-index: 200;
     left: rem2(8px);
@@ -63,7 +92,7 @@
     flex-flow: row nowrap;
 }
 
-.header-logo {
+.header-content-container ::deep .header-logo {
     cursor: pointer;
     width: rem2(50px);
     height: rem2(50px);
@@ -74,12 +103,13 @@
     background-image: url('/images/bit-blue-icon.svg');
 }
 
-.header-link {
+.header-content-container ::deep .header-link {
     height: 100%;
     cursor: pointer;
     line-height: 1.5;
     position: relative;
-    font-size: rem2(18px);
+    font-weight: 500;
+    font-size: rem2(16px);
     text-decoration: none;
     box-sizing: border-box;
     padding: rem2(10px) rem2(16px);
@@ -109,7 +139,7 @@
     }
 }
 
-.header-link--active {
+.header-content-container ::deep .header-link--active {
     color: $bit-color-primary;
 
     &::after {
@@ -127,7 +157,7 @@
     align-items: center;
 }
 
-.github-container {
+.right-section ::deep .github-container {
     display: flex;
     align-items: center;
 }
@@ -141,7 +171,7 @@
     transition: transform 200ms $MotionEase 0ms;
 }
 
-.github-container {
+.right-section ::deep .github-container {
     &:hover .github-btn {
         transform: scale(1.1);
     }
@@ -152,7 +182,7 @@
 }
 
 // Visibility (dark-theme/light-theme classes) is owned by the global themed utilities in app.scss.
-.toggle-theme-btn {
+.right-section ::deep .toggle-theme-btn {
     padding: 0;
     border: none;
     cursor: pointer;
@@ -170,7 +200,7 @@
         align-items: center;
         justify-content: center;
 
-        img {
+        .theme-icon {
             width: 19px;
             height: 19px;
             transition: transform 300ms $MotionEase 0ms;
@@ -180,7 +210,7 @@
     &:hover {
         transform: scale(1.1);
 
-        img {
+        .theme-icon {
             transform: rotate(30deg);
         }
     }
@@ -238,7 +268,7 @@
 
     // Staggered entry for the nav entries; `backwards` keeps each one invisible until its delay hits.
     >.header-nav-item,
-    >.header-nav-link {
+    > ::deep .header-nav-link {
         animation: header-fade-slide-in 300ms $MotionEase backwards;
 
         @for $i from 1 through 7 {
@@ -260,21 +290,23 @@
     width: 100%;
 }
 
-.header-nav-link {
+.header-nav ::deep .header-nav-link {
     width: 100%;
     line-height: 1.5;
-    padding: rem2(16px) 0;
-    font-size: rem2(14px);
+    font-weight: 500;
+    padding: rem2(14px) 0;
+    font-size: rem2(16px);
     text-decoration: none;
-    margin-bottom: rem2(16px);
+    margin-bottom: rem2(8px);
+    border-bottom: 1px solid var(--app-hairline);
     color: $bit-color-foreground-secondary;
 }
 
-.header-nav-link--active {
+.header-nav ::deep .header-nav-link--active {
     color: $bit-color-primary;
 }
 
-.header-nav-products-trigger {
+.header-nav ::deep .header-nav-products-trigger {
     border: none;
     gap: rem2(6px);
     cursor: pointer;
@@ -294,16 +326,16 @@
     display: flex;
     padding: rem2(8px);
     box-sizing: border-box;
-    border-radius: rem2(4px);
+    border-radius: var(--app-radius-md);
     flex-flow: column nowrap;
     margin-bottom: rem2(16px);
-    border: 1px solid $bit-color-border-secondary;
+    border: 1px solid var(--app-hairline);
     background-color: $bit-color-background-secondary;
     animation: header-fade-slide-in 200ms $MotionEase 0ms;
 
     // The single-line descriptions of the desktop popup overflow a narrow phone, worst under the
     // indented utilities list, so they wrap here.
-    .item-desc {
+    ::deep .item-desc {
         white-space: normal;
     }
 }
@@ -353,12 +385,9 @@
     visibility: hidden;
     pointer-events: none;
     flex-flow: row nowrap;
-    border-radius: rem2(4px);
-    padding: rem2(8px) rem2(16px);
+    padding: rem2(8px);
     transform: translateY(rem2(-8px));
-    border: 1px solid $bit-color-border-secondary;
-    background-color: $bit-color-background-secondary;
-    box-shadow: 0 rem2(8px) rem2(24px) rgba(0, 0, 0, 0.12);
+    @include SurfaceCard($radius: var(--app-radius-md), $shadow: var(--app-shadow-popup));
 
     // Visibility flips at the END of the fade-out (the 180ms delay) and instantly on fade-in.
     transition: opacity 180ms $MotionEase 0ms,
@@ -381,23 +410,24 @@
     padding: rem2(8px) 0;
 }
 
-.menu-item {
+::deep .menu-item {
     display: flex;
     cursor: pointer;
     align-items: center;
     flex-flow: row nowrap;
-    border-radius: rem2(4px);
+    border-radius: var(--app-radius-sm);
     justify-content: flex-start;
     padding: rem2(8px) rem2(16px);
     transition: background-color 150ms $MotionEase 0ms,
         transform 150ms $MotionEase 0ms;
 
+    // A tint instead of the old bolder title: no width change, so the row never reflows on hover.
     &:hover {
         transform: translateX(rem2(3px));
-        background-color: $bit-color-background-secondary-hover;
+        background-color: var(--app-tint);
 
         .item-title {
-            font-weight: 800;
+            color: $bit-color-primary;
         }
     }
 
@@ -408,14 +438,14 @@
     }
 }
 
-.item-title {
+::deep .item-title {
     font-weight: 600;
     white-space: nowrap;
     font-size: rem2(16px);
     color: $bit-color-foreground-primary;
 }
 
-.item-desc {
+::deep .item-desc {
     font-weight: 600;
     white-space: nowrap;
     font-size: rem2(14px);
@@ -425,8 +455,8 @@
 .menu-item--disabled {
     cursor: default;
 
-    .item-title,
-    .item-desc {
+    ::deep .item-title,
+    ::deep .item-desc {
         color: $bit-color-foreground-disabled;
     }
 
@@ -434,15 +464,18 @@
         transform: none;
         background-color: transparent;
 
-        .item-title {
-            font-weight: 600;
+        ::deep .item-title {
+            color: $bit-color-foreground-disabled;
         }
     }
 }
 
-// The Utilities entry closes the main list in both the desktop popup and the mobile nav.
+// The Utilities entry closes the main list in both the desktop popup and the mobile nav, and the
+// All products entry closes the whole menu, each behind a hairline.
 .menu-sub,
-.header-nav-sub {
+.header-nav-sub,
+.menu-all,
+.header-nav-all {
     margin-top: rem2(4px);
     padding-top: rem2(4px);
     border-top: 1px solid $bit-color-border-secondary;
@@ -455,8 +488,8 @@
     border-top: none;
 }
 
-.menu-sub-trigger,
-.header-nav-sub-trigger {
+::deep .menu-sub-trigger,
+::deep .header-nav-sub-trigger {
     margin: 0;
     width: 100%;
     border: none;
@@ -492,10 +525,9 @@
     overflow-y: auto;
     position: absolute;
     visibility: hidden;
-    padding: rem2(16px);
+    padding: rem2(8px);
     box-sizing: border-box;
     flex-flow: column nowrap;
-    border-radius: rem2(4px);
     width: calc(100% + 2px);
     scrollbar-width: thin;
     overscroll-behavior: contain;
@@ -503,23 +535,21 @@
     // list scrolls.
     scrollbar-color: $bit-color-border-primary transparent;
     transform: translateX(rem2(-8px));
-    border: 1px solid $bit-color-border-secondary;
-    background-color: $bit-color-background-secondary;
-    box-shadow: 0 rem2(8px) rem2(24px) rgba(0, 0, 0, 0.12);
+    @include SurfaceCard($radius: var(--app-radius-md), $shadow: var(--app-shadow-popup));
     // Hiding waits a beat (hover intent), so a diagonal pass over the neighboring items on the way to
     // the flyout does not close it; visibility flips at the end of the fade-out.
     transition: opacity 150ms $MotionEase 200ms,
         transform 150ms $MotionEase 200ms,
         visibility 0s linear 350ms;
 
-    .item-desc {
+    ::deep .item-desc {
         white-space: normal;
     }
 }
 
 @mixin menu-sub-open {
-    .menu-sub-trigger {
-        background-color: $bit-color-background-secondary-hover;
+    ::deep .menu-sub-trigger {
+        background-color: var(--app-tint);
     }
 
     .menu-sub-chevron {
@@ -538,7 +568,7 @@
     }
 }
 
-.header-ps-trigger {
+.header-ps-btn ::deep .header-ps-trigger {
     margin: 0;
     padding: 0;
     border: none;

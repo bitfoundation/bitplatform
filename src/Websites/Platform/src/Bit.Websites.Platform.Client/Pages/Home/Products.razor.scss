@@ -119,6 +119,18 @@
     ::deep .code-box-content {
         background-color: $bit-color-background-primary;
     }
+
+    ::deep .template-link {
+        cursor: pointer;
+        flex-flow: row nowrap;
+        line-height: rem2(32px);
+        transition: all 0.2s linear;
+        @include ArrowLink('.template-link-arrow');
+
+        &:hover {
+            transform: translateX(5px);
+        }
+    }
 }
 
 .template-terminal {
@@ -128,14 +140,35 @@
     gap: rem2(12px);
     flex-wrap: wrap;
     align-items: center;
+    position: relative;
+    padding-top: 3.25rem;
     margin: rem2(25px) 0;
-    border-radius: rem2(8px);
+    border-radius: var(--app-radius-md);
     background-color: #060e2d;
     border: 1px solid rgba(140, 133, 255, 0.25);
     box-shadow: 0 16px 40px -24px rgba(6, 14, 45, 0.9);
 
+    // Window-chrome dots, so the snippet reads as a terminal at a glance.
+    &::before {
+        top: 1.25rem;
+        left: 1.5rem;
+        width: 0.625rem;
+        height: 0.625rem;
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        background-color: #ff5f57;
+        box-shadow: 1rem 0 0 #febc2e, 2rem 0 0 #28c840;
+    }
+
     @include lt-md {
         padding: 1.5rem;
+        padding-top: 2.75rem;
+
+        &::before {
+            top: 1rem;
+            left: 1.25rem;
+        }
     }
 
     span {
@@ -162,6 +195,13 @@
     .delayed {
         left: 0;
         position: absolute;
+    }
+
+    // With reduced motion the word swap stops, so only the first word of each pair stays.
+    @media (prefers-reduced-motion: reduce) {
+        .delayed {
+            display: none;
+        }
     }
 
     .a-2 {
@@ -203,31 +243,5 @@
             opacity: 0;
             transform: translateY(15px);
         }
-    }
-}
-
-.template-link {
-    display: flex;
-    cursor: pointer;
-    font-weight: 700;
-    align-items: center;
-    font-size: rem2(14px);
-    flex-flow: row nowrap;
-    line-height: rem2(32px);
-    transition: all 0.2s linear;
-    color: $bit-color-primary;
-
-    .template-link-arrow {
-        width: rem2(16px);
-        height: rem2(16px);
-        margin-left: rem2(8px);
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-image: url('/images/arrow-right-blue-icon.svg');
-    }
-
-    &:hover {
-        transform: translateX(5px);
     }
 }

@@ -24,13 +24,13 @@
         }
             #bit-bswup .bswup-container circle {
                 fill: none;
-                stroke: #e0e0e0;
+                stroke: var(--bit-clr-brd-ter);
                 stroke-width: 0.2rem;
                 transform-origin: 50% 50%;
                 transform: rotate(-90deg);
             }
                 #bit-bswup .bswup-container circle:last-child {
-                    stroke: #1b6ec2;
+                    stroke: var(--bit-clr-pri);
                     transition: stroke-dasharray 0.05s ease-in-out;
                     stroke-dasharray: calc(3.141 * var(--bit-bswup-percent, 0%) * 0.8), 500%;
                 }

@@ -16,42 +16,19 @@
     min-height: rem2(48px);
     line-height: rem2(24px);
     margin-bottom: rem2(32px);
+    tab-size: 4;
     padding: rem2(12px) rem2(48px) rem2(12px) rem2(16px);
+    border-radius: var(--app-radius-md);
+    border: 1px solid var(--app-hairline);
     background-color: $bit-color-background-secondary;
-    border-left: rem2(2px) solid $bit-color-primary;
-    font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+    font-family: "Cascadia Code", "Cascadia Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    // Thin scrollbars in the palette's own colors: the old fixed white webkit track glared on the
+    // dark theme.
+    scrollbar-width: thin;
+    scrollbar-color: $bit-color-border-secondary transparent;
 
     &.copy-on-click {
         cursor: pointer;
-    }
-
-    &::-webkit-scrollbar {
-        width: rem2(8px);
-        background-color: $White;
-    }
-
-    &::-webkit-scrollbar-track {
-        background-color: $White;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        background-color: #c8c6c4;
-        border-radius: rem2(8px);
-        border: rem2(4px) solid #c8c6c4;
-    }
-
-    &::-webkit-scrollbar-button {
-        display: none;
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-        border-radius: rem2(8px);
-        background-color: $Gray2;
-        border: rem2(4px) solid $Gray2;
-    }
-
-    &::-webkit-scrollbar:horizontal {
-        height: rem2(8px);
     }
 }
 
@@ -63,6 +40,7 @@
     height: rem2(32px);
     position: absolute;
     padding-left: rem2(4px);
+    border-radius: var(--app-radius-sm);
     transition: width 0.2s ease-in-out;
 
     &:hover {

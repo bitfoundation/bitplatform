@@ -136,7 +136,7 @@
     }
 }
 
-.stepper-compact {
+::deep .stepper-compact {
     display: none;
     font-size: rem2(14px);
     font-weight: 600;
@@ -163,12 +163,6 @@
 
     &:hover {
         text-decoration-thickness: 2px;
-    }
-
-    &:focus-visible {
-        outline: 2px solid $bit-color-primary;
-        outline-offset: 2px;
-        border-radius: 2px;
     }
 }
 
@@ -257,7 +251,7 @@
     max-width: rem2(420px);
 }
 
-.name-hint {
+::deep .name-hint {
     margin: 0;
     font-size: rem2(14px);
     line-height: 1.5;
@@ -456,10 +450,6 @@
     flex-wrap: wrap;
     gap: rem2(8px) rem2(20px);
     font-size: rem2(14px);
-
-    a {
-        color: $bit-color-primary;
-    }
 }
 
 .device-web {
@@ -477,11 +467,11 @@
     color: $bit-color-success;
 }
 
-.device-web-title {
+::deep .device-web-title {
     font-weight: 600;
 }
 
-.device-web-text {
+::deep .device-web-text {
     font-size: rem2(14px);
     color: $bit-color-foreground-secondary;
 }
@@ -500,12 +490,12 @@
     border: 1px dashed $bit-color-border-secondary;
 }
 
-.device-off-title {
+::deep .device-off-title {
     font-weight: 600;
     color: $bit-color-foreground-secondary;
 }
 
-.device-off-text {
+::deep .device-off-text {
     font-size: rem2(14px);
     line-height: 1.45;
     color: $bit-color-foreground-secondary;
@@ -573,7 +563,7 @@
     margin-inline-start: auto;
 }
 
-.reassure {
+::deep .reassure {
     margin: 0;
     font-size: rem2(14px);
     color: $bit-color-foreground-secondary;

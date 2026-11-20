@@ -6,14 +6,14 @@
 
 <section class="cp-getit" aria-labelledby="cp-getit-title">
     <div class="cp-getit-head">
-        <h2 class="cp-getit-title" id="cp-getit-title">Create @answers.DisplayName on your computer</h2>
-        <p class="cp-getit-lead">One line, pasted once. It sets everything up on your computer and opens your app.</p>
+        <BitText Typography="BitTypography.Inherit" Element="h2" Class="cp-getit-title" Id="cp-getit-title">Create @answers.DisplayName on your computer</BitText>
+        <BitText Typography="BitTypography.Inherit" Element="p" Class="cp-getit-lead">One line, pasted once. It sets everything up on your computer and opens your app.</BitText>
     </div>
 
     <div class="cp-phone-note">
         <div class="cp-phone-note-text">
             <b>On your phone?</b>
-            <span>Your project is created on a computer: Windows, Mac or Linux. Send this page to yourself and open it there. Your answers come along.</span>
+            <BitText Typography="BitTypography.Inherit" Element="span">Your project is created on a computer: Windows, Mac or Linux. Send this page to yourself and open it there. Your answers come along.</BitText>
             <div class="cp-phone-actions">
                 <BitButton Size="BitSize.Small" Href="@MailLink">Email it to me</BitButton>
                 <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" OnClick="CopyLink">@(isLinkCopied ? "Link copied" : "Copy link")</BitButton>
@@ -29,8 +29,8 @@
                 <div class="cp-line-box">
                     <CodeBox CopyOnClick OnCopy="RecordCopiedLine">@Words(answers.Line)</CodeBox>
                 </div>
-                <span>It runs the bit CLI, which the <a href="/templates/getting-started">Getting started</a> page installs.</span>
-                <span class="cp-line-safety">Copy this line only from bitplatform.dev. Check the address bar before you do.</span>
+                <BitText Typography="BitTypography.Inherit" Element="span">It runs the bit CLI, which the <BitLink Href="/templates/getting-started">Getting started</BitLink> page installs.</BitText>
+                <BitText Typography="BitTypography.Inherit" Element="span" Class="cp-line-safety">Copy this line only from bitplatform.dev. Check the address bar before you do.</BitText>
                 <div>
                     <BitButton Variant="BitVariant.Text" Size="BitSize.Small"
                                IconName="ChevronDownSmall"
@@ -47,8 +47,8 @@
                         }
                     </ol>
                     <span class="cp-plan-links">
-                        <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli" target="_blank" rel="noopener">Read the bit CLI's code before you run it</a>
-                        <button type="button" class="help-link" @onclick="() => State.OpenHelp(CreateProjectHelpTopic.Line)">Is it safe?</button>
+                        <BitLink Href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Toolings/Cli" Target="_blank">Read the bit CLI's code before you run it</BitLink>
+                        <BitLink Class="help-link" OnClick="() => State.OpenHelp(CreateProjectHelpTopic.Line)">Is it safe?</BitLink>
                     </span>
                 }
             </div>
@@ -57,7 +57,7 @@
             <span class="cp-howto-number" aria-hidden="true">2</span>
             <div class="cp-howto-text">
                 <b>Run it in a terminal</b>
-                <span>When a tool needs it, Windows asks once for administrator permission, and macOS and Linux ask once for your password.</span>
+                <BitText Typography="BitTypography.Inherit" Element="span">When a tool needs it, Windows asks once for administrator permission, and macOS and Linux ask once for your password.</BitText>
             </div>
         </li>
         <li>
@@ -66,18 +66,18 @@
                 <b>Look around while it works</b>
                 @if (answers.Devices.Count > 0)
                 {
-                    <span>In about @answers.WebReadyMinutes minutes your app opens in your browser, with its landing page and its Workbench. The @CreateProjectNames.ListOf(answers.Devices) tools are set up after that while you look around, then VS Code opens your project, with Claude Code ready for your first prompt.</span>
+                    <BitText Typography="BitTypography.Inherit" Element="span">In about @answers.WebReadyMinutes minutes your app opens in your browser, with its landing page and its Workbench. The @CreateProjectNames.ListOf(answers.Devices) tools are set up after that while you look around, then VS Code opens your project, with Claude Code ready for your first prompt.</BitText>
                 }
                 else
                 {
-                    <span>In about @answers.WebReadyMinutes minutes your app opens in your browser, with its landing page and its Workbench. Then VS Code opens your project, with Claude Code ready for your first prompt.</span>
+                    <BitText Typography="BitTypography.Inherit" Element="span">In about @answers.WebReadyMinutes minutes your app opens in your browser, with its landing page and its Workbench. Then VS Code opens your project, with Claude Code ready for your first prompt.</BitText>
                 }
             </div>
         </li>
     </ol>
 
     <div class="cp-needs">
-        <h3 class="cp-needs-title">What you'll need</h3>
+        <BitText Typography="BitTypography.Inherit" Element="h3" Class="cp-needs-title">What you'll need</BitText>
         <ul>
             <li>@ComputerNeed(answers)</li>
             @if (answers.HasGitHubRepo)

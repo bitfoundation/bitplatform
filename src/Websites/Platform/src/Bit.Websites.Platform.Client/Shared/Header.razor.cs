@@ -13,54 +13,19 @@ public partial class Header : IDisposable
     private ProductSubMenu? openMobileSubMenu;
 
 
-    private sealed record ProductMenuItem(string Title, string Description, string Url, bool External = false, bool Disabled = false);
+    private sealed record ProductSubMenu(string Id, string Title, string Description, ProductLink[] Items);
 
-    private sealed record ProductSubMenu(string Id, string Title, string Description, ProductMenuItem[] Items);
+    // The entries themselves live in ProductCatalog, shared with the products page. The utilities and
+    // toolings sit in submenus, so the root of the Products menu stays focused on the main products.
+    private static readonly ProductLink[] mainProductMenuItems = ProductCatalog.Main;
 
-    private static readonly ProductMenuItem[] mainProductMenuItems =
-    [
-        new("Boilerplate", "Feature-rich project template", Urls.Templates),
-        new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),
-        new("Butil", "Blazor utils for browser APIs", Urls.Butil, External: true),
-        new("Bswup", "Blazor PWA on steroids", Urls.Bswup, External: true),
-        new("Brouter", "Modern declarative Blazor router", Urls.Brouter, External: true),
-    ];
-
-    // Listed under the Utilities submenu (the projects under src/Utilities), so the root of the
-    // Products menu stays focused on the main products.
-    private static readonly ProductMenuItem[] utilityMenuItems =
-    [
-        new("Bmotion", "Blazor-native animation library", Urls.Bmotion, External: true),
-        new("Bmage", "Blazor-native image processing", Urls.Bmage, External: true),
-        new("Bsqlite", "SQLite and EF Core in the browser", Urls.Bsqlite, External: true),
-        new("Bink", "Blazor-native drawing and ink", Urls.Bink, External: true),
-        new("Balette", "Blazor-native command palette", Urls.Balette, External: true),
-        new("BbScanner", "Blazor-native barcode scanner", Urls.BbScanner, External: true),
-        new("Bdnd", "Declarative drag and drop for Blazor", Urls.Bdnd, External: true),
-        new("BlazeDb", "Memory-first database for Blazor", Urls.BlazeDb, External: true),
-        new("Blow", "Blazor-native node-based editors", Urls.Blow, External: true),
-        new("Borm", "Schema-driven forms for Blazor", Urls.Borm, External: true),
-        new("Bcrdt", "Real-time collaborative editing for Blazor", Urls.Bcrdt, External: true),
-        new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
-        new("Bortable", "Blazor-native sortable lists", Urls.Bortable, External: true),
-        new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
-        new("Belemetry", "OpenTelemetry for every Blazor app", Urls.Belemetry, External: true),
-        new("Bheadless", "Accessible, unstyled Blazor UI primitives", Urls.Bheadless, External: true),
-    ];
-
-    private static readonly ProductMenuItem[] toolingMenuItems =
-    [
-        new("bit CLI", "Ready-to-run projects in one command", Urls.Cli),
-        new("Minifier", "Smaller Blazor WebAssembly downloads", Urls.Minifier),
-        new("BlazorES2019", "Blazor apps on older browsers", Urls.BlazorES2019),
-        new("Code Analyzers", "Best practices checked as you type", Urls.CodeAnalyzers),
-        new("Source Generators", "Less code to write and review", Urls.SourceGenerators),
-    ];
+    // Closes the root list, so the products page is reachable from every page, not only the home page.
+    private static readonly ProductLink allProductsMenuItem = new("All products", "Every product, utility and tooling", Urls.Products);
 
     private static readonly ProductSubMenu[] productSubMenus =
     [
-        new("utilities", "Utilities", $"{utilityMenuItems.Length} focused Blazor libraries", utilityMenuItems),
-        new("toolings", "Toolings", $"{toolingMenuItems.Length} tools to build apps with", toolingMenuItems),
+        new("utilities", "Utilities", $"{ProductCatalog.Utilities.Length} focused Blazor libraries", ProductCatalog.Utilities),
+        new("toolings", "Toolings", $"{ProductCatalog.Toolings.Length} tools to build apps with", ProductCatalog.Toolings),
     ];
 
 
@@ -189,30 +154,24 @@ public partial class Header : IDisposable
     private EventCallback<MouseEventArgs> ProductsMenuMouseEnterCallback =>
         isProductsMenuForceClosed ? EventCallback.Factory.Create<MouseEventArgs>(this, WrapHandled(HandleProductsMenuMouseEnter)) : default;
 
-    private bool IsMenuItemActive(ProductMenuItem item)
+    private bool IsMenuItemActive(ProductLink item)
     {
         if (item.Url == Urls.Templates) return navMenuService.IsTemplateDocRoute;
 
-        return item.External is false && navMenuService.CurrentUrl == item.Url;
+        return item.External is false && navMenuService.IsCurrentUrl(item.Url);
     }
 
     private bool IsSubMenuActive(ProductSubMenu subMenu) => subMenu.Items.Any(IsMenuItemActive);
 
     private string GetActiveRouteName()
     {
-        var routeName = navMenuService.CurrentUrl switch
-        {
-            Urls.Home => "Home",
-            Urls.Demos => "Demos",
-            Urls.Pricing => "Pricing",
-            Urls.AboutUs => "About us",
-            Urls.ContactUs => "Contact us",
-            _ => null,
-        };
+        if (navMenuService.IsCurrentUrl(Urls.Home)) return "Home";
+        if (navMenuService.IsCurrentUrl(Urls.Demos)) return "Demos";
+        if (navMenuService.IsCurrentUrl(Urls.Pricing)) return "Pricing";
+        if (navMenuService.IsCurrentUrl(Urls.AboutUs)) return "About us";
+        if (navMenuService.IsCurrentUrl(Urls.ContactUs)) return "Contact us";
 
-        if (routeName is not null) return routeName;
-
-        if (navMenuService.CurrentUrl.StartsWith(Urls.NotFound)) return "404";
+        if (navMenuService.CurrentUrl.StartsWith(Urls.NotFound, StringComparison.OrdinalIgnoreCase)) return "404";
 
         return "Products";
     }

@@ -160,7 +160,7 @@
                 <BitAiCodeBlockView Code="@AiSamples.ShellCode" Language="bash" ShowHeader="false" />
             </StateSample>
             <StateSample Name="@nameof(BitAiMessageStatus.Streaming)">
-                <BitAiCodeBlockView Code="@AiSamples.StreamingCode" Language="json" IsStreaming />
+                <BitAiCodeBlockView Code="@AiSamples.StreamingCode" Language="json" Streaming />
             </StateSample>
             <StateSample Name="@Localizer[nameof(WorkbenchStrings.ThemeAiLineNumbers)]">
                 <BitAiOptionsProvider UiOptions="lineNumbersOptions">
@@ -441,7 +441,7 @@
 
         <ComponentStates Name="BitAiStreamingMarkdown" Wide>
             <StateSample Name="@nameof(BitAiMessageStatus.Streaming)">
-                <BitAiStreamingMarkdown Text="@samples.StreamingMarkdownText" IsStreaming />
+                <BitAiStreamingMarkdown Text="@samples.StreamingMarkdownText" Streaming />
             </StateSample>
             <StateSample Name="@nameof(BitAiMessageStatus.Complete)">
                 <BitAiStreamingMarkdown Text="@samples.MarkdownText" />

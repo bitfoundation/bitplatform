@@ -39,9 +39,14 @@
     display: flex;
 }
 
-.image {
+.image-container ::deep .image {
     @include Image;
     width: rem2(500px);
+
+    img {
+        width: 100%;
+        height: auto;
+    }
 }
 
 .video-container {
@@ -56,10 +61,6 @@
 }
 
 ::deep {
-    a {
-        color: $bit-color-primary;
-    }
-
     .link-btn {
         padding: 0;
         width: 2rem;

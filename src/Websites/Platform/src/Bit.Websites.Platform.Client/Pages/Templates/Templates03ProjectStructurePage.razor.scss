@@ -50,11 +50,13 @@
     }
 }
 
-.image {
+.row-section-container ::deep .image {
     @include Image;
     width: rem2(300px);
-}
+    flex-shrink: 0;
 
-::deep a {
-    color: $bit-color-primary;
+    img {
+        width: 100%;
+        height: auto;
+    }
 }

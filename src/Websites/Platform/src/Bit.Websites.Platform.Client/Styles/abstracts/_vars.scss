@@ -5,3 +5,10 @@ $HeaderSecondRowHeight: 44px;
 // The site-wide easing curve. Use this instead of literal cubic-bezier/ease values so all
 // components animate with one consistent feel and the motion can be tuned in one place.
 $MotionEase: cubic-bezier(.4, 0, .2, 1);
+
+// The site's font stacks. Segoe UI Variable is Windows 11's own variable face (Display for large
+// headings, Text for everything else); system-ui picks the platform UI font elsewhere. All local -
+// no web font download on the critical path.
+$FontFallback: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+$FontText: "Segoe UI Variable Text", $FontFallback;
+$FontDisplay: "Segoe UI Variable Display", $FontFallback;

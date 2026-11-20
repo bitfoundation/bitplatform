@@ -11,11 +11,11 @@
     <span class="answer-mark square" aria-hidden="true"></span>
     <span class="answer-body">
         <span class="answer-head">
-            <span class="answer-text">@Label</span>
+            <BitText Typography="BitTypography.Inherit" Element="span" Class="answer-text">@Label</BitText>
         </span>
         @if (HasHint)
         {
-            <span class="answer-hint" id="@hintId">@Description @ChildContent</span>
+            <BitText Typography="BitTypography.Inherit" Element="span" Class="answer-hint" Id="@hintId">@Description @ChildContent</BitText>
         }
     </span>
 </div>

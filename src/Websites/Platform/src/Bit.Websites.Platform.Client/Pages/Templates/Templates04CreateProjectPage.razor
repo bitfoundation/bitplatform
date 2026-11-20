@@ -30,9 +30,9 @@
                             </li>
                         }
                     </ol>
-                    <span class="stepper-compact">Step @(CurrentStep + 1) of @stepTitles.Length: @stepTitles[CurrentStep]</span>
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="stepper-compact">Step @(CurrentStep + 1) of @stepTitles.Length: @stepTitles[CurrentStep]</BitText>
                 </nav>
-                <button type="button" class="help-link" @onclick="() => state.OpenHelp(CreateProjectHelpTopic.General)">Questions?</button>
+                <BitLink Class="help-link" OnClick="() => state.OpenHelp(CreateProjectHelpTopic.General)">Questions?</BitLink>
             </div>
 
             <div class="step" @key="CurrentStep" tabindex="-1" @ref="stepElement">
@@ -51,14 +51,14 @@
                             <div aria-live="polite">
                                 @if (Answers.IsNameValid)
                                 {
-                                    <p class="name-hint">This names your project's folder and code, so it takes English letters and numbers, with no spaces, starting with a letter. The name people see in the app can be in any language, and can change any time.</p>
+                                    <BitText Typography="BitTypography.Inherit" Element="p" Class="name-hint">This names your project's folder and code, so it takes English letters and numbers, with no spaces, starting with a letter. The name people see in the app can be in any language, and can change any time.</BitText>
                                 }
                                 else
                                 {
                                     <div class="name-invalid">
                                         <BitIcon IconName="ErrorBadge" Color="BitColor.Error" Class="name-invalid-icon" />
                                         <div class="name-invalid-text">
-                                            <span>This name can't name a project: use English letters and numbers, with no spaces, starting with a letter. The name people see in the app can still be in any language: ask your AI to change it once your project is open.</span>
+                                            <BitText Typography="BitTypography.Inherit" Element="span">This name can't name a project: use English letters and numbers, with no spaces, starting with a letter. The name people see in the app can still be in any language: ask your AI to change it once your project is open.</BitText>
                                             <BitButton Variant="BitVariant.Outline" Size="BitSize.Small" OnClick="() => state.Rename(Answers.SuggestedName)">Use @Answers.SuggestedName</BitButton>
                                         </div>
                                     </div>
@@ -78,8 +78,8 @@
                             <CreateProjectChoices TValue="CreateProjectStart" AriaLabel="What should it start with?"
                                                   Items="startChoices" Value="Answers.Start" OnChange="start => state.StartWith(start)" />
                             <div class="demo-links">
-                                <a href="https://adminpanel.bitplatform.dev" target="_blank" rel="noopener">See the admin panel live</a>
-                                <a href="https://sales.bitplatform.dev" target="_blank" rel="noopener">See the store live</a>
+                                <BitLink Href="https://adminpanel.bitplatform.dev" Target="_blank">See the admin panel live</BitLink>
+                                <BitLink Href="https://sales.bitplatform.dev" Target="_blank">See the store live</BitLink>
                             </div>
                         </CreateProjectQuestion>
                         <CreateProjectQuestion Title="Who will use it?" Topic="CreateProjectHelpTopic.Customers">
@@ -114,10 +114,10 @@
                                                Lead="Your project has all five apps: web, Android, iPhone and iPad, Windows and Mac. Its pipeline builds every one of them, even in a private GitHub repository, on GitHub's free minutes, which are limited each month. If you like, set some up on your computer too, so trying them as you build uses none of those minutes. You can add the others any time."
                                                Topic="CreateProjectHelpTopic.Devices">
                             <div class="group">
-                                <h3 class="group-prompt">Your computer</h3>
+                                <BitText Typography="BitTypography.Inherit" Element="h3" Class="group-prompt">Your computer</BitText>
                                 @if (ComputerHint is not null)
                                 {
-                                    <p class="group-hint">@ComputerHint</p>
+                                    <BitText Typography="BitTypography.Inherit" Element="p" Class="group-hint">@ComputerHint</BitText>
                                 }
                                 <CreateProjectChoices TValue="CreateProjectComputer" AriaLabel="Your computer" Horizontal
                                                       Items="computerChoices" Value="Answers.Computer" OnChange="computer => state.PickComputer(computer)" />
@@ -126,8 +126,8 @@
                             <div class="device-web">
                                 <BitIcon IconName="Accept" Class="device-web-icon" />
                                 <div>
-                                    <div class="device-web-title">Web app</div>
-                                    <div class="device-web-text">Always ready. You can open it on your phone too, in its browser, through a link your project gives you.</div>
+                                    <BitText Typography="BitTypography.Inherit" Element="div" Class="device-web-title">Web app</BitText>
+                                    <BitText Typography="BitTypography.Inherit" Element="div" Class="device-web-text">Always ready. You can open it on your phone too, in its browser, through a link your project gives you.</BitText>
                                 </div>
                             </div>
 
@@ -148,8 +148,8 @@
                                     else
                                     {
                                         <div class="device-off">
-                                            <div class="device-off-title">@CreateProjectNames.Of(device)</div>
-                                            <div class="device-off-text">@DeviceNote(device)</div>
+                                            <BitText Typography="BitTypography.Inherit" Element="div" Class="device-off-title">@CreateProjectNames.Of(device)</BitText>
+                                            <BitText Typography="BitTypography.Inherit" Element="div" Class="device-off-text">@DeviceNote(device)</BitText>
                                         </div>
                                     }
                                 }
@@ -157,7 +157,7 @@
 
                             <div class="devices-note">
                                 <BitIcon IconName="Info" Color="BitColor.Info" Class="devices-note-icon" />
-                                <span>Each app you set up on your computer costs a bigger download and an install. In return, trying it there costs you nothing.</span>
+                                <BitText Typography="BitTypography.Inherit" Element="span">Each app you set up on your computer costs a bigger download and an install. In return, trying it there costs you nothing.</BitText>
                             </div>
                         </CreateProjectQuestion>
                         break;
@@ -178,7 +178,7 @@
                                 <CreateProjectQuestion Title="Where should your data live?" Topic="CreateProjectHelpTopic.Database" HeadingElement="h3">
                                     @if (Answers.IsTry)
                                     {
-                                        <p class="question-lead">A quick try keeps your data in one file (SQLite), so there's no database to set up. Pick “My real product” to choose a database.</p>
+                                        <BitText Typography="BitTypography.Inherit" Element="p" Class="question-lead">A quick try keeps your data in one file (SQLite), so there's no database to set up. Pick “My real product” to choose a database.</BitText>
                                     }
                                     else
                                     {
@@ -233,7 +233,7 @@
                                        Class="@(state.IsSuperTechnicalOpen ? "more-toggle is-open" : "more-toggle")">@SuperTechnicalSummary</BitButton>
                             @if (state.IsSuperTechnicalOpen)
                             {
-                                <p class="question-lead">The project template's other options, each set to its default. Most projects never change them, and your AI can change any of them later.</p>
+                                <BitText Typography="BitTypography.Inherit" Element="p" Class="question-lead">The project template's other options, each set to its default. Most projects never change them, and your AI can change any of them later.</BitText>
 
                                 @foreach (var option in superTechnicalChoicesBeforeSwitches)
                                 {
@@ -281,7 +281,7 @@
             </div>
             @if (CurrentStep < LastStep)
             {
-                <p class="reassure">Not sure? Keep the recommended answers. You can change anything later by asking your AI.</p>
+                <BitText Typography="BitTypography.Inherit" Element="p" Class="reassure">Not sure? Keep the recommended answers. You can change anything later by asking your AI.</BitText>
             }
         </section>
 

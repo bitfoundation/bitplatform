@@ -27,19 +27,18 @@
     @include ImageContainer;
 }
 
-.image {
+.image-container ::deep .image {
     @include Image;
     width: rem2(500px);
+
+    img {
+        width: 100%;
+        height: auto;
+    }
 }
 
 .video-container {
     width: 100%;
     display: flex;
     justify-content: center;
-}
-
-::deep {
-    a {
-        color: $bit-color-primary;
-    }
 }

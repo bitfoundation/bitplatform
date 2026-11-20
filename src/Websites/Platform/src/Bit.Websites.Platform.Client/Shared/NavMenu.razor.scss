@@ -52,7 +52,7 @@
     inset: 0;
     z-index: 1101;
     position: fixed;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--bit-clr-bg-overlay);
 }
 
 .search-box-container {
