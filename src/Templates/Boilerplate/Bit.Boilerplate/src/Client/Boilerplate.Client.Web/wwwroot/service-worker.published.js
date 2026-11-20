@@ -74,10 +74,6 @@ self.assetsExclude = [
     // The standalone app's css bundle; Server.Web serves that css inside its own bundle below instead.
     ...(isServerHosted ? [/Boilerplate\.Client\.Web\.styles\.css$/, /^_framework\/blazor\.webassembly\.js$/] : [])
 ];
-// Every asset here is downloaded before a new version installs, and one that answers 404 stops the install for good.
-// Server.Web's stylesheet imports a bundle per project that has scoped styles: the build lists those under _content
-// itself, and this project's own (Boilerplate.Client.Web.bundle.scp.css) belongs here only while a .razor.scss exists in
-// it. ServiceWorkerAssetsTests checks this list against what the server serves.
 self.externalAssets = [
     {
         "url": "/"

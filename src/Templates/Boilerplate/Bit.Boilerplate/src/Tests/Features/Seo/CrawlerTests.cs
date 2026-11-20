@@ -4,9 +4,9 @@ namespace Boilerplate.Tests.Features.Seo;
 
 /// <summary>
 /// What a search engine or an AI agent meets besides a page's own tags: <c>llms.txt</c> and <c>sitemap.xml</c> list the
-/// public pages only, each under a url that answers without a redirect; the links of a public page carry its culture; an
-/// unknown address answers 404 where it was asked; a page has one canonical address and an alternate per language; and
-/// <c>/.well-known/security.txt</c> is served once a contact is configured.
+/// public pages only, each under a url that answers without a redirect; the links of a public page carry its culture; a
+/// page has one canonical address and an alternate per language; and <c>/.well-known/security.txt</c> is served once a
+/// contact is configured.
 /// </summary>
 [TestClass, TestCategory("IntegrationTest"), TestCategory("SEO")]
 public partial class CrawlerTests
@@ -141,42 +141,6 @@ public partial class CrawlerTests
     }
 
     /// <summary>
-    /// An unknown address answers 404 where it was asked, with the not-found page in the address's culture. It took three
-    /// redirects: to /en-US/pricing, to /not-found?url=..., then to /en-US/not-found?url=....
-    /// </summary>
-    [TestMethod, TestCategory("PreRendering")]
-    public async Task AnUnknownAddress_Should_Answer404_WhereItWasAsked()
-    {
-        if (CultureInfoManager.InvariantGlobalization)
-        {
-            Assert.Inconclusive("A culture-prefixed url resolves to no culture on an invariant globalization build.");
-            return;
-        }
-
-        await using var server = await StartPrerenderingServer();
-        using var httpClient = NoRedirectClient(server);
-
-        var defaultCulture = CultureInfoManager.DefaultCulture.Name;
-
-        foreach (var (path, culture) in new[] { ("/pricing", defaultCulture), ($"/{defaultCulture}/pricing", defaultCulture), ("/fa-IR/no-such-page/really", "fa-IR"), ($"/{defaultCulture}{PageUrls.NotFound}", defaultCulture) })
-        {
-            using var response = await httpClient.GetAsync(path, TestContext.CancellationToken);
-            var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
-
-            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, $"{path} answers 404 itself, not {(int)response.StatusCode} {response.Headers.Location}.");
-            Assert.Contains($"<html lang=\"{culture}\"", html, $"{path}'s not-found page is in {culture}.");
-            Assert.Contains(AppStrings.ResourceManager.GetString(nameof(AppStrings.NotFoundText), CultureInfoManager.GetCultureInfo(culture))!, html, $"{path} shows the not-found page.");
-            Assert.IsTrue(response.Headers.TryGetValues("X-Robots-Tag", out var robots) && robots.Contains("noindex"), $"{path} isn't to be indexed.");
-        }
-
-        // A page asked for without its culture still goes to it, as before
-        using var terms = await httpClient.GetAsync(PageUrls.Terms, TestContext.CancellationToken);
-        Assert.AreEqual(HttpStatusCode.Found, terms.StatusCode);
-        Assert.IsNotNull(terms.Headers.Location);
-        Assert.AreEqual($"/{defaultCulture}{PageUrls.Terms}", terms.Headers.Location.OriginalString);
-    }
-
-    /// <summary>
     /// A page answers with a trailing slash too, as routing ignores it, but names the address without it as canonical, so
     /// it has one address. The home page keeps its slash. Each language also has a language-only hreflang, so a Spanish
     /// reader in Mexico gets the Spanish page rather than x-default's.
@@ -229,7 +193,10 @@ public partial class CrawlerTests
             using var httpClient = NoRedirectClient(server);
 
             using var response = await httpClient.GetAsync(".well-known/security.txt", TestContext.CancellationToken);
-            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, "With no contact there is nobody to name, so there is no security.txt.");
+            // With no contact there is nobody to name, so the address is an unknown one, sent to the not-found page
+            Assert.AreEqual(HttpStatusCode.Found, response.StatusCode, "With no contact there is nobody to name, so there is no security.txt.");
+            Assert.IsNotNull(response.Headers.Location);
+            Assert.StartsWith($"{PageUrls.NotFound}?", response.Headers.Location.OriginalString);
         }
 
         await using (var server = new AppTestServer())

@@ -2,8 +2,8 @@ namespace Boilerplate.Tests.E2E.Features.ErrorPages;
 
 /// <summary>
 /// What a prerendering deployment answers before any WebAssembly runs - a crawler, a link preview, a browser with
-/// scripts off. Server.Web's Handle40XStatusCodes redirects Blazor's bodiless 401 to NotAuthorizedPage, answers a 404
-/// with NotFoundPage at the address that was asked for, and keeps the status code on them.
+/// scripts off. Server.Web's Handle40XStatusCodes redirects Blazor's bodiless 401/404 to NotAuthorizedPage /
+/// NotFoundPage and keeps the status code on them.
 /// <para>
 /// AdminPanel is not among the rows: cd.adminpanel.demo.yml does not set <c>WebAppRender.PrerenderEnabled</c>, so it
 /// serves a shell and only the client router knows, once WebAssembly is up, that a route is missing or needs an
@@ -26,7 +26,7 @@ public partial class ErrorPageStatusCodeTests
         var html = WebUtility.HtmlDecode(await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode, $"{app} answered {response.RequestMessage!.RequestUri}.");
-        Assert.AreEqual("/e2e/route/that-does-not-exist", response.RequestMessage!.RequestUri!.AbsolutePath, "The 404 is answered where it was asked, with no redirect on the way.");
+        Assert.AreEqual(PageUrls.NotFound, PathWithoutCulture(response.RequestMessage!.RequestUri!), "The 404 is served from NotFoundPage's own url.");
         Assert.Contains(AppStrings.NotFoundText, html, $"{app}'s 404 carries no NotFoundPage markup - a status code with nothing to show.");
     }
 

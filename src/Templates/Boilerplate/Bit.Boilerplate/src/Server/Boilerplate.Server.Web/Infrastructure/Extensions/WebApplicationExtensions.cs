@@ -19,8 +19,7 @@ public static partial class WebApplicationExtensions
     extension(WebApplication app)
     {
         /// <summary>
-        /// Makes <c>/{culture}/...</c> the one url a Blazor page is served under, and answers 404 for an address whose first
-        /// segment a <c>{culture}</c> route parameter caught without being a culture: 302s <c>/about</c>,
+        /// Makes <c>/{culture}/...</c> the one url a Blazor page is served under: 302s <c>/about</c>,
         /// <c>/about?culture=fa-IR</c> and <c>/FA-ir/about</c> onto the canonical form. With the culture in the path
         /// the url alone identifies the language variant, which is what lets pre-rendered pages be cached on the CDN
         /// edge and in the browser (See <c>AppResponseCachePolicy</c>) while one purge by the bare path still clears
@@ -45,18 +44,6 @@ public static partial class WebApplicationExtensions
                     || request.Query.ContainsKey("no-prerender"))
                 {
                     await next(context);
-                    return;
-                }
-
-                // A route's optional {culture} captures any first segment, so /pricing matches the home page's
-                // {culture:nonfile?}/ with "pricing" for a culture. Such an address is no page at all: it answers 404 where
-                // it was asked (See Program.Handle40XStatusCodes) rather than redirecting to /en-US/pricing first, the
-                // first of three redirects an unknown address took on its way to a 404.
-                if (context.GetRouteValue("culture") is string { Length: > 0 } routeCulture && CultureInfoManager.GetCultureInfo(routeCulture) is null)
-                {
-                    context.SetEndpoint(null);
-                    context.Request.RouteValues.Clear();
-                    context.Response.StatusCode = StatusCodes.Status404NotFound;
                     return;
                 }
 
