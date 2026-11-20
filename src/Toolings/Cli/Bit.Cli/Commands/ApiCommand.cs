@@ -73,11 +73,10 @@ public static class ApiCommand
 
     private static async Task<int> RunAsync(CliServices cli, ApiProjectOptions options, ParseResult parseResult, bool build, bool requireRecorded, bool record, CancellationToken cancellationToken)
     {
-        var folder = options.Project.Folder(parseResult, cli);
-        var directory = ProjectContext.FindProjectDirectory(folder);
+        var directory = options.Project.ProjectDirectory(parseResult, cli, out var folder);
 
         if (directory is null || ProjectContext.FindProjectName(directory) is not { } name)
-            return cli.UsageError("not-a-project", $"{folder} isn't in a bit Boilerplate project: neither it nor a folder above it has a *.Web.slnf or *.slnx. Run bit api in the project's folder, or name it with {ProjectOptions.ProjectName}.");
+            return cli.UsageError("not-a-project", $"{ProjectOptions.NotInAProject(folder)} Run bit api in the project's folder, or name it with {ProjectOptions.ProjectName}.");
 
         var (parts, partsError) = options.Project.Read(parseResult, cli, directory);
 

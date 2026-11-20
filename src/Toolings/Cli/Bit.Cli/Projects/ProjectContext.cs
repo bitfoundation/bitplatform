@@ -116,16 +116,24 @@ public sealed partial class ProjectContext
 
     public string Relative(string path) => Path.GetRelativePath(Directory, path).Replace('\\', '/');
 
-    public static string? ProjectFileIn(string folder)
+    public static IReadOnlyList<string> ProjectFilesIn(string folder)
     {
         try
         {
-            return System.IO.Directory.Exists(folder) ? System.IO.Directory.EnumerateFiles(folder, "*.csproj").Order(StringComparer.Ordinal).FirstOrDefault() : null;
+            return System.IO.Directory.Exists(folder) ? [.. System.IO.Directory.EnumerateFiles(folder, "*.csproj").Order(StringComparer.Ordinal)] : [];
         }
         catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
         {
-            return null;
+            return [];
         }
+    }
+
+    public static string? ProjectFileIn(string folder)
+    {
+        var files = ProjectFilesIn(folder);
+        var named = Path.GetFileName(Path.TrimEndingDirectorySeparator(folder));
+
+        return files.FirstOrDefault(file => string.Equals(Path.GetFileNameWithoutExtension(file), named, StringComparison.OrdinalIgnoreCase)) ?? files.FirstOrDefault();
     }
 
     public static string? ReadTargetFramework(string directory, string name) => ReadTargetFrameworkOf(Path.Combine(directory, FindClientProject(directory, name, $"src/Client/{name}.Client.Core/{name}.Client.Core.csproj", ".Core.csproj")));
@@ -154,13 +162,20 @@ public sealed partial class ProjectContext
 
     public static string? FindProjectName(string directory)
     {
-        var filter = System.IO.Directory.EnumerateFiles(directory, "*.Web.slnf").FirstOrDefault();
+        try
+        {
+            var filter = System.IO.Directory.EnumerateFiles(directory, "*.Web.slnf").FirstOrDefault();
 
-        if (filter is not null)
-            return Path.GetFileName(filter)[..^".Web.slnf".Length];
+            if (filter is not null)
+                return Path.GetFileName(filter)[..^".Web.slnf".Length];
 
-        var solution = System.IO.Directory.EnumerateFiles(directory, "*.slnx").FirstOrDefault();
-        return solution is null ? null : Path.GetFileNameWithoutExtension(solution);
+            var solution = System.IO.Directory.EnumerateFiles(directory, "*.slnx").FirstOrDefault();
+            return solution is null ? null : Path.GetFileNameWithoutExtension(solution);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 
     public static string? FindProjectDirectory(string directory)

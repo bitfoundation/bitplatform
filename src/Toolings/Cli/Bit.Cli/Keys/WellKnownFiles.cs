@@ -17,13 +17,40 @@ public static class WellKnownFiles
 
     public const string DefaultPlace = "a wwwroot/.well-known folder under src/Client";
 
+    public static string NoneIn(ProjectContext project, string links) => project.Parts.WellKnown.Count > 0
+        ? $"bit found none in what {Option} names, so {links} won't verify."
+        : $"bit found none in {DefaultPlace}, so {links} won't verify. {Option} names its folder.";
+
+    public static (IReadOnlyList<string> Changed, IReadOnlyList<string> Unreadable) Change(IEnumerable<string> files, Func<string, bool> change)
+    {
+        var changed = new List<string>();
+        var unreadable = new List<string>();
+
+        foreach (var file in files)
+        {
+            try
+            {
+                if (change(file))
+                {
+                    changed.Add(file);
+                }
+            }
+            catch (Exception exp) when (exp is JsonException or IOException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                unreadable.Add(file);
+            }
+        }
+
+        return (changed, unreadable);
+    }
+
     public static IReadOnlyList<string> Folders(ProjectContext project) => project.Parts.WellKnown.Count > 0
         ? project.Parts.WellKnown
         : [.. ProjectContext.FilesUnder(Path.Combine(project.Directory, "src", "Client"), "*.json")
             .Where(file => Path.GetFileName(file) is AssetLinks or AppleAppSiteAssociation)
             .Select(file => Path.GetDirectoryName(file)!)
             .Where(folder => Path.GetFileName(folder) is ".well-known" && Path.GetFileName(Path.GetDirectoryName(folder)) is "wwwroot")
-            .Distinct(StringComparer.OrdinalIgnoreCase)];
+            .Distinct(StringComparer.Ordinal)];
 
     public static IReadOnlyList<string> Files(ProjectContext project, string fileName) => [.. Folders(project).Select(folder => Path.Combine(folder, fileName)).Where(File.Exists)];
 

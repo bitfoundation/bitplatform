@@ -452,9 +452,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         try
         {
             var appHost = string.Join('\n', ProjectContext.FilesUnder(project.AppHostDirectory, "*.cs").Select(ProjectContext.ReadText));
-            var webResources = project.ServerWebProjects.Select(web => AspireResource(appHost, web, "serverweb")).ToList();
+            var websGiven = project.Parts.ServerWeb.Count > 0;
+            var webResources = project.ServerWebProjects.Select(web => AspireResource(appHost, web, websGiven ? null : "serverweb", project.AppHostDirectory)).ToList();
+            var webResource = webResources[0] ?? (websGiven ? null : "serverweb");
 
-            foreach (var resource in webResources.Append(AspireResource(appHost, project.ServerApiProject, "serverapi")).OfType<string>().Distinct(StringComparer.Ordinal))
+            foreach (var resource in webResources.Append(AspireResource(appHost, project.ServerApiProject, project.Parts.ServerApi is null ? "serverapi" : null, project.AppHostDirectory)).OfType<string>().Distinct(StringComparer.Ordinal))
             {
                 if (await WaitUntilHealthyAsync(resource, containerProblem is null, progress, cancellationToken) is { } reason)
                     return StepResult.Warning($"Aspire started, {resource} didn't get healthy", reason, followUp);
@@ -472,7 +474,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             Running = new RunningProject
             {
                 DashboardUrl = DashboardUrlRegex().Match(start.Output) is { Success: true } dashboard ? dashboard.Groups["url"].Value : null,
-                AppUrl = await AspireResourceUrlAsync(webResources[0] ?? "serverweb", cancellationToken) ?? ReadLaunchUrl(ServerWebDirectory),
+                AppUrl = (webResource is null ? null : await AspireResourceUrlAsync(webResource, cancellationToken)) ?? ReadLaunchUrl(ServerWebDirectory),
                 StopAsync = async detached =>
                 {
                     if (detached is false || Runner.StartDetached(stop) is false)
@@ -485,7 +487,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             keep = true;
 
             var noAddress = Running.AppUrl is null
-                ? $"bit doesn't know the app's address: the AppHost has no resource of {project.Relative(project.ServerWebProjects[0])}. --server-web names Server.Web's .csproj."
+                ? $"bit doesn't know the app's address: {(webResources[0] is { } known ? $"Aspire names none for {known}" : $"the AppHost has no resource of {project.Relative(project.ServerWebProjects[0])}")}, and its launchSettings.json has none.{(project.Template is null ? " --server-web names Server.Web's .csproj." : "")}"
                 : null;
 
             return containerProblem is { } absent
@@ -504,15 +506,21 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     public async Task<StepResult> DotnetRunAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         const string skipped = "Didn't start the project";
-        string[] webs = [.. project.ServerWebProjects.Select(web => Path.GetDirectoryName(web)!)];
-        string[] servers = project.IsApiStandalone ? [project.ServerApiDirectory, .. webs] : webs;
-        var followUp = string.Join(" & ", servers.Select(server => $"dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, server))}"));
+        var websGiven = project.Parts.ServerWeb.Count > 0;
+        List<Server> servers = [.. project.ServerWebProjects.Select(web => new Server(Path.GetDirectoryName(web)!, websGiven ? web : Path.GetDirectoryName(web)!, "--server-web", websGiven))];
 
-        if (servers.FirstOrDefault(server => System.IO.Directory.Exists(server) is false) is { } absent)
-            return StepResult.Skipped(skipped, $"{project.Relative(absent)} isn't there") with { Hint = $"{(webs.Contains(absent) ? "--server-web" : "--server-api")} names the server's .csproj when it's somewhere else." };
+        if (project.IsApiStandalone)
+        {
+            servers.Insert(0, new Server(project.ServerApiDirectory, project.Parts.ServerApi ?? project.ServerApiDirectory, "--server-api", project.Parts.ServerApi is not null));
+        }
 
-        if (servers.FirstOrDefault(server => ReadLaunchUrl(server) is null) is { } missing)
-            return StepResult.Skipped(skipped, $"{Path.GetFileName(missing)} has no URL in its launchSettings.json");
+        var followUp = string.Join(" & ", servers.Select(server => $"dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, server.Run))}"));
+
+        if (servers.FirstOrDefault(server => System.IO.Directory.Exists(server.Directory) is false) is { } absent)
+            return StepResult.Skipped(skipped, $"{project.Relative(absent.Directory)} isn't there") with { Hint = project.Template is null ? $"{absent.Option} names the server's .csproj when it's somewhere else." : null };
+
+        if (servers.FirstOrDefault(server => ReadLaunchUrl(server.Directory) is null) is { } missing)
+            return StepResult.Skipped(skipped, $"{Path.GetFileName(missing.Directory)} has no URL in its launchSettings.json");
 
         var running = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var runs = new List<Task<ProcessResult?>>();
@@ -525,11 +533,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         foreach (var server in servers)
         {
-            var url = ReadLaunchUrl(server)!;
+            var url = ReadLaunchUrl(server.Directory)!;
             var run = RunUntilStoppedAsync(new ProcessSpec
             {
                 FileName = "dotnet",
-                Arguments = ["run", "--project", server, .. migrationAdded ? Array.Empty<string>() : ["--no-build"], .. project.BuildProperties.Select(p => $"--property:{p}")],
+                Arguments = ["run", "--project", server.Run, .. migrationAdded || server.Given ? Array.Empty<string>() : ["--no-build"], .. project.BuildProperties.Select(p => $"--property:{p}")],
                 WorkingDirectory = project.Directory,
                 Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
             }, running.Token);
@@ -540,7 +548,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             {
                 await StopAsync();
                 running.Dispose();
-                return StepResult.Warning($"Couldn't start {Path.GetFileName(server)}", reason, $"cd {ProcessSpec.Quote(project.Directory)} && {followUp}");
+                return StepResult.Warning($"Couldn't start {Path.GetFileName(server.Directory)}", reason, $"cd {ProcessSpec.Quote(project.Directory)} && {followUp}");
             }
         }
 
@@ -548,27 +556,29 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return StepResult.Succeeded("Started the project", Running.AppUrl);
     }
 
+    private sealed record Server(string Directory, string Run, string Option, bool Given);
+
     public RunningProject? Workbench { get; private set; }
 
     public RunningProject? LandingPage { get; private set; }
 
     public async Task<StepResult> WorkbenchRunAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var (result, running) = await RunUntilClosedAsync(project.WorkbenchDirectory, "Workbench", progress, cancellationToken);
+        var (result, running) = await RunUntilClosedAsync(project.WorkbenchDirectory, project.Parts.Workbench ?? project.WorkbenchDirectory, "Workbench", progress, cancellationToken);
         Workbench = running;
         return result;
     }
 
     public async Task<StepResult> LandingPageRunAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var (result, running) = await RunUntilClosedAsync(project.LandingPageDirectory, "landing page", progress, cancellationToken);
+        var (result, running) = await RunUntilClosedAsync(project.LandingPageDirectory, project.Parts.LandingPage ?? project.LandingPageDirectory, "landing page", progress, cancellationToken);
         LandingPage = running;
         return result;
     }
 
-    private async Task<(StepResult Result, RunningProject? Running)> RunUntilClosedAsync(string directory, string name, Action<string> progress, CancellationToken cancellationToken)
+    private async Task<(StepResult Result, RunningProject? Running)> RunUntilClosedAsync(string directory, string target, string name, Action<string> progress, CancellationToken cancellationToken)
     {
-        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, directory))}";
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, target))}";
 
         if (System.IO.Directory.Exists(directory) is false)
             return (StepResult.Skipped($"Didn't start the {name}", $"the project has no {name}"), null);
@@ -580,7 +590,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var run = RunUntilStoppedAsync(new ProcessSpec
         {
             FileName = "dotnet",
-            Arguments = ["run", "--project", directory, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
+            Arguments = ["run", "--project", target, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
             WorkingDirectory = project.Directory,
             Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
         }, running.Token);
@@ -797,14 +807,16 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private static string Join(IEnumerable<string> items) => string.Join(", ", items);
 
-    public static string? AspireResource(string appHost, string projectFile, string templateName)
+    public static string? AspireResource(string appHost, string projectFile, string? templateName, string? appHostDirectory = null)
     {
         var fileName = Path.GetFileName(projectFile);
         var typeName = NotInATypeNameRegex().Replace(Path.GetFileNameWithoutExtension(projectFile), "_");
+        var added = AddProjectRegex().Matches(appHost).Select(m => (Name: m.Groups["name"].Value, Path: m.Groups["path"].Value.Replace('\\', '/'))).ToList();
 
-        return AddProjectRegex().Matches(appHost).FirstOrDefault(m => string.Equals(Path.GetFileName(m.Groups["path"].Value.Replace('\\', '/')), fileName, StringComparison.OrdinalIgnoreCase))?.Groups["name"].Value
+        return (appHostDirectory is null ? null : added.FirstOrDefault(a => string.Equals(Path.GetFullPath(a.Path, appHostDirectory), Path.GetFullPath(projectFile), StringComparison.OrdinalIgnoreCase)).Name)
+            ?? added.FirstOrDefault(a => string.Equals(Path.GetFileName(a.Path), fileName, StringComparison.OrdinalIgnoreCase)).Name
             ?? AddProjectTypeRegex().Matches(appHost).FirstOrDefault(m => m.Groups["type"].Value == typeName)?.Groups["name"].Value
-            ?? (appHost.Contains($"\"{templateName}\"", StringComparison.Ordinal) ? templateName : null);
+            ?? (templateName is not null && appHost.Contains($"\"{templateName}\"", StringComparison.Ordinal) ? templateName : null);
     }
 
     [GeneratedRegex(@"AddProject\(\s*""(?<name>[^""]+)""\s*,\s*@?""(?<path>[^""]+\.csproj)""")]

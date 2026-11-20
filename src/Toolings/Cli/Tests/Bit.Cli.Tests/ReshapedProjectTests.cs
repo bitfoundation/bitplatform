@@ -224,6 +224,94 @@ public class ReshapedProjectTests
     }
 
     [TestMethod]
+    public async Task TheWellKnownFolders_Should_BeChangedOneByOneAndNamedAsTheyWereGiven()
+    {
+        using var host = new TestHost();
+        var directory = Shop(host);
+        Maui(directory, "src/Client/Shop.Client.Maui/Shop.Client.Maui.csproj");
+        var broken = WellKnown(Path.Combine(directory, "src", "Client", "Shop.Client.Management.Web", "wwwroot", ".well-known"));
+        var whole = WellKnown(Path.Combine(directory, "src", "Client", "Shop.Client.Operations.Web", "wwwroot", ".well-known"));
+        File.WriteAllText(Path.Combine(broken, WellKnownFiles.AssetLinks), "[ not json");
+        var empty = Directory.CreateDirectory(Path.Combine(directory, "public", ".well-known")).FullName;
+
+        Assert.AreEqual(0, await RunInAsync(host, directory, "keys", "android"), host.Output);
+
+        StringAssert.Contains(File.ReadAllText(Path.Combine(whole, WellKnownFiles.AssetLinks)), "com.contoso.shop");
+        Assert.AreEqual("[ not json", File.ReadAllText(Path.Combine(broken, WellKnownFiles.AssetLinks)));
+        StringAssert.Contains(host.FlatOutput, "src/Client/Shop.Client.Management.Web/wwwroot/.well-known/assetlinks.json isn't the JSON bit expects, so bit left it as it is.");
+
+        Assert.AreEqual(0, await RunInAsync(host, directory, "keys", "android", "-o", Path.Combine(host.Root, "second.keystore"), "--well-known", empty), host.Output);
+
+        StringAssert.Contains(host.FlatOutput, "bit found none in what --well-known names, so the app's Android App Links won't verify.");
+    }
+
+    [TestMethod]
+    public async Task Pipeline_Should_TakeTheProjectItIsGivenWhateverPathGitHasForItsRepository()
+    {
+        using var host = Repository();
+        var repository = Path.Combine(host.Root, "the-path-git-names");
+        host.Runner.On("git", "rev-parse --show-toplevel", 0, repository);
+        Write(Path.Combine(repository, ".github", "workflows", "cd.yml"), "on: push\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    environment: Production\n    steps:\n      - run: echo ${{ secrets.ANDROID_RELEASE_KEYSTORE_FILE_BASE64 }}\n");
+        var directory = Shop(host);
+        Maui(directory, "src/Client/Shop.Client.Maui/Shop.Client.Maui.csproj");
+        var wellKnown = WellKnown(Path.Combine(directory, "src", "Client", "Shop.Client.Web", "wwwroot", ".well-known"));
+
+        Assert.AreEqual(0, await host.RunAsync("pipeline", "--yes", "--project", directory), host.Output);
+
+        StringAssert.Contains(File.ReadAllText(Path.Combine(wellKnown, WellKnownFiles.AssetLinks)), "com.contoso.shop", host.Output);
+        Assert.IsFalse(host.Output.Contains("found no bit Boilerplate project", StringComparison.Ordinal), host.Output);
+    }
+
+    [TestMethod]
+    public async Task AProjectFolderThatIsntThere_Should_StopTheCommandInsteadOfTakingAProjectAboveIt()
+    {
+        using var host = Repository();
+        var directory = Shop(host);
+        Maui(directory, "src/Client/Shop.Client.Maui/Shop.Client.Maui.csproj");
+        var wellKnown = WellKnown(Path.Combine(directory, "src", "Client", "Shop.Client.Web", "wwwroot", ".well-known"));
+        var typo = Path.Combine(directory, "typo");
+
+        foreach (var command in new string[][] { ["keys", "android"], ["keys", "certificate"], ["migration", "add", "Initial"], ["api", "check"], ["pipeline", "--yes"], ["run"], ["doctor"] })
+        {
+            Assert.AreEqual(CliApp.ExitUsage, await RunInAsync(host, host.Root, [.. command, "--project", typo]), $"{string.Join(' ', command)}: {host.Output}");
+        }
+
+        Assert.AreEqual(AssetLinks, File.ReadAllText(Path.Combine(wellKnown, WellKnownFiles.AssetLinks)));
+        Assert.IsFalse(Directory.Exists(Path.Combine(host.Home, ".bitplatform", "keys")), "No key is made for a project the command wasn't given.");
+        Assert.IsEmpty(host.Runner.Calls);
+        StringAssert.Contains(host.FlatOutput, "isn't there.");
+    }
+
+    [TestMethod]
+    public async Task Pipeline_Should_TakeTheProjectItRunsInBeforeTheOneAtTheRepositorysRoot()
+    {
+        using var host = Repository();
+        AndroidWorkflow(host);
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "Root.slnx"), "<Solution />");
+        Maui(host.WorkingDirectory, "src/Client/Root.Client.Maui/Root.Client.Maui.csproj", "com.contoso.root");
+        var ofRoot = WellKnown(Path.Combine(host.WorkingDirectory, "src", "Client", "Root.Client.Web", "wwwroot", ".well-known"));
+        var shop = Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "apps", "Shop")).FullName;
+        File.WriteAllText(Path.Combine(shop, "Shop.slnx"), "<Solution />");
+        Maui(shop, "src/Client/Shop.Client.Maui/Shop.Client.Maui.csproj");
+        var ofShop = WellKnown(Path.Combine(shop, "src", "Client", "Shop.Client.Web", "wwwroot", ".well-known"));
+
+        Assert.AreEqual(0, await RunInAsync(host, Directory.CreateDirectory(Path.Combine(shop, "src", "Server")).FullName, "pipeline", "--yes"), host.Output);
+
+        StringAssert.Contains(File.ReadAllText(Path.Combine(ofShop, WellKnownFiles.AssetLinks)), "com.contoso.shop", host.Output);
+        Assert.AreEqual(AssetLinks, File.ReadAllText(Path.Combine(ofRoot, WellKnownFiles.AssetLinks)));
+
+        using var atRoot = Repository();
+        AndroidWorkflow(atRoot);
+        File.WriteAllText(Path.Combine(atRoot.WorkingDirectory, "Root.slnx"), "<Solution />");
+        Maui(atRoot.WorkingDirectory, "src/Client/Root.Client.Maui/Root.Client.Maui.csproj", "com.contoso.root");
+        var itsOwn = WellKnown(Path.Combine(atRoot.WorkingDirectory, "src", "Client", "Root.Client.Web", "wwwroot", ".well-known"));
+
+        Assert.AreEqual(0, await RunInAsync(atRoot, Directory.CreateDirectory(Path.Combine(atRoot.WorkingDirectory, "docs")).FullName, "pipeline", "--yes"), atRoot.Output);
+
+        StringAssert.Contains(File.ReadAllText(Path.Combine(itsOwn, WellKnownFiles.AssetLinks)), "com.contoso.root", atRoot.Output);
+    }
+
+    [TestMethod]
     public async Task Pipeline_Should_SayItFoundNoProjectToAddTheFingerprintTo()
     {
         using var host = Repository();
@@ -349,7 +437,9 @@ public class ReshapedProjectTests
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
         Assert.AreEqual("http://localhost:5030", steps.Running!.AppUrl);
-        CollectionAssert.AreEqual(new[] { Path.GetDirectoryName(operations), Path.GetDirectoryName(management) }, host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => c.Arguments[2]).ToArray());
+        var runs = host.Runner.Calls.Where(c => c.FileName is "dotnet").ToList();
+        CollectionAssert.AreEqual(new[] { operations, management }, runs.Select(c => c.Arguments[2]).ToArray(), "The folder of a project an option names may hold more than one .csproj.");
+        Assert.IsFalse(runs.Any(c => c.Arguments.Contains("--no-build")), "A server an option names may be outside the web solution filter bit built, so dotnet run builds it.");
 
         await steps.Running.StopAsync(false);
     }
@@ -395,6 +485,17 @@ public class ReshapedProjectTests
         Assert.AreEqual("web", ProjectSteps.AspireResource("""builder.AddProject<Projects.Shop_Server_Web>("web")""", web, "serverweb"));
         Assert.AreEqual("serverweb", ProjectSteps.AspireResource("""builder.AddProject("serverweb", path)""", web, "serverweb"));
         Assert.IsNull(ProjectSteps.AspireResource("""builder.AddProject("api", "../Shop.Server.Api/Shop.Server.Api.csproj")""", web, "serverweb"));
+        Assert.IsNull(ProjectSteps.AspireResource("""builder.AddProject("serverweb", "../Other/Other.csproj")""", web, null), "A server an option names isn't another app's serverweb.");
+
+        using var host = new TestHost();
+        var appHost = Path.Combine(host.Root, "src", "Server", "Shop.Server.AppHost");
+        var management = Path.Combine(host.Root, "src", "Management", "Web", "Web.csproj");
+        const string two = """
+            builder.AddProject("operations", "../../Operations/Web/Web.csproj");
+            builder.AddProject("management", "../../Management/Web/Web.csproj");
+            """;
+
+        Assert.AreEqual("management", ProjectSteps.AspireResource(two, management, null, appHost), "Two projects may share a file name.");
     }
 
     [TestMethod]
@@ -478,6 +579,13 @@ public class ReshapedProjectTests
 
         StringAssert.Contains(Read("--server-api", "nowhere.csproj").Error, "--server-api:");
         StringAssert.Contains(Read("--server-api", "empty").Error, "--server-api takes a .csproj");
+        StringAssert.Contains(Read("--server-api", Path.Combine(directory, "Shop.slnx")).Error, "--server-api takes a .csproj or its folder");
+
+        var tests = Write(Path.Combine(directory, "src", "Web", "Shop.Web.Tests.csproj"), "<Project />");
+        Write(Path.Combine(directory, "src", "Web", "Shop.Web.csproj"), "<Project />");
+        StringAssert.Contains(Read("--server-api", Path.Combine("src", "Web")).Error, "has 2 of them: name the one you mean");
+        Assert.AreEqual(tests, Read("--server-api", tests).Parts.ServerApi);
+        Assert.AreEqual(Write(Path.Combine(directory, "src", "Web", "Web.csproj"), "<Project />"), Read("--server-api", Path.Combine("src", "Web")).Parts.ServerApi, "The one named after the folder is the folder's project.");
         StringAssert.Contains(Read("--client-core", backend).Error, "--client-core takes a folder");
         Assert.HasCount(2, Read("--well-known", "empty", "--well-known", Path.Combine("src", "Backend")).Parts.WellKnown);
 

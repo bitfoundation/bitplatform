@@ -183,15 +183,25 @@ public static partial class KeysCommand
                 }
                 else if (assetLinks.Count == 0)
                 {
-                    cli.Console.StepWarning(skipped, $"bit found none in {WellKnownFiles.DefaultPlace}, so the app's Android App Links won't verify. {WellKnownFiles.Option} names its folder.");
+                    cli.Console.StepWarning(skipped, WellKnownFiles.NoneIn(project, "the app's Android App Links"));
                 }
-                else if (assetLinks.Where(file => WellKnownFiles.AddAndroidFingerprint(file, appId, keystore.Sha256Fingerprint)).ToList() is { Count: > 0 } changed)
+                else
                 {
-                    cli.Console.Step(StepStatus.Succeeded, "Added its fingerprint to assetlinks.json", appId);
+                    var (changed, unreadable) = WellKnownFiles.Change(assetLinks, file => WellKnownFiles.AddAndroidFingerprint(file, appId, keystore.Sha256Fingerprint));
 
-                    if (assetLinks.Count > 1)
+                    if (changed.Count > 0)
                     {
-                        cli.Console.StepHint(string.Join(", ", changed.Select(project.Relative)));
+                        cli.Console.Step(StepStatus.Succeeded, "Added its fingerprint to assetlinks.json", appId);
+
+                        if (assetLinks.Count > 1)
+                        {
+                            cli.Console.StepHint(string.Join(", ", changed.Select(project.Relative)));
+                        }
+                    }
+
+                    foreach (var file in unreadable)
+                    {
+                        cli.Console.StepWarning(skipped, $"{project.Relative(file)} isn't the JSON bit expects, so bit left it as it is.");
                     }
                 }
             }
@@ -226,12 +236,11 @@ public static partial class KeysCommand
 
     private static int? FindProject(CliServices cli, ParseResult parseResult, ProjectOptions options, out ProjectContext? project)
     {
-        var folder = options.Folder(parseResult, cli);
-        var directory = ProjectContext.FindProjectDirectory(folder);
+        var directory = options.ProjectDirectory(parseResult, cli, out var folder);
         project = null;
 
         if (directory is null && options.IsGiven(parseResult))
-            return cli.UsageError("not-a-project", $"{folder} isn't in a bit Boilerplate project: neither it nor a folder above it has a *.Web.slnf or *.slnx.");
+            return cli.UsageError("not-a-project", ProjectOptions.NotInAProject(folder));
 
         var (parts, error) = options.Read(parseResult, cli, directory ?? folder);
 

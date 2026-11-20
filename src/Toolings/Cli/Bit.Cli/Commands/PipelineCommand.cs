@@ -40,17 +40,16 @@ public static class PipelineCommand
         };
 
         var projectOptions = new ProjectOptions();
-        projectOptions.Project.Description = "A folder of the project, in its git repository. Default: the repository's root, or else the nearest folder with a *.Web.slnf or *.slnx, the current one or one above it.";
+        projectOptions.Project.Description = "A folder of the project, in its git repository. Default: the nearest folder with a *.Web.slnf or *.slnx, the current one or one above it in the repository, or else the repository's root.";
         projectOptions.AddTo(command, projectOptions.Project, projectOptions.ServerApi, projectOptions.Maui, projectOptions.WellKnown);
 
         command.SetAction(async (parseResult, cancellationToken) =>
         {
             var cli = services();
-            var folder = projectOptions.Folder(parseResult, cli);
-            var projectDirectory = ProjectContext.FindProjectDirectory(folder);
+            var projectDirectory = projectOptions.ProjectDirectory(parseResult, cli, out var folder);
 
             if (projectDirectory is null && projectOptions.IsGiven(parseResult))
-                return cli.UsageError("not-a-project", $"{folder} isn't in a bit Boilerplate project: neither it nor a folder above it has a *.Web.slnf or *.slnx.");
+                return cli.UsageError("not-a-project", ProjectOptions.NotInAProject(folder));
 
             var (parts, error) = projectOptions.Read(parseResult, cli, projectDirectory ?? folder);
 

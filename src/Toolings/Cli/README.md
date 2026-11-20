@@ -422,7 +422,7 @@ bit finds a project's parts where bit Boilerplate puts them. A project that rena
 
 | Part | Where bit looks | Option | On |
 |---|---|---|---|
-| The project | The current folder. `migration`, `api`, `keys` and `pipeline` take the nearest folder with a `*.Web.slnf` or `*.slnx`, it or one above it | `--project <folder>` | `run`, `doctor`, `migration`, `api`, `keys certificate`, `keys android`, `keys apple`, `pipeline`, `diff`. `setup`, `clean` and `rename` take the folder as an argument |
+| The project | The current folder. `migration`, `api`, `keys certificate`, `keys android` and `pipeline` take the nearest folder with a `*.Web.slnf` or `*.slnx`, it or one above it | `--project <folder>` | `run`, `doctor`, `migration`, `api`, `keys certificate`, `keys android`, `keys apple`, `pipeline`, `diff`. `setup`, `clean` and `rename` take the folder as an argument |
 | Server.Api | `src/Server/<name>.Server.Api` | `--server-api <csproj>` | `setup`, `run`, `migration`, `api`, `keys certificate`, `pipeline` |
 | Server.Web | `src/Server/<name>.Server.Web` | `--server-web <csproj>`, repeatable | `setup`, `run`, `migration` |
 | The Aspire AppHost | `src/Server/<name>.Server.AppHost` | `--apphost <csproj>` | `setup`, `run`, `doctor` |
@@ -437,8 +437,8 @@ bit finds a project's parts where bit Boilerplate puts them. A project that rena
 | The app's version | `<Version>` in `src/Directory.Build.props` | `--version <version>` | `api` |
 
 - A project that isn't at the template's path is still found when the project's `.slnx` lists one whose file name ends the same way, like `backend/Shop.Server.Api.csproj` for Server.Api. The option is for the rest: one with another name, or one of several.
-- An option that takes a `.csproj` takes its folder too, and a relative path is from the current folder, or else from the project's. A path that isn't there stops the command.
-- With more than one `--server-web`, `bit run` and `bit setup` start them all without Aspire, and open the first. With Aspire they wait for each one's resource, which bit reads from the AppHost: the `AddProject` call that names the project, or else the template's `serverweb` and `serverapi`.
+- An option that takes a `.csproj` takes its folder too, when the folder has one `.csproj` or one with the folder's name, and a relative path is from the current folder, or else from the project's. A path that isn't there stops the command.
+- With more than one `--server-web`, `bit run` and `bit setup` start them all without Aspire, and open the first. `dotnet run` builds a server an option names, which may be outside the `.Web.slnf` bit built. With Aspire they wait for each one's resource, which bit reads from the AppHost: the `AddProject` call that names the project. The template's names, `serverweb` and `serverapi`, stand only for the template's own servers.
 - `bit keys android` and `bit pipeline` add the Android key's fingerprint, and `bit pipeline` the iOS app, to every `.well-known` folder, since a project may serve more than one web app. When they find none, or don't know the app's id, they say that the app's links won't verify.
 
 ## Staying up to date

@@ -100,7 +100,7 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
             return cli.UsageError("not-a-repository", options.Project is null ? "Run bit pipeline inside your project's git repository." : $"{options.Project} isn't inside a git repository, and bit pipeline fills the secrets of the project's repository.");
 
         root = Path.GetFullPath(top.Output.Trim());
-        project = FindProject();
+        project = await FindProjectAsync(cancellationToken);
 
         if (Directory.Exists(Path.Combine(root, ".github", "workflows")) is false)
             return cli.UsageError("no-github-workflows", "This repository has no GitHub Actions workflows. bit pipeline fills the secrets of GitHub Actions; for another pipeline, create the keys with bit keys.");
@@ -510,21 +510,40 @@ public sealed partial class PipelineSetup(CliServices cli, PipelineOptions optio
 
         if (files.Count == 0 && saidMissing.Add(fileName))
         {
-            cli.Console.StepWarning($"Didn't add {what} to {fileName}", project is null
-                ? $"so {links} won't verify. {NoProject}"
-                : $"bit found none in {WellKnownFiles.DefaultPlace}, so {links} won't verify. {WellKnownFiles.Option} names its folder.");
+            cli.Console.StepWarning($"Didn't add {what} to {fileName}", project is null ? $"so {links} won't verify. {NoProject}" : WellKnownFiles.NoneIn(project, links));
         }
 
-        changedFiles.AddRange(files.Where(change));
+        var (changed, unreadable) = WellKnownFiles.Change(files, change);
+        changedFiles.AddRange(changed);
+
+        foreach (var file in unreadable.Where(saidMissing.Add))
+        {
+            cli.Console.StepWarning($"Didn't add {what} to {fileName}", $"{project!.Relative(file)} isn't the JSON bit expects, so bit left it as it is.");
+        }
     }
 
-    private ProjectContext? FindProject()
+    private async Task<ProjectContext?> FindProjectAsync(CancellationToken cancellationToken)
     {
-        var directory = options.Project ?? (ProjectContext.FindProjectName(root) is not null ? root : ProjectContext.FindProjectDirectory(cli.Environment.CurrentDirectory));
+        var directory = options.Project;
 
-        return directory is not null && Path.GetRelativePath(root, directory) is var relative && relative.StartsWith("..", StringComparison.Ordinal) is false && Path.IsPathRooted(relative) is false && ProjectContext.FindProjectName(directory) is { } name
-            ? ProjectContext.At(directory, name, options.Parts)
-            : null;
+        if (directory is null && ProjectContext.FindProjectDirectory(cli.Environment.CurrentDirectory) is { } nearest && await IsInRepositoryAsync(nearest, cancellationToken))
+        {
+            directory = nearest;
+        }
+
+        directory ??= root;
+
+        return ProjectContext.FindProjectName(directory) is { } name ? ProjectContext.At(directory, name, options.Parts) : null;
+    }
+
+    private async Task<bool> IsInRepositoryAsync(string directory, CancellationToken cancellationToken)
+    {
+        if (Path.GetRelativePath(root, directory) is var relative && relative.StartsWith("..", StringComparison.Ordinal) is false && Path.IsPathRooted(relative) is false)
+            return true;
+
+        var top = await Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = ["rev-parse", "--show-toplevel"], WorkingDirectory = directory, Timeout = TimeSpan.FromSeconds(30) }, cancellationToken);
+
+        return top.Succeeded && top.Output.Trim() is { Length: > 0 } itsRoot && string.Equals(Path.GetFullPath(itsRoot), root, cli.Environment.IsLinux ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<string?> AskAsync(string? environment, string name, CancellationToken cancellationToken)

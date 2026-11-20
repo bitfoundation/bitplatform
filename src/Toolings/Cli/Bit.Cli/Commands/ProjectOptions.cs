@@ -52,6 +52,16 @@ public sealed class ProjectOptions
 
     public bool IsGiven(ParseResult parseResult) => added.Contains(Project) && parseResult.GetValue(Project) is { Length: > 0 };
 
+    public string? ProjectDirectory(ParseResult parseResult, CliServices cli, out string folder)
+    {
+        folder = Folder(parseResult, cli);
+        return Directory.Exists(folder) ? ProjectContext.FindProjectDirectory(folder) : null;
+    }
+
+    public static string NotInAProject(string folder) => Directory.Exists(folder)
+        ? $"{folder} isn't in a bit Boilerplate project: neither it nor a folder above it has a *.Web.slnf or *.slnx."
+        : $"{folder} isn't there.";
+
     public (ProjectParts Parts, string? Error) Read(ParseResult parseResult, CliServices cli, string projectDirectory)
     {
         string? error = null;
@@ -79,19 +89,30 @@ public sealed class ProjectOptions
             }
 
             if (File.Exists(path))
-                return path;
+            {
+                if (path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+                    return path;
 
-            if (ProjectContext.ProjectFileIn(path) is { } csproj)
-                return csproj;
+                error ??= $"{option.Name} takes a .csproj or its folder, and {path} is neither.";
+                return null;
+            }
 
-            error ??= $"{option.Name} takes a .csproj, and {path} has none.";
+            var inside = ProjectContext.ProjectFilesIn(path);
+            var named = Path.GetFileName(Path.TrimEndingDirectorySeparator(path));
+
+            if (inside.Count == 1 || inside.Any(file => string.Equals(Path.GetFileNameWithoutExtension(file), named, StringComparison.OrdinalIgnoreCase)))
+                return ProjectContext.ProjectFileIn(path);
+
+            error ??= inside.Count == 0
+                ? $"{option.Name} takes a .csproj, and {path} has none."
+                : $"{option.Name} takes a .csproj, and {path} has {inside.Count} of them: name the one you mean.";
             return null;
         }
 
         string? One(Option<string?> option, bool folder = false) => added.Contains(option) ? Resolve(option, parseResult.GetValue(option), folder) : null;
 
         IReadOnlyList<string> Many(Option<string[]> option, bool folder = false) => added.Contains(option)
-            ? [.. (parseResult.GetValue(option) ?? []).Select(value => Resolve(option, value, folder)).OfType<string>().Distinct(StringComparer.OrdinalIgnoreCase)]
+            ? [.. (parseResult.GetValue(option) ?? []).Select(value => Resolve(option, value, folder)).OfType<string>().Distinct(cli.Environment.IsLinux ? StringComparer.Ordinal : StringComparer.OrdinalIgnoreCase)]
             : [];
 
         var parts = new ProjectParts

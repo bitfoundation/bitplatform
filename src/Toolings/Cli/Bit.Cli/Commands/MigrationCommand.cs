@@ -150,12 +150,11 @@ public static class MigrationCommand
 
     private static async Task<int> RunAsync(CliServices cli, ParseResult parseResult, ProjectOptions projectOptions, bool offline, Func<StepRunner, ProjectMigrations, Task> work)
     {
-        var folder = projectOptions.Folder(parseResult, cli);
-        var directory = ProjectContext.FindProjectDirectory(folder);
+        var directory = projectOptions.ProjectDirectory(parseResult, cli, out var folder);
 
         if (directory is null || ProjectContext.FindProjectName(directory) is not { } name)
         {
-            return cli.UsageError("not-a-project", $"{folder} isn't in a bit Boilerplate project: neither it nor a folder above it has a *.Web.slnf or *.slnx. Run bit migration in the project's folder, or name it with {ProjectOptions.ProjectName}.");
+            return cli.UsageError("not-a-project", $"{ProjectOptions.NotInAProject(folder)} Run bit migration in the project's folder, or name it with {ProjectOptions.ProjectName}.");
         }
 
         var (parts, partsError) = projectOptions.Read(parseResult, cli, directory);
