@@ -1,10 +1,12 @@
 //+:cnd:noEmit
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.FileProviders;
 using Boilerplate.Server.Shared;
 using Microsoft.AspNetCore.OutputCaching;
 using Boilerplate.Server.Shared.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Tests.Features.Caching;
 
@@ -27,9 +29,10 @@ public partial class ResponseCachePolicyClientCacheTests
     private const int MaxAgeSeconds = 300;
 
     /// <summary>
-    /// The control. An anonymous caller resolves its tenant from the host, so the tenant is already part of the URL
-    /// every private cache keys on, and the carve-out must not touch it - that traffic is what the client cache
-    /// exists for. If this fails, the rule stopped being a carve-out and became a blanket pessimisation.
+    /// The control. An anonymous caller resolves its tenant from the host, and a signed-in member never asks for its URL
+    /// (the client adds the member's tenant to it, See AuthDelegatingHandler), so the carve-out must not touch it - that
+    /// traffic is what the client cache exists for. If this fails, the rule stopped being a carve-out and became a
+    /// blanket pessimisation.
     /// </summary>
     [TestMethod]
     public async Task AnAnonymousCaller_Should_KeepTheClientMaxAge()
@@ -83,16 +86,94 @@ public partial class ResponseCachePolicyClientCacheTests
     }
 
     /// <summary>
+    /// The url a member asks for carries its tenant (See AuthDelegatingHandler), but the server does not resolve the
+    /// tenant from it, so an anonymous caller sending the same parameter is answered with the host's rows. Kept at the
+    /// edge or in the browser, that answer would be handed to the members of that tenant.
+    /// </summary>
+    [TestMethod]
+    public async Task AnAnonymousCallerNamingATenantInTheUrl_Should_NotGetAClientOrEdgeMaxAge()
+    {
+        var httpContext = await RunPolicy(tenantId: null, queryString: $"?{AppResponseCacheAttribute.TenantQueryParameterName}={Guid.NewGuid()}");
+
+        Assert.IsNull(httpContext.Response.GetTypedHeaders().CacheControl?.MaxAge);
+        Assert.IsNull(httpContext.Response.GetTypedHeaders().CacheControl?.SharedMaxAge);
+
+        var decision = httpContext.Response.Headers["App-Cache-Response"].ToString();
+        Assert.Contains("Client:-1", decision);
+        Assert.Contains("Edge:-1", decision);
+        // The output cache varies by the resolved tenant (See the Tenant rule), so a member's request never meets this entry.
+        Assert.DoesNotContain("Output:-1", decision);
+    }
+
+    /// <summary>
+    /// The client's half of the rule above: a member's GET names its token's tenant, so it never asks for the url an
+    /// anonymous caller's answer is kept under.
+    /// </summary>
+    [TestMethod]
+    public async Task AMembersGetRequest_Should_CarryItsTenantInTheUrl()
+    {
+        var tenantId = Guid.NewGuid();
+
+        var requestUri = await SendThroughAuthDelegatingHandler(HttpMethod.Get, BuildAccessToken(tenantId));
+
+        Assert.AreEqual($"{ProductViewUrl}&{AppResponseCacheAttribute.TenantQueryParameterName}={tenantId}", requestUri.AbsoluteUri);
+    }
+
+    [TestMethod]
+    public async Task AnAnonymousGetOrAMembersPost_Should_KeepTheUrl()
+    {
+        Assert.AreEqual(ProductViewUrl, (await SendThroughAuthDelegatingHandler(HttpMethod.Get, accessToken: null)).AbsoluteUri);
+        Assert.AreEqual(ProductViewUrl, (await SendThroughAuthDelegatingHandler(HttpMethod.Post, BuildAccessToken(Guid.NewGuid()))).AbsoluteUri);
+    }
+
+    private const string ProductViewUrl = "https://localhost/api/v1/ProductView/Get?%24top=6&%24orderby=Name";
+
+    private static async Task<Uri> SendThroughAuthDelegatingHandler(HttpMethod method, string? accessToken)
+    {
+        var tokenProvider = A.Fake<IAuthTokenProvider>();
+        A.CallTo(() => tokenProvider.GetAccessToken()).Returns(accessToken);
+
+        var transport = new RequestCapturingHandler();
+
+        using var invoker = new HttpMessageInvoker(new AuthDelegatingHandler(jsRuntime: null!, storageService: null!, serviceProvider: null!,
+            tokenProvider, localizer: null!, transport));
+
+        using var response = await invoker.SendAsync(new HttpRequestMessage(method, ProductViewUrl), CancellationToken.None);
+
+        return transport.RequestUri!;
+    }
+
+    private static string BuildAccessToken(Guid tenantId)
+    {
+        var claims = $$"""{"nameid":"{{Guid.NewGuid()}}","{{AppClaimTypes.TENANT_ID}}":"{{tenantId}}","exp":{{DateTimeOffset.UtcNow.AddMinutes(5).ToUnixTimeSeconds()}}}""";
+
+        return $"header.{Convert.ToBase64String(Encoding.UTF8.GetBytes(claims)).TrimEnd('=').Replace('+', '-').Replace('/', '_')}.signature";
+    }
+
+    private sealed class RequestCapturingHandler : HttpMessageHandler
+    {
+        public Uri? RequestUri { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            RequestUri = request.RequestUri;
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        }
+    }
+
+    /// <summary>
     /// Drives the real policy against a request shaped like <c>ProductViewController.Get</c> - the endpoint the defect
     /// was found on: <c>UserAgnostic</c> (so the authenticated downgrade for the shared caches does not fire) with a
     /// five minute <c>MaxAge</c>, outside Development (which would zero every client ttl on its own).
     /// </summary>
-    private static async Task<HttpContext> RunPolicy(Guid? tenantId, bool authenticated = false, bool userAgnostic = true)
+    private static async Task<HttpContext> RunPolicy(Guid? tenantId, bool authenticated = false, bool userAgnostic = true, string? queryString = null)
     {
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Scheme = "https";
         httpContext.Request.Host = new("localhost");
         httpContext.Request.Path = "/api/v1/ProductView/Get/1";
+        httpContext.Request.QueryString = queryString is null ? QueryString.Empty : new(queryString);
 
         httpContext.SetEndpoint(new Endpoint(
             requestDelegate: null,

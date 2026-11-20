@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Components;
 using Boilerplate.Client.Web.Infrastructure.Services;
+using Boilerplate.Client.Core.Infrastructure.Services.Contracts;
 
 namespace Boilerplate.Server.Web.Infrastructure.Services;
 
@@ -17,16 +18,18 @@ public partial class WebServerPrerenderStateService : IPrerenderStateService, IA
     private PersistingComponentStateSubscription? subscription;
     private readonly ServerWebSettings serverWebSettings = default!;
     private readonly JsonSerializerOptions jsonSerializerOptions;
+    private readonly IAuthTokenProvider authTokenProvider = default!;
     private readonly PersistentComponentState? persistentComponentState;
     private readonly ConcurrentDictionary<string, (object? Value, JsonTypeInfo TypeInfo)> values = new();
 
     private bool NoPersistent => serverWebSettings.WebAppRender.RenderMode is null /*Ssr*/ ||
                                        serverWebSettings.WebAppRender.PrerenderEnabled is false;
 
-    public WebServerPrerenderStateService(ServerWebSettings clientWebSettings, JsonSerializerOptions jsonSerializerOptions, PersistentComponentState? persistentComponentState = null)
+    public WebServerPrerenderStateService(ServerWebSettings clientWebSettings, JsonSerializerOptions jsonSerializerOptions, IAuthTokenProvider authTokenProvider, PersistentComponentState? persistentComponentState = null)
     {
         this.serverWebSettings = clientWebSettings;
         this.jsonSerializerOptions = jsonSerializerOptions;
+        this.authTokenProvider = authTokenProvider;
         this.persistentComponentState = persistentComponentState;
         if (NoPersistent) return;
         subscription = persistentComponentState?.RegisterOnPersisting(PersistAsJson, clientWebSettings.WebAppRender.RenderMode);
@@ -47,6 +50,8 @@ public partial class WebServerPrerenderStateService : IPrerenderStateService, IA
     public async Task<T?> GetValue<T>(string key, Func<Task<T?>> factory)
     {
         if (NoPersistent) return await factory();
+
+        key = await WebClientPrerenderStateService.KeyForCaller(authTokenProvider, key);
 
         if (persistentComponentState!.TryTakeFromJson(key, out JsonElement value)) return value.Deserialize(jsonSerializerOptions.GetTypeInfo<T>());
 
