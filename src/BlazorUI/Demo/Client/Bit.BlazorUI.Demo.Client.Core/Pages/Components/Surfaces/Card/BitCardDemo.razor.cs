@@ -98,6 +98,13 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "Element",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom html element used for the root node, a div by default - an article, a section, an aside or a nav is what tells assistive technologies which part of the page the card is. A card rendered as one of those four is titled by its Title through aria-labelledby, unless an AriaLabel, an aria-label or aria-labelledby of the page's own, a splatted role, a HeaderTemplate, an Href or an OnClick names it some other way. A name that is not one a tag can have, or a void element, falls back to the default.",
+        },
+        new()
+        {
             Name = "Elevation",
             Type = "int?",
             DefaultValue = "null",

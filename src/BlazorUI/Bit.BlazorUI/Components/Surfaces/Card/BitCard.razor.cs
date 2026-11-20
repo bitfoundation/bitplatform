@@ -7,8 +7,14 @@ namespace Bit.BlazorUI;
 public partial class BitCard : BitComponentBase
 {
     private string? _rel;
-    private bool _buttonKeysRegistered;
     private ElementReference _stretchedRef;
+
+    // The tag the root is rendered as, resolved from Element whenever the parameters change rather than on every render.
+    private string _element = "div";
+
+    // The tag of the root the button keys were registered on. A root of another tag is another element, which has none
+    // of the listeners the last one was given.
+    private string? _buttonKeysElement;
 
     // Whether the card was sectioned, whether it was a control and whether that control was a button the last time
     // its classes were built. None of them is a parameter the generated setter can watch for: they are read off
@@ -74,6 +80,18 @@ public partial class BitCard : BitComponentBase
                             || IconTemplate is not null
                             || Icon is not null
                             || IconName.HasValue();
+
+    // A div is a generic element, which ARIA prohibits naming, so a name given to one is not guaranteed to be read
+    // unless the card gives it a role as well. Every other tag has a role of its own - a section, an article, a list
+    // item - which a role the card picked would take away.
+    private bool _IsGenericElement => _element.Equals("div", StringComparison.OrdinalIgnoreCase)
+                                   || _element.Equals("span", StringComparison.OrdinalIgnoreCase);
+
+    // The sectioning elements of HTML: what they hold is a section of the page, which the heading inside it titles.
+    private bool _IsSectioningElement => _element.Equals("article", StringComparison.OrdinalIgnoreCase)
+                                      || _element.Equals("aside", StringComparison.OrdinalIgnoreCase)
+                                      || _element.Equals("nav", StringComparison.OrdinalIgnoreCase)
+                                      || _element.Equals("section", StringComparison.OrdinalIgnoreCase);
 
 
 
@@ -208,6 +226,30 @@ public partial class BitCard : BitComponentBase
     /// It only reaches the anchor a card lays over itself while <see cref="Href"/> is set.
     /// </remarks>
     [Parameter] public string? Download { get; set; }
+
+    /// <summary>
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    /// <remarks>
+    /// A card is very often a section of the page, and HTML has names for those: an "article" for a card that stands
+    /// on its own - a post, a product, a comment - a "section" for one part of a page, an "aside" for content beside
+    /// the main flow and a "nav" for a card of links. The name is what tells assistive technologies which of them the
+    /// card is; the looks and every other parameter of the card work the same whichever tag is rendered.
+    /// <br />
+    /// A card rendered as one of those four is titled by its <see cref="Title"/>: the root gets an aria-labelledby
+    /// pointing at the title, which is what makes a "section" a region a reader can find among the landmarks of the
+    /// page. That is left out where the card is named some other way - an <see cref="BitComponentBase.AriaLabel"/>,
+    /// an aria-label or aria-labelledby of the page's own, a role splatted onto the root, a custom
+    /// <see cref="HeaderTemplate"/> that takes the title off - and on a card with a <see cref="Href"/> or an
+    /// <see cref="OnClick"/>, whose name belongs to the link or the button stretched over it. A card rendered as any
+    /// tag but a "div" or a "span" is not given the group role a named card otherwise gets, since it has a role of its
+    /// own already.
+    /// <br />
+    /// The name is used as written, but only while it is a name a tag can have - a letter followed by letters, digits
+    /// and the "-", "_", "." and ":" that join them - and one that can hold content. Anything else, a void element
+    /// such as an "hr" included, falls back to the default tag.
+    /// </remarks>
+    [Parameter] public string? Element { get; set; }
 
     /// <summary>
     /// Sets the shadow elevation level of the card (0-24). Maps to theme shadow variables (--bit-shd-1 to --bit-shd-24).
@@ -620,17 +662,18 @@ public partial class BitCard : BitComponentBase
     // button answers: Enter as the key goes down, Space as it comes back up, and neither one scrolling the page.
     // That is wired up in the browser, where a key pressed on the card itself can be told apart from one pressed
     // on a control it holds - which a Blazor keydown handler cannot see, nor prevent the default of per key. The
-    // root is the same element for the lifetime of the card, so it is registered once, the first time the root is
-    // a control; once registered it only ever turns a key pressed on the root into a click, and a root that
-    // stopped being a control is no longer focusable for one to be pressed on. The stretched button of every other
+    // root is the same element for as long as its tag stays the same, so it is registered once per tag, the first
+    // time the root of that tag is a control; once registered it only ever turns a key pressed on the root into a
+    // click, and a root that stopped being a control is no longer focusable for one to be pressed on. A new Element
+    // replaces the root with a new element, which is registered again. The stretched button of every other
     // clickable card is a native one and needs none of this.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_buttonKeysRegistered || _IsRootControl is false) return;
+        if (_IsRootControl is false || _buttonKeysElement == _element) return;
 
-        _buttonKeysRegistered = true;
+        _buttonKeysElement = _element;
 
         try
         {
@@ -757,6 +800,8 @@ public partial class BitCard : BitComponentBase
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        _element = ResolveContentElement(Element, "div");
 
         var classState = (_IsSectioned, _IsLink || _IsButton, _IsButton);
         if (_classState != classState)

@@ -35,9 +35,16 @@
     @* A card that is not a control but does carry a name - through AriaLabel, or through an aria-labelledby
        pointing at a heading elsewhere on the page - needs a role for that name to be announced at all, since a
        name on a plain div is not guaranteed to be read, and "group" is the role of a box that holds related
-       things without being a landmark. A role the app splatted in itself always wins. *@
+       things without being a landmark. A role the app splatted in itself always wins, and a root rendered as a tag
+       with a role of its own (see Element) keeps that one: a named section is already a region. *@
     var isNamed = label.HasValue() || splattedLabelledBy.HasValue();
-    var role = splattedRole ?? (labelOnRoot && isNamed ? "group" : null);
+    var role = splattedRole ?? (labelOnRoot && isNamed && _IsGenericElement ? "group" : null);
+
+    @* A card rendered as a sectioning element - an article, an aside, a nav, a section - is a section of the page,
+       and its title is what titles it: pointing the root at the title is what makes a section a region a reader
+       finds among the landmarks, and what an article is announced by. Only where the name of the card stays on the
+       root, and where the page has neither named the card nor made it something else through a role of its own. *@
+    var titleLabelledBy = labelOnRoot && isNamed is false && splattedRole is null && _IsSectioningElement ? titleId : null;
 
     @* Some roles present their children: what is inside one of them is read as the name of the control rather
        than as structure, so nothing in there is ever reached on its own. A card splatted with one - an option or
@@ -111,24 +118,8 @@
     object? onClick = _IsClickable
                     ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick)
                     : splattedOnClick;
-}
 
-<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
-     onclick="@onClick"
-     @onclick:stopPropagation="StopPropagation"
-     id="@_Id"
-     role="@role"
-     tabindex="@rootTabIndex"
-     aria-label="@(labelOnRoot ? label : null)"
-     aria-labelledby="@(labelOnRoot ? splattedLabelledBy : null)"
-     aria-pressed="@ariaPressed"
-     aria-selected="@ariaSelected"
-     aria-checked="@ariaChecked"
-     aria-busy="@ariaBusy"
-     aria-disabled="@ariaDisabled"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+    RenderFragment content = @<text>
     @if (_IsLink)
     {
         @* The card is not wrapped in the anchor: an anchor around the whole card is invalid the moment the
@@ -319,4 +310,34 @@
     {
         @ChildContent
     }
-</div>
+    </text>;
+
+    @* The root is written through the render tree rather than in the markup, since the tag it is rendered as is the
+       page's to choose (see Element). Everything the card writes comes after the splat, so it wins over the attribute
+       of the same name the page splatted, and a null one takes that attribute off the element altogether. *@
+    RenderFragment root = builder =>
+    {
+        builder.OpenElement(0, _element);
+        builder.AddMultipleAttributes(1, DisabledAwareHtmlAttributes);
+        builder.AddAttribute(2, "onclick", onClick);
+        builder.AddEventStopPropagationAttribute(3, "onclick", StopPropagation);
+        builder.AddAttribute(4, "id", _Id);
+        builder.AddAttribute(5, "role", role);
+        builder.AddAttribute(6, "tabindex", rootTabIndex);
+        builder.AddAttribute(7, "aria-label", labelOnRoot ? label : null);
+        builder.AddAttribute(8, "aria-labelledby", labelOnRoot ? (splattedLabelledBy ?? titleLabelledBy) : null);
+        builder.AddAttribute(9, "aria-pressed", ariaPressed);
+        builder.AddAttribute(10, "aria-selected", ariaSelected);
+        builder.AddAttribute(11, "aria-checked", ariaChecked);
+        builder.AddAttribute(12, "aria-busy", ariaBusy);
+        builder.AddAttribute(13, "aria-disabled", ariaDisabled);
+        builder.AddAttribute(14, "style", StyleBuilder.Value);
+        builder.AddAttribute(15, "class", ClassBuilder.Value);
+        builder.AddAttribute(16, "dir", Dir?.ToString().ToLower());
+        builder.AddElementReferenceCapture(17, v => RootElement = v);
+        builder.AddContent(18, content);
+        builder.CloseElement();
+    };
+}
+
+@root
