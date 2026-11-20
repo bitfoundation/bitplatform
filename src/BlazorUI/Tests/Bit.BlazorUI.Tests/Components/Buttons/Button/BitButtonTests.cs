@@ -1329,6 +1329,90 @@ public class BitButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitButtonIconTemplateShouldRenderInTheIconSlotHiddenFromAssistiveTechnologies()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.Classes, new BitButtonClassStyles { Icon = "custom-icon" });
+            parameters.Add(p => p.Styles, new BitButtonClassStyles { Icon = "color: red;" });
+            parameters.AddChildContent("Label");
+        });
+
+        var slot = com.Find(".bit-btn-ict");
+
+        Assert.AreEqual("span", slot.TagName, ignoreCase: true);
+        Assert.AreEqual("true", slot.GetAttribute("aria-hidden"));
+        Assert.IsTrue(slot.ClassList.Contains("custom-icon"));
+        Assert.AreEqual("color: red;", slot.GetAttribute("style"));
+        Assert.HasCount(1, slot.QuerySelectorAll(".custom-svg"));
+
+        // It takes the place the icon has: ahead of the text, which IconPlacement moves it after through the root.
+        Assert.IsTrue(com.Find(".bit-btn").FirstElementChild!.ClassList.Contains("bit-btn-ict"));
+        Assert.AreEqual("Label", com.Find(".bit-btn-prt").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitButtonIconTemplateShouldTakePrecedenceOverIconIconNameAndIconUrl()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("solid house"));
+            parameters.Add(p => p.IconName, "Emoji");
+            parameters.Add(p => p.IconUrl, "/images/bit-logo.svg");
+            parameters.AddChildContent("Label");
+        });
+
+        Assert.HasCount(1, com.FindAll(".bit-btn-ict .custom-svg"));
+        Assert.IsEmpty(com.FindAll(".bit-btn-icn"));
+        Assert.IsEmpty(com.FindAll(".bit-btn-icnu"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconTemplateShouldKeepTheShapeOfAnIconButton()
+    {
+        // With no text at all the button is squared off as an icon one, the shape an svg put in its content loses.
+        var alone = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.AriaLabel, "Menu");
+        });
+
+        Assert.IsTrue(alone.Find(".bit-btn").ClassList.Contains("bit-btn-ntx"));
+        Assert.IsEmpty(alone.FindAll(".bit-btn-tcn"));
+        Assert.HasCount(1, alone.FindAll(".bit-btn-ict .custom-svg"));
+
+        // IconOnly drops the text out of the box and keeps it as the name, beside the template.
+        var iconOnly = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.AddChildContent("Menu");
+        });
+
+        Assert.IsTrue(iconOnly.Find(".bit-btn").ClassList.Contains("bit-btn-ntx"));
+        Assert.IsEmpty(iconOnly.FindAll(".bit-btn-tcn"));
+        Assert.AreEqual("Menu", iconOnly.Find(".bit-btn-srl").TextContent.Trim());
+        Assert.HasCount(1, iconOnly.FindAll(".bit-btn-ict .custom-svg"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconTemplateShouldStayUnderTheSpinnerWhileLoading()
+    {
+        // The content is kept in the flow under the spinner so the box holds its size, the template with it.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.AddChildContent("Save");
+        });
+
+        Assert.HasCount(1, com.FindAll(".bit-btn-hcn .bit-btn-ict .custom-svg"));
+        Assert.HasCount(1, com.FindAll(".bit-btn-spn"));
+    }
+
+    [TestMethod]
     public void BitButtonIconOnlyShouldDropTheTextAndSquareTheBox()
     {
         var com = RenderComponent<BitButton>(parameters =>

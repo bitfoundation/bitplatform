@@ -447,6 +447,78 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-acb-icu").Count);
     }
 
+    [TestMethod]
+    public void BitActionButtonIconTemplateShouldRenderInTheIconSlotHiddenFromAssistiveTechnologies()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.Classes, new BitActionButtonClassStyles { Icon = "custom-icon" });
+            parameters.Add(p => p.Styles, new BitActionButtonClassStyles { Icon = "width: 2rem;" });
+            parameters.AddChildContent("Content");
+        });
+
+        var slot = component.Find(".bit-acb-ict");
+
+        Assert.AreEqual("span", slot.TagName, ignoreCase: true);
+        Assert.AreEqual("true", slot.GetAttribute("aria-hidden"));
+        Assert.IsTrue(slot.ClassList.Contains("custom-icon"));
+        Assert.AreEqual("width: 2rem;", slot.GetAttribute("style"));
+        Assert.AreEqual(1, slot.QuerySelectorAll(".custom-svg").Length);
+
+        // It is a direct child of the inner wrapper, ahead of the content, so IconPlacement flips it as it does the icon.
+        var inner = component.Find(".bit-acb-inn");
+
+        Assert.AreEqual(2, inner.Children.Length);
+        Assert.IsTrue(inner.Children[0].ClassList.Contains("bit-acb-ict"));
+        Assert.IsTrue(inner.Children[1].ClassList.Contains("bit-acb-con"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconTemplateShouldTakePrecedenceOverIconIconNameAndIconUrl()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("solid house"));
+            parameters.Add(p => p.IconName, "Add");
+            parameters.Add(p => p.IconUrl, "/images/icon.svg");
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-acb-ict .custom-svg").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-acb-ico").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-acb-icu").Count);
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconTemplateShouldKeepTheIconOnlyShape()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.AriaLabel, "Copy");
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.AddChildContent("Copy");
+        });
+
+        Assert.IsTrue(component.Find(".bit-acb").ClassList.Contains("bit-acb-ion"));
+        Assert.AreEqual(0, component.FindAll(".bit-acb-con").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-acb-ict .custom-svg").Count);
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconTemplateShouldBeReplacedBySpinnerWhileLoading()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.Loading, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-acb-spn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-acb-ict").Count);
+    }
+
     [TestMethod,
         DataRow(null, true),
         DataRow(null, false),

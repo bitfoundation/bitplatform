@@ -183,6 +183,20 @@ public partial class BitActionButton : BitComponentBase
     public BitPlacement? IconPlacement { get; set; }
 
     /// <summary>
+    /// The custom template to render in place of the icon of the action button, which takes precedence over
+    /// <see cref="Icon"/>, <see cref="IconName"/> and <see cref="IconUrl"/>.
+    /// </summary>
+    /// <remarks>
+    /// Use it for an icon an icon font cannot carry, an inline SVG most of the time. It renders in the icon's own slot,
+    /// so it keeps the icon's place, color, <see cref="IconPlacement"/> and <see cref="IconOnly"/> shape, gets the
+    /// <c>Icon</c> class/style of <see cref="Classes"/> and <see cref="Styles"/>, and is hidden from assistive
+    /// technologies just as the icon is. Its font size is the icon size, so an SVG sized <c>1em</c> (or one with no
+    /// size of its own) is drawn as big as the icon it replaces, and <c>currentColor</c> follows the icon's color
+    /// through every state. The spinner takes its slot while the button is loading, as it does the icon's.
+    /// </remarks>
+    [Parameter] public RenderFragment? IconTemplate { get; set; }
+
+    /// <summary>
     /// The url of a custom image to render as the icon of the action button, used when neither <see cref="Icon"/> nor <see cref="IconName"/> is set.
     /// </summary>
     [Parameter] public string? IconUrl { get; set; }

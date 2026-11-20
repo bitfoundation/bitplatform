@@ -120,12 +120,30 @@ $acb-private-properties: clr-ico, clr-fg, clr-hover, clr-active, clr-focus, clr-
 
 // The hover/active/disabled states retarget --bit-acb-ico on the button, which changes the
 // computed color here, so the transition has to sit on the icon to animate along with the label.
-.bit-acb-ico {
+// The box an IconTemplate is drawn in is painted and sized the same way: its font size is the icon size, so markup
+// sized in em - an inline svg of 1em, a glyph of another icon font - comes out exactly as big as the icon it stands
+// in for, while markup with a size of its own keeps it; and an svg reaches the icon color through currentColor.
+.bit-acb-ico,
+.bit-acb-ict {
     line-height: 1;
     flex-shrink: 0;
     color: var(--bit-acb-ico);
     font-size: var(--bit-acb-ico-size, var(--bit-ActionButton-icon-size, #{$siz-icon-md}));
     transition: color $mot-duration-short $mot-easing;
+}
+
+.bit-acb-ict {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// An inline svg given no size at all would be drawn at the 300x150 a browser defaults it to, so it takes the icon's
+// square instead. The whole selector is inside :where(), which weighs nothing, so a size an app gives the svg
+// through a class of its own still wins.
+:where(.bit-acb-ict > svg:not([width]):not([height])) {
+    width: 1em;
+    height: 1em;
 }
 
 .bit-acb-icu {

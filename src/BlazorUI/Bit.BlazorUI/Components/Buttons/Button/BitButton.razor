@@ -56,7 +56,13 @@
                    && ariaLabel.HasNoValue() && GetSplattedAttribute("aria-labelledby").HasNoValue();
 
     RenderFragment content = @<text>
-        @if (icon is not null)
+        @* The template takes the icon's slot, so it is hidden from assistive technologies as the icon is: the label (or
+           the AriaLabel of an icon-only button) is what names the button. *@
+        @if (IconTemplate is not null)
+        {
+            <span style="@Styles?.Icon" class="bit-btn-ict @Classes?.Icon" aria-hidden="true">@IconTemplate</span>
+        }
+        else if (icon is not null)
         {
             <i style="@Styles?.Icon" class="bit-btn-icn @icon.GetCssClasses() @Classes?.Icon" aria-hidden="true" />
         }

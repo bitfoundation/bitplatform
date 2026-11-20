@@ -24,6 +24,7 @@ public class BitButtonParamsTests : BunitTestContext
     [
         nameof(BitButton.CascadingParameters),
         nameof(BitButton.ChildContent),
+        nameof(BitButton.IconTemplate),
         nameof(BitButton.PrimaryTemplate),
         nameof(BitButton.SecondaryTemplate),
         nameof(BitButton.LoadingTemplate),

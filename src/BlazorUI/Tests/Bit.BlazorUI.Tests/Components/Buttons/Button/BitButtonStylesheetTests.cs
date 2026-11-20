@@ -177,6 +177,28 @@ public partial class BitButtonStylesheetTests
         Assert.IsFalse(Regex.IsMatch(block, @"var\(--bit-Button-(outline|text)-color\b"), $"{selector} fixes the resting foreground of its variant.");
     }
 
+    [TestMethod]
+    public void BitButtonShouldDrawAnIconTemplateAtTheSizeOfTheIcon()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The box takes the icon size as its font size (an explicit Size still ahead of the variable), so markup sized
+        // in em matches the glyph it stands in for, and it never shrinks out of the row, as the glyph does not.
+        var box = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btn-ict {");
+
+        StringAssert.Contains(box, "font-size: var(--bit-btn-icn-size, var(--bit-Button-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(box, "flex-shrink: 0;");
+
+        // A compound button drops it onto the line of the primary text, as it does the glyph and the image.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-btn-hsc:not(.bit-btn-ntx) {"), ".bit-btn-ict");
+
+        // An svg given no size gets the icon's square, from a rule that weighs nothing so an app's own class wins.
+        var unsized = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-btn-ict > svg:not([width]):not([height])) {");
+
+        StringAssert.Contains(unsized, "width: 1em;");
+        StringAssert.Contains(unsized, "height: 1em;");
+    }
+
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "Button", "BitButton.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Button-[a-z-]+)\s", RegexOptions.Multiline)]

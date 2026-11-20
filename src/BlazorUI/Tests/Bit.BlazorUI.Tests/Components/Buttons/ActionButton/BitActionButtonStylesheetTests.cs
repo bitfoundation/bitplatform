@@ -77,6 +77,26 @@ public partial class BitActionButtonStylesheetTests
         }
     }
 
+    [TestMethod]
+    public void BitActionButtonShouldDrawAnIconTemplateAsItsIcon()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The box shares the icon's rule: the icon color every state retargets (which an svg reaches through
+        // currentColor) and the icon size as its font size, an explicit Size still ahead of the variable.
+        var box = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-acb-ict {");
+
+        StringAssert.Contains(box, "color: var(--bit-acb-ico);");
+        StringAssert.Contains(box, "font-size: var(--bit-acb-ico-size, var(--bit-ActionButton-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(box, "flex-shrink: 0;");
+
+        // An svg given no size gets the icon's square, from a rule that weighs nothing so an app's own class wins.
+        var unsized = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-acb-ict > svg:not([width]):not([height])) {");
+
+        StringAssert.Contains(unsized, "width: 1em;");
+        StringAssert.Contains(unsized, "height: 1em;");
+    }
+
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "ActionButton", "BitActionButton.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-ActionButton-[a-z-]+)\s", RegexOptions.Multiline)]

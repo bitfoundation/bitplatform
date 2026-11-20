@@ -68,7 +68,8 @@
 //   --bit-Button-font-weight               weight of both lines of text                   (default: $tg-font-weight)
 //   --bit-Button-text-transform            casing of both lines of text                   (default: $tg-ctrl-text-transform)
 //   --bit-Button-letter-spacing            tracking of both lines of text                 (default: $tg-ctrl-letter-spacing)
-//   --bit-Button-icon-size                 icon size, for a glyph and an IconUrl alike    (default: $siz-icon-md)
+//   --bit-Button-icon-size                 icon size, for a glyph, an IconUrl and an
+//                                          IconTemplate alike                             (default: $siz-icon-md)
 //   --bit-Button-spinner-size              diameter of the loading spinner                (default: $siz-icon-md, as the icon)
 //   --bit-Button-spinner-color             the spinner's moving arc                       (default: the button's own foreground)
 //   --bit-Button-spinner-track-color       the ring the arc travels on                    (default: the foreground at 25%)
@@ -168,7 +169,8 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
     align-items: flex-start;
 
     .bit-btn-icn,
-    .bit-btn-icnu {
+    .bit-btn-icnu,
+    .bit-btn-ict {
         margin-top: var(--bit-btn-icn-margintop, #{spacing(0.25)});
     }
 }
@@ -204,6 +206,26 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
     object-fit: contain;
     width: var(--bit-btn-icn-size, var(--bit-Button-icon-size, #{$siz-icon-md}));
     height: var(--bit-btn-icn-size, var(--bit-Button-icon-size, #{$siz-icon-md}));
+}
+
+// The box an IconTemplate is drawn in. Its font size is the icon size, so markup sized in em - an inline svg of
+// 1em, a glyph of another icon font - comes out exactly as big as the icon it stands in for, while markup with a
+// size of its own keeps it; and it inherits the button's foreground, which an svg reaches through currentColor.
+.bit-btn-ict {
+    line-height: 1;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--bit-btn-icn-size, var(--bit-Button-icon-size, #{$siz-icon-md}));
+}
+
+// An inline svg given no size at all would be drawn at the 300x150 a browser defaults it to, so it takes the icon's
+// square instead. The whole selector is inside :where(), which weighs nothing, so a size an app gives the svg
+// through a class of its own still wins.
+:where(.bit-btn-ict > svg:not([width]):not([height])) {
+    width: 1em;
+    height: 1em;
 }
 
 .bit-btn-eni {

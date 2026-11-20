@@ -151,6 +151,13 @@ public partial class BitActionButtonDemo
         },
         new()
         {
+            Name = "IconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render in place of the icon of the action button (an inline SVG, for example), which takes precedence over Icon, IconName and IconUrl. It renders in the icon's slot, so it keeps the icon's place, color, IconPlacement and the square shape of an IconOnly button, gets the Icon class/style, gives way to the spinner while loading, and is hidden from assistive technologies just as the icon is. Its font size is the icon size, so an SVG sized 1em (or one with no size of its own) is as big as the icon.",
+        },
+        new()
+        {
             Name = "IconUrl",
             Type = "string?",
             DefaultValue = "null",
@@ -361,7 +368,7 @@ public partial class BitActionButtonDemo
         {
             Name = "--bit-ActionButton-icon-size",
             DefaultValue = "--bit-siz-icon-md",
-            Description = "Size of the icon, the IconUrl image and the spinner, which share one slot so entering the loading state moves nothing. The Size parameter wins over it.",
+            Description = "Size of the icon, the IconUrl image, the IconTemplate and the spinner, which share one slot so entering the loading state moves nothing. The Size parameter wins over it.",
         },
     ];
 
@@ -386,7 +393,7 @@ public partial class BitActionButtonDemo
                     Name = "Icon",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom class or style applied to the icon element of the BitActionButton (the glyph, or the image rendered for IconUrl)."
+                    Description = "Custom class or style applied to the icon element of the BitActionButton (the glyph, the image rendered for IconUrl, or the element IconTemplate is rendered in)."
                 },
                 new()
                 {

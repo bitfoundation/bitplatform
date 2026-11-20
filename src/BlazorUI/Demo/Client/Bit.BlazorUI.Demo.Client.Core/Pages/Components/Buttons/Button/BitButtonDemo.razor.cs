@@ -181,6 +181,13 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "IconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render in place of the icon of the button (an inline SVG, for example), which takes precedence over Icon, IconName and IconUrl. It renders in the icon's slot, so it keeps the icon's place, IconPlacement and the square shape of an icon-only button, gets the Icon class/style, and is hidden from assistive technologies just as the icon is. Its font size is the icon size, so an SVG sized 1em (or one with no size of its own) is as big as the icon.",
+        },
+        new()
+        {
             Name = "IconUrl",
             Type = "string?",
             DefaultValue = "null",
@@ -352,7 +359,7 @@ public partial class BitButtonDemo
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom class or style applied to the icon element (the glyph, or the image rendered for IconUrl)."
+                   Description = "Custom class or style applied to the icon element (the glyph, the image rendered for IconUrl, or the element IconTemplate is rendered in)."
                },
                new()
                {
@@ -835,7 +842,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-icon-size",
             DefaultValue = "--bit-siz-icon-md",
-            Description = "Size of the icon, for a glyph and an IconUrl image alike. The Size parameter wins over it.",
+            Description = "Size of the icon, for a glyph, an IconUrl image and an IconTemplate alike. The Size parameter wins over it.",
         },
         new()
         {
