@@ -824,7 +824,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             ?? (templateName is not null && appHost.Contains($"\"{templateName}\"", StringComparison.Ordinal) ? templateName : null);
     }
 
-    [GeneratedRegex(@"<ProjectReference\b[^>]*\bInclude\s*=\s*""(?<path>[^""]+\.csproj)""")]
+    [GeneratedRegex(@"<ProjectReference\b[^>]*\bInclude\s*=\s*[""'](?<path>[^""']+\.csproj)[""']")]
     private static partial Regex ProjectReferenceRegex();
 
     [GeneratedRegex(@"AddProject\(\s*""(?<name>[^""]+)""\s*,\s*@?""(?<path>[^""]+\.csproj)""")]

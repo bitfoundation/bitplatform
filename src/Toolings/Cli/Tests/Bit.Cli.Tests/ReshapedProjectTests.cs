@@ -503,6 +503,10 @@ public class ReshapedProjectTests
 
         Assert.AreEqual("operations", ProjectSteps.AspireResource(typed, Path.Combine(host.Root, "src", "Operations", "Web", "Web.csproj"), null, appHost));
         Assert.IsNull(ProjectSteps.AspireResource(typed, management, null, appHost), "The type is the one of the project the AppHost references, not of another with its name.");
+
+        Write(Path.Combine(appHost, "Shop.Server.AppHost.csproj"), "<Project><ItemGroup><ProjectReference Include='../../Operations/Web/Web.csproj' /></ItemGroup></Project>");
+
+        Assert.IsNull(ProjectSteps.AspireResource(typed, management, null, appHost), "A reference may be written with single quotes.");
     }
 
     [TestMethod]
