@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -86,6 +87,24 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// Lays the items of the ChoiceGroup out in a grid of this many equal columns, filled row by row in the order of
+    /// the items, instead of the single column (or the wrapping row of <see cref="Horizontal"/>) they flow in otherwise.
+    /// </summary>
+    /// <remarks>
+    /// Values below 1 are treated as 1. The columns share the width of the group equally: a group that hugs its
+    /// content is as wide as that many of its widest item, and with <see cref="FullWidth"/> the columns share the
+    /// width of its container.
+    /// <br />
+    /// <see cref="MinItemWidth"/> wins over this parameter when both are set, as it does on <see cref="BitGrid"/>.
+    /// <br />
+    /// The grid replaces the column or the row <see cref="Horizontal"/> lays the items out in; Horizontal still decides
+    /// the <c>aria-orientation</c> of the group and its default gap, and <see cref="Gap"/> spaces the rows and the
+    /// columns alike. The items keep the order they are given in, and so does the arrow key navigation between them.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public int? Columns { get; set; }
 
     /// <summary>
     /// The comparer that decides which item carries the current value, and which item the DefaultValue
@@ -245,6 +264,26 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// Custom RenderFragment for the label of the ChoiceGroup.
     /// </summary>
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Lays the items of the ChoiceGroup out in a grid of equal columns no narrower than this width, fitting as many
+    /// columns on a row as the width of the group allows and wrapping the rest of the items onto the next rows.
+    /// </summary>
+    /// <remarks>
+    /// Takes any CSS length (for example <c>240px</c>, <c>15rem</c> or <c>30%</c>). A bare number is read as pixels.
+    /// A width larger than the group is capped at the width of the group, so a narrow container gets a single column
+    /// rather than a row that overflows it.
+    /// <br />
+    /// The number of columns is worked out from the width of the group, so the group takes the full width of its
+    /// container while this is set, as <see cref="FullWidth"/> makes it. Every column keeps the same width, a last row
+    /// that is not full included (the CSS <c>repeat(auto-fill, minmax(MinItemWidth, 1fr))</c> layout), which keeps the
+    /// options of one choice the same size.
+    /// <br />
+    /// It wins over <see cref="Columns"/> when both are set, as it does on <see cref="BitGrid"/>, and replaces the
+    /// layout of <see cref="Horizontal"/> the way Columns does.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? MinItemWidth { get; set; }
 
     /// <summary>
     /// Names and selectors of the custom input type properties.
@@ -543,6 +582,12 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => Horizontal ? "bit-chg-hor" : string.Empty);
 
+        // The grid class is what turns the grid on, so it is only handed out alongside a column count or a width to
+        // read; the second class picks the fluid tracks of MinItemWidth over the counted ones of Columns.
+        ClassBuilder.Register(() => Columns.HasValue || MinItemWidth.HasValue() ? "bit-chg-grd" : string.Empty);
+
+        ClassBuilder.Register(() => MinItemWidth.HasValue() ? "bit-chg-mnw" : string.Empty);
+
         ClassBuilder.Register(() => LabelPlacement switch
         {
             BitPlacement.Top => "bit-chg-ltp",
@@ -570,6 +615,10 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-chg-gap:{Gap}" : string.Empty);
+
+        StyleBuilder.Register(() => Columns.HasValue ? FormattableString.Invariant($"--bit-chg-cols:{Math.Max(1, Columns.Value)}") : string.Empty);
+
+        StyleBuilder.Register(() => MinItemWidth.HasValue() ? $"--bit-chg-mnw:{GetMinItemWidth(MinItemWidth!)}" : string.Empty);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -597,6 +646,19 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
         {
             SetIndex(_items[i], i);
         }
+    }
+
+    // A bare number is no CSS length, and one inside the minmax() of the grid tracks would throw the whole track list
+    // away, so it is read as pixels - what it was meant as, and what BitGrid reads its MinItemWidth as too. The number
+    // is written out again rather than echoed, which turns the forms CSS does not accept (a trailing decimal point)
+    // into the one it does.
+    private static string GetMinItemWidth(string value)
+    {
+        var length = value.Trim();
+
+        if (double.TryParse(length, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var number) is false) return length;
+
+        return FormattableString.Invariant($"{number}px");
     }
 
     // The internal label element is only rendered (and therefore only worth referencing) when there is a
