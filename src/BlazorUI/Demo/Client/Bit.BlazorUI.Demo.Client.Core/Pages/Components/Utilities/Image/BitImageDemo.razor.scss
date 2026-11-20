@@ -15,6 +15,13 @@
     align-items: flex-end;
 }
 
+// A region of the page pinned to the dark theme, painted with the theme's own surface so the scheme shows.
+.dark-region {
+    padding: 0.5rem;
+    color: var(--bit-clr-fg-pri);
+    background-color: var(--bit-clr-bg-pri);
+}
+
 // The column a Fluid image scales down to, outlined so the column's edge is visible.
 .narrow-column {
     width: 12rem;

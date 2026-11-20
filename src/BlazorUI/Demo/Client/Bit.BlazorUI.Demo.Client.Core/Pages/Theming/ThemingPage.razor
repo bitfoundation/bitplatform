@@ -1581,6 +1581,15 @@ await BitThemeManager.ApplyBitThemeAsync(fromDesign);</CodeBox>
                     <li>layout &amp; breakpoints (<code>BitCss.Var.Layout</code>)</li>
                     <li>the semantic aliases (<code>BitCss.Var.Semantic</code>)</li>
                 </ul>
+
+                <BitText>
+                    <b>Showing something in one scheme only.</b> <code>bit-css-dark-only</code> (<code>BitCss.Class.ColorScheme.DarkOnly</code>) and <code>bit-css-light-only</code> (<code>BitCss.Class.ColorScheme.LightOnly</code>) take an element out of the layout - and so out of the accessibility tree - in the other scheme: a logo drawn for a dark page, a sun or a moon on a theme toggle. The scheme is that of the nearest element carrying <code>bit-theme</code>, the element itself included - the document's, or a <i>scoped preset</i>'s - and a theme whose name ends in <code>dark</code> is the dark one, the rule every layer of the library classifies themes by; a page that names no theme is light, and following the OS is covered too, since the theme script writes the resolved theme into the attribute. It is all CSS, so prerendered markup is right before the page is interactive and every theme switch is followed without a render. The rules outweigh the <code>display</code> a component gives its own root, so the classes work on a component's <code>Class</code> as well. For an image, <code>BitImage</code>'s <code>DarkSrc</code> / <code>DarkSrcset</code> does the same with one component.
+                </BitText>
+
+                <CodeBox Language="razor">&lt;img class="@@BitCss.Class.ColorScheme.LightOnly" src="logo-light.svg" alt="bit platform" /&gt;
+&lt;img class="@@BitCss.Class.ColorScheme.DarkOnly"  src="logo-dark.svg"  alt="bit platform" /&gt;
+
+&lt;BitImage Src="logo-light.svg" DarkSrc="logo-dark.svg" Alt="bit platform" /&gt;</CodeBox>
             </DocSection>
 
             <DocSection Level="3" Id="css-bundles" Title="External CSS bundles">
@@ -1973,7 +1982,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
             <BitText Element="h4" Typography="BitTypography.H5">Authoring helpers in C#</BitText>
 
             <ul>
-                <li><code>BitCss.Class</code> - <code>bit-css-*</code> utility class names (colors, shadows incl. per-surface, z-index, shape incl. the radius scale <code>bit-css-shp-radius-*</code>, focus ring)</li>
+                <li><code>BitCss.Class</code> - <code>bit-css-*</code> utility class names (colors, shadows incl. per-surface, z-index, shape incl. the radius scale <code>bit-css-shp-radius-*</code>, focus ring, the color-scheme visibility classes <code>bit-css-dark-only</code> / <code>bit-css-light-only</code>)</li>
                 <li><code>BitCss.Var</code> - <code>--bit-*</code> custom property names</li>
             </ul>
 

@@ -326,3 +326,12 @@ $bit-radius-scale: (
 .bit-css-shd-focus-ring:focus-visible {
     @include focus-ring;
 }
+
+//color scheme - an element shown in one scheme only, the scheme of its nearest bit-theme (functions.scss).
+.bit-css-dark-only {
+    @include dark-scheme-only;
+}
+
+.bit-css-light-only {
+    @include light-scheme-only;
+}

@@ -25,6 +25,8 @@ public class BitImageParamsTests : BunitTestContext
         nameof(BitImage.CascadingParameters),
         nameof(BitImage.Alt),
         nameof(BitImage.ChildContent),
+        nameof(BitImage.DarkSrc),
+        nameof(BitImage.DarkSrcset),
         nameof(BitImage.ErrorTemplate),
         nameof(BitImage.LoadingTemplate),
         nameof(BitImage.OnClick),

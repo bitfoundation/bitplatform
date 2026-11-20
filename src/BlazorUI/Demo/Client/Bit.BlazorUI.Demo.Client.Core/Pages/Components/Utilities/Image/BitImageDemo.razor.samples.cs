@@ -385,6 +385,31 @@ private readonly BitImageParams[] imageParams =
 
     private readonly string example16RazorCode = @"
 <style>
+    .dark-region {
+        padding: 0.5rem;
+        color: var(--bit-clr-fg-pri);
+        background-color: var(--bit-clr-bg-pri);
+    }
+</style>
+
+<div>Follows the page's theme</div>
+<BitImage Width=""8rem""
+          Loading=""BitImageLoading.Lazy""
+          Alt=""The bit platform logo""
+          Src=""images/bit-logo-light.svg""
+          DarkSrc=""images/bit-logo-dark.svg"" />
+
+<div bit-theme=""dark"" class=""dark-region"">
+    <div>An always-dark region</div>
+    <BitImage Width=""8rem""
+              Loading=""BitImageLoading.Lazy""
+              Alt=""The bit platform logo""
+              Src=""images/bit-logo-light.svg""
+              DarkSrc=""images/bit-logo-dark.svg"" />
+</div>";
+
+    private readonly string example17RazorCode = @"
+<style>
     .custom-class {
         padding: 0.5rem;
         filter: hue-rotate(45deg);
@@ -418,7 +443,7 @@ private readonly BitImageParams[] imageParams =
           Classes=""@(new() { Image = ""custom-image"" })""
           Src=""images/bit-logo-blue.png"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .image-caption {
         left: 0;

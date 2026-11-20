@@ -403,6 +403,83 @@ $html-font-size: 16px;
 }
 
 /*
+ * dark-scheme() / dark-scheme-only / light-scheme-only
+ * --------------------------------------------------
+ * What is shown in one color scheme only - a logo drawn for a dark page, a screenshot taken in the light
+ * theme - is decided in CSS, off the bit-theme attribute the theme script keeps current, so it is right in
+ * prerendered and statically rendered markup too, before any Blazor runtime is up, and it follows every
+ * change of the theme without a render.
+ *   - A theme is dark when its name ends in "dark", the one rule every layer of the library classifies a
+ *     theme by ([bit-theme$="dark"]: "dark", "fluent-dark", "material-dark", an app's "acme-dark").
+ *     Following the operating system is no exception: the theme script resolves "system" into the theme of
+ *     the scheme the system reports, so the attribute always names the scheme on screen. A page that names
+ *     no theme at all is light, as the core stylesheet is.
+ *   - The scheme is the one of the NEAREST element carrying the attribute, the element itself included:
+ *     the document's, or a scoped region's (<section bit-theme="dark">), whose palette and color-scheme
+ *     re-theme just that subtree. Selectors cannot ask for the nearest ancestor, but they can count
+ *     alternations the way theme-overlay-nearest does: below the outermost dark region, a chain dark /
+ *     light / dark ... reaching the element ends in a dark region exactly when its longest such chain is of
+ *     odd length. $scheme-nesting-depth alternations are told apart; deeper nestings than that read as
+ *     the region that many levels up.
+ *   - The element is taken out of the box tree (display: none), which also takes it out of the
+ *     accessibility tree, so the copy of the other scheme is never announced beside the one on screen.
+ *     The condition weighs several attributes, which is what lets the rules outweigh the display a
+ *     component's own stylesheet gives the same element, wherever the two are linked.
+ *
+ * Usage:
+ *   .bit-xyz-drk {
+ *       @include dark-scheme-only;
+ *   }
+ */
+$scheme-nesting-depth: 3;
+
+@function dark-scheme() {
+    $dark: '[bit-theme$="dark"]';
+    $light: '[bit-theme]:not([bit-theme$="dark"])';
+    $condition: null;
+    $depth: $scheme-nesting-depth;
+
+    @while $depth > 0 {
+        $chain: $dark;
+        $i: 2;
+
+        @while $i <= $depth {
+            @if $i % 2 == 0 {
+                $chain: '#{$chain} #{$light}';
+            } @else {
+                $chain: '#{$chain} #{$dark}';
+            }
+
+            $i: $i + 1;
+        }
+
+        $inside: ':is(#{$chain}, #{$chain} *)';
+
+        @if $condition {
+            $condition: '#{$inside}:not(#{$condition})';
+        } @else {
+            $condition: $inside;
+        }
+
+        $depth: $depth - 1;
+    }
+
+    @return string.unquote($condition);
+}
+
+@mixin dark-scheme-only {
+    &:not(#{dark-scheme()}) {
+        display: none;
+    }
+}
+
+@mixin light-scheme-only {
+    &#{dark-scheme()} {
+        display: none;
+    }
+}
+
+/*
  * spinner-ring($size, $color, $track, $box-sizing, $stroke)
  * --------------------------------------------------
  * The inline busy spinner a component draws for itself - core components never render a

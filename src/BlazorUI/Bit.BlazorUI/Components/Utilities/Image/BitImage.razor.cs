@@ -45,6 +45,13 @@ public partial class BitImage : BitComponentBase
     /// </summary>
     private const string PlaceholderFadeOutAnimation = "bit-img-fade-out";
 
+    /// <summary>
+    /// The classes of what is shown in one color scheme only, where a <see cref="DarkSrc"/> renders an img for
+    /// each (BitImage.scss).
+    /// </summary>
+    private const string LightSchemeClass = "bit-img-lsc";
+    private const string DarkSchemeClass = "bit-img-dsc";
+
     private BitImageState _loadingState;
 
     /// <summary>
@@ -58,6 +65,28 @@ public partial class BitImage : BitComponentBase
     /// requested again and again by its own error.
     /// </summary>
     private bool _fallbackApplied;
+
+    /// <summary>
+    /// The source the img of the dark scheme actually renders, which is <see cref="DarkSrc"/> until an error
+    /// swaps in the <see cref="FallbackSrc"/>, and whether it has; null while there is no <see cref="DarkSrc"/>
+    /// nor <see cref="DarkSrcset"/>, which renders no second img at all.
+    /// </summary>
+    private string? _darkSrc;
+    private bool _darkFallbackApplied;
+
+    /// <summary>
+    /// Whether the img of one scheme has failed for good - its fallback included - while there is a second img
+    /// (see <see cref="StateOf"/>): the other one may well be on screen, so the failure is that image's alone.
+    /// </summary>
+    private bool _lightFailed;
+    private bool _darkFailed;
+
+    /// <summary>
+    /// Whether the sources of the img of either scheme have changed in the parameters being set; see
+    /// <see cref="OnParametersSetAsync"/>, which decides what that changes once every parameter is in.
+    /// </summary>
+    private bool _lightSourceChanged;
+    private bool _darkSourceChanged;
 
     /// <summary>
     /// Whether a parameter change has moved the state back to loading without anyone being told yet;
@@ -103,32 +132,34 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// The key of the img element. Changing it replaces the element rather than patching it, which is
     /// the only way to make the browser fetch a source it already has an answer for - see
-    /// <see cref="ReloadAsync"/>.
+    /// <see cref="ReloadAsync"/>. The img of the dark scheme is keyed off the same count (see
+    /// <see cref="_darkReloadKey"/>).
     /// </summary>
     private int _reloadKey;
 
     private ElementReference _imageElement;
 
+    private ElementReference _darkImageElement;
+
     /// <summary>
     /// Whether the img element currently on screen has the Space key suppressed on it, and which
     /// <see cref="_reloadKey"/> that element belongs to - a reload replaces the element, and the
-    /// listener goes away with the one it was put on.
+    /// listener goes away with the one it was put on. The img of the dark scheme keeps a flag of its own.
     /// </summary>
     private bool _preventKeysRegistered;
+    private bool _darkPreventKeysRegistered;
     private int _preventKeysReloadKey;
 
     private bool _isClickable => Disabled is false && OnClick.HasDelegate;
 
-    // The placeholder stands in for an image that is not on screen, which is as true of one that has
-    // failed as of one still on its way: it is taken away by the image arriving rather than by time.
-    // An image that fades in keeps it through the fade, fading it out as the image fades in over it -
-    // taken away at once, the frame would drop to its background for the length of the fade - and lets it
-    // go once that fade has ended.
-    private string? _placeholderSrc => PlaceholderSrc.HasValue() && (_loadingState is not BitImageState.Loaded || _isPlaceholderLeaving)
-                                        ? PlaceholderSrc
-                                        : null;
+    // The two imgs are siblings, so they are keyed apart: the dark one counts down from -1 as the other counts up from 0.
+    private int _darkReloadKey => -1 - _reloadKey;
 
-    private bool _isPlaceholderLeaving => _loadingState is BitImageState.Loaded && FadeIn && _placeholderFaded is false;
+    // Whether a second img is rendered for the dark scheme.
+    private bool _hasDarkImage => DarkSrc.HasValue() || DarkSrcset.HasValue();
+
+    // Whether the placeholder of an image that fades in is on its way out.
+    private bool _isPlaceholderLeaving => IsPlaceholderLeaving(_loadingState);
 
     // Until a prerendered component has rendered in the browser the image is left to the browser, shown while it
     // loads the way an img with nothing around it is. That is all a prerendered page shows before it is interactive and all
@@ -141,23 +172,7 @@ public partial class BitImage : BitComponentBase
     // with nothing to load has nothing for the browser to show either, so it is hidden from the start as it always is.
     private bool _isLeftToBrowser => (_awaitsTakeOver || _isKeptByBrowser) &&
                                      _loadingState is BitImageState.Loading &&
-                                     (_src.HasValue() || Srcset.HasValue() || _hasSources);
-
-    // Whether the img element is on screen, which is also whether its alt is in the accessibility tree.
-    private bool _isImageVisible => _loadingState is BitImageState.Loaded ||
-                                    (_loadingState is BitImageState.Loading && (StartVisible || _isLeftToBrowser));
-
-    private bool _isLoadingTemplateShown => _loadingState is BitImageState.Loading && _isImageVisible is false && LoadingTemplate is not null;
-
-    private bool _isErrorTemplateShown => _loadingState is BitImageState.Error && ErrorTemplate is not null;
-
-    // The text alternative announced in place of an image that is not on screen; see the .bit-img-alt rule.
-    // A template on screen speaks for itself, and a decorative image has nothing to announce. It is read
-    // the way GetImageAttributes writes the img: a parameter first, then the attribute of the same name a
-    // page put in ImageAttributes.
-    private string? _hiddenImageName => _isImageVisible || _isLoadingTemplateShown || _isErrorTemplateShown
-                                            ? null
-                                            : FirstValue(AriaLabel, GetImageAttribute("aria-label"), Alt, GetImageAttribute("alt"));
+                                     (_src.HasValue() || Srcset.HasValue() || _hasSources || _hasDarkImage);
 
     private bool _hasSources
     {
@@ -172,6 +187,79 @@ public partial class BitImage : BitComponentBase
 
             return false;
         }
+    }
+
+    /// <summary>
+    /// The state the img of one scheme is shown by: the state of the component, unless that image has failed
+    /// for good on its own while the other one is there (see <see cref="HandleOnErrorAsync"/>). Without a
+    /// <see cref="DarkSrc"/> it is the state of the component for both, there being one img.
+    /// </summary>
+    private BitImageState StateOf(bool dark) => (dark ? _darkFailed : _lightFailed) ? BitImageState.Error : _loadingState;
+
+    // The placeholder stands in for an image that is not on screen, which is as true of one that has
+    // failed as of one still on its way: it is taken away by the image arriving rather than by time.
+    // An image that fades in keeps it through the fade, fading it out as the image fades in over it -
+    // taken away at once, the frame would drop to its background for the length of the fade - and lets it
+    // go once that fade has ended.
+    private bool IsPlaceholderShown(BitImageState state) => PlaceholderSrc.HasValue() && (state is not BitImageState.Loaded || IsPlaceholderLeaving(state));
+
+    private bool IsPlaceholderLeaving(BitImageState state) => state is BitImageState.Loaded && FadeIn && _placeholderFaded is false;
+
+    // Whether the img element is on screen, which is also whether its alt is in the accessibility tree.
+    private bool IsImageVisible(BitImageState state) => state is BitImageState.Loaded ||
+                                                        (state is BitImageState.Loading && (StartVisible || _isLeftToBrowser));
+
+    private bool IsLoadingTemplateShown(BitImageState state) => state is BitImageState.Loading && IsImageVisible(state) is false && LoadingTemplate is not null;
+
+    private bool IsErrorTemplateShown(BitImageState state) => state is BitImageState.Error && ErrorTemplate is not null;
+
+    // The text alternative announced in place of an image that is not on screen; see the .bit-img-alt rule.
+    // A template on screen speaks for itself, and a decorative image has nothing to announce. It is read
+    // the way GetImageAttributes writes the img: a parameter first, then the attribute of the same name a
+    // page put in ImageAttributes.
+    private bool IsHiddenImageAnnounced(BitImageState state) => IsImageVisible(state) is false &&
+                                                                IsLoadingTemplateShown(state) is false &&
+                                                                IsErrorTemplateShown(state) is false &&
+                                                                GetHiddenImageName() is not null;
+
+    private string? GetHiddenImageName() => FirstValue(AriaLabel, GetImageAttribute("aria-label"), Alt, GetImageAttribute("alt"));
+
+    /// <summary>
+    /// The renders of one part of the frame - the placeholder, a template, the hidden image's alt - each with the
+    /// scheme it is shown in and the state it is rendered by.
+    /// </summary>
+    /// <remarks>
+    /// With one img that is the part once, for both schemes, while <paramref name="isShown"/> holds for the state
+    /// of the component. With an img for each scheme the two can differ - one image has failed while the other is
+    /// there - and a part shown for one of them only is rendered for its scheme only (the scheme classes of
+    /// BitImage.scss), as is one shown for both in two different states. Rendered for both in the same state, it
+    /// is rendered once, for both, as without a <see cref="DarkSrc"/>.
+    /// </remarks>
+    private IEnumerable<(string? Scheme, BitImageState State)> GetSchemeParts(Func<BitImageState, bool> isShown)
+    {
+        var light = StateOf(dark: false);
+        var lightShown = isShown(light);
+
+        if (_hasDarkImage is false)
+        {
+            if (lightShown) yield return (null, light);
+
+            yield break;
+        }
+
+        var dark = StateOf(dark: true);
+        var darkShown = isShown(dark);
+
+        if (lightShown && darkShown && light == dark)
+        {
+            yield return (null, light);
+
+            yield break;
+        }
+
+        if (lightShown) yield return (LightSchemeClass, light);
+
+        if (darkShown) yield return (DarkSchemeClass, dark);
     }
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -283,6 +371,46 @@ public partial class BitImage : BitComponentBase
     [Parameter] public BitImageCrossOrigin? CrossOrigin { get; set; }
 
     /// <summary>
+    /// The src of the image shown in place of <see cref="Src"/> while the color scheme is dark.
+    /// </summary>
+    /// <remarks>
+    /// This is the picture drawn for the other scheme - a logo in light ink, a screenshot taken in the dark
+    /// theme. It is rendered as a second img beside the one of <see cref="Src"/>, and which of the two is on
+    /// screen is decided in CSS, off the bit-theme attribute the theme script keeps current: the scheme is the
+    /// one of the nearest element carrying it - the document's, or a scoped region's - and a theme whose name
+    /// ends in "dark" is the dark one. So it is right in prerendered and statically rendered markup too, and it
+    /// follows every change of the theme, the operating system's included, without a render. The img of the
+    /// other scheme is taken out of the layout and so out of the accessibility tree, and every other parameter -
+    /// the alt, the size, the fit, the loading attributes, the click - applies to both.
+    /// <br />
+    /// A browser fetches an img taken out of the layout all the same unless it is loaded lazily, so an eagerly
+    /// loaded image (the default) costs the two downloads; with <see cref="Loading"/> set to
+    /// <see cref="BitImageLoading.Lazy"/> only the image of the scheme on screen is fetched, and the other one
+    /// once the scheme changes - which is what the trade suits wherever the image is not on the first screen.
+    /// <br />
+    /// Each image falls back to the <see cref="FallbackSrc"/> on its own, and the
+    /// <see cref="BitImageState"/>, the templates, the placeholder and the callbacks follow both: the image of
+    /// either scheme arriving loads the component, and one that fails while the other has arrived is shown as
+    /// failed - its <see cref="ErrorTemplate"/>, its placeholder or its alt - in its own scheme only. Changing
+    /// the source of one scheme alone leaves the state as it is, since the image on screen may well be the
+    /// other one, which has nothing new to report. The <see cref="Sources"/> are the img of <see cref="Src"/>'s
+    /// alone; <see cref="Sizes"/> is read by both.
+    /// </remarks>
+    [Parameter, CallOnSet(nameof(OnSetDarkSrc))]
+    public string? DarkSrc { get; set; }
+
+    /// <summary>
+    /// The set of image sources the browser may choose from while the color scheme is dark, with their width
+    /// or density descriptors - the <see cref="Srcset"/> of the <see cref="DarkSrc"/>.
+    /// </summary>
+    /// <remarks>
+    /// It is chosen against the same <see cref="Sizes"/> as the <see cref="Srcset"/>. See <see cref="DarkSrc"/>
+    /// for how the image of the scheme on screen is picked.
+    /// </remarks>
+    [Parameter, CallOnSet(nameof(OnSetDarkSrc))]
+    public string? DarkSrcset { get; set; }
+
+    /// <summary>
     /// Hints the browser at whether the image may be decoded asynchronously.
     /// </summary>
     [Parameter] public BitImageDecoding? Decoding { get; set; }
@@ -335,7 +463,7 @@ public partial class BitImage : BitComponentBase
     /// A fallback belongs to the page rather than to the network: something already cached or inlined
     /// as a data URI, since whatever kept the first image from arriving may well keep this one away too.
     /// </remarks>
-    [Parameter, CallOnSet(nameof(OnSetSrc))]
+    [Parameter, CallOnSet(nameof(OnSetFallbackSrc))]
     public string? FallbackSrc { get; set; }
 
     /// <summary>
@@ -619,7 +747,8 @@ public partial class BitImage : BitComponentBase
     /// It is not captured before the first render.
     /// <br />
     /// <see cref="BitComponentBase.RootElement"/> is the frame around it, which is what carries the
-    /// size and the shape.
+    /// size and the shape. Where a <see cref="DarkSrc"/> is given this is the img of <see cref="Src"/>, which
+    /// the dark scheme takes out of the layout in favor of a second img.
     /// </remarks>
     public ElementReference ImageElement => _imageElement;
 
@@ -635,12 +764,11 @@ public partial class BitImage : BitComponentBase
     /// Nothing but a clickable image (one with an <see cref="OnClick"/>) or one given an explicit
     /// <see cref="BitComponentBase.TabIndex"/> is focusable at all, so anywhere else the call does
     /// nothing. Nothing is captured before the first render either, where it does nothing rather than
-    /// fail on an element that is not there.
+    /// fail on an element that is not there. Where a <see cref="DarkSrc"/> is given, it is the img of the
+    /// scheme on screen that takes the focus: the browser focuses nothing that is out of the layout, so both
+    /// are asked, and only that one answers.
     /// </remarks>
-    public ValueTask FocusAsync()
-    {
-        return _imageElement.Context is null ? ValueTask.CompletedTask : _imageElement.FocusAsync();
-    }
+    public ValueTask FocusAsync() => FocusImagesAsync(null);
 
     /// <summary>
     /// Gives the browser focus to the img element of the component.
@@ -650,10 +778,7 @@ public partial class BitImage : BitComponentBase
     /// means that the browser will scroll the element into view after focusing it.
     /// If preventScroll is set to true, no scrolling will occur.</param>
     /// <inheritdoc cref="FocusAsync()" path="/remarks"/>
-    public ValueTask FocusAsync(bool preventScroll)
-    {
-        return _imageElement.Context is null ? ValueTask.CompletedTask : _imageElement.FocusAsync(preventScroll);
-    }
+    public ValueTask FocusAsync(bool preventScroll) => FocusImagesAsync(preventScroll);
 
     /// <summary>
     /// Requests the image again from the beginning, whichever state it is in.
@@ -668,7 +793,15 @@ public partial class BitImage : BitComponentBase
     {
         _reloadKey++;
         _fallbackApplied = false;
+        _lightFailed = false;
         _src = Src.HasValue() ? Src : FallbackSrc;
+
+        if (_hasDarkImage)
+        {
+            _darkFallbackApplied = false;
+            _darkFailed = false;
+            _darkSrc = DarkSrc.HasValue() ? DarkSrc : FallbackSrc;
+        }
 
         return SetLoadingStateAsync(BitImageState.Loading, forceRender: true);
     }
@@ -732,7 +865,26 @@ public partial class BitImage : BitComponentBase
 
         if (string.Equals(_src, expectedSrc, StringComparison.Ordinal) is false)
         {
-            OnSetSrc();
+            _lightSourceChanged = true;
+        }
+
+        if (_hasDarkImage)
+        {
+            var expectedDarkSrc = _darkFallbackApplied || DarkSrc.HasNoValue() ? FallbackSrc : DarkSrc;
+
+            if (string.Equals(_darkSrc, expectedDarkSrc, StringComparison.Ordinal) is false)
+            {
+                _darkSourceChanged = true;
+            }
+        }
+        else
+        {
+            RemoveDarkImage();
+        }
+
+        if (_lightSourceChanged || _darkSourceChanged)
+        {
+            ApplySourceChanges();
         }
 
         // The source change that put the component back into the loading state is reported here rather
@@ -773,33 +925,105 @@ public partial class BitImage : BitComponentBase
         {
             _preventKeysReloadKey = _reloadKey;
             _preventKeysRegistered = false;
+            _darkPreventKeysRegistered = false;
         }
 
-        if (interactive == _preventKeysRegistered) return;
-
-        try
+        // The img of the dark scheme goes away with its sources, and the listener with it.
+        if (_hasDarkImage is false)
         {
-            await _js.BitUtilsRegisterPreventKeys(_imageElement, interactive ? [" ", "Spacebar"] : []);
+            _darkPreventKeysRegistered = false;
+        }
 
+        if (interactive != _preventKeysRegistered && await RegisterPreventKeysAsync(_imageElement, interactive))
+        {
             // Only a call that landed counts as registered: flagging it beforehand would leave a failed
             // one believing the listener is installed, and the guard above would never let it be tried
             // again.
             _preventKeysRegistered = interactive;
         }
-        catch (JSDisconnectedException) { } // the circuit is gone, nothing to register
-        catch (JSException) { } // a JS-side failure here only costs the page-scroll prevention
+
+        if (_hasDarkImage && interactive != _darkPreventKeysRegistered && await RegisterPreventKeysAsync(_darkImageElement, interactive))
+        {
+            _darkPreventKeysRegistered = interactive;
+        }
+    }
+
+    private async Task<bool> RegisterPreventKeysAsync(ElementReference element, bool interactive)
+    {
+        try
+        {
+            await _js.BitUtilsRegisterPreventKeys(element, interactive ? [" ", "Spacebar"] : []);
+
+            return true;
+        }
+        catch (JSDisconnectedException) { return false; } // the circuit is gone, nothing to register
+        catch (JSException) { return false; } // a JS-side failure here only costs the page-scroll prevention
+    }
+
+    /// <summary>
+    /// Focuses the img of the scheme on screen: the img of the other one is out of the layout, which the
+    /// browser focuses nothing in, so both are asked and only the one on screen answers. The dark one is asked
+    /// first, so the img of <see cref="Src"/> - the one there is without a <see cref="DarkSrc"/> - is asked last
+    /// and has the last word wherever no stylesheet decides between the two.
+    /// </summary>
+    private async ValueTask FocusImagesAsync(bool? preventScroll)
+    {
+        if (_hasDarkImage && _darkImageElement.Context is not null)
+        {
+            await (preventScroll.HasValue ? _darkImageElement.FocusAsync(preventScroll.Value) : _darkImageElement.FocusAsync());
+        }
+
+        if (_imageElement.Context is null) return;
+
+        await (preventScroll.HasValue ? _imageElement.FocusAsync(preventScroll.Value) : _imageElement.FocusAsync());
     }
 
 
+
+    // A change of the sources is only noted while the parameters are being assigned, and taken in once they all are
+    // (see ApplySourceChanges): what it changes depends on the sources of the other scheme, which may not have been
+    // assigned yet. The fallback is a source of both.
+    private void OnSetSrc() => _lightSourceChanged = true;
+
+    private void OnSetDarkSrc() => _darkSourceChanged = true;
+
+    private void OnSetFallbackSrc()
+    {
+        _lightSourceChanged = true;
+        _darkSourceChanged = true;
+    }
 
     /// <summary>
     /// A new source is a new image, so whatever the previous one ended up as is no longer the answer:
     /// the state returns to loading and the fallback is available again.
     /// </summary>
-    private void OnSetSrc()
+    /// <remarks>
+    /// Where a <see cref="DarkSrc"/> renders a second img, that is so of each img whose sources changed, but the
+    /// state only returns to loading once the sources of both have: the image on screen may well be the one
+    /// whose sources stayed as they were, which has no load event coming to take it out of hiding again.
+    /// </remarks>
+    private void ApplySourceChanges()
     {
-        _fallbackApplied = false;
-        _src = Src.HasValue() ? Src : FallbackSrc;
+        var renewsAll = _lightSourceChanged && (_darkSourceChanged || _hasDarkImage is false);
+
+        if (_lightSourceChanged)
+        {
+            _fallbackApplied = false;
+            _lightFailed = false;
+            _src = Src.HasValue() ? Src : FallbackSrc;
+        }
+
+        if (_darkSourceChanged && _hasDarkImage)
+        {
+            _darkFallbackApplied = false;
+            _darkFailed = false;
+            _darkSrc = DarkSrc.HasValue() ? DarkSrc : FallbackSrc;
+        }
+
+        _lightSourceChanged = false;
+        _darkSourceChanged = false;
+
+        if (renewsAll is false) return;
 
         // What the browser was painting was the previous source; the new one is the component's to show - even
         // while the browser is still being asked about the previous one (see TakeOverFromBrowserAsync), whose answer
@@ -812,6 +1036,28 @@ public partial class BitImage : BitComponentBase
 
         _loadingState = BitImageState.Loading;
         _arrivedOnScreen = false;
+        _stateChangePending = true;
+    }
+
+    /// <summary>
+    /// Forgets the img of the dark scheme once there is no <see cref="DarkSrc"/> nor <see cref="DarkSrcset"/>
+    /// to render it for. The img of <see cref="Src"/> is then the image, so a failure that was its own alone is
+    /// the state of the component.
+    /// </summary>
+    private void RemoveDarkImage()
+    {
+        _darkSrc = null;
+        _darkFallbackApplied = false;
+        _darkFailed = false;
+        _darkSourceChanged = false;
+
+        if (_lightFailed is false) return;
+
+        _lightFailed = false;
+
+        if (_loadingState is BitImageState.Error) return;
+
+        _loadingState = BitImageState.Error;
         _stateChangePending = true;
     }
 
@@ -845,6 +1091,14 @@ public partial class BitImage : BitComponentBase
         try
         {
             progress = await _js.BitUtilsGetImageProgress(_imageElement);
+
+            // With a second img for the dark scheme it is whichever of the two the browser got furthest with. Only
+            // the stylesheet knows which one is on screen, and keeping the image the browser's while the other one
+            // finishes takes nothing off the screen: it was being shown as the browser's all along.
+            if (_hasDarkImage)
+            {
+                progress = Math.Max(progress, await _js.BitUtilsGetImageProgress(_darkImageElement));
+            }
         }
         catch (JSDisconnectedException) { } // the circuit is gone, there is nothing left to show
         catch (JSException) { } // an image that cannot be asked about is shown the way the component shows any other
@@ -931,8 +1185,13 @@ public partial class BitImage : BitComponentBase
     /// when the URL is already in its memory cache, as the image a prerendered page deferred is when the
     /// interactive render replaces it. Written ahead of the loading attribute, a lazy image far off screen
     /// would then be fetched as an eager one.
+    /// <br />
+    /// The img of the dark scheme (<paramref name="dark"/>) is written the same way but for its sources, which
+    /// are <see cref="DarkSrc"/> and <see cref="DarkSrcset"/> alone - a src or a srcset put in ImageAttributes is
+    /// the picture of the other scheme - and for an id, which names one element of the page and so stays on the
+    /// img of <see cref="Src"/>.
     /// </remarks>
-    private Dictionary<string, object> GetImageAttributes()
+    private Dictionary<string, object> GetImageAttributes(bool dark = false)
     {
         Dictionary<string, object> attributes = new(ImageAttributes.Count + 14, StringComparer.OrdinalIgnoreCase);
 
@@ -942,15 +1201,19 @@ public partial class BitImage : BitComponentBase
         {
             if (string.Equals(attribute.Key, "src", StringComparison.OrdinalIgnoreCase))
             {
-                splattedSrc = attribute.Value;
+                splattedSrc = dark ? null : attribute.Value;
             }
             else if (string.Equals(attribute.Key, "srcset", StringComparison.OrdinalIgnoreCase))
             {
-                splattedSrcset = attribute.Value;
+                splattedSrcset = dark ? null : attribute.Value;
             }
             else if (string.Equals(attribute.Key, "sizes", StringComparison.OrdinalIgnoreCase))
             {
                 splattedSizes = attribute.Value;
+            }
+            else if (dark && string.Equals(attribute.Key, "id", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
             }
             else
             {
@@ -1004,13 +1267,13 @@ public partial class BitImage : BitComponentBase
         // by it, the same way the two styles are: both are lists, and neither is the other's default.
         attributes["class"] = GetImageClasses(attributes.TryGetValue("class", out var splattedClass)
                                                 ? splattedClass?.ToString()
-                                                : null);
+                                                : null, dark);
 
         // Last, in the order a browser reads them in: the sizes the srcset is chosen against, the srcset,
         // and the src. A parameter wins over what the page put in ImageAttributes, as everywhere above.
         SetOrKeep(attributes, "sizes", Sizes, splattedSizes);
-        SetOrKeep(attributes, "srcset", Srcset, splattedSrcset);
-        SetOrKeep(attributes, "src", _src, splattedSrc);
+        SetOrKeep(attributes, "srcset", dark ? DarkSrcset : Srcset, splattedSrcset);
+        SetOrKeep(attributes, "src", dark ? _darkSrc : _src, splattedSrc);
 
         return attributes;
 
@@ -1049,12 +1312,18 @@ public partial class BitImage : BitComponentBase
 
     private string? GetPlaceholderReferrerPolicy() => GetReferrerPolicy() ?? GetImageAttribute("referrerpolicy");
 
-    private string GetPlaceholderClasses()
+    private string GetPlaceholderClasses(BitImageState state, string? scheme)
     {
-        var className = _isPlaceholderLeaving ? "bit-img-plc bit-img-pfo" : "bit-img-plc";
+        var className = IsPlaceholderLeaving(state) ? "bit-img-plc bit-img-pfo" : "bit-img-plc";
 
-        return Classes?.Placeholder.HasValue() is true ? $"{className} {Classes.Placeholder}" : className;
+        return JoinClasses(JoinClasses(className, scheme), Classes?.Placeholder);
     }
+
+    // The class of a part of the frame: its own, then the scheme it is rendered for (see GetSchemeParts), then the
+    // page's.
+    private string GetTemplateClasses(string? scheme, string? classes) => JoinClasses(JoinClasses("bit-img-tpl", scheme), classes);
+
+    private static string JoinClasses(string className, string? other) => other.HasValue() ? $"{className} {other}" : className;
 
     private string? GetPlaceholderStyles()
     {
@@ -1085,7 +1354,7 @@ public partial class BitImage : BitComponentBase
         return JoinStyles(style, Styles?.Image);
     }
 
-    private string GetImageClasses(string? splattedClass = null)
+    private string GetImageClasses(string? splattedClass = null, bool dark = false)
     {
         StringBuilder className = new StringBuilder();
 
@@ -1125,7 +1394,13 @@ public partial class BitImage : BitComponentBase
 
         className.Append(Cover is BitImageCover.Landscape ? " bit-img-lan" : " bit-img-por");
 
-        if (_isImageVisible)
+        // Where there are two imgs each one is told apart by the scheme it is shown in (BitImage.scss).
+        if (_hasDarkImage)
+        {
+            className.Append(dark ? $" {DarkSchemeClass}" : $" {LightSchemeClass}");
+        }
+
+        if (IsImageVisible(StateOf(dark)))
         {
             className.Append(" bit-img-vis");
 
@@ -1204,27 +1479,60 @@ public partial class BitImage : BitComponentBase
         await OnClick.InvokeAsync(new MouseEventArgs { Type = "click", Detail = 0 });
     }
 
-    private async Task HandleOnError()
+    private Task HandleOnError() => HandleOnErrorAsync(dark: false);
+
+    private Task HandleOnDarkError() => HandleOnErrorAsync(dark: true);
+
+    private async Task HandleOnErrorAsync(bool dark)
     {
         await OnError.InvokeAsync();
+
+        // The image of a DarkSrc that has already arrived is the other one: with two imgs, a failure that comes after
+        // it is the failing image's alone, and it takes nothing away from the one that is there.
+        var otherArrived = _hasDarkImage && _loadingState is BitImageState.Loaded;
 
         // The fallback is another image being fetched rather than the end of this one, so the state
         // stays at loading and only the source changes. It is tried once: a fallback that fails as
         // well would otherwise be asked for again by its own error, forever.
-        if (_fallbackApplied is false &&
+        if ((dark ? _darkFallbackApplied : _fallbackApplied) is false &&
             FallbackSrc.HasValue() &&
-            string.Equals(FallbackSrc, _src, StringComparison.Ordinal) is false)
+            string.Equals(FallbackSrc, dark ? _darkSrc : _src, StringComparison.Ordinal) is false)
         {
-            _fallbackApplied = true;
-            _src = FallbackSrc;
+            if (dark)
+            {
+                _darkFallbackApplied = true;
+                _darkSrc = FallbackSrc;
+            }
+            else
+            {
+                _fallbackApplied = true;
+                _src = FallbackSrc;
+            }
 
-            // The fallback is a new image, the component's to show (see OnSetSrc).
+            if (otherArrived) return;
+
+            // The fallback is a new image, the component's to show (see ApplySourceChanges).
             _isKeptByBrowser = false;
             _awaitsTakeOver = false;
 
             await SetLoadingStateAsync(BitImageState.Loading, forceRender: true);
 
             return;
+        }
+
+        // Kept per image only where there are two of them (see StateOf).
+        if (_hasDarkImage)
+        {
+            if (dark)
+            {
+                _darkFailed = true;
+            }
+            else
+            {
+                _lightFailed = true;
+            }
+
+            if (otherArrived) return;
         }
 
         await SetLoadingStateAsync(BitImageState.Error);
@@ -1274,9 +1582,24 @@ public partial class BitImage : BitComponentBase
         _placeholderFaded = true;
     }
 
-    private async Task HandleOnLoad()
+    private Task HandleOnLoad() => HandleOnLoadAsync(dark: false);
+
+    private Task HandleOnDarkLoad() => HandleOnLoadAsync(dark: true);
+
+    // The image of either scheme arriving loads the component: which of the two is on screen is the stylesheet's
+    // to know, and a lazily loaded pair only fetches that one.
+    private async Task HandleOnLoadAsync(bool dark)
     {
         await OnLoad.InvokeAsync();
+
+        if (dark)
+        {
+            _darkFailed = false;
+        }
+        else
+        {
+            _lightFailed = false;
+        }
 
         await SetLoadingStateAsync(BitImageState.Loaded);
     }
