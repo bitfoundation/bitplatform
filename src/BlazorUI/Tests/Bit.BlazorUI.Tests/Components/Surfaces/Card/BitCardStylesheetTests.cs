@@ -60,7 +60,8 @@ public partial class BitCardStylesheetTests
         // The surface and the shadow chains are the shared $crd-bg / $crd-shd the states read as well.
         StringAssert.Contains(stylesheet, "$crd-bg: var(--bit-crd-bg, var(--bit-Card-background, ");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-dis-bg, var(--bit-crd-sbg, #{$crd-bg}));");
-        StringAssert.Contains(stylesheet, "border-color: var(--bit-crd-dis-brd, var(--bit-crd-brd-clr, var(--bit-Card-border-color, ");
+        StringAssert.Contains(stylesheet, "$crd-brd: var(--bit-crd-brd-clr, var(--bit-Card-border-color, ");
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-crd-dis-brd, var(--bit-crd-sbr, #{$crd-brd}));");
         StringAssert.Contains(stylesheet, "border-radius: var(--bit-crd-radius, var(--bit-Card-radius, ");
         StringAssert.Contains(stylesheet, "$crd-shd: var(--bit-crd-shd, var(--bit-Card-shadow, ");
         StringAssert.Contains(stylesheet, "box-shadow: $crd-shd;");
@@ -221,7 +222,7 @@ public partial class BitCardStylesheetTests
 
         // The shadow and the rule width are read by the root alone, so they are registered as properties that do not
         // inherit, while still being reset on the root with the rest for a browser without @property.
-        StringAssert.Contains(stylesheet, "\n$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;\n");
+        StringAssert.Contains(stylesheet, "\n$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, trn;\n");
         StringAssert.Contains(stylesheet, """
             @each $name in $crd-root-only-properties {
                 @property --bit-crd-#{$name} {
@@ -233,7 +234,7 @@ public partial class BitCardStylesheetTests
 
         var privateList = SourceFiles.GetPrivatePropertyLists(stylesheet).Single(l => l.Name == "crd-private-properties");
 
-        foreach (var name in new[] { "shd", "shd-hov", "shd-act", "brd-wid" })
+        foreach (var name in new[] { "shd", "shd-hov", "shd-act", "brd-wid", "sbr", "trn" })
         {
             CollectionAssert.Contains(privateList.Names.ToArray(), name, $"{name} is registered but no longer reset on the root.");
         }
@@ -246,7 +247,7 @@ public partial class BitCardStylesheetTests
 
         // A card that is a button is pressed through its root, in a rule that needs no :has, so a browser that cannot
         // read :has keeps the press of a root that is the control rather than dropping it with the rest of a list.
-        StringAssert.Contains(stylesheet, "\n.bit-crd-btn:active {\n    box-shadow: $crd-shd-active;\n    --bit-crd-sbg: #{$crd-bg-active};\n}");
+        StringAssert.Contains(stylesheet, "\n.bit-crd-btn:active {\n    box-shadow: $crd-shd-active;\n    --bit-crd-sbg: #{$crd-bg-active};\n    --bit-crd-trn: none;\n}");
 
         // A linked card is pressed through its anchor alone, since :active on the root would also be the press of a
         // control in its header or its footer.
@@ -255,6 +256,33 @@ public partial class BitCardStylesheetTests
 
         // ...and pressing one of the controls in the slots of a card that is a button leaves the card where it is.
         StringAssert.Contains(stylesheet, "\n.bit-crd-btn:active:has(> .bit-crd-fac:active, > .bit-crd-mai > .bit-crd-hdr > .bit-crd-act:active, > .bit-crd-mai > .bit-crd-ftr:active) {\n    box-shadow: $crd-shd;");
+    }
+
+    [TestMethod]
+    public void BitCardShouldMoveItsRuleAndItsOffsetUnderThePointer()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The hover rule falls back to the resting one, and the color a Border or a role asked for stays put under the
+        // pointer, since it is the more specific ask. The offset is nothing unless the variable asks for one.
+        StringAssert.Contains(stylesheet, "$crd-brd-hover: var(--bit-crd-brd-clr, var(--bit-Card-hover-border-color, var(--bit-Card-border-color, #{$clr-brd-pri})));");
+        StringAssert.Contains(stylesheet, "$crd-trn-hover: var(--bit-Card-hover-translate, none);");
+
+        // Both are states of every card that answers the pointer - a control or a Hoverable one, like the hover shadow -
+        // and move a private variable the root paints from, so a class the app hands the root keeps its paint.
+        var hover = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-crd-int:hover,\n    .bit-crd-hov:hover {");
+        StringAssert.Contains(hover, "--bit-crd-sbr: #{$crd-brd-hover};");
+        StringAssert.Contains(hover, "--bit-crd-trn: #{$crd-trn-hover};");
+
+        // The move is timed by the motion tokens, which is what collapses it under reduced motion.
+        var root = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-crd {");
+        StringAssert.Contains(root, "translate: var(--bit-crd-trn, none);");
+        StringAssert.Contains(root, "translate $mot-duration-short $mot-easing;");
+
+        // A press settles the card back to its place along with its shadow, and pressing a control inside a card that is
+        // a button leaves the card where the hover put it.
+        StringAssert.Contains(stylesheet, "\n.bit-crd-int:has(> .bit-crd-lnk:active) {\n    box-shadow: $crd-shd-active;\n    --bit-crd-sbg: #{$crd-bg-active};\n    --bit-crd-trn: none;\n}");
+        StringAssert.Contains(stylesheet, "        --bit-crd-sbg: #{$crd-bg-hover};\n        --bit-crd-trn: #{$crd-trn-hover};\n");
     }
 
     [TestMethod]

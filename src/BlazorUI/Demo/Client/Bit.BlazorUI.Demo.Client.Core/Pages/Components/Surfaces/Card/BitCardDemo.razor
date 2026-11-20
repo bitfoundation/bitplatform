@@ -292,8 +292,9 @@
 
     <DemoExample Title="Elevation & Hover" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            <b>Elevation</b> picks a level of the theme's shadow ramp (0-24) and lifts from it on hover. <b>NoShadow</b> flattens the card,
-            and <b>Hoverable</b> lifts a card that is not clickable under the pointer.
+            <b>Elevation</b> picks a level of the theme's shadow ramp (0-24) and rises from it on hover. <b>NoShadow</b> flattens the card,
+            and <b>Hoverable</b> gives a card that is not clickable the hover shadow under the pointer - and the hover border color and offset
+            when the variables set them (see CSS variables below).
         </div>
         <br /><br />
         <BitSlider @bind-Value="elevation" Min="0" Max="24" Step="1" Label="Elevation" />
@@ -358,11 +359,12 @@
         <div>
             The public <b>--bit-Card-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink> table) restyle every
             card at once. They inherit, so set them on <code>:root</code>, on any ancestor - a plain element, as here - or on one card's <b>Style</b>.
-            A parameter set on the card still wins, and a disabled card keeps the disabled colors.
+            A parameter set on the card still wins, and a disabled card keeps the disabled colors. Hover the first row: <b>--bit-Card-hover-border-color</b>
+            darkens the rule and <b>--bit-Card-hover-translate</b> lifts the card, while the Border of the last one keeps its color.
         </div>
         <br /><br />
-        <div class="card-row" style="--bit-Card-radius: 1rem; --bit-Card-padding: 1.25rem; --bit-Card-shadow: none; --bit-Card-border-width: 1px; --bit-Card-border-color: var(--bit-clr-brd-sec); --bit-Card-hover-shadow: var(--bit-shd-md);">
-            <BitCard Hoverable Title="Soft" Subtitle="Rounder, flat, outlined" Width="14rem" />
+        <div class="card-row" style="--bit-Card-radius: 1rem; --bit-Card-padding: 1.25rem; --bit-Card-shadow: none; --bit-Card-border-width: 1px; --bit-Card-border-color: var(--bit-clr-brd-sec); --bit-Card-hover-shadow: var(--bit-shd-md); --bit-Card-hover-border-color: var(--bit-clr-brd-pri); --bit-Card-hover-translate: 0 -2px;">
+            <BitCard Hoverable Title="Soft" Subtitle="Flat, outlined, lifts on hover" Width="14rem" />
             <BitCard Hoverable Title="Same look" Subtitle="From the same ancestor" Width="14rem" />
             <BitCard Hoverable Border="BitColorKind.Primary" Title="Border wins" Subtitle="A parameter beats the variable" Width="14rem" />
         </div>

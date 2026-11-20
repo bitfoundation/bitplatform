@@ -101,7 +101,7 @@ public partial class BitCardDemo
             Name = "Elevation",
             Type = "int?",
             DefaultValue = "null",
-            Description = "A level of the theme's shadow ramp (0-24, --bit-shd-0 to --bit-shd-24) the card rests at and lifts from on hover. 0 is flat.",
+            Description = "A level of the theme's shadow ramp (0-24, --bit-shd-0 to --bit-shd-24) the card rests at and rises from on hover. 0 is flat.",
         },
         new()
         {
@@ -171,7 +171,7 @@ public partial class BitCardDemo
             Name = "Hoverable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lifts the card under the pointer. A clickable or linked card lifts on its own.",
+            Description = "Gives a card that is not a control the hover shadow under the pointer, and the hover border color and offset when --bit-Card-hover-border-color and --bit-Card-hover-translate set them. A clickable or linked card gets them on its own.",
         },
         new()
         {
@@ -296,7 +296,7 @@ public partial class BitCardDemo
             Name = "NoShadow",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the resting shadow. The card still lifts on hover when it is clickable, linked or Hoverable.",
+            Description = "Removes the resting shadow. The card still takes the hover shadow when it is clickable, linked or Hoverable.",
         },
         new()
         {
@@ -653,6 +653,18 @@ public partial class BitCardDemo
             Name = "--bit-Card-active-background",
             DefaultValue = "The resting background washed 10% with the text color",
             Description = "Background of a clickable or linked card while pressed. A Fill card uses its role's pressed shade instead.",
+        },
+        new()
+        {
+            Name = "--bit-Card-hover-border-color",
+            DefaultValue = "The resting border color",
+            Description = "Border color of a clickable, linked or Hoverable card under the pointer, on a card that draws a border. A Border or a Color on the card wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Card-hover-translate",
+            DefaultValue = "none",
+            Description = "How far a clickable, linked or Hoverable card moves under the pointer, as a CSS translate value: 0 -2px lifts it by 2px. The press settles it back. Under reduced motion it steps there instead of gliding.",
         },
         new()
         {
