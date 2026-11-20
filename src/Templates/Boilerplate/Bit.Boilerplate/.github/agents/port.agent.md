@@ -17,11 +17,16 @@ decisions of section 3 are its phase 1, and this file adds what a port needs to 
 features this project already has, such as
 <!--#if (signalR == true)-->
 the AI chatbot,
+<!--#else-->
+several people sharing one device, each switching to their own account with a PIN,
 <!--#endif-->
-two-factor sign-in, or the page where users see the devices they are signed in on and sign them out: should you make
-the product decisions and changes that keep them in the product? Offer Yes first, as the recommended answer. Don't
-ask when the request already answers it, and when the user won't be there until the end (section 5), take Yes and
-list it as decided without review.
+<!--#if (appInsights == true || ads == true)-->
+the dialog that asks users' consent before tracking them,
+<!--#endif-->
+or letting users download their own data and delete their account: should you make the product decisions and changes
+that keep them in the product? Offer Yes first, as the recommended answer. Don't ask when the request already
+answers it, and when the user won't be there until the end (section 5), take Yes and list it as decided without
+review.
 
 - **Yes**: each such feature stays and fits the product. The plan recommends, with section 3's decisions, where it
   shows, who uses it and what it knows about the product.
