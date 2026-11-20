@@ -454,7 +454,7 @@ public class ReshapedProjectTests
         var directory = Shop(host);
         File.WriteAllText(Path.Combine(directory, "Shop.Web.slnf"), "{}");
         var operations = ServerWeb(directory, "Shop.Server.Operations.Web", "http://localhost:1");
-        var appHost = Write(Path.Combine(directory, "hosting", "Host.csproj"), "<Project />");
+        var appHost = Write(Path.Combine(directory, "hosting", "Host.csproj"), """<Project><ItemGroup><ProjectReference Include="..\src\Backend\Shop.Backend.csproj" /></ItemGroup></Project>""");
         Write(Path.Combine(directory, "hosting", "Program.cs"), """
             var operations = builder.AddProject("operations", "../src/Server/Shop.Server.Operations.Web/Shop.Server.Operations.Web.csproj");
             var api = builder.AddProject<Projects.Shop_Backend>("backend");
@@ -497,6 +497,12 @@ public class ReshapedProjectTests
 
         Assert.AreEqual("management", ProjectSteps.AspireResource(two, management, null, appHost), "Two projects may share a file name.");
         Assert.IsNull(ProjectSteps.AspireResource("""builder.AddProject("operations", "../../Operations/Web/Web.csproj");""", management, null, appHost), "A project the AppHost doesn't add has no resource, whatever its file is called.");
+
+        const string typed = """builder.AddProject<Projects.Web>("operations");""";
+        Write(Path.Combine(appHost, "Shop.Server.AppHost.csproj"), """<Project><ItemGroup><ProjectReference Include="..\..\Operations\Web\Web.csproj" /></ItemGroup></Project>""");
+
+        Assert.AreEqual("operations", ProjectSteps.AspireResource(typed, Path.Combine(host.Root, "src", "Operations", "Web", "Web.csproj"), null, appHost));
+        Assert.IsNull(ProjectSteps.AspireResource(typed, management, null, appHost), "The type is the one of the project the AppHost references, not of another with its name.");
     }
 
     [TestMethod]
@@ -591,9 +597,13 @@ public class ReshapedProjectTests
         Assert.HasCount(2, Read("--well-known", "empty", "--well-known", Path.Combine("src", "Backend")).Parts.WellKnown);
         Assert.HasCount(1, Read("--well-known", "empty", "--well-known", "empty").Parts.WellKnown);
 
-        Directory.CreateDirectory(Path.Combine(directory, "cased"));
+        var cased = Directory.CreateDirectory(Path.Combine(directory, "cased")).FullName;
 
-        if (Directory.Exists(Path.Combine(directory, "Cased")) is false)
+        if (Directory.Exists(Path.Combine(directory, "Cased")))
+        {
+            CollectionAssert.AreEqual(new[] { cased }, Read("--well-known", "cased", "--well-known", "Cased", "--well-known", Path.Combine(Path.GetDirectoryName(directory)!, "SHOP", "CASED")).Parts.WellKnown.ToArray(), "On a file system that doesn't tell them apart, it is one folder, named as it is on the disk.");
+        }
+        else
         {
             Directory.CreateDirectory(Path.Combine(directory, "Cased"));
             Assert.HasCount(2, Read("--well-known", "cased", "--well-known", "Cased").Parts.WellKnown, "On a file system that tells them apart, they are two folders.");

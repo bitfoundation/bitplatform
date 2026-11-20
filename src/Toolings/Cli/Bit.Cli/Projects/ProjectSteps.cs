@@ -812,13 +812,20 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var fileName = Path.GetFileName(projectFile);
         var typeName = NotInATypeNameRegex().Replace(Path.GetFileNameWithoutExtension(projectFile), "_");
         var added = AddProjectRegex().Matches(appHost).Select(m => (Name: m.Groups["name"].Value, Path: m.Groups["path"].Value.Replace('\\', '/'))).ToList();
+        var referenced = appHostDirectory is null ? [] : ProjectContext.ProjectFilesIn(appHostDirectory)
+            .SelectMany(host => ProjectReferenceRegex().Matches(ProjectContext.ReadText(host)))
+            .Select(m => Path.GetFullPath(m.Groups["path"].Value.Replace('\\', '/'), appHostDirectory))
+            .ToList();
 
         return (appHostDirectory is null
                 ? added.FirstOrDefault(a => string.Equals(Path.GetFileName(a.Path), fileName, StringComparison.OrdinalIgnoreCase)).Name
                 : added.FirstOrDefault(a => string.Equals(Path.GetFullPath(a.Path, appHostDirectory), Path.GetFullPath(projectFile), StringComparison.OrdinalIgnoreCase)).Name)
-            ?? AddProjectTypeRegex().Matches(appHost).FirstOrDefault(m => m.Groups["type"].Value == typeName)?.Groups["name"].Value
+            ?? (referenced.Count == 0 || referenced.Contains(Path.GetFullPath(projectFile), StringComparer.OrdinalIgnoreCase) ? AddProjectTypeRegex().Matches(appHost).FirstOrDefault(m => m.Groups["type"].Value == typeName)?.Groups["name"].Value : null)
             ?? (templateName is not null && appHost.Contains($"\"{templateName}\"", StringComparison.Ordinal) ? templateName : null);
     }
+
+    [GeneratedRegex(@"<ProjectReference\b[^>]*\bInclude\s*=\s*""(?<path>[^""]+\.csproj)""")]
+    private static partial Regex ProjectReferenceRegex();
 
     [GeneratedRegex(@"AddProject\(\s*""(?<name>[^""]+)""\s*,\s*@?""(?<path>[^""]+\.csproj)""")]
     private static partial Regex AddProjectRegex();

@@ -136,7 +136,32 @@ public sealed class ProjectOptions
     {
         var path = Path.GetFullPath(value, cli.Environment.CurrentDirectory);
 
-        return Exists(path) is false && Path.IsPathRooted(value) is false && Path.GetFullPath(value, projectDirectory) is var inProject && Exists(inProject) ? inProject : path;
+        if (Exists(path) is false && Path.IsPathRooted(value) is false && Path.GetFullPath(value, projectDirectory) is var inProject && Exists(inProject))
+        {
+            path = inProject;
+        }
+
+        return Exists(path) ? AsOnDisk(Path.TrimEndingDirectorySeparator(path)) : path;
+    }
+
+    private static string AsOnDisk(string path)
+    {
+        try
+        {
+            var entry = new DirectoryInfo(path);
+
+            if (entry.Parent is not { } parent || entry.Name.AsSpan().IndexOfAny('*', '?') >= 0)
+                return path;
+
+            var names = parent.EnumerateFileSystemInfos(entry.Name, new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive, AttributesToSkip = 0 }).Select(e => e.Name).ToList();
+            var name = names.Count == 1 && names.Contains(entry.Name, StringComparer.Ordinal) is false ? names[0] : entry.Name;
+
+            return Path.Combine(AsOnDisk(parent.FullName), name);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException or ArgumentException)
+        {
+            return path;
+        }
     }
 
     private static bool Exists(string path) => File.Exists(path) || Directory.Exists(path);
