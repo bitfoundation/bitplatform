@@ -86,6 +86,13 @@ public partial class BitSeparatorDemo
         },
         new()
         {
+            Name = "Fade",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Fades the line out toward its ends: each segment beside the content fades away toward its outer end, mirroring the other, and a separator without content fades toward both ends. The ends follow the reading direction, and the line is drawn in full in a forced-colors mode or when more contrast is asked for."
+        },
+        new()
+        {
             Name = "Inset",
             Type = "string?",
             DefaultValue = "null",
@@ -153,6 +160,12 @@ public partial class BitSeparatorDemo
             Name = "--bit-Separator-line-style",
             DefaultValue = "solid",
             Description = "Style of the line, as any CSS border style. The LineStyle parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-line-background",
+            DefaultValue = "none",
+            Description = "An image painted along each segment of the line in place of its color and style: a gradient or a url(). A plain color is --bit-Separator-color's. The Color and Border parameters, and a dashed, dotted or double LineStyle, win over it; a disabled separator and a forced-colors mode draw the plain line instead.",
         },
         new()
         {

@@ -80,6 +80,7 @@ public class BitSeparatorParamsTests : BunitTestContext
             Background = BitColorKind.Secondary,
             Border = BitColorKind.Tertiary,
             Color = BitColor.Error,
+            Fade = true,
             LineStyle = BitLineStyle.Dashed,
             Size = BitSize.Large,
             Vertical = true,
@@ -92,6 +93,7 @@ public class BitSeparatorParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-spr-bsg"));
         Assert.IsTrue(root.ClassList.Contains("bit-spr-btr"));
         Assert.IsTrue(root.ClassList.Contains("bit-spr-err"));
+        Assert.IsTrue(root.ClassList.Contains("bit-spr-fad"));
         Assert.IsTrue(root.ClassList.Contains("bit-spr-dsh"));
         Assert.IsTrue(root.ClassList.Contains("bit-spr-lg"));
         Assert.IsTrue(root.ClassList.Contains("bit-spr-vrt"));
@@ -157,6 +159,7 @@ public class BitSeparatorParamsTests : BunitTestContext
             Vertical = true,
             Decorative = true,
             Element = "li",
+            Fade = true,
             Thickness = "3px",
         }, builder =>
         {
@@ -166,6 +169,7 @@ public class BitSeparatorParamsTests : BunitTestContext
             builder.AddAttribute(4, nameof(BitSeparator.Decorative), false);
             builder.AddAttribute(5, nameof(BitSeparator.Element), "section");
             builder.AddAttribute(6, nameof(BitSeparator.Thickness), "1px");
+            builder.AddAttribute(7, nameof(BitSeparator.Fade), false);
         });
 
         var root = component.Find(".bit-spr");
@@ -176,6 +180,7 @@ public class BitSeparatorParamsTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-spr-err"));
         Assert.IsTrue(root.ClassList.Contains("bit-spr-sld"));
         Assert.IsFalse(root.ClassList.Contains("bit-spr-dsh"));
+        Assert.IsFalse(root.ClassList.Contains("bit-spr-fad"));
         Assert.IsTrue(root.ClassList.Contains("bit-spr-hrz"));
         Assert.AreEqual("--bit-spr-siz:1px", root.GetAttribute("style"));
     }

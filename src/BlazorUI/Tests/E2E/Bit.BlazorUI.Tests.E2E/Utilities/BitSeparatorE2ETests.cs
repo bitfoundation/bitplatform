@@ -6,7 +6,8 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 /// <summary>
 /// Drives BitSeparator (/e2e/separator) in a real browser: the line its ::before / ::after draw (one segment alone,
 /// two flanking content), horizontal and vertical layouts (a flex row's stretch, a run of text, a container's height,
-/// AutoSize), AlignContent with ContentOffset both ways, Inset, every LineStyle, Thickness, every Size, Color, Border
+/// AutoSize), AlignContent with ContentOffset both ways, Inset, every LineStyle, Thickness, Fade and the line background
+/// (with forced colors), every Size, Color, Border
 /// and Background, the public --bit-Separator-* variables and the parameters winning over them, a nested separator
 /// never inheriting the outer one's choices, the separator role, its name and orientation, Decorative, Element,
 /// the BitParams cascade, Style/Class/Styles/Classes and splatted attributes, Visibility, Disabled, RTL (explicit and
@@ -280,6 +281,62 @@ public class BitSeparatorE2ETests : E2ETestBase
 
         Assert.AreEqual("3px", await PseudoAsync("#spr-vline-dashed", "::before", "border-left-width"));
         Assert.AreEqual("dashed", await PseudoAsync("#spr-vline-dashed", "::before", "border-left-style"));
+    }
+
+    [TestMethod]
+    public async Task Fade_FadesEachSegmentTowardItsOuterEnd_FollowingTheDirection()
+    {
+        await OpenAsync(Path);
+
+        await Expect(Page.Locator("#spr-fade")).ToHaveClassAsync(HasClass("bit-spr-fad"));
+
+        // The two segments mirror each other around the content, transparent at their outer ends.
+        StringAssert.Contains(await PseudoAsync("#spr-fade", "::before", "mask-image"), "to right");
+        StringAssert.Contains(await PseudoAsync("#spr-fade", "::after", "mask-image"), "to left");
+
+        // Right to left, the leading segment is the right one.
+        StringAssert.Contains(await PseudoAsync("#spr-fade-rtl", "::before", "mask-image"), "to left");
+        StringAssert.Contains(await PseudoAsync("#spr-fade-rtl", "::after", "mask-image"), "to right");
+
+        // Without content, the one segment fades toward both ends; a vertical one fades up and down.
+        StringAssert.Contains(await PseudoAsync("#spr-fade-empty", "::before", "mask-image"), "to right");
+        StringAssert.Contains(await PseudoAsync("#spr-fade-vertical", "::before", "mask-image"), "to bottom");
+        StringAssert.Contains(await PseudoAsync("#spr-fade-vertical", "::after", "mask-image"), "to top");
+
+        // A separator that is not faded has no mask.
+        Assert.AreEqual("none", await PseudoAsync("#spr-line-background", "::before", "mask-image"));
+    }
+
+    [TestMethod]
+    public async Task LineBackground_PaintsEachSegment_AndTheLineParametersWinOverIt()
+    {
+        await OpenAsync(Path);
+
+        StringAssert.Contains(await PseudoAsync("#spr-line-background", "::before", "border-image-source"), "rgb(1, 2, 3)");
+        StringAssert.Contains(await PseudoAsync("#spr-line-background", "::after", "border-image-source"), "rgb(4, 5, 6)");
+        StringAssert.Contains(await PseudoAsync("#spr-fade", "::before", "border-image-source"), "rgb(1, 2, 3)");
+
+        // A separator that asks for a color or a broken style of its own, or a disabled one, draws its plain line.
+        Assert.AreEqual("none", await PseudoAsync("#spr-line-background-color", "::before", "border-image-source"));
+        Assert.AreEqual("none", await PseudoAsync("#spr-line-background-dashed", "::before", "border-image-source"));
+        Assert.AreEqual("dashed", await PseudoAsync("#spr-line-background-dashed", "::before", "border-top-style"));
+        Assert.AreEqual("none", await PseudoAsync("#spr-line-background-disabled", "::before", "border-image-source"));
+
+        // Nor does a separator outside the container that sets the variable have any line background.
+        Assert.AreEqual("none", await PseudoAsync("#spr-basic", "::before", "border-image-source"));
+    }
+
+    [TestMethod]
+    public async Task ForcedColors_DrawsTheLineInFull_InTheSystemColor()
+    {
+        if (IsWebKit) Assert.Inconclusive("WebKit does not emulate forced colors.");
+
+        await OpenAsync(Path);
+        await Page.EmulateMediaAsync(new() { ForcedColors = ForcedColors.Active });
+
+        Assert.AreEqual("none", await PseudoAsync("#spr-fade", "::before", "mask-image"));
+        Assert.AreEqual("none", await PseudoAsync("#spr-fade", "::before", "border-image-source"));
+        Assert.AreEqual("solid", await PseudoAsync("#spr-fade", "::before", "border-top-style"));
     }
 
     [TestMethod]

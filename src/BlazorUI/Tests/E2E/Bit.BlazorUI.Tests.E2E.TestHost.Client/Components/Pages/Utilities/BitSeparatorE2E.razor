@@ -76,6 +76,21 @@
     </div>
 </E2ESection>
 
+<E2ESection Id="fade" Title="Fade & line background">
+    <div style="width: 400px; --bit-Separator-line-background: linear-gradient(to right, rgb(1, 2, 3), rgb(4, 5, 6));">
+        <BitSeparator Id="spr-fade" Fade>Fade</BitSeparator>
+        <BitSeparator Id="spr-fade-empty" Fade />
+        <BitSeparator Id="spr-fade-rtl" Fade Dir="BitDir.Rtl">Fade</BitSeparator>
+        <BitSeparator Id="spr-line-background">Gradient</BitSeparator>
+        <BitSeparator Id="spr-line-background-color" Color="BitColor.Error">Color wins</BitSeparator>
+        <BitSeparator Id="spr-line-background-dashed" LineStyle="BitLineStyle.Dashed">Dashed wins</BitSeparator>
+        <BitSeparator Id="spr-line-background-disabled" Disabled>Disabled</BitSeparator>
+    </div>
+    <div style="display: flex; height: 60px;">
+        <BitSeparator Id="spr-fade-vertical" Vertical Fade>OR</BitSeparator>
+    </div>
+</E2ESection>
+
 <E2ESection Id="a11y" Title="Accessibility">
     <BitSeparator Id="spr-named">Named by its content</BitSeparator>
     <BitSeparator Id="spr-aria-label" AriaLabel="End of the shipping details" />
