@@ -193,11 +193,7 @@ public sealed class NavigationMenuAndDrawerTests : DemoTest
         var (x, y) = await CenterAsync(from);
         await page.Mouse.MoveAsync((float)x, (float)y);
         await page.Mouse.DownAsync();
-        for (var i = 1; i <= 3; i++)
-        {
-            await page.Mouse.MoveAsync((float)(x + dx * i / 3), (float)(y + dy * i / 3));
-            await page.WaitForTimeoutAsync(16);
-        }
+        await page.Mouse.MoveAsync((float)(x + dx), (float)(y + dy), new MouseMoveOptions { Steps = 3 });
         await page.Mouse.UpAsync();
     }
 
