@@ -199,6 +199,7 @@
         var used = Object.create(null);
 
         container.querySelectorAll(HEADINGS).forEach(function (heading) {
+            if (heading.closest('.bh-example-panel')) return;
             var title = heading.textContent.trim();
             if (title.length === 0) return;
 
