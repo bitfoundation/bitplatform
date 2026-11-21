@@ -44,6 +44,8 @@
     var nativeDisabled = Disabled && DisabledInteractive is false;
 }
 <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     @onmouseenter="HandleOnMouseEnter"
+     @onmouseleave="HandleOnMouseLeave"
      id="@_Id"
      style="@StyleBuilder.Value"
      data-bit-popup-style="@(GetPopupStyle(Toggle && Split && Toggled, Styles?.Toggled, JoinStyles(Styles?.Root, IsOpen ? Styles?.Opened : null)))"
@@ -195,8 +197,9 @@
 }
 
 @* Without the overlay the page keeps its own clicks, and the dismissal the overlay would have taken care of falls
-   to the page-level handler on the JS side (see NoOverlay). *@
-@if (NoOverlay is false)
+   to the page-level handler on the JS side (see NoOverlay). The OpenOnHover mode renders none either, since it
+   would cover the button the pointer opened the menu from (see HasOverlay). *@
+@if (HasOverlay)
 {
     <div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
          aria-hidden="true"
@@ -206,6 +209,8 @@
 }
 
 <div @onkeydown="e => HandleOnMenuKeyDown(e, _calloutId, null)"
+     @onmouseenter="HandleOnMouseEnter"
+     @onmouseleave="HandleOnMouseLeave"
      id="@_calloutId"
      dir="@Dir?.ToString().ToLower()"
      style="@GetCalloutStyle()"

@@ -49,6 +49,7 @@ public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyA
     int IBitMenuButtonSubmenu.Level => Level;
 
     private string _itemId => $"BitMenuButton-{_uniqueId}-item";
+    private string _descriptionId => $"BitMenuButton-{_uniqueId}-description";
     private string _submenuId => $"BitMenuButton-{_uniqueId}-submenu";
     // The menu inside the submenu's callout, which is what the row points at: aria-controls names the
     // popup itself rather than the element that carries it.
@@ -263,9 +264,18 @@ public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyA
         }
     }
 
-    private void HandleOnSubmenuPointerEnter(MouseEventArgs e)
+    // The submenu is moved to the body while it is open, so the pointer travelling into it leaves the menu it was
+    // opened from: in the OpenOnHover mode it is one more place the pointer holds the menu button open from.
+    private async Task HandleOnSubmenuPointerEnter(MouseEventArgs e)
     {
         MenuButton.NextHoverToken();
+
+        await MenuButton.HandleOnMouseEnter();
+    }
+
+    private Task HandleOnSubmenuPointerLeave(MouseEventArgs e)
+    {
+        return MenuButton.HandleOnMouseLeave();
     }
 
     private async Task RunAfterHoverDelay(int token, Func<Task> action)

@@ -183,6 +183,20 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "HoverCloseDelay",
+            Type = "int",
+            DefaultValue = "150",
+            Description = "The delay in milliseconds before the menu closes once the pointer leaves the menu button and its menus in the OpenOnHover mode. It bridges the gap between the button and the menu, and between the menu and a submenu, so moving the pointer from one to the other does not close what the pointer is on its way to.",
+        },
+        new()
+        {
+            Name = "HoverOpenDelay",
+            Type = "int",
+            DefaultValue = "0",
+            Description = "The delay in milliseconds before the menu opens once the pointer enters the menu button in the OpenOnHover mode, so that passing over the button on the way somewhere else does not open it.",
+        },
+        new()
+        {
             Name = "Icon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -316,6 +330,13 @@ public partial class BitMenuButtonDemo
             Name = "OnToggleChange",
             Type = "EventCallback<bool>",
             Description = "The callback that is called when the Toggled value changes in toggle mode.",
+        },
+        new()
+        {
+            Name = "OpenOnHover",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Opens the menu when the pointer enters the menu button and closes it when the pointer leaves both the button and the menu - and any submenu opened from it - which is what a navigation menu is usually expected to do. The button keeps toggling the menu on a click, so the keyboard and the touch screens - where hovering does not exist and this mode turns itself off - are left with a way to reach it. A menu opened by hovering leaves the focus where it is, and Escape closes it wherever the focus is, until an arrow key, Enter or Space on the button, or the keyboard moving the focus into it, hands it to the keyboard. A menu the keyboard holds is left open when the pointer leaves it. No overlay is rendered in this mode, as with NoOverlay.",
         },
         new()
         {
@@ -915,6 +936,18 @@ public partial class BitMenuButtonDemo
         },
         new()
         {
+            Name = "--bit-MenuButton-item-description-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The description under the text of an item.",
+        },
+        new()
+        {
+            Name = "--bit-MenuButton-item-current-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Text and icon color of the item pointing at the current page (see Match), and of the row of the submenu that holds it. The Color parameter wins over it.",
+        },
+        new()
+        {
             Name = "--bit-MenuButton-item-header-color",
             DefaultValue = "--bit-clr-fg-sec",
             Description = "The label of a group header item.",
@@ -956,6 +989,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The custom CSS classes of the item.",
+               },
+               new()
+               {
+                   Name = "Description",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The description of the item: a second line under its text - what an entry of a navigation (mega) menu says about where it leads. It is announced as a description (aria-describedby) rather than as part of the name, and a template renders the item without it.",
                },
                new()
                {
@@ -1021,6 +1061,15 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "A unique value to use as a Key of the item.",
+               },
+               new()
+               {
+                   Name = "Match",
+                   Type = "BitNavMatch?",
+                   DefaultValue = "null",
+                   Description = "Marks the item as the one pointing at the current page by matching its Href against the current URL in the given mode: it carries aria-current=\"page\" and the Current class-style part, and so does the row of the submenu it sits in. Left unset, the item is never marked.",
+                   LinkType = LinkType.Link,
+                   Href = "#nav-match-enum",
                },
                new()
                {
@@ -1125,6 +1174,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "Description",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The description of the option: a second line under its text - what an entry of a navigation (mega) menu says about where it leads. It is announced as a description (aria-describedby) rather than as part of the name, and a template renders the option without it.",
+               },
+               new()
+               {
                    Name = "Href",
                    Type = "string?",
                    DefaultValue = "null",
@@ -1194,6 +1250,15 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "A unique value to use as a key of the option.",
+               },
+               new()
+               {
+                   Name = "Match",
+                   Type = "BitNavMatch?",
+                   DefaultValue = "null",
+                   Description = "Marks the option as the one pointing at the current page by matching its Href against the current URL in the given mode: it carries aria-current=\"page\" and the Current class-style part, and so does the row of the submenu it sits in. Left unset, the option is never marked.",
+                   LinkType = LinkType.Link,
+                   Href = "#nav-match-enum",
                },
                new()
                {
@@ -1319,6 +1384,13 @@ public partial class BitMenuButtonDemo
                },
                new()
                {
+                   Name = "Current",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item that points at the current page (see Match), and for the row of the submenu that holds it."
+               },
+               new()
+               {
                    Name = "ChevronDownButton",
                    Type = "string?",
                    DefaultValue = "null",
@@ -1386,6 +1458,13 @@ public partial class BitMenuButtonDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the chevron of each item of the BitMenuButton that opens a submenu."
+               },
+               new()
+               {
+                   Name = "ItemDescription",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the description of each item of the BitMenuButton."
                },
                new()
                {
@@ -1489,6 +1568,15 @@ public partial class BitMenuButtonDemo
                 },
                 new()
                 {
+                    Name = "Description",
+                    Type = "BitNameSelectorPair<TItem, string?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Description))",
+                    Description = "Description field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
                     Name = "Href",
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitMenuButtonItem.Href))",
@@ -1565,6 +1653,15 @@ public partial class BitMenuButtonDemo
                     Type = "BitNameSelectorPair<TItem, string?>",
                     DefaultValue = "new(nameof(BitMenuButtonItem.Key))",
                     Description = "Key field name and selector of the custom input class.",
+                    Href = "#name-selector-pair",
+                    LinkType = LinkType.Link,
+                },
+                new()
+                {
+                    Name = "Match",
+                    Type = "BitNameSelectorPair<TItem, BitNavMatch?>",
+                    DefaultValue = "new(nameof(BitMenuButtonItem.Match))",
+                    Description = "Match field name and selector of the custom input class.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -1709,6 +1806,7 @@ public partial class BitMenuButtonDemo
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitDropDirection(),
         DemoSharedEnums.BitLinkRels(),
+        DemoSharedEnums.BitNavMatch(),
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitVariant(),
     ];

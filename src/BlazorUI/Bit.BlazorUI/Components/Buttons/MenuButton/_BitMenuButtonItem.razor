@@ -45,14 +45,30 @@
         // The rel and the new-tab sentence follow the rule every anchor of the library shares (BitNewTabUtils);
         // only an item that renders as a followable anchor uses either of them.
         var rel = BitNewTabUtils.AddNoOpener(MenuButton.GetRel(Item), target);
-        var hint = BitNewTabUtils.PlaceHint(BitNewTabUtils.GetHint(target, MenuButton.NewTabHint, MenuButton.NoNewTabHint),
-                                            MenuButton.GetAriaLabel(Item), null, string.Empty);
         // A row that opens a submenu is a way further in rather than a state, so neither kind of mark
         // belongs on it.
         var radioGroup = hasSubmenu ? null : MenuButton.GetRadioGroup(Item);
         var checkable = hasSubmenu is false && (radioGroup.HasValue() || MenuButton.GetCheckable(Item));
         var isChecked = checkable && MenuButton.GetIsChecked(Item);
         var secondaryText = MenuButton.GetSecondaryText(Item);
+        // The description is a part of the default content alone: a template renders the item in its place, so it
+        // leaves nothing for aria-describedby to point at.
+        var description = MenuButton.GetDescription(Item);
+        var hasDescription = description.HasValue() && template is null && MenuButton.ItemTemplate is null;
+        var descriptionId = hasDescription ? _descriptionId : null;
+        // An item with a description is named after its text alone rather than after its content, so the description
+        // is announced as the description it is (aria-describedby) rather than as part of the name. The secondary text
+        // stays in the name, read after the label as it is without a description.
+        var ariaLabel = MenuButton.GetAriaLabel(Item)
+                        ?? (hasDescription ? string.Join(' ', new[] { MenuButton.GetText(Item), secondaryText }.Where(t => t.HasValue())) : null);
+        // The item pointing at the current page says so (aria-current), and the row of a submenu holding it is drawn
+        // as the way to it - which is a look alone: the page it names is the one inside.
+        var isCurrent = hasSubmenu ? MenuButton.HasCurrentChild(Item) : MenuButton.IsCurrent(Item);
+        var ariaCurrent = isCurrent && hasSubmenu is false ? "page" : null;
+        var currentClass = isCurrent ? $"bit-mnb-cur {MenuButton.Classes?.Current}" : null;
+        var currentStyle = isCurrent && MenuButton.Styles?.Current is { Length: > 0 } current ? $";{current}" : null;
+        var hint = BitNewTabUtils.PlaceHint(BitNewTabUtils.GetHint(target, MenuButton.NewTabHint, MenuButton.NoNewTabHint),
+                                            ariaLabel, null, string.Empty);
         // Once any item of the menu is checkable every item reserves the check column, so the labels line up
         // instead of shifting by the width of a glyph from one row to the next.
         var hasCheckColumn = ShowCheckColumn;
@@ -98,9 +114,27 @@
                     {
                         <i aria-hidden="true" style="@MenuButton.Styles?.ItemIcon" class="bit-mnb-iic @itemIcon.GetCssClasses() @MenuButton.Classes?.ItemIcon" />
                     }
-                    <span style="@MenuButton.Styles?.ItemText" class="bit-mnb-btx @MenuButton.Classes?.ItemText">
-                        @MenuButton.GetText(Item)
-                    </span>
+                    @if (hasDescription)
+                    {
+                        @* The text and the description under it are one column, which takes the room the label alone
+                           takes otherwise, so the secondary text and the chevron stay where they are. *@
+                        <span class="bit-mnb-ilb">
+                            <span style="@MenuButton.Styles?.ItemText" class="bit-mnb-btx @MenuButton.Classes?.ItemText">
+                                @MenuButton.GetText(Item)
+                            </span>
+                            <span id="@descriptionId"
+                                  style="@MenuButton.Styles?.ItemDescription"
+                                  class="bit-mnb-ids @MenuButton.Classes?.ItemDescription">
+                                @description
+                            </span>
+                        </span>
+                    }
+                    else
+                    {
+                        <span style="@MenuButton.Styles?.ItemText" class="bit-mnb-btx @MenuButton.Classes?.ItemText">
+                            @MenuButton.GetText(Item)
+                        </span>
+                    }
                     @if (secondaryText.HasValue())
                     {
                         @* Part of the item's accessible name rather than a decoration: a shortcut or a count
@@ -133,9 +167,11 @@
                    rel="@rel"
                    title="@MenuButton.GetTitle(Item)"
                    aria-label="@hint.AriaLabel"
+                   aria-describedby="@descriptionId"
+                   aria-current="@ariaCurrent"
                    aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
-                   style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
-                   class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
+                   style="@($"{MenuButton.GetStyle(Item)};{MenuButton.Styles?.ItemButton}{currentStyle}")"
+                   class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @currentClass @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
                     @content
                     @if (hint.HintText.HasValue())
                     {
@@ -163,13 +199,15 @@
                         tabindex="-1"
                         disabled="@nativeDisabled"
                         aria-disabled="@(isDisabled ? "true" : null)"
-                        aria-label="@MenuButton.GetAriaLabel(Item)"
+                        aria-label="@ariaLabel"
+                        aria-describedby="@descriptionId"
+                        aria-current="@ariaCurrent"
                         aria-checked="@(checkable ? isChecked.ToString().ToLower() : null)"
                         aria-haspopup="@(hasSubmenu ? "menu" : null)"
                         aria-controls="@(hasSubmenu && _isSubmenuOpen ? _submenuMenuId : null)"
                         aria-expanded="@(hasSubmenu ? _isSubmenuOpen.ToString().ToLower() : null)"
-                        style="@MenuButton.GetStyle(Item);@MenuButton.Styles?.ItemButton"
-                        class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @(_isSubmenuOpen ? "bit-mnb-osb" : null) @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
+                        style="@($"{MenuButton.GetStyle(Item)};{MenuButton.Styles?.ItemButton}{currentStyle}")"
+                        class="bit-mnb-itm @(isChecked ? "bit-mnb-chk" : null) @(_isSubmenuOpen ? "bit-mnb-osb" : null) @currentClass @MenuButton.GetClass(Item) @MenuButton.Classes?.ItemButton">
                     @content
                 </button>
             }
@@ -184,6 +222,7 @@
                    markup says so rather than leaving it to where the element happens to be. *@
                 <div @onkeydown="HandleOnSubmenuKeyDown" @onkeydown:stopPropagation="true"
                      @onmouseenter="HandleOnSubmenuPointerEnter"
+                     @onmouseleave="HandleOnSubmenuPointerLeave"
                      id="@_submenuId"
                      dir="@MenuButton.Dir?.ToString().ToLower()"
                      style="@MenuButton.Styles?.Submenu"
