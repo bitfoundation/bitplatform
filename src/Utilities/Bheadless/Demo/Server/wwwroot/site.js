@@ -199,6 +199,9 @@
         var used = Object.create(null);
 
         container.querySelectorAll(HEADINGS).forEach(function (heading) {
+            // A live demo's headings are the demo's, not the page's sections. A portalled dialog or drawer
+            // renders its title in the example panel before it is moved to <body>; an anchor added in that
+            // moment would travel with it, take a place in its focus order and hold its initial focus.
             if (heading.closest('.bh-example-panel')) return;
             var title = heading.textContent.trim();
             if (title.length === 0) return;
