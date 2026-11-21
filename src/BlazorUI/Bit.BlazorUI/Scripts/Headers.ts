@@ -9,21 +9,28 @@
             // and dispose has to take the scroll listener off the target it is bound to at that moment.
             target: { current: HTMLElement | Window },
             observer?: ResizeObserver,
-            // Gives up the claim of this header on the scroll padding of the scroller, whichever box is
-            // carrying it at that moment, and puts the padding back once no header is holding it anymore.
-            clearPadding: () => void,
+            // Gives up the claims of this header on the scroller (its scroll padding, its published height),
+            // whichever box is carrying them at that moment, and puts each property back once no header is
+            // holding it anymore.
+            clearMeasures: () => void,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
             frame: { handle: number }
         }>();
 
-        // The scroll padding of a box is shared ground: two pinned headers over the same scroller (an app
-        // shell whose pane carries both) would each otherwise capture the write of the other as "the
-        // value it had before", so the first one to go would wipe the padding the second still needs and
-        // the second would hand the box back a value the page never had. The value found before any of
-        // them touched the box is kept here instead, together with the headers reserving padding on it,
-        // and only the last one to let go puts it back.
-        private static _paddings = new WeakMap<HTMLElement, { previous: string, owners: Set<string> }>();
+        // The properties a header writes onto the box of its scroller are shared ground: two pinned headers
+        // over the same scroller (an app shell whose pane carries both) would each otherwise capture the
+        // write of the other as "the value it had before", so the first one to go would wipe the value the
+        // second still needs and the second would hand the box back a value the page never had. The value
+        // found before any of them touched the box is kept here instead, per property, together with the
+        // headers holding it, and only the last one to let go puts it back.
+        private static _claims = new WeakMap<HTMLElement, Map<string, { previous: string, priority: string, owners: Set<string> }>>();
+
+        // The scroll padding that keeps what is scrolled to out from under the header (ScrollPadding).
+        private static readonly SCROLL_PADDING = 'scroll-padding-block-start';
+
+        // The live height of the header, which the content under it offsets itself by (PublishHeight).
+        private static readonly HEIGHT_VARIABLE = '--bit-env-header-height';
 
         // Scroll deltas below this many pixels are ignored, so the rubber-banding of touch devices and
         // the sub-pixel jitter of a trackpad cannot flip the header back and forth on every frame.
@@ -35,7 +42,7 @@
         // Both states live here and only cross the interop boundary when they actually flip, so a scroll
         // never costs more than a comparison. It also keeps the scroll padding of the scroller in step
         // with the height of the header, so nothing scrolled to lands underneath a pinned one.
-        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean) {
+        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean, publishHeight: boolean) {
             Headers.dispose(id);
 
             const element = document.getElementById(id);
@@ -82,63 +89,56 @@
             // requestAnimationFrame never hands out a 0 handle, so it doubles as the "no frame pending" mark.
             const frame = { handle: 0 };
 
-            // The box this header is reserving scroll padding on, if it is reserving any.
-            let padded: HTMLElement | undefined;
+            // The properties of the scroller this header keeps in step with its own height.
+            const measures: string[] = [];
 
-            const clearPadding = () => {
-                if (!padded) return;
+            if (scrollPadding) {
+                measures.push(Headers.SCROLL_PADDING);
+            }
 
-                const shared = Headers._paddings.get(padded);
+            if (publishHeight) {
+                measures.push(Headers.HEIGHT_VARIABLE);
+            }
 
-                if (shared) {
-                    shared.owners.delete(id);
+            // The box this header is writing its height onto, if it is writing it anywhere.
+            let measured: HTMLElement | undefined;
 
-                    // The header leaving is not necessarily the one that wrote the padding that is on the
-                    // box right now, so the value is only put back once nothing is reserving any anymore.
-                    // Until then it is left to the headers still holding it, which write it again on their
-                    // next layout change anyway.
-                    if (shared.owners.size === 0) {
-                        padded.style.scrollPaddingBlockStart = shared.previous;
+            const clearMeasures = () => {
+                if (!measured) return;
 
-                        Headers._paddings.delete(padded);
-                    }
+                for (const property of measures) {
+                    Headers.release(measured, property, id);
                 }
 
-                padded = undefined;
+                measured = undefined;
             };
 
             // A pinned header covers the top of the scroller, so anything scrolled to by an anchor, by
             // the browser bringing a focused control into the view, or by scrollIntoView, lands
             // underneath it (WCAG 2.4.11). Reserving the height of the header as the scroll padding of
-            // the scroller is what stops the scroll short of it. The value is on the element that
-            // scrolls - the documentElement when that is the page - and it is re-read whenever the
-            // header or the layout changes size, so a header that shrinks on scroll stays in step.
-            const applyPadding = () => {
-                if (!scrollPadding) return;
+            // the scroller is what stops the scroll short of it. The same height is published as a
+            // custom property of the scroller, which the content inside it offsets itself by instead of
+            // a copy of the height a stylesheet would have to keep in step. Both are on the element
+            // that scrolls - the documentElement when that is the page - and they are re-read whenever
+            // the header or the layout changes size, so a header that shrinks on scroll stays in step.
+            const applyMeasures = () => {
+                if (measures.length === 0) return;
 
                 const box = target.current === window
                     ? document.documentElement
                     : target.current as HTMLElement;
 
-                if (padded && padded !== box) {
-                    clearPadding();
+                if (measured && measured !== box) {
+                    clearMeasures();
                 }
 
-                if (!padded) {
-                    let shared = Headers._paddings.get(box);
+                measured = box;
 
-                    if (!shared) {
-                        shared = { previous: box.style.scrollPaddingBlockStart, owners: new Set() };
+                const height = `${element.offsetHeight}px`;
 
-                        Headers._paddings.set(box, shared);
-                    }
-
-                    shared.owners.add(id);
-
-                    padded = box;
+                for (const property of measures) {
+                    Headers.claim(box, property, id, height);
                 }
-
-                box.style.scrollPaddingBlockStart = `${element.offsetHeight}px`;
             };
 
             const applyHidden = (next: boolean) => {
@@ -218,7 +218,7 @@
 
             // The scroller is watched as well as the page, since a pane only becomes the scroller of the
             // header once its own content overflows it. The header itself is watched only when its height
-            // is being mirrored into the scroll padding of that scroller.
+            // is being mirrored onto that scroller (its scroll padding, its published height).
             const observe = () => {
                 if (!observer) return;
 
@@ -238,7 +238,7 @@
                     }
                 }
 
-                if (scrollPadding) {
+                if (measures.length > 0) {
                     observer.observe(element);
                 }
             };
@@ -262,7 +262,7 @@
                     observe();
                 }
 
-                applyPadding();
+                applyMeasures();
 
                 scrollHandler();
             };
@@ -281,9 +281,9 @@
                 observe();
             }
 
-            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearPadding, frame });
+            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearMeasures, frame });
 
-            applyPadding();
+            applyMeasures();
 
             // The scroller can already be scrolled when the header arrives (a restored scroll position, a
             // deep link to an anchor, a header rendered into a pane the user has been reading), so the
@@ -301,7 +301,7 @@
 
             entry.observer?.disconnect();
 
-            entry.clearPadding();
+            entry.clearMeasures();
 
             // A frame scheduled by the last scroll before the disposal would still evaluate and call back
             // into a component that is on its way out, so it is dropped along with the listeners.
@@ -312,6 +312,58 @@
             }
 
             Headers._entries.delete(id);
+        }
+
+        // Writes a property onto the box of a scroller on behalf of a header, keeping the value the box had
+        // before the first header touched it.
+        private static claim(box: HTMLElement, property: string, id: string, value: string) {
+            let claims = Headers._claims.get(box);
+
+            if (!claims) {
+                claims = new Map();
+
+                Headers._claims.set(box, claims);
+            }
+
+            let shared = claims.get(property);
+
+            if (!shared) {
+                shared = {
+                    previous: box.style.getPropertyValue(property),
+                    priority: box.style.getPropertyPriority(property),
+                    owners: new Set()
+                };
+
+                claims.set(property, shared);
+            }
+
+            shared.owners.add(id);
+
+            box.style.setProperty(property, value);
+        }
+
+        // Gives up the claim of a header on a property of a box. The header leaving is not necessarily the one
+        // that wrote the value that is on the box right now, so the value is only put back once nothing is
+        // holding the property anymore. Until then it is left to the headers still holding it, which write it
+        // again on their next layout change anyway.
+        private static release(box: HTMLElement, property: string, id: string) {
+            const claims = Headers._claims.get(box);
+            const shared = claims?.get(property);
+
+            if (!claims || !shared) return;
+
+            shared.owners.delete(id);
+
+            if (shared.owners.size > 0) return;
+
+            // An empty value removes the property, which is what the box had when nothing was set on it.
+            box.style.setProperty(property, shared.previous, shared.priority);
+
+            claims.delete(property);
+
+            if (claims.size === 0) {
+                Headers._claims.delete(box);
+            }
         }
 
         private static scrollParent(element: HTMLElement): HTMLElement | Window {

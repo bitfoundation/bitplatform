@@ -393,7 +393,30 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Usage" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Publish height" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+        <div>
+            <b>PublishHeight</b> writes the live height of a pinned header - its rows, its paddings and the device's top safe area
+            inset - as the <b>--bit-env-header-height</b> custom property of its scrolling area, so the content under it offsets
+            itself by exactly that much instead of a hard-coded copy. Here a toolbar sticks right below the header, and follows it
+            when the header changes its height:
+        </div>
+        <br />
+        <BitToggleButton @bind-Checked="isHeaderTall" OnText="Make the header shorter" OffText="Make the header taller" />
+        <br /><br />
+        <div class="scroll-demo">
+            <BitHeader Sticky Bordered PublishHeight Color="BitColor.PrimaryBackground"
+                       Height="@(isHeaderTall ? 96 : 48)">
+                I publish my height
+            </BitHeader>
+            <div class="publish-demo-bar">I stick right below the header</div>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div class="scroll-demo-row">Row @i</div>
+            }
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Usage" RazorCode="@example15RazorCode" Id="example15">
         <div>A complete application header: a navigation toggle and a brand, a BitSpacer, then the account actions.</div>
         <br />
         <div class="container">
@@ -415,7 +438,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Cascading parameters" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Cascading parameters" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
             <b>BitParams</b> hands a <b>BitHeaderParams</b> to every header under it as defaults: a header keeps whatever it sets
             itself and only takes what it left unset.
@@ -436,7 +459,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
         <div>Every theme color works with every variant. Without one the header keeps the theme's primary background and foreground.</div>
         <br />
         <div class="container">
@@ -508,7 +531,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div>The size sets the paddings around the content.</div>
         <br />
         <div class="container">
@@ -524,7 +547,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CodeFiles="@example18CodeFiles" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CodeFiles="@example19CodeFiles" Id="example19">
         <div>
             Reach for the <b>--bit-Header-*</b> CSS variables first (listed in the API section): they inherit, so set them on
             <b>:root</b>, an ancestor or an instance's <b>Style</b>. They restyle the default, not a choice: an explicit
@@ -577,7 +600,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div><b>Dir</b> mirrors the header: the alignment of its content and the side its paddings sit on.</div>
         <br />
         <div class="container">

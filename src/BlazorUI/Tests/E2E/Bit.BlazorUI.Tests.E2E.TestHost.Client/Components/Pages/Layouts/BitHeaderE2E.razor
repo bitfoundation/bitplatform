@@ -261,6 +261,21 @@
     </div>
 </E2ESection>
 
+@* The box starts with a value of its own for the variable, which the header has to hand back once it lets go. The
+   bar under the header offsets itself by what the header publishes, so where it sticks is the published height. *@
+<E2ESection Id="publish-height" Title="PublishHeight">
+    <button id="btn-publish-height" @onclick="() => _publishedHeight = _publishedHeight == 50 ? 90 : 50">Toggle the height</button>
+    <button id="btn-publish-toggle" @onclick="() => _publishHeight = !_publishHeight">Toggle PublishHeight</button>
+    <div class="hdr-scroll" id="publish-box" style="--bit-env-header-height: 7px">
+        <BitHeader Id="publish-header" Sticky ScrollPadding PublishHeight="@_publishHeight" Height="@_publishedHeight">Publishes its height</BitHeader>
+        <div id="publish-bar" style="position: sticky; top: var(--bit-env-header-height, 0px); height: 20px; background: gold">Bar</div>
+        @for (var i = 1; i <= 12; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
+</E2ESection>
+
 <E2ESection Id="cascading" Title="Cascading parameters">
     <BitParams Parameters="@_headerParams">
         <div class="hdr-host"><BitHeader Id="casc-header">cascaded</BitHeader></div>
@@ -365,6 +380,8 @@
     private bool _targetScrolled;
     private bool _targetMissScrolled;
     private bool _hidden;
+    private bool _publishHeight = true;
+    private int _publishedHeight = 50;
     private bool _mounted = true;
     private bool _runtimeReveal;
     private bool _runtimeRevealed = true;
