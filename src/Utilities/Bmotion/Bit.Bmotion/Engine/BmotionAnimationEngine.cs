@@ -544,8 +544,10 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         // Animate target would cancel the exit for them. The rest go back now.
         if (state.DeactivateGestureLayer(gesture) is not { } deactivation
             || state.WithoutExitKeys(deactivation) is not { } request) return;
+        // Named, so a gesture that takes a key again while it is still on its way back keeps the origin it goes back
+        // to, rather than the value it shows part-way (see BmotionElementAnimationState.ActivateGestureLayer).
         await PlayAsync(elementId, state, request.Values, request.Transition, tcs: null, claim: false,
-            stylesheetKeys: request.StylesheetKeys, yieldsToExit: true);
+            stylesheetKeys: request.StylesheetKeys, yieldsToExit: true, owner: request.Owner);
     }
 
     /// <summary>
