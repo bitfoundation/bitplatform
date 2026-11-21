@@ -9,7 +9,7 @@ public partial class BitContainerDemo
         border: 1px solid var(--bit-clr-brd-sec);
     }
 
-    .container {
+    .band > * {
         background: color-mix(in srgb, var(--bit-clr-pri) 16%, transparent);
     }
 
@@ -23,33 +23,33 @@ public partial class BitContainerDemo
 
 
 <div class=""band"">
-    <BitContainer Class=""container"">
+    <BitContainer>
         <div class=""content"">The content of the page</div>
     </BitContainer>
 </div>";
 
     private readonly string example2RazorCode = @"
 <div class=""band"">
-    <BitContainer MaxWidth=""480px"" Class=""container"">
+    <BitContainer MaxWidth=""480px"">
         <div class=""content"">480px</div>
     </BitContainer>
 </div>
-
+<br />
 <div class=""band"">
-    <BitContainer MaxWidth=""40rem"" Class=""container"">
+    <BitContainer MaxWidth=""40rem"">
         <div class=""content"">40rem</div>
     </BitContainer>
 </div>
-
+<br />
 <div class=""band"">
-    <BitContainer MaxWidth=""none"" Class=""container"">
+    <BitContainer MaxWidth=""none"">
         <div class=""content"">none</div>
     </BitContainer>
 </div>";
 
     private readonly string example3RazorCode = @"
 <div class=""band"">
-    <BitContainer MaxWidth=""480px"" NoGutter Class=""container"">
+    <BitContainer MaxWidth=""480px"" NoGutter>
         <div class=""content"">No gutter</div>
     </BitContainer>
 </div>";
@@ -80,13 +80,13 @@ public partial class BitContainerDemo
         <div>Its text lines up with the section below.</div>
     </BitContainer>
 </div>
-<BitContainer MaxWidth=""560px"" Class=""section"">
-    The section under the hero, in a container of the same width.
+<BitContainer MaxWidth=""560px"">
+    <div class=""section"">The section under the hero, in a container of the same width.</div>
 </BitContainer>";
 
     private readonly string example5RazorCode = @"
 <div class=""band"">
-    <BitContainer Element=""section"" AriaLabel=""Latest news"" MaxWidth=""480px"" Class=""container"">
+    <BitContainer Element=""section"" AriaLabel=""Latest news"" MaxWidth=""480px"">
         <div class=""content"">A section landmark</div>
     </BitContainer>
 </div>";
@@ -94,13 +94,13 @@ public partial class BitContainerDemo
     private readonly string example6RazorCode = @"
 <BitParams Parameters=""@containerParams"">
     <div class=""band"">
-        <BitContainer Class=""container"">
+        <BitContainer>
             <div class=""content"">Cascaded 480px</div>
         </BitContainer>
     </div>
-
+    <br />
     <div class=""band"">
-        <BitContainer MaxWidth=""320px"" Class=""container"">
+        <BitContainer MaxWidth=""320px"">
             <div class=""content"">Its own 320px</div>
         </BitContainer>
     </div>
@@ -121,13 +121,13 @@ private readonly BitContainerParams[] containerParams =
 
 
 <div class=""band"">
-    <BitContainer Style=""--bit-Container-max-width:400px;--bit-Container-padding-inline:3rem;--bit-Container-padding-block:1rem"" Class=""container"">
+    <BitContainer Style=""--bit-Container-max-width:400px;--bit-Container-padding-inline:3rem;--bit-Container-padding-block:1rem"">
         <div class=""content"">Variables on Style</div>
     </BitContainer>
 </div>
-
+<br />
 <div class=""band"">
-    <BitContainer MaxWidth=""400px"" Class=""container custom-class"">
+    <BitContainer MaxWidth=""400px"" Class=""custom-class"">
         <div class=""content"">Class</div>
     </BitContainer>
 </div>";

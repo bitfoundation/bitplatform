@@ -12,8 +12,9 @@ namespace Bit.BlazorUI;
 /// and a desktop - unless <see cref="NoGutter"/> removes it.
 /// <br />
 /// The maximum width includes the gutters (the root is a border-box), so two containers of the same maximum width
-/// line their content up whatever they are nested in. A full-width band of the page (a colored hero, a footer) is
-/// usually an element of its own with a container inside it, which keeps the band edge to edge while its content
+/// line their content up as long as each sits in a full-width parent with no inline padding of its own; a container
+/// nested in another one, or in a padded element, works from a narrower width and adds its gutters again. A full-width
+/// band of the page (a colored hero, a footer) is usually an element of its own with a container inside it, which keeps the band edge to edge while its content
 /// lines up with the rest of the page - the same thing the <c>MaxWidth</c> of <see cref="BitHeader"/> and
 /// <see cref="BitFooter"/> does for their own content.
 /// </remarks>
@@ -42,9 +43,10 @@ public partial class BitContainer : BitComponentBase
     /// </summary>
     /// <remarks>
     /// A container that holds the main content of the page is more meaningful as a <c>main</c>, one that holds a region of
-    /// it as a <c>section</c> or an <c>article</c>. The layout itself is unaffected: only the tag name changes, and with it
-    /// the semantics reported to assistive technologies - so a landmark element given here is worth pairing with an
-    /// <see cref="BitComponentBase.AriaLabel"/> that names it.
+    /// it as a <c>section</c> or an <c>article</c>. The layout itself is unaffected, since the root is a block whatever
+    /// the tag: only the tag name changes, and with it the semantics reported to assistive technologies - so a landmark
+    /// element given here is worth pairing with an <see cref="BitComponentBase.AriaLabel"/> that names it. An empty
+    /// value falls back to a <c>div</c>, as it does in <see cref="BitContainerParams"/>.
     /// </remarks>
     [Parameter] public string? Element { get; set; }
 
@@ -96,7 +98,7 @@ public partial class BitContainer : BitComponentBase
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, Element ?? "div");
+        builder.OpenElement(0, Element.HasValue() ? Element : "div");
         builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(2, "id", _Id);
         // A null value here is not the same as nothing at all: the builder still records the name and drops the

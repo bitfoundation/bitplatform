@@ -16,6 +16,8 @@
 $cnt-private-properties: gut, max-width;
 
 .bit-cnt {
+    // Set rather than left to the tag, so an inline Element (a span, an a) is still capped and centered.
+    display: block;
     width: 100%;
     margin-inline: auto;
     box-sizing: border-box;

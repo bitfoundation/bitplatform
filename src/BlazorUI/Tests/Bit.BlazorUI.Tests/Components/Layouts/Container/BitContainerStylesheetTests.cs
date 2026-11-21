@@ -16,7 +16,9 @@ public class BitContainerStylesheetTests
     {
         var root = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-cnt {");
 
-        // The maximum width includes the gutters, so two containers of the same width line their content up.
+        // The maximum width includes the gutters, so two containers of the same width line their content up. The display
+        // is set rather than left to the tag, so an inline Element (a span, an a) is still capped and centered.
+        StringAssert.Contains(root, "display: block;");
         StringAssert.Contains(root, "width: 100%;");
         StringAssert.Contains(root, "margin-inline: auto;");
         StringAssert.Contains(root, "box-sizing: border-box;");

@@ -47,6 +47,20 @@ public class BitContainerTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    public void BitContainerShouldFallBackToADivWithoutAnElement(string? element)
+    {
+        var component = RenderComponent<BitContainer>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+        });
+
+        // An empty tag name is not a tag: it falls back to a div, the same as an empty Element in BitContainerParams.
+        Assert.AreEqual("DIV", component.Find(".bit-cnt").TagName);
+    }
+
+    [TestMethod]
     [DataRow("1200px")]
     [DataRow("75rem")]
     [DataRow("none")]

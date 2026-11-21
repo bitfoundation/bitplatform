@@ -1,7 +1,7 @@
 ﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
-// A BitContainer root is rendered by the component, so it does not carry this file's scope attribute and every
-// class handed to one has to live in ::deep, under the plain div the page is wrapped in.
+// A BitContainer root is rendered by the component, so it does not carry this file's scope attribute: the rules that
+// reach it, or the content rendered in it, live in ::deep, under the plain div the page is wrapped in.
 ::deep {
     // The room the container is given: the part of it the container leaves on its two sides is what
     // MaxWidth centers it in.
@@ -10,8 +10,9 @@
         border: 1px solid $bit-color-border-secondary;
     }
 
-    // The container itself is tinted, so the gutters show up as the strips between its edges and the content.
-    .container {
+    // The container itself - the band's only child - is tinted, so the gutters show up as the strips between its
+    // edges and the content. It is reached through the band, so the examples need no Class before Style & Class.
+    .band > * {
         background: color-mix(in srgb, $bit-color-primary 16%, transparent);
     }
 

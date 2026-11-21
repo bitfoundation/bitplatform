@@ -19,7 +19,7 @@
             </div>
             <div class="example-content">
                 <div class="band">
-                    <BitContainer Class="container">
+                    <BitContainer>
                         <div class="content">The content of the page</div>
                     </BitContainer>
                 </div>
@@ -29,24 +29,25 @@
         <DemoExample Title="MaxWidth" RazorCode="@example2RazorCode" Id="example2">
             <div class="example-desc">
                 <b>MaxWidth</b> takes any CSS length and caps the container at it, centering it in the room that is left.
-                The width includes the gutters, so two containers of the same width line their content up. <code>none</code>
+                The width includes the gutters, so two containers of the same width, each in a full-width parent, line their
+                content up. <code>none</code>
                 lets the container span the whole width it is given and keep only its gutters.
             </div>
             <div class="example-content">
                 <div class="band">
-                    <BitContainer MaxWidth="480px" Class="container">
+                    <BitContainer MaxWidth="480px">
                         <div class="content">480px</div>
                     </BitContainer>
                 </div>
                 <br />
                 <div class="band">
-                    <BitContainer MaxWidth="40rem" Class="container">
+                    <BitContainer MaxWidth="40rem">
                         <div class="content">40rem</div>
                     </BitContainer>
                 </div>
                 <br />
                 <div class="band">
-                    <BitContainer MaxWidth="none" Class="container">
+                    <BitContainer MaxWidth="none">
                         <div class="content">none</div>
                     </BitContainer>
                 </div>
@@ -60,7 +61,7 @@
             </div>
             <div class="example-content">
                 <div class="band">
-                    <BitContainer MaxWidth="480px" NoGutter Class="container">
+                    <BitContainer MaxWidth="480px" NoGutter>
                         <div class="content">No gutter</div>
                     </BitContainer>
                 </div>
@@ -79,8 +80,8 @@
                         <div>Its text lines up with the section below.</div>
                     </BitContainer>
                 </div>
-                <BitContainer MaxWidth="560px" Class="section">
-                    The section under the hero, in a container of the same width.
+                <BitContainer MaxWidth="560px">
+                    <div class="section">The section under the hero, in a container of the same width.</div>
                 </BitContainer>
             </div>
         </DemoExample>
@@ -89,11 +90,12 @@
             <div class="example-desc">
                 <b>Element</b> swaps the rendered <code>div</code> for another tag: a <code>main</code> for the main content
                 of the page, a <code>section</code> or an <code>article</code> for a region of it. Only the semantics change,
-                so a landmark is worth naming with an <b>AriaLabel</b>.
+                so a landmark is worth naming: <b>AriaLabel</b> puts an <code>aria-label</code> on the root, which assistive
+                technologies read out as the name of the region.
             </div>
             <div class="example-content">
                 <div class="band">
-                    <BitContainer Element="section" AriaLabel="Latest news" MaxWidth="480px" Class="container">
+                    <BitContainer Element="section" AriaLabel="Latest news" MaxWidth="480px">
                         <div class="content">A section landmark</div>
                     </BitContainer>
                 </div>
@@ -108,13 +110,13 @@
             <div class="example-content">
                 <BitParams Parameters="@containerParams">
                     <div class="band">
-                        <BitContainer Class="container">
+                        <BitContainer>
                             <div class="content">Cascaded 480px</div>
                         </BitContainer>
                     </div>
                     <br />
                     <div class="band">
-                        <BitContainer MaxWidth="320px" Class="container">
+                        <BitContainer MaxWidth="320px">
                             <div class="content">Its own 320px</div>
                         </BitContainer>
                     </div>
@@ -131,13 +133,13 @@
             </div>
             <div class="example-content">
                 <div class="band">
-                    <BitContainer Style="--bit-Container-max-width:400px;--bit-Container-padding-inline:3rem;--bit-Container-padding-block:1rem" Class="container">
+                    <BitContainer Style="--bit-Container-max-width:400px;--bit-Container-padding-inline:3rem;--bit-Container-padding-block:1rem">
                         <div class="content">Variables on Style</div>
                     </BitContainer>
                 </div>
                 <br />
                 <div class="band">
-                    <BitContainer MaxWidth="400px" Class="container custom-class">
+                    <BitContainer MaxWidth="400px" Class="custom-class">
                         <div class="content">Class</div>
                     </BitContainer>
                 </div>
