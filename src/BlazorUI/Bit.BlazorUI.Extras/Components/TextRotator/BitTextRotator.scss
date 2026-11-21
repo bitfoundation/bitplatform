@@ -1,0 +1,115 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
+// ancestor, or on the Class or the Style of a rotator inherits down to every rotator under it:
+//   --bit-TextRotator-duration          one entrance, and the exit played beside it   (default: $mot-duration-long)
+//   --bit-TextRotator-easing            curve of the entrance and the exit             (default: $mot-easing)
+//   --bit-TextRotator-distance          how far an item travels: it comes in from      (default: 0.5em)
+//                                       below and goes out above, and the other way
+//                                       round with a negative distance
+//   --bit-TextRotator-disabled-opacity  opacity of a rotator whose Disabled is true    (default: $opa-dis)
+// The time an item is shown for is the Interval parameter: the rotation is driven by the component, which turns to
+// the next item by moving the classes below, and the stylesheet only draws the move.
+
+.bit-trt {
+    // The duration the page sets is scaled by the motion factor of the theme, so it collapses under reduced motion
+    // and comes back with ForceAnimation along with every other duration. What it cannot say - that only the first
+    // item is shown under reduced motion - is the query at the end of this file.
+    --bit-trt-dur: #{mot-scaled-duration(var(--bit-TextRotator-duration, #{$mot-duration-long}))};
+    --bit-trt-eas: var(--bit-TextRotator-easing, #{$mot-easing});
+    --bit-trt-dst: var(--bit-TextRotator-distance, 0.5em);
+
+    margin: 0;
+    // Every item is laid in the one cell of the grid, so the rotator is as wide as its widest item whichever one is
+    // shown, and the text around it never moves. Its baseline is the first item's, which lines it up with that text.
+    display: inline-grid;
+    // The containing block of the visually hidden text, which would otherwise be placed against whatever positioned
+    // ancestor the page has.
+    position: relative;
+
+    // A run of text only takes the focus where a page made it focusable, and one the keyboard can tab to is drawn
+    // with the ring every other control uses. A tabindex of -1 is a text focused only by script, which gets no ring
+    // of its own, the same as BitText.
+    &:focus-visible:not([tabindex="-1"]) {
+        @include focus-ring;
+    }
+}
+
+// An item that is not the one shown is still laid out, which is what reserves its width, but is not painted.
+.bit-trt-itm {
+    grid-area: 1 / 1;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.bit-trt-cur {
+    opacity: 1;
+    visibility: visible;
+}
+
+// The item shown first is at rest; each one that takes its place after that comes in.
+.bit-trt-ent {
+    animation: bit-trt-ent var(--bit-trt-dur) var(--bit-trt-eas) both;
+}
+
+// The item that was shown goes out while the next one comes in. It is hidden like any other item, and only its exit
+// shows it: where the animation does not run, it is gone at once rather than left over the item that took its place.
+.bit-trt-prv {
+    animation: bit-trt-ext var(--bit-trt-dur) var(--bit-trt-eas) both;
+}
+
+@keyframes bit-trt-ent {
+    from {
+        opacity: 0;
+        translate: 0 var(--bit-trt-dst);
+    }
+}
+
+@keyframes bit-trt-ext {
+    from {
+        opacity: 1;
+        visibility: visible;
+        translate: none;
+    }
+
+    to {
+        opacity: 0;
+        visibility: hidden;
+        translate: 0 calc(-1 * var(--bit-trt-dst));
+    }
+}
+
+// Every item is hidden from assistive technologies, which read all of them from this text instead.
+.bit-trt-srt {
+    @include visually-hidden;
+}
+
+// A disabled rotator is dimmed rather than recolored, and holds the item it shows.
+.bit-trt.bit-dis {
+    opacity: var(--bit-TextRotator-disabled-opacity, #{$opa-dis});
+}
+
+// Reduced motion shows the first item alone, still and for good: a word that keeps changing is motion even when it
+// changes at once, which no duration can say. .bit-fam is the shared opt-out class rendered by
+// BitComponentBase.ForceAnimation, honored on an ancestor as well as on the rotator itself, the same as the
+// token-driven animations, which inherit the class's custom properties.
+@media (prefers-reduced-motion: reduce) {
+    .bit-trt:where(:not(.bit-fam):not(.bit-fam *)) > .bit-trt-itm {
+        animation: none;
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .bit-trt:where(:not(.bit-fam):not(.bit-fam *)) > .bit-trt-itm:first-child {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+// Windows High Contrast / forced-colors: a forced palette takes away what the dimming was saying, so a disabled
+// rotator is painted in GrayText, the system color for it, the way a disabled BitText is.
+@media (forced-colors: active) {
+    .bit-trt.bit-dis {
+        color: GrayText;
+    }
+}

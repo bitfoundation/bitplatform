@@ -1,0 +1,166 @@
+﻿@page "/components/textrotator"
+@page "/components/text-rotator"
+
+<PageOutlet Url="components/textrotator"
+            Title="TextRotator"
+            Description="BitTextRotator cycles through words or phrases in one place - the rotating word of a hero heading or a command line - without moving the text around it." />
+
+<DemoPage Name="TextRotator"
+          SecondaryNames="@(["RotatingText", "WordRotator", "TextLoop"])"
+          Description="BitTextRotator cycles through a list of words or phrases in one place, moving each one out as the next one comes in. It always takes the width of its widest item, so the text around it never jumps; screen readers get every item as one stable text instead of a stream of changes; and under reduced motion it shows its first item, still."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubExtrasUrl="TextRotator/BitTextRotator.cs"
+          GitHubDemoUrl="Extras/TextRotator/BitTextRotatorDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            BitTextRotator honors the reduced motion preference (prefers-reduced-motion) and shows its first item only.
+            If the items do not rotate, turn off reduced motion or use the ForceAnimation toggle at the top of this page.
+            The rotation starts once the page is interactive; prerendered or statically rendered, the first item is shown.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                Give it the <b>Items</b> to rotate through: one comes in every three seconds as the one before it goes out. It is as wide
+                as its widest item, so the sentence around it stays where it is. <b>ForceAnimation</b> keeps it rotating under reduced
+                motion - reserve it for motion that carries a meaning.
+            </div>
+            <br />
+            <div>Build apps for <BitTextRotator Items="@(["the web", "mobile", "desktop"])" /> with one codebase.</div>
+            <br />
+            <div>Ship them as <BitTextRotator ForceAnimation Items="@(["a PWA", "Android", "iOS", "Windows", "macOS"])" /> apps, even with reduced motion.</div>
+        </DemoExample>
+
+        <DemoExample Title="Interval" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                <b>Interval</b> is the time each item is shown for, in ms (3000 by default). Keep it long enough for the item to be read.
+            </div>
+            <br />
+            <div>A <BitTextRotator Interval="1500" Items="@(["quick", "brisk", "rapid"])" /> rotation of a second and a half.</div>
+            <br />
+            <div>A <BitTextRotator Interval="5000" Items="@(["calm", "steady", "relaxed"])" /> rotation of five seconds.</div>
+        </DemoExample>
+
+        <DemoExample Title="Element" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                Renders a <b>span</b> by default, which fits inside a sentence, a heading or a button. <b>Element</b> picks another tag.
+                The font is inherited, so inside a <b>BitText</b> the rotator takes the typography of the theme.
+            </div>
+            <br />
+            <BitTextRotator Element="h2" Items="@(["Fast.", "Accessible.", "Themeable."])" />
+            <br />
+            <BitText Typography="BitTypography.H4">
+                Made for <BitTextRotator Items="@(["developers", "designers", "teams"])" />
+            </BitText>
+        </DemoExample>
+
+        <DemoExample Title="Transition" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                The move is drawn by the stylesheet: <b>--bit-TextRotator-duration</b>, <b>--bit-TextRotator-easing</b> and
+                <b>--bit-TextRotator-distance</b> restyle it. A negative distance brings the items in from above, a distance of
+                0 cross-fades them in place.
+            </div>
+            <br />
+            <div style="--bit-TextRotator-distance:-0.5em">
+                Items that come in from <BitTextRotator Items="@(["above", "the top", "overhead"])" />
+            </div>
+            <br />
+            <div style="--bit-TextRotator-distance:0;--bit-TextRotator-duration:800ms">
+                Items that <BitTextRotator Items="@(["cross-fade", "dissolve", "blend"])" /> in place
+            </div>
+            <br />
+            <div style="--bit-TextRotator-distance:1.25em;--bit-TextRotator-easing:cubic-bezier(0, 1, 0, 1)">
+                Items that <BitTextRotator Items="@(["snap", "spring", "jump"])" /> into place
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Paused" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Paused</b> holds the item that is shown, and the rotation carries on from it once it is turned off again. Offering a
+                way to pause is what lets a reader stop text that keeps changing (WCAG 2.2.2). A disabled rotator holds still too,
+                dimmed.
+            </div>
+            <br />
+            <BitToggle @bind-Value="isPaused" Text="Paused" />
+            <div>Pause me on <BitTextRotator Paused="isPaused" Items="@(["this word", "that word", "any word"])" /></div>
+            <br />
+            <div>A disabled rotator: <BitTextRotator Disabled Items="@(["held", "still"])" /></div>
+        </DemoExample>
+
+        <DemoExample Title="Command line" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                Several rotators side by side, each at a pace of its own. Each one keeps the width of its widest item, so the line
+                never shifts as they turn.
+            </div>
+            <br />
+            <code class="terminal">
+                bit new MyApp
+                --database <BitTextRotator Interval="3000" Items="@(["sqlite", "sqlserver", "postgresql"])" />
+                --api <BitTextRotator Interval="6000" Items="@(["integrated", "standalone"])" />
+                --module <BitTextRotator Interval="5000" Items="@(["admin", "sales"])" />
+            </code>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>BitParams</b> with a <b>BitTextRotatorParams</b> sets the defaults of every rotator inside it, and a parameter of the
+                rotator itself still wins. A cascaded <b>Paused</b> is one "pause animations" switch for a whole region.
+            </div>
+            <br />
+            <BitToggle @bind-Value="pauseAll" Text="Pause animations" />
+            <BitParams Parameters="rotatorParams">
+                <div>Fast at <BitTextRotator Items="@(["one", "two", "three"])" /></div>
+                <br />
+                <div>Fast at <BitTextRotator Items="@(["red", "green", "blue"])" /></div>
+                <br />
+                <div>Slow at <BitTextRotator Interval="4000" Items="@(["its own", "Interval"])" /></div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                <b>Style</b> and <b>Class</b> style the root, <b>Styles</b> and <b>Classes</b> each item and the item that is shown. The
+                public <b>--bit-TextRotator-*</b> variables inherit, so setting them on <b>:root</b>, a container or a class restyles
+                every rotator below it.
+            </div>
+            <br />
+            @* A plain element of this page for the scoped ::deep .custom-class rule to anchor on. *@
+            <div>
+                <BitTextRotator Style="font-size:2rem;font-weight:bold" Items="@(["Styled", "Bold", "Big"])" />
+                <br />
+                <BitTextRotator Class="custom-class" Items="@(["Classy", "Italic", "Large"])" />
+                <br />
+                <BitTextRotator Styles="@(new() { CurrentItem = "color:var(--bit-clr-pri)" })" Items="@(["Primary", "colored", "items"])" />
+                <br /><br />
+                <div style="--bit-TextRotator-duration:1s;--bit-TextRotator-distance:1em">
+                    <BitTextRotator Items="@(["Restyled by", "the variables of", "its container"])" />
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" Id="example9">
+            <div>
+                The items sit at the start of the reading direction, whether it comes from <b>Dir</b> or from a <b>dir</b> attribute
+                around the rotator.
+            </div>
+            <br />
+            <div dir="rtl">
+                ساخت برنامه برای <BitTextRotator Dir="BitDir.Rtl" Items="@(["وب", "موبایل", "دسکتاپ"])" /> با یک کد
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

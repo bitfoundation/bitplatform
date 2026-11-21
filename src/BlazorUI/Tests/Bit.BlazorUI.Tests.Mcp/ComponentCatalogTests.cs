@@ -423,6 +423,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitInfiniteScrolling", "BitInfiniteScrollingParams")]
     [DataRow("BitMarkdownViewer", "BitMarkdownViewerParams")]
     [DataRow("BitTextShimmer", "BitTextShimmerParams")]
+    [DataRow("BitTextRotator", "BitTextRotatorParams")]
     [DataRow("BitTextField", "BitTextFieldParams")]
     [DataRow("BitMarkdownEditor", "BitMarkdownEditorParams")]
     [DataRow("BitPdfViewer", "BitPdfViewerParams")]
