@@ -327,6 +327,76 @@ public partial class BitGridItem : BitComponentBase
     public bool? GrowXxl { get; set; }
 
     /// <summary>
+    /// Hides this item from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> shows
+    /// the item again from this breakpoint upwards. See <see cref="HiddenXs"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HiddenLg { get; set; }
+
+    /// <summary>
+    /// Hides this item from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> shows
+    /// the item again from this breakpoint upwards. See <see cref="HiddenXs"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HiddenMd { get; set; }
+
+    /// <summary>
+    /// Hides this item from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> shows
+    /// the item again from this breakpoint upwards. See <see cref="HiddenXs"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HiddenSm { get; set; }
+
+    /// <summary>
+    /// Hides this item from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> shows
+    /// the item again from this breakpoint upwards. See <see cref="HiddenXs"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HiddenXl { get; set; }
+
+    /// <summary>
+    /// Hides this item from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The value keeps applying to every wider breakpoint until another one replaces it, and <c>false</c> shows
+    /// the item again from that breakpoint upwards: <c>HiddenMd="true"</c> is a piece of a layout that is only
+    /// there on a phone or a tablet, and <c>HiddenXs="true" HiddenMd="false"</c> one that only appears once there
+    /// is room for it.
+    /// <br />
+    /// The item is hidden by the stylesheet alone, so the right content is shown from the very first paint of a
+    /// prerendered page rather than once the page is interactive, and the item is hidden whatever way it takes up
+    /// room (its columns, <see cref="Auto"/> or <see cref="Grow"/>). In a grid that is a
+    /// <see cref="BitGrid.Container"/> query container, the breakpoints are read off the width of the grid.
+    /// <br />
+    /// A span of 0 still hides the item at the breakpoints it applies to: <c>false</c> only takes back what an
+    /// earlier Hidden value asked for. The item is still rendered, so a screen reader will not read it either
+    /// while it is hidden.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HiddenXs { get; set; }
+
+    /// <summary>
+    /// Hides this item from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// <c>false</c> shows the item again from this breakpoint upwards. See <see cref="HiddenXs"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool? HiddenXxl { get; set; }
+
+    /// <summary>
     /// Number of columns this item should fill in the large breakpoint (from 1280px).
     /// </summary>
     /// <remarks>
@@ -654,6 +724,9 @@ public partial class BitGridItem : BitComponentBase
     private bool _HasResponsiveSpan => Xs.HasValue || Sm.HasValue || Md.HasValue
                                     || Lg.HasValue || Xl.HasValue || Xxl.HasValue;
 
+    private bool _HasHidden => HiddenXs.HasValue || HiddenSm.HasValue || HiddenMd.HasValue
+                            || HiddenLg.HasValue || HiddenXl.HasValue || HiddenXxl.HasValue;
+
     // How the item takes up room, and how many columns it asks for, at each of the six breakpoints: both of
     // them carried up from the breakpoint below until a value of its own replaces it. The span is left null
     // where the item never named one, since what it falls back to then belongs to the grid rather than here.
@@ -708,22 +781,41 @@ public partial class BitGridItem : BitComponentBase
         }
     }
 
-    // The breakpoints at which the item asks for no columns at all, which is the item asking not to be shown.
-    // An item that leaves the tracks behind is never hidden by this: being exactly as wide as its content, or
-    // taking whatever the row has left, is a width of its own and has nothing to do with a count of columns.
+    // The breakpoints at which the item is not shown: the ones a Hidden value asked for, carried up from the
+    // breakpoint below until a value of its own replaces it, and the ones at which the item asks for no columns
+    // at all. An item that leaves the tracks behind is never hidden by its span: being exactly as wide as its
+    // content, or taking whatever the row has left, is a width of its own and has nothing to do with a count of
+    // columns. A Hidden value hides it whatever way it takes up room.
     private string _HiddenClasses
     {
         get
         {
-            // An item whose sizing and span are the same at every size is either shown at all of them or at
-            // none of them, and says so once rather than six times.
-            if (_HasResponsiveSizing is false && _HasResponsiveSpan is false)
+            // An item whose sizing and span are the same at every size, and that was told nothing about being
+            // hidden, is either shown at all of them or at none of them, and says so once rather than six times.
+            if (_HasResponsiveSizing is false && _HasResponsiveSpan is false && _HasHidden is false)
             {
                 return (Auto is false && Grow is false && ColumnSpan <= 0) ? "bit-grd-itm-non" : string.Empty;
             }
 
-            return string.Join(' ', _Breakpoints.Where(b => b.Sizing is _Sizing.Span && b.Span <= 0)
-                                                .Select(b => $"bit-grd-itm-non-{b.Breakpoint}"));
+            bool?[] hiddens = [HiddenXs, HiddenSm, HiddenMd, HiddenLg, HiddenXl, HiddenXxl];
+
+            var breakpoints = _Breakpoints;
+            var classes = new List<string>(breakpoints.Length);
+            var hidden = false;
+
+            for (var i = 0; i < breakpoints.Length; i++)
+            {
+                var (breakpoint, sizing, span) = breakpoints[i];
+
+                hidden = hiddens[i] ?? hidden;
+
+                if (hidden || (sizing is _Sizing.Span && span <= 0))
+                {
+                    classes.Add($"bit-grd-itm-non-{breakpoint}");
+                }
+            }
+
+            return string.Join(' ', classes);
         }
     }
 

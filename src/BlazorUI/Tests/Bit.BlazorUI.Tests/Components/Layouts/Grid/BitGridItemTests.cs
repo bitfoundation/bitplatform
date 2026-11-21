@@ -264,6 +264,104 @@ public class BitGridItemTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitGridItemShouldCarryHiddenUpwardsUntilFalseShowsItAgain()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.HiddenSm, true);
+            parameters.Add(p => p.HiddenLg, false);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-xs"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-sm"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-md"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-lg"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-xl"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-xxl"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldBeHiddenAtEveryBreakpointByHiddenXsAlone()
+    {
+        // Answered per breakpoint rather than with the all-or-nothing class, so the same classes a container
+        // query grid reads off its own width hide it there too.
+        var component = RenderComponent<BitGridItem>(parameters => parameters.Add(p => p.HiddenXs, true));
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        foreach (var breakpoint in new[] { "xs", "sm", "md", "lg", "xl", "xxl" })
+        {
+            Assert.IsTrue(classList.Contains($"bit-grd-itm-non-{breakpoint}"), breakpoint);
+        }
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldBeHiddenByHiddenWhateverWayItTakesUpRoom()
+    {
+        var auto = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.Auto, true);
+            parameters.Add(p => p.HiddenMd, true);
+        });
+
+        var grow = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.GrowSm, true);
+            parameters.Add(p => p.HiddenXs, true);
+            parameters.Add(p => p.HiddenMd, false);
+        });
+
+        var autoClasses = auto.Find(".bit-grd-itm").ClassList;
+        Assert.IsFalse(autoClasses.Contains("bit-grd-itm-non-sm"));
+        Assert.IsTrue(autoClasses.Contains("bit-grd-itm-non-md"));
+        Assert.IsTrue(autoClasses.Contains("bit-grd-itm-non-xxl"));
+
+        var growClasses = grow.Find(".bit-grd-itm").ClassList;
+        Assert.IsTrue(growClasses.Contains("bit-grd-itm-non-xs"));
+        Assert.IsTrue(growClasses.Contains("bit-grd-itm-non-sm"));
+        Assert.IsFalse(growClasses.Contains("bit-grd-itm-non-md"));
+    }
+
+    [TestMethod]
+    public void BitGridItemHiddenFalseShouldNotShowAnItemThatAsksForNoColumns()
+    {
+        // False only takes back what an earlier Hidden value asked for; a span of none still hides the item.
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.Add(p => p.ColumnSpan, 12);
+            parameters.Add(p => p.HiddenXs, true);
+            parameters.Add(p => p.HiddenMd, false);
+            parameters.Add(p => p.Lg, 0);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-sm"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-md"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-lg"));
+    }
+
+    [TestMethod]
+    public void BitGridItemShouldTakeHiddenFromItsCascadingParameters()
+    {
+        var component = RenderComponent<BitGridItem>(parameters =>
+        {
+            parameters.AddCascadingValue(BitGridItemParams.ParamName, new BitGridItemParams { HiddenMd = true });
+            parameters.Add(p => p.HiddenXl, false);
+        });
+
+        var classList = component.Find(".bit-grd-itm").ClassList;
+
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-sm"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-md"));
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non-lg"));
+        Assert.IsFalse(classList.Contains("bit-grd-itm-non-xl"));
+    }
+
+    [TestMethod]
     public void BitGridItemShouldNotBeHiddenWhileItIsSizedBySomethingOtherThanItsColumns()
     {
         // Being exactly as wide as its content, or taking whatever the row has left, is a width of its own and

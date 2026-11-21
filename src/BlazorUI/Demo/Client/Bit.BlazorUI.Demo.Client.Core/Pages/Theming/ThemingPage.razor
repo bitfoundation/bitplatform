@@ -1581,6 +1581,13 @@ await BitThemeManager.ApplyBitThemeAsync(fromDesign);</CodeBox>
                     <li>layout &amp; breakpoints (<code>BitCss.Var.Layout</code>)</li>
                     <li>the semantic aliases (<code>BitCss.Var.Semantic</code>)</li>
                 </ul>
+
+                <BitText>
+                    <b>Hiding per breakpoint.</b> <code>bit-css-hide-{xs..xxl}</code> (<code>BitCss.Class.Hide.Xs</code> to <code>Xxl</code>) hide an element from that breakpoint upwards, and <code>bit-css-hide-lt-{sm..xxl}</code> (<code>BitCss.Class.Hide.LtSm</code> to <code>LtXxl</code>) below it, at the same widths as the <code>--bit-bp-*</code> breakpoints. They are pure CSS, so unlike <code>BitMediaQuery</code> a prerendered page shows the right content from its first paint, not once it is interactive. The two of one breakpoint are complements:
+                </BitText>
+
+                <CodeBox Language="razor">&lt;nav class="@@BitCss.Class.Hide.Md"&gt;Mobile header&lt;/nav&gt;
+&lt;nav class="@@BitCss.Class.Hide.LtMd"&gt;Desktop header&lt;/nav&gt;</CodeBox>
             </DocSection>
 
             <DocSection Level="3" Id="css-bundles" Title="External CSS bundles">
@@ -1973,7 +1980,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
             <BitText Element="h4" Typography="BitTypography.H5">Authoring helpers in C#</BitText>
 
             <ul>
-                <li><code>BitCss.Class</code> - <code>bit-css-*</code> utility class names (colors, shadows incl. per-surface, z-index, shape incl. the radius scale <code>bit-css-shp-radius-*</code>, focus ring)</li>
+                <li><code>BitCss.Class</code> - <code>bit-css-*</code> utility class names (colors, shadows incl. per-surface, z-index, shape incl. the radius scale <code>bit-css-shp-radius-*</code>, focus ring, hiding per breakpoint <code>bit-css-hide-*</code>)</li>
                 <li><code>BitCss.Var</code> - <code>--bit-*</code> custom property names</li>
             </ul>
 

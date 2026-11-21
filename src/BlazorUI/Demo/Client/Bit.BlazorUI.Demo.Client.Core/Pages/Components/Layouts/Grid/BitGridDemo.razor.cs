@@ -482,6 +482,48 @@ public partial class BitGridDemo
                 },
                 new()
                 {
+                    Name = "HiddenXs",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Hides the item from the extra small breakpoint (from 0px) upwards, by the stylesheet alone, so a prerendered page shows the right items from its first paint. It hides the item whatever way it takes up room, Auto and Grow included. The value keeps applying to every wider breakpoint until another one replaces it, and false shows the item again from there; a span of 0 still hides it.",
+                },
+                new()
+                {
+                    Name = "HiddenSm",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Hides the item from the small breakpoint (from 600px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and false shows the item again from there.",
+                },
+                new()
+                {
+                    Name = "HiddenMd",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Hides the item from the medium breakpoint (from 960px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and false shows the item again from there.",
+                },
+                new()
+                {
+                    Name = "HiddenLg",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Hides the item from the large breakpoint (from 1280px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and false shows the item again from there.",
+                },
+                new()
+                {
+                    Name = "HiddenXl",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Hides the item from the extra large breakpoint (from 1920px) upwards. The value keeps applying to every wider breakpoint until another one replaces it, and false shows the item again from there.",
+                },
+                new()
+                {
+                    Name = "HiddenXxl",
+                    Type = "bool?",
+                    DefaultValue = "null",
+                    Description = "Hides the item from the extra extra large breakpoint (from 2560px) upwards, and false shows it again from there.",
+                },
+                new()
+                {
                     Name = "Offset",
                     Type = "int?",
                     DefaultValue = "null",
