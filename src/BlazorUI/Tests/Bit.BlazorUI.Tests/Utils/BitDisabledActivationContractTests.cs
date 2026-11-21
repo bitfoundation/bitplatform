@@ -120,6 +120,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitCarousel)],
         [typeof(BitSwiper)],
         [typeof(BitPivot)],
+        [typeof(BitCodeBlock)],
         [typeof(BitAccordionList<BitAccordionListItem>)],
         [typeof(BitMessageBox)],
         [typeof(BitMap<BitLeafletMapProvider>)],

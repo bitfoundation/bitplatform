@@ -1,0 +1,240 @@
+﻿@import "../../../Styles/functions.scss";
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every code block
+// and one set on the Style of an instance re-skins that one (a code block holds no other one):
+//   --bit-CodeBlock-background                      background of the block                       (default: 4% of $clr-fg-pri)
+//   --bit-CodeBlock-color                           text color of the code                        (default: inherit)
+//   --bit-CodeBlock-border-color                    border of the block and under its header      (default: $clr-brd-sec)
+//   --bit-CodeBlock-radius                          corner radius of the block                    (default: $shp-radius-surface)
+//   --bit-CodeBlock-padding                         padding around the code                       (default: spacing(1.5))
+//   --bit-CodeBlock-font-family                     font of the code and of the language label    (default: $tg-font-family-mono)
+//   --bit-CodeBlock-font-size                       text size of the code                         (default: $tg-fs-sm)
+//   --bit-CodeBlock-max-height                      height past which the code scrolls            (default: none; the MaxHeight parameter wins over it)
+//   --bit-CodeBlock-header-background               background of the header bar                  (default: 4% of $clr-fg-pri)
+//   --bit-CodeBlock-header-color                    text color of the header bar                  (default: $clr-fg-sec)
+//   --bit-CodeBlock-copy-button-color               color of the copy button's glyph              (default: inherit)
+//   --bit-CodeBlock-copy-button-hover-background    background of the copy button under the pointer (default: 12% of its color)
+//   --bit-CodeBlock-terminal-background             background of a Terminal block                (default: $clr-ntr-gray190, dark in both schemes)
+//   --bit-CodeBlock-terminal-color                  text color of a Terminal block                (default: $clr-ntr-gray20)
+//   --bit-CodeBlock-terminal-border-color           border of a Terminal block                    (default: 16% of $clr-ntr-gray20)
+//   --bit-CodeBlock-prompt                          prompt drawn before each line of a Terminal   (default: "$ ")
+//   --bit-CodeBlock-prompt-color                    color of that prompt                          (default: $clr-ntr-gray90)
+//
+// The Terminal parameter wins over the plain block's background, color and border: a terminal is drawn dark in both color
+// schemes, so it reads its own variables instead.
+
+// The private properties the C# writes into the inline style of the root (MaxHeight), reset on the root so a code
+// block never takes them from another one around it.
+$cdb-private-properties: mxh;
+
+.bit-cdb {
+    @each $name in $cdb-private-properties {
+        --bit-cdb-#{$name}: initial;
+    }
+
+    min-width: 0;
+    // The containing block of the copy button floating over the code (when there is no header) and of the visually
+    // hidden live region, which are both absolutely positioned.
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    font-family: $tg-font-family;
+    color: var(--bit-CodeBlock-color, inherit);
+    border-radius: var(--bit-CodeBlock-radius, #{$shp-radius-surface});
+    background-color: var(--bit-CodeBlock-background, #{translucent($clr-fg-pri, 4%)});
+    border: $shp-border-width $shp-border-style var(--bit-CodeBlock-border-color, #{$clr-brd-sec});
+}
+
+.bit-cdb-hdr {
+    display: flex;
+    gap: spacing(1);
+    align-items: center;
+    padding-block: spacing(0.5);
+    padding-inline: spacing(1.5) spacing(0.5);
+    font-size: $tg-fs-xs;
+    color: var(--bit-CodeBlock-header-color, #{$clr-fg-sec});
+    background-color: var(--bit-CodeBlock-header-background, #{translucent($clr-fg-pri, 4%)});
+    border-block-end: $shp-border-width $shp-border-style var(--bit-CodeBlock-border-color, #{$clr-brd-sec});
+}
+
+// The three dots of a window's title bar, in the order the traffic lights of a desktop window put them.
+.bit-cdb-dts {
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: 0.5em;
+    margin-inline-end: spacing(1);
+}
+
+.bit-cdb-dot {
+    width: 0.75em;
+    height: 0.75em;
+    border-radius: $shp-radius-full;
+    background-color: $clr-err;
+
+    &:nth-child(2) {
+        background-color: $clr-wrn;
+    }
+
+    &:nth-child(3) {
+        background-color: $clr-suc;
+    }
+}
+
+.bit-cdb-ttl {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-cdb-lng {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-family: var(--bit-CodeBlock-font-family, #{$tg-font-family-mono});
+}
+
+// The copy button sits at the end of the header, or floats over the top end corner of the code where there is no header.
+.bit-cdb-cpb {
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: inline-flex;
+    flex-shrink: 0;
+    cursor: pointer;
+    font: inherit;
+    align-items: center;
+    justify-content: center;
+    width: $siz-ctrl-sm;
+    height: $siz-ctrl-sm;
+    margin-inline-start: auto;
+    border-radius: $shp-radius-button;
+    --bit-cdb-cpb-bg: initial;
+    color: var(--bit-CodeBlock-copy-button-color, inherit);
+    background-color: var(--bit-cdb-cpb-bg, transparent);
+    transition: background-color $mot-duration-short $mot-easing;
+
+    // The states change the variable the button is painted from rather than its paint, so the one rule that paints is
+    // the one at rest: a copy button the app paints through Classes keeps that paint under the pointer and while it is
+    // pressed, instead of losing it to a state that outranks the app's class.
+    @media (hover: hover) {
+        &:hover:not(:disabled) {
+            --bit-cdb-cpb-bg: var(--bit-CodeBlock-copy-button-hover-background, #{translucent(currentcolor, 12%)});
+        }
+    }
+
+    &:active:not(:disabled) {
+        --bit-cdb-cpb-bg: var(--bit-CodeBlock-copy-button-hover-background, #{translucent(currentcolor, 20%)});
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: $opa-dis;
+    }
+}
+
+.bit-cdb > .bit-cdb-cpb {
+    z-index: 1;
+    position: absolute;
+    inset-block-start: spacing(0.5);
+    inset-inline-end: spacing(0.5);
+}
+
+.bit-cdb-cpi {
+    width: $siz-icon-md;
+    height: $siz-icon-md;
+}
+
+// The body takes the focus so a keyboard can scroll a long line or a tall block into view. The root clips its overflow
+// to its corners, so the ring is drawn inside the body rather than around it.
+.bit-cdb-bdy {
+    overflow: auto;
+    max-height: var(--bit-cdb-mxh, var(--bit-CodeBlock-max-height, none));
+
+    &:focus-visible {
+        @include focus-ring-inset($clr-pri-focus);
+    }
+}
+
+// A floating copy button keeps the end of the first lines clear of it while the code is not scrolled.
+.bit-cdb > .bit-cdb-cpb ~ .bit-cdb-bdy {
+    padding-inline-end: calc(#{$siz-ctrl-sm} + #{spacing(0.5)});
+}
+
+.bit-cdb-coc .bit-cdb-bdy {
+    cursor: pointer;
+}
+
+// Code is written left to right whatever the page around it reads, so the lines are laid out that way and isolated from
+// the surrounding direction - inherited right to left, the bidirectional algorithm would move the punctuation of a line
+// (the ; of a statement) to its other end. The header keeps the direction of the page.
+.bit-cdb-pre {
+    margin: 0;
+    tab-size: 4;
+    direction: ltr;
+    unicode-bidi: isolate;
+    line-height: 1.55;
+    white-space: pre;
+    padding: var(--bit-CodeBlock-padding, #{spacing(1.5)});
+    font-size: var(--bit-CodeBlock-font-size, #{$tg-fs-sm});
+    font-family: var(--bit-CodeBlock-font-family, #{$tg-font-family-mono});
+}
+
+// The code element takes the type of the block rather than the browser's own monospace and size, and none of the
+// background a page gives its code spans.
+.bit-cdb-cod {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: none;
+}
+
+.bit-cdb-trm {
+    color: var(--bit-CodeBlock-terminal-color, #{$clr-ntr-gray20});
+    background-color: var(--bit-CodeBlock-terminal-background, #{$clr-ntr-gray190});
+    border-color: var(--bit-CodeBlock-terminal-border-color, #{translucent($clr-ntr-gray20, 16%)});
+
+    // The title bar of a terminal is part of its window rather than a bar of its own.
+    > .bit-cdb-hdr {
+        color: inherit;
+        border-block-end: none;
+        background-color: transparent;
+    }
+}
+
+// The prompt is generated content, so it is neither selected nor copied with the command after it.
+.bit-cdb-lin::before {
+    user-select: none;
+    -webkit-user-select: none;
+    content: var(--bit-CodeBlock-prompt, "$ ");
+    color: var(--bit-CodeBlock-prompt-color, #{$clr-ntr-gray90});
+}
+
+.bit-cdb-liv {
+    @include visually-hidden;
+}
+
+// A printed block shows all of its code: the long lines wrap rather than being cut off at the edge of the page, and a
+// block that scrolls on the screen is printed at its full height.
+@media print {
+    .bit-cdb {
+        break-inside: avoid;
+    }
+
+    .bit-cdb-bdy {
+        overflow: visible;
+        max-height: none;
+    }
+
+    .bit-cdb-pre {
+        white-space: pre-wrap;
+    }
+
+    .bit-cdb-cpb {
+        display: none;
+    }
+}

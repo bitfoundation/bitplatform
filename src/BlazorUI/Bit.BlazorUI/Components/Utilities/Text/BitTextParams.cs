@@ -51,6 +51,11 @@ public partial class BitTextParams : BitComponentBaseParams, IBitComponentParams
     public bool? BreakWord { get; set; }
 
     /// <summary>
+    /// Renders the text as inline code: a "code" element in the theme's monospaced family, on a chip of its own.
+    /// </summary>
+    public bool? Code { get; set; }
+
+    /// <summary>
     /// The general color of the text.
     /// </summary>
     public BitColor? Color { get; set; }
@@ -202,6 +207,11 @@ public partial class BitTextParams : BitComponentBaseParams, IBitComponentParams
         if (BreakWord.HasValue)
         {
             bitText.TakeFromCascade(nameof(BreakWord), BreakWord.Value, static t => t.BreakWord, static (t, v) => t.BreakWord = v);
+        }
+
+        if (Code.HasValue)
+        {
+            bitText.TakeFromCascade(nameof(Code), Code.Value, static t => t.Code, static (t, v) => t.Code = v);
         }
 
         if (Color.HasValue)

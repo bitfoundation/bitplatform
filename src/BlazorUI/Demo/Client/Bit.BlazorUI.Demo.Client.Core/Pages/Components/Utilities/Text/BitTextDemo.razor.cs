@@ -43,6 +43,13 @@ public partial class BitTextDemo
         },
         new()
         {
+            Name = "Code",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the text as inline code: a code element (unless Element names another one) in the theme's monospaced family, on a chip of its own. With no Typography it takes the type of the text around it (the Inherit variant), set a little smaller.",
+        },
+        new()
+        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
@@ -351,7 +358,31 @@ public partial class BitTextDemo
         {
             Name = "--bit-Text-monospace-font-family",
             DefaultValue = "--bit-tpg-font-family-mono",
-            Description = "Font family of a Monospace text.",
+            Description = "Font family of a Monospace or a Code text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-code-background",
+            DefaultValue = "8% of --bit-clr-fg-pri",
+            Description = "Background of the chip of a Code text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-code-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the chip of a Code text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-code-padding",
+            DefaultValue = "0.125em 0.375em",
+            Description = "Padding of the chip of a Code text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-code-font-size",
+            DefaultValue = "0.875em",
+            Description = "Size of a Code text in the Inherit variant it takes when no Typography is set. Any other Typography set on the text wins over it.",
         },
         new()
         {

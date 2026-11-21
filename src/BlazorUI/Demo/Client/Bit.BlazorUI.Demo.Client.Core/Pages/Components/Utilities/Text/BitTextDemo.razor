@@ -86,12 +86,13 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Numbers & monospace" RazorCode="@example4RazorCode" Id="example4">
+    <DemoExample Title="Numbers, monospace & code" RazorCode="@example4RazorCode" Id="example4">
         <div class="example-desc">
             <b>Numeric</b> uses tabular, lining figures, so digits line up in a column and a changing number does not
             jitter; letters stay proportional. <b>Monospace</b> switches to the theme's monospaced family for code, IDs
             and hashes - pair it with a <code>code</code>, <code>kbd</code> or <code>samp</code> <b>Element</b> to carry
-            the meaning too.
+            the meaning too. <b>Code</b> is inline code: a <code>code</code> element on a chip of its own, which takes the
+            type of the text around it.
         </div>
         <br />
         <div class="example-content">
@@ -113,6 +114,7 @@
                 </div>
             </div>
             <BitText Element="code" Typography="BitTypography.Body2" Monospace>var text = new BitText { Monospace = true };</BitText>
+            <BitText Typography="BitTypography.Body1">Run <BitText Code>dotnet build</BitText> in the folder of the project, then <BitText Code>dotnet run</BitText>.</BitText>
         </div>
     </DemoExample>
 

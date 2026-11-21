@@ -416,4 +416,25 @@ public class BitStrings
     /// many there are.
     /// </summary>
     public virtual string PanelSizeFormat => "Resize, size {0} of {1}";
+
+
+
+    // ===== BitCodeBlock =====
+
+    /// <summary>
+    /// The name of the copy button of a code block: the fallback of <see cref="BitCodeBlock.CopyText"/>.
+    /// </summary>
+    public virtual string Copy => "Copy";
+
+    /// <summary>
+    /// The name of the copy button of a code block while what it copied is on the clipboard, which is also what a screen
+    /// reader is told after the copy: the fallback of <see cref="BitCodeBlock.CopiedText"/>.
+    /// </summary>
+    public virtual string Copied => "Copied";
+
+    /// <summary>
+    /// The name of the scrolling box of a <see cref="BitCodeBlock"/> that has no <see cref="BitCodeBlock.Title"/> and no
+    /// <see cref="BitCodeBlock.Language"/> to be named by.
+    /// </summary>
+    public virtual string Code => "Code";
 }
