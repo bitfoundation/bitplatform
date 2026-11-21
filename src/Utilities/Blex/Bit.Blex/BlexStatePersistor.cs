@@ -28,6 +28,8 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     private const string StoreVersionKey = "__blexStoreVersion";
     private const string StateKey = "state";
 
+    private static readonly TimeSpan DisposalWait = TimeSpan.FromSeconds(5);
+
     private readonly BlexManager _manager;
     private readonly IBlexStorage _storage;
     private readonly BlexPersistenceOptions _options;
@@ -1515,7 +1517,14 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         // neither listen nor announce itself then.
         _disposed = true;
         Unsubscribe();
-        await FlushAsync().ConfigureAwait(false);
+
+        try
+        {
+            await FlushAsync().WaitAsync(DisposalWait, _manager.TimeProvider).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+        }
     }
 
     /// <summary>

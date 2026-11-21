@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Blex;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Blex.Tests;
@@ -237,6 +238,24 @@ public class PersistenceHydrationTests
         Assert.IsFalse(announced);
         Assert.IsFalse(persistor.HasHydrated);
         Assert.IsEmpty(storage.Data, "A disposed persistor saved a change.");
+    }
+
+    [TestMethod]
+    public async Task APersistorDisposedWhileAReadNeverAnswers_StopsWaitingForIt()
+    {
+        var (manager, _) = Setup();
+        var clock = new FakeTimeProvider();
+        manager.TimeProvider = clock;
+        var storage = new InMemoryStorage { ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously) };
+        var persistor = new BlexStatePersistor(manager, storage);
+        _ = persistor.StartAsync();
+
+        var disposing = persistor.DisposeAsync().AsTask();
+        clock.Advance(TimeSpan.FromSeconds(4));
+        Assert.IsFalse(disposing.IsCompleted, "Disposal gave up on a read before it had a chance to answer.");
+
+        clock.Advance(TimeSpan.FromSeconds(1));
+        await disposing.WaitAsync(TimeSpan.FromSeconds(10));
     }
 
     [TestMethod]
