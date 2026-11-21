@@ -100,7 +100,7 @@
         presence, throttled, so the other side sees it being drawn. The most recent operation is shown below exactly as
         it was sent; every incoming one is validated like a loaded file, so a peer cannot send something hostile.
     </p>
-    <pre class="bb-code bink-output">@(_lastMessage ?? "Draw on one of the canvases to see the operation that is sent.")</pre>
+    <pre class="bb-code bink-output" tabindex="0">@(_lastMessage ?? "Draw on one of the canvases to see the operation that is sent.")</pre>
     <p class="bb-card-desc">
         A picture crosses the wire once: later changes to it, such as every frame of a drag, refer to it by a hash of its
         content instead of sending it again.
