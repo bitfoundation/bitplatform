@@ -101,6 +101,38 @@ public sealed class UseBitBsqliteTests
 
         Assert.IsTrue(kept.Any(d => d.Type == typeof(BsqliteAotNullableValues)
             && d.MemberSignature == nameof(BsqliteAotNullableValues.RoundTrip)));
-        Assert.IsTrue(BsqliteAotNullableValues.RoundTrip(null).All(value => value is null));
+    }
+
+    /// <summary>
+    /// The value types the SQLite provider maps, which docs/getting-started.md says <c>UseBitBsqlite</c> covers. A type
+    /// dropped from <see cref="BsqliteAotNullableValues.RoundTrip"/> fails here: the demo-aot E2E job saves only
+    /// <c>DateOnly?</c>, and an AOT app with a <c>Guid?</c> property would stop silently on its first save.
+    /// </summary>
+    [TestMethod]
+    [DataRow(typeof(bool))]
+    [DataRow(typeof(byte))]
+    [DataRow(typeof(sbyte))]
+    [DataRow(typeof(short))]
+    [DataRow(typeof(ushort))]
+    [DataRow(typeof(int))]
+    [DataRow(typeof(uint))]
+    [DataRow(typeof(long))]
+    [DataRow(typeof(ulong))]
+    [DataRow(typeof(char))]
+    [DataRow(typeof(float))]
+    [DataRow(typeof(double))]
+    [DataRow(typeof(decimal))]
+    [DataRow(typeof(DateTime))]
+    [DataRow(typeof(DateTimeOffset))]
+    [DataRow(typeof(DateOnly))]
+    [DataRow(typeof(TimeOnly))]
+    [DataRow(typeof(TimeSpan))]
+    [DataRow(typeof(Guid))]
+    public void TheNullableBoxesCover(Type type)
+    {
+        var value = Activator.CreateInstance(type);
+
+        Assert.AreEqual(value, BsqliteAotNullableValues.RoundTrip(type, value));
+        Assert.IsNull(BsqliteAotNullableValues.RoundTrip(type, null));
     }
 }

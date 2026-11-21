@@ -119,16 +119,28 @@ tab again.
 
 `UseBitBsqlite` brings the boxing of every type the SQLite provider maps: `bool`, the integer types, `char`, `float`,
 `double`, `decimal`, `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `TimeSpan` and `Guid`. An entity with a
-nullable property of one of the app's own enums or structs needs the app to box it once, in code it runs:
+nullable property of one of the app's own enums or structs needs the app to box that type once. Do it in the context
+class, which lives with the entities:
 
 ```csharp
-// Program.cs of the WebAssembly client
-_ = BoxNullables(null);
+public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+{
+    // Boxes OrderStatus? once, for AOT builds: see "AOT and nullable properties".
+    static AppDbContext() => _ = BoxNullables(null);
 
-static object? BoxNullables(object? value) => (OrderStatus?)value;
+    private static object? BoxNullables(object? value) => (OrderStatus?)value;
+
+    // ...
+}
 ```
 
-A build without AOT runs that code in the interpreter, which needs none of this.
+Not in `Program.cs`: an app that [lazy loads](#lazy-loading-on-webassembly) its model would name the entities' types
+there before their assembly has loaded, and fail at startup in every build that is not AOT-compiled. The context runs
+only once the assembly has loaded, and an AOT build compiles it with the rest.
+
+A build without AOT runs EF Core's snapshot in the interpreter, which needs none of this. Mono compiles ahead of time
+for a Blazor Hybrid app on iOS and Mac Catalyst too. `UseBitBsqlite`'s boxing is in those builds as well, and an app's
+own costs nothing there. Only WebAssembly is tested, so box the app's own nullable types on those targets too.
 
 ### Concurrent contexts
 
@@ -369,6 +381,7 @@ The rest of the app has to keep to these rules:
   The server project prerenders the page, and so resolves what it injects: it registers `LazyAssemblyLoader` as well, `builder.Services.AddScoped<LazyAssemblyLoader>()`.
 - A Blazor Hybrid app downloads nothing, so there is nothing to lazy load: it registers the services as usual, with the same method - `AppDatabase.Register(builder.Services)` in `MauiProgram.cs` - and `GetBitBsqliteServices` hands the pages it shares with the WebAssembly client its container. It builds none of its own there: a web view closes long before the app does, and would leave its databases open. If it shares the router's file, it registers `LazyAssemblyLoader` (`builder.Services.AddScoped<LazyAssemblyLoader>()`), because the router injects it there too, though the switch leaves it unused.
 - The condition leaves AOT builds out. AOT compiles every assembly into `dotnet.native.wasm`, so there is nothing left to download later, and lazy loading an AOT-compiled assembly can fail at startup. The switch is set only where the marks are, so an AOT build skips `LoadAssembliesAsync` as well.
+- The boxing that [AOT and nullable properties](#aot-and-nullable-properties) asks for goes in the context class, not in `Program.cs`: it names the model's types, and they load with the rest of the list.
 - `Could not load file or assembly 'Bit.Bsqlite'` - or `'Microsoft.EntityFrameworkCore'`, or `Could not load type of field` - when a database page opens means something used their types before the assemblies loaded: load them in `OnNavigateAsync` for every route whose page uses the database - from the page itself, for a page with its own render mode - and keep their types out of `Program.cs`, `App.razor`, the layouts every page shares and the method that loads them. If it comes in a `ReflectionTypeLoadException` from the router on the first page - and only when the app is opened away from the database pages - a public type in an assembly the router reads derives from or implements one of theirs. The same error naming another assembly of the list, on a page that does not use the database, is one your app uses itself: take it out of the list. `... must be marked with 'BlazorWebAssemblyLazyLoad' item group` names an assembly the call loads that the project file does not mark.
 
 The [lazy loading sample](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite/Samples/Lazy/)
