@@ -55,6 +55,13 @@ public sealed class BitBhListState<TValue>
 
     internal BitBhTypeahead Typeahead { get; } = new();
 
+    /// <summary>
+    /// Where the pointer was at the last pointermove an option handled. A list scrolled by the keyboard under a
+    /// resting pointer gets pointermoves at the same coordinates (WebKit sends them): those must not take the
+    /// highlight back from the keyboard.
+    /// </summary>
+    internal (double X, double Y)? LastPointer { get; set; }
+
     // ── Data-driven (virtualized) mode ───────────────────────────────────────
 
     internal IReadOnlyList<TValue>? Items { get; private set; }

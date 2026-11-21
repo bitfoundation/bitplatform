@@ -98,8 +98,10 @@ public abstract class BitBhOptionBase<TValue> : BitBhComponentBase, IBitBhCollec
         // Keep focus on the button / input while clicking an option.
         builder.AddAttribute(31, "onmousedown", On<MouseEventArgs>("onmousedown", static () => { }));
         builder.AddEventPreventDefaultAttribute(32, "onmousedown", true);
-        builder.AddAttribute(33, "onpointerenter",
-            On<PointerEventArgs>("onpointerenter", HandlePointerEnter));
+        // A move, not pointerenter: an option the keyboard scrolls under a resting pointer gets a pointerenter
+        // (Chromium sends one), and the highlight would jump from the option the keys moved to onto it.
+        builder.AddAttribute(33, "onpointermove",
+            On<PointerEventArgs>("onpointermove", HandlePointerMove));
         builder.AddElementReferenceCapture(40, CaptureElement);
         RenderContent(builder, 50);
         builder.CloseElement();
@@ -131,9 +133,14 @@ public abstract class BitBhOptionBase<TValue> : BitBhComponentBase, IBitBhCollec
     private Task HandleClick(MouseEventArgs _)
         => IsItemDisabled ? Task.CompletedTask : SelectAsync();
 
-    private void HandlePointerEnter(PointerEventArgs args)
+    private void HandlePointerMove(PointerEventArgs args)
     {
-        if (IsItemDisabled || ListState is null || args.PointerType == "touch") return;
+        if (ListState is null || args.PointerType == "touch") return;
+        // The pointer did not move: the options moved under it.
+        var position = (args.ClientX, args.ClientY);
+        if (ListState.LastPointer == position) return;
+        ListState.LastPointer = position;
+        if (IsItemDisabled || IsActive) return;
         ListState.SetActiveId(ItemId, scroll: false);
     }
 
