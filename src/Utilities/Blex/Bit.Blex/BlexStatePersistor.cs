@@ -70,6 +70,11 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     // that one is reading to it, and waits for it before it is announced. Guarded by _saveGate.
     private Task _storeReads = Task.CompletedTask;
     private CancellationTokenSource? _debounce;
+
+    // Cancelled on disposal: a read still waiting for storage is abandoned rather than waited for. A disposed persistor has
+    // nothing left to restore, and storage behind a page that went away (a reloaded BlazorWebView) never answers. Never
+    // disposed itself, since code still in flight reads its token after disposal.
+    private readonly CancellationTokenSource _disposal = new();
     private DateTimeOffset? _pendingSince;
     private bool _subscribed;
     private bool _watchingRegistry;
@@ -253,6 +258,11 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             try
             {
                 await ReadStoresAsync(cancellationToken).ConfigureAwait(true);
+            }
+            catch (OperationCanceledException) when (IsCancelledByDisposal(cancellationToken))
+            {
+                // Disposed while storage was read: nothing is left to restore for, and nothing to report.
+                return;
             }
             catch when (!HasHydrated)
             {
@@ -468,7 +478,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
                 if (target is not null && store.Name != target)
                     continue;
 
-                var raw = await _storage.GetAsync(KeyFor(store)).ConfigureAwait(true);
+                var raw = await _storage.GetAsync(KeyFor(store), _disposal.Token).ConfigureAwait(true);
 
                 JsonObject? slice = null;
                 if (!string.IsNullOrEmpty(raw))
@@ -509,6 +519,10 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
 
                 NotifyExternalChange(store.Name, slice);
             }
+        }
+        catch (OperationCanceledException) when (_disposal.IsCancellationRequested)
+        {
+            // Disposed while storage was read: the change is no longer anyone's to apply.
         }
         catch (Exception ex)
         {
@@ -580,6 +594,10 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             await WaitForLateStoresAsync().ConfigureAwait(true);
             CompleteHydration();
         }
+        catch (OperationCanceledException) when (IsCancelledByDisposal(cancellationToken))
+        {
+            // Disposed while storage was read, as when it is called on a disposed persistor: nothing to restore for.
+        }
         finally
         {
             Interlocked.Decrement(ref _hydrationsRunning);
@@ -645,6 +663,8 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
             }
         }
 
+        // The caller's token, or disposal: either abandons a read storage has not answered.
+        using var readCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _disposal.Token);
         var next = 0;
         try
         {
@@ -724,7 +744,7 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
 
                 // It may have left the manager while an earlier store was read.
                 if (_manager.Stores.Contains(store))
-                    await HydrateStoreAsync(store, sb, cancellationToken).ConfigureAwait(true);
+                    await HydrateStoreAsync(store, sb, readCancellation.Token).ConfigureAwait(true);
             }
 
             return true;
@@ -1025,7 +1045,11 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         {
             // It may have left again while it waited its turn. Hydrating lifts the store's hold.
             if (_manager.Stores.Contains(store) && store is BlexStoreBase sb)
-                await HydrateStoreAsync(store, sb, CancellationToken.None).ConfigureAwait(true);
+                await HydrateStoreAsync(store, sb, _disposal.Token).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException) when (_disposal.IsCancellationRequested)
+        {
+            // Disposed while storage was read: nothing is left to restore for.
         }
         catch (Exception ex)
         {
@@ -1510,13 +1534,23 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
         StopSaving();
     }
 
-    /// <summary>Stops listening, flushes any pending writes and waits for them to complete.</summary>
+    /// <summary>
+    /// Stops listening, abandons the reads storage has not answered yet, flushes any pending writes and waits for them
+    /// to complete -- for five seconds at most.
+    /// </summary>
+    /// <remarks>
+    /// Storage behind a page that went away never answers (a BlazorWebView reloaded while the app starts), and the
+    /// next page attaches only once the old one's scope is disposed. A read is abandoned at once: a disposed persistor
+    /// has nothing to restore it into. A write is waited for, up to five seconds, after which disposal returns and the
+    /// write is left to finish, or not, on its own.
+    /// </remarks>
     public async ValueTask DisposeAsync()
     {
         // Before anything is released: a hydration still reading storage checks it as it resumes, and must
         // neither listen nor announce itself then.
         _disposed = true;
         Unsubscribe();
+        _disposal.Cancel();
 
         try
         {
@@ -1543,10 +1577,17 @@ public sealed class BlexStatePersistor : IAsyncDisposable, IDisposable
     {
         _disposed = true;
         Unsubscribe();
+        _disposal.Cancel();
         lock (_saveGate)
         {
             CancelDebounceLocked();
             SavePendingLocked();
         }
+    }
+
+    /// <summary>Whether a read was abandoned because the persistor was disposed, rather than by the caller's own token.</summary>
+    private bool IsCancelledByDisposal(CancellationToken callerToken)
+    {
+        return _disposal.IsCancellationRequested && !callerToken.IsCancellationRequested;
     }
 }
