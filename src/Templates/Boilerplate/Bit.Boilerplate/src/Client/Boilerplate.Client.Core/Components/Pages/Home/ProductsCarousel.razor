@@ -44,7 +44,7 @@ else
             @foreach (var product in carouselProducts)
             {
                 <BitCarouselItem Style="width:100%">
-                    <BitLink Href="@product.PageUrl" NoUnderline NoColor>
+                    <BitLink Href="@CultureInfoManager.GetCurrentCultureUrl(product.PageUrl)" NoUnderline NoColor>
                         <BitStack HorizontalSm="true" Class="carousel-stack">
                             <ProductImage Src="@GetProductImageUrl(product)" Alt="@product.PrimaryImageAltText" Width="50%" Class="carousel-image" />
                             <BitStack AutoHeight>

@@ -82,10 +82,10 @@ public static class IResourceBuilderExtensions
         /// <summary>
         /// https://github.com/dotnet/aspire/issues/11710
         /// </summary>
-        public IResourceBuilder<PostgresServerResource> WithV18DataVolume(string? name = null, bool isReadOnly = false)
+        public IResourceBuilder<PostgresServerResource> WithV18PlusDataVolume(string? name = null, bool isReadOnly = false)
         {
             return builder.WithVolume(name ?? VolumeNameGenerator.Generate(builder, "data"),
-                "/var/lib/postgresql/18/docker", isReadOnly);
+                "/var/lib/postgresql", isReadOnly);
         }
     }
 }
