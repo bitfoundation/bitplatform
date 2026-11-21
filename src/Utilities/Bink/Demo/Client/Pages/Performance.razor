@@ -96,7 +96,7 @@
         are never touched, and undoing it puts the exact transforms back. The two SVG exports write the same file, once
         as a string and once straight to a stream.
     </p>
-    <pre class="bb-code"><span class="k">using</span> (_document.BeginBatch(<span class="s">"Generate"</span>))
+    <pre class="bb-code" tabindex="0"><span class="k">using</span> (_document.BeginBatch(<span class="s">"Generate"</span>))
 {
     <span class="k">for</span> (<span class="k">int</span> i = 0; i &lt; _strokeCount; i++) _document.AddElement(CreateStroke(random), layer);
 }

@@ -136,7 +136,7 @@
         document, addressed to the one that asked; the first answer is applied as one remote change, so it never lands
         in the newcomer's undo history, and anything drawn while it was on its way is applied again on top.
     </p>
-    <pre class="bb-code"><span class="k">var</span> session = <span class="k">new</span> BinkCollaborationSession(<span class="k">new</span> BinkDocument(), transport, participantId: <span class="s">"sam"</span>);
+    <pre class="bb-code" tabindex="0"><span class="k">var</span> session = <span class="k">new</span> BinkCollaborationSession(<span class="k">new</span> BinkDocument(), transport, participantId: <span class="s">"sam"</span>);
 <span class="k">await</span> session.RequestSnapshotAsync();   <span class="c">// joining: someone sends this participant the document</span>
 
 <span class="k">await</span> session.SendSnapshotAsync();      <span class="c">// resetting: everyone replaces their copy with this one</span></pre>
@@ -155,7 +155,7 @@
         the demo's in-memory <code>LoopbackTransport</code> (<code>Shared/LoopbackTransport.cs</code>); anything that
         implements <code>IBinkCollaborationTransport</code> - a SignalR hub, a WebSocket - takes its place unchanged.
     </p>
-    <pre class="bb-code">_documents[1] = BinkSerializer.Deserialize(BinkSerializer.Serialize(_documents[0]));
+    <pre class="bb-code" tabindex="0">_documents[1] = BinkSerializer.Deserialize(BinkSerializer.Serialize(_documents[0]));
 
 LoopbackTransport transport = _hub.CreateClient();
 <span class="k">var</span> session = <span class="k">new</span> BinkCollaborationSession(_documents[i], transport, Participants[i].Id);
@@ -177,7 +177,7 @@ session.ParticipantLeft += id =&gt; { <span class="c">/* remove it */</span> };<
         could be applied while the local user is drawing. Each sender's messages must arrive in order, which SignalR
         and WebSockets both give; ordering between senders does not matter.
     </p>
-    <pre class="bb-code">connection.On&lt;BinkCollaborationMessage&gt;(<span class="s">"Message"</span>, message =&gt;
+    <pre class="bb-code" tabindex="0">connection.On&lt;BinkCollaborationMessage&gt;(<span class="s">"Message"</span>, message =&gt;
     dispatch(() =&gt; MessageReceived?.Invoke(message) ?? Task.CompletedTask));   <span class="c">// dispatch = the component's InvokeAsync</span></pre>
 </div>
 
