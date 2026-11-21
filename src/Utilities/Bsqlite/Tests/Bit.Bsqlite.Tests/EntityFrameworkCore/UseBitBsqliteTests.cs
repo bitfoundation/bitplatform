@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -79,5 +82,25 @@ public sealed class UseBitBsqliteTests
         // no e_sqlite3; UseBitBsqlite installs a PCL stub so the call does not throw.
         var version = new Version(new Microsoft.Data.Sqlite.SqliteConnection().ServerVersion);
         Assert.IsTrue(version >= new Version(3, 38));
+    }
+
+    /// <summary>
+    /// An AOT-compiled app stops for good on the first save of an entity with a <c>DateOnly?</c>,
+    /// <c>Guid?</c> or similar property unless something it compiles boxes that nullable type -
+    /// see <see cref="BsqliteAotNullableValues"/>. Every <c>UseBitBsqlite</c> overload ends in the one that
+    /// keeps it through trimming; only the demo-aot E2E job sees a regression otherwise.
+    /// </summary>
+    [TestMethod]
+    public void UseBitBsqlite_KeepsTheNullableBoxesAnAotAppNeeds()
+    {
+        var useBitBsqlite = typeof(BsqliteDbContextOptionsExtensions).GetMethod(
+            nameof(BsqliteDbContextOptionsExtensions.UseBitBsqlite),
+            [typeof(DbContextOptionsBuilder), typeof(DbConnection), typeof(bool), typeof(Action<SqliteDbContextOptionsBuilder>)])!;
+
+        var kept = useBitBsqlite.GetCustomAttributes<DynamicDependencyAttribute>();
+
+        Assert.IsTrue(kept.Any(d => d.Type == typeof(BsqliteAotNullableValues)
+            && d.MemberSignature == nameof(BsqliteAotNullableValues.RoundTrip)));
+        Assert.IsTrue(BsqliteAotNullableValues.RoundTrip(null).All(value => value is null));
     }
 }

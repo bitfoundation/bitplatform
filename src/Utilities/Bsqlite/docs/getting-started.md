@@ -108,6 +108,28 @@ With more than one database registered, name the one a context belongs to: `AddB
 
 Use the async EF API throughout: `ToListAsync`, `SaveChangesAsync`, `MigrateAsync`. Synchronous members throw `BsqliteSynchronousApiNotSupportedException` naming the async overload, because the engine runs in a worker the main thread cannot wait on. Blazor Hybrid keeps the same rule, so code written once runs in both - and its UI thread never waits on the disk either.
 
+### AOT and nullable properties
+
+An app published with `RunAOTCompilation` saves an entity with a nullable property only if its AOT-compiled code
+contains the boxing of that nullable type. EF Core keeps original values in a generic snapshot it builds at run time,
+which AOT runs through Mono's shared code for value types; that code boxes a `DateOnly?` by calling
+`Nullable<DateOnly>.Box`, and the AOT compiler emits that only for the nullable types some compiled code boxes. Without
+it, the first `SaveChangesAsync` traps in WebAssembly: no exception, nothing in the console, and no .NET code runs in the
+tab again.
+
+`UseBitBsqlite` brings the boxing of every type the SQLite provider maps: `bool`, the integer types, `char`, `float`,
+`double`, `decimal`, `DateTime`, `DateTimeOffset`, `DateOnly`, `TimeOnly`, `TimeSpan` and `Guid`. An entity with a
+nullable property of one of the app's own enums or structs needs the app to box it once, in code it runs:
+
+```csharp
+// Program.cs of the WebAssembly client
+_ = BoxNullables(null);
+
+static object? BoxNullables(object? value) => (OrderStatus?)value;
+```
+
+A build without AOT runs that code in the interpreter, which needs none of this.
+
 ### Concurrent contexts
 
 Every context of a session shares its one connection - one SQLite connection in the worker - and every statement is a round trip, so two contexts' operations interleave: a page saving while a sync service pulls, say. They take turns the way two SQLite connections over one file do:
