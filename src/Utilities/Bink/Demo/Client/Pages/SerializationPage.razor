@@ -105,7 +105,7 @@
         opened, a request body - use <code>TryDeserialize</code>, which reports a message instead of throwing. The
         UTF-8 and stream overloads avoid a string the size of the document when it goes to a file or over the network.
     </p>
-    <pre class="bb-code"><span class="k">string</span> compact = BinkSerializer.Serialize(document);
+    <pre class="bb-code" tabindex="0"><span class="k">string</span> compact = BinkSerializer.Serialize(document);
 <span class="k">string</span> readable = BinkSerializer.Serialize(document, BinkSerializerOptions.Readable);
 <span class="k">byte</span>[] utf8 = BinkSerializer.SerializeToUtf8Bytes(document);
 <span class="k">await</span> BinkSerializer.SerializeAsync(document, stream);
@@ -119,7 +119,7 @@ BinkDocument fromStream = <span class="k">await</span> BinkSerializer.Deserializ
         Your own information travels with it: metadata on the document and on any element, and a
         <code>Description</code> that is also what screen readers and the exported SVG report.
     </p>
-    <pre class="bb-code">document.SetMetadata(<span class="s">"case-id"</span>, <span class="s">"2026-114"</span>);
+    <pre class="bb-code" tabindex="0">document.SetMetadata(<span class="s">"case-id"</span>, <span class="s">"2026-114"</span>);
 document.ReplaceElement(stroke <span class="k">with</span>
 {
     Description = <span class="s">"Signature of Jane Doe"</span>,
@@ -143,7 +143,7 @@ document.ReplaceElement(stroke <span class="k">with</span>
         <code>ShareImageData = false</code> always writes version 1, and <code>IncludeEmbeddedImages = false</code> leaves
         the pictures out for an application that stores them elsewhere.
     </p>
-    <pre class="bb-code"><span class="k">var</span> options = <span class="k">new</span> BinkSerializerOptions
+    <pre class="bb-code" tabindex="0"><span class="k">var</span> options = <span class="k">new</span> BinkSerializerOptions
 {
     ShareImageData = <span class="k">false</span>,           <span class="c">// version 1 even with repeated pictures, for older readers</span>
     IncludeEmbeddedImages = <span class="k">false</span>,    <span class="c">// pictures load as BinkImageSource.Omitted, to be re-attached</span>
@@ -164,7 +164,7 @@ document.ReplaceElement(stroke <span class="k">with</span>
         wrong, and a hostile size field never makes the reader allocate for it. <strong>Strict limits</strong> loads
         with options like these:
     </p>
-    <pre class="bb-code"><span class="k">var</span> options = <span class="k">new</span> BinkDeserializerOptions
+    <pre class="bb-code" tabindex="0"><span class="k">var</span> options = <span class="k">new</span> BinkDeserializerOptions
 {
     Limits = <span class="k">new</span> BinkDocumentLimits { MaxElements = @StrictLimits.MaxElements, MaxPointsPerStroke = 20_000 },
     AllowRemoteImages = <span class="k">false</span>,
@@ -194,7 +194,7 @@ document.ReplaceElement(stroke <span class="k">with</span>
         still reads as changed. For a save that takes time, pass the revision that was serialized, so what changed
         while the bytes were on their way stays unsaved.
     </p>
-    <pre class="bb-code"><span class="k">long</span> revision = document.Revision;
+    <pre class="bb-code" tabindex="0"><span class="k">long</span> revision = document.Revision;
 <span class="k">await</span> SaveToServerAsync(BinkSerializer.SerializeToUtf8Bytes(document));
 document.MarkSaved(revision);</pre>
 </div>
