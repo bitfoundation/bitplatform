@@ -4700,19 +4700,24 @@ function createRuntime() {
             document.addEventListener('click', swallow, { capture: true, once: true });
             setTimeout(() => document.removeEventListener('click', swallow, true), 0);
 
-            // The speed of the movement in the last 100ms before the release, from where it started - the newest sample
-            // before them (a single move in them, the release some time after it, is still a flick) - to where it
-            // ended. A drag held still that long before it is let go is no flick.
+            // The speed of the movement in the last 100ms before the release, timed by the samples in them; with a single
+            // move in them (the release some time after it, still a flick), from the newest sample before them, where
+            // that move started. A drag held still that long before it is let go is no flick.
             let velocity = 0;
             const last = samples[samples.length - 1];
             if (last && ev.timeStamp - last.t <= 100) {
                 let i = samples.length - 1;
                 while (i > 0 && ev.timeStamp - samples[i - 1].t <= 100) i--;
-                const first = samples[Math.max(0, i - 1)];
-                // That sample may be from long before, the pointer resting since (no moves come then): the movement into
-                // the window started at most 100ms before its first sample, so a pause ahead of a flick slows it no more.
-                const from = Math.max(first.t, samples[i].t - 100);
-                if (last.t > from) velocity = (last.d - first.d) / (last.t - from);
+                if (last.t > samples[i].t) {
+                    // Two moves or more: the older samples (the press among them, however long ago) play no part.
+                    velocity = (last.d - samples[i].d) / (last.t - samples[i].t);
+                } else {
+                    const first = samples[Math.max(0, i - 1)];
+                    // That sample may be from long before, the pointer resting since (no moves come then): the movement
+                    // into the window started at most 100ms before its first sample, so a pause ahead of a flick slows it no more.
+                    const from = Math.max(first.t, samples[i].t - 100);
+                    if (last.t > from) velocity = (last.d - first.d) / (last.t - from);
+                }
             }
             const threshold = state.options.threshold ?? 0.25;
             if (state.snap) {
