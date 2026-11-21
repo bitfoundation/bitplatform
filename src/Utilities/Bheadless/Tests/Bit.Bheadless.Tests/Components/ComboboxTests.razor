@@ -563,23 +563,19 @@
     }
 
     [TestMethod]
-    public void A_pointermove_that_did_not_move_leaves_the_highlight_to_the_keyboard()
+    public void The_pointer_highlights_an_option_through_the_runtime_hover()
     {
-        // A list the keyboard scrolls under a resting pointer: WebKit sends a pointermove at the same coordinates to the
-        // option it brings under it (Chromium a pointerenter, which options ignore). It leaves the highlight to the keyboard.
+        // The runtime sends an option its hover once, as the pointer reaches it - not with every move, nor when the
+        // keyboard scrolls it under a resting pointer.
         var cut = Render(Combobox(new Harness()));
         AngleSharp.Dom.IElement Option(string text) => cut.FindAll("[role=option]").First(o => o.TextContent == text);
 
         cut.Find("input").Press("ArrowDown");
-        Option("Apricot").PointerMove(new PointerEventArgs { ClientX = 40, ClientY = 120 });
-        Assert.AreEqual("Apricot", Text(ActiveOf(cut.Find("input"))));
         cut.Find("input").Press("PageDown");
         Assert.AreEqual("Cherry", Text(ActiveOf(cut.Find("input"))));
 
-        Option("Banana").PointerMove(new PointerEventArgs { ClientX = 40, ClientY = 120 });
-        Assert.AreEqual("Cherry", Text(ActiveOf(cut.Find("input"))));
-
-        Option("Banana").PointerMove(new PointerEventArgs { ClientX = 40, ClientY = 121 });
+        Option("Banana").PointerHover();
         Assert.AreEqual("Banana", Text(ActiveOf(cut.Find("input"))));
+        Assert.IsFalse(cut.FindAll("[role=option]").Any(o => o.HasAttribute("blazor:onpointermove") || o.HasAttribute("blazor:onpointerenter")));
     }
 }

@@ -372,6 +372,50 @@ function createRuntime() {
         if (el && !isDisabledInteractive(el)) el.setAttribute('data-active', '');
     }
 
+    // ─── option hover ────────────────────────────────────────────────────────────
+    // The pointer highlights a list option ([data-bit-bh-hover]) through a 'bitbhhover' event the runtime sends it (see
+    // BitBhEventHandlers in C#), not through the pointer events themselves: .NET hears of an option once, as the pointer
+    // reaches it while another is highlighted, not with every move over it. Options the keyboard scrolls under a resting
+    // pointer get pointer events too - Chromium a pointerover, WebKit a pointermove at the same coordinates - and those
+    // leave the highlight where the keys put it; a wheel's scroll is the pointer's own, and its options take it.
+
+    let hoverX = NaN;
+    let hoverY = NaN;
+    /** The option last told, while it has not taken the highlight: told once, not with every move. */
+    let hoverSent: Element | null = null;
+    /** A wheel scrolled since the pointer last moved. */
+    let hoverWheeled = false;
+
+    function hoverOption(target: EventTarget | null) {
+        const el = target instanceof Element ? target.closest('[data-bit-bh-hover]') : null;
+        if (!el || el.hasAttribute('data-disabled') || el.hasAttribute('data-highlighted')) {
+            hoverSent = null;
+            return;
+        }
+        if (el === hoverSent) return;
+        hoverSent = el;
+        el.dispatchEvent(new CustomEvent('bitbhhover', { bubbles: true }));
+    }
+
+    function onHoverPointerMove(e: PointerEvent) {
+        if (e.pointerType === 'touch') return;
+        const moved = e.clientX !== hoverX || e.clientY !== hoverY;
+        hoverX = e.clientX;
+        hoverY = e.clientY;
+        if (moved) hoverWheeled = false;
+        if (moved || hoverWheeled) hoverOption(e.target);
+    }
+
+    function onHoverPointerOver(e: PointerEvent) {
+        if (e.pointerType !== 'touch' && hoverWheeled) hoverOption(e.target);
+    }
+
+    function onHoverKeyDown() {
+        // The keys move the highlight: the option under the pointer may take it back on the next move.
+        hoverSent = null;
+        hoverWheeled = false;
+    }
+
     function clearActive() {
         for (const el of Array.from(document.querySelectorAll('[data-bit-bh-interactive][data-active]'))) el.removeAttribute('data-active');
     }
@@ -438,6 +482,12 @@ function createRuntime() {
         document.addEventListener('pointerup', clearActive, true);
         document.addEventListener('pointercancel', clearActive, true);
         document.addEventListener('dragend', clearActive, true);
+
+        document.addEventListener('pointermove', onHoverPointerMove, { capture: true, passive: true });
+        document.addEventListener('pointerover', onHoverPointerOver, { capture: true, passive: true });
+        document.addEventListener('wheel', () => { hoverWheeled = true; }, { capture: true, passive: true });
+        document.addEventListener('keydown', onHoverKeyDown, true);
+
         document.addEventListener('focusin', onFocusInInteractive, true);
         document.addEventListener('focusout', onFocusOutInteractive, true);
 
@@ -4659,7 +4709,10 @@ function createRuntime() {
                 let i = samples.length - 1;
                 while (i > 0 && ev.timeStamp - samples[i - 1].t <= 100) i--;
                 const first = samples[Math.max(0, i - 1)];
-                if (last.t > first.t) velocity = (last.d - first.d) / (last.t - first.t);
+                // That sample may be from long before, the pointer resting since (no moves come then): the movement into
+                // the window started at most 100ms before its first sample, so a pause ahead of a flick slows it no more.
+                const from = Math.max(first.t, samples[i].t - 100);
+                if (last.t > from) velocity = (last.d - first.d) / (last.t - from);
             }
             const threshold = state.options.threshold ?? 0.25;
             if (state.snap) {

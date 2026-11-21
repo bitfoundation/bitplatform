@@ -456,34 +456,31 @@
     }
 
     [TestMethod]
-    public void A_pointermove_that_did_not_move_leaves_the_highlight_to_the_keyboard()
+    public void The_pointer_highlights_an_option_through_the_runtime_hover()
     {
-        // A list the keyboard scrolls under a resting pointer: WebKit sends a pointermove at the same coordinates to the
-        // option it brings under it (Chromium a pointerenter, which options ignore). It leaves the highlight to the keyboard.
+        // The runtime sends an option its hover once, as the pointer reaches it - not with every move, nor when the
+        // keyboard scrolls it under a resting pointer - so the options listen to no pointer event of their own.
         var cut = Render(
             @<BitBhListbox TValue="int">
                 <BitBhListboxButton TValue="int" aria-label="Count">Count</BitBhListboxButton>
                 <BitBhListboxOptions TValue="int">
                     <BitBhListboxOption TValue="int" Value="1">One</BitBhListboxOption>
-                    <BitBhListboxOption TValue="int" Value="2">Two</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="2" Disabled>Two</BitBhListboxOption>
                     <BitBhListboxOption TValue="int" Value="3">Three</BitBhListboxOption>
                 </BitBhListboxOptions>
             </BitBhListbox>);
         AngleSharp.Dom.IElement Option(string text) => cut.FindAll("[role=option]").First(o => o.TextContent == text);
 
         cut.Find("[role=combobox]").Press("ArrowDown");
-        Option("One").PointerMove(new PointerEventArgs { ClientX = 40, ClientY = 120 });
         Assert.AreEqual("One", Text(ActiveOf(cut.Find("[role=combobox]"))));
-        cut.Find("[role=combobox]").Press("ArrowDown");
-        Assert.AreEqual("Two", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        Assert.HasCount(3, cut.FindAll("[role=option][data-bit-bh-hover]"));
+        Assert.IsFalse(cut.FindAll("[role=option]").Any(o => o.HasAttribute("blazor:onpointermove") || o.HasAttribute("blazor:onpointerenter")));
 
-        Option("Three").PointerMove(new PointerEventArgs { ClientX = 40, ClientY = 120 });
-        Assert.AreEqual("Two", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        Option("Three").PointerHover();
+        Assert.AreEqual("Three", Text(ActiveOf(cut.Find("[role=combobox]"))));
 
-        // A pointer that moves does take it, a touch does not.
-        Option("Three").PointerMove(new PointerEventArgs { ClientX = 40, ClientY = 121, PointerType = "touch" });
-        Assert.AreEqual("Two", Text(ActiveOf(cut.Find("[role=combobox]"))));
-        Option("Three").PointerMove(new PointerEventArgs { ClientX = 41, ClientY = 120 });
+        // A disabled option does not take it.
+        Option("Two").PointerHover();
         Assert.AreEqual("Three", Text(ActiveOf(cut.Find("[role=combobox]"))));
     }
 }
