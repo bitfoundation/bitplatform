@@ -187,13 +187,16 @@ public sealed class NavigationMenuAndDrawerTests : DemoTest
         await page.Mouse.UpAsync();
     }
 
-    /// <summary>A short, quick move let go at once.</summary>
+    /// <summary>
+    /// A short, quick move let go at once: a single move, so only the round trip between it and the release is timed
+    /// (the drawer counts the movement into it from at most 100ms before it, however long ago the press was).
+    /// </summary>
     private static async Task FlickAsync(IPage page, ILocator from, double dx, double dy)
     {
         var (x, y) = await CenterAsync(from);
         await page.Mouse.MoveAsync((float)x, (float)y);
         await page.Mouse.DownAsync();
-        await page.Mouse.MoveAsync((float)(x + dx), (float)(y + dy), new MouseMoveOptions { Steps = 3 });
+        await page.Mouse.MoveAsync((float)(x + dx), (float)(y + dy));
         await page.Mouse.UpAsync();
     }
 

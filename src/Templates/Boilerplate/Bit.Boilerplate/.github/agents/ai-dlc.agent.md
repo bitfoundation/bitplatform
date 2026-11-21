@@ -56,6 +56,7 @@ port, rebrand, landing-page, bitify-ui, template-diff and scaffold-entity, and t
 - **If the design involves CRUD operations**, invoke the **scaffold-entity** skill (`.github/agents/scaffold-entity.agent.md`) for structure and conventions - it is a recipe, not a lifecycle: its steps are tasks inside this plan, and when they're done you continue with the next phase here
 - Break the work into small, verifiable, independently completable tasks
 - Order tasks by dependency
+- End the plan with phase 5's validation as its last tasks: the build and the tests, the **review** skill on the changes, the acceptance criteria, and each check in the running app that applies, so they are ticked like every other task
 - Write the plan into a new file under `specs/changes/` and present it to the user for approval before starting. Approval is the user telling you to go ahead; answers to your questions are not approval, so fold them into the plan and present it again
 
 ### 3. Design
