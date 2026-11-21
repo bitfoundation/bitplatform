@@ -244,6 +244,7 @@ internal sealed class BmotionElementAnimationState
                 _activeAnims.Remove(key);
                 SettleAuto(key);
                 NotePropFinished(key, interrupted: false); // natural completion
+                ForgetArrivedReturn(key);
             }
 
         if (Silent)
@@ -569,6 +570,7 @@ internal sealed class BmotionElementAnimationState
                 _activeAnims.Remove(key);
                 SettleAuto(key);
                 NotePropFinished(key, interrupted: false); // snapped to end value = natural completion
+                ForgetArrivedReturn(key);
             }
         }
     }
@@ -823,9 +825,40 @@ internal sealed class BmotionElementAnimationState
     private ReturningOrigin? TakeReturningOrigin(string key)
     {
         if (!_returningOrigins.Remove(key, out var returning)) return null;
-        // Anything else that started the key since has already dropped the entry (NoteStarted).
-        bool started = _startedBy?.TryGetValue(key, out var owner) == true && ReferenceEquals(owner, returning.Revert);
-        return !started || StillPlays(key, returning.Revert) ? returning : null;
+        return Arrived(key, returning) ? null : returning;
+    }
+
+    // Whether the animation back to returning's origin has started on key and no longer plays it: it came to rest there
+    // or was stopped. Anything else that started the key since has already dropped the entry (NoteStarted).
+    private bool Arrived(string key, ReturningOrigin returning)
+        => ReferenceEquals(StartedBy(key), returning.Revert) && !StillPlays(key, returning.Revert);
+
+    /// <summary>Drops the origin <paramref name="key"/> was going back to once it is there, rather than keeping it for the element's life.</summary>
+    private void ForgetArrivedReturn(string key)
+    {
+        if (_returningOrigins.TryGetValue(key, out var returning) && Arrived(key, returning)) _returningOrigins.Remove(key);
+    }
+
+    /// <summary>
+    /// Drops the origins <paramref name="revert"/> was to take keys back to that it never started on: keys the exit
+    /// kept from it, or all of them when it was overtaken or kept from playing. Nothing takes those keys back there.
+    /// </summary>
+    internal void ForgetUnstartedReturns(object revert)
+    {
+        if (_returningOrigins.Count == 0) return;
+        List<string>? unstarted = null;
+        foreach (var (key, returning) in _returningOrigins)
+            if (ReferenceEquals(returning.Revert, revert) && !ReferenceEquals(StartedBy(key), revert))
+                (unstarted ??= new List<string>()).Add(key);
+        if (unstarted is not null)
+            foreach (var key in unstarted) _returningOrigins.Remove(key);
+    }
+
+    /// <summary>Drops the origins <paramref name="keys"/> were going back to: something wrote them outright (an instant set).</summary>
+    internal void ForgetReturningOrigins(IEnumerable<string> keys)
+    {
+        if (_returningOrigins.Count == 0) return;
+        foreach (var key in keys) _returningOrigins.Remove(key);
     }
 
     /// <summary>Whether any gesture layer is still active for <paramref name="key"/>.</summary>
@@ -899,6 +932,17 @@ internal sealed class BmotionElementAnimationState
         }
         _startedBy ??= new Dictionary<string, object>(StringComparer.Ordinal);
         foreach (var key in keys) _startedBy[key] = owner;
+    }
+
+    /// <summary>
+    /// <see cref="NoteStarted(IEnumerable{string}, object?)"/> for a start that carries on what several earlier starts
+    /// played (a browser animation played again): each of <paramref name="keys"/> stays with the owner
+    /// <paramref name="owners"/> gives it.
+    /// </summary>
+    internal void NoteStartedEach(IEnumerable<string> keys, IReadOnlyDictionary<string, object?> owners)
+    {
+        foreach (var group in keys.GroupBy(key => owners.GetValueOrDefault(key), ReferenceEqualityComparer.Instance))
+            NoteStarted(group, group.Key);
     }
 
     /// <summary>
@@ -1961,7 +2005,11 @@ internal sealed class BmotionElementAnimationState
                     rewrite |= track.RewriteFinal;
                 }
             // A size played to its measured natural size lands on "auto" itself.
-            foreach (var key in plan.Keys) rewrite |= SettleAuto(key);
+            foreach (var key in plan.Keys)
+            {
+                rewrite |= SettleAuto(key);
+                ForgetArrivedReturn(key);
+            }
             return true;
         }
         return false;

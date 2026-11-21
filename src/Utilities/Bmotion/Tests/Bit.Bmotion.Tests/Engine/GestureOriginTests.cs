@@ -96,4 +96,74 @@ public class GestureOriginTests
         await engine.DeactivateGestureLayerAsync("el", "hover");
         Assert.AreEqual(0.5, Run(engine, ref now, 500), 1e-6);
     }
+
+    private static (BmotionAnimationEngine Engine, FakeBmotionInterop Interop) NewStylesheetEngine()
+    {
+        var interop = new FakeBmotionInterop { IsInProcess = true, WebAnimationsSupported = false };
+        interop.ComputedStyle = (_, key) => key == "opacity" ? "1" : null;
+        return (new BmotionAnimationEngine(interop), interop);
+    }
+
+    private static double Opacity(BmotionAnimationEngine engine)
+        => engine.GetDiagnostics().Single(d => d.Id == "el").NumericValues.GetValueOrDefault("opacity", 1);
+
+    [TestMethod]
+    public async Task AGestureBackWhileItsWayBackReadsTheStylesheet_IsNotUndoneByThatWayBack()
+    {
+        var (engine, interop) = NewStylesheetEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el");
+        var tween = Bm.Tween(0.3).ToConfig();
+        double now = 0;
+        engine.ComputeFrame(now);
+        var hover = Values(("scale", 1.5), ("opacity", 0.5));
+
+        await engine.ActivateGestureLayerAsync("el", "hover", hover, tween);
+        Run(engine, ref now, 500);
+
+        // The way back waits on the stylesheet's opacity; the pointer comes back meanwhile.
+        var gate = new TaskCompletionSource();
+        interop.ReadStylesGate = gate.Task;
+        var leave = engine.DeactivateGestureLayerAsync("el", "hover").AsTask();
+        await engine.ActivateGestureLayerAsync("el", "hover", hover, tween);
+        interop.ReadStylesGate = null;
+        gate.SetResult();
+        await leave;
+
+        Assert.AreEqual(1.5, Run(engine, ref now, 500), 1e-6, "still hovered: the overtaken way back must not play");
+        Assert.AreEqual(0.5, Opacity(engine), 1e-6);
+
+        await engine.DeactivateGestureLayerAsync("el", "hover");
+        Assert.AreEqual(1, Run(engine, ref now, 500), 1e-6);
+        Assert.AreEqual(1, Opacity(engine), 1e-6);
+    }
+
+    [TestMethod]
+    public async Task AnInstantSetWhileTheWayBackReadsTheStylesheet_IsWhereTheNextGestureReturnsTo()
+    {
+        var (engine, interop) = NewStylesheetEngine();
+        await using var _ = engine;
+        engine.RegisterElement("el");
+        var tween = Bm.Tween(0.3).ToConfig();
+        double now = 0;
+        engine.ComputeFrame(now);
+        var hover = Values(("scale", 1.5), ("opacity", 0.5));
+
+        await engine.ActivateGestureLayerAsync("el", "hover", hover, tween);
+        Run(engine, ref now, 500);
+
+        var gate = new TaskCompletionSource();
+        interop.ReadStylesGate = gate.Task;
+        var leave = engine.DeactivateGestureLayerAsync("el", "hover").AsTask();
+        // Set outright before the way back starts: that is where scale rests now, not the origin the hover captured.
+        engine.SetInstant("el", Values(("scale", 0.8)));
+        await engine.ActivateGestureLayerAsync("el", "hover", hover, tween);
+        interop.ReadStylesGate = null;
+        gate.SetResult();
+        await leave;
+        Run(engine, ref now, 500);
+
+        await engine.DeactivateGestureLayerAsync("el", "hover");
+        Assert.AreEqual(0.8, Run(engine, ref now, 500), 1e-6);
+    }
 }
