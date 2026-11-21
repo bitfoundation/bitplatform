@@ -15,7 +15,11 @@
             clearMeasures: () => void,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
-            frame: { handle: number }
+            frame: { handle: number },
+            // The frame the boxes are watched again in, once the scroller moved (see setup).
+            reobserve: { handle: number },
+            // The frame the height is written onto the scroller in, once the resize observer reported a change (see setup).
+            remeasure: { handle: number }
         }>();
 
         // The properties a header writes onto the box of its scroller are shared ground: two pinned headers
@@ -23,8 +27,10 @@
         // write of the other as "the value it had before", so the first one to go would wipe the value the
         // second still needs and the second would hand the box back a value the page never had. The value
         // found before any of them touched the box is kept here instead, per property, together with the
-        // headers holding it, and only the last one to let go puts it back.
-        private static _claims = new WeakMap<HTMLElement, Map<string, { previous: string, priority: string, owners: Set<string> }>>();
+        // value each header holding it measured last - in the order they last changed it, so the box carries
+        // the one of the header that changed size last, and gets the one of the header that is left when
+        // another lets go - and only the last one to let go puts the value found back.
+        private static _claims = new WeakMap<HTMLElement, Map<string, { previous: string, priority: string, owners: Map<string, string> }>>();
 
         // The scroll padding that keeps what is scrolled to out from under the header (ScrollPadding).
         private static readonly SCROLL_PADDING = 'scroll-padding-block-start';
@@ -134,7 +140,10 @@
 
                 measured = box;
 
-                const height = `${element.offsetHeight}px`;
+                // The border box as laid out, fractions included: offsetHeight rounds to a whole pixel, and a
+                // header sized by rem paddings, wrapped lines or a fractional safe area inset is often not one,
+                // which would leave a hairline seam (or overlap) between the header and what is offset by it.
+                const height = `${element.getBoundingClientRect().height}px`;
 
                 for (const property of measures) {
                     Headers.claim(box, property, id, height);
@@ -243,11 +252,44 @@
                 }
             };
 
+            // The boxes are watched again in a frame of their own rather than right away, since the layout handler
+            // runs from the resize observer: a box observed from inside its callback is owed a first notification, and
+            // the root element - shallower than any box the callback was delivered for - is one the browser can only
+            // deliver in the next frame, which it reports as a "ResizeObserver loop completed with undelivered
+            // notifications" error (WebKit as an uncaught one).
+            const reobserve = { handle: 0 };
+
+            const scheduleObserve = () => {
+                if (reobserve.handle) return;
+
+                reobserve.handle = requestAnimationFrame(() => {
+                    reobserve.handle = 0;
+
+                    observe();
+                });
+            };
+
+            // The height is written in a frame of its own too when the resize observer reports the change, for the
+            // same reason: the published height moves the layout of the content offset by it, which resizes the root
+            // element (or the content wrapper of a pane) - boxes shallower than the header the callback was delivered
+            // for - so a write from inside the callback would raise the same loop error.
+            const remeasure = { handle: 0 };
+
+            const scheduleMeasures = () => {
+                if (remeasure.handle) return;
+
+                remeasure.handle = requestAnimationFrame(() => {
+                    remeasure.handle = 0;
+
+                    applyMeasures();
+                });
+            };
+
             // Which box scrolls the header is not settled once and for all: a pane that had nothing to
             // scroll at setup time (so the walk landed on the window) becomes the scroller as soon as its
             // content outgrows it, and the other way round. The scroller is re-resolved whenever the
             // layout or the content moves, and the scroll listener follows it.
-            const layoutHandler = () => {
+            const relayout = (fromObserver: boolean) => {
                 const next = resolveTarget();
 
                 if (next !== target.current) {
@@ -259,13 +301,19 @@
 
                     next.addEventListener('scroll', scrollHandler, { passive: true });
 
-                    observe();
+                    scheduleObserve();
                 }
 
-                applyMeasures();
+                if (fromObserver) {
+                    scheduleMeasures();
+                } else {
+                    applyMeasures();
+                }
 
                 scrollHandler();
             };
+
+            const layoutHandler = () => relayout(false);
 
             target.current.addEventListener('scroll', scrollHandler, { passive: true });
             window.addEventListener('resize', layoutHandler, { passive: true });
@@ -276,12 +324,12 @@
             // holds the content picks those up, so a header does not stay lifted above a page that just
             // became short enough not to scroll at all.
             if (typeof ResizeObserver !== 'undefined') {
-                observer = new ResizeObserver(layoutHandler);
+                observer = new ResizeObserver(() => relayout(true));
 
                 observe();
             }
 
-            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearMeasures, frame });
+            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearMeasures, frame, reobserve, remeasure });
 
             applyMeasures();
 
@@ -311,11 +359,28 @@
                 entry.frame.handle = 0;
             }
 
+            // A watch or a write scheduled by the last layout change would observe the boxes again after the
+            // disconnect above, or claim the scroller again after its claims were released.
+            if (entry.reobserve.handle) {
+                cancelAnimationFrame(entry.reobserve.handle);
+
+                entry.reobserve.handle = 0;
+            }
+
+            if (entry.remeasure.handle) {
+                cancelAnimationFrame(entry.remeasure.handle);
+
+                entry.remeasure.handle = 0;
+            }
+
             Headers._entries.delete(id);
         }
 
         // Writes a property onto the box of a scroller on behalf of a header, keeping the value the box had
-        // before the first header touched it.
+        // before the first header touched it. A header that measures what it measured last writes nothing: the
+        // published height moves the layout, which reports every header on the box again, and two headers of
+        // different heights rewriting their own values on each report would hand the box back and forth on
+        // every frame. So the box carries the value of the header that changed size last.
         private static claim(box: HTMLElement, property: string, id: string, value: string) {
             let claims = Headers._claims.get(box);
 
@@ -331,30 +396,44 @@
                 shared = {
                     previous: box.style.getPropertyValue(property),
                     priority: box.style.getPropertyPriority(property),
-                    owners: new Set()
+                    owners: new Map()
                 };
 
                 claims.set(property, shared);
             }
 
-            shared.owners.add(id);
+            if (shared.owners.get(id) === value) return;
+
+            // Re-inserted rather than updated, so the order of the map stays the order the headers last changed in.
+            shared.owners.delete(id);
+            shared.owners.set(id, value);
 
             box.style.setProperty(property, value);
         }
 
         // Gives up the claim of a header on a property of a box. The header leaving is not necessarily the one
-        // that wrote the value that is on the box right now, so the value is only put back once nothing is
-        // holding the property anymore. Until then it is left to the headers still holding it, which write it
-        // again on their next layout change anyway.
+        // that wrote the value that is on the box right now, and the ones still holding it may never change size
+        // again to write theirs back, so the box is handed the value of the one that changed last of them. The
+        // value found before any of them is only put back once nothing is holding the property anymore.
         private static release(box: HTMLElement, property: string, id: string) {
             const claims = Headers._claims.get(box);
             const shared = claims?.get(property);
 
-            if (!claims || !shared) return;
+            if (!claims || !shared || !shared.owners.has(id)) return;
 
             shared.owners.delete(id);
 
-            if (shared.owners.size > 0) return;
+            if (shared.owners.size > 0) {
+                let latest = '';
+
+                for (const value of shared.owners.values()) {
+                    latest = value;
+                }
+
+                box.style.setProperty(property, latest);
+
+                return;
+            }
 
             // An empty value removes the property, which is what the box had when nothing was set on it.
             box.style.setProperty(property, shared.previous, shared.priority);

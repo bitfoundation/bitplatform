@@ -727,7 +727,12 @@ public partial class BitHeader : BitComponentBase
 
         if (signature == _attachedSignature) return;
 
-        if (_attachedId is not null)
+        // A registration set up again under the same id is not taken down by a call of its own: the setup of the
+        // script disposes the id it is handed first, in the same task, so the claims of the header on its scroller
+        // (its scroll padding, its published height) are released and written again before the browser can paint.
+        // A separate dispose would release them a whole round trip earlier, and the content offset by the published
+        // height would drop to its fallback and jump back once the setup arrived.
+        if (_attachedId is not null && (shouldAttach is false || _attachedId != _Id))
         {
             await _js.BitHeadersDispose(_attachedId);
 

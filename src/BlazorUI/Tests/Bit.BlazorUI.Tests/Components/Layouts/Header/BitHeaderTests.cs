@@ -1620,14 +1620,15 @@ public class BitHeaderTests : BunitTestContext
             parameters.Add(p => p.ScrollTarget, "#second");
         });
 
-        // The scroller is resolved once at setup time, so a new one has to reach the script as a fresh setup.
+        // The scroller is resolved once at setup time, so a new one has to reach the script as a fresh setup -
+        // with no dispose call of its own, since the setup of the same id takes the old registration down itself.
         var targets = Context.JSInterop.Invocations
                              .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
                              .Select(i => i.Arguments[6])
                              .ToArray();
 
         CollectionAssert.AreEqual(new object[] { "#first", "#second" }, targets);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
     }
 
     [TestMethod]
@@ -1779,14 +1780,15 @@ public class BitHeaderTests : BunitTestContext
         });
 
         // What the script writes onto the scroller is decided at setup time, so the new property has to reach it
-        // as a fresh setup, with the old one taken down first.
+        // as a fresh setup. The old one is taken down by that setup itself rather than by a dispose call a round
+        // trip earlier, which would leave the scroller without its scroll padding in between.
         var published = Context.JSInterop.Invocations
                                .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
                                .Select(i => i.Arguments[8])
                                .ToArray();
 
         CollectionAssert.AreEqual(new object[] { false, true }, published);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
     }
 
     [TestMethod]

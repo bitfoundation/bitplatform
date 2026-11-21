@@ -404,7 +404,7 @@ private bool isImmersiveMode;";
         padding: 0.5rem 1rem;
     }
 
-    /* The header publishes its height on the box that scrolls it, which every row inside reads. */
+    /* The header publishes its height on the box that scrolls it, which the bar below reads to stick right under the header. */
     .publish-demo-bar {
         position: sticky;
         top: var(--bit-env-header-height, 0px);
