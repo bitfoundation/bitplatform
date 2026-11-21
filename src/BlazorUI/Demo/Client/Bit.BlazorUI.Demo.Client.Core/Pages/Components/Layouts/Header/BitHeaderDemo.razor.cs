@@ -138,6 +138,13 @@ public partial class BitHeaderDemo
         },
         new()
         {
+            Name = "PublishHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Publishes the live height of the BitHeader - its ExtensionContent row and the top safe area inset included - as the --bit-env-header-height custom property of its scrolling area (the root element of the document when that is the page), so the content under a pinned header can make room for it (padding-top: var(--bit-env-header-height, 0px)) and stick its own parts right under it, without hard-coding its height. It is kept in step while the header changes size and taken off when the header goes away. When several headers publish on the same scrolling area, it carries the tallest of them. It only has an effect on a Fixed or Sticky header, and ScrollTarget names the scrolling area here as well.",
+        },
+        new()
+        {
             Name = "Reveal",
             Type = "bool",
             DefaultValue = "false",
@@ -545,4 +552,5 @@ public partial class BitHeaderDemo
     private bool isHeaderRevealed = true;
     private bool isHeaderScrolled;
     private bool isImmersiveMode;
+    private bool showHeaderSearch;
 }

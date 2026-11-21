@@ -1490,6 +1490,7 @@ public class BitHeaderTests : BunitTestContext
         CollectionAssert.AreEqual(new object[] { 30, 30 }, setups.Select(i => i.Arguments[3]).ToArray());
         CollectionAssert.AreEqual(new object[] { "#pane", "#pane" }, setups.Select(i => i.Arguments[6]).ToArray());
         CollectionAssert.AreEqual(new object[] { true, true }, setups.Select(i => i.Arguments[7]).ToArray());
+        CollectionAssert.AreEqual(new object[] { true, true }, setups.Select(i => i.Arguments[8]).ToArray());
 
         // The cascaded max width reaches both headers as the variable the container reads.
         StringAssert.Contains(headers[0].GetAttribute("style")!, "--bit-hdr-max-width:60rem");
@@ -1717,15 +1718,144 @@ public class BitHeaderTests : BunitTestContext
         var component = RenderComponent<BitHeader>(parameters =>
         {
             parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.PublishHeight, true);
             parameters.Add(p => p.ScrollTarget, "#pane");
         });
 
-        // Both of them are handed to the script alone, so neither leaks into the markup of the header.
+        // All of them are handed to the script alone, so none leaks into the markup of the header.
         component.MarkupMatches(@"
 <header class=""bit-hdr bit-hdr-fil"" id:ignore>
     <div class=""bit-hdr-gut"">
     </div>
 </header>");
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(false, false)]
+    public void BitHeaderShouldOnlySetTheScrollScriptUpForAPinnedPublishHeightHeader(bool @fixed, bool sticky)
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.PublishHeight, true);
+            parameters.Add(p => p.Fixed, @fixed);
+            parameters.Add(p => p.Sticky, sticky);
+        });
+
+        // Only a pinned header covers the content under it, so a header in the normal flow has no height the content
+        // has to make room for, and needs no script at all.
+        var setups = Context.JSInterop.Invocations
+                            .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
+                            .ToArray();
+
+        Assert.AreEqual((@fixed || sticky) ? 1 : 0, setups.Length);
+
+        if (@fixed || sticky)
+        {
+            // The scroll behaviors and the padding stay off: the script is only there for the height.
+            Assert.AreEqual(false, setups[0].Arguments[4]);
+            Assert.AreEqual(false, setups[0].Arguments[5]);
+            Assert.AreEqual(false, setups[0].Arguments[7]);
+            Assert.AreEqual(true, setups[0].Arguments[8]);
+        }
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotSetUpTheScrollScriptForAnAbsolutePublishHeightHeader()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.PublishHeight, true);
+            parameters.Add(p => p.Absolute, true);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        // An absolute header scrolls away with its container, the way it does for the scroll padding.
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotPublishTheHeightByDefault()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        // The script is attached for the padding, and still leaves the height unpublished.
+        var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
+
+        Assert.AreEqual(false, invocation.Arguments[8]);
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldSetTheScrollScriptUpAgainWhenPublishHeightIsTurnedOn()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.PublishHeight, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        var published = Context.JSInterop.Invocations
+                               .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
+                               .Select(i => i.Arguments[8])
+                               .ToArray();
+
+        CollectionAssert.AreEqual(new object[] { false, true }, published);
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldDisposeTheScrollScriptWhenPublishHeightIsTurnedOff()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.PublishHeight, true);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.PublishHeight, false);
+            parameters.Add(p => p.Fixed, true);
+        });
+
+        // The script is what wrote the property on the scroller, so it has to be taken down to take it off again.
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
+    }
+
+    [TestMethod]
+    public async Task BitHeaderShouldTakeThePublishedHeightOffWhenTheComponentGoesAway()
+    {
+        RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.PublishHeight, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Id, "header-published");
+        });
+
+        // The property stays on the scroller until the script is told the header is gone.
+        await Context.DisposeComponentsAsync();
+
+        var disposes = Context.JSInterop.Invocations
+                              .Where(i => i.Identifier == "BitBlazorUI.Headers.dispose")
+                              .Select(i => i.Arguments[0])
+                              .ToArray();
+
+        CollectionAssert.AreEqual(new object[] { "header-published" }, disposes);
     }
 
     [TestMethod]

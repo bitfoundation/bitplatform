@@ -436,7 +436,46 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Published height" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+        <div>
+            <b>PublishHeight</b> writes the live height of a pinned header - its second row included - to the
+            <b>--bit-env-header-height</b> custom property of its scrolling area, so the content under a fixed header makes room
+            for it and the section titles stick right below it, with no height hard-coded per breakpoint. Show the search row and
+            watch both follow.
+        </div>
+        <br />
+        <BitToggleButton @bind-Checked="showHeaderSearch" OnText="Hide the search row" OffText="Show a search row" />
+        <br />
+        <div class="fixed-demo">
+            <BitHeader Fixed PublishHeight Bordered
+                       ScrollTarget="#header-published-pane"
+                       Color="BitColor.PrimaryBackground">
+                <ChildContent>I publish my height</ChildContent>
+                <ExtensionContent>
+                    @if (showHeaderSearch)
+                    {
+                        <div class="published-demo-search">
+                            <BitSearchBox Placeholder="Search" />
+                        </div>
+                    }
+                </ExtensionContent>
+            </BitHeader>
+            <div id="header-published-pane" class="published-demo-pane">
+                <div class="published-demo-content">
+                    @for (var s = 1; s <= 3; s++)
+                    {
+                        <div class="published-demo-title">Section @s</div>
+                        for (var i = 1; i <= 4; i++)
+                        {
+                            <div class="scroll-demo-row">Row @i</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17">
         <div>Every theme color works with every variant. Without one the header keeps the theme's primary background and foreground.</div>
         <br />
         <div class="container">
@@ -508,7 +547,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div>The size sets the paddings around the content.</div>
         <br />
         <div class="container">
@@ -524,7 +563,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CodeFiles="@example18CodeFiles" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" CodeFiles="@example19CodeFiles" Id="example19">
         <div>
             Reach for the <b>--bit-Header-*</b> CSS variables first (listed in the API section): they inherit, so set them on
             <b>:root</b>, an ancestor or an instance's <b>Style</b>. They restyle the default, not a choice: an explicit
@@ -577,7 +616,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div><b>Dir</b> mirrors the header: the alignment of its content and the side its paddings sit on.</div>
         <br />
         <div class="container">

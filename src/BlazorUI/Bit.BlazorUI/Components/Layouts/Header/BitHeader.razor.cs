@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// <br />
 /// A pinned header also carries what it owes the users it covers: the shortcut past it (<see cref="SkipLinkHref"/>)
 /// and the room it reserves at the top of the scrolling area so nothing scrolled to lands underneath it
-/// (<see cref="ScrollPadding"/>).
+/// (<see cref="ScrollPadding"/>), and it can hand its live height to the content it covers (<see cref="PublishHeight"/>).
 /// </remarks>
 public partial class BitHeader : BitComponentBase
 {
@@ -160,7 +160,7 @@ public partial class BitHeader : BitComponentBase
     /// <remarks>
     /// A fixed header is taken out of the normal flow, so it overlaps the content it covers.
     /// Reserve room for it at the start of the page (for example with a top padding) to keep the first
-    /// piece of content reachable.
+    /// piece of content reachable; <see cref="PublishHeight"/> hands that padding the live height of the header.
     /// <br />
     /// Takes precedence over <see cref="Absolute"/> and <see cref="Sticky"/> when more than one of them is set.
     /// </remarks>
@@ -256,6 +256,33 @@ public partial class BitHeader : BitComponentBase
     /// cast a shadow at that moment - shrink itself, swap a logo for a compact one, reveal a search box - hooks into.
     /// </remarks>
     [Parameter] public EventCallback<bool> OnScrolledChanged { get; set; }
+
+    /// <summary>
+    /// Publishes the live height of the BitHeader as the <c>--bit-env-header-height</c> custom property of its
+    /// scrolling area, so the content under a pinned header can make room for it without hard-coding its height.
+    /// </summary>
+    /// <remarks>
+    /// A fixed header is taken out of the flow, so the content it covers has to start below it, and a sticky part of
+    /// that content (a section title, the head of a table) has to stop right under it rather than at the top of the
+    /// scrolling area. Both need the height of the header, which changes with the breakpoints, the wrapping of its
+    /// content and its second row - so a height copied into the styles of every page drifts. This measures the whole
+    /// header - the <see cref="ExtensionContent"/> row and the top safe area inset of a pinned header included - and
+    /// writes it in pixels on the scrolling area (the root element of the document when that is the page), where
+    /// everything scrolling under the header inherits it: <c>padding-top: var(--bit-env-header-height, 0px)</c>,
+    /// <c>top: var(--bit-env-header-height, 0px)</c>. It is kept in step while the header changes size, and taken off
+    /// again when the header goes away or this is turned off, which leaves the fallback of the <c>var()</c> to apply.
+    /// <br />
+    /// It is the room the header takes, so it does not drop to zero while a <see cref="Reveal"/> or
+    /// <see cref="Hidden"/> header is slid out of the view, and the content does not jump as the header slides.
+    /// When more than one header publishes on the same scrolling area, the area carries the tallest of them, since
+    /// headers pinned to the top of one area overlap each other, and the ones left over take it back as soon as one
+    /// of them goes away. The header of a pane that scrolls on its own publishes on that pane, where its height takes
+    /// over from the one of the page for everything inside the pane.
+    /// <br />
+    /// It only has an effect on a <see cref="Fixed"/> or <see cref="Sticky"/> header, like <see cref="ScrollPadding"/>,
+    /// and <see cref="ScrollTarget"/> names the scrolling area here as well.
+    /// </remarks>
+    [Parameter] public bool PublishHeight { get; set; }
 
     /// <summary>
     /// Slides the header out of the view while the page is scrolled down and brings it back while the page is scrolled up.
@@ -691,16 +718,16 @@ public partial class BitHeader : BitComponentBase
     private async Task SetupScrollListener()
     {
         // Only a pinned header has anything to slide over, to lift itself above, or to cover at the top of the
-        // scrolling area, so the scroll listener is attached for those alone. Toggling any of these parameters
-        // at runtime attaches or detaches it accordingly.
-        var shouldAttach = (Reveal || ElevateOnScroll || ScrollPadding) && IsPinned;
+        // scrolling area (and so a height the content has to make room for), so the scroll listener is attached
+        // for those alone. Toggling any of these parameters at runtime attaches or detaches it accordingly.
+        var shouldAttach = (Reveal || ElevateOnScroll || ScrollPadding || PublishHeight) && IsPinned;
 
         // Everything the script is handed at setup time is part of the signature, so a change of any of it sets
         // the listener up again - including the id, which is what the script keys its registration by, and which
         // would otherwise leave the listeners behind on the element that id no longer names.
         var revealOffset = Math.Max(0, RevealOffset.GetValueOrDefault());
         var elevateOffset = Math.Max(0, ElevateOffset.GetValueOrDefault());
-        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{elevateOffset}|{Reveal}|{ElevateOnScroll}|{ScrollTarget}|{ScrollPadding}" : null;
+        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{elevateOffset}|{Reveal}|{ElevateOnScroll}|{ScrollTarget}|{ScrollPadding}|{PublishHeight}" : null;
 
         if (signature == _attachedSignature) return;
 
@@ -722,7 +749,7 @@ public partial class BitHeader : BitComponentBase
         {
             _dotnetObj ??= DotNetObjectReference.Create(this);
 
-            await _js.BitHeadersSetup(_Id, _dotnetObj, revealOffset, elevateOffset, Reveal, ElevateOnScroll, ScrollTarget, ScrollPadding);
+            await _js.BitHeadersSetup(_Id, _dotnetObj, revealOffset, elevateOffset, Reveal, ElevateOnScroll, ScrollTarget, ScrollPadding, PublishHeight);
 
             if (IsDisposed)
             {

@@ -12,6 +12,9 @@
             // Gives up the claim of this header on the scroll padding of the scroller, whichever box is
             // carrying it at that moment, and puts the padding back once no header is holding it anymore.
             clearPadding: () => void,
+            // Gives up the share of this header in the height published on the scroller, whichever box is
+            // carrying it at that moment, and takes the property off once no header is publishing it anymore.
+            clearHeight: () => void,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
             frame: { handle: number }
@@ -25,6 +28,17 @@
         // and only the last one to let go puts it back.
         private static _paddings = new WeakMap<HTMLElement, { previous: string, owners: Set<string> }>();
 
+        // The height published on a scroller is shared ground as well, but it is not left to whichever header
+        // wrote last: every header publishing on the box keeps its own height here and the box carries the
+        // tallest of them, since headers pinned to the top of the same scroller overlap each other and the
+        // tallest one is the band they cover together. A header that leaves hands the property over to the
+        // ones that remain at once, and the last one to go puts back the value the box had before any of them.
+        private static _heights = new WeakMap<HTMLElement, { previous: string, owners: Map<string, number> }>();
+
+        // The custom property the height of a header is published as, beside the --bit-env-* values of the
+        // environment (the safe area insets, the window size) that an app's own styles read the same way.
+        private static readonly HEIGHT_PROPERTY = '--bit-env-header-height';
+
         // Scroll deltas below this many pixels are ignored, so the rubber-banding of touch devices and
         // the sub-pixel jitter of a trackpad cannot flip the header back and forth on every frame.
         private static readonly THRESHOLD = 4;
@@ -34,8 +48,9 @@
         // and lifting it off the content once the page has left its top (the "elevate on scroll" shadow).
         // Both states live here and only cross the interop boundary when they actually flip, so a scroll
         // never costs more than a comparison. It also keeps the scroll padding of the scroller in step
-        // with the height of the header, so nothing scrolled to lands underneath a pinned one.
-        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean) {
+        // with the height of the header, so nothing scrolled to lands underneath a pinned one, and publishes
+        // that height on the scroller for the content under the header to make room for it.
+        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean, publishHeight: boolean) {
             Headers.dispose(id);
 
             const element = document.getElementById(id);
@@ -141,6 +156,66 @@
                 box.style.scrollPaddingBlockStart = `${element.offsetHeight}px`;
             };
 
+            // The box this header is publishing its height on, if it is publishing it.
+            let published: HTMLElement | undefined;
+
+            const clearHeight = () => {
+                if (!published) return;
+
+                const shared = Headers._heights.get(published);
+
+                if (shared) {
+                    shared.owners.delete(id);
+
+                    if (shared.owners.size === 0) {
+                        if (shared.previous) {
+                            published.style.setProperty(Headers.HEIGHT_PROPERTY, shared.previous);
+                        } else {
+                            published.style.removeProperty(Headers.HEIGHT_PROPERTY);
+                        }
+
+                        Headers._heights.delete(published);
+                    } else {
+                        Headers.writeHeight(published, shared.owners);
+                    }
+                }
+
+                published = undefined;
+            };
+
+            // A fixed header is out of the flow, so the content under it has to make room for it, and a sticky
+            // part of that content (a section title, the head of a table) has to stop right under it rather
+            // than at the top of the scroller. Both need the height of the header - its second row included -
+            // which changes with the breakpoints, the wrapping of its content and the rows it shows. The
+            // measured height is published on the scroller - the documentElement when that is the page - so
+            // everything that scrolls under the header inherits it, and it is re-read whenever the header or
+            // the layout changes size, like the scroll padding is.
+            const applyHeight = () => {
+                if (!publishHeight) return;
+
+                const box = target.current === window
+                    ? document.documentElement
+                    : target.current as HTMLElement;
+
+                if (published && published !== box) {
+                    clearHeight();
+                }
+
+                let shared = Headers._heights.get(box);
+
+                if (!shared) {
+                    shared = { previous: box.style.getPropertyValue(Headers.HEIGHT_PROPERTY), owners: new Map() };
+
+                    Headers._heights.set(box, shared);
+                }
+
+                shared.owners.set(id, element.offsetHeight);
+
+                published = box;
+
+                Headers.writeHeight(box, shared.owners);
+            };
+
             const applyHidden = (next: boolean) => {
                 if (!reveal || next === hidden) return;
 
@@ -218,7 +293,7 @@
 
             // The scroller is watched as well as the page, since a pane only becomes the scroller of the
             // header once its own content overflows it. The header itself is watched only when its height
-            // is being mirrored into the scroll padding of that scroller.
+            // is being mirrored into the scroll padding of that scroller or published on it.
             const observe = () => {
                 if (!observer) return;
 
@@ -238,7 +313,7 @@
                     }
                 }
 
-                if (scrollPadding) {
+                if (scrollPadding || publishHeight) {
                     observer.observe(element);
                 }
             };
@@ -263,6 +338,7 @@
                 }
 
                 applyPadding();
+                applyHeight();
 
                 scrollHandler();
             };
@@ -281,9 +357,10 @@
                 observe();
             }
 
-            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearPadding, frame });
+            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearPadding, clearHeight, frame });
 
             applyPadding();
+            applyHeight();
 
             // The scroller can already be scrolled when the header arrives (a restored scroll position, a
             // deep link to an anchor, a header rendered into a pane the user has been reading), so the
@@ -302,6 +379,7 @@
             entry.observer?.disconnect();
 
             entry.clearPadding();
+            entry.clearHeight();
 
             // A frame scheduled by the last scroll before the disposal would still evaluate and call back
             // into a component that is on its way out, so it is dropped along with the listeners.
@@ -312,6 +390,14 @@
             }
 
             Headers._entries.delete(id);
+        }
+
+        private static writeHeight(box: HTMLElement, owners: Map<string, number>) {
+            let height = 0;
+
+            owners.forEach(h => height = Math.max(height, h));
+
+            box.style.setProperty(Headers.HEIGHT_PROPERTY, `${height}px`);
         }
 
         private static scrollParent(element: HTMLElement): HTMLElement | Window {

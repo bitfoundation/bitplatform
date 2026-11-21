@@ -431,6 +431,82 @@ private readonly BitHeaderParams[] headerParams =
 ];";
 
     private readonly string example16RazorCode = @"
+<style>
+    /* A transform makes this box the containing block of any fixed descendant, which scopes the
+       fixed header of the example to the box instead of the top of the page. */
+    .fixed-demo {
+        height: 10rem;
+        overflow: hidden;
+        position: relative;
+        transform: translateZ(0);
+        border: 1px solid gray;
+    }
+
+    /* The pane is what scrolls under the fixed header, so that is where the header publishes its height. */
+    .published-demo-pane {
+        height: 100%;
+        overflow: auto;
+    }
+
+    /* The content starts below the header... */
+    .published-demo-content {
+        padding-block-start: var(--bit-env-header-height, 0px);
+    }
+
+    /* ...and the section titles stick right under it rather than at the top of the pane. */
+    .published-demo-title {
+        position: sticky;
+        font-weight: 600;
+        padding: 0.25rem 1rem;
+        top: var(--bit-env-header-height, 0px);
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .published-demo-search {
+        width: 100%;
+        padding-block-end: 0.5rem;
+    }
+
+    .scroll-demo-row {
+        padding: 0.5rem 1rem;
+    }
+</style>
+
+
+<BitToggleButton @bind-Checked=""showHeaderSearch"" OnText=""Hide the search row"" OffText=""Show a search row"" />
+
+<div class=""fixed-demo"">
+    <BitHeader Fixed PublishHeight Bordered
+               ScrollTarget=""#header-published-pane""
+               Color=""BitColor.PrimaryBackground"">
+        <ChildContent>I publish my height</ChildContent>
+        <ExtensionContent>
+            @if (showHeaderSearch)
+            {
+                <div class=""published-demo-search"">
+                    <BitSearchBox Placeholder=""Search"" />
+                </div>
+            }
+        </ExtensionContent>
+    </BitHeader>
+    <div id=""header-published-pane"" class=""published-demo-pane"">
+        <div class=""published-demo-content"">
+            @for (var s = 1; s <= 3; s++)
+            {
+                <div class=""published-demo-title"">Section @s</div>
+                for (var i = 1; i <= 4; i++)
+                {
+                    <div class=""scroll-demo-row"">Row @i</div>
+                }
+            }
+        </div>
+    </div>
+</div>";
+
+    private readonly string example16CsharpCode = @"
+private bool showHeaderSearch;";
+
+    private readonly string example17RazorCode = @"
 <BitHeader Color=""BitColor.Primary"">Primary</BitHeader>
 
 <BitHeader Color=""BitColor.Secondary"">Secondary</BitHeader>
@@ -468,14 +544,14 @@ private readonly BitHeaderParams[] headerParams =
 
 <BitHeader Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitHeader>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitHeader Size=""BitSize.Small"" Bordered>Small</BitHeader>
 
 <BitHeader Size=""BitSize.Medium"" Bordered>Medium</BitHeader>
 
 <BitHeader Size=""BitSize.Large"" Bordered>Large</BitHeader>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitHeader Bordered Elevated
            Style=""--bit-Header-background: #1e293b; --bit-Header-color: #f8fafc; --bit-Header-border-color: #38bdf8; --bit-Header-border-width: 3px; --bit-Header-border-radius: 0.75rem; --bit-Header-min-height: 4rem;"">
     On the instance
@@ -502,7 +578,7 @@ private readonly BitHeaderParams[] headerParams =
     Classes
 </BitHeader>";
 
-    private const string example18ScssCode = @"
+    private const string example19ScssCode = @"
 // An ancestor re-skins every header under it: the variables inherit.
 .brand-headers {
     --bit-Header-background: #fdf4ff;
@@ -528,12 +604,12 @@ private readonly BitHeaderParams[] headerParams =
     }
 }";
 
-    private readonly DemoCodeFile[] example18CodeFiles =
+    private readonly DemoCodeFile[] example19CodeFiles =
     [
-        new("BitHeaderDemo.razor.scss", example18ScssCode),
+        new("BitHeaderDemo.razor.scss", example19ScssCode),
     ];
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitHeader Dir=""BitDir.Rtl"" Alignment=""BitAlignment.SpaceBetween"" Bordered>
     <BitTag Text=""یک"" />
     <BitTag Text=""دو"" />
