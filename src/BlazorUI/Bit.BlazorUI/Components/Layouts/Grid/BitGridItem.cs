@@ -379,6 +379,9 @@ public partial class BitGridItem : BitComponentBase
     /// prerendered page rather than once the page is interactive, and the item is hidden whatever way it takes up
     /// room (its columns, <see cref="Auto"/> or <see cref="Grow"/>). In a grid that is a
     /// <see cref="BitGrid.Container"/> query container, the breakpoints are read off the width of the grid.
+    /// They are the default breakpoints, as everywhere the grid lays itself out: a media or container query
+    /// cannot read a custom property, so a theme that changes its <c>Layout.Breakpoints</c> moves the
+    /// <c>--bit-bp-*</c> properties and <see cref="BitMediaQuery"/>, never these.
     /// <br />
     /// A span of 0 still hides the item at the breakpoints it applies to: <c>false</c> only takes back what an
     /// earlier Hidden value asked for. The item is still rendered, so a screen reader will not read it either
@@ -814,6 +817,10 @@ public partial class BitGridItem : BitComponentBase
                     classes.Add($"bit-grd-itm-non-{breakpoint}");
                 }
             }
+
+            // Hidden at every breakpoint is hidden at every width, in a query container too, so it is said once
+            // with the class that applies whatever the width rather than as six bands.
+            if (classes.Count == breakpoints.Length) return "bit-grd-itm-non";
 
             return string.Join(' ', classes);
         }

@@ -485,7 +485,7 @@ public partial class BitGridDemo
                     Name = "HiddenXs",
                     Type = "bool?",
                     DefaultValue = "null",
-                    Description = "Hides the item from the extra small breakpoint (from 0px) upwards, by the stylesheet alone, so a prerendered page shows the right items from its first paint. It hides the item whatever way it takes up room, Auto and Grow included. The value keeps applying to every wider breakpoint until another one replaces it, and false shows the item again from there; a span of 0 still hides it.",
+                    Description = "Hides the item from the extra small breakpoint (from 0px) upwards, by the stylesheet alone, so a prerendered page shows the right items from its first paint. It hides the item whatever way it takes up room, Auto and Grow included. The value keeps applying to every wider breakpoint until another one replaces it, and false shows the item again from there; a span of 0 still hides it. The breakpoints are the default ones: a theme that changes its Layout.Breakpoints moves BitMediaQuery, never these.",
                 },
                 new()
                 {

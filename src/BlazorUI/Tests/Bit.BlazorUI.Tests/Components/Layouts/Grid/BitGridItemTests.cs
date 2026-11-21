@@ -286,15 +286,17 @@ public class BitGridItemTests : BunitTestContext
     [TestMethod]
     public void BitGridItemShouldBeHiddenAtEveryBreakpointByHiddenXsAlone()
     {
-        // Answered per breakpoint rather than with the all-or-nothing class, so the same classes a container
-        // query grid reads off its own width hide it there too.
+        // Hidden at every breakpoint is hidden at every width, so it is said once with the all-or-nothing class,
+        // which applies whatever the width of the viewport or of a query container, rather than as six bands.
         var component = RenderComponent<BitGridItem>(parameters => parameters.Add(p => p.HiddenXs, true));
 
         var classList = component.Find(".bit-grd-itm").ClassList;
 
+        Assert.IsTrue(classList.Contains("bit-grd-itm-non"));
+
         foreach (var breakpoint in new[] { "xs", "sm", "md", "lg", "xl", "xxl" })
         {
-            Assert.IsTrue(classList.Contains($"bit-grd-itm-non-{breakpoint}"), breakpoint);
+            Assert.IsFalse(classList.Contains($"bit-grd-itm-non-{breakpoint}"), breakpoint);
         }
     }
 

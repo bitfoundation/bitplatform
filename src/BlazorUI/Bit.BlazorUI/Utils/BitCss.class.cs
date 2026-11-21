@@ -509,6 +509,12 @@ public static partial class BitCss
         /// below it, so <see cref="Md"/> on the mobile content and <see cref="LtMd"/> on the desktop one swap the two at
         /// the medium breakpoint.
         /// </summary>
+        /// <remarks>
+        /// The classes are built from the default breakpoints (600, 960, 1280, 1920 and 2560px), since a media query
+        /// cannot read a custom property: a theme that changes its <c>Layout.Breakpoints</c> moves the
+        /// <c>--bit-bp-*</c> properties, <see cref="BitMediaQuery"/> and <see cref="BitScreenQuery"/> with it, but never
+        /// these, which then no longer agree with them. Keep the default breakpoints wherever they are mixed.
+        /// </remarks>
         public static class Hide
         {
             /// <summary>Hides the element at every size.</summary>
