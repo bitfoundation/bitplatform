@@ -15,6 +15,9 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     private bool _selectionDirty;
     private bool _scrollToSelectedItem;
     private bool _wheelIsSetUp;
+    // Whether the list the wheel listener was installed on sits in the drawer: a DrawerBreakpoint set or taken away
+    // renders the list anew in the other place, which has no listener of its own yet.
+    private bool _wheelListInDrawer;
     private bool _defaultSelectedKeyPending;
     private bool _selectedKeyPending;
     private bool _selectedKeyStale;
@@ -287,7 +290,7 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
         // The shape of a navbar with a DrawerBreakpoint (see _DrawerShapeClass), and whether its drawer is open.
         ClassBuilder.Register(() => _DrawerShapeClass);
-        ClassBuilder.Register(() => DrawerBreakpoint is not null && DrawerOpen ? "bit-nbr-dop" : string.Empty);
+        ClassBuilder.Register(() => DrawerBreakpoint is not null && _DrawerShown ? "bit-nbr-dop" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -367,6 +370,8 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         // through may be assigned after the SelectedKey itself.
         await ApplySelectedKey();
         await SyncSelectedKey();
+
+        await CloseDrawerOffScreen();
 
         await base.OnParametersSetAsync();
     }
@@ -458,6 +463,12 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
         // go, which is what the drawer was opened for.
         await CloseDrawerOnItemClick();
     }
+
+    // When the key handlers of the drawer act on Escape, written onto the toggle button and the drawer for
+    // Utils.claimEscape: read off the very state they decide on (see BitNavBar.razor.drawer.cs), so a surface the navbar
+    // sits in (a dialog, a BitPanel) does not close on the same press. A closed drawer, or the bar of a wide screen,
+    // leaves the key alone.
+    private string? _EscapeClaim => _ClosesOnEscape ? "claim" : null;
 
     // The keyboard navigation is wired to the item's own element rather than to the root of the navbar, so
     // a focusable element rendered by a template (an input, a checkbox, ...) keeps its own key handling
@@ -640,10 +651,13 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     // checks the mode at the time of each event, so a navbar that stops scrolling needs no teardown.
     private async Task SetupWheel()
     {
-        if (_wheelIsSetUp) return;
+        var inDrawer = DrawerBreakpoint is not null;
+
+        if (_wheelIsSetUp && _wheelListInDrawer == inDrawer) return;
         if (Scrollable is false || Vertical) return;
 
         _wheelIsSetUp = true;
+        _wheelListInDrawer = inDrawer;
 
         try
         {
@@ -810,6 +824,19 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
         if (IsDisposed) return;
+
+        // The open drawer closes on any navigation, the one a link an item template renders (Replace) makes included:
+        // the template owns its click, so the drawer hears of the reader's choice from the navigation alone.
+        if (DrawerOpen && _isDrawer)
+        {
+            _ = InvokeAsync(async () =>
+            {
+                if (IsDisposed) return;
+
+                await CloseDrawerOnItemClick();
+            });
+        }
+
         if (Mode is not BitNavMode.Automatic) return;
 
         // The event is raised outside the renderer's synchronization context, so the match (and the

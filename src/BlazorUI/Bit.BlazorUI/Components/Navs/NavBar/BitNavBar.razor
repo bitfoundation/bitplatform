@@ -36,14 +36,8 @@
         <div style="@Styles?.Header" class="bit-nbr-hdr @Classes?.Header">@HeaderTemplate</div>
     }
 
-    @if (DrawerBreakpoint is { } drawerBreakpoint)
+    @if (DrawerBreakpoint is not null)
     {
-        @* Reports whether the screen is one the navbar is folded into its drawer on. Nothing is rendered through it -
-           the shape itself is CSS - but the page the open drawer covers and the focus it holds are decided in C#, and
-           only the browser knows the answer, built from the live theme breakpoints. It is plumbing that draws nothing,
-           so it is no visual part of another component the navbar would be rendering. *@
-        <BitMediaQuery NoWrapper ScreenQuery="drawerBreakpoint" OnChange="HandleScreenChange" />
-
         var toggleIcon = BitIconInfo.From(ToggleIcon, ToggleIconName);
         var toggleLabel = _ToggleLabel;
         var isModal = _IsModalDrawer;
@@ -58,7 +52,7 @@
                 title="@toggleLabel"
                 aria-label="@toggleLabel"
                 aria-controls="@_drawerId"
-                aria-expanded="@(DrawerOpen ? "true" : "false")"
+                aria-expanded="@(_DrawerShown ? "true" : "false")"
                 disabled="@Disabled"
                 aria-disabled="@(Disabled ? "true" : null)"
                 data-bit-esc="@_EscapeClaim"

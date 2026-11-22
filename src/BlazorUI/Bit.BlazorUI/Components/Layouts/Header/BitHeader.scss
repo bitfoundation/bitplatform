@@ -389,8 +389,10 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 
 
 // The shadow is part of the slide as well (see .bit-hdr-hdn), so the two transitions always travel together.
+// No will-change: transform is declared: it would make the header the containing block of every fixed element
+// inside it for as long as the header is on the page - the drawer of a BitNavBar and its overlay would be confined
+// to the box of the header rather than cover the screen. The slide still runs on the compositor once it starts.
 .bit-hdr-anm {
-    will-change: transform;
     transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing;
 }
 

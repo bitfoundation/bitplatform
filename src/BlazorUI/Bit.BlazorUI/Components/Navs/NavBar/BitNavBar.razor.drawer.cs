@@ -13,6 +13,10 @@ public partial class BitNavBar<TItem>
     private bool _isDrawer;
     private bool _screenChecked;
     private BitScreenQuery? _checkedBreakpoint;
+    // Set once a DrawerBreakpoint is taken away, so a drawer left open then is closed (see CloseDrawerOffScreen).
+    private bool _drawerTakenAway;
+    // Whether the browser has been asked to report the screen (see SyncScreenListener).
+    private bool _screenListened;
     private bool _scrollLocked;
     private bool _focusTrapped;
     private bool _focusTaken;
@@ -31,6 +35,9 @@ public partial class BitNavBar<TItem>
     // Which Escapes a part of the drawer claimed first (see _OnEscapeVerdict), for its key handler. Made on first use,
     // so a navbar disposed before it rendered never starts watching.
     private BitEscapeClaimWatch<BitNavBar<TItem>>? _escapeWatch;
+    // The receiver of the reports of the screen (_OnMatchChange). Made on first use, so a navbar disposed before it
+    // rendered leaves no reference behind.
+    private DotNetObjectReference<BitNavBar<TItem>>? _screenDotnetObj;
 
 
 
@@ -39,6 +46,10 @@ public partial class BitNavBar<TItem>
     // the region the shell scrolls rather than the document.
     [CascadingParameter(Name = "BitAppShell.Container")]
     private ElementReference? AppShellContainer { get; set; }
+
+    // The theme of an enclosing BitThemeProvider, whose breakpoints the screen query of the DrawerBreakpoint is built
+    // from ahead of the --bit-bp-* variables of the document, the way BitMediaQuery builds it.
+    [CascadingParameter] private BitTheme? CascadingTheme { get; set; }
 
 
 
@@ -55,6 +66,29 @@ public partial class BitNavBar<TItem>
         EscapeWatch.SetVerdict(foreign);
     }
 
+    /// <summary>
+    /// Sent by the browser with whether the screen matches the <see cref="DrawerBreakpoint"/>: the first answer once
+    /// it is asked, and every change of it after that (the listener of BitMediaQuery.ts reports it).
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnMatchChange")]
+    public async Task _OnMatchChange(bool isDrawer)
+    {
+        if (IsDisposing) return;
+
+        try
+        {
+            await InvokeAsync(() => HandleScreenChange(isDrawer));
+        }
+        catch (Exception ex) when (ex is not ObjectDisposedException)
+        {
+            // This method is called from JavaScript, which reads a rejected call as the .NET side being gone and stops
+            // listening for good; an exception of a handler of the page is handed to Blazor's error handling instead.
+            await DispatchExceptionAsync(ex);
+        }
+    }
+
 
 
     // The open drawer is a modal surface while it covers the page: only on the screens the navbar is folded on, only
@@ -66,10 +100,9 @@ public partial class BitNavBar<TItem>
     // on screen to show for it.
     private bool _ClosesOnEscape => _IsModalDrawer;
 
-    // When the key handlers act on Escape, written onto the toggle button and the drawer for Utils.claimEscape: read
-    // off the very state they decide on, so a surface the navbar sits in (a dialog, a BitPanel) does not close on the
-    // same press. A closed drawer, or the bar of a wide screen, leaves the key alone.
-    private string? _EscapeClaim => _ClosesOnEscape ? "claim" : null;
+    // Whether the drawer is open as far as the page can see: a disabled navbar keeps the open state it was given, but
+    // shows no open drawer it would leave nothing to dismiss with (see bit-nbr-dop).
+    private bool _DrawerShown => DrawerOpen && Disabled is false;
 
     // The name of the toggle button and of the drawer it opens.
     private string _ToggleLabel => ToggleAriaLabel ?? BitStrings.Current.Menu;
@@ -99,17 +132,79 @@ public partial class BitNavBar<TItem>
         _onToggleKeyDown = EventCallback.Factory.Create<KeyboardEventArgs>(new object(), HandleOnToggleKeyDown);
     }
 
-    // A breakpoint that changed (or went away) asks the browser again, so the shape falls back on the stylesheet's
-    // until the media query has reported the new one.
+    // A breakpoint set afresh (or taken away) asks the browser again, so the shape falls back on the stylesheet's until
+    // it has reported the screen. One changed for another keeps the shape last reported: the listener is rebuilt for
+    // the new query and carries its last answer over, so it only reports again when the new query answers otherwise
+    // (see BitMediaQuery.ts) - a shape reset here would wait for a report that never comes.
     private void SyncDrawerBreakpoint()
     {
         if (DrawerBreakpoint == _checkedBreakpoint) return;
 
+        var previous = _checkedBreakpoint;
+
         _checkedBreakpoint = DrawerBreakpoint;
+
+        if (previous is not null && DrawerBreakpoint is not null) return;
+
+        if (DrawerBreakpoint is null) _drawerTakenAway = true;
+
         _screenChecked = false;
         _isDrawer = false;
 
         ClassBuilder.Reset();
+    }
+
+    // A drawer that is not on screen is not open either, so it does not slide open on its own the moment a drawer shape
+    // applies again: the one left open as the DrawerBreakpoint is taken away, and the one opened (bound) on a screen the
+    // browser has reported to be a bar.
+    private async Task CloseDrawerOffScreen()
+    {
+        var takenAway = _drawerTakenAway;
+
+        _drawerTakenAway = false;
+
+        if (DrawerOpen is false) return;
+
+        var offScreen = DrawerBreakpoint is null ? takenAway : _screenChecked && _isDrawer is false;
+
+        if (offScreen is false) return;
+
+        if (await AssignDrawerOpen(false) is false) return;
+
+        ClassBuilder.Reset();
+    }
+
+    // Asks the browser to report the screen the navbar renders on, on every render: the query is built from the live
+    // breakpoints, and the script keeps its listener while the query it resolves to is the same one. A drawer taken
+    // away stops listening.
+    private async Task SyncScreenListener()
+    {
+        if (IsDisposed) return;
+
+        if (DrawerBreakpoint is { } query)
+        {
+            _screenDotnetObj ??= DotNetObjectReference.Create(this);
+            _screenListened = true;
+
+            try
+            {
+                await _js.BitMediaQuerySetup(_drawerId!, null, null, query.ToString(), BitMediaQuery.ToScriptBreakpoints(CascadingTheme), _screenDotnetObj);
+            }
+            catch (JSDisconnectedException)
+            {
+                _screenListened = false; // the circuit is gone, and the listener was never made
+            }
+        }
+        else if (_screenListened)
+        {
+            _screenListened = false;
+
+            try
+            {
+                await _js.BitMediaQueryDispose(_drawerId!);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, and the listener with it
+        }
     }
 
     private async Task OnAfterRenderDrawer()
@@ -118,6 +213,8 @@ public partial class BitNavBar<TItem>
         // moment a single parameter changes: whether it covers the page at all is decided by the screen, the open
         // state and the disabled state together, and each step does nothing unless it is the one that actually changed.
         await UpdateModalState();
+
+        await SyncScreenListener();
 
         if (IsDisposed) return;
 
@@ -172,9 +269,12 @@ public partial class BitNavBar<TItem>
         _isDrawer = isDrawer;
 
         // A screen that grew out of the drawer closes it, so the drawer does not open again on its own the moment the
-        // screen shrinks back.
+        // screen shrinks back. The focus stays where it is: the items it can be on are in the bar now, and the toggle
+        // button it would be handed back to is hidden there, which would drop it onto the body.
         if (isDrawer is false && DrawerOpen)
         {
+            await ForgetFocusOrigin();
+
             await AssignDrawerOpen(false);
         }
 
@@ -343,6 +443,20 @@ public partial class BitNavBar<TItem>
         catch (JSDisconnectedException) { } // the circuit is gone, and the drawer with it
     }
 
+    // Lets go of the focus stored as the drawer opened, without handing it back.
+    private async Task ForgetFocusOrigin()
+    {
+        if (_focusOriginStored is false) return;
+
+        _focusOriginStored = false;
+
+        try
+        {
+            await _js.BitUtilsForgetFocus(_drawerId!);
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the drawer with it
+    }
+
     private async Task LockScroll()
     {
         if (_scrollLocked || IsDisposed || IsRendered is false) return;
@@ -382,17 +496,24 @@ public partial class BitNavBar<TItem>
     {
         await DisposeFocusTrap();
         await UnlockScroll();
+        await ForgetFocusOrigin();
 
+        // The listener is taken down before the reference it reports to is released, so a change of the screen in
+        // between cannot reach a disposed object.
         try
         {
-            if (_focusOriginStored)
+            if (_screenListened)
             {
-                _focusOriginStored = false;
+                _screenListened = false;
 
-                await _js.BitUtilsForgetFocus(_drawerId!);
+                await _js.BitMediaQueryDispose(_drawerId!);
             }
         }
-        catch (JSDisconnectedException) { } // the circuit is gone, and the drawer with it
+        catch (JSDisconnectedException) { } // the circuit is gone, and the listener with it
+        finally
+        {
+            _screenDotnetObj?.Dispose();
+        }
 
         // Disposed even when it never started, so a first render still on its way does not start it afterwards.
         if (_escapeWatch is not null)

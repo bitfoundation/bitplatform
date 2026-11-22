@@ -136,9 +136,14 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
 // the margin under the parts of the bar instead, all of them side by side in a bar and the last one in a
 // rail, and the fill of the bar runs on under it. The fallback keeps it a no-op everywhere the inset is
 // not reported.
-.bit-nbr-sfa:not(.bit-nbr-vrt) > *,
+// The drawer of a DrawerBreakpoint is no part of the bar: on a wide screen it is no box (display: contents),
+// so the list inside it takes the margin, and folded it is fixed to the screen from top to bottom, which a
+// margin of its own (or of the overlay) would cut short. Folded, it keeps the inset clear with its own padding
+// (see nbr-drawer-safe-area).
+.bit-nbr-sfa:not(.bit-nbr-vrt) > :not(.bit-nbr-drw, .bit-nbr-ovl),
 .bit-nbr-sfa:not(.bit-nbr-vrt) > .bit-nbr-drw > .bit-nbr-cnt,
-.bit-nbr-sfa.bit-nbr-vrt > :last-child {
+.bit-nbr-sfa.bit-nbr-vrt > :last-child:not(.bit-nbr-drw),
+.bit-nbr-sfa.bit-nbr-vrt > .bit-nbr-drw:last-child > .bit-nbr-cnt {
     margin-bottom: env(safe-area-inset-bottom, 0px);
 }
 
@@ -610,6 +615,15 @@ $nbr-drawer-queries: (
     }
 }
 
+// The list of a folded SafeArea navbar takes no inset of its own: the padding of the drawer already keeps it clear.
+// The root carries the weight of the SafeArea rules above (the drawer shape is a class of the root, never a :where()),
+// so this wins over them on the screens the drawer shape applies.
+@mixin nbr-drawer-safe-area {
+    > .bit-nbr-drw > .bit-nbr-cnt {
+        margin-bottom: 0;
+    }
+}
+
 // On a wide screen the drawer is no box of its own, so the list lays out in the bar as it does without one; the
 // toggle button and the overlay belong to the drawer alone.
 .bit-nbr-drw {
@@ -698,10 +712,20 @@ $nbr-drawer-queries: (
     @include nbr-drawer;
 }
 
+.bit-nbr.bit-nbr-sfa.bit-nbr-dsh {
+    @include nbr-drawer-safe-area;
+}
+
 @each $name, $range in $nbr-drawer-queries {
     :where(.bit-nbr.bit-nbr-dq-#{$name}) {
         @include nbr-screen(nth($range, 1), nth($range, 2)) {
             @include nbr-drawer;
+        }
+    }
+
+    .bit-nbr.bit-nbr-sfa.bit-nbr-dq-#{$name} {
+        @include nbr-screen(nth($range, 1), nth($range, 2)) {
+            @include nbr-drawer-safe-area;
         }
     }
 }

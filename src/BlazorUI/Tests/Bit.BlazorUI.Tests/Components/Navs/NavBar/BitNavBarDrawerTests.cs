@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.NavBar;
@@ -41,13 +42,11 @@ public class BitNavBarDrawerTests : BunitTestContext
         });
     }
 
-    // Drives the media query the navbar reads its own shape from, which is the browser's answer in an app and has none
-    // of its own in a test.
+    // Drives the report of the media query the navbar reads its own shape from, which is the browser's answer in an app
+    // and has none of its own in a test.
     private static void SetDrawerScreen(IRenderedComponent<BitNavBar<BitNavBarItem>> component, bool isDrawer)
     {
-        var mediaQuery = component.FindComponent<BitMediaQuery>();
-
-        component.InvokeAsync(() => mediaQuery.Instance._OnMatchChange(isDrawer).AsTask()).GetAwaiter().GetResult();
+        component.InvokeAsync(() => component.Instance._OnMatchChange(isDrawer)).GetAwaiter().GetResult();
     }
 
     private IRenderedComponent<BitNavBar<BitNavBarItem>> RenderOpenDrawer(Action<ComponentParameterCollectionBuilder<BitNavBar<BitNavBarItem>>>? parameters = null,
@@ -74,7 +73,7 @@ public class BitNavBarDrawerTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-nbr-tgl").Count);
         Assert.AreEqual(0, component.FindAll(".bit-nbr-drw").Count);
         Assert.AreEqual(0, component.FindAll(".bit-nbr-ovl").Count);
-        Assert.AreEqual(0, component.FindComponents<BitMediaQuery>().Count);
+        Assert.AreEqual(0, Invocations("BitBlazorUI.MediaQuery.setup"));
 
         // The list stays a child of the root, where every rule of the bar finds it.
         Assert.AreEqual("bit-nbr", component.Find(".bit-nbr-cnt").ParentElement!.ClassList[0]);
@@ -172,11 +171,76 @@ public class BitNavBarDrawerTests : BunitTestContext
         Assert.IsFalse(root.ClassList.Contains("bit-nbr-dsh"));
         Assert.IsFalse(root.ClassList.Contains("bit-nbr-dq-smtomd"));
 
-        // A breakpoint that changes asks the browser again, and falls back on the stylesheet meanwhile.
+        // A breakpoint changed for another asks the browser of the new one, and keeps the shape it last reported: the
+        // listener only reports again when the new query answers otherwise.
         component.Render(p => p.Add(c => c.DrawerBreakpoint, BitScreenQuery.LtLg));
 
-        Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains("bit-nbr-dq-ltlg"));
-        Assert.AreEqual(BitScreenQuery.LtLg, component.FindComponent<BitMediaQuery>().Instance.ScreenQuery);
+        root = component.Find(".bit-nbr");
+        Assert.IsFalse(root.ClassList.Contains("bit-nbr-dq-ltlg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nbr-dsh"));
+        Assert.AreEqual("LtLg", Context.JSInterop.Invocations["BitBlazorUI.MediaQuery.setup"].Last().Arguments[3]);
+
+        // One taken away and set afresh falls back on the stylesheet until the browser answers.
+        component.Render(p => p.Add(c => c.DrawerBreakpoint, null));
+
+        Assert.AreEqual(1, Invocations("BitBlazorUI.MediaQuery.dispose"));
+
+        component.Render(p => p.Add(c => c.DrawerBreakpoint, BitScreenQuery.LtMd));
+
+        Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains("bit-nbr-dq-ltmd"));
+    }
+
+    [TestMethod]
+    public void BitNavBarOpenDrawerShouldStayModalWhenTheBreakpointChangesForOneTheScreenStillMatches()
+    {
+        var component = RenderOpenDrawer();
+
+        component.Render(p => p.Add(c => c.DrawerBreakpoint, BitScreenQuery.LtLg));
+
+        // No report comes for a query that answers the same, so the drawer is still the modal surface it was.
+        Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains("bit-nbr-dsh"));
+        Assert.AreEqual("dialog", component.Find(".bit-nbr-drw").GetAttribute("role"));
+        Assert.AreEqual("claim", component.Find(".bit-nbr-drw").GetAttribute("data-bit-esc"));
+        Assert.AreEqual(0, Invocations("BitBlazorUI.Utils.unlockScroll"));
+
+        component.FindAll(".bit-nbr-itm")[1].Click();
+
+        Assert.IsFalse(component.Instance.DrawerOpen);
+    }
+
+    [TestMethod]
+    public void BitNavBarDrawerTakenAwayWhileOpenShouldCloseIt()
+    {
+        var opened = new List<bool>();
+
+        var component = RenderOpenDrawer(p => p.Add(c => c.DrawerOpenChanged, (bool open) => opened.Add(open)));
+
+        component.Render(p => p.Add(c => c.DrawerBreakpoint, null));
+
+        Assert.IsFalse(component.Instance.DrawerOpen);
+        CollectionAssert.AreEqual(new[] { true, false }, opened);
+        Assert.AreEqual(1, Invocations("BitBlazorUI.Utils.unlockScroll"));
+
+        // So a breakpoint set again does not show the drawer open on its own.
+        component.Render(p => p.Add(c => c.DrawerBreakpoint, BitScreenQuery.LtMd));
+
+        Assert.IsFalse(component.Find(".bit-nbr").ClassList.Contains("bit-nbr-dop"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotOpenTheDrawerOfAScreenReportedToBeABar()
+    {
+        var opened = new List<bool>();
+
+        var component = RenderNavBar(p => p.Add(c => c.DrawerOpenChanged, (bool open) => opened.Add(open)));
+
+        SetDrawerScreen(component, false);
+
+        component.Render(p => p.Add(c => c.DrawerOpen, true));
+
+        Assert.IsFalse(component.Instance.DrawerOpen);
+        CollectionAssert.AreEqual(new[] { false }, opened);
+        Assert.IsFalse(component.Find(".bit-nbr").ClassList.Contains("bit-nbr-dop"));
     }
 
     [TestMethod]
@@ -419,6 +483,47 @@ public class BitNavBarDrawerTests : BunitTestContext
         Assert.IsNull(component.Find(".bit-nbr-drw").GetAttribute("role"));
         Assert.AreEqual(1, Invocations("BitBlazorUI.Utils.unlockScroll"));
         Assert.AreEqual(1, Invocations("BitBlazorUI.Utils.disposeFocusTrap"));
+
+        // The focus stays on the item it is on, which is in the bar now: the toggle button it would be handed back to
+        // is hidden there.
+        Assert.AreEqual(0, Invocations("BitBlazorUI.Utils.restoreFocus"));
+        Assert.AreEqual(1, Invocations("BitBlazorUI.Utils.forgetFocus"));
+    }
+
+    [TestMethod]
+    public void BitNavBarNavigationShouldCloseTheDrawer()
+    {
+        var component = RenderOpenDrawer(p => p.Add(c => c.Mode, BitNavMode.Manual));
+
+        // A link an item template renders navigates without the navbar hearing of the click.
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/somewhere");
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Instance.DrawerOpen));
+        Assert.AreEqual(1, Invocations("BitBlazorUI.Utils.unlockScroll"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldSetUpTheWheelOfTheListRenderedAnewInOrOutOfTheDrawer()
+    {
+        var component = RenderComponent<BitNavBar<BitNavBarItem>>(p =>
+        {
+            p.Add(c => c.Items, Items());
+            p.Add(c => c.Scrollable, true);
+        });
+
+        Assert.AreEqual(1, Invocations("BitBlazorUI.NavBar.setupWheel"));
+
+        component.Render(p => p.Add(c => c.DrawerBreakpoint, BitScreenQuery.LtMd));
+
+        Assert.AreEqual(2, Invocations("BitBlazorUI.NavBar.setupWheel"));
+
+        component.Render(p => p.Add(c => c.DrawerBreakpoint, BitScreenQuery.LtLg));
+
+        Assert.AreEqual(2, Invocations("BitBlazorUI.NavBar.setupWheel"));
+
+        component.Render(p => p.Add(c => c.DrawerBreakpoint, null));
+
+        Assert.AreEqual(3, Invocations("BitBlazorUI.NavBar.setupWheel"));
     }
 
     [TestMethod]
@@ -464,6 +569,21 @@ public class BitNavBarDrawerTests : BunitTestContext
         Assert.IsNull(component.Find(".bit-nbr-drw").GetAttribute("role"));
         Assert.IsNull(component.Find(".bit-nbr-drw").GetAttribute("data-bit-esc"));
         Assert.AreEqual(0, Invocations("BitBlazorUI.Utils.lockScroll"));
+
+        // Nor is it shown open, which would leave a drawer on screen with nothing to dismiss it with.
+        Assert.IsFalse(component.Find(".bit-nbr").ClassList.Contains("bit-nbr-dop"));
+        Assert.AreEqual("false", component.Find(".bit-nbr-tgl").GetAttribute("aria-expanded"));
+
+        // Disabled while open, the drawer slides away and comes back once the navbar is enabled again.
+        component.Render(p => p.Add(c => c.Disabled, false));
+
+        Assert.IsTrue(component.Find(".bit-nbr").ClassList.Contains("bit-nbr-dop"));
+        Assert.AreEqual("dialog", component.Find(".bit-nbr-drw").GetAttribute("role"));
+
+        component.Render(p => p.Add(c => c.Disabled, true));
+
+        Assert.IsFalse(component.Find(".bit-nbr").ClassList.Contains("bit-nbr-dop"));
+        Assert.AreEqual(1, Invocations("BitBlazorUI.Utils.unlockScroll"));
     }
 
     [TestMethod]
@@ -556,6 +676,29 @@ public class BitNavBarDrawerTests : BunitTestContext
         {
             StringAssert.Contains(map, $"\n    {query.ToString().ToLowerInvariant()}: (", $"The stylesheet has no range for {query}.");
         }
+    }
+
+    [TestMethod]
+    public void BitNavBarStylesheetShouldKeepTheSafeAreaMarginOffTheFixedDrawerAndOverlay()
+    {
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "NavBar", "BitNavBar.scss").Replace("\r\n", "\n");
+
+        // A margin on a box fixed from top to bottom cuts it short, which leaves a strip of the page under the open
+        // drawer uncovered.
+        StringAssert.Contains(stylesheet, ".bit-nbr-sfa:not(.bit-nbr-vrt) > :not(.bit-nbr-drw, .bit-nbr-ovl),");
+        StringAssert.Contains(stylesheet, ".bit-nbr-sfa.bit-nbr-vrt > :last-child:not(.bit-nbr-drw),");
+        StringAssert.Contains(stylesheet, ".bit-nbr.bit-nbr-sfa.bit-nbr-dsh {\n    @include nbr-drawer-safe-area;");
+        StringAssert.Contains(stylesheet, ".bit-nbr.bit-nbr-sfa.bit-nbr-dq-#{$name} {");
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotConfineTheDrawerOfANavBarInsideIt()
+    {
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Layouts", "Header", "BitHeader.scss");
+
+        // A will-change of transform makes the header the containing block of the fixed drawer and overlay for as long
+        // as the header is on the page, which confines them to its box.
+        Assert.IsFalse(System.Text.RegularExpressions.Regex.IsMatch(stylesheet, @"^\s*will-change:\s*transform", System.Text.RegularExpressions.RegexOptions.Multiline));
     }
 
     private static TouchPoint Touch(double x, double y) => new() { ClientX = x, ClientY = y };

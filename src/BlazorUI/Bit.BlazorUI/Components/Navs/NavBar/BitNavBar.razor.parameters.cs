@@ -74,14 +74,23 @@ public partial class BitNavBar<TItem>
     /// <br />
     /// The open drawer covers the page with an overlay: it reports itself as a modal dialog, holds the page behind
     /// it from scrolling, takes the focus as it opens and keeps it inside, and hands it back once it closes - on a
-    /// click of an item, of the overlay or of the toggle button, and on the Escape key.
+    /// click of an item, of the overlay or of the toggle button, on a navigation, and on the Escape key.
+    /// <br />
+    /// The drawer and its overlay are fixed to the screen, so an ancestor that is the containing block of fixed elements
+    /// confines them to its own box instead: one with a <c>transform</c>, a <c>filter</c>, a <c>backdrop-filter</c>, a
+    /// <c>perspective</c>, a <c>contain</c> of layout or paint, or a <c>will-change</c> of any of them. Inside a
+    /// <see cref="BitHeader"/> that is a Translucent Fill header (its blur), and a scrolled one while the
+    /// <c>--bit-Header-scrolled-backdrop-filter</c> variable sets a filter: put the navbar of such a header in the
+    /// drawer shape only where the header is not translucent, or leave the variable unset.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitScreenQuery? DrawerBreakpoint { get; set; }
 
     /// <summary>
-    /// Whether the drawer of a navbar folded by its <see cref="DrawerBreakpoint"/> is open. It has no effect on the
-    /// screens the navbar is a bar on, and a screen that grows out of the drawer closes it.
+    /// Whether the drawer of a navbar folded by its <see cref="DrawerBreakpoint"/> is open. A drawer is only open on the
+    /// screens the navbar is folded on: one opened on a screen it is a bar on is closed again, and so is one left open
+    /// as the screen grows out of the drawer or the <see cref="DrawerBreakpoint"/> is taken away. A disabled navbar
+    /// keeps the value, but shows no open drawer while it is disabled.
     /// </summary>
     [Parameter, TwoWayBound, ResetClassBuilder]
     public bool DrawerOpen { get; set; }
