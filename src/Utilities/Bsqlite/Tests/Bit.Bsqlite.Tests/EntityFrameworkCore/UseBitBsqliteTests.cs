@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -79,5 +82,57 @@ public sealed class UseBitBsqliteTests
         // no e_sqlite3; UseBitBsqlite installs a PCL stub so the call does not throw.
         var version = new Version(new Microsoft.Data.Sqlite.SqliteConnection().ServerVersion);
         Assert.IsTrue(version >= new Version(3, 38));
+    }
+
+    /// <summary>
+    /// An AOT-compiled app stops for good on the first save of an entity with a <c>DateOnly?</c>,
+    /// <c>Guid?</c> or similar property unless something it compiles boxes that nullable type -
+    /// see <see cref="BsqliteAotNullableValues"/>. Every <c>UseBitBsqlite</c> overload ends in the one that
+    /// keeps it through trimming; only the demo-aot E2E job sees a regression otherwise.
+    /// </summary>
+    [TestMethod]
+    public void UseBitBsqlite_KeepsTheNullableBoxesAnAotAppNeeds()
+    {
+        var useBitBsqlite = typeof(BsqliteDbContextOptionsExtensions).GetMethod(
+            nameof(BsqliteDbContextOptionsExtensions.UseBitBsqlite),
+            [typeof(DbContextOptionsBuilder), typeof(DbConnection), typeof(bool), typeof(Action<SqliteDbContextOptionsBuilder>)])!;
+
+        var kept = useBitBsqlite.GetCustomAttributes<DynamicDependencyAttribute>();
+
+        Assert.IsTrue(kept.Any(d => d.Type == typeof(BsqliteAotNullableValues)
+            && d.MemberSignature == nameof(BsqliteAotNullableValues.RoundTrip)));
+    }
+
+    /// <summary>
+    /// The value types the SQLite provider maps, which docs/getting-started.md says <c>UseBitBsqlite</c> covers. A type
+    /// dropped from <see cref="BsqliteAotNullableValues.RoundTrip"/> fails here: the demo-aot E2E job saves only
+    /// <c>DateOnly?</c>, and an AOT app with a <c>Guid?</c> property would stop silently on its first save.
+    /// </summary>
+    [TestMethod]
+    [DataRow(typeof(bool))]
+    [DataRow(typeof(byte))]
+    [DataRow(typeof(sbyte))]
+    [DataRow(typeof(short))]
+    [DataRow(typeof(ushort))]
+    [DataRow(typeof(int))]
+    [DataRow(typeof(uint))]
+    [DataRow(typeof(long))]
+    [DataRow(typeof(ulong))]
+    [DataRow(typeof(char))]
+    [DataRow(typeof(float))]
+    [DataRow(typeof(double))]
+    [DataRow(typeof(decimal))]
+    [DataRow(typeof(DateTime))]
+    [DataRow(typeof(DateTimeOffset))]
+    [DataRow(typeof(DateOnly))]
+    [DataRow(typeof(TimeOnly))]
+    [DataRow(typeof(TimeSpan))]
+    [DataRow(typeof(Guid))]
+    public void TheNullableBoxesCover(Type type)
+    {
+        var value = Activator.CreateInstance(type);
+
+        Assert.AreEqual(value, BsqliteAotNullableValues.RoundTrip(type, value));
+        Assert.IsNull(BsqliteAotNullableValues.RoundTrip(type, null));
     }
 }

@@ -17,12 +17,11 @@ public class BitHeaderStylesheetTests
 
         // An explicit Color or Size publishes these only while it is set, so they are read before the variable, which
         // only restyles the default an unset one stands for: the plain page surface and the medium spacing.
-        // The colors are read per variant, the variant's own tier of each public variable ahead of the shared one, with
-        // what a scrolled header publishes (--bit-hdr-scr-*) between the Color and the two tiers.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-hdr-bg, var(--bit-hdr-scr-bg, var(--bit-Header-fill-background, var(--bit-Header-background, #{$clr-bg-pri}))));");
+        // The colors are read per variant, the variant's own tier of each public variable ahead of the shared one.
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-hdr-bg, var(--bit-Header-fill-background, var(--bit-Header-background, #{$clr-bg-pri})));");
         StringAssert.Contains(stylesheet, "color: var(--bit-hdr-on, var(--bit-Header-fill-color, var(--bit-Header-color, #{$clr-fg-pri})));");
         StringAssert.Contains(stylesheet, "color: var(--bit-hdr-fg, var(--bit-Header-outline-color, var(--bit-Header-color, #{$clr-fg-pri})));");
-        StringAssert.Contains(stylesheet, "var(--bit-hdr-brd, var(--bit-hdr-scr-brd, var(--bit-Header-outline-border-color, var(--bit-Header-border-color, #{$clr-brd-pri}))));");
+        StringAssert.Contains(stylesheet, "var(--bit-hdr-brd, var(--bit-Header-outline-border-color, var(--bit-Header-border-color, #{$clr-brd-pri})));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-hdr-bg-dis, var(--bit-Header-fill-disabled-background, var(--bit-Header-disabled-background, #{$clr-bg-pri})));");
         StringAssert.Contains(stylesheet, "color: var(--bit-hdr-fg-dis, var(--bit-Header-text-disabled-color, var(--bit-Header-disabled-color, #{$clr-fg-dis})));");
         StringAssert.Contains(stylesheet, "$hdr-pad-y: var(--bit-hdr-pad-y, var(--bit-Header-padding-block, #{spacing(1)}));");
@@ -70,6 +69,79 @@ public class BitHeaderStylesheetTests
         Assert.IsFalse(stylesheet.Contains("\n.bit-hdr-brd {"), "A rule of every variant draws the divider.");
     }
 
+    [TestMethod,
+        DataRow("\n.bit-hdr-scr:where(.bit-hdr-fil) {", "fill", "background"),
+        DataRow("\n.bit-hdr-trs.bit-hdr-scr:where(.bit-hdr-fil) {", "fill", "background"),
+        DataRow("\n.bit-hdr-scr:where(.bit-hdr-otl) {", "outline", "border-color"),
+        DataRow("\n.bit-hdr-brd:where(.bit-hdr-fil.bit-hdr-scr) {", "fill", "border-color"),
+        DataRow("\n.bit-hdr-brd:where(.bit-hdr-txt.bit-hdr-scr) {", "text", "border-color")]
+    public void BitHeaderShouldReadTheScrolledTierAheadOfTheRestingOne(string selector, string variant, string name)
+    {
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), selector);
+        var color = name == "background" ? "--bit-hdr-bg" : "--bit-hdr-brd";
+
+        // A scrolled header reads the scrolled tier (the variant's own, then the shared one) ahead of the resting
+        // variables, which stay its fallback - so a scrolled variable left unset changes nothing - and an explicit
+        // Color, published privately, still wins over all of them.
+        StringAssert.Contains(block, $"var({color}, var(--bit-Header-{variant}-scrolled-{name}, var(--bit-Header-scrolled-{name}, var(--bit-Header-{variant}-{name}, var(--bit-Header-{name}, ");
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldTransitionWhatTheScrolledStateChanges()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The scrolled fill and border fade in with the shadow, also on a header that slides (whose own transition list
+        // would otherwise replace the scroll one).
+        foreach (var selector in new[] { "\n.bit-hdr-esc {", "\n.bit-hdr-anm:where(.bit-hdr-esc) {" })
+        {
+            var block = SourceFiles.GetScssBlock(stylesheet, selector);
+
+            StringAssert.Contains(block, "box-shadow $mot-duration $mot-easing");
+            StringAssert.Contains(block, "background-color $mot-duration $mot-easing");
+            StringAssert.Contains(block, "border-color $mot-duration $mot-easing");
+
+            // The content color fades with the background, so a theme switch never leaves text on the old fill.
+            StringAssert.Contains(block, ", color $mot-duration $mot-easing");
+
+            StringAssert.Contains(block, "backdrop-filter $mot-duration $mot-easing");
+        }
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-anm:where(.bit-hdr-esc) {"), "transform $mot-duration $mot-easing");
+
+        // The combined list weighs one class, so it follows both single lists to win, and the print rule (one class,
+        // later still) and an app's single class keep overriding it.
+        Assert.IsFalse(stylesheet.Contains(".bit-hdr-anm.bit-hdr-esc"), "The combined list weighs two classes.");
+
+        var combined = stylesheet.IndexOf("\n.bit-hdr-anm:where(.bit-hdr-esc) {", System.StringComparison.Ordinal);
+
+        Assert.IsTrue(combined > stylesheet.IndexOf("\n.bit-hdr-esc {", System.StringComparison.Ordinal));
+        Assert.IsTrue(combined > stylesheet.IndexOf("\n.bit-hdr-anm {", System.StringComparison.Ordinal));
+        Assert.IsTrue(combined < stylesheet.IndexOf("@media print {", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldReadTheScrolledBackdropFilterOnlyWhileScrolled()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // One class, so the two class Translucent Fill rule keeps its own blur over it, and an unset variable leaves
+        // the none every header has at rest.
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-scr {");
+
+        StringAssert.Contains(block, "backdrop-filter: var(--bit-Header-scrolled-backdrop-filter, none);");
+        StringAssert.Contains(block, "-webkit-backdrop-filter: var(--bit-Header-scrolled-backdrop-filter, none);");
+
+        // Forced colors, reduced transparency and print take it off, as they do the Translucent blur.
+        foreach (var media in new[] { "@media (forced-colors: active) {", "@media (prefers-reduced-transparency: reduce) {", "@media print {" })
+        {
+            var start = stylesheet.IndexOf(media, System.StringComparison.Ordinal);
+            var end = stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal);
+
+            StringAssert.Matches(stylesheet[start..end], new System.Text.RegularExpressions.Regex(@"\.bit-hdr-scr\s*[,{][^}]*backdrop-filter: none;"));
+        }
+    }
+
     [TestMethod]
     public void BitHeaderShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
     {
@@ -82,41 +154,6 @@ public class BitHeaderStylesheetTests
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }
-    }
-
-    [TestMethod]
-    public void BitHeaderShouldRestyleItsScrolledStateThroughPrivateSlots()
-    {
-        var stylesheet = ReadStylesheet();
-
-        // The scrolled state moves a variable, never the paint: its class publishes the public variables into private
-        // slots, which a nested header resets on its own root so it never inherits the outer one's scrolled state.
-        var scrolled = SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-scr {");
-
-        StringAssert.Contains(scrolled, "--bit-hdr-scr-bg: var(--bit-Header-scrolled-background);");
-        StringAssert.Contains(scrolled, "--bit-hdr-scr-brd: var(--bit-Header-scrolled-border-color);");
-        StringAssert.Contains(scrolled, "--bit-hdr-scr-bdf: var(--bit-Header-scrolled-backdrop-filter);");
-        Assert.IsFalse(Regex.IsMatch(scrolled, @"^\s*(?:background|border|color|backdrop-filter)", RegexOptions.Multiline), "The scrolled state paints the header itself.");
-
-        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr {");
-
-        foreach (var property in new[] { "--bit-hdr-scr-bg", "--bit-hdr-scr-brd", "--bit-hdr-scr-bdf" })
-        {
-            StringAssert.Contains(root, $"{property}: initial;");
-        }
-
-        // Every variant reads the slots right behind the Color: the Outline and Text ones fill only while scrolled, and
-        // the dividers and the outline take the scrolled border color.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-otl {"), "background-color: var(--bit-hdr-scr-bg, transparent);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-txt {"), "background-color: var(--bit-hdr-scr-bg, transparent);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-hdr-fil).bit-hdr-brd {"), "var(--bit-hdr-brd, var(--bit-hdr-scr-brd, var(--bit-Header-fill-border-color, ");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-hdr-txt).bit-hdr-brd {"), "var(--bit-hdr-brd, var(--bit-hdr-scr-brd, var(--bit-Header-text-border-color, ");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-trs.bit-hdr-fil {"), "translucent(var(--bit-hdr-bg, var(--bit-hdr-scr-bg, var(--bit-Header-fill-background, ");
-
-        // The backdrop filter is read on the headers tracking their scrolled state alone, and a Translucent one keeps
-        // its own blur, its rule of two classes outranking this one.
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-hdr-esc {"), "backdrop-filter: var(--bit-hdr-scr-bdf, none);");
-        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-hdr-trs.bit-hdr-fil {"), "backdrop-filter: blur(");
     }
 
     [TestMethod]

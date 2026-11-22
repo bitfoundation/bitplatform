@@ -336,6 +336,22 @@ private bool isImmersiveMode;";
     {
         <div class=""scroll-demo-row"">Content behind the header - row @i</div>
     }
+</div>
+
+
+<div class=""translucent-demo"">
+    <BitHeader Sticky Translucent Bordered ElevateOnScroll
+               Style=""--bit-Header-background: transparent;
+                      --bit-Header-border-color: transparent;
+                      --bit-Header-shadow: none;
+                      --bit-Header-scrolled-background: var(--bit-clr-bg-pri);
+                      --bit-Header-scrolled-border-color: var(--bit-clr-brd-pri);"">
+        I'm see-through until you scroll
+    </BitHeader>
+    @for (var i = 1; i <= 10; i++)
+    {
+        <div class=""scroll-demo-row"">Content behind the header - row @i</div>
+    }
 </div>";
 
     private readonly string example13RazorCode = @"
@@ -393,6 +409,46 @@ private bool isImmersiveMode;";
 </div>";
 
     private readonly string example14RazorCode = @"
+<style>
+    .scroll-demo {
+        height: 10rem;
+        overflow: auto;
+        border: 1px solid gray;
+    }
+
+    .scroll-demo-row {
+        padding: 0.5rem 1rem;
+    }
+
+    /* The header publishes its height on the box that scrolls it, which the bar below reads to stick right under the header. */
+    .publish-demo-bar {
+        position: sticky;
+        top: var(--bit-env-header-height, 0px);
+        padding: 0.25rem 1rem;
+        background-color: gold;
+        color: black;
+    }
+</style>
+
+
+<BitToggleButton @bind-Checked=""isHeaderTall"" OnText=""Make the header shorter"" OffText=""Make the header taller"" />
+
+<div class=""scroll-demo"">
+    <BitHeader Sticky Bordered PublishHeight Color=""BitColor.PrimaryBackground""
+               Height=""@(isHeaderTall ? 96 : 48)"">
+        I publish my height
+    </BitHeader>
+    <div class=""publish-demo-bar"">I stick right below the header</div>
+    @for (var i = 1; i <= 12; i++)
+    {
+        <div class=""scroll-demo-row"">Row @i</div>
+    }
+</div>";
+
+    private readonly string example14CsharpCode = @"
+private bool isHeaderTall;";
+
+    private readonly string example15RazorCode = @"
 <BitHeader Gap=""1rem"">
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.GlobalNavButton"" Title=""Open Navigation"" />
     <BitText Typography=""BitTypography.Caption1"">My Awesome App</BitText>
@@ -409,7 +465,7 @@ private bool isImmersiveMode;";
     </BitMenuButton>
 </BitHeader>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitParams Parameters=""@headerParams"">
     <BitHeader>Takes the color, the variant, the size and the border from the cascade</BitHeader>
 
@@ -418,7 +474,7 @@ private bool isImmersiveMode;";
 
 <BitHeader>Outside the cascade, and back to the defaults</BitHeader>";
 
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private readonly BitHeaderParams[] headerParams =
 [
     new()
@@ -430,7 +486,7 @@ private readonly BitHeaderParams[] headerParams =
     }
 ];";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitHeader Color=""BitColor.Primary"">Primary</BitHeader>
 
 <BitHeader Color=""BitColor.Secondary"">Secondary</BitHeader>
@@ -468,14 +524,14 @@ private readonly BitHeaderParams[] headerParams =
 
 <BitHeader Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"">TertiaryBorder</BitHeader>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitHeader Size=""BitSize.Small"" Bordered>Small</BitHeader>
 
 <BitHeader Size=""BitSize.Medium"" Bordered>Medium</BitHeader>
 
 <BitHeader Size=""BitSize.Large"" Bordered>Large</BitHeader>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitHeader Bordered Elevated
            Style=""--bit-Header-background: #1e293b; --bit-Header-color: #f8fafc; --bit-Header-border-color: #38bdf8; --bit-Header-border-width: 3px; --bit-Header-border-radius: 0.75rem; --bit-Header-min-height: 4rem;"">
     On the instance
@@ -500,43 +556,9 @@ private readonly BitHeaderParams[] headerParams =
 
 <BitHeader Classes=""@(new() { Root = ""custom-root"", Container = ""custom-container"" })"">
     Classes
-</BitHeader>
+</BitHeader>";
 
-
-<div class=""scroll-demo"">
-    <BitHeader Sticky ElevateOnScroll Bordered
-               Variant=""BitVariant.Text""
-               Style=""--bit-Header-border-color: transparent; --bit-Header-scrolled-border-color: var(--bit-clr-brd-pri); --bit-Header-scrolled-background: color-mix(in srgb, var(--bit-clr-bg-pri) 70%, transparent); --bit-Header-scrolled-backdrop-filter: blur(12px);"">
-        Transparent at the top, frosted once you scroll
-    </BitHeader>
-    @for (var i = 1; i <= 12; i++)
-    {
-        <div class=""scroll-demo-row"">Content behind the header - row @i</div>
-    }
-</div>
-
-<div class=""scroll-demo"">
-    <BitHeader Sticky Classes=""@(new() { Scrolled = ""custom-scrolled"" })"">
-        A Scrolled class, and no shadow
-    </BitHeader>
-    @for (var i = 1; i <= 12; i++)
-    {
-        <div class=""scroll-demo-row"">Row @i</div>
-    }
-</div>";
-
-    private const string example18ScssCode = @"
-// A box that scrolls on its own, for the header to stick to.
-.scroll-demo {
-    height: 10rem;
-    overflow: auto;
-    border: 1px solid gray;
-}
-
-.scroll-demo-row {
-    padding: 0.5rem 1rem;
-}
-
+    private const string example19ScssCode = @"
 // An ancestor re-skins every header under it: the variables inherit.
 .brand-headers {
     --bit-Header-background: #fdf4ff;
@@ -560,20 +582,14 @@ private readonly BitHeaderParams[] headerParams =
         color: blueviolet;
         justify-content: flex-end;
     }
-
-    // Only on the root while it is scrolled.
-    .custom-scrolled {
-        color: white;
-        background: linear-gradient(90deg, #7e57c2, #26c6da);
-    }
 }";
 
-    private readonly DemoCodeFile[] example18CodeFiles =
+    private readonly DemoCodeFile[] example19CodeFiles =
     [
-        new("BitHeaderDemo.razor.scss", example18ScssCode),
+        new("BitHeaderDemo.razor.scss", example19ScssCode),
     ];
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitHeader Dir=""BitDir.Rtl"" Alignment=""BitAlignment.SpaceBetween"" Bordered>
     <BitTag Text=""یک"" />
     <BitTag Text=""دو"" />

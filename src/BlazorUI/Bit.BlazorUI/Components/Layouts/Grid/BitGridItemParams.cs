@@ -151,6 +151,36 @@ public partial class BitGridItemParams : BitComponentBaseParams, IBitComponentPa
     public bool? GrowXxl { get; set; }
 
     /// <summary>
+    /// Hides the item from the extra small breakpoint upwards, and false shows it again from there.
+    /// </summary>
+    public bool? HiddenXs { get; set; }
+
+    /// <summary>
+    /// Hides the item from the small breakpoint upwards, and false shows it again from there.
+    /// </summary>
+    public bool? HiddenSm { get; set; }
+
+    /// <summary>
+    /// Hides the item from the medium breakpoint upwards, and false shows it again from there.
+    /// </summary>
+    public bool? HiddenMd { get; set; }
+
+    /// <summary>
+    /// Hides the item from the large breakpoint upwards, and false shows it again from there.
+    /// </summary>
+    public bool? HiddenLg { get; set; }
+
+    /// <summary>
+    /// Hides the item from the extra large breakpoint upwards, and false shows it again from there.
+    /// </summary>
+    public bool? HiddenXl { get; set; }
+
+    /// <summary>
+    /// Hides the item from the extra extra large breakpoint upwards, and false shows it again from there.
+    /// </summary>
+    public bool? HiddenXxl { get; set; }
+
+    /// <summary>
     /// Number of columns to leave empty before the item.
     /// </summary>
     public int? Offset { get; set; }
@@ -301,6 +331,8 @@ public partial class BitGridItemParams : BitComponentBaseParams, IBitComponentPa
 
         UpdateSizingParameters(bitGridItem);
 
+        UpdateHiddenParameters(bitGridItem);
+
         UpdateOffsetParameters(bitGridItem);
 
         UpdateOrderParameters(bitGridItem);
@@ -370,6 +402,39 @@ public partial class BitGridItemParams : BitComponentBaseParams, IBitComponentPa
         if (GrowXxl.HasValue)
         {
             bitGridItem.TakeFromCascade(nameof(GrowXxl), GrowXxl.Value, static g => g.GrowXxl, static (g, v) => g.GrowXxl = v);
+        }
+    }
+
+    private void UpdateHiddenParameters(BitGridItem bitGridItem)
+    {
+        if (HiddenXs.HasValue)
+        {
+            bitGridItem.TakeFromCascade(nameof(HiddenXs), HiddenXs.Value, static g => g.HiddenXs, static (g, v) => g.HiddenXs = v);
+        }
+
+        if (HiddenSm.HasValue)
+        {
+            bitGridItem.TakeFromCascade(nameof(HiddenSm), HiddenSm.Value, static g => g.HiddenSm, static (g, v) => g.HiddenSm = v);
+        }
+
+        if (HiddenMd.HasValue)
+        {
+            bitGridItem.TakeFromCascade(nameof(HiddenMd), HiddenMd.Value, static g => g.HiddenMd, static (g, v) => g.HiddenMd = v);
+        }
+
+        if (HiddenLg.HasValue)
+        {
+            bitGridItem.TakeFromCascade(nameof(HiddenLg), HiddenLg.Value, static g => g.HiddenLg, static (g, v) => g.HiddenLg = v);
+        }
+
+        if (HiddenXl.HasValue)
+        {
+            bitGridItem.TakeFromCascade(nameof(HiddenXl), HiddenXl.Value, static g => g.HiddenXl, static (g, v) => g.HiddenXl = v);
+        }
+
+        if (HiddenXxl.HasValue)
+        {
+            bitGridItem.TakeFromCascade(nameof(HiddenXxl), HiddenXxl.Value, static g => g.HiddenXxl, static (g, v) => g.HiddenXxl = v);
         }
     }
 

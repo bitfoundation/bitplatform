@@ -12,6 +12,16 @@
     padding: rem2(8px) rem2(16px);
 }
 
+// The PublishHeight example's toolbar sticks right below the header by the height the header publishes
+// on the box that scrolls it, rather than a copy of that height.
+.publish-demo-bar {
+    position: sticky;
+    top: var(--bit-env-header-height, 0px);
+    padding: rem2(4px) rem2(16px);
+    background-color: gold;
+    color: black;
+}
+
 // A fixed or absolute header overlaps the content it covers, so the first row of these examples
 // keeps its own distance instead of hiding underneath the bar.
 .scroll-demo-row--offset {
@@ -93,11 +103,5 @@
     .custom-container {
         color: blueviolet;
         justify-content: flex-end;
-    }
-
-    // Only on the root while it is scrolled.
-    .custom-scrolled {
-        color: white;
-        background: linear-gradient(90deg, #7e57c2, #26c6da);
     }
 }

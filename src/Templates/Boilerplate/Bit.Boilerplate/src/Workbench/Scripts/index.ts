@@ -375,6 +375,8 @@ function emulateTouch() {
 
 // On the shell: refit the stages as views come and go or change size, and handle what the views report.
 if (!isPreview) {
+    takeSuggestions();
+
     new MutationObserver(scan).observe(document.body, {
         subtree: true,
         childList: true,
@@ -407,6 +409,24 @@ if (!isPreview) {
         if (event.data?.type === 'workbench-page' && frame.dataset.paneId) {
             callShell('ReportPage', String(event.data.pageKey ?? ''));
         }
+    });
+}
+
+/** Tab in an empty field takes the answer an agent suggests for it, which the field shows faded, instead of moving on. */
+function takeSuggestions() {
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Tab' || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey || event.isComposing) return;
+
+        const field = event.target;
+        if (!(field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) || field.value !== '') return;
+
+        const suggestion = field.closest<HTMLElement>('[data-suggestion]')?.dataset.suggestion;
+        if (!suggestion) return;
+
+        event.preventDefault();
+        field.value = suggestion;
+        field.setSelectionRange(suggestion.length, suggestion.length);
+        field.dispatchEvent(new Event('input', { bubbles: true }));
     });
 }
 

@@ -40,6 +40,9 @@ public static class BsqliteDbContextOptionsExtensions
     /// from a <c>BsqliteSession</c> - the session owns the transport, and an ADO.NET close is
     /// bookkeeping only.
     /// </remarks>
+    // Every overload ends here, so every context a Bsqlite app configures keeps what an AOT-compiled app needs to save
+    // an entity with a nullable property. See BsqliteAotNullableValues.
+    [DynamicDependency(nameof(BsqliteAotNullableValues.RoundTrip), typeof(BsqliteAotNullableValues))]
     public static DbContextOptionsBuilder UseBitBsqlite(
         this DbContextOptionsBuilder optionsBuilder,
         DbConnection connection,

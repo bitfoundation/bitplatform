@@ -160,7 +160,7 @@ Every component derives from `BitBhComponentBase`:
 
 Event handlers you put on a part run too: `<BitBhTab @onclick="Track">` calls `Track` and then switches the tab.
 
-Parts that host content of their own - grid cells, tree items - leave the keys and clicks of interactive content inside them alone: an input or a button in a cell keeps its Space, arrows, Enter and clicks. They listen to the library's own `@onbitbhkeydown` / `@onbitbhclick` events (`BitBhEventHandlers`), which the JS initializer registers and which say which part owns the event.
+Parts that host content of their own - grid cells, tree items - leave the keys and clicks of interactive content inside them alone: an input or a button in a cell keeps its Space, arrows, Enter and clicks. They listen to the library's own `@onbitbhkeydown` / `@onbitbhclick` events (`BitBhEventHandlers`), which the JS initializer registers and which say which part owns the event. The listbox's and the combobox's options are highlighted by the pointer through a third, `@onbitbhhover`, which the runtime sends an option once as the pointer reaches it - not with every move, and not when the keyboard scrolls it under a resting pointer.
 
 ### Positioning
 
