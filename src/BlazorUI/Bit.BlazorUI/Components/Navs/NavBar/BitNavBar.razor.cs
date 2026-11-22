@@ -611,7 +611,8 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
     // never drags the page the navbar sits on along with it.
     private async ValueTask ScrollItemElementIntoView(TItem item)
     {
-        if (Scrollable is false) return;
+        // A drawer scrolls the list it holds whether or not the bar does (see NavBar.scrollItemIntoView).
+        if (Scrollable is false && DrawerBreakpoint is null) return;
         if (_itemElements.TryGetValue(item, out var element) is false) return;
 
         try
@@ -674,7 +675,7 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
         _scrollToSelectedItem = false;
 
-        if (Scrollable is false) return;
+        if (Scrollable is false && DrawerBreakpoint is null) return;
         if (SelectedItem is null) return;
 
         try

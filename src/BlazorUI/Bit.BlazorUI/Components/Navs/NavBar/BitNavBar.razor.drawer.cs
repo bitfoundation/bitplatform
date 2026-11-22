@@ -369,19 +369,30 @@ public partial class BitNavBar<TItem>
         StateHasChanged();
     }
 
+    // Each step awaits the browser, and another pass (a render, a report of the screen) can open or close the drawer
+    // while it does: a closing pass then finds nothing taken yet and releases nothing, and the opening one goes on to
+    // take the page for a drawer that is already closed. So the state is read again once the steps are done, and they
+    // are run again for it until it holds still.
     private async Task UpdateModalState()
     {
-        if (_IsModalDrawer)
+        while (true)
         {
-            await StoreFocusOrigin();
-            await LockScroll();
-            await SetupFocusTrap();
-        }
-        else
-        {
-            await DisposeFocusTrap();
-            await UnlockScroll();
-            await RestoreFocusOrigin();
+            var modal = _IsModalDrawer;
+
+            if (modal)
+            {
+                await StoreFocusOrigin();
+                await LockScroll();
+                await SetupFocusTrap();
+            }
+            else
+            {
+                await DisposeFocusTrap();
+                await UnlockScroll();
+                await RestoreFocusOrigin();
+            }
+
+            if (_IsModalDrawer == modal) return;
         }
     }
 

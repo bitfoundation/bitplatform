@@ -596,7 +596,8 @@ $nbr-drawer-queries: (
     }
 
     // The items run down the drawer from its top, each one a row of its icon and its text: the drawer scrolls them
-    // itself, whatever the bar does with them.
+    // itself, whatever the bar does with them. The drawer qualifies the item through :where(), so the rule weighs the
+    // single class of the item and the class an app hands it (Classes.Item) keeps winning over it.
     > .bit-nbr-drw > .bit-nbr-cnt {
         flex: 0 0 auto;
         overflow: visible;
@@ -608,7 +609,7 @@ $nbr-drawer-queries: (
         flex: 0 0 auto;
     }
 
-    > .bit-nbr-drw .bit-nbr-itm {
+    > :where(.bit-nbr-drw) .bit-nbr-itm {
         text-align: start;
         flex-direction: row;
         justify-content: flex-start;
@@ -675,7 +676,8 @@ $nbr-drawer-queries: (
         @include focus-ring-own(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color)));
     }
 
-    &:disabled {
+    &:disabled,
+    &[aria-disabled="true"] {
         cursor: default;
         color: var(--bit-nbr-clr-dis, var(--bit-NavBar-disabled-color, #{$clr-pri-dis-text}));
     }
@@ -955,7 +957,8 @@ $nbr-drawer-queries: (
         border-inline-start: $shp-border-width $shp-border-style CanvasText;
     }
 
-    .bit-nbr-tgl:disabled {
+    .bit-nbr-tgl:disabled,
+    .bit-nbr-tgl[aria-disabled="true"] {
         color: GrayText;
     }
 

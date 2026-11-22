@@ -50,21 +50,23 @@
             if (!target) return;
 
             try {
-                const containerRect = container.getBoundingClientRect();
+                // The list of a navbar folded into its drawer runs down the drawer, which is what scrolls it.
+                const viewport = NavBar.drawerBox(container) ?? container;
+                const viewportRect = viewport.getBoundingClientRect();
                 const itemRect = target.getBoundingClientRect();
 
                 // A rail scrolls down its own length and a bar across it, and only one of the two axes ever
                 // overflows, so each is corrected on its own and the other one stays where it is.
-                if (itemRect.top < containerRect.top) {
-                    container.scrollTop -= (containerRect.top - itemRect.top);
-                } else if (itemRect.bottom > containerRect.bottom) {
-                    container.scrollTop += (itemRect.bottom - containerRect.bottom);
+                if (itemRect.top < viewportRect.top) {
+                    viewport.scrollTop -= (viewportRect.top - itemRect.top);
+                } else if (itemRect.bottom > viewportRect.bottom) {
+                    viewport.scrollTop += (itemRect.bottom - viewportRect.bottom);
                 }
 
-                if (itemRect.left < containerRect.left) {
-                    container.scrollLeft -= (containerRect.left - itemRect.left);
-                } else if (itemRect.right > containerRect.right) {
-                    container.scrollLeft += (itemRect.right - containerRect.right);
+                if (itemRect.left < viewportRect.left) {
+                    viewport.scrollLeft -= (viewportRect.left - itemRect.left);
+                } else if (itemRect.right > viewportRect.right) {
+                    viewport.scrollLeft += (itemRect.right - viewportRect.right);
                 }
             } catch (e) { console.error('BitBlazorUI.NavBar.scrollItemIntoView:', e); }
         }
@@ -88,6 +90,9 @@
                 // navbar with a DrawerBreakpoint rather than right in the root, so the root is looked up.
                 const root = container.closest('.bit-nbr');
                 if (!root || !root.classList.contains('bit-nbr-scr') || root.classList.contains('bit-nbr-vrt')) return;
+
+                // Folded into its drawer, the list runs down the drawer, whose own vertical scroll the wheel is.
+                if (NavBar.drawerBox(container)) return;
 
                 const max = container.scrollWidth - container.clientWidth;
                 if (max <= 0) return;
@@ -115,6 +120,16 @@
             }, { passive: false });
         }
 
+
+        // The drawer of a navbar with a DrawerBreakpoint, while it is a box of its own: on the screens the navbar is a bar
+        // on, the drawer is display: contents, which lays out no box and so reports no client rects. Read off the layout
+        // rather than a class, since until the browser has reported the screen the shape is a media query of the
+        // stylesheet (bit-nbr-dq-*).
+        private static drawerBox(container: HTMLElement): HTMLElement | null {
+            const drawer = container.parentElement;
+
+            return drawer?.classList.contains('bit-nbr-drw') && drawer.getClientRects().length > 0 ? drawer : null;
+        }
 
         private static hasVerticalScroller(target: Element | null, container: HTMLElement, deltaY: number): boolean {
             for (let el = target; el && el !== container; el = el.parentElement) {
