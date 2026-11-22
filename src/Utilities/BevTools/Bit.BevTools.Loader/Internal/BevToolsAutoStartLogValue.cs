@@ -17,6 +17,14 @@ internal readonly struct BevToolsAutoStartLogValue
     /// </summary>
     internal const int MaxTextLength = 500;
 
+    /// <summary>
+    /// The longest string value kept as itself. Not <see cref="MaxTextLength"/>: a string is shown as a value, and EF
+    /// Core's SQL - which the session keeps up to 4000 characters - is one. Twice that, as the entry's message, so a
+    /// credential at the end keeps what makes it recognisable to the redaction that runs once a session takes it over.
+    /// A longer string is clipped with a trailing "…", which says it is not whole.
+    /// </summary>
+    internal const int MaxStringLength = BevToolsAutoStartLogProvider.MaxMessageLength;
+
     private BevToolsAutoStartLogValue(string name, object? value, Type? objectType, string? text, int? count)
     {
         Name = name;
@@ -45,13 +53,18 @@ internal readonly struct BevToolsAutoStartLogValue
 
     public static BevToolsAutoStartLogValue Capture(string name, object? value)
     {
+        if (value is string text && text.Length > MaxStringLength)
+        {
+            return new(name, BevToolsAutoStartLogProvider.Clip(text, MaxStringLength), null, null, null);
+        }
+
         if (IsScalar(value))
         {
             return new(name, value, null, null, null);
         }
 
-        var text = SafeToString(value!);
-        return new(name, null, value!.GetType(), text.Length <= MaxTextLength ? text : null, value is ICollection collection ? SafeCount(collection) : null);
+        var summary = SafeToString(value!);
+        return new(name, null, value!.GetType(), summary.Length <= MaxTextLength ? summary : null, value is ICollection collection ? SafeCount(collection) : null);
     }
 
     /// <summary>
@@ -62,11 +75,13 @@ internal readonly struct BevToolsAutoStartLogValue
 
     /// <summary>
     /// Values whose instances never change and reference nothing else: keeping one keeps nothing alive and shows it as
-    /// it was. The inspector describes each of them from the value alone.
+    /// it was. The inspector describes each of them from the value alone. <see cref="Uri"/> is not sealed: only the
+    /// exact type is, a subclass can carry state of its own.
     /// </summary>
     internal static bool IsScalar(object? value) => value is null or string or bool or char or byte or sbyte or short or ushort or int or uint or long
         or ulong or float or double or decimal or nint or nuint or Half or Int128 or UInt128 or DateTime or DateTimeOffset or DateOnly or TimeOnly
-        or TimeSpan or Guid or Version or Uri or Enum;
+        or TimeSpan or Guid or Version or Enum
+        || value.GetType() == typeof(Uri);
 
     internal static string SafeToString(object value)
     {

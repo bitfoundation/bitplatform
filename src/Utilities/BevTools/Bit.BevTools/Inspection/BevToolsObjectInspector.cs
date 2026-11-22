@@ -148,6 +148,13 @@ public sealed class BevToolsObjectInspector
             : new BevToolsInspectedNode(name, typeName, BevToolsRedactor.HiddenValue, BevToolsNodeKind.Redacted, "", false);
     }
 
+    /// <summary>
+    /// Whether a value of the type may be shown by its <c>ToString</c>: not when a member of it would be redacted, since
+    /// a record or a ToString override prints its members. The rule every object summary follows, for a text read
+    /// outside the inspector (a log scope's).
+    /// </summary>
+    internal bool MayShowToString(Type type) => !HasSensitiveMember(type);
+
     /// <summary><see cref="Summarize"/> over the text a value's <c>ToString</c> gave when it was logged.</summary>
     private string SummarizeDetached(Type type, string? text)
     {

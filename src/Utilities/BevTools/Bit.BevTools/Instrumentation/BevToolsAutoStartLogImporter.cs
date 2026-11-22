@@ -154,8 +154,8 @@ internal static class BevToolsAutoStartLogImporter
         var template = entry.Template is null || (access == BevToolsValueAccess.None && values is null) ? null : BevToolsRedactor.RedactText(entry.Template);
         string? message = access == BevToolsValueAccess.None
             ? null
-            : rebuild && template is not null
-                ? BevToolsLoggerProvider.Render(template, values)
+            : rebuild
+                ? template is not null ? BevToolsLoggerProvider.Render(template, values) : BevToolsLoggerProvider.RenderWithoutTemplate(values)
                 : BevToolsRedactor.RedactText(entry.Formatted ?? "");
 
         return new BevToolsLogRecord
@@ -222,7 +222,7 @@ internal static class BevToolsAutoStartLogImporter
             {
                 line = scope.IsString ? "string" : scope.Type is { } type ? BevToolsTypeNames.Short(type) : "";
             }
-            else if (scope.IsString || access == BevToolsValueAccess.Full)
+            else if (scope.IsString || (access == BevToolsValueAccess.Full && (scope.Type is null || inspector.MayShowToString(scope.Type))))
             {
                 line = BevToolsRedactor.RedactText(scope.Text ?? "");
             }

@@ -125,6 +125,14 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
         return BevToolsRedactor.RedactText(sb.ToString());
     }
 
+    /// <summary>
+    /// The message of an entry whose logger text holds more than may be shown and that has no template to rebuild it
+    /// from (a state of the app's own type): its values as its properties show them, or hidden when it has none. Never
+    /// the formatter's text, which may print a value redacted here or an object only its type may stand for.
+    /// </summary>
+    internal static string RenderWithoutTemplate(List<(string Name, object? Value, BevToolsInspectedNode Node)>? values) =>
+        values is null ? BevToolsRedactor.HiddenValue : string.Join(", ", values.Select(v => v.Name + "=" + Unquoted(v.Node)));
+
     internal static string Unquoted(BevToolsInspectedNode node) =>
         node.Kind == BevToolsNodeKind.String && node.Display.Length >= 2 && node.Display[0] == '"' && node.Display[^1] == '"'
             ? node.Display[1..^1]
@@ -333,9 +341,9 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
             {
                 message = null;
             }
-            else if (rebuild && template is not null)
+            else if (rebuild)
             {
-                message = Render(template, values);
+                message = template is not null ? Render(template, values) : RenderWithoutTemplate(values);
             }
             else
             {
@@ -425,7 +433,9 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
 
             return scope is string text
                 ? BevToolsRedactor.RedactText(text)
-                : inspector.ValueAccess == BevToolsValueAccess.Full ? BevToolsRedactor.RedactText(Safe(scope.ToString) ?? "") : BevToolsTypeNames.Short(scope.GetType());
+                : inspector.ValueAccess == BevToolsValueAccess.Full && inspector.MayShowToString(scope.GetType())
+                    ? BevToolsRedactor.RedactText(Safe(scope.ToString) ?? "")
+                    : BevToolsTypeNames.Short(scope.GetType());
         }
 
         private static string DescribeException(Exception exception)

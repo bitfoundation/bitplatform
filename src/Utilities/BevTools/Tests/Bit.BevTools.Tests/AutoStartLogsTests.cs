@@ -1,5 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
+using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -124,6 +126,45 @@ public class AutoStartLogsTests
         // An object is shown as the inspector shows it - its ToString when short and clean - unless a member is sensitive.
         Assert.AreEqual("AutoStartPoint { X = 1, Y = 2 }", position.Properties.Single(p => p.Key == "Position").Value);
         Assert.AreEqual(nameof(AutoStartGrant), position.Properties.Single(p => p.Key == "Grant").Value);
+    }
+
+    [TestMethod]
+    public async Task A_scope_with_a_sensitive_member_and_a_state_without_a_template_show_nothing_their_text_would()
+    {
+        using var provider = Build(o => o.AutoStart = BevToolsAutoStart.Logs);
+        var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Accounts");
+        using (logger.BeginScope(new AutoStartGrant("ada", "h-123")))
+        {
+            logger.Log(LogLevel.Information, default, new List<KeyValuePair<string, object?>> { new("User", "ada"), new("Password", "hunter2") }, null,
+                (state, _) => string.Join(" ", state.Select(p => p.Key + ":" + p.Value)));
+        }
+
+        using var scope = provider.CreateScope();
+        var session = await OpenAsync(scope);
+
+        var log = Assert.ContainsSingle(session.Logs.Snapshot());
+        Assert.AreEqual(nameof(AutoStartGrant), Assert.ContainsSingle(log.Scopes));
+        Assert.AreEqual("User=ada, Password=" + BevToolsRedactor.RedactedValue, log.Message);
+    }
+
+    [TestMethod]
+    public void Long_strings_and_exception_messages_are_kept_clipped_and_a_Uri_subclass_by_its_type()
+    {
+        using var provider = Build(o => o.AutoStart = BevToolsAutoStart.Logs);
+        var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Http");
+        var body = new string('x', BevToolsAutoStartLogValue.MaxStringLength * 3);
+        logger.LogWarning(new InvalidOperationException(body, new TimeoutException(body)), "Got {Body} from {Address} and {Plain}", body, new AutoStartUri("https://example.test/"), new Uri("https://example.test/"));
+
+        var entry = Assert.ContainsSingle(Context(provider).AutoStartLogs!.Take(provider, out _, out _, out _)!);
+
+        var kept = (string)entry.Values[0].Value!;
+        Assert.AreEqual(BevToolsAutoStartLogValue.MaxStringLength, kept.Length);
+        StringAssert.EndsWith(kept, "…", "a clipped value says it is not whole");
+        Assert.IsTrue(entry.ExceptionMessages!.All(m => m.Message!.Length == BevToolsAutoStartLogProvider.MaxMessageLength && m.Message.EndsWith('…')));
+        Assert.AreEqual(typeof(TimeoutException).FullName, entry.ExceptionMessages![1].Type);
+        Assert.IsNull(entry.Values[1].Value, "a subclass can hold anything: only the exact Uri is kept as itself");
+        Assert.AreEqual(typeof(AutoStartUri), entry.Values[1].ObjectType);
+        Assert.IsInstanceOfType<Uri>(entry.Values[2].Value);
     }
 
     [TestMethod]
@@ -487,6 +528,65 @@ public class AutoStartLogsTests
         Assert.AreEqual(BevToolsCapabilityStatus.RequiresInstrumentation, session.Capabilities.Single(c => c.Name == Feature).Status);
     }
 
+    [TestMethod]
+    public async Task The_panel_attaching_to_a_circuit_renderer_hands_over_that_circuit_entries_once()
+    {
+        using var context = new BunitContext();
+        context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var module = context.JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
+        module.Setup<BevToolsBrowserSnapshot>("attach", _ => true).SetResult(new BevToolsBrowserSnapshot { Online = true, Visibility = "visible" });
+        module.Setup<string?>("loadPrefs", _ => true).SetResult("""{"open":false}""");
+        // bUnit registers a logger factory that drops everything; the app's is a real one, with its providers.
+        context.Services.AddLogging();
+        context.Services.Replace(Microsoft.Extensions.DependencyInjection.ServiceDescriptor.Singleton<ILoggerFactory, LoggerFactory>());
+        context.Services.AddSingleton<IHostEnvironment>(new AutoStartEnvironment("Development"));
+        context.Services.AddSingleton<Microsoft.AspNetCore.Hosting.Server.IServer>(_ => throw new InvalidOperationException("not resolved"));
+        context.Services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AutoStart = BevToolsAutoStart.Logs;
+        });
+        context.UseRenderer("Server");
+        var logger = context.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Circuit");
+        using var other = context.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+        var previous = SynchronizationContext.Current;
+        try
+        {
+            RunOn(new SynchronizationContext(), other, () => logger.LogInformation("Another circuit"));
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        var cut = context.Render<LoaderHost>();
+        await cut.InvokeAsync(() => logger.LogInformation("This circuit, before the attach"));
+        Assert.IsTrue(await context.Renderer.Dispatcher.InvokeAsync(() => cut.Instance.Loader.OpenAsync()));
+        var session = cut.Instance.Session;
+        try
+        {
+            cut.WaitForAssertion(() => Assert.IsNull(session.Attachment!.PendingLogsBeforeAttach, "the panel attached the session to its renderer"));
+
+            var handed = Assert.ContainsSingle(session.Logs.Snapshot());
+            Assert.IsTrue(handed.BeforeAttach);
+            Assert.AreEqual("This circuit, before the attach", handed.Message, "the other circuit's entries are not this session's");
+            Assert.AreEqual(BevToolsCapabilityStatus.Partial, session.Capabilities.Single(c => c.Name == Feature).Status);
+
+            await cut.InvokeAsync(cut.Instance.ShowLateChild);
+            await cut.InvokeAsync(() => logger.LogInformation("This circuit, after the attach"));
+
+            var logs = session.Logs.Snapshot();
+            Assert.HasCount(2, logs, "a later render hands nothing over again");
+            Assert.IsFalse(logs[1].BeforeAttach);
+            Assert.AreEqual("Another circuit", Assert.ContainsSingle(context.Services.GetRequiredService<BevToolsLoaderContext>().AutoStartLogs!.Take(other.ServiceProvider, out _, out _, out _)!).Formatted,
+                "still the other circuit's, for its own session");
+        }
+        finally
+        {
+            session.Dispose();
+        }
+    }
+
     private static ServiceProvider Build(Action<BevToolsLoaderOptions>? configure = null, string? environment = null)
     {
         var services = Services(environment);
@@ -558,6 +658,8 @@ public class AutoStartLogsTests
     private sealed record AutoStartGrant(string User, [property: BevToolsSensitive] string Handle);
 
     private sealed record AutoStartCart(List<AutoStartPoint> Items);
+
+    private sealed class AutoStartUri(string address) : Uri(address);
 
     /// <summary>An entity whose ToString would cost something real (a lazy load, a query), and says when it was asked.</summary>
     private sealed class AutoStartLazyOrder

@@ -57,6 +57,16 @@ internal static class BevToolsRuntimeAttacher
         // of the process shares: a slow factory must not hold up every other circuit, nor one that waits on another
         // attach deadlock it.
         var session = Create(services, configure, loader, openedByLoader);
+
+        // Decided before the session is published: another attach of this scope returns it as soon as it is, and its
+        // panel may attach it to the renderer before this one goes on, which would find nothing to take over. Nothing is
+        // taken here, so a session that loses the race below takes nothing with it.
+        var perScope = session.IsEnabled && loader?.AutoStartLogs is { } autoStartLogs && autoStartLogs.KeepsPerScope(services);
+        if (perScope)
+        {
+            session.Attachment!.PendingLogsBeforeAttach = loader;
+        }
+
         lock (Lock)
         {
             if (Find(services) is { } raced)
@@ -78,19 +88,11 @@ internal static class BevToolsRuntimeAttacher
             // the loader keeping more, so none is kept twice, and only an entry another thread logs in the instant
             // between the two is kept by neither. In a process that serves one user that is now (the only session owns
             // everything; WebAssembly has no other thread); per circuit it is once the panel attaches the session to the
-            // renderer and it knows the dispatcher, until when the loader keeps them.
-            BevToolsAutoStartLogImporter.Handover? handover = null;
-            if (loader?.AutoStartLogs is { } autoStartLogs && autoStartLogs.KeepsPerScope(services))
-            {
-                attachment.PendingLogsBeforeAttach = loader;
-            }
-            else
-            {
-                handover = BevToolsAutoStartLogImporter.Take(session, loader);
-            }
-
+            // renderer and it knows the dispatcher, until when the loader keeps them (PendingLogsBeforeAttach, set above;
+            // a panel may have taken it over already).
+            var handover = perScope ? null : BevToolsAutoStartLogImporter.Take(session, loader);
             attachment.LoggerProviderAdded = AddLoggerProvider(services, session.Registry);
-            if (attachment.PendingLogsBeforeAttach is null)
+            if (!perScope)
             {
                 attachment.LogsBeforeAttach = BevToolsAutoStartLogImporter.Complete(session, handover, out var handedOver);
                 attachment.LogsBeforeAttachHandedOver = handedOver;

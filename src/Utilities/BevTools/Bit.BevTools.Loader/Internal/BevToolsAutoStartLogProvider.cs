@@ -49,6 +49,9 @@ internal sealed class BevToolsAutoStartLogProvider(BevToolsAutoStartLogs logs) :
     {
     }
 
+    /// <summary>The text cut to <paramref name="max"/> characters, the last of them a "…" that says it is not whole.</summary>
+    internal static string Clip(string text, int max) => text.Length <= max ? text : text[..(max - 1)] + "…";
+
     private sealed class CaptureLogger(BevToolsAutoStartLogProvider provider, string category) : ILogger
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => provider._scopes?.Push(state);
@@ -165,20 +168,19 @@ internal sealed class BevToolsAutoStartLogProvider(BevToolsAutoStartLogs logs) :
         }
 
         // Message is virtual, the app's code, and often carries the values the entry would have: where values are not
-        // read, only the types are kept. InnerException is read either way, as the framework's own field.
+        // read, only the types are kept. InnerException is read either way, as the framework's own field. Each message is
+        // clipped as the entry's own is, so an exception that carries a whole response body is not kept whole.
         private static List<(string? Type, string? Message)> ReadException(Exception exception, bool read)
         {
-            List<(string? Type, string? Message)> messages = [(null, read ? exception.Message : null)];
+            List<(string? Type, string? Message)> messages = [(null, read ? Clip(exception.Message, MaxMessageLength) : null)];
             var inner = exception.InnerException;
             for (var hops = 0; inner is not null && hops < MaxInnerExceptions; hops++, inner = inner.InnerException)
             {
-                messages.Add((inner.GetType().FullName, read ? inner.Message : null));
+                messages.Add((inner.GetType().FullName, read ? Clip(inner.Message, MaxMessageLength) : null));
             }
 
             return messages;
         }
-
-        private static string Clip(string text, int max) => text.Length <= max ? text : text[..(max - 1)] + "…";
 
         private static string Safe(Func<string?> read)
         {
