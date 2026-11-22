@@ -69,6 +69,42 @@ public class BitHeaderStylesheetTests
         Assert.IsFalse(stylesheet.Contains("\n.bit-hdr-brd {"), "A rule of every variant draws the divider.");
     }
 
+    [TestMethod,
+        DataRow("\n.bit-hdr-scr:where(.bit-hdr-fil) {", "fill", "background"),
+        DataRow("\n.bit-hdr-trs.bit-hdr-scr:where(.bit-hdr-fil) {", "fill", "background"),
+        DataRow("\n.bit-hdr-scr:where(.bit-hdr-otl) {", "outline", "border-color"),
+        DataRow("\n.bit-hdr-brd:where(.bit-hdr-fil.bit-hdr-scr) {", "fill", "border-color"),
+        DataRow("\n.bit-hdr-brd:where(.bit-hdr-txt.bit-hdr-scr) {", "text", "border-color")]
+    public void BitHeaderShouldReadTheScrolledTierAheadOfTheRestingOne(string selector, string variant, string name)
+    {
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), selector);
+        var color = name == "background" ? "--bit-hdr-bg" : "--bit-hdr-brd";
+
+        // A scrolled header reads the scrolled tier (the variant's own, then the shared one) ahead of the resting
+        // variables, which stay its fallback - so a scrolled variable left unset changes nothing - and an explicit
+        // Color, published privately, still wins over all of them.
+        StringAssert.Contains(block, $"var({color}, var(--bit-Header-{variant}-scrolled-{name}, var(--bit-Header-scrolled-{name}, var(--bit-Header-{variant}-{name}, var(--bit-Header-{name}, ");
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldTransitionWhatTheScrolledStateChanges()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The scrolled fill and border fade in with the shadow, also on a header that slides (whose own transition list
+        // would otherwise replace the scroll one).
+        foreach (var selector in new[] { "\n.bit-hdr-esc {", "\n.bit-hdr-anm.bit-hdr-esc {" })
+        {
+            var block = SourceFiles.GetScssBlock(stylesheet, selector);
+
+            StringAssert.Contains(block, "box-shadow $mot-duration $mot-easing");
+            StringAssert.Contains(block, "background-color $mot-duration $mot-easing");
+            StringAssert.Contains(block, "border-color $mot-duration $mot-easing");
+        }
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-anm.bit-hdr-esc {"), "transform $mot-duration $mot-easing");
+    }
+
     [TestMethod]
     public void BitHeaderShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
     {

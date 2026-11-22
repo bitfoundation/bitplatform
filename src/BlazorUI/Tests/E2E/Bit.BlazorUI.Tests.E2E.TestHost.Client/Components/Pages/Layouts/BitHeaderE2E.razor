@@ -192,6 +192,17 @@
             <div class="hdr-row">Row @i</div>
         }
     </div>
+    <div class="hdr-scroll" id="scrolled-style-box">
+        <BitHeader Id="scrolled-style-header" Sticky Bordered ElevateOnScroll
+                   Classes="@(new() { Scrolled = "app-scrolled" })"
+                   Style="--bit-Header-background: transparent; --bit-Header-border-color: transparent; --bit-Header-shadow: none; --bit-Header-scrolled-background: rgb(255, 0, 0); --bit-Header-scrolled-border-color: rgb(0, 0, 255);">
+            see-through until scrolled
+        </BitHeader>
+        @for (var i = 1; i <= 20; i++)
+        {
+            <div class="hdr-row">Row @i</div>
+        }
+    </div>
 </E2ESection>
 
 <E2ESection Id="scroll-target" Title="ScrollTarget">

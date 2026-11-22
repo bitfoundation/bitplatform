@@ -448,6 +448,37 @@ public class BitHeaderE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task ElevateOnScroll_TheScrolledVariablesAndPartStyleTheScrolledStateBeyondTheShadow()
+    {
+        await OpenAsync("/e2e/header");
+
+        var header = Page.Locator("#scrolled-style-header");
+
+        // At the top the header is see-through, with no divider and no shadow.
+        await Expect(header).Not.ToHaveClassAsync(HasClass("bit-hdr-scr"));
+        await Expect(header).Not.ToHaveClassAsync(HasClass("app-scrolled"));
+        await Expect(header).ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
+        await Expect(header).ToHaveCSSAsync("border-bottom-color", "rgba(0, 0, 0, 0)");
+        await Expect(header).ToHaveCSSAsync("box-shadow", "none");
+
+        // Once content is under it, the scrolled variables take over (after their transition), and the Scrolled part
+        // lands on the root - while the shadow stays off, as the page asked.
+        await Page.Locator("#scrolled-style-box").EvaluateAsync("el => el.scrollTop = 100");
+        await Expect(header).ToHaveClassAsync(HasClass("bit-hdr-scr"));
+        await Expect(header).ToHaveClassAsync(HasClass("app-scrolled"));
+        await Expect(header).ToHaveCSSAsync("background-color", "rgb(255, 0, 0)");
+        await Expect(header).ToHaveCSSAsync("border-bottom-color", "rgb(0, 0, 255)");
+        await Expect(header).ToHaveCSSAsync("box-shadow", "none");
+
+        // Back at the top, the resting look returns.
+        await Page.Locator("#scrolled-style-box").EvaluateAsync("el => el.scrollTop = 0");
+        await Expect(header).Not.ToHaveClassAsync(HasClass("bit-hdr-scr"));
+        await Expect(header).Not.ToHaveClassAsync(HasClass("app-scrolled"));
+        await Expect(header).ToHaveCSSAsync("background-color", "rgba(0, 0, 0, 0)");
+        await Expect(header).ToHaveCSSAsync("border-bottom-color", "rgba(0, 0, 0, 0)");
+    }
+
+    [TestMethod]
     public async Task ElevateOffset_KeepsTheHeaderFlatUntilTheScrollHasPassedIt()
     {
         await OpenAsync("/e2e/header");
