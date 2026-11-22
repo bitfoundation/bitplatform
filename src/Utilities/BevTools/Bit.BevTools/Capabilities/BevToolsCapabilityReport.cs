@@ -119,6 +119,7 @@ internal static class BevToolsCapabilityReport
                     : attachment is { LoggerProviderAdded: false }
                         ? "BevTools was attached at runtime and the app's ILoggerFactory could not take its provider."
                         : "A logger provider (alias BevTools) records what is logged at " + session.Options.MinimumLogLevel + " or above while this session's code runs, after the host's logging configuration filtered it: on its dispatcher, or after an await that left it, by the UI event or navigation the work descends from (its Activity). The template's values and the scopes are read at the session's value access and redacted; under None the message is shown as its template. An application entry at Error or above is an error too. Entries written outside every session (a server's request pipeline, a hosted service) are not attributed to one."),
+            LogsBeforeAttach(session, attachment),
             new("Logging", "Component and UI event that logged", session.Options.CaptureLogCallers ? BevToolsCapabilityStatus.Available : BevToolsCapabilityStatus.Partial,
                 session.Options.CaptureLogCallers
                     ? "The component method that logged, read from the stack (a logger is called synchronously, so it is there unless the code went asynchronous first), and the UI event or navigation running then."
@@ -173,6 +174,34 @@ internal static class BevToolsCapabilityReport
     private static string JSRuntimeReadinessGap() => BevToolsBlazorReflection.JSRuntimeReadinessGaps is { Count: > 0 } gaps
         ? " Whether " + string.Join(" or ", gaps) + " can take calls yet could not be read on this framework version, so it is wrapped even before it can (while prerendering, or before the circuit connected), and a library that tells those states apart by the runtime's type cannot then."
         : "";
+
+    /// <summary>What the session knows of the entries written before it existed (<c>BevToolsLoaderOptions.AutoStart</c>).</summary>
+    private static BevToolsCapability LogsBeforeAttach(BevToolsSession session, BevToolsRuntimeAttachment? attachment)
+    {
+        const string Feature = "Entries written before BevTools started";
+        if (attachment is null)
+        {
+            // Partial, not Available: the provider was there from the start, but what it saw before this session existed
+            // is not shown here.
+            return new("Logging", Feature, session.Options.TrackLogs ? BevToolsCapabilityStatus.Partial : BevToolsCapabilityStatus.NotAvailable,
+                "BevTools was registered at startup, so its provider was in the app's logger factory from the start and this session records what is logged once it exists; what was logged before that (the host starting, a hosted service) belongs to no session and is not shown.");
+        }
+
+        if (attachment.PendingLogsBeforeAttach is not null)
+        {
+            return new("Logging", Feature, BevToolsCapabilityStatus.RequiresInstrumentation,
+                "Bit.BevTools.Loader keeps them per circuit (BevToolsLoaderOptions.AutoStart) until a panel attaches this session to its circuit's renderer, which is when they are handed over: only from then on are the circuit's entries this session's.");
+        }
+
+        if (attachment.LogsBeforeAttach is not { } note)
+        {
+            return new("Logging", Feature, BevToolsCapabilityStatus.NotAvailable, attachment.ThroughLoader
+                ? "BevTools was attached at runtime and records what is logged from then on. Set BevToolsLoaderOptions.AutoStart to BevToolsAutoStart.Logs to have Bit.BevTools.Loader capture what the app logs from startup, on its own and without the rest of BevTools, and hand it to the session that attaches."
+                : "BevTools was attached at runtime without Bit.BevTools.Loader, which is what captures logs from startup (BevToolsLoaderOptions.AutoStart): it records what is logged from the attach on.");
+        }
+
+        return new("Logging", Feature, attachment.LogsBeforeAttachHandedOver ? BevToolsCapabilityStatus.Partial : BevToolsCapabilityStatus.NotAvailable, note);
+    }
 
     private static string AttachedComponents(BevToolsRuntimeAttachment attachment)
     {

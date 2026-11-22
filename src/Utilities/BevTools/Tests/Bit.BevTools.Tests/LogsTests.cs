@@ -255,6 +255,45 @@ public class LogsTests
     }
 
     [TestMethod]
+    public void A_state_without_a_template_is_never_shown_through_its_formatter_when_a_value_is_redacted()
+    {
+        var (session, scope, factory) = Create();
+        using (scope)
+        {
+            using (session.UseAmbient())
+            {
+                factory.CreateLogger("Shop").Log(LogLevel.Information, default, new List<KeyValuePair<string, object?>> { new("User", "ada"), new("Password", "hunter2") }, null,
+                    (state, _) => string.Join(" ", state.Select(p => p.Key + ":" + p.Value)));
+            }
+
+            var log = Assert.ContainsSingle(session.Logs.Snapshot());
+            Assert.IsNull(log.MessageTemplate);
+            Assert.AreEqual("User=ada, Password=" + BevToolsRedactor.RedactedValue, log.Message);
+        }
+    }
+
+    [TestMethod]
+    public void A_scope_object_with_a_sensitive_member_is_shown_by_its_type_not_its_ToString()
+    {
+        var (session, scope, factory) = Create();
+        using (scope)
+        {
+            using (session.UseAmbient())
+            {
+                var logger = factory.CreateLogger("Shop");
+                using (logger.BeginScope(new SensitiveScope("ada", "h-123")))
+                using (logger.BeginScope(new PlainScope(7)))
+                {
+                    logger.LogInformation("Inside");
+                }
+            }
+
+            var log = Assert.ContainsSingle(session.Logs.Snapshot());
+            CollectionAssert.AreEqual(new[] { nameof(SensitiveScope), "PlainScope { Id = 7 }" }, log.Scopes.ToArray());
+        }
+    }
+
+    [TestMethod]
     public void Scopes_are_recorded_outermost_first_with_sensitive_keys_redacted()
     {
         var (session, scope, factory) = Create();
@@ -511,6 +550,10 @@ public class LogsTests
         Assert.AreEqual(LogLevel.Error, BevToolsLogLevels.Parse("4"));
         Assert.IsNull(BevToolsLogLevels.Parse("9"));
     }
+
+    private sealed record SensitiveScope(string User, [property: BevToolsSensitive] string Handle);
+
+    private sealed record PlainScope(int Id);
 
     private sealed class SecretOrder
     {

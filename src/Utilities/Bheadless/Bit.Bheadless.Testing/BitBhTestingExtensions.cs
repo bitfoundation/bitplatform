@@ -110,6 +110,17 @@ public static class BitBhTestingExtensions
             BitBhEventHandlers.Click,
             ownerId => new BitBhMouseEventArgs { Detail = 1, Button = 0, ShiftKey = shift, CtrlKey = ctrl, AltKey = alt, MetaKey = meta, Type = "click", OwnerId = ownerId });
 
+    /// <summary>
+    /// The pointer reaching a list option (a listbox's, a combobox's) the way the runtime reports it in a browser: the
+    /// library's own <c>onbitbhhover</c> (see <see cref="BitBhEventHandlers"/>), which options highlight on. bUnit's
+    /// <c>PointerEnter()</c> and <c>PointerMove()</c> reach no handler of theirs.
+    /// </summary>
+    public static void PointerHover(this IElement element)
+    {
+        if (HasHandler(element, BitBhEventHandlers.Hover) is false) throw new MissingEventHandlerException(element, BitBhEventHandlers.Hover);
+        Await(element.TriggerEventAsync(BitBhEventHandlers.Hover, EventArgs.Empty));
+    }
+
     // The runtime's rule (Scripts/Bit.Bheadless.lib.module.ts): the nearest owner around the target,
     // unless interactive content nested in it comes first. A label counts, since it activates its control.
     private const string Interactive =

@@ -19,14 +19,16 @@ namespace Bit.BlazorUI.Tests.Components.Navs.NavBar;
 public class BitNavBarParamsTests : BunitTestContext
 {
     // What is typed over the item type - the items, the selection, the item template, the name selectors and the
-    // callbacks - and the header and footer content belong to one navbar, so they have no place on the params object,
-    // which is what lets one non-generic object fit every navbar whatever it is generic over.
+    // callbacks - the header and footer content and the open state of the drawer belong to one navbar, so they have no
+    // place on the params object, which is what lets one non-generic object fit every navbar whatever it is generic over.
     private static readonly string[] _notCascaded =
     [
         nameof(BitNavBar<BitNavBarItem>.CascadingParameters),
         nameof(BitNavBar<BitNavBarItem>.ChildContent),
         nameof(BitNavBar<BitNavBarItem>.DefaultSelectedItem),
         nameof(BitNavBar<BitNavBarItem>.DefaultSelectedKey),
+        nameof(BitNavBar<BitNavBarItem>.DrawerOpen),
+        nameof(BitNavBar<BitNavBarItem>.DrawerOpenChanged),
         nameof(BitNavBar<BitNavBarItem>.FooterTemplate),
         nameof(BitNavBar<BitNavBarItem>.HeaderTemplate),
         nameof(BitNavBar<BitNavBarItem>.Items),

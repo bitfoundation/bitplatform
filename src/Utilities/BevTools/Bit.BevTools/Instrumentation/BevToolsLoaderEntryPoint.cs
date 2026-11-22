@@ -59,6 +59,9 @@ internal sealed class BevToolsLoaderEntryPoint : IBevToolsEntryPoint
     {
         to.UseFrameworkInstrumentation = from.UseFrameworkInstrumentation;
         to.TrackHttp = from.TrackHttp;
+        // Also what BevToolsAutoStart.Logs captured by before the attach, so the session goes on from the same level and bound.
+        to.MinimumLogLevel = from.MinimumLogLevel;
+        to.MaxLogs = from.MaxLogs;
         to.Ui.ShowBadge = from.ShowBadge;
         if (from.ToggleShortcut is { Length: > 0 } shortcut)
         {

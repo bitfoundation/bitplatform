@@ -63,6 +63,22 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "DrawerBreakpoint",
+            Type = "BitScreenQuery?",
+            DefaultValue = "null",
+            Description = "The screens on which the navbar folds its items into a drawer: while the screen matches this query (built from the live theme breakpoints), the bar keeps its header and footer and shows a toggle button instead of its items, and the button opens the same items in a column from the end edge of the screen. The open drawer is a modal dialog over an overlay that holds the page from scrolling and the focus inside, and it closes on an item click, the overlay, the toggle and Escape. Until the browser answers the query, the stylesheet resolves it at the default breakpoints, so a prerendered page has its shape from the start. Unset, the navbar never folds.",
+            LinkType = LinkType.Link,
+            Href = "/components/mediaquery#screen-query-enum",
+        },
+        new()
+        {
+            Name = "DrawerOpen",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Whether the drawer of a navbar folded by its DrawerBreakpoint is open (two-way bindable). It has no effect on the screens the navbar is a bar on, and a screen that grows out of the drawer closes it.",
+        },
+        new()
+        {
             Name = "Filled",
             Type = "bool",
             DefaultValue = "false",
@@ -294,6 +310,29 @@ public partial class BitNavBarDemo
         },
         new()
         {
+            Name = "ToggleAriaLabel",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The aria-label and the tooltip of the toggle button that opens and closes the drawer (see DrawerBreakpoint), which also names the drawer. Defaults to BitStrings.Menu (\"Menu\").",
+        },
+        new()
+        {
+            Name = "ToggleIcon",
+            Type = "BitIconInfo?",
+            DefaultValue = "null",
+            Description = "The icon of the toggle button that opens and closes the drawer, from any icon library. Takes precedence over ToggleIconName. While neither is set, the button draws the three bars of a menu button.",
+            LinkType = LinkType.Link,
+            Href = "#bit-icon-info",
+        },
+        new()
+        {
+            Name = "ToggleIconName",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The name of the built-in icon of the toggle button that opens and closes the drawer.",
+        },
+        new()
+        {
             Name = "Vertical",
             Type = "bool",
             DefaultValue = "false",
@@ -356,6 +395,10 @@ public partial class BitNavBarDemo
         new() { Name = "--bit-NavBar-badge-background", DefaultValue = "--bit-clr-err", Description = "Fill of a badge and a dot." },
         new() { Name = "--bit-NavBar-disabled-color", DefaultValue = "--bit-clr-pri-dis-text", Description = "Content color of a disabled item. The Color parameter wins over it." },
         new() { Name = "--bit-NavBar-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Color of the focus ring of an item. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too." },
+        new() { Name = "--bit-NavBar-drawer-background", DefaultValue = "--bit-clr-bg-pri", Description = "Fill of the drawer the DrawerBreakpoint folds the items into." },
+        new() { Name = "--bit-NavBar-drawer-width", DefaultValue = "spacing(40)", Description = "Width of that drawer, which is never wider than the screen." },
+        new() { Name = "--bit-NavBar-drawer-shadow", DefaultValue = "--bit-shd-sheet", Description = "Elevation of that drawer." },
+        new() { Name = "--bit-NavBar-overlay-background", DefaultValue = "--bit-clr-bg-overlay", Description = "Fill of the overlay behind the open drawer." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -950,6 +993,13 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Drawer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the drawer of the BitNavBar, which holds the container of the items below the DrawerBreakpoint."
+               },
+               new()
+               {
                    Name = "Footer",
                    Type = "string?",
                    DefaultValue = "null",
@@ -1006,10 +1056,24 @@ public partial class BitNavBarDemo
                },
                new()
                {
+                   Name = "Overlay",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the overlay rendered behind the open drawer of the BitNavBar."
+               },
+               new()
+               {
                    Name = "SelectedItem",
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the selected item of the BitNavBar."
+               },
+               new()
+               {
+                   Name = "ToggleButton",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the toggle button that opens and closes the drawer of the BitNavBar."
                },
             ]
         }

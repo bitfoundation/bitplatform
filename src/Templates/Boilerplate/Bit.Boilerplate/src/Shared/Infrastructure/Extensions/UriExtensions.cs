@@ -117,8 +117,30 @@ public static partial class UriExtensions
         /// <summary>
         /// The absolute url without query or fragment. The culture segment is KEPT: each culture is a document of
         /// its own, declared to the others through hreflang (See Server.Web's <c>App.razor</c>).
+        /// <br/>
+        /// A trailing slash, which routing ignores, is dropped, so <c>/en-US/terms/</c> names <c>/en-US/terms</c> as the
+        /// one address of the page rather than being a second one. The home page keeps the slash the sitemap lists it
+        /// with: <c>/en-US</c> and <c>/en-US/</c> are both <c>/en-US/</c>.
         /// </summary>
-        public string GetCanonicalUrl() => uri.GetLeftPart(UriPartial.Path);
+        public string GetCanonicalUrl() => $"{uri.GetLeftPart(UriPartial.Authority)}{Uri.GetCanonicalPath(uri.AbsolutePath)}";
+
+        /// <summary>
+        /// <paramref name="path"/> without its trailing slash, except for the home page: <c>/</c>, and <c>/{culture}/</c>
+        /// with its slash (See <see cref="GetCanonicalUrl"/>).
+        /// </summary>
+        public static string GetCanonicalPath(string path)
+        {
+            var trimmed = path.TrimEnd('/');
+
+            if (trimmed.Length is 0)
+                return "/";
+
+            // A culture's home page, /en-US or /en-US/
+            if (trimmed.LastIndexOf('/') is 0 && CultureInfoManager.InvariantGlobalization is false && CultureInfoManager.GetCultureInfo(trimmed[1..]) is not null)
+                return $"{trimmed}/";
+
+            return trimmed;
+        }
 
         public string GetPath()
         {
