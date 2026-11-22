@@ -689,6 +689,17 @@ public partial class BitHeader : BitComponentBase
             StyleBuilder.Reset();
         }
 
+        // Only an ElevateOnScroll header is told about the scroll, so one that turns it off while scrolled would
+        // never hear the state go back - the listener may well stay attached for Reveal, ScrollPadding or
+        // PublishHeight - and would keep the scrolled class, part and colors for good. It is at rest from now on.
+        if (ElevateOnScroll is false && _scrolled)
+        {
+            _scrolled = false;
+
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
+        }
+
         base.OnParametersSet();
     }
 

@@ -100,9 +100,17 @@ public class BitHeaderStylesheetTests
             StringAssert.Contains(block, "box-shadow $mot-duration $mot-easing");
             StringAssert.Contains(block, "background-color $mot-duration $mot-easing");
             StringAssert.Contains(block, "border-color $mot-duration $mot-easing");
+
+            // The content color fades with the background, so a theme switch never leaves text on the old fill.
+            StringAssert.Contains(block, ", color $mot-duration $mot-easing");
         }
 
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-anm.bit-hdr-esc {"), "transform $mot-duration $mot-easing");
+
+        // On paper the combined list, which weighs two classes, is switched off along with the single ones.
+        var print = stylesheet[stylesheet.IndexOf("@media print {", System.StringComparison.Ordinal)..];
+
+        StringAssert.Contains(print, ".bit-hdr-anm.bit-hdr-esc {");
     }
 
     [TestMethod]

@@ -22,6 +22,8 @@ public class BitHeaderClassStyles
     /// Custom CSS classes/styles applied to the root element of the BitHeader while it is scrolled, which is
     /// while <see cref="BitHeader.IsScrolled"/> is true (an <see cref="BitHeader.ElevateOnScroll"/> header
     /// whose scrolling area has travelled past the <see cref="BitHeader.ElevateOffset"/>).
+    /// On a <see cref="BitHeader.Translucent"/> header, a rule of a single class does not outweigh the translucent
+    /// background, so a class restyling it there needs a heavier selector (or the scrolled CSS variables).
     /// </summary>
     public string? Scrolled { get; set; }
 

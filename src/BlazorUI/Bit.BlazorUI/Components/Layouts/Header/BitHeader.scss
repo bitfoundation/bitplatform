@@ -198,6 +198,8 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 // so an explicit Color still wins and a scrolled variable left unset changes nothing.
 // The state class carries the weight of one class and the variant costs none, so these rules weigh no more than the
 // ones they follow - an app's single class still restyles them - and the disabled rules, heavier, keep winning.
+// The Translucent one is the exception: it has to outweigh the two class resting rule of a Translucent header, so,
+// like that rule, it takes more than a single class of the app to restyle.
 .bit-hdr-scr:where(.bit-hdr-fil) {
     background-color: var(--bit-hdr-bg, var(--bit-Header-fill-scrolled-background, var(--bit-Header-scrolled-background, var(--bit-Header-fill-background, var(--bit-Header-background, #{$clr-bg-pri})))));
 }
@@ -365,8 +367,10 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 
 // What only shows up once the page has been scrolled - the shadow, and the scrolled fill and border - has to arrive
 // gradually, or the header snaps from flat to lifted on the very first pixel of a scroll.
+// A fading background fades on any change, a theme switch or a new Color included, so the content color fades along
+// with it: text that flipped at once would sit on the old background, light on light, for the whole transition.
 .bit-hdr-esc {
-    transition: box-shadow $mot-duration $mot-easing, background-color $mot-duration $mot-easing, border-color $mot-duration $mot-easing;
+    transition: box-shadow $mot-duration $mot-easing, background-color $mot-duration $mot-easing, border-color $mot-duration $mot-easing, color $mot-duration $mot-easing;
 }
 
 
@@ -378,7 +382,7 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 
 // A header that both slides and follows the scroll needs both lists, since a later transition replaces an earlier one.
 .bit-hdr-anm.bit-hdr-esc {
-    transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing, background-color $mot-duration $mot-easing, border-color $mot-duration $mot-easing;
+    transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing, background-color $mot-duration $mot-easing, border-color $mot-duration $mot-easing, color $mot-duration $mot-easing;
 }
 
 // translateY is used rather than a top offset so the slide runs on the compositor, and it hides the
@@ -502,8 +506,10 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
         padding-top: 0;
     }
 
+    // The combined list of a header that both slides and follows the scroll weighs two classes, so it is named too.
     .bit-hdr-anm,
-    .bit-hdr-esc {
+    .bit-hdr-esc,
+    .bit-hdr-anm.bit-hdr-esc {
         transition: none;
     }
 

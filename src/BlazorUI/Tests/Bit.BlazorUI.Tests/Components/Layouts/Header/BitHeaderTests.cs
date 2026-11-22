@@ -917,6 +917,35 @@ public class BitHeaderTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitHeaderShouldLeaveTheScrolledStateWhenElevateOnScrollIsTurnedOff()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Scrolled = "scrolled-class" });
+            parameters.Add(p => p.Styles, new BitHeaderClassStyles { Scrolled = "color:blue" });
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(true));
+
+        Assert.IsTrue(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-scr"));
+
+        // Reveal keeps the listener attached, but the script only reports the scroll of an ElevateOnScroll header,
+        // so nothing would ever take the scrolled state back.
+        component.Render(parameters => parameters.Add(p => p.ElevateOnScroll, false));
+
+        var header = component.Find(".bit-hdr");
+
+        Assert.IsFalse(component.Instance.IsScrolled);
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-elv"));
+        Assert.IsFalse(header.ClassList.Contains("scrolled-class"));
+        Assert.IsFalse((header.GetAttribute("style") ?? string.Empty).Contains("color:blue"));
+    }
+
+    [TestMethod]
     public async Task BitHeaderShouldMarkAnElevatedHeaderAsScrolledOnlyOnceItIsScrolled()
     {
         var component = RenderComponent<BitHeader>(parameters =>
