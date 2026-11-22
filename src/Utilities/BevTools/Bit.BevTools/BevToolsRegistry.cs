@@ -105,6 +105,13 @@ public sealed class BevToolsRegistry
                 throw new ArgumentException($"Panel '{panel.Id}' component type {panel.ComponentType.Name} is not a Blazor component.");
             }
 
+            // The panel host shows a built-in panel for its id before it looks at extensions, so such a tab would open the
+            // built-in panel instead of this one.
+            if (BevToolsPanel.BuiltInPanels.Any(p => string.Equals(p.Id, panel.Id, StringComparison.Ordinal)))
+            {
+                throw new ArgumentException($"Panel id '{panel.Id}' is a built-in panel's; choose another.");
+            }
+
             Panels.RemoveAll(p => p.Id == panel.Id);
             Panels.Add(panel);
             return this;

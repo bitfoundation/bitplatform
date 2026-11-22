@@ -446,6 +446,32 @@ public sealed class MyLibraryBevTools : IBevToolsExtension
 services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()));
 ```
 
+An application adds a panel of its own - a tab that calls its own APIs, resets a cache, switches a feature flag -
+without writing an extension:
+
+```csharp
+services.AddBitBevToolsServices(o => o.AddPanel<MyApiPanel>("my-api", "My API"));
+```
+
+```razor
+@* MyApiPanel.razor *@
+@inherits BevToolsTab
+@inject MyApiClient Api
+
+<button class="bev-btn" @onclick="() => Api.ResetCacheAsync()">Reset the cache</button>
+```
+
+A panel is an ordinary component that receives no parameters: it injects the application's services and BevTools'
+ones, and inheriting `BevToolsTab` gives it the session and a re-read whenever the panel refreshes. It is BevTools' own
+UI, so its renders and clicks never show up as the application's (what it changes in the application, such as a state
+change, does). `order` places the tab among the extension panels, `requiredPlatform` limits it to one renderer
+(`"Server"`), and a built-in panel's id is refused (About lists the error). Panels are rendered by the in-app panel
+only; the companion window and the browser extension show what the protocol carries. A panel is a component, not a
+`RenderFragment` passed to `<BevToolsPanel>`, because the panel is often rendered where no parameter can reach it (by
+`BevToolsLoaderPanel`, as a WebAssembly root component, across a render mode boundary), and a fragment from the layout
+would re-render all of BevTools with it. Where BevTools runs in production (see the loader's `Authorize`), the APIs a
+panel calls check their callers on the server, as they would for any other page.
+
 Integrations ship as packages of their own: `Bit.BevTools.Blex` shows bit Blex's stores and actions in the State panel
 and restores through Blex's time travel (`services.AddBevToolsBlex()`). `Bit.BevTools.Belemetry` adds a Support panel
 for bit Belemetry's production diagnostics - its timeline and exception groups, a jump from a failure to its component

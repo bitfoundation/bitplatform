@@ -216,7 +216,10 @@ panel is shown, usually after the burst a developer opened it to look at.
 as the `IBevToolsCommandContext` to panels, hosts the refresh loop and the browser bridge, and persists preferences in
 `localStorage`. Panels are plain Blazor components reading the session directly; lists use `Virtualize`; the tree and
 command palette are keyboard-navigable; theme follows `prefers-color-scheme` unless overridden. Extension panels are
-rendered with `DynamicComponent` and can be restricted to a platform (`RequiredPlatform = "Server"`).
+rendered with `DynamicComponent` and can be restricted to a platform (`RequiredPlatform = "Server"`); an application adds
+one without an extension class through `BevToolsOptions.AddPanel<T>`, which wraps it in an internal one-panel extension.
+A panel whose id is a built-in panel's is refused (an extension error in About), since the host would show the built-in
+panel for it.
 
 ### Attaching to a running app (`Bit.BevTools.Loader`, `BevToolsRuntimeAttacher`)
 

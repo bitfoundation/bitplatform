@@ -21,6 +21,7 @@ public class ExtensibilityTests : BunitContext
             o.Enabled = true;
             o.Extensions.Add(new AcmeBevToolsExtension());
             o.Extensions.Add(new FailingCommandExtension());
+            o.AddPanel<AppApiPanel>(AppApiPanel.Id, "App API");
         });
         this.UseRenderer("Server");
         JSInterop.Mode = JSRuntimeMode.Loose;
@@ -138,6 +139,74 @@ public class ExtensibilityTests : BunitContext
 
         Assert.Contains(e => e.Contains("Broken", StringComparison.Ordinal), registry.ExtensionErrors);
         Assert.IsTrue(registry.IsEnabled);
+    }
+
+    [TestMethod]
+    public void An_application_adds_a_panel_of_its_own_through_the_options()
+    {
+        var registry = Services.GetRequiredService<BevToolsRegistry>();
+
+        var panel = Assert.ContainsSingle(p => p.Id == AppApiPanel.Id, registry.Panels);
+        Assert.AreEqual(typeof(AppApiPanel), panel.ComponentType);
+        Assert.AreEqual("App API", panel.Title);
+        Assert.Contains("App API panel", registry.ExtensionNames);
+        Assert.IsEmpty(registry.ExtensionErrors);
+    }
+
+    /// <summary>
+    /// What the shortcut is for: a tab that calls the application's own services. Its clicks are BevTools' UI like any
+    /// extension panel's, while what the call changes in the application (a state change) is recorded as usual.
+    /// </summary>
+    [TestMethod]
+    public void An_application_panel_calls_the_applications_services_and_is_never_recorded_as_application_activity()
+    {
+        var cut = Render<BevToolsPanel>();
+        cut.Find(".bev-badge").Click();
+        cut.FindAll(".bev-tab").First(t => t.TextContent.Contains("App API", StringComparison.Ordinal)).Click();
+
+        cut.Find("button.app-api-set").Click();
+
+        Assert.AreEqual(7, Services.GetRequiredService<MoneyStore>().Amount);
+        Assert.Contains("Amount: 7", cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain(e => e.Kind == BevToolsEventKind.UiEvent, Session.Timeline.Snapshot());
+        Assert.IsTrue(Session.Components.IsBevToolsOnlyType(typeof(AppApiPanel).FullName!));
+    }
+
+    [TestMethod]
+    public void Adding_a_panel_with_the_same_id_again_replaces_it()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBevToolsServices(o =>
+        {
+            o.Enabled = true;
+            o.AddPanel<AcmePanel>("mine", "First");
+        });
+        services.AddBitBevToolsServices(o => o.AddPanel<AppApiPanel>("mine", "Second", order: 5));
+
+        using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<BevToolsRegistry>();
+
+        var panel = Assert.ContainsSingle(p => p.Id == "mine", registry.Panels);
+        Assert.AreEqual(typeof(AppApiPanel), panel.ComponentType);
+        Assert.AreEqual(5, panel.Order);
+        Assert.AreEqual(1, registry.ExtensionNames.Count(n => n.EndsWith(" panel", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void A_panel_with_a_built_in_panels_id_is_refused_and_reported()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBevToolsServices(o =>
+        {
+            o.Enabled = true;
+            o.AddPanel<AcmePanel>("logs", "My logs");
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<BevToolsRegistry>();
+
+        Assert.DoesNotContain(p => p.Id == "logs", registry.Panels);
+        Assert.Contains(e => e.StartsWith("My logs panel: ", StringComparison.Ordinal) && e.Contains("'logs'", StringComparison.Ordinal), registry.ExtensionErrors);
     }
 
     [TestMethod]
@@ -263,6 +332,26 @@ public sealed class FailingCommandExtension : IBevToolsExtension
 
         public Task ExecuteAsync(IBevToolsCommandContext context, string? argument) =>
             throw new InvalidOperationException("refresh failed for token eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.c2lnbmF0dXJl");
+    }
+}
+
+/// <summary>An application's own panel, added with <c>o.AddPanel&lt;AppApiPanel&gt;</c>: it calls an application service.</summary>
+public class AppApiPanel : BevToolsTab
+{
+    public const string Id = "app-api";
+
+    [Inject] private MoneyStore Store { get; set; } = default!;
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, "div");
+        builder.AddContent(1, "Amount: " + Store.Amount);
+        builder.CloseElement();
+        builder.OpenElement(2, "button");
+        builder.AddAttribute(3, "class", "app-api-set");
+        builder.AddAttribute(4, "onclick", EventCallback.Factory.Create(this, () => Store.Set(7)));
+        builder.AddContent(5, "Set 7");
+        builder.CloseElement();
     }
 }
 

@@ -59,7 +59,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
     }
 
-    private static readonly (string Id, string Title)[] BuiltInPanels =
+    internal static readonly (string Id, string Title)[] BuiltInPanels =
     [
         ("components", "Components"),
         ("profiler", "Profiler"),

@@ -1,4 +1,6 @@
 ﻿
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.BevTools;
@@ -183,6 +185,32 @@ public sealed class BevToolsOptions
 
     /// <summary>Extensions contributed by libraries or the application.</summary>
     public List<IBevToolsExtension> Extensions { get; } = [];
+
+    /// <summary>
+    /// Adds a panel of the application's own, as a tab after the built-in ones, without writing an
+    /// <see cref="IBevToolsExtension"/>: <c>o.AddPanel&lt;MyApiPanel&gt;("my-api", "My API")</c>. The component receives no
+    /// parameters; it can inject the application's services (to call its own APIs, say) and BevTools' ones, and when it
+    /// inherits <see cref="BevToolsTab"/> it reads the session and re-reads whenever the panel refreshes. Like every panel it
+    /// is BevTools' own UI, so its renders and clicks are never recorded as the application's. Adding a panel with an id
+    /// that was already added replaces it.
+    /// </summary>
+    /// <param name="id">The panel's id, for <c>ShowPanel</c>. A built-in panel's id ("logs", "about", ...) is refused, and About says so.</param>
+    /// <param name="title">The tab's text.</param>
+    /// <param name="order">Where the tab goes among the extension panels: lower first.</param>
+    /// <param name="requiredPlatform">When set, the panel shows only where the renderer has this name (e.g. "Server").</param>
+    public BevToolsOptions AddPanel<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TComponent>(string id, string title, int order = 100, string? requiredPlatform = null)
+        where TComponent : IComponent
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+
+        // A configure callback can run more than once on the same options (each AddBitBevToolsServices call of a host
+        // configures the options already registered), so adding the same id again replaces it rather than listing the
+        // extension twice in About.
+        Extensions.RemoveAll(e => e is BevToolsPanelExtension existing && existing.Panel.Id == id);
+        Extensions.Add(new BevToolsPanelExtension(new BevToolsPanelDescriptor(id, title, typeof(TComponent), order) { RequiredPlatform = requiredPlatform }));
+        return this;
+    }
 
     /// <summary>The decision <c>AddBitBevToolsServices</c> made, so companion packages do not have to repeat it.</summary>
     internal bool ResolvedEnabled { get; set; }
