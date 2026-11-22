@@ -69,6 +69,7 @@ public partial class MainLayout
             Text = "Layouts",
             ChildItems =
             [
+                new() { Text = "Container", Url = "/components/container", Data = "Max width, Centered column, Content width, Page width, Gutter, Wrapper, Section" },
                 new() { Text = "Footer", Url = "/components/footer" },
                 new() { Text = "Grid", Url = "/components/grid" },
                 new() { Text = "Header", Url = "/components/header", Description = "AppBar, TopBar" },

@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using Bit.Cli.Pipelines;
+using Bit.Cli.Projects;
 
 namespace Bit.Cli.Commands;
 
@@ -38,8 +39,23 @@ public static class PipelineCommand
             teamIdOption
         };
 
+        var projectOptions = new ProjectOptions();
+        projectOptions.Project.Description = "A folder of the project, in its git repository. Default: the nearest folder with a *.Web.slnf or *.slnx, the current one or one above it in the repository, or else the repository's root.";
+        projectOptions.AddTo(command, projectOptions.Project, projectOptions.ServerApi, projectOptions.Maui, projectOptions.WellKnown);
+
         command.SetAction(async (parseResult, cancellationToken) =>
         {
+            var cli = services();
+            var projectDirectory = projectOptions.ProjectDirectory(parseResult, cli, out var folder);
+
+            if (projectDirectory is null && projectOptions.IsGiven(parseResult))
+                return cli.UsageError("not-a-project", ProjectOptions.NotInAProject(folder));
+
+            var (parts, error) = projectOptions.Read(parseResult, cli, projectDirectory ?? folder);
+
+            if (error is not null)
+                return cli.UsageError("project-part-missing", error);
+
             var options = new PipelineOptions(
                 SharedOptions.SplitList(parseResult.GetValue(environmentOption)),
                 parseResult.GetValue(checkOption),
@@ -51,10 +67,12 @@ public static class PipelineCommand
                 ApnsKey = parseResult.GetValue(apnsOption),
                 SignInWithAppleKey = parseResult.GetValue(signInWithAppleOption),
                 AppleServicesId = parseResult.GetValue(servicesIdOption)?.Trim(),
-                AppleTeamId = parseResult.GetValue(teamIdOption)?.Trim()
+                AppleTeamId = parseResult.GetValue(teamIdOption)?.Trim(),
+                Project = projectOptions.IsGiven(parseResult) ? projectDirectory : null,
+                Parts = parts
             };
 
-            return await new PipelineSetup(services(), options).RunAsync(cancellationToken);
+            return await new PipelineSetup(cli, options).RunAsync(cancellationToken);
         });
 
         return command;

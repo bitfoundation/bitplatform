@@ -52,7 +52,10 @@ public static class WorkbenchSampleTasks
                 {
                     Secret = new(WorkbenchProgressSecretTo.File, null, null)
                 },
-                new("email", Text(nameof(WorkbenchStrings.SampleDeployAskEmail)), Text(nameof(WorkbenchStrings.SampleDeployAskEmailDetail)), WorkbenchProgressAskKind.Choice, emailOptions, null, now - TimeSpan.FromMinutes(3), null, false),
+                new("email", Text(nameof(WorkbenchStrings.SampleDeployAskEmail)), Text(nameof(WorkbenchStrings.SampleDeployAskEmailDetail)), WorkbenchProgressAskKind.Choice, emailOptions, null, now - TimeSpan.FromMinutes(3), null, false)
+                {
+                    Suggestion = Text(nameof(WorkbenchStrings.SampleDeployAskEmailSuggestion))
+                },
                 new("ssh", Text(nameof(WorkbenchStrings.SampleDeployAskSsh)), Text(nameof(WorkbenchStrings.SampleDeployAskSshDetail)), WorkbenchProgressAskKind.Confirm, [], null, now - TimeSpan.FromMinutes(2), null, false)
             ],
             [

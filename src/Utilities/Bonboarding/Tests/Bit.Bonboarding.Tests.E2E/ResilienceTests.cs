@@ -250,7 +250,7 @@ public sealed class ResilienceTests : BonboardingTest
         await Assertions.Expect(card.Locator(".bit-bonboarding-title")).ToHaveTextAsync("Now click this button");
 
         // Using the control is the way on - once End, which was the page's, has scrolled it back from the page's end.
-        await control.EvaluateAsync("el => el.scrollIntoView({ block: 'center' })");
+        await control.EvaluateAsync("el => el.scrollIntoView({ block: 'center', behavior: 'instant' })");
         await WaitForSettledAsync(page);
         await control.ClickAsync();
         await WaitForStepAsync(page, "Nicely done");
