@@ -206,13 +206,106 @@ test('without stickyBarLabels an edge-aligned text stays at its edge, off screen
 test('a text wider than its bar stays at its edge', () => {
     const engine = makeSceneEngine([{
         id: 'a', resourceId: 'r0', startTime: at(0), endTime: at(1),
-        texts: { topStart: { text: 'Long flight' }, topEnd: { text: 'Long flight!' } }
+        texts: { topStart: { text: 'Long flight' }, bottomEnd: { text: 'Long flight!' } }
     }], true);
     scrollTo(engine, 20);
     const node = barNode(engine);
 
     assert.equal(label(node, 'Long flight').x, 130);
     assert.equal(label(node, 'Long flight!').x, 170);
+});
+
+test('a text overlapping one drawn before it on its line is left out', () => {
+    // Bar 10h-12h: x 550-630, centered at 590.
+    const engine = makeSceneEngine([{
+        id: 'a', resourceId: 'r0', startTime: at(10), endTime: at(12),
+        texts: {
+            topCenter: { text: 'Heavy' },     // 572.5-607.5
+            topStart: { text: 'D-ABYT' },     // 550-592: over the center one
+            topEnd: { text: 'Ck' },           // 616-630: clear of it
+            bottomStart: { text: 'D-ABYT' },  // 550-592
+            bottomEnd: { text: 'C-check' }    // 581-630: over the start one
+        }
+    }]);
+    const node = barNode(engine);
+
+    assert.ok(label(node, 'Heavy'), 'the center text is drawn first');
+    assert.equal(label(node, 'Ck').x, 630);
+    assert.equal(node.labels.filter(l => l.text === 'D-ABYT').length, 1, 'only the bottom start text is clear');
+    assert.equal(label(node, 'D-ABYT').baseline, 'top');
+    assert.equal(label(node, 'C-check'), undefined, 'the end text gives way to the start one');
+});
+
+test('a text moved off its line by its offset is not in the way of the others', () => {
+    const engine = makeSceneEngine([{
+        id: 'a', resourceId: 'r0', startTime: at(10), endTime: at(12),
+        texts: { topCenter: { text: 'Heavy' }, topStart: { text: 'D-ABYT', offsetY: -30 } }
+    }]);
+    const node = barNode(engine);
+
+    assert.ok(label(node, 'Heavy'));
+    assert.ok(label(node, 'D-ABYT'));
+});
+
+test('stickyBarLabels keeps the centered text clear of an end-aligned one held at the end of the bars area', () => {
+    const center = 'Heavy maintenance'; // 119px
+    const engine = makeSceneEngine([longBar({ topStart: { text: 'TS' }, topCenter: { text: center }, topEnd: { text: 'C-check' } })], true);
+    const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
+
+    // The bar runs from x 190 to 2030: the end text is held at 1200 - gap, 49px wide.
+    const te = label(node, 'C-check');
+    const tc = label(node, center);
+    assert.equal(te.x, 1200 - gap);
+    assert.ok(tc, 'the centered text is still drawn');
+    assert.equal(tc.x + 119 / 2, te.x - 49 - gap, 'it ends the label gap before the end text');
+});
+
+test('stickyBarLabels keeps the centered text clear of a start-aligned one held at the start of the bars area', () => {
+    const center = 'Heavy maintenance'; // 119px
+    const engine = makeSceneEngine([longBar({ topStart: { text: 'TS' }, topCenter: { text: center }, topEnd: { text: 'C-check' } })], true);
+    // The bar now runs from x -710 to 1130, centered at 210.
+    scrollTo(engine, 900);
+    const node = barNode(engine);
+    const gap = engine.config.barLabelGap;
+
+    const ts = label(node, 'TS');
+    const tc = label(node, center);
+    assert.equal(ts.x, 150 + gap);
+    assert.ok(tc);
+    assert.equal(tc.x - 119 / 2, ts.x + 2 * CHAR + gap, 'it starts the label gap after the start text');
+});
+
+test('a font the canvas cannot parse falls back to the bar-label font', () => {
+    const engine = makeSceneEngine([{
+        id: 'a', resourceId: 'r0', startTime: at(10), endTime: at(20),
+        texts: { topStart: { text: 'abcd', font: 'bold 24px serif' }, topEnd: { text: 'abcd', font: '12 px Arial' } }
+    }]);
+    // A canvas ignores the assignment of a font it cannot parse, keeping the last one.
+    let current = '11px sans-serif';
+    engine._measureCtx = {
+        get font() { return current; },
+        set font(v) { if (/\dpx/.test(v)) current = v; },
+        measureText: (t) => ({ width: t.length * (/\b(2\d|[3-9]\d)px/.test(current) ? 2 * CHAR : CHAR) })
+    };
+    // Drop what indexing measured with the fixture's context, which takes any font.
+    engine._decorGen++;
+    const node = barNode(engine);
+
+    const te = node.labels.find(l => l.text === 'abcd' && l.align === 'right');
+    assert.equal(te.font, null, 'the scene draws it in the bar-label font');
+    assert.equal(engine._textWidth(engine.allocations[0].texts.topEnd), 4 * CHAR, 'and it is measured in it, not in the last font set');
+    assert.equal(engine._textLineHeight(engine.allocations[0].texts.topEnd, engine._labelMetrics()), engine._labelMetrics().lineHeight);
+});
+
+test('the line height of a text is read off its font size, not off a line height in px', () => {
+    const engine = makeSceneEngine([]);
+    const metrics = engine._labelMetrics();
+    const height = (font) => engine._textLineHeight({ text: 'x', font }, metrics);
+
+    assert.equal(height('600 0.75rem/24px sans-serif'), metrics.lineHeight, 'a size in rem keeps the bar-label line');
+    assert.equal(height('bold 20px/40px serif'), 24);
+    assert.equal(height('italic 10px serif'), 12);
 });
 
 test('the measurement keeps room past the other edge for an edge-aligned text wider than its bar', () => {

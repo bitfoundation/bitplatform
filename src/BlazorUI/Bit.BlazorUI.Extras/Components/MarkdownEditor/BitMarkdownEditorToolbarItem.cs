@@ -63,7 +63,7 @@ public class BitMarkdownEditorToolbarItem
     /// <summary>
     /// A short text rendered beside the icon: the label of a menu item, or of a toolbar button that is worth
     /// spelling out (a "Save" or a "Publish"). An item named like one of the default toolbar shows its localized title
-    /// (see <see cref="BitMarkdownEditorTexts"/>) instead, so what is on screen is also what is read out.
+    /// (see <see cref="BitMarkdownEditorStrings"/>) instead, so what is on screen is also what is read out.
     /// </summary>
     public string? Text { get; init; }
 

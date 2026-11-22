@@ -112,6 +112,15 @@
     const LABEL_LINE_HEIGHT_RATIO = 1.2;
     const DEFAULT_LABEL_FONT_SIZE = 11;
 
+    // The pixel size of a CSS font shorthand, or null when its size is not in
+    // px (a keyword, rem, em, %). The size is the length that stands on its own
+    // or before a `/line-height`, so a line height in px ("0.75rem/24px") is
+    // never read as the size.
+    function fontPxSize(font: string): number | null {
+        const match = /(?:^|\s)(\d*\.?\d+)px(?=\s|\/|$)/.exec(font);
+        return match ? parseFloat(match[1]) : null;
+    }
+
     // The built-in colors: the lowest layer of config.colors, under the colors of
     // the theme in force (setTheme) and every color the options have set.
     const DEFAULT_COLORS: { readonly [key: string]: string } = {
@@ -733,6 +742,9 @@
         private _labelMetricsCache: ResourceTimelineLabelMetrics | null;
         private _labelWidths: Map<string, number> | null;
         private _labelWidthsGen: number;
+        private _validFonts: Map<string, boolean> | null;
+        private _validFontsGen: number;
+        private _lineTextBoxes: number[];
         private _spanScratch: ResourceTimelineSpan;
         private _centeredSections: ResourceTimelineCenteredSection[];
         private _edgeLabels: WeakMap<ResourceTimelineAllocation, ResourceTimelineEdgeLabels>;
@@ -1218,6 +1230,11 @@
             this._labelMetricsCache = null;
             this._labelWidths = null;
             this._labelWidthsGen = 0;
+            this._validFonts = null;
+            this._validFontsGen = 0;
+            // Reused per line of bar texts, so leaving out the ones that would
+            // overlap allocates nothing (see _placeLineTexts).
+            this._lineTextBoxes = [];
             // Reused by the lane pass so measuring a painted span allocates nothing.
             this._spanScratch = { lead: 0, trail: 0 };
             this._centeredSections = [];
@@ -3787,6 +3804,19 @@
                 }
             }
 
+            // The texts aligned with an edge of the bar; with stickyBarLabels,
+            // held the label gap in from the edge of the bars area the bar
+            // reaches past (see _stickyEdge). Placed ahead of the centered ones,
+            // which keep clear of them.
+            const topStart = barText(alloc, 'topStart');
+            const topEnd = barText(alloc, 'topEnd');
+            const bottomStart = barText(alloc, 'bottomStart');
+            const bottomEnd = barText(alloc, 'bottomEnd');
+            const topStartX = topStart !== null ? this._stickyEdge(topStart, barX, barEndX, sticky, false) : 0;
+            const topEndX = topEnd !== null ? this._stickyEdge(topEnd, barX, barEndX, sticky, true) : 0;
+            const bottomStartX = bottomStart !== null ? this._stickyEdge(bottomStart, barX, barEndX, sticky, false) : 0;
+            const bottomEndX = bottomEnd !== null ? this._stickyEdge(bottomEnd, barX, barEndX, sticky, true) : 0;
+
             // Only what is on the line moves; a label wider than the bar keeps
             // the bar's center (see _stickyCenter).
             const topCenter = barText(alloc, 'topCenter');
@@ -3806,7 +3836,27 @@
                 if (aboveWidth < room && aboveWidth > lineWidth) lineWidth = aboveWidth;
                 if (belowWidth < room && belowWidth > lineWidth) lineWidth = belowWidth;
                 if (lineWidth > 0) {
-                    const lineX = this._stickyCenter(barCenterX, lineWidth, barX, barEndX);
+                    // The line slides between the edge-aligned texts on the lines
+                    // of the centered texts moving with it, so a long bar never
+                    // draws its centered text over an edge-aligned one held in at
+                    // the same edge of the view. With no room between them it
+                    // slides within the bar, and the edge-aligned text it would
+                    // overlap is left out (see _placeLineText).
+                    let lo = barX;
+                    let hi = barEndX;
+                    if (aboveWidth > 0 && aboveWidth < room) {
+                        if (topStart !== null) lo = Math.max(lo, this._textLeft(topStart, topStartX, 'left') + this._textWidth(topStart) + gap);
+                        if (topEnd !== null) hi = Math.min(hi, this._textLeft(topEnd, topEndX, 'right') - gap);
+                    }
+                    if (belowWidth > 0 && belowWidth < room) {
+                        if (bottomStart !== null) lo = Math.max(lo, this._textLeft(bottomStart, bottomStartX, 'left') + this._textWidth(bottomStart) + gap);
+                        if (bottomEnd !== null) hi = Math.min(hi, this._textLeft(bottomEnd, bottomEndX, 'right') - gap);
+                    }
+                    if (!this._fitsWithin(lineWidth, lo, hi)) {
+                        lo = barX;
+                        hi = barEndX;
+                    }
+                    const lineX = this._stickyCenter(barCenterX, lineWidth, lo, hi);
                     const dx = lineX - barCenterX;
                     if (dx !== 0) {
                         if (stickyIcons !== null) {
@@ -3850,31 +3900,8 @@
 
             const labels = node._labels;
             if (alloc.texts) {
-                // The texts aligned with an edge of the bar; with stickyBarLabels,
-                // held the label gap in from the edge of the bars area the bar
-                // reaches past (see _stickyEdge).
-                const topStart = barText(alloc, 'topStart');
-                const topEnd = barText(alloc, 'topEnd');
-                const bottomStart = barText(alloc, 'bottomStart');
-                const bottomEnd = barText(alloc, 'bottomEnd');
-                if (topStart !== null) {
-                    labels.push(this._barTextLabel(topStart, this._stickyEdge(topStart, barX, barEndX, sticky, false), aboveY, 'left', 'bottom'));
-                }
-                if (topCenter !== null) {
-                    labels.push(this._barTextLabel(topCenter, aboveX, aboveY, 'center', 'bottom'));
-                }
-                if (topEnd !== null) {
-                    labels.push(this._barTextLabel(topEnd, this._stickyEdge(topEnd, barX, barEndX, sticky, true), aboveY, 'right', 'bottom'));
-                }
-                if (bottomStart !== null) {
-                    labels.push(this._barTextLabel(bottomStart, this._stickyEdge(bottomStart, barX, barEndX, sticky, false), belowY, 'left', 'top'));
-                }
-                if (bottomCenter !== null) {
-                    labels.push(this._barTextLabel(bottomCenter, belowX, belowY, 'center', 'top'));
-                }
-                if (bottomEnd !== null) {
-                    labels.push(this._barTextLabel(bottomEnd, this._stickyEdge(bottomEnd, barX, barEndX, sticky, true), belowY, 'right', 'top'));
-                }
+                this._placeLineTexts(labels, aboveY, 'bottom', topCenter, aboveX, topStart, topStartX, topEnd, topEndX);
+                this._placeLineTexts(labels, belowY, 'top', bottomCenter, belowX, bottomStart, bottomStartX, bottomEnd, bottomEndX);
                 // A start text the bar before already draws, or an end text shared
                 // with the bar after - drawn once, centered in the gap between them
                 // (see _resolveSharedEdgeLabels).
@@ -3905,8 +3932,61 @@
                 align,
                 baseline,
                 color: t.color || null,
-                font: t.font || null
+                font: this._textFont(t)
             };
+        }
+
+        // The left edge of a bar text drawn `align`ed at anchor `x`, moved by its
+        // horizontal offset.
+        private _textLeft(t: ResourceTimelineBarText, x: number, align: 'left' | 'center' | 'right'): number {
+            const ax = x + (t.offsetX || 0);
+            if (align === 'left') return ax;
+            const width = this._textWidth(t);
+            return align === 'right' ? ax - width : ax - width / 2;
+        }
+
+        // Draws the texts of the line above (baseline 'bottom') or below
+        // (baseline 'top') a bar: the centered one, then the start-aligned one,
+        // then the end-aligned one, each left out where it would overlap one
+        // drawn before it - on a bar too narrow for all three, the earlier one
+        // in the order that names the bar is the one kept. A line of one text is
+        // drawn without measuring it.
+        private _placeLineTexts(labels: any[], y: number, baseline: 'top' | 'bottom',
+            center: ResourceTimelineBarText | null, centerX: number,
+            start: ResourceTimelineBarText | null, startX: number,
+            end: ResourceTimelineBarText | null, endX: number): void {
+            const count = (center !== null ? 1 : 0) + (start !== null ? 1 : 0) + (end !== null ? 1 : 0);
+            if (count === 0) return;
+            if (count === 1) {
+                if (center !== null) labels.push(this._barTextLabel(center, centerX, y, 'center', baseline));
+                else if (start !== null) labels.push(this._barTextLabel(start, startX, y, 'left', baseline));
+                else labels.push(this._barTextLabel(end!, endX, y, 'right', baseline));
+                return;
+            }
+            const boxes = this._lineTextBoxes;
+            boxes.length = 0;
+            this._placeLineText(labels, boxes, center, centerX, y, 'center', baseline);
+            this._placeLineText(labels, boxes, start, startX, y, 'left', baseline);
+            this._placeLineText(labels, boxes, end, endX, y, 'right', baseline);
+        }
+
+        // Draws one text of a line unless its box overlaps one of `boxes` - the
+        // texts of the line drawn so far, as left, right, top, bottom runs - and
+        // adds its own box when it is drawn.
+        private _placeLineText(labels: any[], boxes: number[], t: ResourceTimelineBarText | null, x: number, y: number,
+            align: 'left' | 'center' | 'right', baseline: 'top' | 'bottom'): void {
+            if (t === null) return;
+            const left = this._textLeft(t, x, align);
+            const right = left + this._textWidth(t);
+            const height = this._textLineHeight(t, this._labelMetrics());
+            const ay = y + (t.offsetY || 0);
+            const top = baseline === 'bottom' ? ay - height : ay;
+            const bottom = top + height;
+            for (let i = 0; i < boxes.length; i += 4) {
+                if (left < boxes[i + 1] && boxes[i] < right && top < boxes[i + 3] && boxes[i + 2] < bottom) return;
+            }
+            boxes.push(left, right, top, bottom);
+            labels.push(this._barTextLabel(t, x, y, align, baseline));
         }
 
         // Where a top or bottom text aligned with an edge of its bar - the start
@@ -6979,8 +7059,7 @@
             let metrics = this._labelMetricsCache;
             if (metrics === null || metrics.gen !== this._decorGen) {
                 const c = this.config;
-                const match = /(\d*\.?\d+)px/.exec(c.barLabelFont || '');
-                const fontSize = match ? parseFloat(match[1]) : DEFAULT_LABEL_FONT_SIZE;
+                const fontSize = fontPxSize(c.barLabelFont || '') ?? DEFAULT_LABEL_FONT_SIZE;
                 metrics = this._labelMetricsCache = {
                     gen: this._decorGen,
                     gap: c.barLabelGap,
@@ -7014,18 +7093,44 @@
             return width;
         }
 
+        // The font a bar text is drawn and measured in: its own, or null for the
+        // bar-label font when it has none or one the canvas cannot parse. Such a
+        // font is ignored by the assignment to ctx.font, which would leave the
+        // font the context last held in force - another label's, or the axis's.
+        // Checked once per font, by assigning it over the bar-label font.
+        private _textFont(t: ResourceTimelineBarText): string | null {
+            const font = t.font;
+            if (!font) return null;
+            let fonts = this._validFonts;
+            if (fonts === null || this._validFontsGen !== this._decorGen) {
+                fonts = this._validFonts = new Map();
+                this._validFontsGen = this._decorGen;
+            }
+            let valid = fonts.get(font);
+            if (valid === undefined) {
+                const ctx = this._measureCtx;
+                ctx.font = this.config.barLabelFont;
+                const before = ctx.font;
+                ctx.font = font;
+                valid = ctx.font !== before;
+                fonts.set(font, valid);
+            }
+            return valid ? font : null;
+        }
+
         // Drawn width of a bar text, in its own font.
         private _textWidth(t: ResourceTimelineBarText): number {
-            return this._labelWidth(String(t.text), t.font);
+            return this._labelWidth(String(t.text), this._textFont(t));
         }
 
         // Line height of a bar text: that of the bar-label font, or of its own
-        // font's px size when it has one (a font in another unit keeps the
-        // bar-label font's).
+        // font's px size when it has one (a font in another unit, or one the
+        // canvas cannot parse, keeps the bar-label font's).
         private _textLineHeight(t: ResourceTimelineBarText, metrics: { lineHeight: number }): number {
-            if (!t.font) return metrics.lineHeight;
-            const match = /(\d*\.?\d+)px/.exec(t.font);
-            return match ? Math.ceil(parseFloat(match[1]) * LABEL_LINE_HEIGHT_RATIO) : metrics.lineHeight;
+            const font = this._textFont(t);
+            if (font === null) return metrics.lineHeight;
+            const size = fontPxSize(font);
+            return size !== null ? Math.ceil(size * LABEL_LINE_HEIGHT_RATIO) : metrics.lineHeight;
         }
 
         // Pixel extents of one bar's decorations, mirroring how

@@ -149,7 +149,7 @@ public partial class BitFullCalendarParams : BitComponentBaseParams, IBitCompone
     /// <summary>
     /// Gets or sets the localized strings of the calendar.
     /// </summary>
-    public BitFullCalendarTexts? Texts { get; set; }
+    public BitFullCalendarStrings? Strings { get; set; }
 
     /// <summary>
     /// Gets or sets the clock the calendars read "now" and "today" from (the user's time zone on Blazor Server).
@@ -293,9 +293,9 @@ public partial class BitFullCalendarParams : BitComponentBaseParams, IBitCompone
             bitFullCalendar.TakeFromCascade(nameof(Styles), Styles, static f => f.Styles, static (f, v) => f.Styles = v);
         }
 
-        if (Texts is not null)
+        if (Strings is not null)
         {
-            bitFullCalendar.TakeFromCascade(nameof(Texts), Texts, static f => f.Texts, static (f, v) => f.Texts = v);
+            bitFullCalendar.TakeFromCascade(nameof(Strings), Strings, static f => f.Strings, static (f, v) => f.Strings = v);
         }
 
         if (TimeProvider is not null)

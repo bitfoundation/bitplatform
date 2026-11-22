@@ -50,6 +50,32 @@ The analyzer reports a `Texts` left on the component and the four removed alloca
 old type (`BITBC002`). With it turned off, a `Texts` left in markup builds and is rendered as an HTML attribute, so the
 timeline speaks English again.
 
+### The words a component writes for itself are `Strings` everywhere ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The object holding every word a component writes for itself - the one that localizes it - is called `Strings`, as it is
+on `BitDataGrid` and `BitResourceTimeline`. The components that called it `Texts` are renamed to match: the parameter
+(and its counterpart on the component's `Bit*Params`) is `Strings`, and its type is `Bit*Strings`, with the same
+members. The Markdown pipeline follows: `BitMarkdownPipelineBuilder.Texts`, `BitMarkdownPipeline.Texts` and
+`BitMarkdownRenderer.Texts` are `Strings`, `UseTexts()` is `UseStrings()`, and `BitMarkdownTexts` is
+`BitMarkdownStrings`.
+
+| Before | After |
+|---|---|
+| `<BitChart Texts="texts" />`, `new BitChartTexts { ... }` | `<BitChart Strings="strings" />`, `new BitChartStrings { ... }` |
+| `<BitColorPicker Texts="texts" />`, `new BitColorPickerTexts { ... }` | `<BitColorPicker Strings="strings" />`, `new BitColorPickerStrings { ... }` |
+| `<BitFullCalendar Texts="texts" />`, `new BitFullCalendarTexts { ... }` | `<BitFullCalendar Strings="strings" />`, `new BitFullCalendarStrings { ... }` |
+| `<BitImageViewer Texts="texts" />`, `new BitImageViewerTexts { ... }` | `<BitImageViewer Strings="strings" />`, `new BitImageViewerStrings { ... }` |
+| `<BitMarkdownEditor Texts="texts" />`, `new BitMarkdownEditorTexts { ... }` | `<BitMarkdownEditor Strings="strings" />`, `new BitMarkdownEditorStrings { ... }` |
+| `<BitPdfViewer Texts="texts" />`, `new BitPdfViewerTexts { ... }` | `<BitPdfViewer Strings="strings" />`, `new BitPdfViewerStrings { ... }` |
+| `new BitChartParams { Texts = ... }` (and the other `Bit*Params`) | `new BitChartParams { Strings = ... }` |
+| `builder.UseTexts(new BitMarkdownTexts { ... })` | `builder.UseStrings(new BitMarkdownStrings { ... })` |
+| `builder.Texts.AlertNote = "..."`, `pipeline.Texts`, `renderer.Texts` | `builder.Strings.AlertNote = "..."`, `pipeline.Strings`, `renderer.Strings` |
+| `new BitMarkdownRenderer(renderers, texts)` | `new BitMarkdownRenderer(renderers, strings)` (only the parameter's name changed) |
+
+The analyzer reports a `Texts` left on any of these components, their `Bit*Params` and the Markdown pipeline types, and a
+`UseTexts()` call (`BITBC001`), and the old types (`BITBC002`). With it turned off, a `Texts` left in markup builds and
+is rendered as an HTML attribute, so the component speaks English again.
+
 ### `BitFullCalendarState` is read-only, but for its filters ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 `BitFullCalendar.State` is what the calendar is showing, for an app to read. The 56 members that changed it are no

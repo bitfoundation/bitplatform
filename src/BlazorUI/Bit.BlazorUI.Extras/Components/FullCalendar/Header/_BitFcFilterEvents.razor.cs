@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcFilterEvents
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
 
     private string SelectedColorValue => State.SelectedColors.Count == 1

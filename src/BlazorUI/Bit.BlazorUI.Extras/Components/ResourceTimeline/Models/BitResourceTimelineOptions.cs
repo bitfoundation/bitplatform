@@ -148,7 +148,8 @@ public class BitResourceTimelineOptions
     /// staying at the bar's center, so a long bar keeps its labels on screen
     /// wherever it is scrolled to. Its top and bottom start texts are likewise
     /// held in from the start edge of the timeline, and its top and bottom end
-    /// texts from its end edge, while the bar reaches past it.
+    /// texts from its end edge, while the bar reaches past it, and the centered
+    /// ones slide between them rather than over them where there is room.
     /// <para>
     /// The labels stay where they are while they are in view and at least
     /// <see cref="BarLabelGap"/> clear of the edge of the timeline, are held that

@@ -548,7 +548,7 @@ public partial class BitMarkdownViewer : BitComponentBase
 
             // Given the pipeline's own words, so supplying a template does not silently put a
             // localized document's alerts and back-links back into English.
-            _renderer = new BitMarkdownRenderer(renderers, pipeline.Texts)
+            _renderer = new BitMarkdownRenderer(renderers, pipeline.Strings)
             {
                 DocumentUrl = documentUrl,
                 AutoDirection = autoDirection,

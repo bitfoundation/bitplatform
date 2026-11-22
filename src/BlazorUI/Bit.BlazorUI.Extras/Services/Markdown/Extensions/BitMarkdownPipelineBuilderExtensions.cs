@@ -163,11 +163,11 @@ public static class BitMarkdownPipelineBuilderExtensions
     /// accessible names of the regions and controls the markup adds - so a rendered document can be
     /// in a language other than English.
     /// </summary>
-    public static BitMarkdownPipelineBuilder UseTexts(this BitMarkdownPipelineBuilder b, BitMarkdownTexts texts)
+    public static BitMarkdownPipelineBuilder UseStrings(this BitMarkdownPipelineBuilder b, BitMarkdownStrings strings)
     {
         ArgumentNullException.ThrowIfNull(b);
-        ArgumentNullException.ThrowIfNull(texts);
-        b.Texts = texts;
+        ArgumentNullException.ThrowIfNull(strings);
+        b.Strings = strings;
         return b;
     }
 

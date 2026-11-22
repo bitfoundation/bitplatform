@@ -152,11 +152,11 @@ public class BitFullCalendarTimelineMonthViewTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFullCalendarTimelineMonthShouldNameTheUnassignedRowThroughTheTexts()
+    public void BitFullCalendarTimelineMonthShouldNameTheUnassignedRowThroughTheStrings()
     {
         var component = RenderTimelineMonth(
             [Event("nobody", Anchor.AddHours(9), Anchor.AddHours(10), resource: null)],
-            p => p.Add(c => c.Texts, new BitFullCalendarTexts { NoResourceLabel = "Nobody", ResourceColumnHeader = "Room" }));
+            p => p.Add(c => c.Strings, new BitFullCalendarStrings { NoResourceLabel = "Nobody", ResourceColumnHeader = "Room" }));
 
         Assert.AreEqual("Nobody", component.Find(".bit-bfc-tl-resource-cell-unassigned").TextContent.Trim());
         Assert.AreEqual("Room", component.Find(".bit-bfc-tl-corner").TextContent.Trim());

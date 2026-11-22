@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// The parameters for <see cref="BitPdfViewer"/> component.
 /// </summary>
 /// <remarks>
-/// What belongs here is what the viewers of an application agree on: their texts (which is where a localized app
+/// What belongs here is what the viewers of an application agree on: their strings (which is where a localized app
 /// sets them once), their toolbar and its custom content, what they show while loading, with no document or with a failed one, their size, how they lay out, zoom and paint pages, which
 /// of the reader's conveniences they offer (shortcuts, dropping a file, the password prompt) and how they look.
 /// The document, the page, zoom and rotation the reader is on and the events are left out on purpose: they are
@@ -163,9 +163,9 @@ public partial class BitPdfViewerParams : BitComponentBaseParams, IBitComponentP
     public BitPdfTextCoalescing? TextCoalescing { get; set; }
 
     /// <summary>
-    /// The texts of the viewer UI.
+    /// The strings of the viewer UI.
     /// </summary>
-    public BitPdfViewerTexts? Texts { get; set; }
+    public BitPdfViewerStrings? Strings { get; set; }
 
     /// <summary>
     /// Custom content rendered at the end of the toolbar, after the built-in controls.
@@ -341,9 +341,9 @@ public partial class BitPdfViewerParams : BitComponentBaseParams, IBitComponentP
             bitPdfViewer.TakeFromCascade(nameof(TextCoalescing), TextCoalescing.Value, static p => p.TextCoalescing, static (p, v) => p.TextCoalescing = v);
         }
 
-        if (Texts is not null)
+        if (Strings is not null)
         {
-            bitPdfViewer.TakeFromCascade(nameof(Texts), Texts, static p => p.Texts, static (p, v) => p.Texts = v);
+            bitPdfViewer.TakeFromCascade(nameof(Strings), Strings, static p => p.Strings, static (p, v) => p.Strings = v);
         }
 
         if (ToolbarEndTemplate is not null)

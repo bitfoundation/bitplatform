@@ -24,8 +24,9 @@ public class BitResourceTimelineBarText
 
     /// <summary>
     /// CSS font shorthand the text is drawn in (for example <c>"italic 600 12px sans-serif"</c>). Falls back to
-    /// <see cref="BitResourceTimelineOptions.BarLabelFont"/> (or the bit theme's font) when null or empty. The text is
-    /// measured in it too, so the room kept for it around the bar follows its size.
+    /// <see cref="BitResourceTimelineOptions.BarLabelFont"/> (or the bit theme's font) when null or empty, or when it is
+    /// not a font the browser can parse. The text is measured in it too, so the room kept for it around the bar follows
+    /// its size (read off a size given in <c>px</c>; a size in another unit keeps the room of the bar-label font).
     /// </summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Font { get; set; }

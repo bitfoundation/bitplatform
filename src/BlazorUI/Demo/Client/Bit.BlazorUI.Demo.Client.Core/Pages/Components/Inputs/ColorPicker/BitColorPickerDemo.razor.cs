@@ -235,21 +235,21 @@ public partial class BitColorPickerDemo
         },
         new()
         {
+            Name = "Strings",
+            Type = "BitColorPickerStrings?",
+            DefaultValue = "null",
+            Description = "Every piece of text the picker writes for itself: the accessible names of its controls, the captions of its fields, and the sentences it announces the color with. This is the parameter that translates the component; an unset property keeps its English default.",
+            LinkType = LinkType.Link,
+            Href = "#color-picker-strings",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitColorPickerClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitColorPicker.",
             LinkType = LinkType.Link,
             Href = "#color-picker-class-styles",
-        },
-        new()
-        {
-            Name = "Texts",
-            Type = "BitColorPickerTexts?",
-            DefaultValue = "null",
-            Description = "Every piece of text the picker writes for itself: the accessible names of its controls, the captions of its fields, and the sentences it announces the color with. This is the parameter that translates the component; an unset property keeps its English default.",
-            LinkType = LinkType.Link,
-            Href = "#color-picker-texts",
         },
         new()
         {
@@ -382,8 +382,8 @@ public partial class BitColorPickerDemo
         },
         new()
         {
-            Id = "color-picker-texts",
-            Title = "BitColorPickerTexts",
+            Id = "color-picker-strings",
+            Title = "BitColorPickerStrings",
             Description = "Every piece of text the BitColorPicker writes for itself. The Format properties are string.Format templates, so a translation is free to reorder what they interpolate - or to leave a placeholder out, which is the way to drop the English ColorDescription from an announcement.",
             Parameters =
             [
@@ -862,7 +862,7 @@ public partial class BitColorPickerDemo
     private string accessibilityColor = "#4DB3B3";
 
     private string localizedColor = "#4DB3B3";
-    private static readonly BitColorPickerTexts persianTexts = new()
+    private static readonly BitColorPickerStrings persianStrings = new()
     {
         SaturationAreaLabel = "اشباع و روشنایی",
         SaturationAreaRoleDescription = "لغزنده دو بعدی",

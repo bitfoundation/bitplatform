@@ -12,6 +12,12 @@ namespace Bit.BlazorUI;
 /// start and just after its end (past any delay bar and the icons outside that end).
 /// </para>
 /// <para>
+/// The three texts of a line are drawn only where they do not overlap: on a bar too narrow for all of them, the center
+/// one is drawn, then the start one where it clears it, then the end one where it clears both. With
+/// <see cref="BitResourceTimelineOptions.StickyBarLabels"/>, the center one slides between the start and end ones
+/// where there is room for it.
+/// </para>
+/// <para>
 /// The first text of <see cref="TopCenter"/>, <see cref="TopStart"/>, <see cref="TopEnd"/>, <see cref="Start"/>,
 /// <see cref="End"/>, <see cref="BottomCenter"/>, <see cref="BottomStart"/> and <see cref="BottomEnd"/>, in that order,
 /// is the bar's label in its default tooltip and its accessible name.

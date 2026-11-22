@@ -2126,9 +2126,9 @@ public class BitChartTests : BunitTestContext
         Assert.AreEqual("0", component.Find("svg").GetAttribute("tabindex"), "it stays keyboard reachable");
     }
 
-    // ---- texts ----
+    // ---- strings ----
 
-    private static readonly BitChartTexts PersianTexts = new()
+    private static readonly BitChartStrings PersianStrings = new()
     {
         DefaultAriaLabelFormat = "نمودار {0} با {1} سری",
         LegendAriaLabel = "راهنمای نمودار",
@@ -2140,7 +2140,7 @@ public class BitChartTests : BunitTestContext
     };
 
     [TestMethod]
-    public void TextsShouldLocalizeWhatTheChartWritesForAssistiveTechnologies()
+    public void StringsShouldLocalizeWhatTheChartWritesForAssistiveTechnologies()
     {
         var data = new BitChartData
         {
@@ -2150,7 +2150,7 @@ public class BitChartTests : BunitTestContext
         var component = RenderComponent<BitChart>(p =>
         {
             p.Add(c => c.Data, data);
-            p.Add(c => c.Texts, PersianTexts);
+            p.Add(c => c.Strings, PersianStrings);
             p.Add(c => c.MaxTableRows, 1);
         });
 
@@ -2170,7 +2170,7 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
-    public void TheEnglishTextsShouldBeTheDefault()
+    public void TheEnglishStringsShouldBeTheDefault()
     {
         var data = new BitChartData { Labels = { "Jan" }, Datasets = { new BitChartDataset { Data = { 1 } } } };
         var component = RenderChart(BitChartType.Bar, data);
@@ -2186,7 +2186,7 @@ public class BitChartTests : BunitTestContext
         var component = RenderComponent<BitChart>(p =>
         {
             p.Add(c => c.Data, TwoSeries());
-            p.Add(c => c.Texts, new BitChartTexts { PositionFormat = "{0} of {1" });
+            p.Add(c => c.Strings, new BitChartStrings { PositionFormat = "{0} of {1" });
         });
 
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
@@ -2457,12 +2457,12 @@ public class BitChartTests : BunitTestContext
         var component = RenderChart(BitChartType.PolarArea);
         Assert.AreEqual("Polar area chart with 2 data series.", component.Find("svg").GetAttribute("aria-label"));
 
-        var texts = new BitChartTexts { TypeNames = { [BitChartType.PolarArea] = "قطبی" }, DefaultAriaLabelFormat = "نمودار {0}", RoleDescription = "نمودار" };
+        var strings = new BitChartStrings { TypeNames = { [BitChartType.PolarArea] = "قطبی" }, DefaultAriaLabelFormat = "نمودار {0}", RoleDescription = "نمودار" };
         var localized = RenderComponent<BitChart>(p =>
         {
             p.Add(c => c.Type, BitChartType.PolarArea);
             p.Add(c => c.Data, TwoSeries());
-            p.Add(c => c.Texts, texts);
+            p.Add(c => c.Strings, strings);
         });
         Assert.AreEqual("نمودار قطبی", localized.Find("svg").GetAttribute("aria-label"));
         Assert.AreEqual("نمودار", localized.Find("svg").GetAttribute("aria-roledescription"));

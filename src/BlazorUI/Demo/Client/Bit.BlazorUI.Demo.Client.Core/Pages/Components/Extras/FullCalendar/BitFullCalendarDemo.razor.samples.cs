@@ -734,9 +734,9 @@ private void ShowVisibleRange()
 " + eventsCode;
 
     private readonly string example19RazorCode = @"
-<BitFullCalendar Events=""events"" CultureName=""fa-IR"" Texts=""persianTexts"" />";
+<BitFullCalendar Events=""events"" CultureName=""fa-IR"" Strings=""persianStrings"" />";
     private readonly string example19CsharpCode = @"
-private readonly BitFullCalendarTexts persianTexts = new()
+private readonly BitFullCalendarStrings persianStrings = new()
 {
     // View & mode tabs
     ViewDay = ""روز"",
