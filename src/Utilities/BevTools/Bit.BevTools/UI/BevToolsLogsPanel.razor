@@ -113,9 +113,13 @@
                         {
                             <dt>Database</dt><dd>@(command.Failed ? "failed after " : "executed in ")@BevToolsFmt.Ms(command.ElapsedMs) <button type="button" class="bev-link" @onclick="() => OpenCommand(command.CommandText is { } sql ? BevToolsDbCommands.Normalize(sql) : string.Empty)">every execution ↗</button></dd>
                         }
-                        <dt>Sent from</dt><dd>@(s.Caller ?? (Session.Options.CaptureLogCallers ? "no component on the stack (a service, a timer, or code that went asynchronous first)" : "not read (CaptureLogCallers is off)"))</dd>
+                        @if (s.BeforeAttach)
+                        {
+                            <dt>Captured</dt><dd>before BevTools was attached, by Bit.BevTools.Loader (BevToolsLoaderOptions.AutoStart); read at this session's value access when it took the entry over</dd>
+                        }
+                        <dt>Sent from</dt><dd>@(s.Caller ?? (s.BeforeAttach ? "not known: no session existed to read the stack when it was logged" : Session.Options.CaptureLogCallers ? "no component on the stack (a service, a timer, or code that went asynchronous first)" : "not read (CaptureLogCallers is off)"))</dd>
                         <dt>During</dt>
-                        <dd>@if (_trigger is { } t) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(t.Id)"><span class="@BevToolsFmt.KindClass(t.Kind)">@BevToolsFmt.KindLabel(t.Kind)</span> @t.Title ↗</button> } else { <span class="bev-muted">no UI event or navigation was running</span> }</dd>
+                        <dd>@if (_trigger is { } t) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(t.Id)"><span class="@BevToolsFmt.KindClass(t.Kind)">@BevToolsFmt.KindLabel(t.Kind)</span> @t.Title ↗</button> } else { <span class="bev-muted">@(s.BeforeAttach ? "not known: no session existed to see UI events when it was logged" : "no UI event or navigation was running")</span> }</dd>
                         @if (s.TraceId is not null)
                         {
                             <dt>Trace</dt><dd><span class="bev-mono" title="W3C trace and span id of the activity current when it was logged: what a tracing backend (OpenTelemetry) files it under">@s.TraceId · @s.SpanId</span> <button type="button" class="bev-link" @onclick='() => Host.ShowPanel("network", "trace:" + s.TraceId)'>requests in it ↗</button></dd>

@@ -144,6 +144,17 @@ public partial class BitMenuButtonParams : BitComponentBaseParams, IBitComponent
     public bool? FullWidth { get; set; }
 
     /// <summary>
+    /// The delay in milliseconds before the menu closes once the pointer leaves the menu button and its menus in the
+    /// OpenOnHover mode.
+    /// </summary>
+    public int? HoverCloseDelay { get; set; }
+
+    /// <summary>
+    /// The delay in milliseconds before the menu opens once the pointer enters the menu button in the OpenOnHover mode.
+    /// </summary>
+    public int? HoverOpenDelay { get; set; }
+
+    /// <summary>
     /// Gets or sets the icon to display using custom CSS classes for external icon libraries.
     /// Takes precedence over <see cref="IconName"/> when both are set.
     /// </summary>
@@ -212,6 +223,12 @@ public partial class BitMenuButtonParams : BitComponentBaseParams, IBitComponent
     /// it. A click or a right-click outside of the menu and its button dismisses it.
     /// </summary>
     public bool? NoOverlay { get; set; }
+
+    /// <summary>
+    /// Opens the menu when the pointer enters the menu button and closes it when the pointer leaves both the button
+    /// and the menu.
+    /// </summary>
+    public bool? OpenOnHover { get; set; }
 
     /// <summary>
     /// The icon of the bullet shown on a checked single-choice item, using custom CSS classes for external
@@ -412,6 +429,16 @@ public partial class BitMenuButtonParams : BitComponentBaseParams, IBitComponent
             bitMenuButton.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static m => m.FullWidth, static (m, v) => m.FullWidth = v);
         }
 
+        if (HoverCloseDelay.HasValue)
+        {
+            bitMenuButton.TakeFromCascade(nameof(HoverCloseDelay), HoverCloseDelay.Value, static m => m.HoverCloseDelay, static (m, v) => m.HoverCloseDelay = v);
+        }
+
+        if (HoverOpenDelay.HasValue)
+        {
+            bitMenuButton.TakeFromCascade(nameof(HoverOpenDelay), HoverOpenDelay.Value, static m => m.HoverOpenDelay, static (m, v) => m.HoverOpenDelay = v);
+        }
+
 
         if (Icon is not null)
         {
@@ -468,6 +495,11 @@ public partial class BitMenuButtonParams : BitComponentBaseParams, IBitComponent
         if (NoOverlay.HasValue)
         {
             bitMenuButton.TakeFromCascade(nameof(NoOverlay), NoOverlay.Value, static m => m.NoOverlay, static (m, v) => m.NoOverlay = v);
+        }
+
+        if (OpenOnHover.HasValue)
+        {
+            bitMenuButton.TakeFromCascade(nameof(OpenOnHover), OpenOnHover.Value, static m => m.OpenOnHover, static (m, v) => m.OpenOnHover = v);
         }
 
 

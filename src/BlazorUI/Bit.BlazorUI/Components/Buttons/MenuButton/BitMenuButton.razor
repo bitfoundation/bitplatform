@@ -43,7 +43,7 @@
     // A disabled menu button kept interactive stays focusable, so aria-disabled carries its state alone.
     var nativeDisabled = Disabled && DisabledInteractive is false;
 }
-<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+<div @ref="RootElement" @attributes="GetRootAttributes()"
      id="@_Id"
      style="@StyleBuilder.Value"
      data-bit-popup-style="@(GetPopupStyle(Toggle && Split && Toggled, Styles?.Toggled, JoinStyles(Styles?.Root, IsOpen ? Styles?.Opened : null)))"
@@ -195,17 +195,22 @@
 }
 
 @* Without the overlay the page keeps its own clicks, and the dismissal the overlay would have taken care of falls
-   to the page-level handler on the JS side (see NoOverlay). *@
+   to the page-level handler on the JS side (see NoOverlay). The OpenOnHover mode keeps it hidden too, since it
+   would cover the button the pointer opened the menu from (see HasOverlay) - hidden rather than not rendered, as
+   whether the device can hover is only known after the first render, and an overlay the JS side has already moved
+   along with an open menu must not be taken out of the page from under it. *@
 @if (NoOverlay is false)
 {
     <div @onclick="HandleOnOverlayClick" @onclick:stopPropagation
          aria-hidden="true"
-         style="display:@(IsOpen ? "block" : "none");@Styles?.Overlay"
+         style="display:@(IsOpen && HasOverlay ? "block" : "none");@Styles?.Overlay"
          id="@_overlayId"
          class="bit-mnb-ovl @Classes?.Overlay"></div>
 }
 
-<div @onkeydown="e => HandleOnMenuKeyDown(e, _calloutId, null)"
+@* The pointer is only listened to on the menu in the OpenOnHover mode (see GetCalloutHoverAttributes). *@
+<div @attributes="GetCalloutHoverAttributes()"
+     @onkeydown="e => HandleOnMenuKeyDown(e, _calloutId, null)"
      id="@_calloutId"
      dir="@Dir?.ToString().ToLower()"
      style="@GetCalloutStyle()"

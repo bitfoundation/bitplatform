@@ -38,11 +38,13 @@ Report("recording everything", instrumented, baseline);
 // synchronization context, as an application's component or service would write it.
 const int LogEntries = 20_000;
 Console.WriteLine($"\nlog entries: {LogEntries}, one structured Information entry with two values each\n");
-RunLogs(bevTools: false); RunLogs(bevTools: true); RunLogs(bevTools: true, callers: false); RunLogs(bevTools: true, trackLogs: false);
+RunLogs(bevTools: false); RunLogs(bevTools: true); RunLogs(bevTools: true, callers: false); RunLogs(bevTools: true, trackLogs: false); RunLogs(bevTools: false, autoStart: true);
 var logBaseline = RunLogs(bevTools: false);
 var logOff = RunLogs(bevTools: true, trackLogs: false);
 var logNoCallers = RunLogs(bevTools: true, callers: false);
 var logAll = RunLogs(bevTools: true);
+// Bit.BevTools.Loader capturing on its own before an attach (BevToolsAutoStart.Logs), with the rest of BevTools waiting.
+var logAutoStart = RunLogs(bevTools: false, autoStart: true);
 
 void ReportLogs(string name, (double TotalMs, long Bytes) r) =>
     Console.WriteLine($"{name,-34} {r.TotalMs,9:0.0} ms  {r.TotalMs * 1000 / LogEntries,8:0.00} µs/entry  alloc {r.Bytes / (double)LogEntries,8:0} B/entry");
@@ -51,6 +53,7 @@ ReportLogs("without BevTools", logBaseline);
 ReportLogs("BevTools, TrackLogs = false", logOff);
 ReportLogs("recording, CaptureLogCallers = false", logNoCallers);
 ReportLogs("recording everything", logAll);
+ReportLogs("loader AutoStart.Logs, not attached", logAutoStart);
 
 (double TotalMs, long Bytes) Run(bool bevTools, bool disabled = false, bool noRenderEvents = false)
 {
@@ -93,10 +96,19 @@ ReportLogs("recording everything", logAll);
     return (elapsed, bytes);
 }
 
-(double TotalMs, long Bytes) RunLogs(bool bevTools, bool trackLogs = true, bool callers = true)
+(double TotalMs, long Bytes) RunLogs(bool bevTools, bool trackLogs = true, bool callers = true, bool autoStart = false)
 {
     var services = new ServiceCollection();
     services.AddLogging();
+    if (autoStart)
+    {
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AutoStart = BevToolsAutoStart.Logs;
+        });
+    }
+
     if (bevTools)
     {
         services.AddBitBevToolsServices(o =>

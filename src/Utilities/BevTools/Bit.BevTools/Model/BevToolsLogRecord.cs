@@ -67,6 +67,14 @@ public sealed class BevToolsLogRecord
     /// <summary>The database command the entry reports, when it is one of Entity Framework Core's (<see cref="BevToolsDbCommands"/>).</summary>
     public BevToolsDbCommand? DbCommand { get; init; }
 
+    /// <summary>
+    /// Written before BevTools was attached, and kept until then by Bit.BevTools.Loader (<c>BevToolsLoaderOptions.AutoStart</c>).
+    /// Read at the session's value access and redacted like any entry when the session took it over, but without what only
+    /// a session knows at the moment of logging: the component that logged it, the UI event running, a timeline row of its own and an
+    /// entry in Errors.
+    /// </summary>
+    public bool BeforeAttach { get; init; }
+
     /// <summary>The error the entry was also recorded as (an error or critical entry, a Blazor warning), when it was one.</summary>
     public long? ErrorId { get; internal set; }
 
