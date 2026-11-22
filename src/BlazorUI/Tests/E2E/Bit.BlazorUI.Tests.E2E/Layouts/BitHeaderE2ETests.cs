@@ -7,7 +7,7 @@
 /// layout, Gap / Wrap / NoGutter / MaxWidth, ExtensionContent, Sticky / Fixed / Absolute and which one wins, the scroll
 /// driven behaviours scrolled with the real mouse wheel - Reveal with RevealOffset, OnRevealChanged and IsRevealed, the
 /// focus bringing it back and the keyboard focus keeping it, ElevateOnScroll with ElevateOffset, OnScrolledChanged and
-/// IsScrolled, ScrollTarget (and a selector matching nothing), ScrollPadding, on a scrolling box and on the window -
+/// IsScrolled, ScrollTarget (and a selector matching nothing), ScrollPadding and PublishHeight, on a scrolling box and on the window -
 /// Hidden and inert, the skip link, the BitParams cascade, Size, the --bit-Header-* variables and their variant tiers,
 /// Style / Class / Styles / Classes / Visibility, RTL, prerendering, a runtime Reveal toggle and unmounting.
 /// </summary>
@@ -585,6 +585,41 @@ public class BitHeaderE2ETests : E2ETestBase
         var header = await BoxAsync("#padding-header");
         var focused = await BoxAsync("#pad-btn-4");
         Assert.IsTrue(focused.Y >= header.Bottom - Tolerance, $"the focused control ({focused.Y}) is below the header ({header.Bottom})");
+    }
+
+    [TestMethod]
+    public async Task PublishHeight_PublishesTheLiveHeightOfThePinnedHeaderOnItsScrollingArea()
+    {
+        await OpenAsync("/e2e/header");
+
+        const string read = "() => getComputedStyle(document.querySelector('#publish-box')).getPropertyValue('--bit-env-header-height').trim()";
+
+        await Page.WaitForFunctionAsync($"() => ({read})() === '50px'");
+        await Expect(Page.Locator("#publish-box")).ToHaveCSSAsync("scroll-padding-top", "50px");
+
+        // The content inside the scrolling area reads it: the bar sticks right below the header.
+        await ScrollBoxAsync("#publish-box", 300);
+        await NextFramesAsync();
+        var header = await BoxAsync("#publish-header");
+        var bar = await BoxAsync("#publish-bar");
+        Assert.AreEqual(header.Bottom, bar.Y, Tolerance, "the bar sticks right below the header");
+
+        // A header that changes size publishes its new height.
+        await Page.ClickAsync("#btn-publish-height");
+        await Page.WaitForFunctionAsync($"() => ({read})() === '90px'");
+        await Expect(Page.Locator("#publish-box")).ToHaveCSSAsync("scroll-padding-top", "90px");
+        await NextFramesAsync();
+        header = await BoxAsync("#publish-header");
+        bar = await BoxAsync("#publish-bar");
+        Assert.AreEqual(header.Bottom, bar.Y, Tolerance, "the bar follows the taller header");
+
+        // Turned off, the box gets its own value back, while the scroll padding the header still holds stays.
+        await Page.ClickAsync("#btn-publish-toggle");
+        await Page.WaitForFunctionAsync($"() => ({read})() === '7px'");
+        await Expect(Page.Locator("#publish-box")).ToHaveCSSAsync("scroll-padding-top", "90px");
+
+        Assert.IsFalse(await IsCircuitDeadAsync());
+        await AssertNoServerErrorsAsync();
     }
 
     [TestMethod]
