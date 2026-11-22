@@ -71,7 +71,7 @@ public partial class BitHeaderDemo
             Name = "ElevateOnScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the BitHeader flat while the scrolling area sits at its top and lets it cast its shadow only once the content has been scrolled underneath it. It only has an effect on a Fixed or Sticky header, and Elevated takes precedence over it. While scrolled, the root also carries the bit-hdr-scr class and the Scrolled part of Classes and Styles, and reads the --bit-Header-scrolled-* variables, so the scrolled state can be styled beyond the shadow.",
+            Description = "Keeps the BitHeader flat while the scrolling area sits at its top and lets it cast its shadow only once the content has been scrolled underneath it. It only has an effect on a Fixed or Sticky header, and Elevated takes precedence over it. While scrolled, the root also carries the bit-hdr-scr class and the Scrolled part of Classes and Styles, and reads the --bit-Header-scrolled-* variables, so the scrolled state can be styled beyond the shadow. A header that wants the scrolled state without the shadow needs no ElevateOnScroll: an OnScrolledChanged handler or a Scrolled class or style is enough.",
         },
         new()
         {
@@ -134,7 +134,7 @@ public partial class BitHeaderDemo
             Name = "OnScrolledChanged",
             Type = "EventCallback<bool>",
             DefaultValue = "",
-            Description = "Callback for when the scrolled state of the header changes. The provided value is true once the scrolling area has travelled past the ElevateOffset. Only invoked while ElevateOnScroll is enabled.",
+            Description = "Callback for when the scrolled state of the header changes. The provided value is true once the scrolling area has travelled past the ElevateOffset. Handling it is enough for a Fixed or Sticky header to track its scrolled state, with or without ElevateOnScroll.",
         },
         new()
         {
@@ -258,7 +258,7 @@ public partial class BitHeaderDemo
             Name = "IsScrolled",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Gets a value indicating whether the scrolling area of the header has travelled past the ElevateOffset. It is always false unless ElevateOnScroll is enabled.",
+            Description = "Gets a value indicating whether the scrolling area of the header has travelled past the ElevateOffset. It is always false unless a Fixed or Sticky header tracks its scrolled state: an ElevateOnScroll, an OnScrolledChanged handler or a Scrolled class or style.",
         },
     ];
 
@@ -296,7 +296,7 @@ public partial class BitHeaderDemo
                     Name = "Scrolled",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles applied to the root element of the BitHeader while it is scrolled, which is while IsScrolled is true (an ElevateOnScroll header whose scrolling area has travelled past the ElevateOffset)."
+                    Description = "Custom CSS classes/styles applied to the root element of the BitHeader while it is scrolled, which is while IsScrolled is true (its scrolling area has travelled past the ElevateOffset). Giving it is enough for a Fixed or Sticky header to track its scrolled state, with or without ElevateOnScroll."
                 },
                 new()
                 {
@@ -498,6 +498,12 @@ public partial class BitHeaderDemo
             Name = "--bit-Header-text-scrolled-border-color",
             DefaultValue = "--bit-Header-scrolled-border-color",
             Description = "Divider of a scrolled Bordered Text header alone, read ahead of --bit-Header-scrolled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-scrolled-backdrop-filter",
+            DefaultValue = "none",
+            Description = "Backdrop filter of a header while it is scrolled (for example blur(12px)), which frosts what passes behind it once content scrolls under it. Shared by the three variants, with no variant twins. A Translucent Fill header keeps its own blur over it, and forced colors, reduced transparency and print turn it off.",
         },
         new()
         {

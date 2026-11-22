@@ -103,6 +103,8 @@ public class BitHeaderStylesheetTests
 
             // The content color fades with the background, so a theme switch never leaves text on the old fill.
             StringAssert.Contains(block, ", color $mot-duration $mot-easing");
+
+            StringAssert.Contains(block, "backdrop-filter $mot-duration $mot-easing");
         }
 
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-anm:where(.bit-hdr-esc) {"), "transform $mot-duration $mot-easing");
@@ -116,6 +118,28 @@ public class BitHeaderStylesheetTests
         Assert.IsTrue(combined > stylesheet.IndexOf("\n.bit-hdr-esc {", System.StringComparison.Ordinal));
         Assert.IsTrue(combined > stylesheet.IndexOf("\n.bit-hdr-anm {", System.StringComparison.Ordinal));
         Assert.IsTrue(combined < stylesheet.IndexOf("@media print {", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldReadTheScrolledBackdropFilterOnlyWhileScrolled()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // One class, so the two class Translucent Fill rule keeps its own blur over it, and an unset variable leaves
+        // the none every header has at rest.
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-scr {");
+
+        StringAssert.Contains(block, "backdrop-filter: var(--bit-Header-scrolled-backdrop-filter, none);");
+        StringAssert.Contains(block, "-webkit-backdrop-filter: var(--bit-Header-scrolled-backdrop-filter, none);");
+
+        // Forced colors, reduced transparency and print take it off, as they do the Translucent blur.
+        foreach (var media in new[] { "@media (forced-colors: active) {", "@media (prefers-reduced-transparency: reduce) {", "@media print {" })
+        {
+            var start = stylesheet.IndexOf(media, System.StringComparison.Ordinal);
+            var end = stylesheet.IndexOf("\n}", start, System.StringComparison.Ordinal);
+
+            StringAssert.Matches(stylesheet[start..end], new System.Text.RegularExpressions.Regex(@"\.bit-hdr-scr\s*[,{][^}]*backdrop-filter: none;"));
+        }
     }
 
     [TestMethod]

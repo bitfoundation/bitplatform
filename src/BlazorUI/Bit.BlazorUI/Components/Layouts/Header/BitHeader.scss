@@ -16,6 +16,10 @@
 //   --bit-Header-shadow                 shadow of an Elevated or scrolled header     (default: $box-shadow-appbar-top)
 //   --bit-Header-scrolled-background    fill of a scrolled Fill header               (default: --bit-Header-background)
 //   --bit-Header-scrolled-border-color  border and divider of a scrolled header      (default: --bit-Header-border-color)
+//   --bit-Header-scrolled-backdrop-filter
+//                                       backdrop filter of a scrolled header         (default: none)
+//                                       It means the same in every variant, so it has no variant twins; a
+//                                       Translucent Fill header keeps its own blur.
 //   --bit-Header-z-index                stacking order of a pinned header            (default: $zindex-base)
 //   --bit-Header-backdrop-blur          blur behind a Translucent header             (default: 12px)
 //   --bit-Header-translucent-opacity    share of the fill a Translucent header keeps (default: 72%)
@@ -192,7 +196,16 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
     }
 }
 
-// The scrolled state of an ElevateOnScroll header (bit-hdr-scr) reads a scrolled tier of the background and border
+// A scrolled header frosts what passes behind it once the variable asks for it. Left unset it stays at none, the
+// value every header has at rest, so nothing changes. The rule weighs one class, so the two class rule of a
+// Translucent Fill header keeps its own blur over it, and an app's single class declared later still restyles it.
+.bit-hdr-scr {
+    backdrop-filter: var(--bit-Header-scrolled-backdrop-filter, none);
+    -webkit-backdrop-filter: var(--bit-Header-scrolled-backdrop-filter, none);
+}
+
+// The scrolled state of a header (bit-hdr-scr) - one that tracks it through ElevateOnScroll, an OnScrolledChanged
+// handler or a Scrolled class or style - reads a scrolled tier of the background and border
 // variables ahead of the resting one, which is what a header transparent at the top that turns into a frosted surface
 // with a hairline once content passes under it is made of. Each tier sits between the Color and the resting variables,
 // so an explicit Color still wins and a scrolled variable left unset changes nothing.
@@ -365,12 +378,13 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
     box-shadow: var(--bit-Header-shadow, #{$box-shadow-appbar-top});
 }
 
-// What only shows up once the page has been scrolled - the shadow, and the scrolled fill and border - has to arrive
-// gradually, or the header snaps from flat to lifted on the very first pixel of a scroll.
+// What only shows up once the page has been scrolled - the shadow, and the scrolled fill, border and backdrop
+// filter - has to arrive gradually, or the header snaps from flat to lifted on the very first pixel of a scroll.
+// The class is on every header that tracks its scrolled state, whether or not it casts the shadow.
 // A fading background fades on any change, a theme switch or a new Color included, so the content color fades along
 // with it: text that flipped at once would sit on the old background, light on light, for the whole transition.
 .bit-hdr-esc {
-    transition: box-shadow $mot-duration $mot-easing, background-color $mot-duration $mot-easing, border-color $mot-duration $mot-easing, color $mot-duration $mot-easing;
+    transition: box-shadow $mot-duration $mot-easing, background-color $mot-duration $mot-easing, border-color $mot-duration $mot-easing, color $mot-duration $mot-easing, backdrop-filter $mot-duration $mot-easing;
 }
 
 
@@ -384,7 +398,7 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 // The second class costs no weight, so this wins over the two rules above by coming after them, and the print rule
 // and an app's single class still override it.
 .bit-hdr-anm:where(.bit-hdr-esc) {
-    transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing, background-color $mot-duration $mot-easing, border-color $mot-duration $mot-easing, color $mot-duration $mot-easing;
+    transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing, background-color $mot-duration $mot-easing, border-color $mot-duration $mot-easing, color $mot-duration $mot-easing, backdrop-filter $mot-duration $mot-easing;
 }
 
 // translateY is used rather than a top offset so the slide runs on the compositor, and it hides the
@@ -445,6 +459,7 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 
     // Forced colors repaints the header with the system palette, so there is no longer a tinted surface to
     // soften - and blurring what passes behind it only muddies the content the mode is there to keep crisp.
+    .bit-hdr-scr,
     .bit-hdr-trs.bit-hdr-fil {
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
@@ -492,6 +507,12 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
         }
     }
 
+    // Nor does the backdrop filter of a scrolled header, whatever the variable asks for.
+    .bit-hdr-scr {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+
     // A scrolled one gets its scrolled fill back solid, rather than the translucent one or the resting fill.
     .bit-hdr-trs.bit-hdr-scr:where(.bit-hdr-fil) {
         background-color: var(--bit-hdr-bg, var(--bit-Header-fill-scrolled-background, var(--bit-Header-scrolled-background, var(--bit-Header-fill-background, var(--bit-Header-background, #{$clr-bg-pri})))));
@@ -517,6 +538,7 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
         transform: none;
     }
 
+    .bit-hdr-scr,
     .bit-hdr-trs.bit-hdr-fil {
         backdrop-filter: none;
         -webkit-backdrop-filter: none;

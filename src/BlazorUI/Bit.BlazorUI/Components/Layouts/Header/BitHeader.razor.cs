@@ -24,6 +24,7 @@ public partial class BitHeader : BitComponentBase
     private bool _slidable;
     private bool _settingUp;
     private bool _setupPending;
+    private bool _tracksScrolled;
     private string? _attachedId;
     private string? _attachedSignature;
     private DotNetObjectReference<BitHeader>? _dotnetObj;
@@ -120,6 +121,10 @@ public partial class BitHeader : BitComponentBase
     /// </summary>
     /// <remarks>
     /// When not set (or set to 0), the header gains its shadow as soon as the scroll leaves the top.
+    /// <br />
+    /// It is the point the header counts as scrolled at, so it is also where the <c>bit-hdr-scr</c> class, the
+    /// <see cref="BitHeaderClassStyles.Scrolled"/> part and the <c>--bit-Header-scrolled-*</c> variables start to apply
+    /// and <see cref="OnScrolledChanged"/> fires, whether or not the header casts the shadow.
     /// </remarks>
     [Parameter] public int? ElevateOffset { get; set; }
 
@@ -139,10 +144,14 @@ public partial class BitHeader : BitComponentBase
     /// <br />
     /// The shadow is only the default look of the scrolled state. While scrolled, the root also carries the
     /// <c>bit-hdr-scr</c> class and the <see cref="BitHeaderClassStyles.Scrolled"/> part of <see cref="Classes"/> and
-    /// <see cref="Styles"/>, and reads the <c>--bit-Header-scrolled-background</c> and
-    /// <c>--bit-Header-scrolled-border-color</c> variables - so a header that is transparent at the top and turns
-    /// frosted with a hairline once scrolled (<see cref="Translucent"/>, <see cref="Bordered"/>) is a matter of CSS,
-    /// and <c>--bit-Header-shadow: none</c> keeps it free of the shadow.
+    /// <see cref="Styles"/>, and reads the <c>--bit-Header-scrolled-background</c>,
+    /// <c>--bit-Header-scrolled-border-color</c> and <c>--bit-Header-scrolled-backdrop-filter</c> variables - so a
+    /// header that is transparent at the top and turns frosted with a hairline once scrolled (<see cref="Translucent"/>,
+    /// <see cref="Bordered"/>) is a matter of CSS, and <c>--bit-Header-shadow: none</c> keeps it free of the shadow.
+    /// <br />
+    /// A header that wants that scrolled state without the shadow does not need this at all: an
+    /// <see cref="OnScrolledChanged"/> handler or a <see cref="BitHeaderClassStyles.Scrolled"/> class or style is
+    /// enough for a <see cref="Fixed"/> or <see cref="Sticky"/> header to track it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool ElevateOnScroll { get; set; }
@@ -260,8 +269,9 @@ public partial class BitHeader : BitComponentBase
     /// area has travelled past the <see cref="ElevateOffset"/>.
     /// </summary>
     /// <remarks>
-    /// Only invoked while <see cref="ElevateOnScroll"/> is enabled. It is what a header that has to do more than
-    /// cast a shadow at that moment - shrink itself, swap a logo for a compact one, reveal a search box - hooks into.
+    /// It is what a header that has to do more than cast a shadow at that moment - shrink itself, swap a logo for a
+    /// compact one, reveal a search box - hooks into, so handling it is enough for a <see cref="Fixed"/> or
+    /// <see cref="Sticky"/> header to track its scrolled state, with or without <see cref="ElevateOnScroll"/>.
     /// </remarks>
     [Parameter] public EventCallback<bool> OnScrolledChanged { get; set; }
 
@@ -458,8 +468,12 @@ public partial class BitHeader : BitComponentBase
 
     /// <summary>
     /// Gets a value indicating whether the scrolling area of the header has travelled past the <see cref="ElevateOffset"/>.
-    /// It is always false unless <see cref="ElevateOnScroll"/> is enabled.
     /// </summary>
+    /// <remarks>
+    /// The state is only tracked for a <see cref="Fixed"/> or <see cref="Sticky"/> header that has a use for it - an
+    /// <see cref="ElevateOnScroll"/>, an <see cref="OnScrolledChanged"/> handler or a
+    /// <see cref="BitHeaderClassStyles.Scrolled"/> class or style - so it is always false otherwise.
+    /// </remarks>
     public bool IsScrolled => _scrolled;
 
 
@@ -535,9 +549,9 @@ public partial class BitHeader : BitComponentBase
 
         if (_scrolled == scrolled) return;
 
-        // A report of the registration set up before ElevateOnScroll was turned off can still be in flight, and
-        // nothing would ever take back the scrolled state it brings.
-        if (scrolled && ElevateOnScroll is false) return;
+        // A report of the registration set up before the header stopped tracking its scrolled state can still be
+        // in flight, and nothing would ever take back the scrolled state it brings.
+        if (scrolled && _tracksScrolled is false) return;
 
         _scrolled = scrolled;
 
@@ -614,10 +628,11 @@ public partial class BitHeader : BitComponentBase
 
         ClassBuilder.Register(() => Bordered ? "bit-hdr-brd" : string.Empty);
 
-        // What the scrolled state changes - the shadow, and the scrolled background and border colors - fades in and
-        // out rather than appearing at once, so the transition is registered for as long as the scroll can still
-        // change the state. An Elevated header keeps its shadow either way, but its colors can still follow the scroll.
-        ClassBuilder.Register(() => ElevateOnScroll ? "bit-hdr-esc" : string.Empty);
+        // What the scrolled state changes - the shadow, and the scrolled background, border colors and backdrop
+        // filter - fades in and out rather than appearing at once, so the transition is registered for as long as the
+        // scroll can still change the state. An Elevated header keeps its shadow either way, but the rest can still
+        // follow the scroll.
+        ClassBuilder.Register(() => _tracksScrolled ? "bit-hdr-esc" : string.Empty);
 
         ClassBuilder.Register(() => (Elevated || (ElevateOnScroll && _scrolled)) ? "bit-hdr-elv" : string.Empty);
 
@@ -693,10 +708,25 @@ public partial class BitHeader : BitComponentBase
             StyleBuilder.Reset();
         }
 
-        // Only an ElevateOnScroll header is told about the scroll, so one that turns it off while scrolled would
+        // The scrolled state is only worth a scroll listener to a header that does something with it: casts the
+        // ElevateOnScroll shadow, hands it to an OnScrolledChanged handler, or is restyled through a Scrolled class or
+        // style - a header asking for none of them gets no listener for it. Neither the callback nor Styles resets
+        // the class builder when it is set, hence the reset here.
+        var tracksScrolled = ElevateOnScroll ||
+                             OnScrolledChanged.HasDelegate ||
+                             Classes?.Scrolled is not null ||
+                             Styles?.Scrolled is not null;
+        if (_tracksScrolled != tracksScrolled)
+        {
+            _tracksScrolled = tracksScrolled;
+
+            ClassBuilder.Reset();
+        }
+
+        // Only a header tracking its scrolled state is told about the scroll, so one that stops while scrolled would
         // never hear the state go back - the listener may well stay attached for Reveal, ScrollPadding or
         // PublishHeight - and would keep the scrolled class, part and colors for good. It is at rest from now on.
-        if (ElevateOnScroll is false && _scrolled)
+        if (_tracksScrolled is false && _scrolled)
         {
             _scrolled = false;
 
@@ -748,14 +778,14 @@ public partial class BitHeader : BitComponentBase
         // Only a pinned header has anything to slide over, to lift itself above, or to cover at the top of the
         // scrolling area, so the scroll listener is attached for those alone. Toggling any of these parameters
         // at runtime attaches or detaches it accordingly.
-        var shouldAttach = (Reveal || ElevateOnScroll || ScrollPadding || PublishHeight) && IsPinned;
+        var shouldAttach = (Reveal || _tracksScrolled || ScrollPadding || PublishHeight) && IsPinned;
 
         // Everything the script is handed at setup time is part of the signature, so a change of any of it sets
         // the listener up again - including the id, which is what the script keys its registration by, and which
         // would otherwise leave the listeners behind on the element that id no longer names.
         var revealOffset = Math.Max(0, RevealOffset.GetValueOrDefault());
         var elevateOffset = Math.Max(0, ElevateOffset.GetValueOrDefault());
-        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{elevateOffset}|{Reveal}|{ElevateOnScroll}|{ScrollTarget}|{ScrollPadding}|{PublishHeight}" : null;
+        var signature = shouldAttach ? $"{_Id}|{revealOffset}|{elevateOffset}|{Reveal}|{_tracksScrolled}|{ScrollTarget}|{ScrollPadding}|{PublishHeight}" : null;
 
         if (signature == _attachedSignature) return;
 
@@ -782,7 +812,7 @@ public partial class BitHeader : BitComponentBase
         {
             _dotnetObj ??= DotNetObjectReference.Create(this);
 
-            await _js.BitHeadersSetup(_Id, _dotnetObj, revealOffset, elevateOffset, Reveal, ElevateOnScroll, ScrollTarget, ScrollPadding, PublishHeight);
+            await _js.BitHeadersSetup(_Id, _dotnetObj, revealOffset, elevateOffset, Reveal, _tracksScrolled, ScrollTarget, ScrollPadding, PublishHeight);
 
             if (IsDisposed)
             {

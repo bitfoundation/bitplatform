@@ -44,11 +44,13 @@
 
         // Drives the two scroll behaviors of the header: sliding it out of the view while the page is
         // scrolled down and bringing it back while it is scrolled up (the classic "reveal" of an app bar),
-        // and lifting it off the content once the page has left its top (the "elevate on scroll" shadow).
-        // Both states live here and only cross the interop boundary when they actually flip, so a scroll
-        // never costs more than a comparison. It also keeps the scroll padding of the scroller in step
-        // with the height of the header, so nothing scrolled to lands underneath a pinned one.
-        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean, publishHeight: boolean) {
+        // and telling it once the page has left its top (the scrolled state, which the "elevate on scroll"
+        // shadow, the Scrolled class-style part, the scrolled variables and OnScrolledChanged all key off -
+        // trackScrolled says whether anything does). Both states live here and only cross the interop
+        // boundary when they actually flip, so a scroll never costs more than a comparison. It also keeps
+        // the scroll padding of the scroller in step with the height of the header, so nothing scrolled to
+        // lands underneath a pinned one.
+        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, trackScrolled: boolean, scrollTarget: string | null, scrollPadding: boolean, publishHeight: boolean) {
             Headers.dispose(id);
 
             const element = document.getElementById(id);
@@ -164,7 +166,7 @@
             };
 
             const applyScrolled = (next: boolean) => {
-                if (!elevate || next === scrolled) return;
+                if (!trackScrolled || next === scrolled) return;
 
                 scrolled = next;
 
