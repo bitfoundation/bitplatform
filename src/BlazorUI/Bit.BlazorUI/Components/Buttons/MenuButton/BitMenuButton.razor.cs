@@ -2300,6 +2300,10 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         if (IsOpen is false)
         {
             _owner = CalloutOwner.Default;
+
+            // A submenu the pointer was about to open (or close) beside a row belongs to the menu that just closed,
+            // so its ticket goes stale here rather than opening a submenu out of a menu that is no longer showing.
+            NextHoverToken();
         }
 
         // The component's own open and close flows toggle the callout themselves, right after the assignment.

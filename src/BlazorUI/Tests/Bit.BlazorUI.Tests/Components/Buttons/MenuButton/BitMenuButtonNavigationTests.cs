@@ -494,8 +494,10 @@ public class BitMenuButtonNavigationTests : BunitTestContext
             parameters.Add(p => p.Text, "Products");
             parameters.Add(p => p.Items, NavItems());
             parameters.Add(p => p.OpenOnHover, true);
-            parameters.Add(p => p.HoverOpenDelay, 5000);
+            parameters.Add(p => p.HoverOpenDelay, 300);
         });
+
+        com.WaitForAssertion(() => Assert.IsTrue(HasHandler(com.Find(".bit-mnb"), "onmouseenter")));
 
         // The pointer passing over the button leaves before the delay is up, which calls the opening off.
         Task enter = Task.CompletedTask;
@@ -507,6 +509,35 @@ public class BitMenuButtonNavigationTests : BunitTestContext
         await enter;
 
         Assert.AreEqual("false", Expanded(com));
+
+        // The pointer staying on the button opens the menu once the delay is up, and not before. A statement body,
+        // so that the dispatch is not awaited as the result of the lambda.
+        await com.InvokeAsync(() => { enter = com.Find(".bit-mnb").MouseEnterAsync(new MouseEventArgs()); });
+
+        Assert.AreEqual("false", Expanded(com));
+
+        await enter;
+
+        Assert.AreEqual("true", Expanded(com));
+    }
+
+    [TestMethod]
+    public async Task BitMenuButtonShouldNotOpenASubmenuThePointerAskedForAfterTheMenuClosed()
+    {
+        var com = RenderNav();
+
+        com.Find(".bit-mnb-opb").Click();
+        Assert.AreEqual("true", Expanded(com));
+
+        // The pointer arrives at a row with a submenu, and the menu closes before the submenu's hover delay is up.
+        RootItem(com, 1).MouseEnter();
+        com.Find(".bit-mnb-opb").KeyDown(Key.Escape);
+        Assert.AreEqual("false", Expanded(com));
+
+        await Task.Delay(400);
+
+        Assert.AreEqual("false", RootItem(com, 1).GetAttribute("aria-expanded"));
+        Assert.IsFalse(RootItem(com, 1).ClassList.Contains("bit-mnb-osb"));
     }
 
     [TestMethod]

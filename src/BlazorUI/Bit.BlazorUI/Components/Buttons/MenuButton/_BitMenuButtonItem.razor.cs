@@ -112,6 +112,10 @@ public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyA
     {
         if (MenuButton.Disabled || MenuButton.GetIsDisabled(Item)) return;
 
+        // An open the pointer asked for is carried out after the hover delay, by which time the menu it was asked
+        // from may have closed: a submenu of a closed menu would be left showing on its own.
+        if (byPointer && MenuButton.IsOpen is false) return;
+
         if (_isSubmenuOpen)
         {
             if (focusFirstItem)
