@@ -176,16 +176,29 @@ else
                     {
                         var text = GetText(current);
                         var error = GetIsError(current);
+                        var disabled = Disabled || GetIsDisabled(current);
 
                         <span style="@Styles?.Position" class="bit-str-pos @Classes?.Position">@GetPositionText()</span>
                         if (text.HasValue())
                         {
-                            <span style="@Styles?.CompactText" class="@GetCompactTextClass(error)">@text</span>
+                            <span style="@Styles?.CompactText" class="@GetCompactTextClass(error, disabled)">@text</span>
                         }
                         if (error)
                         {
                             <span class="bit-str-sts">@BitStrings.Current.StepError</span>
                         }
+                    }
+                    else if (_items.Count > 0)
+                    {
+                        @* Outside the steps, the position is where the process is as a whole: every step done, or none started. *@
+                        <span style="@Styles?.Position" class="bit-str-pos @Classes?.Position">@(CurrentIndex < 0 ? BitStrings.Current.StepsNotStarted : BitStrings.Current.StepsCompleted)</span>
+                    }
+                    @* The bar is hidden from a screen reader, so the steps in error other than the current one, which only
+                       the bar draws, are said in words, as the list says each of them. *@
+                    var otherErrors = GetOtherErrorsText();
+                    if (otherErrors is not null)
+                    {
+                        <span class="bit-str-sts">@otherErrors</span>
                     }
                     if (_items.Count > 0)
                     {

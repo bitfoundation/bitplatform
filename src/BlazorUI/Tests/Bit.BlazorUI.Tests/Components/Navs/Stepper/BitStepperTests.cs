@@ -143,20 +143,55 @@ public class BitStepperTests : BunitTestContext
         var com = Render(items, currentIndex: 1, compact: true);
 
         Assert.IsTrue(com.Find(".bit-str-ctx").ClassList.Contains("bit-str-cte"));
-        Assert.AreEqual("Error", com.Find(".bit-str-sum .bit-str-sts").TextContent);
+        // The current step says it is in error after its text, and the other step in error, which only the bar draws,
+        // is said in words after that.
+        CollectionAssert.AreEqual(new[] { "Error", "Steps in error: 1" }, com.FindAll(".bit-str-sum .bit-str-sts").Select(s => s.TextContent).ToArray());
         CollectionAssert.AreEqual(new[] { "bit-str-sge", "bit-str-sge", "", "" }, Segments(com));
     }
 
     [TestMethod]
-    [DataRow(4, new[] { "bit-str-sga", "bit-str-sga", "bit-str-sga", "bit-str-sga" })]
-    [DataRow(-1, new[] { "", "", "", "" })]
-    public void CompactBitStepperShouldShowTheBarAloneOutsideTheSteps(int currentIndex, string[] expected)
+    public void CompactBitStepperShouldSayTheOtherStepsInError()
+    {
+        var items = Items();
+        items[0].IsError = true;
+        items[3].IsError = true;
+
+        var com = Render(items, currentIndex: 2, compact: true);
+
+        Assert.IsFalse(com.Find(".bit-str-ctx").ClassList.Contains("bit-str-cte"));
+        CollectionAssert.AreEqual(new[] { "Steps in error: 1, 4" }, com.FindAll(".bit-str-sum .bit-str-sts").Select(s => s.TextContent).ToArray());
+        Assert.IsNull(com.Find(".bit-str-sts").Closest("[aria-hidden]"));
+    }
+
+    [TestMethod]
+    [DataRow(4, "All steps completed", new[] { "bit-str-sga", "bit-str-sga", "bit-str-sga", "bit-str-sga" })]
+    [DataRow(-1, "Not started", new[] { "", "", "", "" })]
+    public void CompactBitStepperShouldSayWhereTheProcessIsOutsideTheSteps(int currentIndex, string status, string[] expected)
     {
         var com = Render(currentIndex: currentIndex, compact: true);
 
-        Assert.AreEqual(0, com.FindAll(".bit-str-pos").Count);
+        Assert.AreEqual(status, com.Find(".bit-str-sum > .bit-str-pos").TextContent);
         Assert.AreEqual(0, com.FindAll(".bit-str-ctx").Count);
+        Assert.AreEqual(0, com.FindAll(".bit-str-sts").Count);
         CollectionAssert.AreEqual(expected, Segments(com));
+    }
+
+    [TestMethod]
+    public void CompactBitStepperShouldKeepTheDisabledPaletteOfADisabledStep()
+    {
+        var items = Items();
+        items[1].IsDisabled = true;
+        items[2].IsDisabled = true;
+
+        var com = Render(items, currentIndex: 1, compact: true);
+
+        Assert.IsTrue(com.Find(".bit-str-ctx").ClassList.Contains("bit-str-ctd"));
+        CollectionAssert.AreEqual(new[] { false, true, true, false }, com.FindAll(".bit-str-seg").Select(s => s.ClassList.Contains("bit-str-sgd")).ToArray());
+
+        var enabled = Render(currentIndex: 1, compact: true);
+
+        Assert.IsFalse(enabled.Find(".bit-str-ctx").ClassList.Contains("bit-str-ctd"));
+        Assert.AreEqual(0, enabled.FindAll(".bit-str-sgd").Count);
     }
 
     [TestMethod]
@@ -573,6 +608,12 @@ public class BitStepperTests : BunitTestContext
             var com = Render(currentIndex: 2, compact: true);
 
             Assert.AreEqual("مرحله 3 از 4", com.Find(".bit-str-pos").TextContent);
+
+            com.Render(parameters => parameters.Add(p => p.CurrentIndex, 4));
+            Assert.AreEqual("همه مراحل انجام شده", com.Find(".bit-str-pos").TextContent);
+
+            com.Render(parameters => parameters.Add(p => p.CurrentIndex, -1));
+            Assert.AreEqual("شروع نشده", com.Find(".bit-str-pos").TextContent);
         }
         finally
         {
@@ -587,6 +628,10 @@ public class BitStepperTests : BunitTestContext
         public override string StepError => "خطا";
 
         public override string StepPositionFormat => "مرحله {0} از {1}";
+
+        public override string StepsCompleted => "همه مراحل انجام شده";
+
+        public override string StepsNotStarted => "شروع نشده";
     }
 
     [TestMethod]

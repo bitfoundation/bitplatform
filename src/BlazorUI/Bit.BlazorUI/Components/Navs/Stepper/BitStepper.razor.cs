@@ -67,6 +67,14 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     /// the width of the stepper's own container through the container query of Responsive, so nothing is measured and
     /// the layout is right from the prerendered page on. The root of a Compact stepper is a group (a <c>div</c> carrying
     /// <c>bit-str-cpt</c>) rather than the list, which a Responsive one holds inside it (<c>bit-str-lst</c>).
+    /// <br />
+    /// Outside the steps, the position says where the process is as a whole (<see cref="BitStrings.StepsCompleted"/>,
+    /// <see cref="BitStrings.StepsNotStarted"/>), and the steps in error other than the current one, which only the bar
+    /// draws, are said to a screen reader (<see cref="BitStrings.StepErrorsFormat"/>).
+    /// <br />
+    /// The layout a Responsive Compact stepper is not in is hidden, so a step button of its list that has the focus while
+    /// the stepper narrows below 600px takes the focus with it: a page that resizes the stepper's container under the
+    /// user's keyboard (a sidebar folding up) moves the focus where it belongs itself.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Compact { get; set; }
@@ -432,11 +440,29 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     private string GetPositionText() =>
         string.Format(CultureInfo.CurrentCulture, BitStrings.Current.StepPositionFormat, GetNumber(CurrentIndex), _items.Count.ToString(CultureInfo.CurrentCulture));
 
-    private string GetCompactTextClass(bool error)
+    // The numbers of the steps in error other than the current one (which says so after its own text), for a screen
+    // reader, or null when there are none.
+    private string? GetOtherErrorsText()
+    {
+        var numbers = new List<string>();
+
+        for (int i = 0; i < _items.Count; i++)
+        {
+            if (i != CurrentIndex && GetIsError(_items[i])) numbers.Add(GetNumber(i));
+        }
+
+        if (numbers.Count == 0) return null;
+
+        return string.Format(CultureInfo.CurrentCulture, BitStrings.Current.StepErrorsFormat, string.Join(", ", numbers));
+    }
+
+    private string GetCompactTextClass(bool error, bool disabled)
     {
         var classes = new List<string> { "bit-str-ctx" };
 
         if (error) classes.Add("bit-str-cte");
+
+        if (disabled) classes.Add("bit-str-ctd");
 
         classes.AddIfHasValue(Classes?.CompactText);
 
@@ -444,7 +470,7 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
     }
 
     // A segment of the bar is in the active color for a step done and for the current one, and in the error color for a
-    // step in error, as the indicators of the list are.
+    // step in error, as the indicators of the list are. A disabled step keeps its disabled palette, as it does in the list.
     private string GetSegmentClass(TItem item, int index)
     {
         var classes = new List<string> { "bit-str-seg" };
@@ -459,6 +485,8 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
         {
             classes.Add("bit-str-sga");
         }
+
+        if (GetIsDisabled(item)) classes.Add("bit-str-sgd");
 
         classes.AddIfHasValue(Classes?.Segment);
 

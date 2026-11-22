@@ -254,6 +254,20 @@ button.bit-str-btn {
     background-color: var(--bit-Stepper-error-color, #{$clr-err});
 }
 
+// A disabled step keeps its disabled palette in the compact part too, as it does in the list (bit-str-sdi): its text,
+// and its segment, which still tells a step done from one to come.
+.bit-str-ctd {
+    color: $clr-fg-dis;
+}
+
+.bit-str-sgd {
+    background-color: $clr-brd-dis;
+}
+
+.bit-str-sgd:is(.bit-str-sga, .bit-str-sge) {
+    background-color: $clr-fg-dis;
+}
+
 // A Responsive horizontal stepper is a row while it is 600px wide or more and a column below that, by the width of its
 // own container rather than the screen's: one in a sidebar, a card or a dialog takes the column on a wide screen too.
 // An element cannot be queried against its own width, so the list stands in a wrapper (bit-str-rsw) that is the query
@@ -278,9 +292,10 @@ button.bit-str-btn {
         @include stp-horizontal-connector;
     }
 
-    // A Responsive Compact stepper shows its list, a row, while it is wide enough.
+    // A Responsive Compact stepper shows its list, a row, while it is wide enough. The part hidden is important, so a
+    // display an app writes into Styles.Compact or Classes.Compact never shows both layouts at once.
     .bit-str-rsw > .bit-str-cpt > .bit-str-sum {
-        display: none;
+        display: none !important;
     }
 }
 
@@ -299,7 +314,7 @@ button.bit-str-btn {
 
     // ...and its compact part in place of the column below that.
     .bit-str-rsw > .bit-str-cpt > .bit-str-lst {
-        display: none;
+        display: none !important;
     }
 }
 
@@ -347,22 +362,41 @@ button.bit-str-btn {
 
 // Forced-colors modes drop the fills of the indicators and the painted lines, so the active and error indicators
 // become Highlight discs, the lines are drawn in the text color, and a disabled step in GrayText. The segments of the
-// compact bar are Highlight for the way already come and GrayText for the steps to come.
+// compact bar are Highlight for the way already come and GrayText for the steps to come; a step in error is dashed,
+// since the palette has no color of its own for an error, and a disabled one (or every one of a disabled stepper)
+// draws the way already come in the text color, so it still stands apart from GrayText.
 @media (forced-colors: active) {
     .bit-str-seg {
         forced-color-adjust: none;
         background-color: GrayText;
     }
 
-    .bit-str-sga,
-    .bit-str-sge {
+    .bit-str-sga {
         background-color: Highlight;
     }
 
+    .bit-str-sge {
+        background-color: Canvas;
+        background-image: repeating-linear-gradient(90deg, Highlight 0 #{spacing(0.5)}, transparent #{spacing(0.5)} #{spacing(0.75)});
+    }
+
+    .bit-str-sgd,
     .bit-dis:where(.bit-str) .bit-str-seg {
         background-color: GrayText;
     }
 
+    .bit-str-sgd.bit-str-sga,
+    .bit-dis:where(.bit-str) .bit-str-sga {
+        background-color: CanvasText;
+    }
+
+    .bit-str-sgd.bit-str-sge,
+    .bit-dis:where(.bit-str) .bit-str-sge {
+        background-color: Canvas;
+        background-image: repeating-linear-gradient(90deg, CanvasText 0 #{spacing(0.5)}, transparent #{spacing(0.5)} #{spacing(0.75)});
+    }
+
+    .bit-str-ctd,
     .bit-dis:where(.bit-str) .bit-str-pos,
     .bit-dis:where(.bit-str) .bit-str-ctx {
         color: GrayText;
