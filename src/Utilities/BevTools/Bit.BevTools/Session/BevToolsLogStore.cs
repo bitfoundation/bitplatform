@@ -72,12 +72,8 @@ internal sealed class BevToolsLogStore
     {
         lock (_lock)
         {
-            var merged = _records.ToArray().Concat(records).OrderBy(static r => r.Id).ToArray();
-            _records.Clear();
-            foreach (var record in merged)
-            {
-                _records.Add(record);
-            }
+            // One step of the ring's own: Snapshot and Find read it without this lock, and must never see it half rebuilt.
+            _records.Replace(current => current.Concat(records).OrderBy(static r => r.Id));
 
             for (var i = 0; i < _counts.Length && i < counts.Count; i++)
             {

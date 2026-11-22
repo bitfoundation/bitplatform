@@ -181,8 +181,10 @@ internal static class BevToolsCapabilityReport
         const string Feature = "Entries written before BevTools started";
         if (attachment is null)
         {
-            return new("Logging", Feature, session.Options.TrackLogs ? BevToolsCapabilityStatus.Available : BevToolsCapabilityStatus.NotAvailable,
-                "BevTools was registered at startup, so its provider was in the app's logger factory from the start; what was logged before this session existed (the host starting, a hosted service) belongs to no session and is not attributed to one.");
+            // Partial, not Available: the provider was there from the start, but what it saw before this session existed
+            // is not shown here.
+            return new("Logging", Feature, session.Options.TrackLogs ? BevToolsCapabilityStatus.Partial : BevToolsCapabilityStatus.NotAvailable,
+                "BevTools was registered at startup, so its provider was in the app's logger factory from the start and this session records what is logged once it exists; what was logged before that (the host starting, a hosted service) belongs to no session and is not shown.");
         }
 
         if (attachment.PendingLogsBeforeAttach is not null)

@@ -237,7 +237,7 @@ internal static class BevToolsAutoStartLogImporter
         return lines;
     }
 
-    private static string DescribeException(IReadOnlyList<(string? Type, string Message)> messages)
+    private static string DescribeException(IReadOnlyList<(string? Type, string? Message)> messages)
     {
         var sb = new StringBuilder();
         foreach (var (type, message) in messages)
@@ -247,7 +247,8 @@ internal static class BevToolsAutoStartLogImporter
                 sb.Append('\n').Append(type).Append(": ");
             }
 
-            sb.Append(BevToolsRedactor.RedactText(message));
+            // A message the loader did not read (the app's code, kept nowhere) is hidden, as an unread value is.
+            sb.Append(message is null ? BevToolsRedactor.HiddenValue : BevToolsRedactor.RedactText(message));
         }
 
         return BevToolsLoggerProvider.Shorten(sb.ToString(), BevToolsLoggerProvider.MaxMessageLength);

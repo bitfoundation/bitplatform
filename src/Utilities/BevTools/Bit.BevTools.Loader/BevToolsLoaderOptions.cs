@@ -62,9 +62,12 @@ public sealed class BevToolsLoaderOptions
     /// startup runs whole from the first render and needs no head start. In a process that serves many users (Blazor
     /// Server) entries are kept per circuit, the ones written on its dispatcher, all circuits together within ten times
     /// <see cref="MaxLogs"/>, and only where an attach is allowed there (Development, or <see cref="AllowInMultiUserHost"/>
-    /// with <see cref="Authorize"/>): an entry written outside every circuit belongs to no user. Outside Development a
-    /// session attached there reads no values, so neither does the capture: names, types and templates only, none of the
-    /// values' code run. Read by the first <c>AddBitBevToolsLoaderServices</c> call.
+    /// with <see cref="Authorize"/>): an entry written outside every circuit belongs to no user, and a session the app
+    /// attaches itself with <c>BevToolsOptions.Enabled</c> where this loader allows none records from its attach on.
+    /// Outside Development a session attached there reads no values, so neither does the capture: names, types and
+    /// templates only, none of the values' code run (no formatter, <c>ToString</c>, count or exception message). Entries
+    /// are kept in memory as they were logged and redacted when a session takes them over, since the redactor is part of
+    /// Bit.BevTools. Read by the first <c>AddBitBevToolsLoaderServices</c> call.
     /// </para>
     /// </summary>
     public BevToolsAutoStart AutoStart { get; set; }

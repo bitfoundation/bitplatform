@@ -245,7 +245,22 @@ public class AutoStartLogsTests
 
         var logs = Context(provider).AutoStartLogs!;
         Assert.IsFalse(logs.IsCapturing);
-        StringAssert.Contains(logs.Reason, "may not be attached");
+        StringAssert.Contains(logs.Reason, "does not let BevTools be attached here");
+    }
+
+    [TestMethod]
+    public void A_session_the_app_attaches_itself_where_the_loader_allows_none_is_told_it_records_from_its_attach_on()
+    {
+        using var provider = Build(o => o.AutoStart = BevToolsAutoStart.Logs, environment: "Production");
+        provider.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Circuit").LogInformation("Kept for no one");
+        using var scope = provider.CreateScope();
+
+        var session = BitBevTools.Attach(scope.ServiceProvider, o => o.Enabled = true);
+
+        var capability = session.Capabilities.Single(c => c.Name == Feature);
+        Assert.AreEqual(BevToolsCapabilityStatus.NotAvailable, capability.Status);
+        StringAssert.Contains(capability.Explanation, "a session the app attaches itself (BevToolsOptions.Enabled) records from its attach on");
+        Assert.DoesNotContain("cannot happen", capability.Explanation, StringComparison.Ordinal);
     }
 
     [TestMethod]
@@ -260,6 +275,7 @@ public class AutoStartLogsTests
         var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Orders");
         using var scope = provider.CreateScope();
         var order = new AutoStartLazyOrder();
+        var failure = new AutoStartCardException("Card 4111 1111 1111 1111 declined", new AutoStartCardException("Issuer said no"));
         var previous = SynchronizationContext.Current;
         try
         {
@@ -269,6 +285,8 @@ public class AutoStartLogsTests
                 {
                     logger.LogInformation("Placed {Order} for {Customer}", order, "Ada");
                 }
+
+                logger.LogWarning(failure, "Charging failed");
             });
         }
         finally
@@ -277,7 +295,14 @@ public class AutoStartLogsTests
         }
 
         Assert.AreEqual(0, order.ToStringCalls, "a session attached here reads no values, so the capture runs none of their code");
-        var entry = Assert.ContainsSingle(Context(provider).AutoStartLogs!.Take(scope.ServiceProvider, out _, out _, out _)!);
+        Assert.AreEqual(0, failure.MessageCalls + ((AutoStartCardException)failure.InnerException!).MessageCalls, "an exception's message is the app's code too");
+        var entries = Context(provider).AutoStartLogs!.Take(scope.ServiceProvider, out _, out _, out _)!;
+        Assert.HasCount(2, entries);
+        var charging = entries[1];
+        Assert.AreEqual(typeof(AutoStartCardException).FullName, charging.ExceptionType);
+        Assert.IsTrue(charging.ExceptionMessages!.All(m => m.Message is null));
+        Assert.AreEqual(typeof(AutoStartCardException).FullName, charging.ExceptionMessages![1].Type, "the types are kept");
+        var entry = entries[0];
         Assert.IsFalse(entry.ValuesRead);
         Assert.IsNull(entry.Formatted);
         Assert.AreEqual("Placed {Order} for {Customer}", entry.Template);
@@ -289,36 +314,145 @@ public class AutoStartLogsTests
     [TestMethod]
     public void All_circuits_together_stay_within_one_budget_which_an_ended_circuit_gives_back()
     {
+        const int MaxLogs = 4;
         using var provider = Build(o =>
         {
             o.AutoStart = BevToolsAutoStart.Logs;
-            o.MaxLogs = 1;
+            o.MaxLogs = MaxLogs;
         }, environment: "Development");
         var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Circuit");
-        var budget = BevToolsAutoStartLogs.CircuitsBudgetFactor;
-        var scopes = Enumerable.Range(0, budget + 1).Select(_ => provider.CreateScope()).ToList();
+        var budget = BevToolsAutoStartLogs.CircuitsBudgetFactor * MaxLogs;
+        var scopes = Enumerable.Range(0, BevToolsAutoStartLogs.CircuitsBudgetFactor).Select(_ => provider.CreateScope()).ToList();
         var previous = SynchronizationContext.Current;
         try
         {
             foreach (var scope in scopes)
             {
-                RunOn(new SynchronizationContext(), scope, () => logger.LogInformation("Kept?"));
+                RunOn(new SynchronizationContext(), scope, () => LogSteps(logger, MaxLogs));
             }
 
             var logs = Context(provider).AutoStartLogs!;
-            Assert.IsEmpty(logs.Take(scopes[^1].ServiceProvider, out _, out var counts, out _)!, "the budget was spent by the circuits before it");
-            Assert.AreEqual(1, counts[(int)LogLevel.Information], "counted all the same");
+            Assert.AreEqual(budget, logs.Held, "the circuits that were never attached spent the budget");
 
             scopes[0].Dispose();
-            using var next = provider.CreateScope();
-            RunOn(new SynchronizationContext(), next, () => logger.LogInformation("Kept"));
-            Assert.AreEqual("Kept", Assert.ContainsSingle(logs.Take(next.ServiceProvider, out _, out _, out _)!).Formatted);
+            Assert.AreEqual(budget - MaxLogs, logs.Held, "an ended circuit gives its share back");
         }
         finally
         {
             SynchronizationContext.SetSynchronizationContext(previous);
             scopes.ForEach(s => s.Dispose());
         }
+    }
+
+    [TestMethod]
+    public void A_new_circuit_keeps_its_entries_when_older_circuits_spent_the_budget()
+    {
+        const int MaxLogs = 4;
+        using var provider = Build(o =>
+        {
+            o.AutoStart = BevToolsAutoStart.Logs;
+            o.MaxLogs = MaxLogs;
+        }, environment: "Development");
+        var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Circuit");
+        var budget = BevToolsAutoStartLogs.CircuitsBudgetFactor * MaxLogs;
+        // Reloads: circuits kept after a disconnect, never attached, holding their share until they end.
+        var older = Enumerable.Range(0, BevToolsAutoStartLogs.CircuitsBudgetFactor).Select(_ => provider.CreateScope()).ToList();
+        using var current = provider.CreateScope();
+        var previous = SynchronizationContext.Current;
+        try
+        {
+            foreach (var scope in older)
+            {
+                RunOn(new SynchronizationContext(), scope, () => LogSteps(logger, MaxLogs));
+            }
+
+            RunOn(new SynchronizationContext(), current, () => LogSteps(logger, MaxLogs));
+
+            var logs = Context(provider).AutoStartLogs!;
+            Assert.AreEqual(budget, logs.Held, "still within the budget");
+            var entries = logs.Take(current.ServiceProvider, out _, out var counts, out _)!;
+            CollectionAssert.AreEqual(new[] { "Step 1", "Step 2", "Step 3", "Step 4" }, entries.Select(e => e.Formatted).ToArray(),
+                "the places came from the circuits holding the most");
+            Assert.AreEqual(MaxLogs, counts[(int)LogLevel.Information]);
+
+            var kept = older.Sum(s => logs.Take(s.ServiceProvider, out _, out _, out _)!.Length);
+            Assert.AreEqual(budget - MaxLogs, kept, "the older circuits gave up their oldest entries, counted, not kept");
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+            older.ForEach(s => s.Dispose());
+        }
+    }
+
+    [TestMethod]
+    public void Scopes_whose_renderers_share_a_context_share_its_entries_until_the_last_of_them_ends()
+    {
+        using var provider = Build(o => o.AutoStart = BevToolsAutoStart.Logs, environment: "Development");
+        var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Circuit");
+        var first = provider.CreateScope();
+        using var second = provider.CreateScope();
+        using var third = provider.CreateScope();
+        var shared = new SynchronizationContext();
+        var logs = Context(provider).AutoStartLogs!;
+        var previous = SynchronizationContext.Current;
+        try
+        {
+            RunOn(shared, first, () => logger.LogInformation("Before the second scope"));
+            RunOn(shared, second, () => logger.LogInformation("Logged on the shared dispatcher"));
+            first.Dispose();
+
+            var entries = logs.Take(second.ServiceProvider, out _, out _, out _);
+            CollectionAssert.AreEqual(new[] { "Before the second scope", "Logged on the shared dispatcher" }, entries!.Select(e => e.Formatted).ToArray(),
+                "the first scope ending does not take what is still the second one's");
+
+            // A context whose entries were handed over starts again for the next scope noted on it.
+            RunOn(shared, third, () => logger.LogInformation("A new scope on the same dispatcher"));
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        Assert.AreEqual("A new scope on the same dispatcher", Assert.ContainsSingle(logs.Take(third.ServiceProvider, out _, out _, out _)!).Formatted);
+    }
+
+    [TestMethod]
+    public async Task A_provider_the_app_removed_from_its_logger_factory_is_reported_instead_of_an_empty_handover()
+    {
+        var services = Services();
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = false;
+            o.AutoStart = BevToolsAutoStart.Logs;
+        });
+        services.AddLogging(b => b.ClearProviders());
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ILoggerFactory>().CreateLogger("Shop.Startup").LogInformation("Nobody captured this");
+
+        using var scope = provider.CreateScope();
+        var session = await OpenAsync(scope);
+
+        Assert.IsEmpty(session.Logs.Snapshot());
+        var capability = session.Capabilities.Single(c => c.Name == Feature);
+        Assert.AreEqual(BevToolsCapabilityStatus.NotAvailable, capability.Status);
+        StringAssert.Contains(capability.Explanation, "ClearProviders");
+        Assert.DoesNotContain("handed 0", capability.Explanation, StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void A_BevTools_registered_at_startup_reports_entries_from_before_its_session_as_not_shown()
+    {
+        var services = Services();
+        services.AddBitBevToolsServices(o => o.Enabled = true);
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var session = scope.ServiceProvider.GetRequiredService<BevToolsSession>();
+
+        var capability = session.Capabilities.Single(c => c.Name == Feature);
+        Assert.AreEqual(BevToolsCapabilityStatus.Partial, capability.Status, "what was logged before the session existed is not shown in it");
+        StringAssert.Contains(capability.Explanation, "not shown");
     }
 
     [TestMethod]
@@ -394,6 +528,14 @@ public class AutoStartLogsTests
         log();
     }
 
+    private static void LogSteps(ILogger logger, int count)
+    {
+        for (var i = 1; i <= count; i++)
+        {
+            logger.LogInformation("Step {Step}", i);
+        }
+    }
+
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static WeakReference<object> LogAnObject(ILogger logger)
     {
@@ -426,6 +568,21 @@ public class AutoStartLogsTests
         {
             ToStringCalls++;
             return "Order 42";
+        }
+    }
+
+    /// <summary>An exception whose message carries what was logged, and says when it was read.</summary>
+    private sealed class AutoStartCardException(string message, Exception? inner = null) : Exception(message, inner)
+    {
+        public int MessageCalls;
+
+        public override string Message
+        {
+            get
+            {
+                MessageCalls++;
+                return base.Message;
+            }
         }
     }
 

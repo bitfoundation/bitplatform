@@ -50,3 +50,5 @@ In a process that serves many users (Blazor Server, prerendering) `CanOpen` is f
 `AllowInMultiUserHost` is set, because the panel would show whoever opens it the server side objects of their circuit.
 There, `AutoStart` keeps log entries per circuit, the ones written on its dispatcher, within one budget for all circuits
 (ten times `MaxLogs`), only where an attach is allowed, and outside Development as names, types and templates only.
+Until a session takes them over they stay in memory unredacted (the redactor is part of Bit.BevTools), and are
+redacted at the handover, before anything can show them.

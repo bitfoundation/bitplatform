@@ -92,6 +92,7 @@ public static class BitBevToolsLoader
             services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, BevToolsAutoStartLogProvider>(sp =>
             {
                 logs.Resolve(sp);
+                logs.ProviderCreated();
                 return new BevToolsAutoStartLogProvider(logs);
             }));
         }

@@ -327,7 +327,10 @@ it over then. Logs are the first:
 * **Capture.** `BevToolsAutoStartLogProvider` is a provider of the container (alias `BevTools`, like the session's), so
   the factory takes it when it is built and the host's filters apply. It takes an entry apart as
   `BevToolsLoggerProvider` does, within the same bounds, but redacts nothing and reads at no value access: neither
-  exists before a session. Values are kept as themselves only when they are immutable scalars (strings, numbers, dates,
+  exists before a session. This is the one exception to redacting at capture: the redactor's patterns are part of
+  `Bit.BevTools`, and carrying them in the loader would put a regular-expression engine in every startup download. The
+  entries never leave the process's memory unredacted - the importer redacts each one before it reaches the log store,
+  so no panel, export or protocol answer sees it otherwise. Values are kept as themselves only when they are immutable scalars (strings, numbers, dates,
   enums, `Guid`, `Uri`); anything else as its type, its `ToString` when short and its count (`BevToolsAutoStartLogValue`),
   so nothing the app logged is kept alive and nothing is shown as it was at the attach rather than when it was logged.
   BevTools' own work (the `Authorize` callback, the load) and category are skipped; the own-work mark lives in the
@@ -335,11 +338,17 @@ it over then. Logs are the first:
 * **Owner.** A process that serves one user keeps one bounded buffer, which the first session attached takes. A process
   that serves many users keeps one per circuit: the loader's activator hook notes the renderer's synchronization context
   when it creates its first component, and only what is logged on that context is the circuit's - the resolver's first
-  rule, without the ones that need a session. All circuits draw on one budget (ten times `MaxLogs`), which a circuit
-  gives back when its scope ends (DI disposes the hook). None is kept where no attach could be allowed
-  (`BevToolsAttachPolicy`), and outside Development, where a session attached on a server reads no values, the capture
-  reads none either: no formatter and no `ToString` runs - an entity whose `ToString` lazy loads costs nothing - and the
-  entry is `ValuesRead = false`, shown as under None whatever the session reads. Deciding, noting a circuit and taking
+  rule, without the ones that need a session. Scopes whose renderers share a context share its buffer, which ends with
+  the last of them. All circuits draw on one budget (ten times `MaxLogs`), which a circuit gives back when its scope
+  ends (DI disposes the hook); once it is spent, the circuit holding the most gives up its oldest entry to one holding
+  fewer, so circuits kept after a disconnect cannot leave a new circuit with nothing. None is kept where the loader
+  allows no attach (`BevToolsAttachPolicy`): a session the app attaches there itself (`BevToolsOptions.Enabled`)
+  vouches for itself only from its attach on. Outside Development, where a session attached on a server reads no
+  values, the capture reads none either: no formatter, `ToString`, count or exception message runs - an entity whose
+  `ToString` lazy loads costs nothing - only the names of the state's and scopes' pairs are read, and the entry is
+  `ValuesRead = false`, shown as under None whatever the session reads. A provider the app removed from its factory
+  (`ClearProviders` after the loader's registration) is never created, which the handover reports instead of an empty
+  buffer. Deciding, noting a circuit and taking
   over never throw into the app: a failure turns the part off, costs the scope its kept entries, and is reported.
 * **Handover.** `BevToolsAutoStartLogImporter` turns each entry into the record the session's provider would have made,
   through its inspector now (`BevToolsObjectInspector.DescribeDetached` for kept types and texts, following `Describe`'s

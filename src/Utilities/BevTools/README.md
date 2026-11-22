@@ -139,9 +139,14 @@ loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `Trac
   they carry no sender, UI event, timeline row or Errors entry, which take a session that did not exist yet, and the
   panel and About say so. In a process that serves one user the first session attached takes them; on Blazor Server
   they are kept per circuit (what was logged on its dispatcher, once its first component was created) and only where
-  an attach is allowed, all circuits within ten times `MaxLogs`; outside Development, where such a session reads no
-  values, they are kept as names, types and templates only, without running any of the values' code. An entry
-  written outside every circuit is nobody's. A BevTools registered at startup runs
+  an attach is allowed, all circuits within ten times `MaxLogs` (a circuit that holds more gives up its oldest entries
+  to a newer one, so the circuit being opened keeps its share); outside Development, where such a session reads no
+  values, they are kept as names, types and templates only, without running any of the values' code (no formatter,
+  `ToString`, count or exception message). An entry written outside every circuit is nobody's, and so is one written
+  where the loader allows no attach, even if the app attaches a session itself with `BevToolsOptions.Enabled`. Until
+  a session takes them over, the entries stay in the process's memory as they were logged: the redactor is part of
+  `Bit.BevTools`, which is not loaded yet, so they are redacted at the handover, before any panel, export or protocol
+  answer can show them. A BevTools registered at startup runs
   whole from the first render and starts no part of its own.
 
 ```csharp

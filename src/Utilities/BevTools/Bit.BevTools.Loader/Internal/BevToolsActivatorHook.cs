@@ -19,6 +19,7 @@ internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponen
     private IComponentActivator? _interceptor;
     private IComponentActivator? _untracked;
     private BevToolsAutoStartLogs? _autoStartLogs = autoStartLogs;
+    private int _left;
 
     /// <summary>
     /// The log entries <see cref="BevToolsAutoStart.Logs"/> keeps for this scope until BevTools is attached to it, in a
@@ -62,10 +63,16 @@ internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponen
     }
 
     /// <summary>
-    /// The scope ended without a session taking its kept logs: they go, and with them their share of the budget all
-    /// circuits draw on. DI disposes the hook with its scope.
+    /// The scope ended: unless another scope's renderer runs on the same synchronization context, its kept logs go, if no
+    /// session took them, and with them their share of the budget all circuits draw on. DI disposes the hook with its scope.
     /// </summary>
-    public void Dispose() => AutoStartLogs?.Take(out _);
+    public void Dispose()
+    {
+        if (Interlocked.Exchange(ref _left, 1) == 0)
+        {
+            AutoStartLogs?.Leave();
+        }
+    }
 
     private IComponent CreateUntracked([DynamicallyAccessedMembers(Component)] Type componentType) =>
         inner is not null ? inner.CreateInstance(componentType) : CreateDefault(services, componentType);

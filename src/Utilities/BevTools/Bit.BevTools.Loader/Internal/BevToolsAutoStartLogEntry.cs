@@ -44,8 +44,11 @@ internal sealed class BevToolsAutoStartLogEntry
 
     public string? ExceptionType { get; init; }
 
-    /// <summary>The exception's message, then each inner exception's type and message; unredacted until the session reads them.</summary>
-    public IReadOnlyList<(string? Type, string Message)>? ExceptionMessages { get; init; }
+    /// <summary>
+    /// The exception's message, then each inner exception's type and message; unredacted until the session reads them.
+    /// The messages are null where values are not read (<see cref="ValuesRead"/>).
+    /// </summary>
+    public IReadOnlyList<(string? Type, string? Message)>? ExceptionMessages { get; init; }
 
     public string? TraceId { get; init; }
 

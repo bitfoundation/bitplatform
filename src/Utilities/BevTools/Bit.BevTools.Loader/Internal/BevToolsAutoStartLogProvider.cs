@@ -126,7 +126,7 @@ internal sealed class BevToolsAutoStartLogProvider(BevToolsAutoStartLogs logs) :
                 ValuesTruncated = truncated,
                 Scopes = ReadScopes(read),
                 ExceptionType = exception?.GetType().FullName,
-                ExceptionMessages = exception is null ? null : ReadException(exception),
+                ExceptionMessages = exception is null ? null : ReadException(exception, read),
                 TraceId = w3c ? activity!.TraceId.ToHexString() : null,
                 SpanId = w3c ? activity!.SpanId.ToHexString() : null,
             };
@@ -164,13 +164,15 @@ internal sealed class BevToolsAutoStartLogProvider(BevToolsAutoStartLogs logs) :
             return scopes;
         }
 
-        private static List<(string? Type, string Message)> ReadException(Exception exception)
+        // Message is virtual, the app's code, and often carries the values the entry would have: where values are not
+        // read, only the types are kept. InnerException is read either way, as the framework's own field.
+        private static List<(string? Type, string? Message)> ReadException(Exception exception, bool read)
         {
-            List<(string? Type, string Message)> messages = [(null, exception.Message)];
+            List<(string? Type, string? Message)> messages = [(null, read ? exception.Message : null)];
             var inner = exception.InnerException;
             for (var hops = 0; inner is not null && hops < MaxInnerExceptions; hops++, inner = inner.InnerException)
             {
-                messages.Add((inner.GetType().FullName, inner.Message));
+                messages.Add((inner.GetType().FullName, read ? inner.Message : null));
             }
 
             return messages;

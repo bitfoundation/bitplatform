@@ -45,8 +45,10 @@ measured overhead - keep all of them accurate when behaviour changes.
    meters name only a component type, so `BevToolsComponentRegistry.IsBevToolsOnlyType` tells their measurements apart
    (`ExtensibilityTests.An_extension_panel_is_never_recorded_as_application_activity`).
 3. **Never leak secrets.** Redaction happens at capture time (`BevToolsRedactor`: names, `[BevToolsSensitive]`, credential
-   shapes, sensitive pairs; browser-side storage and URL redaction), and `BevToolsObjectInspector` never walks configuration
-   or key material. Every application value reaches a panel, export, trace or protocol answer through the inspector,
+   shapes, sensitive pairs; browser-side storage and URL redaction). The one exception is the loader's `AutoStart`
+   capture, which runs before `Bit.BevTools` (and its redactor) is loaded: it keeps entries in memory unredacted and
+   `BevToolsAutoStartLogImporter` redacts each one before it reaches a store, so nothing shows it otherwise.
+   `BevToolsObjectInspector` never walks configuration or key material. Every application value reaches a panel, export, trace or protocol answer through the inspector,
    which applies `ValueAccess` (`None` by default outside Development in a server process). Exports, traces and the
    protocol may never show more than the panels do; a new frontend reads through `BevToolsProtocol`, never around it.
    Production inspection is opt-in: outside Development in a server process it takes `AllowInMultiUserHost` and an
