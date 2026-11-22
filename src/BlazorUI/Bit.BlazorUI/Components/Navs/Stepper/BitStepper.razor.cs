@@ -430,7 +430,9 @@ public partial class BitStepper<[DynamicallyAccessedMembers(DynamicallyAccessedM
         return style.HasValue() ? style : null;
     }
 
-    private string GetItemKey(TItem item, int index) => GetKey(item) ?? index.ToString(CultureInfo.InvariantCulture);
+    // An explicit key is matched by its value and an unkeyed step by its index, kept apart as a string and an int so
+    // that a step keyed "1" never collides with the second step left unkeyed.
+    private object GetItemKey(TItem item, int index) => (object?)GetKey(item) ?? index;
 
     // The step the compact layout shows: none while CurrentIndex is outside the steps (every step done, or none started),
     // where the bar alone says how far the process is.

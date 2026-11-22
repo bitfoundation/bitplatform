@@ -267,6 +267,8 @@ public class BitStepperE2ETests : E2ETestBase
 
         // In a narrow container on the same screen: the compact part in place of the column.
         await Expect(Page.Locator("#stp-compact-narrow > .bit-str-lst")).ToBeHiddenAsync();
+        await Expect(Page.Locator("#stp-compact-narrow .bit-str-pos")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#stp-compact-narrow .bit-str-ctx")).ToBeVisibleAsync();
         await Expect(Page.Locator("#stp-compact-narrow .bit-str-pos")).ToHaveTextAsync("Step 2 of 3");
         await Expect(Page.Locator("#stp-compact-narrow .bit-str-ctx")).ToHaveTextAsync("Destination");
 

@@ -85,6 +85,8 @@ public class BitStepperMobileE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Expect(Page.Locator("#stp-compact > .bit-str-lst")).ToBeHiddenAsync();
+        await Expect(Page.Locator("#stp-compact .bit-str-pos")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#stp-compact .bit-str-ctx")).ToBeVisibleAsync();
         await Expect(Page.Locator("#stp-compact .bit-str-pos")).ToHaveTextAsync("Step 2 of 3");
         await Expect(Page.Locator("#stp-compact .bit-str-ctx")).ToHaveTextAsync("Destination");
         await Expect(Page.Locator("#stp-compact .bit-str-seg")).ToHaveCountAsync(3);
