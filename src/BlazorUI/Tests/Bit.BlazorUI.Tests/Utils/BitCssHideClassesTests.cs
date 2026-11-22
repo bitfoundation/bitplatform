@@ -54,10 +54,10 @@ public sealed class BitCssHideClassesTests
     [DynamicData(nameof(BelowBreakpoint))]
     public void HidesBelowItsBreakpoint(string className, string breakpoint)
     {
-        // The upper bound sits 0.02px under the breakpoint, as media-queries.scss and BitMediaQuery write it.
-        var max = (int.Parse(breakpoint.Replace("px", string.Empty), System.Globalization.CultureInfo.InvariantCulture) - 1).ToString(System.Globalization.CultureInfo.InvariantCulture) + ".98px";
-
-        StringAssert.Contains(CompiledCoreCss(), $"@media(max-width:{max}){{.{className}{Hidden}}}");
+        // The query is the exact negation of the from-a-breakpoint-up one (`not all and`), not a max-width a fraction of
+        // a pixel below the breakpoint, so the two classes of one breakpoint are complements at every width (bit-css.scss).
+        // CompiledCoreCss strips whitespace, which runs `not all and` together.
+        StringAssert.Contains(CompiledCoreCss(), $"@medianotalland(min-width:{breakpoint}){{.{className}{Hidden}}}");
     }
 
     [TestMethod]
