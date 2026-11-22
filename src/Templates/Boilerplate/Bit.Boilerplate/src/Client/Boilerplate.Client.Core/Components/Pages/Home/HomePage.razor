@@ -48,7 +48,7 @@
                         <BitText Typography="BitTypography.H6" Align="BitTextAlign.Center">
                             @Localizer[nameof(AppStrings.SelectTenantMessage)]
                         </BitText>
-                        <BitButton Href="@PageUrls.ManageMyTenants">
+                        <BitButton Href="@CultureInfoManager.GetCurrentCultureUrl(PageUrls.ManageMyTenants)">
                             @Localizer[nameof(AppStrings.ManageMyTenants)]
                         </BitButton>
                     </BitStack>

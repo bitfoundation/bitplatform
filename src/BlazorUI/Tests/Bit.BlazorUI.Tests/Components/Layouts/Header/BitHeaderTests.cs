@@ -879,6 +879,132 @@ public class BitHeaderTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitHeaderShouldToggleTheScrolledClassAndPartOnScrollChange()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Root = "root-class", Scrolled = "scrolled-class" });
+            parameters.Add(p => p.Styles, new BitHeaderClassStyles { Root = "color:red", Scrolled = "color:blue" });
+        });
+
+        var header = component.Find(".bit-hdr");
+
+        // At the top the header carries none of the scrolled state.
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
+        Assert.IsFalse(header.ClassList.Contains("scrolled-class"));
+        Assert.IsFalse(header.GetAttribute("style")!.Contains("color:blue"));
+
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(true));
+
+        header = component.Find(".bit-hdr");
+
+        Assert.IsTrue(header.ClassList.Contains("bit-hdr-scr"));
+        Assert.IsTrue(header.ClassList.Contains("scrolled-class"));
+        Assert.IsTrue(header.ClassList.Contains("root-class"));
+        StringAssert.Contains(header.GetAttribute("style")!, "color:red");
+        StringAssert.Contains(header.GetAttribute("style")!, "color:blue");
+
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(false));
+
+        header = component.Find(".bit-hdr");
+
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
+        Assert.IsFalse(header.ClassList.Contains("scrolled-class"));
+        Assert.IsTrue(header.ClassList.Contains("root-class"));
+        Assert.IsFalse(header.GetAttribute("style")!.Contains("color:blue"));
+    }
+
+    [TestMethod]
+    public async Task BitHeaderShouldLeaveTheScrolledStateWhenElevateOnScrollIsTurnedOff()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Scrolled = "scrolled-class" });
+            parameters.Add(p => p.Styles, new BitHeaderClassStyles { Scrolled = "color:blue" });
+        });
+
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(true));
+
+        Assert.IsTrue(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-scr"));
+
+        // Reveal keeps the listener attached, but the script only reports the scroll of an ElevateOnScroll header,
+        // so nothing would ever take the scrolled state back.
+        component.Render(parameters => parameters.Add(p => p.ElevateOnScroll, false));
+
+        var header = component.Find(".bit-hdr");
+
+        Assert.IsFalse(component.Instance.IsScrolled);
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-elv"));
+        Assert.IsFalse(header.ClassList.Contains("scrolled-class"));
+        Assert.IsFalse((header.GetAttribute("style") ?? string.Empty).Contains("color:blue"));
+    }
+
+    [TestMethod]
+    public async Task BitHeaderShouldIgnoreAScrolledReportWithoutElevateOnScroll()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        // A report still in flight from a registration made while ElevateOnScroll was on.
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(true));
+
+        Assert.IsFalse(component.Instance.IsScrolled);
+        Assert.IsFalse(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-scr"));
+    }
+
+    [TestMethod]
+    public async Task BitHeaderShouldMarkAnElevatedHeaderAsScrolledOnlyOnceItIsScrolled()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Elevated, true);
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Scrolled = "scrolled-class" });
+        });
+
+        // Elevated draws the shadow of the scrolled state from the start, but not the scrolled state itself,
+        // which is what tells a stylesheet that content has passed under the header.
+        Assert.IsFalse(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-scr"));
+        Assert.IsFalse(component.Find(".bit-hdr").ClassList.Contains("scrolled-class"));
+
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(true));
+
+        Assert.IsTrue(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-elv"));
+        Assert.IsTrue(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-scr"));
+        Assert.IsTrue(component.Find(".bit-hdr").ClassList.Contains("scrolled-class"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldNotMarkAnElevatedHeaderWithoutElevateOnScrollAsScrolled()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Elevated, true);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Classes, new BitHeaderClassStyles { Scrolled = "scrolled-class" });
+            parameters.Add(p => p.Styles, new BitHeaderClassStyles { Scrolled = "color:blue" });
+        });
+
+        var header = component.Find(".bit-hdr");
+
+        Assert.IsTrue(header.ClassList.Contains("bit-hdr-elv"));
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-esc"));
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
+        Assert.IsFalse(header.ClassList.Contains("scrolled-class"));
+        Assert.IsFalse((header.GetAttribute("style") ?? string.Empty).Contains("color:blue"));
+    }
+
+    [TestMethod]
     public async Task BitHeaderShouldNotRaiseOnScrolledChangedForTheSameState()
     {
         var callCount = 0;
@@ -908,10 +1034,11 @@ public class BitHeaderTests : BunitTestContext
 
         var header = component.Find(".bit-hdr");
 
-        // A header that is always lifted has nothing left to gain from a scroll, so it stays elevated
-        // and no shadow transition is armed for it.
+        // A header that is always lifted has nothing left to gain from a scroll in its shadow, so it stays
+        // elevated - but its scrolled fill and border can still follow the scroll, so the transition is armed.
         Assert.IsTrue(header.ClassList.Contains("bit-hdr-elv"));
-        Assert.IsFalse(header.ClassList.Contains("bit-hdr-esc"));
+        Assert.IsTrue(header.ClassList.Contains("bit-hdr-esc"));
+        Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
 
         // The shadow is settled, but the scroll state is still a documented output of its own, so the
         // listener stays attached and OnScrolledChanged/IsScrolled keep working.
@@ -1057,6 +1184,7 @@ public class BitHeaderTests : BunitTestContext
 
             Assert.IsFalse(header.ClassList.Contains("bit-hdr-elv"));
             Assert.IsFalse(header.ClassList.Contains("bit-hdr-esc"));
+            Assert.IsFalse(header.ClassList.Contains("bit-hdr-scr"));
             Assert.IsFalse(component.Instance.IsScrolled);
         });
     }
@@ -1620,14 +1748,15 @@ public class BitHeaderTests : BunitTestContext
             parameters.Add(p => p.ScrollTarget, "#second");
         });
 
-        // The scroller is resolved once at setup time, so a new one has to reach the script as a fresh setup.
+        // The scroller is resolved once at setup time, so a new one has to reach the script as a fresh setup -
+        // with no dispose call of its own, since the setup of the same id takes the old registration down itself.
         var targets = Context.JSInterop.Invocations
                              .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
                              .Select(i => i.Arguments[6])
                              .ToArray();
 
         CollectionAssert.AreEqual(new object[] { "#first", "#second" }, targets);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
     }
 
     [TestMethod]
@@ -1710,50 +1839,37 @@ public class BitHeaderTests : BunitTestContext
         Assert.AreEqual(true, invocation.Arguments[4]);
         Assert.AreEqual(true, invocation.Arguments[5]);
         Assert.AreEqual(true, invocation.Arguments[7]);
+        Assert.AreEqual(false, invocation.Arguments[8]);
     }
 
     [TestMethod]
-    public void BitHeaderShouldNotRenderAnyExtraMarkupForTheScrollParameters()
-    {
-        var component = RenderComponent<BitHeader>(parameters =>
-        {
-            parameters.Add(p => p.ScrollPadding, true);
-            parameters.Add(p => p.PublishHeight, true);
-            parameters.Add(p => p.ScrollTarget, "#pane");
-        });
-
-        // All of them are handed to the script alone, so none leaks into the markup of the header.
-        component.MarkupMatches(@"
-<header class=""bit-hdr bit-hdr-fil"" id:ignore>
-    <div class=""bit-hdr-gut"">
-    </div>
-</header>");
-    }
-
-    [TestMethod]
-    [DataRow(true, false)]
-    [DataRow(false, true)]
-    [DataRow(false, false)]
-    public void BitHeaderShouldOnlySetTheScrollScriptUpForAPinnedPublishHeightHeader(bool @fixed, bool sticky)
+    [DataRow(true, false, false)]
+    [DataRow(false, true, false)]
+    [DataRow(false, false, true)]
+    [DataRow(false, false, false)]
+    public void BitHeaderShouldOnlySetTheScrollScriptUpForAPinnedPublishHeightHeader(bool @fixed, bool sticky, bool absolute)
     {
         var component = RenderComponent<BitHeader>(parameters =>
         {
             parameters.Add(p => p.PublishHeight, true);
             parameters.Add(p => p.Fixed, @fixed);
             parameters.Add(p => p.Sticky, sticky);
+            parameters.Add(p => p.Absolute, absolute);
         });
 
-        // Only a pinned header covers the content under it, so a header in the normal flow has no height the content
-        // has to make room for, and needs no script at all.
+        // The height is published for the content a pinned header covers, so a header in the normal flow or
+        // one pinned to its container alone needs no script at all.
         var setups = Context.JSInterop.Invocations
                             .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
                             .ToArray();
 
-        Assert.AreEqual((@fixed || sticky) ? 1 : 0, setups.Length);
+        var pinned = @fixed || sticky;
 
-        if (@fixed || sticky)
+        Assert.AreEqual(pinned ? 1 : 0, setups.Length);
+
+        if (pinned)
         {
-            // The scroll behaviors and the padding stay off: the script is only there for the height.
+            // The two scroll behaviors and the scroll padding stay off: the script is only there for the height.
             Assert.AreEqual(false, setups[0].Arguments[4]);
             Assert.AreEqual(false, setups[0].Arguments[5]);
             Assert.AreEqual(false, setups[0].Arguments[7]);
@@ -1762,29 +1878,14 @@ public class BitHeaderTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitHeaderShouldNotSetUpTheScrollScriptForAnAbsolutePublishHeightHeader()
+    public void BitHeaderShouldPassPublishHeightAsFalseWhenItIsNotSet()
     {
         var component = RenderComponent<BitHeader>(parameters =>
         {
-            parameters.Add(p => p.PublishHeight, true);
-            parameters.Add(p => p.Absolute, true);
-            parameters.Add(p => p.Sticky, true);
-        });
-
-        // An absolute header scrolls away with its container, the way it does for the scroll padding.
-        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
-    }
-
-    [TestMethod]
-    public void BitHeaderShouldNotPublishTheHeightByDefault()
-    {
-        var component = RenderComponent<BitHeader>(parameters =>
-        {
-            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.Reveal, true);
             parameters.Add(p => p.Fixed, true);
         });
 
-        // The script is attached for the padding, and still leaves the height unpublished.
         var invocation = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Headers.setup");
 
         Assert.AreEqual(false, invocation.Arguments[8]);
@@ -1806,13 +1907,16 @@ public class BitHeaderTests : BunitTestContext
             parameters.Add(p => p.Fixed, true);
         });
 
+        // What the script writes onto the scroller is decided at setup time, so the new property has to reach it
+        // as a fresh setup. The old one is taken down by that setup itself rather than by a dispose call a round
+        // trip earlier, which would leave the scroller without its scroll padding in between.
         var published = Context.JSInterop.Invocations
                                .Where(i => i.Identifier == "BitBlazorUI.Headers.setup")
                                .Select(i => i.Arguments[8])
                                .ToArray();
 
         CollectionAssert.AreEqual(new object[] { false, true }, published);
-        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
     }
 
     [TestMethod]
@@ -1821,7 +1925,7 @@ public class BitHeaderTests : BunitTestContext
         var component = RenderComponent<BitHeader>(parameters =>
         {
             parameters.Add(p => p.PublishHeight, true);
-            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.Sticky, true);
         });
 
         Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
@@ -1829,33 +1933,29 @@ public class BitHeaderTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.PublishHeight, false);
-            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.Sticky, true);
         });
 
-        // The script is what wrote the property on the scroller, so it has to be taken down to take it off again.
+        // The script is what wrote the height onto the scroller, so it has to be taken down to take it off again.
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.dispose"));
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Headers.setup"));
     }
 
     [TestMethod]
-    public async Task BitHeaderShouldTakeThePublishedHeightOffWhenTheComponentGoesAway()
+    public void BitHeaderShouldNotRenderAnyExtraMarkupForTheScrollParameters()
     {
-        RenderComponent<BitHeader>(parameters =>
+        var component = RenderComponent<BitHeader>(parameters =>
         {
-            parameters.Add(p => p.PublishHeight, true);
-            parameters.Add(p => p.Sticky, true);
-            parameters.Add(p => p.Id, "header-published");
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.ScrollTarget, "#pane");
         });
 
-        // The property stays on the scroller until the script is told the header is gone.
-        await Context.DisposeComponentsAsync();
-
-        var disposes = Context.JSInterop.Invocations
-                              .Where(i => i.Identifier == "BitBlazorUI.Headers.dispose")
-                              .Select(i => i.Arguments[0])
-                              .ToArray();
-
-        CollectionAssert.AreEqual(new object[] { "header-published" }, disposes);
+        // Both of them are handed to the script alone, so neither leaks into the markup of the header.
+        component.MarkupMatches(@"
+<header class=""bit-hdr bit-hdr-fil"" id:ignore>
+    <div class=""bit-hdr-gut"">
+    </div>
+</header>");
     }
 
     [TestMethod]

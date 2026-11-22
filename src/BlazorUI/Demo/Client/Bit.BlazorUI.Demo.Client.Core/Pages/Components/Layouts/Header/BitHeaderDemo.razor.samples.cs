@@ -336,6 +336,22 @@ private bool isImmersiveMode;";
     {
         <div class=""scroll-demo-row"">Content behind the header - row @i</div>
     }
+</div>
+
+
+<div class=""translucent-demo"">
+    <BitHeader Sticky Translucent Bordered ElevateOnScroll
+               Style=""--bit-Header-background: transparent;
+                      --bit-Header-border-color: transparent;
+                      --bit-Header-shadow: none;
+                      --bit-Header-scrolled-background: var(--bit-clr-bg-pri);
+                      --bit-Header-scrolled-border-color: var(--bit-clr-brd-pri);"">
+        I'm see-through until you scroll
+    </BitHeader>
+    @for (var i = 1; i <= 10; i++)
+    {
+        <div class=""scroll-demo-row"">Content behind the header - row @i</div>
+    }
 </div>";
 
     private readonly string example13RazorCode = @"
@@ -393,6 +409,46 @@ private bool isImmersiveMode;";
 </div>";
 
     private readonly string example14RazorCode = @"
+<style>
+    .scroll-demo {
+        height: 10rem;
+        overflow: auto;
+        border: 1px solid gray;
+    }
+
+    .scroll-demo-row {
+        padding: 0.5rem 1rem;
+    }
+
+    /* The header publishes its height on the box that scrolls it, which the bar below reads to stick right under the header. */
+    .publish-demo-bar {
+        position: sticky;
+        top: var(--bit-env-header-height, 0px);
+        padding: 0.25rem 1rem;
+        background-color: gold;
+        color: black;
+    }
+</style>
+
+
+<BitToggleButton @bind-Checked=""isHeaderTall"" OnText=""Make the header shorter"" OffText=""Make the header taller"" />
+
+<div class=""scroll-demo"">
+    <BitHeader Sticky Bordered PublishHeight Color=""BitColor.PrimaryBackground""
+               Height=""@(isHeaderTall ? 96 : 48)"">
+        I publish my height
+    </BitHeader>
+    <div class=""publish-demo-bar"">I stick right below the header</div>
+    @for (var i = 1; i <= 12; i++)
+    {
+        <div class=""scroll-demo-row"">Row @i</div>
+    }
+</div>";
+
+    private readonly string example14CsharpCode = @"
+private bool isHeaderTall;";
+
+    private readonly string example15RazorCode = @"
 <BitHeader Gap=""1rem"">
     <BitButton Variant=""BitVariant.Text"" IconName=""@BitIconName.GlobalNavButton"" Title=""Open Navigation"" />
     <BitText Typography=""BitTypography.Caption1"">My Awesome App</BitText>
@@ -409,7 +465,7 @@ private bool isImmersiveMode;";
     </BitMenuButton>
 </BitHeader>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitParams Parameters=""@headerParams"">
     <BitHeader>Takes the color, the variant, the size and the border from the cascade</BitHeader>
 
@@ -418,7 +474,7 @@ private bool isImmersiveMode;";
 
 <BitHeader>Outside the cascade, and back to the defaults</BitHeader>";
 
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private readonly BitHeaderParams[] headerParams =
 [
     new()
@@ -429,82 +485,6 @@ private readonly BitHeaderParams[] headerParams =
         Variant = BitVariant.Outline,
     }
 ];";
-
-    private readonly string example16RazorCode = @"
-<style>
-    /* A transform makes this box the containing block of any fixed descendant, which scopes the
-       fixed header of the example to the box instead of the top of the page. */
-    .fixed-demo {
-        height: 10rem;
-        overflow: hidden;
-        position: relative;
-        transform: translateZ(0);
-        border: 1px solid gray;
-    }
-
-    /* The pane is what scrolls under the fixed header, so that is where the header publishes its height. */
-    .published-demo-pane {
-        height: 100%;
-        overflow: auto;
-    }
-
-    /* The content starts below the header... */
-    .published-demo-content {
-        padding-block-start: var(--bit-env-header-height, 0px);
-    }
-
-    /* ...and the section titles stick right under it rather than at the top of the pane. */
-    .published-demo-title {
-        position: sticky;
-        font-weight: 600;
-        padding: 0.25rem 1rem;
-        top: var(--bit-env-header-height, 0px);
-        background-color: var(--bit-clr-bg-sec);
-    }
-
-    .published-demo-search {
-        width: 100%;
-        padding-block-end: 0.5rem;
-    }
-
-    .scroll-demo-row {
-        padding: 0.5rem 1rem;
-    }
-</style>
-
-
-<BitToggleButton @bind-Checked=""showHeaderSearch"" OnText=""Hide the search row"" OffText=""Show a search row"" />
-
-<div class=""fixed-demo"">
-    <BitHeader Fixed PublishHeight Bordered
-               ScrollTarget=""#header-published-pane""
-               Color=""BitColor.PrimaryBackground"">
-        <ChildContent>I publish my height</ChildContent>
-        <ExtensionContent>
-            @if (showHeaderSearch)
-            {
-                <div class=""published-demo-search"">
-                    <BitSearchBox Placeholder=""Search"" />
-                </div>
-            }
-        </ExtensionContent>
-    </BitHeader>
-    <div id=""header-published-pane"" class=""published-demo-pane"">
-        <div class=""published-demo-content"">
-            @for (var s = 1; s <= 3; s++)
-            {
-                <div class=""published-demo-title"">Section @s</div>
-                for (var i = 1; i <= 4; i++)
-                {
-                    <div class=""scroll-demo-row"">Row @i</div>
-                }
-            }
-        </div>
-    </div>
-</div>";
-
-    private readonly string example16CsharpCode = @"
-private bool showHeaderSearch;";
 
     private readonly string example17RazorCode = @"
 <BitHeader Color=""BitColor.Primary"">Primary</BitHeader>

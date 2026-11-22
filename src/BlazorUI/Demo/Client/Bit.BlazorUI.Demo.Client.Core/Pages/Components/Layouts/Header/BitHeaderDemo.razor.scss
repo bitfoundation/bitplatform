@@ -12,6 +12,16 @@
     padding: rem2(8px) rem2(16px);
 }
 
+// The PublishHeight example's toolbar sticks right below the header by the height the header publishes
+// on the box that scrolls it, rather than a copy of that height.
+.publish-demo-bar {
+    position: sticky;
+    top: var(--bit-env-header-height, 0px);
+    padding: rem2(4px) rem2(16px);
+    background-color: gold;
+    color: black;
+}
+
 // A fixed or absolute header overlaps the content it covers, so the first row of these examples
 // keeps its own distance instead of hiding underneath the bar.
 .scroll-demo-row--offset {
@@ -52,32 +62,6 @@
 .split-demo-pane {
     height: rem2(160px);
     overflow: auto;
-}
-
-// The PublishHeight example: the pane is what scrolls under the fixed header, so the header publishes its
-// height on it and everything inside the pane reads it - the content to start below the header, and the
-// section titles to stick right under it rather than at the top of the pane.
-.published-demo-pane {
-    height: 100%;
-    overflow: auto;
-}
-
-.published-demo-content {
-    padding-block-start: var(--bit-env-header-height, 0px);
-}
-
-.published-demo-title {
-    position: sticky;
-    font-weight: 600;
-    padding: rem2(4px) rem2(16px);
-    top: var(--bit-env-header-height, 0px);
-    background-color: var(--bit-clr-bg-sec);
-}
-
-// The search row brings its own room below it, since the second row of the header has no block padding.
-.published-demo-search {
-    width: 100%;
-    padding-block-end: rem2(8px);
 }
 
 // The Wrap example needs a header narrow enough to actually run out of room for its content.

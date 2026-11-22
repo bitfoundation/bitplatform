@@ -47,9 +47,9 @@ public sealed partial class MigrationTargets(ProjectContext project, Func<string
                 return new(null, "offline-db-missing", $"{project.Name} has no offline database: none of its .cs files declares the {context} class, which bit adds the offline database's migrations to. Only a project created with --offlineDb true has one.");
 
             if (Directory.Exists(usual))
-                return new(Target(context, contextFound: false, Path.Combine(usual, $"{Path.GetFileName(usual)}.csproj"), usual, Path.Combine(usual, "Infrastructure", "Data"), contextFile: null));
+                return new(Target(context, contextFound: false, project.ServerApiProject, usual, Path.Combine(usual, "Infrastructure", "Data"), contextFile: null));
 
-            return new(null, "server-api-missing", $"{project.Name} has no src/Server/{project.Name}.Server.Api folder and none of its .cs files declares the {context} class, so bit doesn't know which project has the database's migrations. "
+            return new(null, "server-api-missing", $"{project.Name} has no {project.Relative(usual)} folder and none of its .cs files declares the {context} class, so bit doesn't know which project has the database's migrations. Pass that project's .csproj with --server-api. "
                 + $"EF Core's tools can do it by hand, from the project's folder: dotnet dnx {tool()} -- migrations add <name> --context <your DbContext> --project <the .csproj that has it> --startup-project <the app's .csproj>");
         }
 

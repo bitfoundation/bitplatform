@@ -55,7 +55,7 @@
                             <NotAuthorized>
                                 <BitActionButton FullWidth
                                                  IconName="@BitIconName.Signin"
-                                                 Href="@($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                                 Href="@($"{CultureInfoManager.GetCurrentCultureUrl(PageUrls.SignIn)}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                                     @Localizer[nameof(AppStrings.SignIn)]
                                 </BitActionButton>
                                 <BitActionButton FullWidth
@@ -65,7 +65,7 @@
                                 </BitActionButton>
                                 <BitActionButton FullWidth
                                                  IconName="@BitIconName.AddFriend"
-                                                 Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                                 Href="@($"{CultureInfoManager.GetCurrentCultureUrl(PageUrls.SignUp)}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                                     @Localizer[nameof(AppStrings.SignUp)]
                                 </BitActionButton>
                             </NotAuthorized>

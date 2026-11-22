@@ -8,13 +8,60 @@ $bit-grd-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
  * written with min-width alone and simply restated by the next breakpoint up, but an item that is not shown at
  * one size is not "unhidden" by a rule that never mentions display, so hiding is the one thing that has to be
  * asked for over a range that ends where the next breakpoint begins.
+ *
+ * Each band is the half-open range from its own breakpoint up to the next one's, given as the pair of the two
+ * (null where it is open), so adjacent bands meet exactly: a max-width a fraction of a pixel below the next
+ * breakpoint would leave a sliver - a zoomed viewport, or the fractional width of a query container - in which
+ * no band matches, and an item hidden on both sides of it shows there. A media query writes the upper end as
+ * the negation of the next breakpoint (`not all and`), nested in the lower one, which every engine reads; a
+ * container query uses the range syntax every engine that has container queries reads.
  */
-$bit-grd-bands: ( 'xs': '(max-width: #{$mq-xs-max})',
-                  'sm': '(min-width: #{$mq-sm-min}) and (max-width: #{$mq-sm-max})',
-                  'md': '(min-width: #{$mq-md-min}) and (max-width: #{$mq-md-max})',
-                  'lg': '(min-width: #{$mq-lg-min}) and (max-width: #{$mq-lg-max})',
-                  'xl': '(min-width: #{$mq-xl-min}) and (max-width: #{$mq-xl-max})',
-                  'xxl': '(min-width: #{$mq-xxl-min})' );
+$bit-grd-bands: ( 'xs': (null, $mq-sm-min),
+                  'sm': ($mq-sm-min, $mq-md-min),
+                  'md': ($mq-md-min, $mq-lg-min),
+                  'lg': ($mq-lg-min, $mq-xl-min),
+                  'xl': ($mq-xl-min, $mq-xxl-min),
+                  'xxl': ($mq-xxl-min, null) );
+
+@mixin bit-grd-band-media($band) {
+    $min: nth($band, 1);
+    $max: nth($band, 2);
+
+    @if $min == null {
+        @media not all and (min-width: #{$max}) {
+            @content;
+        }
+    } @else if $max == null {
+        @media (min-width: #{$min}) {
+            @content;
+        }
+    } @else {
+        @media (min-width: #{$min}) {
+            @media not all and (min-width: #{$max}) {
+                @content;
+            }
+        }
+    }
+}
+
+@mixin bit-grd-band-container($band) {
+    $min: nth($band, 1);
+    $max: nth($band, 2);
+
+    @if $min == null {
+        @container (width < #{$max}) {
+            @content;
+        }
+    } @else if $max == null {
+        @container (width >= #{$min}) {
+            @content;
+        }
+    } @else {
+        @container (width >= #{$min}) and (width < #{$max}) {
+            @content;
+        }
+    }
+}
 
 /*
  * The width of an item is its share of what is left of the row once the gaps between the columns are taken
@@ -364,25 +411,27 @@ $grd-private-properties: mnw;
 /*
  * A span of no columns at all is an item that is not shown, which is how a piece of a layout is dropped at one
  * size and given its columns back at another. Only the band of the breakpoint it was asked for is hidden, so
- * the breakpoints on either side of it are free to show the item again.
+ * the breakpoints on either side of it are free to show the item again. The rules are !important, as the
+ * bit-css-hide-* classes are, since a hidden item must stay hidden whatever display an app's stylesheet or the
+ * item's own Style gives it.
  */
 .bit-grd-itm.bit-grd-itm-non {
-    display: none;
+    display: none !important;
 }
 
 @each $name, $band in $bit-grd-bands {
-    @media #{$band} {
+    @include bit-grd-band-media($band) {
         :where(:not(.bit-grd-cnq)) > .bit-grd-itm.bit-grd-itm-non-#{$name} {
-            display: none;
+            display: none !important;
         }
     }
 }
 
 :where(.bit-grd-cnq) > .bit-grd-itm {
     @each $name, $band in $bit-grd-bands {
-        @container #{$band} {
+        @include bit-grd-band-container($band) {
             &.bit-grd-itm-non-#{$name} {
-                display: none;
+                display: none !important;
             }
         }
     }
