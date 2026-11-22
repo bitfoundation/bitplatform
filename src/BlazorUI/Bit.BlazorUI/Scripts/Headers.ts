@@ -140,10 +140,9 @@
 
                 measured = box;
 
-                // The border box as laid out, fractions included: offsetHeight rounds to a whole pixel, and a
-                // header sized by rem paddings, wrapped lines or a fractional safe area inset is often not one,
-                // which would leave a hairline seam (or overlap) between the header and what is offset by it.
-                const height = `${element.getBoundingClientRect().height}px`;
+                // One measurement serves every property (the published height, the scroll padding), so they
+                // never disagree about how tall the header is (see borderBoxHeight).
+                const height = `${Headers.borderBoxHeight(element)}px`;
 
                 for (const property of measures) {
                     Headers.claim(box, property, id, height);
@@ -247,8 +246,10 @@
                     }
                 }
 
+                // Watched by its border box, which is what is measured: the default content box misses a change
+                // of the paddings alone - the top safe area inset of the device, a Size that only pads the bar.
                 if (measures.length > 0) {
-                    observer.observe(element);
+                    observer.observe(element, { box: 'border-box' });
                 }
             };
 
@@ -443,6 +444,28 @@
             if (claims.size === 0) {
                 Headers._claims.delete(box);
             }
+        }
+
+        // The height of the border box of an element in CSS pixels, untransformed and with its fractions: offsetHeight
+        // rounds to a whole pixel, and a header sized by rem paddings, wrapped lines or a fractional safe area inset is
+        // often not one, which would leave a hairline seam (or overlap) between the header and what is offset by it;
+        // getBoundingClientRect is scaled by every transform of an ancestor (a zoomed preview, a scaled frame), while
+        // what is offset by it is laid out in the same untransformed pixels the header is. The computed height is
+        // neither, and is a border box once its paddings and borders are added where box-sizing leaves them out.
+        private static borderBoxHeight(element: HTMLElement): number {
+            const style = getComputedStyle(element);
+
+            let height = parseFloat(style.height);
+
+            // A box with no used height of its own (not rendered, display: contents) computes to "auto".
+            if (!isFinite(height)) return element.offsetHeight;
+
+            if (style.boxSizing !== 'border-box') {
+                height += (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0) +
+                    (parseFloat(style.borderTopWidth) || 0) + (parseFloat(style.borderBottomWidth) || 0);
+            }
+
+            return height;
         }
 
         private static scrollParent(element: HTMLElement): HTMLElement | Window {
