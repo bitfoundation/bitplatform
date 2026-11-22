@@ -89,7 +89,10 @@
             const elevation = Math.max(0, elevateOffset || 0);
 
             let hidden = false;
-            let scrolled = false;
+            // Unknown until the first evaluation, which always reports what it finds: a header set up again (a new
+            // offset, scroller or id) may still be marked as scrolled on the .NET side from its previous registration,
+            // and a first check finding it at rest has to say so rather than match a guess of "not scrolled".
+            let scrolled: boolean | null = null;
             let lastY = Headers.scrollTop(target.current);
 
             // requestAnimationFrame never hands out a 0 handle, so it doubles as the "no frame pending" mark.

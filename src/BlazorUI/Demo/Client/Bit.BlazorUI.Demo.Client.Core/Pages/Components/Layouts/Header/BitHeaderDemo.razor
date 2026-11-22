@@ -338,6 +338,28 @@
                 <div class="scroll-demo-row">Content behind the header - row @i</div>
             }
         </div>
+        <br />
+        <div>
+            With <b>ElevateOnScroll</b>, the scrolled state is more than a shadow: the <b>--bit-Header-scrolled-background</b> and
+            <b>--bit-Header-scrolled-border-color</b> variables take over while content passes under the header, so it can stay
+            see-through at the top and turn frosted with a hairline once scrolled. The <b>Scrolled</b> part of <b>Classes</b> and
+            <b>Styles</b> (and the <b>bit-hdr-scr</b> class) reach anything else.
+        </div>
+        <br />
+        <div class="translucent-demo">
+            <BitHeader Sticky Translucent Bordered ElevateOnScroll
+                       Style="--bit-Header-background: transparent;
+                              --bit-Header-border-color: transparent;
+                              --bit-Header-shadow: none;
+                              --bit-Header-scrolled-background: var(--bit-clr-bg-pri);
+                              --bit-Header-scrolled-border-color: var(--bit-clr-brd-pri);">
+                I'm see-through until you scroll
+            </BitHeader>
+            @for (var i = 1; i <= 10; i++)
+            {
+                <div class="scroll-demo-row">Content behind the header - row @i</div>
+            }
+        </div>
     </DemoExample>
 
     <DemoExample Title="Accessibility" RazorCode="@example13RazorCode" Id="example13">

@@ -336,6 +336,22 @@ private bool isImmersiveMode;";
     {
         <div class=""scroll-demo-row"">Content behind the header - row @i</div>
     }
+</div>
+
+
+<div class=""translucent-demo"">
+    <BitHeader Sticky Translucent Bordered ElevateOnScroll
+               Style=""--bit-Header-background: transparent;
+                      --bit-Header-border-color: transparent;
+                      --bit-Header-shadow: none;
+                      --bit-Header-scrolled-background: var(--bit-clr-bg-pri);
+                      --bit-Header-scrolled-border-color: var(--bit-clr-brd-pri);"">
+        I'm see-through until you scroll
+    </BitHeader>
+    @for (var i = 1; i <= 10; i++)
+    {
+        <div class=""scroll-demo-row"">Content behind the header - row @i</div>
+    }
 </div>";
 
     private readonly string example13RazorCode = @"

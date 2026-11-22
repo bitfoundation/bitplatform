@@ -136,6 +136,13 @@ public partial class BitHeader : BitComponentBase
     /// flow scrolls away with the content it would have to lift itself above. <see cref="Elevated"/> takes
     /// precedence over the shadow it adds - a header that is always elevated has nothing left to gain from a
     /// scroll - but <see cref="OnScrolledChanged"/> and <see cref="IsScrolled"/> keep reporting the state either way.
+    /// <br />
+    /// The shadow is only the default look of the scrolled state. While scrolled, the root also carries the
+    /// <c>bit-hdr-scr</c> class and the <see cref="BitHeaderClassStyles.Scrolled"/> part of <see cref="Classes"/> and
+    /// <see cref="Styles"/>, and reads the <c>--bit-Header-scrolled-background</c> and
+    /// <c>--bit-Header-scrolled-border-color</c> variables - so a header that is transparent at the top and turns
+    /// frosted with a hairline once scrolled (<see cref="Translucent"/>, <see cref="Bordered"/>) is a matter of CSS,
+    /// and <c>--bit-Header-shadow: none</c> keeps it free of the shadow.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool ElevateOnScroll { get; set; }
@@ -528,9 +535,14 @@ public partial class BitHeader : BitComponentBase
 
         if (_scrolled == scrolled) return;
 
+        // A report of the registration set up before ElevateOnScroll was turned off can still be in flight, and
+        // nothing would ever take back the scrolled state it brings.
+        if (scrolled && ElevateOnScroll is false) return;
+
         _scrolled = scrolled;
 
         ClassBuilder.Reset();
+        StyleBuilder.Reset();
 
         await OnScrolledChanged.InvokeAsync(scrolled);
 
@@ -602,11 +614,18 @@ public partial class BitHeader : BitComponentBase
 
         ClassBuilder.Register(() => Bordered ? "bit-hdr-brd" : string.Empty);
 
-        // The shadow of a header that only elevates on scroll fades in and out rather than appearing at once,
-        // so the transition is registered for as long as the scroll can still change the state.
-        ClassBuilder.Register(() => (ElevateOnScroll && Elevated is false) ? "bit-hdr-esc" : string.Empty);
+        // What the scrolled state changes - the shadow, and the scrolled background and border colors - fades in and
+        // out rather than appearing at once, so the transition is registered for as long as the scroll can still
+        // change the state. An Elevated header keeps its shadow either way, but its colors can still follow the scroll.
+        ClassBuilder.Register(() => ElevateOnScroll ? "bit-hdr-esc" : string.Empty);
 
         ClassBuilder.Register(() => (Elevated || (ElevateOnScroll && _scrolled)) ? "bit-hdr-elv" : string.Empty);
+
+        // The scrolled state on its own, apart from the shadow that Elevated draws too, so a stylesheet (and the
+        // scrolled variables) can tell a header that has content under it from one that is merely elevated.
+        ClassBuilder.Register(() => IsScrolled ? "bit-hdr-scr" : string.Empty);
+
+        ClassBuilder.Register(() => IsScrolled ? Classes?.Scrolled : string.Empty);
 
         ClassBuilder.Register(() => NoGutter ? "bit-hdr-ngt" : string.Empty);
 
@@ -621,6 +640,8 @@ public partial class BitHeader : BitComponentBase
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+
+        StyleBuilder.Register(() => IsScrolled ? Styles?.Scrolled : string.Empty);
 
         // A pinned header pads itself with the top safe area inset of the device, and the root is a
         // border-box, so an explicit height would be eaten into by that inset and leave the content of the
@@ -669,6 +690,17 @@ public partial class BitHeader : BitComponentBase
         {
             _extended = extended;
 
+            StyleBuilder.Reset();
+        }
+
+        // Only an ElevateOnScroll header is told about the scroll, so one that turns it off while scrolled would
+        // never hear the state go back - the listener may well stay attached for Reveal, ScrollPadding or
+        // PublishHeight - and would keep the scrolled class, part and colors for good. It is at rest from now on.
+        if (ElevateOnScroll is false && _scrolled)
+        {
+            _scrolled = false;
+
+            ClassBuilder.Reset();
             StyleBuilder.Reset();
         }
 
@@ -778,6 +810,7 @@ public partial class BitHeader : BitComponentBase
             _scrolled = false;
 
             ClassBuilder.Reset();
+            StyleBuilder.Reset();
 
             StateHasChanged();
         }
