@@ -1193,10 +1193,6 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
             <BitText>
                 <code>BitThemeBreakpointDefaults</code> exposes the recommended widths in pixels (<code>Xs = 0px</code>, <code>Sm = 600px</code>, <code>Md = 960px</code>, <code>Lg = 1280px</code>, <code>Xl = 1920px</code>, <code>Xxl = 2560px</code>) so your media queries and theme breakpoints stay aligned.
             </BitText>
-
-            <BitText>
-                The breakpoints are custom properties, and a media query cannot read one: the <code>--bit-bp-*</code> a theme writes reach what reads them at run time (<code>BitMediaQuery</code>, your own <code>var()</code> calls), never a <code>@@media</code> rule. So whatever is written in media queries - the <a href="#bit-css">bit-css-hide-*</a> classes, <code>BitGrid</code>'s breakpoints - stays on the default widths above, whatever <code>Breakpoints</code> says.
-            </BitText>
         </DocSection>
 
         <DocSection Id="motion-accessibility" Title="Motion and accessibility"
@@ -1587,22 +1583,11 @@ await BitThemeManager.ApplyBitThemeAsync(fromDesign);</CodeBox>
                 </ul>
 
                 <BitText>
-                    <b>Hiding per breakpoint.</b> <code>BitCss.Class.Hide</code> names the classes that hide an element at some screen widths in CSS alone. Unlike <code>BitMediaQuery</code>, which asks the browser through JavaScript and so renders its default until the app has started, they are right from the first paint of a prerendered page - a desktop visitor never sees the mobile header flash by. They set <code>display: none !important</code>, so they also win over a component's own <code>display</code>, and combine freely (<code>bit-css-hide-lt-md bit-css-hide-xl</code> shows an element from Md to Lg only):
+                    <b>Hiding per breakpoint.</b> <code>bit-css-hide-{xs..xxl}</code> (<code>BitCss.Class.Hide.Xs</code> to <code>Xxl</code>) hide an element from that breakpoint upwards, and <code>bit-css-hide-lt-{sm..xxl}</code> (<code>BitCss.Class.Hide.LtSm</code> to <code>LtXxl</code>) below it, at the default widths of the <code>--bit-bp-*</code> breakpoints. They are pure CSS, so unlike <code>BitMediaQuery</code> a prerendered page shows the right content from its first paint, not once it is interactive. A media query cannot read a custom property, so they are built from the default breakpoints and ignore a theme's <code>Layout.Breakpoints</code>: a theme that moves the breakpoints moves <code>--bit-bp-*</code> and <code>BitMediaQuery</code>, never these, and the two then disagree between the old and the new width - keep the default breakpoints wherever you mix them. The two of one breakpoint are complements, and exactly so - at every width one of them matches and the other does not:
                 </BitText>
 
-                <ul>
-                    <li><code>bit-css-hide-{xs,sm,md,lg,xl,xxl}</code> (<code>Hide.Xs</code> &hellip; <code>Hide.Xxl</code>) - hidden from that breakpoint up, the way <code>Md="0"</code> hides a <code>BitGridItem</code>; <code>bit-css-hide-xs</code> hides it at every width</li>
-                    <li><code>bit-css-hide-lt-{sm,md,lg,xl,xxl}</code> (<code>Hide.LtSm</code> &hellip; <code>Hide.LtXxl</code>) - hidden below that breakpoint, the widths of <code>BitScreenQuery.LtSm</code> &hellip; <code>LtXxl</code></li>
-                </ul>
-
-                <CodeBox Language="razor">&lt;div class="@@BitCss.Class.Hide.Md"&gt;Mobile header&lt;/div&gt;
-&lt;div class="@@BitCss.Class.Hide.LtMd"&gt;Desktop header&lt;/div&gt;
-
-&lt;BitButton Class="bit-css-hide-lt-lg"&gt;Shown from Lg up&lt;/BitButton&gt;</CodeBox>
-
-                <BitText>
-                    They are media queries, and a media query cannot read a custom property, so they are built on the default breakpoints (<code>BitThemeBreakpointDefaults</code>): a theme that moves the <code>--bit-bp-*</code> breakpoints does not move them.
-                </BitText>
+                <CodeBox Language="razor">&lt;nav class="@@BitCss.Class.Hide.Md"&gt;Mobile header&lt;/nav&gt;
+&lt;nav class="@@BitCss.Class.Hide.LtMd"&gt;Desktop header&lt;/nav&gt;</CodeBox>
             </DocSection>
 
             <DocSection Level="3" Id="css-bundles" Title="External CSS bundles">

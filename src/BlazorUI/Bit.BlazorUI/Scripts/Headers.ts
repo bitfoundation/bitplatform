@@ -9,21 +9,34 @@
             // and dispose has to take the scroll listener off the target it is bound to at that moment.
             target: { current: HTMLElement | Window },
             observer?: ResizeObserver,
-            // Gives up the claim of this header on the scroll padding of the scroller, whichever box is
-            // carrying it at that moment, and puts the padding back once no header is holding it anymore.
-            clearPadding: () => void,
+            // Gives up the claims of this header on the scroller (its scroll padding, its published height),
+            // whichever box is carrying them at that moment, and puts each property back once no header is
+            // holding it anymore.
+            clearMeasures: () => void,
             // The pending frame is held in a box rather than in a plain field so the handler can keep
             // writing to the same object that dispose reads from.
-            frame: { handle: number }
+            frame: { handle: number },
+            // The frame the boxes are watched again in, once the scroller moved (see setup).
+            reobserve: { handle: number },
+            // The frame the height is written onto the scroller in, once the resize observer reported a change (see setup).
+            remeasure: { handle: number }
         }>();
 
-        // The scroll padding of a box is shared ground: two pinned headers over the same scroller (an app
-        // shell whose pane carries both) would each otherwise capture the write of the other as "the
-        // value it had before", so the first one to go would wipe the padding the second still needs and
-        // the second would hand the box back a value the page never had. The value found before any of
-        // them touched the box is kept here instead, together with the headers reserving padding on it,
-        // and only the last one to let go puts it back.
-        private static _paddings = new WeakMap<HTMLElement, { previous: string, owners: Set<string> }>();
+        // The properties a header writes onto the box of its scroller are shared ground: two pinned headers
+        // over the same scroller (an app shell whose pane carries both) would each otherwise capture the
+        // write of the other as "the value it had before", so the first one to go would wipe the value the
+        // second still needs and the second would hand the box back a value the page never had. The value
+        // found before any of them touched the box is kept here instead, per property, together with the
+        // value each header holding it measured last - in the order they last changed it, so the box carries
+        // the one of the header that changed size last, and gets the one of the header that is left when
+        // another lets go - and only the last one to let go puts the value found back.
+        private static _claims = new WeakMap<HTMLElement, Map<string, { previous: string, priority: string, owners: Map<string, string> }>>();
+
+        // The scroll padding that keeps what is scrolled to out from under the header (ScrollPadding).
+        private static readonly SCROLL_PADDING = 'scroll-padding-block-start';
+
+        // The live height of the header, which the content under it offsets itself by (PublishHeight).
+        private static readonly HEIGHT_VARIABLE = '--bit-env-header-height';
 
         // Scroll deltas below this many pixels are ignored, so the rubber-banding of touch devices and
         // the sub-pixel jitter of a trackpad cannot flip the header back and forth on every frame.
@@ -35,7 +48,7 @@
         // Both states live here and only cross the interop boundary when they actually flip, so a scroll
         // never costs more than a comparison. It also keeps the scroll padding of the scroller in step
         // with the height of the header, so nothing scrolled to lands underneath a pinned one.
-        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean) {
+        public static setup(id: string, dotnetObj: DotNetObject, revealOffset: number, elevateOffset: number, reveal: boolean, elevate: boolean, scrollTarget: string | null, scrollPadding: boolean, publishHeight: boolean) {
             Headers.dispose(id);
 
             const element = document.getElementById(id);
@@ -76,69 +89,67 @@
             const elevation = Math.max(0, elevateOffset || 0);
 
             let hidden = false;
-            let scrolled = false;
+            // Unknown until the first evaluation, which always reports what it finds: a header set up again (a new
+            // offset, scroller or id) may still be marked as scrolled on the .NET side from its previous registration,
+            // and a first check finding it at rest has to say so rather than match a guess of "not scrolled".
+            let scrolled: boolean | null = null;
             let lastY = Headers.scrollTop(target.current);
 
             // requestAnimationFrame never hands out a 0 handle, so it doubles as the "no frame pending" mark.
             const frame = { handle: 0 };
 
-            // The box this header is reserving scroll padding on, if it is reserving any.
-            let padded: HTMLElement | undefined;
+            // The properties of the scroller this header keeps in step with its own height.
+            const measures: string[] = [];
 
-            const clearPadding = () => {
-                if (!padded) return;
+            if (scrollPadding) {
+                measures.push(Headers.SCROLL_PADDING);
+            }
 
-                const shared = Headers._paddings.get(padded);
+            if (publishHeight) {
+                measures.push(Headers.HEIGHT_VARIABLE);
+            }
 
-                if (shared) {
-                    shared.owners.delete(id);
+            // The box this header is writing its height onto, if it is writing it anywhere.
+            let measured: HTMLElement | undefined;
 
-                    // The header leaving is not necessarily the one that wrote the padding that is on the
-                    // box right now, so the value is only put back once nothing is reserving any anymore.
-                    // Until then it is left to the headers still holding it, which write it again on their
-                    // next layout change anyway.
-                    if (shared.owners.size === 0) {
-                        padded.style.scrollPaddingBlockStart = shared.previous;
+            const clearMeasures = () => {
+                if (!measured) return;
 
-                        Headers._paddings.delete(padded);
-                    }
+                for (const property of measures) {
+                    Headers.release(measured, property, id);
                 }
 
-                padded = undefined;
+                measured = undefined;
             };
 
             // A pinned header covers the top of the scroller, so anything scrolled to by an anchor, by
             // the browser bringing a focused control into the view, or by scrollIntoView, lands
             // underneath it (WCAG 2.4.11). Reserving the height of the header as the scroll padding of
-            // the scroller is what stops the scroll short of it. The value is on the element that
-            // scrolls - the documentElement when that is the page - and it is re-read whenever the
-            // header or the layout changes size, so a header that shrinks on scroll stays in step.
-            const applyPadding = () => {
-                if (!scrollPadding) return;
+            // the scroller is what stops the scroll short of it. The same height is published as a
+            // custom property of the scroller, which the content inside it offsets itself by instead of
+            // a copy of the height a stylesheet would have to keep in step. Both are on the element
+            // that scrolls - the documentElement when that is the page - and they are re-read whenever
+            // the header or the layout changes size, so a header that shrinks on scroll stays in step.
+            const applyMeasures = () => {
+                if (measures.length === 0) return;
 
                 const box = target.current === window
                     ? document.documentElement
                     : target.current as HTMLElement;
 
-                if (padded && padded !== box) {
-                    clearPadding();
+                if (measured && measured !== box) {
+                    clearMeasures();
                 }
 
-                if (!padded) {
-                    let shared = Headers._paddings.get(box);
+                measured = box;
 
-                    if (!shared) {
-                        shared = { previous: box.style.scrollPaddingBlockStart, owners: new Set() };
+                // One measurement serves every property (the published height, the scroll padding), so they
+                // never disagree about how tall the header is (see borderBoxHeight).
+                const height = `${Headers.borderBoxHeight(element)}px`;
 
-                        Headers._paddings.set(box, shared);
-                    }
-
-                    shared.owners.add(id);
-
-                    padded = box;
+                for (const property of measures) {
+                    Headers.claim(box, property, id, height);
                 }
-
-                box.style.scrollPaddingBlockStart = `${element.offsetHeight}px`;
             };
 
             const applyHidden = (next: boolean) => {
@@ -218,7 +229,7 @@
 
             // The scroller is watched as well as the page, since a pane only becomes the scroller of the
             // header once its own content overflows it. The header itself is watched only when its height
-            // is being mirrored into the scroll padding of that scroller.
+            // is being mirrored onto that scroller (its scroll padding, its published height).
             const observe = () => {
                 if (!observer) return;
 
@@ -238,16 +249,51 @@
                     }
                 }
 
-                if (scrollPadding) {
-                    observer.observe(element);
+                // Watched by its border box, which is what is measured: the default content box misses a change
+                // of the paddings alone - the top safe area inset of the device, a Size that only pads the bar.
+                if (measures.length > 0) {
+                    observer.observe(element, { box: 'border-box' });
                 }
+            };
+
+            // The boxes are watched again in a frame of their own rather than right away, since the layout handler
+            // runs from the resize observer: a box observed from inside its callback is owed a first notification, and
+            // the root element - shallower than any box the callback was delivered for - is one the browser can only
+            // deliver in the next frame, which it reports as a "ResizeObserver loop completed with undelivered
+            // notifications" error (WebKit as an uncaught one).
+            const reobserve = { handle: 0 };
+
+            const scheduleObserve = () => {
+                if (reobserve.handle) return;
+
+                reobserve.handle = requestAnimationFrame(() => {
+                    reobserve.handle = 0;
+
+                    observe();
+                });
+            };
+
+            // The height is written in a frame of its own too when the resize observer reports the change, for the
+            // same reason: the published height moves the layout of the content offset by it, which resizes the root
+            // element (or the content wrapper of a pane) - boxes shallower than the header the callback was delivered
+            // for - so a write from inside the callback would raise the same loop error.
+            const remeasure = { handle: 0 };
+
+            const scheduleMeasures = () => {
+                if (remeasure.handle) return;
+
+                remeasure.handle = requestAnimationFrame(() => {
+                    remeasure.handle = 0;
+
+                    applyMeasures();
+                });
             };
 
             // Which box scrolls the header is not settled once and for all: a pane that had nothing to
             // scroll at setup time (so the walk landed on the window) becomes the scroller as soon as its
             // content outgrows it, and the other way round. The scroller is re-resolved whenever the
             // layout or the content moves, and the scroll listener follows it.
-            const layoutHandler = () => {
+            const relayout = (fromObserver: boolean) => {
                 const next = resolveTarget();
 
                 if (next !== target.current) {
@@ -259,13 +305,19 @@
 
                     next.addEventListener('scroll', scrollHandler, { passive: true });
 
-                    observe();
+                    scheduleObserve();
                 }
 
-                applyPadding();
+                if (fromObserver) {
+                    scheduleMeasures();
+                } else {
+                    applyMeasures();
+                }
 
                 scrollHandler();
             };
+
+            const layoutHandler = () => relayout(false);
 
             target.current.addEventListener('scroll', scrollHandler, { passive: true });
             window.addEventListener('resize', layoutHandler, { passive: true });
@@ -276,14 +328,14 @@
             // holds the content picks those up, so a header does not stay lifted above a page that just
             // became short enough not to scroll at all.
             if (typeof ResizeObserver !== 'undefined') {
-                observer = new ResizeObserver(layoutHandler);
+                observer = new ResizeObserver(() => relayout(true));
 
                 observe();
             }
 
-            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearPadding, frame });
+            Headers._entries.set(id, { element, scrollHandler, layoutHandler, focusHandler, target, observer, clearMeasures, frame, reobserve, remeasure });
 
-            applyPadding();
+            applyMeasures();
 
             // The scroller can already be scrolled when the header arrives (a restored scroll position, a
             // deep link to an anchor, a header rendered into a pane the user has been reading), so the
@@ -301,7 +353,7 @@
 
             entry.observer?.disconnect();
 
-            entry.clearPadding();
+            entry.clearMeasures();
 
             // A frame scheduled by the last scroll before the disposal would still evaluate and call back
             // into a component that is on its way out, so it is dropped along with the listeners.
@@ -311,7 +363,112 @@
                 entry.frame.handle = 0;
             }
 
+            // A watch or a write scheduled by the last layout change would observe the boxes again after the
+            // disconnect above, or claim the scroller again after its claims were released.
+            if (entry.reobserve.handle) {
+                cancelAnimationFrame(entry.reobserve.handle);
+
+                entry.reobserve.handle = 0;
+            }
+
+            if (entry.remeasure.handle) {
+                cancelAnimationFrame(entry.remeasure.handle);
+
+                entry.remeasure.handle = 0;
+            }
+
             Headers._entries.delete(id);
+        }
+
+        // Writes a property onto the box of a scroller on behalf of a header, keeping the value the box had
+        // before the first header touched it. A header that measures what it measured last writes nothing: the
+        // published height moves the layout, which reports every header on the box again, and two headers of
+        // different heights rewriting their own values on each report would hand the box back and forth on
+        // every frame. So the box carries the value of the header that changed size last.
+        private static claim(box: HTMLElement, property: string, id: string, value: string) {
+            let claims = Headers._claims.get(box);
+
+            if (!claims) {
+                claims = new Map();
+
+                Headers._claims.set(box, claims);
+            }
+
+            let shared = claims.get(property);
+
+            if (!shared) {
+                shared = {
+                    previous: box.style.getPropertyValue(property),
+                    priority: box.style.getPropertyPriority(property),
+                    owners: new Map()
+                };
+
+                claims.set(property, shared);
+            }
+
+            if (shared.owners.get(id) === value) return;
+
+            // Re-inserted rather than updated, so the order of the map stays the order the headers last changed in.
+            shared.owners.delete(id);
+            shared.owners.set(id, value);
+
+            box.style.setProperty(property, value);
+        }
+
+        // Gives up the claim of a header on a property of a box. The header leaving is not necessarily the one
+        // that wrote the value that is on the box right now, and the ones still holding it may never change size
+        // again to write theirs back, so the box is handed the value of the one that changed last of them. The
+        // value found before any of them is only put back once nothing is holding the property anymore.
+        private static release(box: HTMLElement, property: string, id: string) {
+            const claims = Headers._claims.get(box);
+            const shared = claims?.get(property);
+
+            if (!claims || !shared || !shared.owners.has(id)) return;
+
+            shared.owners.delete(id);
+
+            if (shared.owners.size > 0) {
+                let latest = '';
+
+                for (const value of shared.owners.values()) {
+                    latest = value;
+                }
+
+                box.style.setProperty(property, latest);
+
+                return;
+            }
+
+            // An empty value removes the property, which is what the box had when nothing was set on it.
+            box.style.setProperty(property, shared.previous, shared.priority);
+
+            claims.delete(property);
+
+            if (claims.size === 0) {
+                Headers._claims.delete(box);
+            }
+        }
+
+        // The height of the border box of an element in CSS pixels, untransformed and with its fractions: offsetHeight
+        // rounds to a whole pixel, and a header sized by rem paddings, wrapped lines or a fractional safe area inset is
+        // often not one, which would leave a hairline seam (or overlap) between the header and what is offset by it;
+        // getBoundingClientRect is scaled by every transform of an ancestor (a zoomed preview, a scaled frame), while
+        // what is offset by it is laid out in the same untransformed pixels the header is. The computed height is
+        // neither, and is a border box once its paddings and borders are added where box-sizing leaves them out.
+        private static borderBoxHeight(element: HTMLElement): number {
+            const style = getComputedStyle(element);
+
+            let height = parseFloat(style.height);
+
+            // A box with no used height of its own (not rendered, display: contents) computes to "auto".
+            if (!isFinite(height)) return element.offsetHeight;
+
+            if (style.boxSizing !== 'border-box') {
+                height += (parseFloat(style.paddingTop) || 0) + (parseFloat(style.paddingBottom) || 0) +
+                    (parseFloat(style.borderTopWidth) || 0) + (parseFloat(style.borderBottomWidth) || 0);
+            }
+
+            return height;
         }
 
         private static scrollParent(element: HTMLElement): HTMLElement | Window {

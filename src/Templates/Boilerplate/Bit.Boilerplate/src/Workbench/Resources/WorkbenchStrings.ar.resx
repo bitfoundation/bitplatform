@@ -5085,6 +5085,9 @@
     <data name="ProgressSendAnswer" xml:space="preserve">
         <value>إرسال الإجابة</value>
     </data>
+    <data name="ProgressUseSuggestion" xml:space="preserve">
+        <value>استخدم الاقتراح</value>
+    </data>
     <data name="ProgressAnswerFailed" xml:space="preserve">
         <value>تمت الإجابة عن هذا السؤال أو سُحب في الأثناء.</value>
     </data>
@@ -5252,6 +5255,9 @@
     </data>
     <data name="SampleDeployAskEmailOption3" xml:space="preserve">
         <value>لا شيء الآن: أظهر الرسائل في السجلات</value>
+    </data>
+    <data name="SampleDeployAskEmailSuggestion" xml:space="preserve">
+        <value>خدمة بريد إلكتروني مجانية إلى أن يصبح النطاق جاهزًا</value>
     </data>
     <data name="SampleDeployAskSsh" xml:space="preserve">
         <value>هل أغلق منفذ SSH على الخادم بعد أن يعمل النفق؟</value>

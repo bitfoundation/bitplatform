@@ -371,6 +371,18 @@
                 <BitGridItem Class="grid-item" ColumnSpan="12" Md="0">Hidden from Md</BitGridItem>
                 <BitGridItem Class="grid-item" ColumnSpan="6" Sm="0" Md="6">Hidden between Sm and Md</BitGridItem>
             </BitGrid>
+            <br />
+            <div>
+                <b>HiddenXs</b> to <b>HiddenXxl</b> hide an item from their breakpoint upwards whatever way it takes up
+                room, Auto and Grow included, and <b>false</b> shows it again. Both ways are pure CSS, so a prerendered
+                page shows the right items from its first paint.
+            </div>
+            <br />
+            <BitGrid>
+                <BitGridItem Class="grid-item" Grow>Always shown</BitGridItem>
+                <BitGridItem Class="grid-item" Auto HiddenMd="true">Mobile menu (hidden from Md)</BitGridItem>
+                <BitGridItem Class="grid-item" Auto HiddenXs="true" HiddenMd="false">Desktop menu (hidden below Md)</BitGridItem>
+            </BitGrid>
         </DemoExample>
 
         <DemoExample Title="Fluid columns" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">

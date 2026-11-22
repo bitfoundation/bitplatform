@@ -10,7 +10,7 @@
             {
                 <BitNavPanel @bind-IsOpen="isNavPanelOpen"
                              @bind-Toggled="isNavPanelToggled"
-                             IconNavUrl="/"
+                             IconNavUrl="@CultureInfoManager.GetCurrentCultureUrl(PageUrls.Home)"
                              Class="nav-panel"
                              Items="NavPanelItems"
                              IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg">
@@ -22,7 +22,7 @@
                                                      IconName="@BitIconName.Signin"
                                                      Title="@Localizer[nameof(AppStrings.SignIn)]"
                                                      AriaLabel="@Localizer[nameof(AppStrings.SignIn)]"
-                                                     Href="@($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                                     Href="@($"{CultureInfoManager.GetCurrentCultureUrl(PageUrls.SignIn)}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                                         @Localizer[nameof(AppStrings.SignIn)]
                                     </BitActionButton>
                                     <BitActionButton IconOnly="isNavPanelToggled"
@@ -36,7 +36,7 @@
                                                      IconName="@BitIconName.AddFriend"
                                                      Title="@Localizer[nameof(AppStrings.SignUp)]"
                                                      AriaLabel="@Localizer[nameof(AppStrings.SignUp)]"
-                                                     Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
+                                                     Href="@($"{CultureInfoManager.GetCurrentCultureUrl(PageUrls.SignUp)}?return-url={Uri.EscapeDataString(NavigationManager.GetRelativePath())}")">
                                         @Localizer[nameof(AppStrings.SignUp)]
                                     </BitActionButton>
                                 </NotAuthorized>

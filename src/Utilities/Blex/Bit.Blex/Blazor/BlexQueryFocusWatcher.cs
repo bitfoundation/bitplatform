@@ -53,6 +53,9 @@ internal sealed class BlexQueryFocusWatcher(IJSRuntime js, BlexQueryClient clien
             // Queries still work without it; they just do not refetch on focus.
             manager.ReportError("query", ex, "watching focus and network");
         }
+
+        if (_disposed)
+            await ReleaseAsync();
     }
 
     /// <summary>Invoked from JS when the page became visible again.</summary>
@@ -102,10 +105,6 @@ internal sealed class BlexQueryFocusWatcher(IJSRuntime js, BlexQueryClient clien
 
         _disposed = true;
 
-        // A start still in flight finishes first, so what it attaches is released below rather than left behind.
-        if (_starting is not null)
-            await _starting;
-
         // The client may outlive the page (a singleton in Hybrid): it must not keep calling into a disposed module.
         if (_syncing)
         {
@@ -118,6 +117,15 @@ internal sealed class BlexQueryFocusWatcher(IJSRuntime js, BlexQueryClient clien
         if (_reportsOffline && !client.IsOnline)
             client.NotifyReconnected();
 
+        // A start still in flight releases what it attaches itself, once its calls answer: a reloaded BlazorWebView page never answers them.
+        if (_starting is { IsCompleted: false })
+            return;
+
+        await ReleaseAsync();
+    }
+
+    private async Task ReleaseAsync()
+    {
         try
         {
             if (_module is not null)

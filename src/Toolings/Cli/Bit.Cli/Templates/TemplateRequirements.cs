@@ -32,12 +32,12 @@ public sealed partial record TemplateRequirements(int? NodeMajor, Version? Aspir
         return new(ParseNodeMajor(packageJson), ParseAspire(appHostProject), SdkRequirement.FromGlobalJson(globalJson), globalJson);
     }
 
-    public static TemplateRequirements FromProject(string directory, string name)
+    public static TemplateRequirements FromProject(Projects.ProjectContext project)
     {
         return new(
-            ParseNodeMajor(ReadFile(Path.Combine(directory, "src", "Client", $"{name}.Client.Core", "package.json"))),
-            ParseAspire(ReadFile(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost", $"{name}.Server.AppHost.csproj"))),
-            SdkRequirement.FromGlobalJson(ReadFile(Path.Combine(directory, "global.json"))));
+            ParseNodeMajor(ReadFile(Path.Combine(project.ClientCoreDirectory, "package.json"))),
+            ParseAspire(ReadFile(project.AppHostProject)),
+            SdkRequirement.FromGlobalJson(ReadFile(Path.Combine(project.Directory, "global.json"))));
     }
 
     public static int? ParseNodeMajor(string? packageJson)

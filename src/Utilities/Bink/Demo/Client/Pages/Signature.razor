@@ -77,7 +77,7 @@
             </div>
             <div class="bb-demo">
                 <div class="bb-demo-bar"><span class="bb-demo-label">Serialized document</span></div>
-                <pre class="bb-code bink-output">@_savedJson</pre>
+                <pre class="bb-code bink-output" tabindex="0">@_savedJson</pre>
             </div>
         </div>
     </div>
@@ -91,7 +91,7 @@
         validation rule that the vector model makes easy to express. Accepting makes the field
         <code>ReadOnly</code>, the way ink on paper is final, until the signer chooses to sign again.
     </p>
-    <pre class="bb-code">BinkInkMetrics ink = BinkDocumentQuery.MeasureInk(_canvas.CurrentDocument);
+    <pre class="bb-code" tabindex="0">BinkInkMetrics ink = BinkDocumentQuery.MeasureInk(_canvas.CurrentDocument);
 <span class="k">bool</span> valid = ink.Length &gt; 120f;   <span class="c">// also ink.StrokeCount, ink.Duration, ink.Bounds</span></pre>
     <p class="bb-card-desc">
         The message beside the buttons comes from <code>StrokeCompleted</code>, which hands over each finished stroke:
@@ -111,7 +111,7 @@
         touch pointer. The wheel is left to the page either way (<code>WheelMode</code> is <code>None</code> by
         default), so a mouse wheel over the field still scrolls the form.
     </p>
-    <pre class="bb-code"><span class="c">@@* EnableTouchGestures="false": a finger scrolls the form, and a pen still signs. *@@</span>
+    <pre class="bb-code" tabindex="0"><span class="c">@@* EnableTouchGestures="false": a finger scrolls the form, and a pen still signs. *@@</span>
 &lt;<span class="k">BinkCanvas</span> Height=<span class="s">"200px"</span> AriaLabel=<span class="s">"Sign here"</span>
             EnableTouchGestures=<span class="s">"true"</span>
             ReadOnly=<span class="s">"_accepted"</span>
@@ -131,7 +131,7 @@
         signature sit on whatever document it is placed into. The stored copy above is exported the same way, with
         <code>BinkSvgExporter</code> on the document rather than through the canvas.
     </p>
-    <pre class="bb-code"><span class="k">await</span> _canvas.SavePngAsync(<span class="s">"signature.png"</span>, <span class="k">new</span> BinkPngExportOptions
+    <pre class="bb-code" tabindex="0"><span class="k">await</span> _canvas.SavePngAsync(<span class="s">"signature.png"</span>, <span class="k">new</span> BinkPngExportOptions
 {
     Region = BinkExportRegion.Content,
     Padding = 12f,

@@ -504,23 +504,41 @@ public static partial class BitCss
         }
 
         /// <summary>
-        /// Hides an element per breakpoint in CSS alone, so a prerendered page is right before the app starts:
-        /// <c>Xs</c> to <c>Xxl</c> from that breakpoint up (<c>Xs</c> at every width), <c>LtSm</c> to <c>LtXxl</c> below it.
-        /// The breakpoints are the library's default ones; a theme that moves the <c>--bit-bp-*</c> variables does not move them.
+        /// Hides an element per breakpoint from the stylesheet alone, so a prerendered page shows the right content
+        /// from its first paint. <c>Xs</c> to <c>Xxl</c> hide from that breakpoint upwards, <c>LtSm</c> to <c>LtXxl</c>
+        /// below it, so <see cref="Md"/> on the mobile content and <see cref="LtMd"/> on the desktop one swap the two at
+        /// the medium breakpoint.
         /// </summary>
+        /// <remarks>
+        /// The classes are built from the default breakpoints (600, 960, 1280, 1920 and 2560px), since a media query
+        /// cannot read a custom property: a theme that changes its <c>Layout.Breakpoints</c> moves the
+        /// <c>--bit-bp-*</c> properties, <see cref="BitMediaQuery"/> and <see cref="BitScreenQuery"/> with it, but never
+        /// these, which then no longer agree with them. Keep the default breakpoints wherever they are mixed.
+        /// </remarks>
         public static class Hide
         {
+            /// <summary>Hides the element at every size.</summary>
             public const string Xs = "bit-css-hide-xs";
+            /// <summary>Hides the element from the small breakpoint (600px) upwards.</summary>
             public const string Sm = "bit-css-hide-sm";
+            /// <summary>Hides the element from the medium breakpoint (960px) upwards.</summary>
             public const string Md = "bit-css-hide-md";
+            /// <summary>Hides the element from the large breakpoint (1280px) upwards.</summary>
             public const string Lg = "bit-css-hide-lg";
+            /// <summary>Hides the element from the extra large breakpoint (1920px) upwards.</summary>
             public const string Xl = "bit-css-hide-xl";
+            /// <summary>Hides the element from the extra extra large breakpoint (2560px) upwards.</summary>
             public const string Xxl = "bit-css-hide-xxl";
 
+            /// <summary>Hides the element below the small breakpoint (under 600px).</summary>
             public const string LtSm = "bit-css-hide-lt-sm";
+            /// <summary>Hides the element below the medium breakpoint (under 960px).</summary>
             public const string LtMd = "bit-css-hide-lt-md";
+            /// <summary>Hides the element below the large breakpoint (under 1280px).</summary>
             public const string LtLg = "bit-css-hide-lt-lg";
+            /// <summary>Hides the element below the extra large breakpoint (under 1920px).</summary>
             public const string LtXl = "bit-css-hide-lt-xl";
+            /// <summary>Hides the element below the extra extra large breakpoint (under 2560px).</summary>
             public const string LtXxl = "bit-css-hide-lt-xxl";
         }
     }

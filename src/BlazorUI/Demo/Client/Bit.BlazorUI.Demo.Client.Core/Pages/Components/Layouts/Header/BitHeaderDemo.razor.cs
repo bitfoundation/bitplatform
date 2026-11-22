@@ -71,7 +71,7 @@ public partial class BitHeaderDemo
             Name = "ElevateOnScroll",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Keeps the BitHeader flat while the scrolling area sits at its top and lets it cast its shadow only once the content has been scrolled underneath it. It only has an effect on a Fixed or Sticky header, and Elevated takes precedence over it.",
+            Description = "Keeps the BitHeader flat while the scrolling area sits at its top and lets it cast its shadow only once the content has been scrolled underneath it. It only has an effect on a Fixed or Sticky header, and Elevated takes precedence over it. While scrolled, the root also carries the bit-hdr-scr class and the Scrolled part of Classes and Styles, and reads the --bit-Header-scrolled-* variables, so the scrolled state can be styled beyond the shadow.",
         },
         new()
         {
@@ -135,6 +135,13 @@ public partial class BitHeaderDemo
             Type = "EventCallback<bool>",
             DefaultValue = "",
             Description = "Callback for when the scrolled state of the header changes. The provided value is true once the scrolling area has travelled past the ElevateOffset. Only invoked while ElevateOnScroll is enabled.",
+        },
+        new()
+        {
+            Name = "PublishHeight",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Publishes the live height of the BitHeader (its rows, its paddings and the top safe area inset) as the --bit-env-header-height custom property of its scrolling area - the document element for the page - and keeps it in step while the header changes size, so the content under a pinned header can offset itself by exactly that much (padding-top: var(--bit-env-header-height, 64px), with a fallback for the first paint). It only has an effect on a Fixed or Sticky header, and follows the ScrollTarget.",
         },
         new()
         {
@@ -283,6 +290,13 @@ public partial class BitHeaderDemo
                     Type = "string?",
                     DefaultValue = "null",
                     Description = "Custom CSS classes/styles for the second row of the BitHeader, which is only rendered when an ExtensionContent is provided."
+                },
+                new()
+                {
+                    Name = "Scrolled",
+                    Type = "string?",
+                    DefaultValue = "null",
+                    Description = "Custom CSS classes/styles applied to the root element of the BitHeader while it is scrolled, which is while IsScrolled is true (an ElevateOnScroll header whose scrolling area has travelled past the ElevateOffset)."
                 },
                 new()
                 {
@@ -447,7 +461,43 @@ public partial class BitHeaderDemo
         {
             Name = "--bit-Header-shadow",
             DefaultValue = "--bit-shd-appbar-top",
-            Description = "Shadow of an Elevated header, or of an ElevateOnScroll one once scrolled.",
+            Description = "Shadow of an Elevated header, or of an ElevateOnScroll one once scrolled. Set it to none for a header that marks its scrolled state with the scrolled variables alone.",
+        },
+        new()
+        {
+            Name = "--bit-Header-scrolled-background",
+            DefaultValue = "--bit-Header-background",
+            Description = "Fill of a Fill header while it is scrolled (ElevateOnScroll), in place of its resting fill - set --bit-Header-background to transparent for a header that only takes a surface once content passes under it. A Translucent header keeps its share of it. The Color parameter wins over it. The Fill variant, the only one reading it, reads --bit-Header-fill-scrolled-background ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-scrolled-background",
+            DefaultValue = "--bit-Header-scrolled-background",
+            Description = "Fill of a scrolled Fill header alone, read ahead of --bit-Header-scrolled-background, like every variable a variant reads. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-scrolled-border-color",
+            DefaultValue = "--bit-Header-border-color",
+            Description = "Border of an Outline header, and the divider of a Bordered one, while it is scrolled (ElevateOnScroll) - set --bit-Header-border-color to transparent for a hairline that only shows up once content passes under the header. The Color parameter wins over it. Shared by the three variants: --bit-Header-fill-scrolled-border-color, --bit-Header-outline-scrolled-border-color and --bit-Header-text-scrolled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-scrolled-border-color",
+            DefaultValue = "--bit-Header-scrolled-border-color",
+            Description = "Divider of a scrolled Bordered Fill header alone, read ahead of --bit-Header-scrolled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-outline-scrolled-border-color",
+            DefaultValue = "--bit-Header-scrolled-border-color",
+            Description = "Border of a scrolled Outline header alone, read ahead of --bit-Header-scrolled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-text-scrolled-border-color",
+            DefaultValue = "--bit-Header-scrolled-border-color",
+            Description = "Divider of a scrolled Bordered Text header alone, read ahead of --bit-Header-scrolled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {
@@ -545,4 +595,5 @@ public partial class BitHeaderDemo
     private bool isHeaderRevealed = true;
     private bool isHeaderScrolled;
     private bool isImmersiveMode;
+    private bool isHeaderTall;
 }

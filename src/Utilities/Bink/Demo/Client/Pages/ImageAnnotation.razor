@@ -110,7 +110,7 @@
         edits - remove the old one, add the new - but to the person using it one action, so it is one undo step. A
         locked layer keeps tools away, not code: the page adds the picture to it directly.
     </p>
-    <pre class="bb-code">BinkImageSource ready = <span class="k">await</span> _canvas.LoadImageAsync(BinkImageSource.FromBytes(bytes, mediaType, 0, 0));
+    <pre class="bb-code" tabindex="0">BinkImageSource ready = <span class="k">await</span> _canvas.LoadImageAsync(BinkImageSource.FromBytes(bytes, mediaType, 0, 0));
 BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, maxWidth: _document.Settings.Width - 40);
 
 <span class="k">using</span> (_canvas.History.BeginGroup(<span class="s">"Open image"</span>))
@@ -129,7 +129,7 @@ BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, ma
         can reference other resources. <code>TryCreate</code> checks a URI from elsewhere without throwing, and a large
         picture can be kept out of the saved document and referenced by URL instead.
     </p>
-    <pre class="bb-code"><span class="k">if</span> (!BinkImageSource.TryCreate(uri, width, height, allowSvg: <span class="k">false</span>, <span class="k">out</span> BinkImageSource? source))
+    <pre class="bb-code" tabindex="0"><span class="k">if</span> (!BinkImageSource.TryCreate(uri, width, height, allowSvg: <span class="k">false</span>, <span class="k">out</span> BinkImageSource? source))
 {
     <span class="c">// refuse it</span>
 }</pre>
@@ -144,7 +144,7 @@ BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, ma
         its frame to match, so what stays visible stays where it was under the annotations. Cropping, like moving or
         resizing, is a vector property: the pixels are never re-encoded, and removing the crop brings the margin back.
     </p>
-    <pre class="bb-code">_document.UpdateLayer(_imageLayer, p =&gt; p <span class="k">with</span> { IsVisible = <span class="k">false</span> });
+    <pre class="bb-code" tabindex="0">_document.UpdateLayer(_imageLayer, p =&gt; p <span class="k">with</span> { IsVisible = <span class="k">false</span> });
 
 _document.ReplaceElement(picture <span class="k">with</span>
 {
@@ -162,7 +162,7 @@ _document.ReplaceElement(picture <span class="k">with</span>
         throws <code>NotSupportedException</code> rather than handing back a PNG under a WebP name. SVG keeps every
         annotation editable, with the descriptions as <code>title</code> elements for screen readers.
     </p>
-    <pre class="bb-code"><span class="k">var</span> options = <span class="k">new</span> BinkPngExportOptions { Region = BinkExportRegion.Content, Scale = 2f };
+    <pre class="bb-code" tabindex="0"><span class="k">var</span> options = <span class="k">new</span> BinkPngExportOptions { Region = BinkExportRegion.Content, Scale = 2f };
 
 <span class="k">await</span> _canvas.SavePngAsync(<span class="s">"annotated.png"</span>, options);
 <span class="k">await</span> _canvas.SaveImageAsync(<span class="s">"annotated.jpg"</span>, BinkImageFormat.Jpeg, options, quality: 0.85);
