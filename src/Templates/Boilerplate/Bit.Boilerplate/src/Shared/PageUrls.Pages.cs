@@ -16,8 +16,8 @@ public static partial class PageUrls
     /// A page is included only when its <see cref="PageUrls"/> constant (or <see cref="SettingsSections"/> field)
     /// is decorated with a <see cref="DescriptionAttribute"/>, so this list automatically adapts to the
     /// enabled template features (Admin/Sales/multitenant/ads/...).
-    /// Consumed by the public, unauthenticated GET /llms.txt endpoint
-    /// (Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs) and, when signalR is enabled, by the
+    /// Consumed by the public, unauthenticated GET /llms.txt endpoint, which lists the ones sitemap.xml lists
+    /// (Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs), and, when signalR is enabled, by the
     /// chatbot's GetAppPages tool. The list is NOT filtered by the caller's roles or features - every description is
     /// readable by anonymous clients.
     /// </summary>
@@ -53,6 +53,15 @@ public static partial class PageUrls
     /// </summary>
     public static IReadOnlySet<string> NoIndexUrls { get; } = typeof(PageUrls).GetFields(BindingFlags.Public | BindingFlags.Static)
         .Where(field => field.FieldType == typeof(string) && field.IsDefined(typeof(NoIndexAttribute)))
+        .Select(field => (string)field.GetValue(null)!)
+        .ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The urls <c>sitemap.xml</c> and <c>llms.txt</c> leave out: those whose <see cref="PageUrls"/> constant carries
+    /// <see cref="NotInSitemapAttribute"/> or <see cref="NoIndexAttribute"/>.
+    /// </summary>
+    public static IReadOnlySet<string> NotInSitemapUrls { get; } = typeof(PageUrls).GetFields(BindingFlags.Public | BindingFlags.Static)
+        .Where(field => field.FieldType == typeof(string) && (field.IsDefined(typeof(NotInSitemapAttribute)) || field.IsDefined(typeof(NoIndexAttribute))))
         .Select(field => (string)field.GetValue(null)!)
         .ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 

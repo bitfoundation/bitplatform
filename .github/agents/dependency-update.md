@@ -99,7 +99,8 @@ rest. Do not move all twenty-one at once.
 **`devops-actions/variable-substitution` is held at v1.2** (`ae7b1f36…`). v2.0.0 committed 31
 symlinks into its vendored `node_modules`; the runner cannot stage them and every job dies before
 the action runs with `Could not find file '.../helper-compilation-targets/node_modules/.bin/semver'`.
-v2.0.0 is the only v2 release and has been broken since 2026-05-23. Re-check with the tree API
+v3.0.0 still carries 16 and fails the same way on Linux and macOS runners, while Windows runners stage it
+([devops-actions/variable-substitution#370](https://github.com/devops-actions/variable-substitution/issues/370)). Re-check with the tree API
 before ever moving this pin again:
 
 ```bash
@@ -315,7 +316,7 @@ for the `rollForward` too, and go back to `<major>.0.100` + `latestFeature` once
 ### Container images
 
 In `Boilerplate.Server.AppHost/Infrastructure/Extensions/IDistributedApplicationBuilderExtensions.cs`.
-Pin a major (`pgvector/pgvector:pg18`, `mssql/server:2025-latest`, `redis:8`), never `latest`. Where
+Pin a major (`pgvector/pgvector:pg19`, `mssql/server:2025-latest`, `redis:8`), never `latest`. Where
 an image publishes no major-only tag, pin the full newest tag and note it. Read every tag in that file,
 `WithImageTag` included, and the images it pulls from `ghcr.io`, whose tags Docker Hub's API doesn't list: ask
 `ghcr.io/v2/<repo>/manifests/<tag>` for the next minor with an anonymous pull token. The same tag also appears in

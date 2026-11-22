@@ -384,7 +384,7 @@ bit keys apple --issuer-id 57246542-96fe-1a63-e053-0824d011072a --key-id 2X9R4HX
 - `--rotate` renames the current pair to `AppCertificate.<date>.crt` and `.key`, which the server keeps trusting for what it signed, and creates a new one with the same subject.
 - `--pfx` also writes `AppCertificate.pfx` behind a generated password. `--list` shows the folder's certificates, which one is active, their key ids and when they expire.
 
-`bit keys android` creates the keystore that signs the Android app for Google Play: an RSA 2048 key valid for 30 years under the project's name as its alias, with one generated password for the keystore and the key. It goes to `~/.bitplatform/keys/<project>` or `-o <file>`, never into the repository, and in a project its SHA-256 fingerprint is added to `assetlinks.json` for the app's id. Google Play only takes updates signed with the same key, so save it and its password somewhere safe.
+`bit keys android` creates the keystore that signs the Android app for Google Play: an RSA 2048 key valid for 30 years under the project's name as its alias, with one generated password for the keystore and the key. It goes to `~/.bitplatform/keys/<project>` or `-o <file>`, never into the repository, and in a project its SHA-256 fingerprint is added to `assetlinks.json` for the app's id, in every `.well-known` folder [the project has](#the-parts-of-a-project). Google Play only takes updates signed with the same key, so save it and its password somewhere safe.
 
 `bit keys apple` creates the signing the CD needs to publish the iOS app, without a Mac, through the App Store Connect API:
 
@@ -416,6 +416,31 @@ The app needs no change for it. The browser is Playwright's Chromium when it's i
 
 Collect the profile in the job that publishes the app, right before the AOT publish, rather than keeping one in the repository: a profile describes one build of the app.
 
+## The parts of a project
+
+bit finds a project's parts where bit Boilerplate puts them. A project that renamed, moved or split one names it with an option, and a command that finds no part where it looked says so and names the option, instead of leaving that step out.
+
+| Part | Where bit looks | Option | On |
+|---|---|---|---|
+| The project | The current folder. `migration`, `api`, `keys certificate`, `keys android` and `pipeline` take the nearest folder with a `*.Web.slnf` or `*.slnx`, it or one above it | `--project <folder>` | `run`, `doctor`, `migration`, `api`, `keys certificate`, `keys android`, `keys apple`, `pipeline`, `diff`. `setup`, `clean` and `rename` take the folder as an argument |
+| Server.Api | `src/Server/<name>.Server.Api` | `--server-api <csproj>` | `setup`, `run`, `migration`, `api`, `keys certificate`, `pipeline` |
+| Server.Web | `src/Server/<name>.Server.Web` | `--server-web <csproj>`, repeatable | `setup`, `run`, `migration` |
+| The Aspire AppHost | `src/Server/<name>.Server.AppHost` | `--apphost <csproj>` | `setup`, `run`, `doctor` |
+| Client.Core | `src/Client/<name>.Client.Core` | `--client-core <folder>` | `setup`, `doctor`, `migration` |
+| The web apps | Every Blazor WebAssembly project under `src/Client` | `--web <csproj>`, repeatable | `setup`, `doctor` |
+| Client.Maui | `src/Client/<name>.Client.Maui` | `--maui <csproj>` | `setup`, `run`, `rename`, `keys android`, `keys apple`, `pipeline` |
+| Client.Windows | `src/Client/<name>.Client.Windows` | `--windows <csproj>` | `setup`, `run` |
+| The Workbench | `src/Workbench/<name>.Workbench.csproj` | `--workbench <csproj>` | `setup` |
+| The landing page | `src/LandingPage/<name>.LandingPage.Server` | `--landing-page <csproj>` | `setup` |
+| `assetlinks.json` and `apple-app-site-association.json` | Every `wwwroot/.well-known` folder under `src/Client` that has one of the two | `--well-known <folder>`, repeatable | `keys android`, `pipeline` |
+| The api's documents | `openapi`, in the project's folder | `--openapi <folder>` | `api` |
+| The app's version | `<Version>` in `src/Directory.Build.props` | `--version <version>` | `api` |
+
+- A project that isn't at the template's path is still found when the project's `.slnx` lists one whose file name ends the same way, like `backend/Shop.Server.Api.csproj` for Server.Api. The option is for the rest: one with another name, or one of several.
+- An option that takes a `.csproj` takes its folder too, when the folder has one `.csproj` or one with the folder's name, and a relative path is from the current folder, or else from the project's. A path that isn't there stops the command.
+- With more than one `--server-web`, `bit run` and `bit setup` start them all without Aspire, and open the first. `dotnet run` builds a server an option names, which may be outside the `.Web.slnf` bit built. With Aspire they wait for each one's resource, which bit reads from the AppHost: the `AddProject` call that names the project. The template's names, `serverweb` and `serverapi`, stand only for the template's own servers.
+- `bit keys android` and `bit pipeline` add the Android key's fingerprint, and `bit pipeline` the iOS app, to every `.well-known` folder, since a project may serve more than one web app. When they find none, or don't know the app's id, they say that the app's links won't verify, and `bit pipeline` gives the fingerprint or the app to add by hand.
+
 ## Staying up to date
 
 `bit new` creates every project from the newest stable bit Boilerplate. As it starts, it looks up the newest `Bit.Cli` on this machine's NuGet sources. When a newer one is out, it installs it next to itself in `~/.bitplatform/cli`, and the same command carries on with it in the same terminal, so nothing is asked twice. When the run ends, the installed global tool updates to that version in the background, with its log in `~/.bitplatform/logs`.
@@ -424,6 +449,37 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - It never happens in CI, with `--template-package`, under `dnx`, which runs the version you ask it for, or in a build from source, so CI and local builds always run the code they were built from.
 - `--no-update`, or `BIT_CLI_NO_UPDATE=1`, keeps the bit you have.
 - `bit update` updates the installed bit on request.
+- In a project's folder every command keeps bit up to date as well, as the next section describes.
+
+### The bit a project works with
+
+In a project's folder, or any folder under it, bit runs the project's commands with the newest bit that works with the project. Before it runs a command it reads the nearest `bit.json`, which records the bit Boilerplate version the project is on:
+
+- A bit older than that version is too old for the project, which may rely on what bit only got in that version. It gets a newer one right away.
+- A bit that works with the project looks for a newer one once a day.
+- A bit can also be too new. A change that stops bit from working with projects made from an older bit Boilerplate records it in bit: from which bit version on, a project has to be on which bit Boilerplate version at least. In a project older than that, the newest bit from before that change runs the commands, until the project is upgraded. The list is `OldestProjects` in `ProjectBit.cs`, and a line names the next version, the one the change ships in.
+- A project can name the newest bit it runs with by hand, for a bit that turns out not to work with it before bit knows:
+
+```json
+"cli": {
+    "maxVersion": "11.4.0"
+}
+```
+
+When another bit is the one to run the command, bit takes it from `~/.bitplatform/cli` when it is already there, otherwise from this machine's NuGet sources, and the same command carries on with it in the same terminal, with the same exit code. When that one is newer than yours, the installed global tool also updates to it once the run ends, so the next command runs directly. When it is older, yours stays installed, and only that project's commands run with the older one.
+
+When the project is on an older bit Boilerplate than the newest bit, bit says so with every command, and `bit diff` shows what changed.
+
+- `bit diff` always runs with the newest bit of all, and looks for it every time. It upgrades the project to the version of the bit that runs it, so an older one would stop at its own version.
+- Every command does this except `bit new`, which always takes the newest bit, and `bit remove`, `bit decode`, `bit trust`, `bit update`, `bit about` and `bit telemetry`, which don't read the project. `bit --version` and `--help` are the installed bit's own.
+- It happens before bit reads the command, so a command or an option that only the other bit knows still reaches it, exactly as it was typed.
+- `bit setup`, `bit clean`, `bit rename` and a command with `--project` go by the folder they're given, not the one they run in. `bit setup` with a repository's address checks right after cloning it.
+- bit looks the other bit up, and downloads it, from its own folder, so the project's `global.json` and `NuGet.config` have no say in it: it works before the project's .NET SDK is installed.
+- A stable bit takes a stable version when one fits, and never moves to a prerelease only because it is newer. While only a prerelease fits, it runs the command with that one and leaves the installed bit as it is.
+- When a bit the project needs can't be found or downloaded, such as without a connection, bit says so and goes on with the one you have. It doesn't try again for 15 minutes, so the commands in between don't wait for it. The same goes for a newer bit that was found and couldn't be downloaded, while a look that finds nothing newer isn't repeated until the next day. An update of the installed bit that didn't get through is tried again an hour later.
+- Ctrl+C is the other bit's to handle, as if you had run it yourself, and a SIGTERM sent to bit is passed on to it.
+- In CI, under `dnx`, in a `--tool-path` install and with `BIT_CLI_NO_UPDATE=1`, bit runs the version you gave it: it never looks for a newer one, and only says so when the project needs another one. A build from source doesn't check.
+- A copy a project used stays in `~/.bitplatform/cli` for 30 days after its last use. `bit new` deletes the others once the installed bit is at least as new. A copy that turns out to be broken is removed, and the next command gets it again.
 
 ## What it changes on your machine
 
@@ -437,7 +493,7 @@ Collect the profile in the job that publishes the app, right before the AOT publ
 - **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. It runs only the script bit wrote, checked by its hash, gives each command a time limit, and Ctrl+C stops it. On macOS and Linux, `sudo` asks for your password once.
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
-- **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.
+- **bit itself**, when a newer version is out or a project needs another one: a copy for the run in `~/.bitplatform/cli`, then, when that copy is newer, `dotnet tool update --global Bit.Cli` once the run ends.
 - **Secrets, environments and pull request and Actions settings** of your GitHub repository, only with `bit pipeline`, after you confirm or with `--yes`.
 - **oasdiff**, for `bit api`, in `~/.bitplatform/tools`.
 - **Its own folder**, `~/.bitplatform`: `settings.json`, the template cache, logs, telemetry not sent yet, the repositories `bit diff` creates, and in `keys` the keys `bit pipeline` and `bit keys android` create, which only your user can read on macOS and Linux.

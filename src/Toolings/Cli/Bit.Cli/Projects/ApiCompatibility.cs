@@ -12,23 +12,35 @@ public sealed record ApiComparison(Version Version, IReadOnlyList<ApiFinding> Er
 
 public sealed record SupportedAppVersions(Version Lowest, IReadOnlyList<(string Platform, Version Minimum)> Platforms);
 
-public sealed partial class ApiCompatibility(CliServices cli, string directory, string name)
+public sealed partial class ApiCompatibility(CliServices cli, ProjectContext project, string? openApiDirectory = null, string? givenVersion = null)
 {
+    private readonly string directory = project.Directory;
+
+    private readonly string name = Path.GetFileNameWithoutExtension(project.ServerApiProject);
+
+    public const string VersionOption = "--version";
+
     public static readonly (string Key, string Title)[] Platforms = [("Android", "Android"), ("Ios", "iOS"), ("MacOS", "macOS"), ("Windows", "Windows"), ("Web", "web")];
 
     public const string SeverityLevels = "response-optional-property-removed ERR\n";
 
     public string Directory => directory;
 
-    public string OpenApiDirectory => Path.Combine(directory, "openapi");
+    public string OpenApiDirectory => openApiDirectory ?? Path.Combine(directory, "openapi");
 
     public string CurrentDocument => Path.Combine(OpenApiDirectory, "current.json");
 
-    public string ServerApiDirectory => Path.Combine(directory, "src", "Server", $"{name}.Server.Api");
+    public string ServerApiDirectory => project.ServerApiDirectory;
 
-    public string ServerApiProject => Path.Combine(ServerApiDirectory, $"{name}.Server.Api.csproj");
+    public string ServerApiProject => project.ServerApiProject;
+
+    public string ServerApiName => name;
 
     public string VersionFile => Path.Combine(directory, "src", "Directory.Build.props");
+
+    public bool VersionGiven => givenVersion is not null;
+
+    public string VersionPlace => VersionGiven ? VersionOption : $"the version in {Relative(VersionFile)}";
 
     public string SettingsFile => Path.Combine(ServerApiDirectory, "appsettings.json");
 
@@ -42,6 +54,13 @@ public sealed partial class ApiCompatibility(CliServices cli, string directory, 
 
     public (Version? Version, string? Problem) ReadVersion()
     {
+        if (givenVersion is not null)
+        {
+            return Version.TryParse(givenVersion, out var given)
+                ? (Normalize(given), null)
+                : (null, $"{VersionOption} is '{givenVersion}', and a release needs a plain version such as 1.2.3: the stores and the force update compare it as numbers.");
+        }
+
         try
         {
             var value = File.Exists(VersionFile)
@@ -49,10 +68,10 @@ public sealed partial class ApiCompatibility(CliServices cli, string directory, 
                 : null;
 
             if (string.IsNullOrEmpty(value))
-                return (null, $"{Relative(VersionFile)} has no <Version>, which is the app's version: add <Version>0.0.1</Version> to its first PropertyGroup.");
+                return (null, $"{Relative(VersionFile)} has no <Version>, which is the app's version: add <Version>0.0.1</Version> to its first PropertyGroup, or pass the version with {VersionOption}.");
 
-            return Version.TryParse(value, out var version)
-                ? (Normalize(version), null)
+            return Version.TryParse(value, out var read)
+                ? (Normalize(read), null)
                 : (null, $"The <Version> in {Relative(VersionFile)} is '{value}', and a release needs a plain version such as 1.2.3: the stores and the force update compare it as numbers.");
         }
         catch (Exception exp) when (exp is IOException or UnauthorizedAccessException or System.Xml.XmlException)
@@ -130,10 +149,10 @@ public sealed partial class ApiCompatibility(CliServices cli, string directory, 
 
     public async Task<StepResult> BuildAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        var title = $"Built {name}.Server.Api, which wrote {Relative(CurrentDocument)}";
-        var failedTitle = $"Couldn't build {name}.Server.Api";
+        var title = $"Built {name}, which wrote {Relative(CurrentDocument)}";
+        var failedTitle = $"Couldn't build {name}";
 
-        var generated = Path.Combine(ServerApiDirectory, "obj", $"{name}.Server.Api.OpenApiFiles.cache");
+        var generated = Path.Combine(ServerApiDirectory, "obj", $"{name}.OpenApiFiles.cache");
 
         if (File.Exists(generated))
         {
@@ -157,7 +176,7 @@ public sealed partial class ApiCompatibility(CliServices cli, string directory, 
 
         if (File.Exists(CurrentDocument) is false || File.GetLastWriteTimeUtc(CurrentDocument) < startedAt)
         {
-            var followUp = $"{name}.Server.Api writes it on a Debug build once it references Microsoft.Extensions.ApiDescription.Server the way the bit Boilerplate template does: bit diff shows the template's setup.";
+            var followUp = $"{name} writes it on a Debug build once it references Microsoft.Extensions.ApiDescription.Server the way the bit Boilerplate template does: bit diff shows the template's setup. If it writes its documents to another folder, pass that folder with --openapi.";
             return StepResult.Failed(failedTitle, $"the build didn't write {Relative(CurrentDocument)}", followUp) with { Attempt = result.Spec?.Attempt };
         }
 

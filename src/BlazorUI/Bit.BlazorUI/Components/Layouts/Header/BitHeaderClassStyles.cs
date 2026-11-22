@@ -19,6 +19,19 @@ public class BitHeaderClassStyles
     public string? Extension { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles applied to the root element of the BitHeader while it is scrolled, which is
+    /// while <see cref="BitHeader.IsScrolled"/> is true (its scrolling area has travelled past the
+    /// <see cref="BitHeader.ElevateOffset"/>).
+    /// On a <see cref="BitHeader.Translucent"/> header, a rule of a single class does not outweigh the translucent
+    /// background, so a class restyling it there needs a heavier selector (or the scrolled CSS variables).
+    /// </summary>
+    /// <remarks>
+    /// Giving it is enough for a <see cref="BitHeader.Fixed"/> or <see cref="BitHeader.Sticky"/> header to track its
+    /// scrolled state, with or without the shadow of <see cref="BitHeader.ElevateOnScroll"/>.
+    /// </remarks>
+    public string? Scrolled { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the skip link of the BitHeader, which is only rendered when a
     /// <see cref="BitHeader.SkipLinkHref"/> is provided.
     /// </summary>

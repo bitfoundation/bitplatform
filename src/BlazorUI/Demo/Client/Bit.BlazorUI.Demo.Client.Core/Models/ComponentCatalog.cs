@@ -277,6 +277,7 @@ public static class ComponentCatalog
         ["TimePicker"] = BitIconName.Timer,
 
         // Layouts
+        ["Container"] = BitIconName.SingleColumn,
         ["Footer"] = BitIconName.Footer,
         ["Grid"] = BitIconName.GridViewMedium,
         ["Header"] = BitIconName.Header,
@@ -467,6 +468,7 @@ public static class ComponentCatalog
         ["TimePicker"] = "A drop-down for an hour and minute value, with a typeable text field.",
 
         // Layouts
+        ["Container"] = "Centers the content of a page in a column with a maximum width and side gutters.",
         ["Footer"] = "The bar at the bottom of a site or an application.",
         ["Grid"] = "Divides the available width into equal columns and lays its items out on them.",
         ["Header"] = "The bar at the top of a site or an application.",
