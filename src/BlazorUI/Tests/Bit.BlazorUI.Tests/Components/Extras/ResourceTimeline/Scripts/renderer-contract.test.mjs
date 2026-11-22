@@ -180,8 +180,8 @@ for (const [name, Renderer] of Object.entries(renderers)) {
 
     test(`the ${name} renderer paints a +N marker above every bar label`, () => {
         const scene = makeSceneEngine([
-            bar('a', 'r0', 1, 3, { textAbove: 'Label A', textBelow: 'Below A' }),
-            bar('b', 'r1', 2, 5, { textAbove: 'Label B' })
+            bar('a', 'r0', 1, 3, { texts: { topCenter: { text: 'Label A' }, bottomCenter: { text: 'Below A' } } }),
+            bar('b', 'r1', 2, 5, { texts: { topCenter: { text: 'Label B' } } })
         ]).buildScene();
         assert.ok(scene.bars.some(b => b.labels && b.labels.length), 'the fixture must carry bar labels');
 

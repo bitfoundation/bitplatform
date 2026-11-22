@@ -89,10 +89,10 @@ export async function loadDomRenderers() {
 // DOM-independent methods touch. Kept explicit rather than reaching into a real
 // instance so a test failure points at the behaviour, not at fixture drift.
 //
-// config.texts is deliberately left out: the engine's built-in texts are not
-// exported, and _text falls back to them for a config without texts (which is
-// what the English assertions exercise); _applyOptions creates it from those
-// defaults the first time an options object sets a text.
+// config.strings is deliberately left out: the engine's built-in strings are
+// not exported, and _text falls back to them for a config without strings
+// (which is what the English assertions exercise); _applyOptions creates it from
+// those defaults the first time an options object sets a string.
 export function makeBareEngine(overrides = {}) {
     const engine = Object.create(ResourceTimelineEngine.prototype);
 

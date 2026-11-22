@@ -18,6 +18,38 @@ only in this file.
 
 ## 11.0.0
 
+### `BitResourceTimeline`'s bar texts are one `Texts` with eight positions, and its `Texts` is `Strings` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`BitResourceTimelineAllocation` labelled a bar through four strings, one per side. They are now the properties of one
+`Texts` (a `BitResourceTimelineBarTexts`), which adds a text at the start and the end edge above and below the bar
+(`TopStart`, `TopEnd`, `BottomStart`, `BottomEnd`). Each position is a `BitResourceTimelineBarText` with its own
+`Text`, `Color`, `Font`, `OffsetX` and `OffsetY`, and a string converts to one implicitly:
+
+| Before | After |
+|---|---|
+| `TextAbove = "LH441"` | `Texts = new() { TopCenter = "LH441" }` |
+| `TextBelow = "Gate 5"` | `Texts = new() { BottomCenter = "Gate 5" }` |
+| `TextStart = "08:00"` | `Texts = new() { Start = "08:00" }` |
+| `TextEnd = "16:00"` | `Texts = new() { End = "16:00" }` |
+| `bar.TextAbove` (read) | `bar.Texts?.TopCenter?.Text` |
+
+The four texts are drawn where they were. The label a bar's default tooltip and accessible name read is the first text
+of `TopCenter`, `TopStart`, `TopEnd`, `Start`, `End`, `BottomCenter`, `BottomStart` and `BottomEnd`, which is the
+order the old four were read in.
+
+So the bar texts and the words of the timeline itself are not both called texts, the component's `Texts` parameter
+(and its counterpart on `BitResourceTimelineParams`) is `Strings`, and its type `BitResourceTimelineTexts` is
+`BitResourceTimelineStrings`, with the same members:
+
+| Before | After |
+|---|---|
+| `<BitResourceTimeline Texts="texts" />` | `<BitResourceTimeline Strings="strings" />` |
+| `new BitResourceTimelineTexts { Loading = "..." }` | `new BitResourceTimelineStrings { Loading = "..." }` |
+
+The analyzer reports a `Texts` left on the component and the four removed allocation properties (`BITBC001`), and the
+old type (`BITBC002`). With it turned off, a `Texts` left in markup builds and is rendered as an HTML attribute, so the
+timeline speaks English again.
+
 ### `BitFullCalendarState` is read-only, but for its filters ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 `BitFullCalendar.State` is what the calendar is showing, for an app to read. The 56 members that changed it are no
