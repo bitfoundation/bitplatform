@@ -946,6 +946,22 @@ public class BitHeaderTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitHeaderShouldIgnoreAScrolledReportWithoutElevateOnScroll()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Sticky, true);
+        });
+
+        // A report still in flight from a registration made while ElevateOnScroll was on.
+        await component.InvokeAsync(() => component.Instance._OnScrollChange(true));
+
+        Assert.IsFalse(component.Instance.IsScrolled);
+        Assert.IsFalse(component.Find(".bit-hdr").ClassList.Contains("bit-hdr-scr"));
+    }
+
+    [TestMethod]
     public async Task BitHeaderShouldMarkAnElevatedHeaderAsScrolledOnlyOnceItIsScrolled()
     {
         var component = RenderComponent<BitHeader>(parameters =>

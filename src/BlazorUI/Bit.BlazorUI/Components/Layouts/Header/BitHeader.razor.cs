@@ -535,6 +535,10 @@ public partial class BitHeader : BitComponentBase
 
         if (_scrolled == scrolled) return;
 
+        // A report of the registration set up before ElevateOnScroll was turned off can still be in flight, and
+        // nothing would ever take back the scrolled state it brings.
+        if (scrolled && ElevateOnScroll is false) return;
+
         _scrolled = scrolled;
 
         ClassBuilder.Reset();

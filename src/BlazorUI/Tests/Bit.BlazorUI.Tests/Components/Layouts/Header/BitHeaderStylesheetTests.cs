@@ -93,7 +93,7 @@ public class BitHeaderStylesheetTests
 
         // The scrolled fill and border fade in with the shadow, also on a header that slides (whose own transition list
         // would otherwise replace the scroll one).
-        foreach (var selector in new[] { "\n.bit-hdr-esc {", "\n.bit-hdr-anm.bit-hdr-esc {" })
+        foreach (var selector in new[] { "\n.bit-hdr-esc {", "\n.bit-hdr-anm:where(.bit-hdr-esc) {" })
         {
             var block = SourceFiles.GetScssBlock(stylesheet, selector);
 
@@ -105,12 +105,17 @@ public class BitHeaderStylesheetTests
             StringAssert.Contains(block, ", color $mot-duration $mot-easing");
         }
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-anm.bit-hdr-esc {"), "transform $mot-duration $mot-easing");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-hdr-anm:where(.bit-hdr-esc) {"), "transform $mot-duration $mot-easing");
 
-        // On paper the combined list, which weighs two classes, is switched off along with the single ones.
-        var print = stylesheet[stylesheet.IndexOf("@media print {", System.StringComparison.Ordinal)..];
+        // The combined list weighs one class, so it follows both single lists to win, and the print rule (one class,
+        // later still) and an app's single class keep overriding it.
+        Assert.IsFalse(stylesheet.Contains(".bit-hdr-anm.bit-hdr-esc"), "The combined list weighs two classes.");
 
-        StringAssert.Contains(print, ".bit-hdr-anm.bit-hdr-esc {");
+        var combined = stylesheet.IndexOf("\n.bit-hdr-anm:where(.bit-hdr-esc) {", System.StringComparison.Ordinal);
+
+        Assert.IsTrue(combined > stylesheet.IndexOf("\n.bit-hdr-esc {", System.StringComparison.Ordinal));
+        Assert.IsTrue(combined > stylesheet.IndexOf("\n.bit-hdr-anm {", System.StringComparison.Ordinal));
+        Assert.IsTrue(combined < stylesheet.IndexOf("@media print {", System.StringComparison.Ordinal));
     }
 
     [TestMethod]

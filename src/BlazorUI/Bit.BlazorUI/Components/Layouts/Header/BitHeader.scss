@@ -381,7 +381,9 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 }
 
 // A header that both slides and follows the scroll needs both lists, since a later transition replaces an earlier one.
-.bit-hdr-anm.bit-hdr-esc {
+// The second class costs no weight, so this wins over the two rules above by coming after them, and the print rule
+// and an app's single class still override it.
+.bit-hdr-anm:where(.bit-hdr-esc) {
     transition: transform $mot-duration $mot-easing, box-shadow $mot-duration $mot-easing, background-color $mot-duration $mot-easing, border-color $mot-duration $mot-easing, color $mot-duration $mot-easing;
 }
 
@@ -506,10 +508,8 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
         padding-top: 0;
     }
 
-    // The combined list of a header that both slides and follows the scroll weighs two classes, so it is named too.
     .bit-hdr-anm,
-    .bit-hdr-esc,
-    .bit-hdr-anm.bit-hdr-esc {
+    .bit-hdr-esc {
         transition: none;
     }
 
