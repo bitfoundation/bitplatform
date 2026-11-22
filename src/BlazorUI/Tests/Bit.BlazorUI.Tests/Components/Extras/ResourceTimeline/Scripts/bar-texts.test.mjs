@@ -303,8 +303,30 @@ test('the line height of a text is read off its font size, not off a line height
     const metrics = engine._labelMetrics();
     const height = (font) => engine._textLineHeight({ text: 'x', font }, metrics);
 
-    assert.equal(height('600 0.75rem/24px sans-serif'), metrics.lineHeight, 'a size in rem keeps the bar-label line');
+    assert.equal(height('600 0.75rem/24px sans-serif'), metrics.lineHeight, 'a size the canvas does not resolve keeps the bar-label line');
     assert.equal(height('bold 20px/40px serif'), 24);
+    assert.equal(height('italic 10px serif'), 12);
+});
+
+test('the line height of a text is read off its effective size in any unit', () => {
+    const engine = makeSceneEngine([]);
+    // A canvas serializes the font it is handed with its size computed to px and
+    // no line height: 1rem is 16px here, 1pt 4/3px.
+    let current = '11px sans-serif';
+    engine._measureCtx = {
+        get font() { return current; },
+        set font(v) {
+            current = v.replace(/(\d*\.?\d+)(rem|pt)(\/\S+)?/, (_, n, unit) => `${unit === 'rem' ? n * 16 : n * 4 / 3}px`);
+        },
+        measureText: (t) => ({ width: t.length * CHAR })
+    };
+    engine._decorGen++;
+    const metrics = engine._labelMetrics();
+    const height = (font) => engine._textLineHeight({ text: 'x', font }, metrics);
+
+    assert.equal(height('600 1.25rem/40px sans-serif'), 24, '1.25rem is 20px');
+    assert.equal(height('15pt serif'), 24, '15pt is 20px');
+    assert.equal(height('bold 20px/40px serif'), 24, 'a px size is as it was');
     assert.equal(height('italic 10px serif'), 12);
 });
 

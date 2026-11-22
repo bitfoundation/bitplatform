@@ -742,7 +742,7 @@
         private _labelMetricsCache: ResourceTimelineLabelMetrics | null;
         private _labelWidths: Map<string, number> | null;
         private _labelWidthsGen: number;
-        private _validFonts: Map<string, boolean> | null;
+        private _validFonts: Map<string, number | null | false> | null;
         private _validFontsGen: number;
         private _lineTextBoxes: number[];
         private _spanScratch: ResourceTimelineSpan;
@@ -7101,21 +7101,32 @@
         private _textFont(t: ResourceTimelineBarText): string | null {
             const font = t.font;
             if (!font) return null;
+            return this._resolvedFontPx(font) === false ? null : font;
+        }
+
+        // A bar text's own font as the canvas resolves it: false when the canvas
+        // cannot parse it, else its effective size in px, or null when that cannot
+        // be read. The canvas serializes the font it was handed with its size
+        // computed to px whatever unit the shorthand gave it (pt, em, rem, %, a
+        // keyword), so the size is read back off ctx.font; a px size in the font
+        // itself is taken as written. Resolved once per font.
+        private _resolvedFontPx(font: string): number | null | false {
             let fonts = this._validFonts;
             if (fonts === null || this._validFontsGen !== this._decorGen) {
                 fonts = this._validFonts = new Map();
                 this._validFontsGen = this._decorGen;
             }
-            let valid = fonts.get(font);
-            if (valid === undefined) {
+            let resolved = fonts.get(font);
+            if (resolved === undefined) {
                 const ctx = this._measureCtx;
                 ctx.font = this.config.barLabelFont;
                 const before = ctx.font;
                 ctx.font = font;
-                valid = ctx.font !== before;
-                fonts.set(font, valid);
+                const after = ctx.font;
+                resolved = after === before ? false : (fontPxSize(font) ?? fontPxSize(after));
+                fonts.set(font, resolved);
             }
-            return valid ? font : null;
+            return resolved;
         }
 
         // Drawn width of a bar text, in its own font.
@@ -7124,13 +7135,14 @@
         }
 
         // Line height of a bar text: that of the bar-label font, or of its own
-        // font's px size when it has one (a font in another unit, or one the
-        // canvas cannot parse, keeps the bar-label font's).
+        // font's effective size in px, in whatever unit the font gives it (a font
+        // the canvas cannot parse, or whose size it does not resolve, keeps the
+        // bar-label font's).
         private _textLineHeight(t: ResourceTimelineBarText, metrics: { lineHeight: number }): number {
-            const font = this._textFont(t);
-            if (font === null) return metrics.lineHeight;
-            const size = fontPxSize(font);
-            return size !== null ? Math.ceil(size * LABEL_LINE_HEIGHT_RATIO) : metrics.lineHeight;
+            const font = t.font;
+            if (!font) return metrics.lineHeight;
+            const size = this._resolvedFontPx(font);
+            return typeof size === 'number' ? Math.ceil(size * LABEL_LINE_HEIGHT_RATIO) : metrics.lineHeight;
         }
 
         // Pixel extents of one bar's decorations, mirroring how

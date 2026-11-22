@@ -122,8 +122,9 @@ test('bars overlapping in time stack and keep both labels', () => {
 });
 
 test('the second leg\'s own end label is kept, even when it repeats the code', () => {
-    const engine = collapsing(legs(40, 'AAA', 'AAA', {}, { texts: { end: { text: 'AAA' } } }));
+    const engine = collapsing(legs(40, 'AAA', 'AAA', {}, { texts: { start: { text: 'AAA' }, end: { text: 'AAA' } } }));
 
+    assert.equal(edges(engine)[0].shareEnd, true);
     assert.equal(edges(engine)[1].shareEnd, false);
 });
 

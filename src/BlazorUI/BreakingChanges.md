@@ -18,7 +18,7 @@ only in this file.
 
 ## 11.0.0
 
-### `BitResourceTimeline`'s bar texts are one `Texts` with eight positions, and its `Texts` is `Strings` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitResourceTimeline`'s bar texts are one `Texts` with eight positions, and its `Texts` is `Strings` ([#15441](https://github.com/bitfoundation/bitplatform/issues/15441))
 
 `BitResourceTimelineAllocation` labelled a bar through four strings, one per side. They are now the properties of one
 `Texts` (a `BitResourceTimelineBarTexts`), which adds a text at the start and the end edge above and below the bar
