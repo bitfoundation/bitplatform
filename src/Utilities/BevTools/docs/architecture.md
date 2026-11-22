@@ -316,6 +316,43 @@ UI event or navigation the current `Activity` descends from - the reason an entr
 `ConfigureAwait(false)` on a circuit is still attributed. Blazor's own warnings and errors keep their Errors path, and
 an entry that became an error points at it instead of adding a second timeline row.
 
+### Parts that start before the attach (`BevToolsLoaderOptions.AutoStart`, `Bit.BevTools.Loader/Internal/BevToolsAutoStart*`)
+
+An app that attaches BevTools on demand still wants some things from its first line, logging above all, without the
+rest of BevTools running meanwhile. So a part that can start alone does, inside the loader: trimmable, reflection free,
+in every startup download, and with nothing of `Bit.BevTools` loaded. `BevToolsAutoStart` is a flags enum, so a later
+part is one more flag and one more handover; each part keeps what it collects until the attach, and the session takes
+it over then. Logs are the first:
+
+* **Capture.** `BevToolsAutoStartLogProvider` is a provider of the container (alias `BevTools`, like the session's), so
+  the factory takes it when it is built and the host's filters apply. It takes an entry apart as
+  `BevToolsLoggerProvider` does, within the same bounds, but redacts nothing and reads at no value access: neither
+  exists before a session. Values are kept as themselves only when they are immutable scalars (strings, numbers, dates,
+  enums, `Guid`, `Uri`); anything else as its type, its `ToString` when short and its count (`BevToolsAutoStartLogValue`),
+  so nothing the app logged is kept alive and nothing is shown as it was at the attach rather than when it was logged.
+  BevTools' own work (the `Authorize` callback, the load) and category are skipped; the own-work mark lives in the
+  loader (`BevToolsHooks.BeginOwnWork`), which `BevToolsSessionResolver.BeginBevToolsWork` now uses too.
+* **Owner.** A process that serves one user keeps one bounded buffer, which the first session attached takes. A process
+  that serves many users keeps one per circuit: the loader's activator hook notes the renderer's synchronization context
+  when it creates its first component, and only what is logged on that context is the circuit's - the resolver's first
+  rule, without the ones that need a session. All circuits draw on one budget (ten times `MaxLogs`), which a circuit
+  gives back when its scope ends (DI disposes the hook). None is kept where no attach could be allowed
+  (`BevToolsAttachPolicy`), and outside Development, where a session attached on a server reads no values, the capture
+  reads none either: no formatter and no `ToString` runs - an entity whose `ToString` lazy loads costs nothing - and the
+  entry is `ValuesRead = false`, shown as under None whatever the session reads. Deciding, noting a circuit and taking
+  over never throw into the app: a failure turns the part off, costs the scope its kept entries, and is reported.
+* **Handover.** `BevToolsAutoStartLogImporter` turns each entry into the record the session's provider would have made,
+  through its inspector now (`BevToolsObjectInspector.DescribeDetached` for kept types and texts, following `Describe`'s
+  rules and showing the type wherever a rule needs the value), and adds them to the log store ahead of anything it
+  records, with the counts of what did not fit. It happens when the session's own provider starts attributing the
+  scope's entries to it - at the attach in a single-user process, once a panel attaches it to its renderer on a
+  circuit. Taking the buffer stops the loader keeping more, so none is kept twice; the session's provider is added
+  right after, and the slow part, reading the entries, comes after that, under ids reserved when they were taken, so
+  they still sort first. An entry another thread logs in the instant between taking and adding is kept by neither
+  (WebAssembly has no other thread, and on a circuit nothing else runs on its dispatcher). Such an entry is
+  `BeforeAttach`: no sender, UI event, timeline row or Errors entry, since each needs the session at the moment of
+  logging; one timeline row says how many came over.
+
 ### Allocations per render (`BevToolsRenderTracker`, `BevToolsRenderSample`)
 
 The render wrapper reads `GC.GetAllocatedBytesForCurrentThread()` right around the original fragment, after BevTools'

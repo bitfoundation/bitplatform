@@ -221,7 +221,8 @@ BevTools ships for .NET 10 and 11.
 ## A session attached to a running app
 
 When BevTools is opened on demand (`Bit.BevTools.Loader`, `BitBevTools.Attach`) instead of registered at startup, the
-About panel says which of these applied. Everything from before the attach is missing either way.
+About panel says which of these applied. Everything from before the attach is missing either way, except the log
+entries the loader's `AutoStart` captured.
 
 | Information | Through Bit.BevTools.Loader | Through a bare `BitBevTools.Attach` |
 |---|---|---|
@@ -231,6 +232,7 @@ About panel says which of these applied. Everything from before the attach is mi
 | `IHttpClientFactory` requests | Available: the loader's pass-through handlers | N/A: those pipelines were built without BevTools, unless the app installed the loader's hooks |
 | The `HttpClient` registered in DI | Available when its pipeline holds `BevToolsHttpHookHandler`, or it comes from `IHttpClientFactory`; otherwise as with a bare attach | Instrumentation: its handler is wrapped through reflection, unless it is transient |
 | DI registrations | Available: the service collection the loader kept | N/A: the container was built before the attach, unless the app installed the loader's hooks |
+| Log entries written before the attach | Partial, with `AutoStart = BevToolsAutoStart.Logs`: captured by the loader from startup (per circuit in a server process, where an attach is allowed, and there outside Development as names, types and templates only) and handed over, redacted and read at the session's value access; no sender, UI event, timeline row or Errors entry | Same, in an app that installed the loader's hooks with `AutoStart`; otherwise N/A |
 | Circuit diagnostics | N/A | N/A |
 | End of the session | With the scope (circuit) | Same |
 | Enabled in a process that serves many users | Development, or `AllowInMultiUserHost` | Development, or `BevToolsOptions.Enabled = true` |

@@ -1,4 +1,6 @@
-﻿namespace Bit.BevTools;
+﻿using Microsoft.Extensions.Logging;
+
+namespace Bit.BevTools;
 
 /// <summary>Configuration for <c>AddBitBevToolsLoaderServices</c>.</summary>
 /// <remarks>
@@ -49,4 +51,34 @@ public sealed class BevToolsLoaderOptions
 
     /// <summary>Forwarded to <c>BevToolsOptions.Ui.ToggleShortcut</c> when set.</summary>
     public string? ToggleShortcut { get; set; }
+
+    /// <summary>
+    /// The parts of BevTools that start with the app while BevTools itself waits to be attached: <see cref="BevToolsAutoStart.Logs"/>
+    /// captures what the app logs from its first entry, and the session <see cref="BevToolsLoader.OpenAsync"/> attaches
+    /// later shows those entries too. Each part runs inside this loader, on its own: it loads nothing of Bit.BevTools and
+    /// instruments nothing else, so it adds only its own cost. None by default.
+    /// <para>
+    /// It applies only while BevTools is not registered at startup (<see cref="RegisterAtStartup"/>): one registered at
+    /// startup runs whole from the first render and needs no head start. In a process that serves many users (Blazor
+    /// Server) entries are kept per circuit, the ones written on its dispatcher, all circuits together within ten times
+    /// <see cref="MaxLogs"/>, and only where an attach is allowed there (Development, or <see cref="AllowInMultiUserHost"/>
+    /// with <see cref="Authorize"/>): an entry written outside every circuit belongs to no user. Outside Development a
+    /// session attached there reads no values, so neither does the capture: names, types and templates only, none of the
+    /// values' code run. Read by the first <c>AddBitBevToolsLoaderServices</c> call.
+    /// </para>
+    /// </summary>
+    public BevToolsAutoStart AutoStart { get; set; }
+
+    /// <summary>
+    /// The lowest level <see cref="BevToolsAutoStart.Logs"/> captures. Forwarded to <c>BevToolsOptions.MinimumLogLevel</c>,
+    /// so an attached session goes on recording from the same level. Information by default.
+    /// </summary>
+    public LogLevel MinimumLogLevel { get; set; } = LogLevel.Information;
+
+    /// <summary>
+    /// The most log entries <see cref="BevToolsAutoStart.Logs"/> keeps until the attach - the newest ones; the others are
+    /// counted, not kept - per process, or per circuit in a process that serves many users. Forwarded to
+    /// <c>BevToolsOptions.MaxLogs</c>. 1000 by default.
+    /// </summary>
+    public int MaxLogs { get; set; } = 1000;
 }

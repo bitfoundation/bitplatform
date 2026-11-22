@@ -86,6 +86,124 @@ public sealed class BevToolsObjectInspector
         return DescribeCore(name, value, path, ancestors, ValueAccess);
     }
 
+    /// <summary>
+    /// Describes a value BevTools did not see itself, from what was kept of it when it was logged: its type, its
+    /// <c>ToString</c> when short (<paramref name="text"/>, null when it was not), and its count. Bit.BevTools.Loader keeps
+    /// values that way before a session exists (<c>BevToolsLoaderOptions.AutoStart</c>), since keeping the object would
+    /// keep what it references alive and show its state at the attach rather than when it was logged. The rules are
+    /// <see cref="Describe(string, object?, string, MemberInfo?)"/>'s; where one needs the value itself - an extension's
+    /// formatter, a special type's state, a pair's name - the type is shown instead: less than for a live value, never
+    /// something else.
+    /// </summary>
+    internal BevToolsInspectedNode DescribeDetached(string name, Type type, string? text, int? count)
+    {
+        var typeName = BevToolsTypeNames.Short(type);
+        if (_redactor.IsSensitiveName(name))
+        {
+            return new BevToolsInspectedNode(name, typeName, BevToolsRedactor.RedactedValue, BevToolsNodeKind.Redacted, "", false);
+        }
+
+        if (ValueAccess == BevToolsValueAccess.None)
+        {
+            return new BevToolsInspectedNode(name, typeName, BevToolsRedactor.HiddenValue, BevToolsNodeKind.Redacted, "", false);
+        }
+
+        if (ConfigurationDisplay(type) is { } configuration)
+        {
+            return new BevToolsInspectedNode(name, typeName, configuration, BevToolsNodeKind.Special, "", false);
+        }
+
+        if ((ValueAccess == BevToolsValueAccess.Full && HasFormatter(type)) || IsDescribedByState(type))
+        {
+            return new BevToolsInspectedNode(name, typeName, typeName, BevToolsNodeKind.Special, "", false);
+        }
+
+        if (typeof(IDictionary).IsAssignableFrom(type))
+        {
+            return new BevToolsInspectedNode(name, typeName, count is null ? typeName : $"{typeName} ({count} entries)", BevToolsNodeKind.Dictionary, "", false, count);
+        }
+
+        if (typeof(IEnumerable).IsAssignableFrom(type))
+        {
+            return new BevToolsInspectedNode(name, typeName, count is null ? typeName + " (enumerable)" : $"{typeName} ({count} items)", BevToolsNodeKind.Collection, "", false, count);
+        }
+
+        return new BevToolsInspectedNode(name, typeName, ValueAccess == BevToolsValueAccess.Full ? SummarizeDetached(type, text) : typeName, BevToolsNodeKind.Object, "", false);
+    }
+
+    /// <summary>
+    /// A value of which only the name and type were kept, its code never run (Bit.BevTools.Loader, where the session that
+    /// attaches reads no values): shown as under <see cref="BevToolsValueAccess.None"/>, a sensitive name redacted.
+    /// </summary>
+    internal BevToolsInspectedNode DescribeUnread(string name, Type? type)
+    {
+        if (type is null)
+        {
+            return new BevToolsInspectedNode(name, null, "null", BevToolsNodeKind.Null, "", false);
+        }
+
+        var typeName = type == typeof(string) ? "string" : BevToolsTypeNames.Short(type);
+        return _redactor.IsSensitiveName(name)
+            ? new BevToolsInspectedNode(name, typeName, BevToolsRedactor.RedactedValue, BevToolsNodeKind.Redacted, "", false)
+            : new BevToolsInspectedNode(name, typeName, BevToolsRedactor.HiddenValue, BevToolsNodeKind.Redacted, "", false);
+    }
+
+    /// <summary><see cref="Summarize"/> over the text a value's <c>ToString</c> gave when it was logged.</summary>
+    private string SummarizeDetached(Type type, string? text)
+    {
+        // A pair's name decides whether its value may be shown, and the name was not kept.
+        if (text is null || IsPairType(type))
+        {
+            return BevToolsTypeNames.Short(type);
+        }
+
+        var toStringDeclaringType = type.GetMethod("ToString", Type.EmptyTypes)?.DeclaringType;
+        if (type.IsValueType && toStringDeclaringType == type && !HasSensitiveMember(type))
+        {
+            return BevToolsRedactor.LooksLikeSecret(text) ? BevToolsTypeNames.Short(type) + " (" + BevToolsRedactor.RedactedValue + ")" : text;
+        }
+
+        if (toStringDeclaringType is not null && toStringDeclaringType != typeof(object) && toStringDeclaringType != typeof(ValueType) && !HasSensitiveMember(type)
+            && text.Length <= 120 && !_redactor.IsSensitiveName(text) && !BevToolsRedactor.LooksLikeSecret(text))
+        {
+            return text;
+        }
+
+        return BevToolsTypeNames.Short(type);
+    }
+
+    /// <summary>The shape <see cref="PairNameIsSensitive"/> reads a name from: a Value (or Values) next to a Key, Name or Type.</summary>
+    private static bool IsPairType(Type type) =>
+        (type.GetProperty("Value", BindingFlags.Public | BindingFlags.Instance) is not null || type.GetProperty("Values", BindingFlags.Public | BindingFlags.Instance) is not null)
+        && Array.Exists((string[])["Key", "Name", "Type"], candidate => type.GetProperty(candidate, BindingFlags.Public | BindingFlags.Instance) is not null);
+
+    private bool HasFormatter(Type type)
+    {
+        if (_formatters.Count == 0)
+        {
+            return false;
+        }
+
+        for (var t = type; t is not null; t = t.BaseType)
+        {
+            if (_formatters.ContainsKey(t))
+            {
+                return true;
+            }
+        }
+
+        return Array.Exists(type.GetInterfaces(), _formatters.ContainsKey);
+    }
+
+    /// <summary>The types <see cref="TrySpecial"/> describes from the value's state, which a detached value no longer has.</summary>
+    private static bool IsDescribedByState(Type type) =>
+        typeof(Delegate).IsAssignableFrom(type) || typeof(Type).IsAssignableFrom(type) || typeof(Task).IsAssignableFrom(type)
+        || typeof(Exception).IsAssignableFrom(type) || typeof(Stream).IsAssignableFrom(type) || typeof(IJSObjectReference).IsAssignableFrom(type)
+        || typeof(IJSRuntime).IsAssignableFrom(type) || typeof(IServiceProvider).IsAssignableFrom(type) || typeof(System.Linq.IQueryable).IsAssignableFrom(type)
+        || typeof(CancellationTokenSource).IsAssignableFrom(type) || type == typeof(CancellationToken) || type == typeof(JsonElement)
+        || type == typeof(ElementReference) || type == typeof(EventCallback)
+        || (type.IsGenericType && type.GetGenericTypeDefinition() is var definition && (definition == typeof(EventCallback<>) || definition == typeof(RenderFragment<>)));
+
     /// <summary>Resolves the children of the node at <paramref name="path"/> relative to <paramref name="root"/>.</summary>
     public IReadOnlyList<BevToolsInspectedNode> Children(object? root, string path)
     {

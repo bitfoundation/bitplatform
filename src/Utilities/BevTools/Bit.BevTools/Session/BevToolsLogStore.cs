@@ -56,6 +56,38 @@ internal sealed class BevToolsLogStore
         _session.Touch();
     }
 
+    /// <summary>
+    /// Reserves ids for entries added later by <see cref="Import"/>, so they sort before whatever is recorded meanwhile.
+    /// Returns the first; the others follow it.
+    /// </summary>
+    public long ReserveIds(int count) => Interlocked.Add(ref _nextId, count) - count + 1;
+
+    /// <summary>
+    /// Adds the entries Bit.BevTools.Loader kept before the session was attached, with ids from <see cref="ReserveIds"/>,
+    /// and the counts per level of every entry it captured: the ones it no longer held count too, as they do here. The
+    /// buffer is kept in id order, which lookups by id rely on, so what the session recorded since the ids were reserved
+    /// stays after them.
+    /// </summary>
+    public void Import(IReadOnlyList<BevToolsLogRecord> records, IReadOnlyList<int> counts)
+    {
+        lock (_lock)
+        {
+            var merged = _records.ToArray().Concat(records).OrderBy(static r => r.Id).ToArray();
+            _records.Clear();
+            foreach (var record in merged)
+            {
+                _records.Add(record);
+            }
+
+            for (var i = 0; i < _counts.Length && i < counts.Count; i++)
+            {
+                Interlocked.Add(ref _counts[i], counts[i]);
+            }
+        }
+
+        _session.Touch();
+    }
+
     public BevToolsLogRecord[] Snapshot() => _records.ToArray();
 
     public BevToolsLogRecord? Find(long id) => _records.FindByKey(static r => r.Id, id);

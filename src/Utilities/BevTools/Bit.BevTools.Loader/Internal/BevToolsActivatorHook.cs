@@ -11,13 +11,23 @@ namespace Bit.BevTools;
 /// activator registered before it if there was one; a renderer never asks for its activator again, so this is the only
 /// way in that needs no reflection over the renderer.
 /// </summary>
-internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponentActivator? inner) : IComponentActivator
+internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponentActivator? inner, BevToolsAutoStartLogs? autoStartLogs = null) : IComponentActivator, IDisposable
 {
     // What IComponentActivator.CreateInstance declares; an implementation has to repeat it exactly.
     private const DynamicallyAccessedMemberTypes Component = DynamicallyAccessedMemberTypes.PublicConstructors;
     private static readonly ConcurrentDictionary<Type, ObjectFactory> Factories = new();
     private IComponentActivator? _interceptor;
     private IComponentActivator? _untracked;
+    private BevToolsAutoStartLogs? _autoStartLogs = autoStartLogs;
+
+    /// <summary>
+    /// The log entries <see cref="BevToolsAutoStart.Logs"/> keeps for this scope until BevTools is attached to it, in a
+    /// process that keeps them per circuit; null otherwise.
+    /// </summary>
+    public BevToolsAutoStartLogBuffer? AutoStartLogs { get; private set; }
+
+    /// <summary>Why <see cref="AutoStartLogs"/> is null in a process that keeps them per circuit, once a component was created.</summary>
+    public string? AutoStartLogsGap { get; private set; }
 
     /// <summary>Set by BevTools when it attaches to the renderer this scope serves; it creates components through <see cref="Untracked"/>.</summary>
     public IComponentActivator? Interceptor
@@ -29,8 +39,33 @@ internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponen
     /// <summary>Creates components the way the app would without BevTools.</summary>
     public IComponentActivator Untracked => _untracked ??= new UntrackedActivator(this);
 
-    public IComponent CreateInstance([DynamicallyAccessedMembers(Component)] Type componentType) =>
-        Interceptor is { } interceptor ? interceptor.CreateInstance(componentType) : CreateUntracked(componentType);
+    public IComponent CreateInstance([DynamicallyAccessedMembers(Component)] Type componentType)
+    {
+        if (_autoStartLogs is { } autoStartLogs)
+        {
+            // Once, on the first component: the renderer creates components on its own synchronization context, which is
+            // how the entries logged on it are told to be this scope's.
+            _autoStartLogs = null;
+            try
+            {
+                AutoStartLogs = autoStartLogs.NoteScope(services, out var gap);
+                AutoStartLogsGap = gap;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                // On the render path: a failure here must cost the scope its kept logs, never its component.
+                AutoStartLogsGap = "noting this circuit failed (" + ex.GetType().Name + ": " + ex.Message + ")";
+            }
+        }
+
+        return Interceptor is { } interceptor ? interceptor.CreateInstance(componentType) : CreateUntracked(componentType);
+    }
+
+    /// <summary>
+    /// The scope ended without a session taking its kept logs: they go, and with them their share of the budget all
+    /// circuits draw on. DI disposes the hook with its scope.
+    /// </summary>
+    public void Dispose() => AutoStartLogs?.Take(out _);
 
     private IComponent CreateUntracked([DynamicallyAccessedMembers(Component)] Type componentType) =>
         inner is not null ? inner.CreateInstance(componentType) : CreateDefault(services, componentType);
@@ -69,7 +104,7 @@ internal sealed class BevToolsActivatorHook(IServiceProvider services, IComponen
         }
 
         BevToolsInnerActivator.MoveExisting(services);
-        services.AddScoped(sp => new BevToolsActivatorHook(sp, sp.GetService<BevToolsInnerActivator>()?.Activator));
+        services.AddScoped(sp => new BevToolsActivatorHook(sp, sp.GetService<BevToolsInnerActivator>()?.Activator, sp.GetService<BevToolsLoaderContext>()?.AutoStartLogs));
         services.AddScoped<IComponentActivator>(sp => sp.GetRequiredService<BevToolsActivatorHook>());
     }
 

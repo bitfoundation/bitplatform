@@ -36,6 +36,17 @@ hooks that cost next to nothing until BevTools is attached: a pass-through compo
 panel. `OpenAsync` then loads BevTools, attaches it to the running app and opens it. Add `BevToolsHttpHookHandler` to a
 hand-built `HttpClient` pipeline to have its requests recorded too.
 
-An attached BevTools sees what happens after the attach. In a process that serves many users (Blazor Server,
-prerendering) `CanOpen` is false outside Development unless `AllowInMultiUserHost` is set, because the panel would show
-whoever opens it the server side objects of their circuit.
+An attached BevTools sees what happens after the attach, plus what the parts named in `AutoStart` collected before it.
+`AutoStart = BevToolsAutoStart.Logs` captures what the app's loggers write from startup, on its own and inside the
+loader - nothing of Bit.BevTools is loaded and nothing else is instrumented - keeping the newest `MaxLogs` entries at
+`MinimumLogLevel` or above, as texts and immutable values, never the logged objects; the attached session shows them
+in its Logs panel, redacted and read at its value access like any entry:
+
+```csharp
+builder.Services.AddBitBevToolsLoaderServices(o => o.AutoStart = BevToolsAutoStart.Logs);
+```
+
+In a process that serves many users (Blazor Server, prerendering) `CanOpen` is false outside Development unless
+`AllowInMultiUserHost` is set, because the panel would show whoever opens it the server side objects of their circuit.
+There, `AutoStart` keeps log entries per circuit, the ones written on its dispatcher, within one budget for all circuits
+(ten times `MaxLogs`), only where an attach is allowed, and outside Development as names, types and templates only.

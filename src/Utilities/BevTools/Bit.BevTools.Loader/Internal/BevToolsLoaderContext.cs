@@ -39,6 +39,14 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
     public string? LoadError { get; private set; }
 
     /// <summary>
+    /// What <see cref="BevToolsAutoStart.Logs"/> captured until a session takes it over; null when that part was not
+    /// started (not asked for, or BevTools was registered at startup).
+    /// </summary>
+    public BevToolsAutoStartLogs? AutoStartLogs { get; private set; }
+
+    internal BevToolsAutoStartLogs StartAutoStartLogs() => AutoStartLogs ??= new BevToolsAutoStartLogs(this);
+
+    /// <summary>
     /// True in a process that serves many users: an ASP.NET Core host (Blazor Server circuits, prerendering, static
     /// rendering), told by the <c>IServer</c> it registers - the signal BevTools itself goes by. Read by name from the
     /// collection the container was built from, which needs neither reflection nor a reference to ASP.NET Core.

@@ -110,7 +110,8 @@ builder.Services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = builder
 
 The loader is small, trimmable and AOT compatible, and it is the only BevTools assembly the startup code touches: an
 app that lazy loads BevTools must not name a `Bit.BevTools` type in code that runs before the load, which is why the
-loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `TrackHttp`, `UseFrameworkInstrumentation`).
+loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `TrackHttp`, `UseFrameworkInstrumentation`,
+`MinimumLogLevel`, `MaxLogs`).
 
 - **Registered at startup.** When `Bit.BevTools` is among the assemblies the app starts with and should run from the
   first render (`RegisterAtStartup`; Development by default), the loader registers it exactly as
@@ -125,7 +126,32 @@ loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `Trac
   meters (.NET 10; a renderer reads them when it is created too), and the service collection for the Services panel.
   `BevToolsLoader.OpenAsync()` then loads `Bit.BevTools` (through `LazyAssemblyLoader` in Blazor WebAssembly), attaches
   it to the running app and opens the panel. It reads the components that already exist from the renderer and sees
-  everything that happens from then on; what happened before stays unrecorded. The session ends with the scope.
+  everything that happens from then on; what happened before stays unrecorded, except what the parts named in
+  `AutoStart` collected. The session ends with the scope.
+- **Parts that start with the app (`AutoStart`).** Logging is the part an app wants from the first line, so
+  `AutoStart = BevToolsAutoStart.Logs` has the loader capture what the app's `ILogger`s write from the moment its logger
+  factory is built, on its own: nothing of `Bit.BevTools` is loaded or downloaded, no component is instrumented and
+  no render measured, so the app pays for that part alone (0.7 µs and 690 B per entry, against 9.5 µs and 6.8 KB for
+  a session's full recording in the same run, for an entry with an integer and a string, see [performance](docs/performance.md#log-entries)). It keeps the newest `MaxLogs`
+  entries at `MinimumLogLevel` or above (both forwarded to the session) and counts the rest; it holds texts and
+  immutable scalars, never the objects the app logged. The session `OpenAsync` attaches takes them over into its Logs
+  panel, ahead of what it records itself, reading them then at its value access and redacting them like any entry;
+  they carry no sender, UI event, timeline row or Errors entry, which take a session that did not exist yet, and the
+  panel and About say so. In a process that serves one user the first session attached takes them; on Blazor Server
+  they are kept per circuit (what was logged on its dispatcher, once its first component was created) and only where
+  an attach is allowed, all circuits within ten times `MaxLogs`; outside Development, where such a session reads no
+  values, they are kept as names, types and templates only, without running any of the values' code. An entry
+  written outside every circuit is nobody's. A BevTools registered at startup runs
+  whole from the first render and starts no part of its own.
+
+```csharp
+builder.Services.AddBitBevToolsLoaderServices(o =>
+{
+    o.RegisterAtStartup = builder.HostEnvironment.IsDevelopment();
+    o.AutoStart = BevToolsAutoStart.Logs;
+});
+```
+
 - **Hand-built `HttpClient`s** record through `BevToolsHttpHookHandler`, which passes requests through until BevTools
   runs. Put it closest to the transport handler so every retry attempt is recorded.
 - **Blazor Server.** In a process that serves many users, `CanOpen` is false outside Development unless
@@ -313,7 +339,8 @@ How the information is obtained, in short:
   entry written outside every session (the request pipeline of a server, a hosted service) is nobody's. Each entry's
   template values and scopes are read through the inspector, at the session's value access, and redacted; a value
   redacted by its name is redacted in the message too. `TrackLogs = false` turns it off; `CaptureLogCallers = false`
-  skips the stack walk that names the sending component.
+  skips the stack walk that names the sending component. A session attached on demand also shows what was logged
+  before it, when the loader's `AutoStart` captured it.
 * **Circuits**: `CircuitHandler` (lifecycle, connection state, inbound message processing time) +
   Blazor's `components-reconnect-state-changed` in the browser (dispatched on the app's own reconnect dialog).
 * **Event handlers and callbacks**: the frames of the component's latest render, which the renderer keeps
