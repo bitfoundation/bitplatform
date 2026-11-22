@@ -79,6 +79,11 @@ public class BitMenuButtonNavigationTests : BunitTestContext
         return com.Find(".bit-mnb-opb").GetAttribute("aria-expanded");
     }
 
+    private static bool HasHandler(AngleSharp.Dom.IElement element, string eventName)
+    {
+        return element.HasAttribute($"blazor:{eventName}");
+    }
+
 
 
     [TestMethod]
@@ -285,8 +290,9 @@ public class BitMenuButtonNavigationTests : BunitTestContext
             parameters.Add(p => p.OpenOnHover, true);
         });
 
-        // The JS side reports no hovering pointer, which is what a touch screen does: the tap is left to the click.
-        com.Find(".bit-mnb").MouseEnter();
+        // The JS side reports no hovering pointer, which is what a touch screen does: the tap is left to the click,
+        // and the pointer is not even listened to.
+        Assert.IsFalse(HasHandler(com.Find(".bit-mnb"), "onmouseenter"));
 
         Assert.AreEqual("false", Expanded(com));
         Assert.HasCount(1, com.FindAll(".bit-mnb-ovl"));
@@ -302,11 +308,13 @@ public class BitMenuButtonNavigationTests : BunitTestContext
         var com = RenderHover();
 
         // The overlay covers the page while the menu is open, so it would take the pointer away from the button the
-        // menu was opened from - and close the menu it only just opened.
-        com.WaitForAssertion(() => Assert.IsEmpty(com.FindAll(".bit-mnb-ovl")));
+        // menu was opened from - and close the menu it only just opened. It stays hidden rather than leaving the page,
+        // since whether the device hovers is only known after the first render.
+        com.WaitForAssertion(() => Assert.IsTrue(HasHandler(com.Find(".bit-mnb"), "onmouseenter")));
 
         com.Find(".bit-mnb").MouseEnter();
 
+        StringAssert.Contains(com.Find(".bit-mnb-ovl").GetAttribute("style"), "display:none");
         var toggle = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"].Last();
         Assert.AreEqual(string.Empty, toggle.Arguments[5]);
     }
@@ -501,6 +509,224 @@ public class BitMenuButtonNavigationTests : BunitTestContext
         Assert.AreEqual("false", Expanded(com));
     }
 
+    [TestMethod]
+    public void BitMenuButtonShouldNotNameAnItemWithNoTextAfterItsText()
+    {
+        var com = RenderNav([new() { IconName = "Home", Key = "home", Href = "/", Description = "Go to start" }]);
+
+        // An empty aria-label would take the name its content gives it.
+        Assert.IsNull(RootItem(com, 0).GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonCustomItemsShouldIgnoreAMatchPropertyOfAnotherType()
+    {
+        NavigateTo("/a");
+
+        var com = RenderComponent<BitMenuButton<OtherMatchItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, [new() { Text = "A", Href = "/a", Match = "exact" }]);
+        });
+
+        Assert.IsNull(com.Find(".bit-mnb-itm").GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldNotListenToThePointerOutsideTheHoverMode()
+    {
+        var com = RenderNav([new() { Text = "Products", Key = "products", ChildItems = [new() { Text = "A", Key = "a" }] }]);
+
+        Assert.IsFalse(HasHandler(com.Find(".bit-mnb"), "onmouseenter"));
+        Assert.IsFalse(HasHandler(com.Find(".bit-mnb"), "onmouseleave"));
+        Assert.IsFalse(HasHandler(com.Find(".bit-mnb-cal:not(.bit-mnb-sub)"), "onmouseenter"));
+        Assert.IsFalse(HasHandler(com.Find(".bit-mnb-cal:not(.bit-mnb-sub)"), "onmouseleave"));
+        Assert.IsFalse(HasHandler(com.Find(".bit-mnb-sub"), "onmouseleave"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldRunThePageMouseHandlersInTheHoverMode()
+    {
+        Context.JSInterop.Setup<bool>(IsHoverDevice, _ => true).SetResult(true);
+
+        var entered = 0;
+        var left = 0;
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Products");
+            parameters.Add(p => p.Items, NavItems());
+            parameters.Add(p => p.OpenOnHover, true);
+            parameters.Add(p => p.HoverCloseDelay, 0);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object>
+            {
+                ["onmouseenter"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => entered++),
+                ["onMouseLeave"] = (System.Action)(() => left++)
+            });
+        });
+
+        com.WaitForAssertion(() => Assert.IsTrue(HasHandler(com.Find(".bit-mnb"), "onmouseenter")));
+
+        com.Find(".bit-mnb").MouseEnter();
+        Assert.AreEqual(1, entered);
+        Assert.AreEqual("true", Expanded(com));
+
+        com.Find(".bit-mnb").MouseLeave();
+        Assert.AreEqual(1, left);
+        com.WaitForAssertion(() => Assert.AreEqual("false", Expanded(com)));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldCloseOnAClickAMenuTheKeyboardHoldsWhileThePointerIsOnIt()
+    {
+        var com = RenderHover();
+
+        com.Find(".bit-mnb").MouseEnter();
+        com.Find(".bit-mnb-opb").KeyDown(Key.Down);
+        Assert.AreEqual("true", Expanded(com));
+
+        // The pointer is still on the button, but the menu is the keyboard's now, so the button toggles it as always.
+        com.Find(".bit-mnb-opb").Click();
+
+        Assert.AreEqual("false", Expanded(com));
+    }
+
+    [TestMethod]
+    public async Task BitMenuButtonShouldNotHandToThePointerAMenuOpenedOtherwiseWhileItsOpenDelayRan()
+    {
+        Context.JSInterop.Setup<bool>(IsHoverDevice, _ => true).SetResult(true);
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Products");
+            parameters.Add(p => p.Items, NavItems());
+            parameters.Add(p => p.OpenOnHover, true);
+            parameters.Add(p => p.HoverOpenDelay, 200);
+            parameters.Add(p => p.IsOpen, false);
+        });
+
+        com.WaitForAssertion(() => Assert.IsTrue(HasHandler(com.Find(".bit-mnb"), "onmouseenter")));
+
+        // The page opens the menu while the open the pointer asked for is still being waited out.
+        Task enter = Task.CompletedTask;
+        await com.InvokeAsync(() => enter = com.Find(".bit-mnb").MouseEnterAsync(new MouseEventArgs()));
+        com.Render(parameters => parameters.Add(p => p.IsOpen, true));
+        await enter;
+
+        // The delay ending does not open it a second time and take it over for the pointer.
+        Assert.AreEqual("true", Expanded(com));
+        Assert.IsEmpty(Context.JSInterop.Invocations[SetupMenuKeyboard]);
+    }
+
+    [TestMethod]
+    public async Task BitMenuButtonShouldNotOpenOnHoverAfterTheKeyboardOpenedItDuringTheOpenDelay()
+    {
+        Context.JSInterop.Setup<bool>(IsHoverDevice, _ => true).SetResult(true);
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Products");
+            parameters.Add(p => p.Items, NavItems());
+            parameters.Add(p => p.OpenOnHover, true);
+            parameters.Add(p => p.HoverOpenDelay, 200);
+            parameters.Add(p => p.HoverCloseDelay, 0);
+        });
+
+        com.WaitForAssertion(() => Assert.IsTrue(HasHandler(com.Find(".bit-mnb"), "onmouseenter")));
+
+        Task enter = Task.CompletedTask, key = Task.CompletedTask;
+        await com.InvokeAsync(() =>
+        {
+            enter = com.Find(".bit-mnb").MouseEnterAsync(new MouseEventArgs());
+            key = com.Find(".bit-mnb-opb").KeyDownAsync(Key.Down);
+        });
+        await Task.WhenAll(enter, key);
+
+        // The keyboard holds the menu: the pointer never took it, and leaving does not close it.
+        Assert.AreEqual("true", Expanded(com));
+        Assert.IsEmpty(Context.JSInterop.Invocations[SetupMenuKeyboard]);
+
+        com.Find(".bit-mnb").MouseLeave();
+        Assert.AreEqual("true", Expanded(com));
+    }
+
+    [TestMethod]
+    public async Task BitMenuButtonShouldNotCloseFromUnderTheKeyboardAfterThePointerLeft()
+    {
+        Context.JSInterop.Setup<bool>(IsHoverDevice, _ => true).SetResult(true);
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Products");
+            parameters.Add(p => p.Items, NavItems());
+            parameters.Add(p => p.OpenOnHover, true);
+            parameters.Add(p => p.HoverCloseDelay, 200);
+            parameters.Add(p => p.IsOpen, false);
+        });
+
+        com.WaitForAssertion(() => Assert.IsTrue(HasHandler(com.Find(".bit-mnb"), "onmouseenter")));
+
+        // A menu the page opened, which the pointer crosses and leaves.
+        com.Render(parameters => parameters.Add(p => p.IsOpen, true));
+        com.Find(".bit-mnb").MouseEnter();
+
+        // The keyboard takes the menu while the close the pointer scheduled is still being waited out.
+        Task leave = Task.CompletedTask, key = Task.CompletedTask;
+        await com.InvokeAsync(() =>
+        {
+            leave = com.Find(".bit-mnb").MouseLeaveAsync(new MouseEventArgs());
+            key = com.Find(".bit-mnb-opb").KeyDownAsync(Key.Down);
+        });
+        await Task.WhenAll(leave, key);
+
+        Assert.AreEqual("true", Expanded(com));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldSetUpEvenWhenTheHoverDeviceCannotBeAsked()
+    {
+        Context.JSInterop.Setup<bool>(IsHoverDevice, _ => true).SetException(new Microsoft.JSInterop.JSException("failed"));
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Products");
+            parameters.Add(p => p.Items, NavItems());
+            parameters.Add(p => p.OpenOnHover, true);
+        });
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.MenuButtons.setup"]);
+
+        // The device is taken for one that does not hover, which leaves the button toggling on a click.
+        com.Find(".bit-mnb-opb").Click();
+        Assert.AreEqual("true", Expanded(com));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonShouldTellTheJsSideTheOverlayIsGoneFromAMenuOpenBeforeTheDeviceWasKnown()
+    {
+        var device = Context.JSInterop.Setup<bool>(IsHoverDevice, _ => true);
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Products");
+            parameters.Add(p => p.Items, NavItems());
+            parameters.Add(p => p.OpenOnHover, true);
+        });
+
+        // The menu opens before the device has answered, so it is handed to the JS side with its overlay.
+        com.Find(".bit-mnb-opb").Click();
+        var overlayId = com.Find(".bit-mnb-ovl").Id;
+        Assert.AreEqual(overlayId, Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"].Last().Arguments[5]);
+
+        device.SetResult(true);
+
+        com.WaitForAssertion(() =>
+        {
+            var toggle = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"].Last();
+            Assert.AreEqual(string.Empty, toggle.Arguments[5]);
+            Assert.IsTrue((bool)toggle.Arguments[6]!);
+        });
+        StringAssert.Contains(com.Find(".bit-mnb-ovl").GetAttribute("style"), "display:none");
+    }
+
 
 
     public class CustomNavItem
@@ -509,5 +735,12 @@ public class BitMenuButtonNavigationTests : BunitTestContext
         public string? Url { get; set; }
         public string? Summary { get; set; }
         public BitNavMatch? UrlMatch { get; set; }
+    }
+
+    public class OtherMatchItem
+    {
+        public string? Text { get; set; }
+        public string? Href { get; set; }
+        public string? Match { get; set; }
     }
 }

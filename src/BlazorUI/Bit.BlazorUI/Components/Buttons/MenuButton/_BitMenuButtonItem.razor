@@ -58,9 +58,10 @@
         var descriptionId = hasDescription ? _descriptionId : null;
         // An item with a description is named after its text alone rather than after its content, so the description
         // is announced as the description it is (aria-describedby) rather than as part of the name. The secondary text
-        // stays in the name, read after the label as it is without a description.
-        var ariaLabel = MenuButton.GetAriaLabel(Item)
-                        ?? (hasDescription ? string.Join(' ', new[] { MenuButton.GetText(Item), secondaryText }.Where(t => t.HasValue())) : null);
+        // stays in the name, read after the label as it is without a description. An item with no text of either kind
+        // has nothing to be named after that way, and an empty aria-label would take the name its content gives it.
+        var textName = hasDescription ? string.Join(' ', new[] { MenuButton.GetText(Item), secondaryText }.Where(t => t.HasValue())) : null;
+        var ariaLabel = MenuButton.GetAriaLabel(Item) ?? (textName.HasValue() ? textName : null);
         // The item pointing at the current page says so (aria-current), and the row of a submenu holding it is drawn
         // as the way to it - which is a look alone: the page it names is the one inside.
         var isCurrent = hasSubmenu ? MenuButton.HasCurrentChild(Item) : MenuButton.IsCurrent(Item);
@@ -89,6 +90,13 @@
         {
             pointerAttributes["onkeydown"] = EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnItemKeyDown);
         }
+
+        var submenuHoverAttributes = hasSubmenu && MenuButton.HoverDriven
+            ? new Dictionary<string, object>
+                {
+                    ["onmouseleave"] = EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnSubmenuPointerLeave)
+                }
+            : null;
 
         RenderFragment content =
             @<text>
@@ -219,10 +227,12 @@
                    first render and kept hidden, which is what lets the nested options inside it register
                    themselves before anything asks whether there are any. The keys pressed in it are its
                    own: being in the body already keeps them from the menu it was opened from, and the
-                   markup says so rather than leaving it to where the element happens to be. *@
-                <div @onkeydown="HandleOnSubmenuKeyDown" @onkeydown:stopPropagation="true"
+                   markup says so rather than leaving it to where the element happens to be.
+                   The pointer leaving it only matters to the OpenOnHover mode, so it is listened to there alone: every
+                   other menu would be paying for a round trip per submenu left. *@
+                <div @attributes="submenuHoverAttributes"
+                     @onkeydown="HandleOnSubmenuKeyDown" @onkeydown:stopPropagation="true"
                      @onmouseenter="HandleOnSubmenuPointerEnter"
-                     @onmouseleave="HandleOnSubmenuPointerLeave"
                      id="@_submenuId"
                      dir="@MenuButton.Dir?.ToString().ToLower()"
                      style="@MenuButton.Styles?.Submenu"

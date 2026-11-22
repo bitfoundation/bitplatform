@@ -46,6 +46,11 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     private CalloutOwner _owner;
     private bool _hoverKeyboardRegistered;
     private BitNavCurrentUrlMatcher<TItem>? _currentUrlMatcher;
+    // Whether any item says how it matches the current URL, read on the first navigation after the items may have
+    // changed rather than on every one (see OnLocationChanged); null until then.
+    private bool? _hasMatches;
+    // A change of HasOverlay while the menu is open, which the JS side has to be told about (see OnAfterRenderAsync).
+    private bool _retoggleAfterRender;
     private readonly BitTypeahead _typeahead = new();
     private string _typeaheadCalloutId = string.Empty;
     private ElementReference _operatorButtonRef;
@@ -606,6 +611,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             await TakeOverFromPointer();
             _owner = CalloutOwner.Keyboard;
 
+            // A hover open or close still being waited out belongs to the pointer, which this menu no longer answers to.
+            CancelHover();
+
             _openAtPointAfterRender = true;
         }
 
@@ -670,6 +678,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         _items.Add(item);
 
         _hasSubmenus = _hasSubmenus || GetHasChildren(item);
+        _hasMatches = null;
 
         if (Sticky)
         {
@@ -696,6 +705,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         _items.Remove((option as TItem)!);
 
         _hasSubmenus = _items.Exists(GetHasChildren);
+        _hasMatches = null;
 
         StateHasChanged();
     }
@@ -788,6 +798,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         // menu button's own parameters (Styles, Sticky, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
 
+        // An item may have been given a Match, or lost one, with any new set of parameters.
+        _hasMatches = null;
+
         // Only the two APIs that register their own items are left alone here - except for whether any of
         // them carries a submenu, which an option is free to start doing at any render (its children are a
         // fragment rather than a registration) and which is cheap to read back off the options themselves.
@@ -839,16 +852,6 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        // Whether the pointer of the device can hover at all decides whether the hover mode applies and whether the
-        // overlay is rendered, so it is resolved before the menu button is interacted with rather than on the first
-        // hover, and only for the menu buttons that ask for it.
-        if (OpenOnHover && _isHoverDevice is null)
-        {
-            _isHoverDevice = await GetIsHoverDevice();
-
-            StateHasChanged();
-        }
-
         if (firstRender)
         {
             try
@@ -866,6 +869,33 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             if (_autoFocus && IsDisposed is false)
             {
                 await _operatorButtonRef.FocusSafelyAsync();
+            }
+        }
+
+        // Whether the pointer of the device can hover at all decides whether the hover mode applies and whether the
+        // overlay takes the outside clicks, so it is resolved before the menu button is interacted with rather than
+        // on the first hover, and only for the menu buttons that ask for it - after the setup of the first render,
+        // which nothing here may hold up or skip.
+        if (OpenOnHover && _isHoverDevice is null && IsDisposed is false)
+        {
+            var hadOverlay = HasOverlay;
+
+            _isHoverDevice = await GetIsHoverDevice();
+
+            // A menu already open (IsOpen given from the start, an open right after the render) was handed to the JS
+            // side with the overlay it no longer has, which would leave it waiting for a click on an overlay that is
+            // hidden from now on: the open callout is registered again, once the render has hidden it.
+            _retoggleAfterRender = IsOpen && hadOverlay != HasOverlay;
+
+            StateHasChanged();
+        }
+        else if (_retoggleAfterRender)
+        {
+            _retoggleAfterRender = false;
+
+            if (IsOpen && IsDisposed is false)
+            {
+                await ToggleCallout();
             }
         }
 
@@ -1206,7 +1236,17 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             return NameSelectors.Match.Selector!(item);
         }
 
-        return item.GetValueFromProperty<BitNavMatch?>(NameSelectors.Match.Name);
+        // The name is read by default, so a custom item class may well have a property of that name that means
+        // something else (a bool, a pattern string). Such a property says nothing about matching the current URL,
+        // and must not throw from the middle of a render.
+        try
+        {
+            return item.GetValueFromProperty<BitNavMatch?>(NameSelectors.Match.Name);
+        }
+        catch (Exception ex) when (ex is InvalidCastException or FormatException or OverflowException or ArgumentException)
+        {
+            return null;
+        }
     }
 
     // Whether the item points at the page the app currently sits on: its Href matched against the current URL the
@@ -1666,9 +1706,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
     // A click on the trigger of an open menu closes it - except in two cases of the OpenOnHover mode. A key that
     // activates the trigger of a menu the pointer opened is the keyboard asking for that menu, so it is handed over
-    // and the focus taken into it rather than closing what is already showing. And the pointer that holds the menu
-    // open is still on the menu button: closing it there would take away what the user has only just been shown,
-    // and moving the pointer off closes it anyway.
+    // and the focus taken into it rather than closing what is already showing. And a menu the pointer opened and still
+    // holds open from the menu button: closing it there would take away what the user has only just been shown, and
+    // moving the pointer off closes it anyway. A menu the keyboard or a click opened is closed by a click as always.
     private async Task HandleOnOpenerClickWhileOpen()
     {
         var byKeyboard = _focusFirstItemOnOpen;
@@ -1681,7 +1721,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             return;
         }
 
-        if (HoverDriven && _hoverInside) return;
+        if (HoverDriven && _hoverInside && _owner is CalloutOwner.Pointer) return;
 
         await CloseCallout();
         StateHasChanged();
@@ -2073,6 +2113,13 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         // so the operation running under the main half never takes the rest of the commands away with it.
         if (Disabled) return false;
 
+        // A menu opened any other way than by the pointer is not the pointer's: an open it is still waiting out would
+        // take it over (or open it a second time), and a close it scheduled would shut it from under the keyboard.
+        if (owner is not CalloutOwner.Pointer)
+        {
+            CancelHover();
+        }
+
         // The pointer only passing over the button must not pull the focus out of whatever the user is typing into
         // (WCAG 3.2.1), so a menu it opens leaves the focus where it is.
         var focusFirstItem = _focusFirstItemOnOpen && owner is not CalloutOwner.Pointer;
@@ -2310,6 +2357,10 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         if (await DelayHover(HoverOpenDelay) is false) return;
 
+        // The state may have moved on while the delay ran: the menu opened some other way (a click, a key, IsOpen),
+        // the menu button disabled or loading, the hover mode turned off.
+        if (HoverDriven is false || _hoverInside is false || Disabled || (Split is false && Loading) || IsOpen) return;
+
         if (await OpenCallout(CalloutOwner.Pointer) is false) return;
 
         StateHasChanged();
@@ -2329,8 +2380,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         if (await DelayHover(HoverCloseDelay) is false) return;
 
-        // The pointer came back before the delay was up, onto the button or into one of the menus.
-        if (_hoverInside) return;
+        // The pointer came back before the delay was up, onto the button or into one of the menus; or the menu was
+        // closed, or handed to the keyboard, while the delay ran.
+        if (_hoverInside || IsOpen is false || _owner is CalloutOwner.Keyboard) return;
 
         await CloseCallout();
 
@@ -2339,7 +2391,76 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
     // The hover mode only applies to the devices that have a pointer to hover with: a tap on a touch screen reports a
     // mouseover of its own, which would fight the click that is meant to toggle the menu.
-    private bool HoverDriven => OpenOnHover && _isHoverDevice is true;
+    internal bool HoverDriven => OpenOnHover && _isHoverDevice is true;
+
+    // The attributes of the root. The pointer is only listened to in the OpenOnHover mode: every other menu button
+    // would be paying for a round trip per hover, and a re-render after it, and have nothing to do with it. In that
+    // mode a mouseenter or mouseleave handler the page splatted on still runs, before the menu button's own.
+    private Dictionary<string, object> GetRootAttributes()
+    {
+        var attributes = DisabledAwareHtmlAttributes;
+
+        if (HoverDriven is false) return attributes;
+
+        object? pageEnter = null;
+        object? pageLeave = null;
+        var merged = new Dictionary<string, object>(attributes.Count + 2);
+
+        foreach (var (name, value) in attributes)
+        {
+            // The render tree matches an attribute name without regard to case, so a differently cased spelling of
+            // the page's would be overwritten all the same.
+            if (string.Equals(name, "onmouseenter", StringComparison.OrdinalIgnoreCase))
+            {
+                pageEnter = value;
+            }
+            else if (string.Equals(name, "onmouseleave", StringComparison.OrdinalIgnoreCase))
+            {
+                pageLeave = value;
+            }
+            else
+            {
+                merged[name] = value;
+            }
+        }
+
+        merged["onmouseenter"] = EventCallback.Factory.Create<MouseEventArgs>(this, async e =>
+        {
+            await InvokePageHandler(pageEnter, e);
+            await HandleOnMouseEnter();
+        });
+        merged["onmouseleave"] = EventCallback.Factory.Create<MouseEventArgs>(this, async e =>
+        {
+            await InvokePageHandler(pageLeave, e);
+            await HandleOnMouseLeave();
+        });
+
+        return merged;
+    }
+
+    // The pointer handlers of the menu, null outside the OpenOnHover mode for the reason the root's are (see
+    // GetRootAttributes).
+    private Dictionary<string, object>? GetCalloutHoverAttributes()
+    {
+        if (HoverDriven is false) return null;
+
+        return new()
+        {
+            ["onmouseenter"] = EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnMouseEnter),
+            ["onmouseleave"] = EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnMouseLeave)
+        };
+    }
+
+    // Runs a handler the page splatted on the root the way the renderer would have: an EventCallback as it is, and a
+    // delegate with the component it belongs to as the receiver, so that component re-renders after it. A string -
+    // inline script - cannot run beside a handler of the menu button's own, the browser taking one or the other.
+    private static Task InvokePageHandler(object? handler, MouseEventArgs e) => handler switch
+    {
+        EventCallback<MouseEventArgs> callback => callback.InvokeAsync(e),
+        EventCallback callback => callback.InvokeAsync(e),
+        MulticastDelegate @delegate => new EventCallback(@delegate.Target as IHandleEvent, @delegate).InvokeAsync(e),
+        _ => Task.CompletedTask
+    };
 
     // The overlay takes the clicks of the page while the menu is open. NoOverlay leaves the page its own, and so does
     // the hover mode, where the overlay would also cover the button the pointer opened the menu from and take it
@@ -2353,7 +2474,11 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         {
             return await _js.BitUtilsIsHoverDevice();
         }
-        catch (JSDisconnectedException) { return false; } // we can ignore this exception here
+        // A device that cannot be asked is taken for one without a pointer to hover with, which leaves the menu button
+        // toggling on a click as it does without the mode.
+        catch (JSException) { return false; }
+        catch (JSDisconnectedException) { return false; }
+        catch (TaskCanceledException) { return false; }
     }
 
     private void CancelHover()
@@ -2444,11 +2569,16 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     {
         if (IsDisposed) return;
 
-        if (EnumerateItems().Any(i => GetMatch(i) is not null) is false) return;
-
+        // The items are read on the renderer's dispatcher, where they are changed too: the event is raised wherever
+        // the navigation happened. Whether any of them has a Match is read once per change of the items rather than
+        // walked again on every navigation by every menu button of the page.
         _ = InvokeAsync(() =>
         {
             if (IsDisposed) return;
+
+            _hasMatches ??= EnumerateItems().Any(i => GetMatch(i) is not null);
+
+            if (_hasMatches is false) return;
 
             RefreshOptions();
             StateHasChanged();
