@@ -6,6 +6,15 @@ public partial class BitCardDemo
     [
         new()
         {
+            Name = "Accent",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "Draws a bar in a theme role along the inline-start edge of the card, the look of a callout. It is laid over the edge, so it moves nothing inside the card (and covers the first few pixels of a NoPadding card's content), lies over the start side of an Outlined card's rule, and goes along with Color, Variant, Outlined and Border. Unset, the card draws the bar only where --bit-Card-accent-color is set.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "Actions",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -624,6 +633,18 @@ public partial class BitCardDemo
             Name = "--bit-Card-border-width",
             DefaultValue = "0; --bit-shp-brd-width on an Outlined card or one given a Border",
             Description = "Border width. Set on its own it draws a border around every card.",
+        },
+        new()
+        {
+            Name = "--bit-Card-accent-color",
+            DefaultValue = "none (no bar)",
+            Description = "Color of the bar along the inline-start edge. Set on its own it draws that bar, on every card it reaches. An Accent on the card wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Card-accent-width",
+            DefaultValue = "2 × --bit-shp-brd-width-thick",
+            Description = "Width of that bar. It draws nothing on its own: the bar needs an Accent or --bit-Card-accent-color.",
         },
         new()
         {

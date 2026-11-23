@@ -356,6 +356,7 @@ public class BitCardParamsTests : BunitTestContext
         var card = component.FindComponent<BitCard>().Instance;
         var root = component.Find(".bit-crd");
 
+        Assert.IsNull(card.Accent);
         Assert.IsNull(card.Background);
         Assert.IsNull(card.Border);
         Assert.IsNull(card.Color);

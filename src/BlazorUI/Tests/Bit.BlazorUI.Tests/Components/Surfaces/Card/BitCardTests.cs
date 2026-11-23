@@ -200,6 +200,100 @@ public class BitCardTests : BunitTestContext
 
     #endregion
 
+    #region Accent
+
+    [TestMethod]
+    [DataRow(BitColor.Primary, "bit-crd-acc-pri")]
+    [DataRow(BitColor.Secondary, "bit-crd-acc-sec")]
+    [DataRow(BitColor.Tertiary, "bit-crd-acc-ter")]
+    [DataRow(BitColor.Info, "bit-crd-acc-inf")]
+    [DataRow(BitColor.Success, "bit-crd-acc-suc")]
+    [DataRow(BitColor.Warning, "bit-crd-acc-wrn")]
+    [DataRow(BitColor.SevereWarning, "bit-crd-acc-swr")]
+    [DataRow(BitColor.Error, "bit-crd-acc-err")]
+    [DataRow(BitColor.PrimaryBackground, "bit-crd-acc-pbg")]
+    [DataRow(BitColor.SecondaryBackground, "bit-crd-acc-sbg")]
+    [DataRow(BitColor.TertiaryBackground, "bit-crd-acc-tbg")]
+    [DataRow(BitColor.PrimaryForeground, "bit-crd-acc-pfg")]
+    [DataRow(BitColor.SecondaryForeground, "bit-crd-acc-sfg")]
+    [DataRow(BitColor.TertiaryForeground, "bit-crd-acc-tfg")]
+    [DataRow(BitColor.PrimaryBorder, "bit-crd-acc-pbr")]
+    [DataRow(BitColor.SecondaryBorder, "bit-crd-acc-sbr")]
+    [DataRow(BitColor.TertiaryBorder, "bit-crd-acc-tbr")]
+    public void BitCardAccentClassTest(BitColor accent, string expected)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Accent, accent);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains(expected));
+
+        // The accent is a bar of its own rather than a paint of the card: it renders neither a Color nor a Variant class.
+        Assert.IsFalse(card.ClassList.Contains(expected.Replace("-acc-", "-")));
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-vfl"));
+    }
+
+    [TestMethod]
+    public void BitCardWithoutAccentShouldNotRenderAnAccentClass()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Primary);
+        });
+
+        // An unset Accent publishes nothing, which leaves the bar to --bit-Card-accent-color, or to no bar at all - and a
+        // Color is no Accent.
+        foreach (var name in component.Find(".bit-crd").ClassList)
+        {
+            Assert.IsFalse(name.StartsWith("bit-crd-acc", StringComparison.Ordinal), $"An unset Accent rendered {name}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitCardAccentShouldGoAlongWithAColorAndAVariant()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Accent, BitColor.Warning);
+            parameters.Add(p => p.Color, BitColor.Primary);
+            parameters.Add(p => p.Variant, BitVariant.Outline);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-acc-wrn"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-pri"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-vot"));
+    }
+
+    [TestMethod]
+    public void BitCardAccentShouldFollowItsParameter()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Accent, BitColor.Success);
+        });
+
+        Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-acc-suc"));
+
+        component.Render(parameters => parameters.Add(p => p.Accent, BitColor.Error));
+
+        Assert.IsFalse(component.Find(".bit-crd").ClassList.Contains("bit-crd-acc-suc"));
+        Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-acc-err"));
+
+        component.Render(parameters => parameters.Add(p => p.Accent, (BitColor?)null));
+
+        foreach (var name in component.Find(".bit-crd").ClassList)
+        {
+            Assert.IsFalse(name.StartsWith("bit-crd-acc", StringComparison.Ordinal), $"A cleared Accent left {name}.");
+        }
+    }
+
+    #endregion
+
     #region Size
 
     [TestMethod]
@@ -3575,6 +3669,7 @@ public class BitCardTests : BunitTestContext
         {
             new BitCardParams
             {
+                Accent = BitColor.Warning,
                 Color = BitColor.Success,
                 Variant = BitVariant.Outline,
                 Size = BitSize.Large,
@@ -3603,6 +3698,7 @@ public class BitCardTests : BunitTestContext
 
         var card = component.Find(".bit-crd");
 
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-acc-wrn"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-suc"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-vot"));
         Assert.IsTrue(card.ClassList.Contains("bit-crd-lg"));

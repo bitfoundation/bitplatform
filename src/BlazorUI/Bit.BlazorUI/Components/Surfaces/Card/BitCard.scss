@@ -29,6 +29,9 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 //   --bit-Card-border-color          border color                                   (default: $clr-brd-pri)
 //   --bit-Card-border-width          border width, on every card                    (default: 0; $shp-border-width on an
 //                                                                                   Outlined card or one given a Border)
+//   --bit-Card-accent-color          color of the bar along the inline-start edge,
+//                                    which it also draws on its own                 (default: none - no bar)
+//   --bit-Card-accent-width          width of that bar                              (default: 2 x $shp-border-width-thick)
 //   --bit-Card-radius                corner radius                                  (default: $shp-radius-surface)
 //   --bit-Card-shadow                resting shadow                                 (default: $box-shadow-card)
 //   --bit-Card-hover-shadow          shadow of a clickable, linked or Hoverable
@@ -63,7 +66,7 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 //   --bit-Card-skeleton-background   resting color of the bars of a loading card    (default: the text color at 10%)
 //   --bit-Card-skeleton-color        the wave that sweeps across those bars         (default: the text color at 20%)
 //
-// A parameter set on the card itself wins over them - Background, Border, Color, Elevation, NoShadow, Outlined,
+// A parameter set on the card itself wins over them - Accent, Background, Border, Color, Elevation, NoShadow, Outlined,
 // Square, Size, NoPadding, CoverWidth - since it is the more specific ask (a Fill card also keeps the hover and pressed
 // shades of its role rather than the two background variables); the variables re-skin what the theme would
 // otherwise decide. A disabled card ignores the colors above and keeps the disabled colors of the theme, so it
@@ -72,6 +75,11 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 $crd-private-properties:
     clr, clr-txt, clr-fg, clr-tint, clr-hover, clr-active, clr-dis, clr-dis-text, fg, bg, bg-hov, bg-act, shd, shd-hov,
     shd-act, radius, brd-wid, brd-clr, dvd-clr, sel-clr, dis-txt, dis-bg, dis-brd,
+    // The role an Accent publishes, which the bar along the inline-start edge is drawn in. The bar is a layer of the
+    // root rather than the root itself, and that layer inherits it from the root, so it is reset but never registered.
+    // The other three draw the bar of a card that is its own scroll container as a background image instead: the image,
+    // the direction its gradient runs in and the color a disabled card dims it to.
+    acc, acc-img, acc-to, acc-paint,
     // The surface, the rule and the lift the hover and press states below move the root to; the states set these
     // rather than the background, the border color and the offset.
     sbg, sbr, lft,
@@ -116,9 +124,16 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, lft;
     // still competes with it at equal weight.
     color: var(--bit-crd-dis-txt, var(--bit-crd-fg, var(--bit-Card-color, #{$clr-fg-pri})));
     background-color: var(--bit-crd-dis-bg, var(--bit-crd-sbg, #{$crd-bg}));
+    // Only a card that scrolls itself draws its accent bar here (see the accent bar below); every other one has none.
+    background-image: var(--bit-crd-acc-img, none);
     border-width: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0));
     border-color: var(--bit-crd-dis-brd, var(--bit-crd-sbr, #{$crd-brd}));
     border-radius: var(--bit-crd-radius, var(--bit-Card-radius, #{$shp-radius-surface}));
+    // The width of the rule the root draws, for its two layers - the accent bar and the room under a lifted card - to
+    // reach across it. The root-only width does not inherit, so a layer cannot read it itself; this one is resolved here
+    // and inherited as a length. Every root declares its
+    // own, so a nested card never takes the rule of the card it sits in.
+    --bit-crd-rul: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0px));
     box-shadow: $crd-shd;
     // The lift is a relative offset of the root, which is positioned already, and never a transform. A transform would
     // make the lifted card a stacking context, trapping the z-index of a tooltip or a menu opened inside it under the
@@ -710,11 +725,12 @@ button.bit-crd-lnk {
     --bit-crd-fg: var(--bit-crd-clr-fg);
     --bit-crd-shd: none;
     --bit-crd-shd-act: none;
-    background-image: linear-gradient(var(--bit-crd-clr-tint), var(--bit-crd-clr-tint));
+    // The accent bar of a card that scrolls itself is the top layer, over the tint (see the accent bar below).
+    background-image: var(--bit-crd-acc-img, none), linear-gradient(var(--bit-crd-clr-tint), var(--bit-crd-clr-tint));
 
     &.bit-dis {
         --bit-crd-dis-txt: var(--bit-crd-clr-dis-text);
-        background-image: linear-gradient(#{translucent(var(--bit-crd-clr-dis), 10%)}, #{translucent(var(--bit-crd-clr-dis), 10%)});
+        background-image: var(--bit-crd-acc-img, none), linear-gradient(#{translucent(var(--bit-crd-clr-dis), 10%)}, #{translucent(var(--bit-crd-clr-dis), 10%)});
     }
 }
 
@@ -726,6 +742,86 @@ button.bit-crd-lnk {
 .bit-crd-vtx {
     > .bit-crd-mai > .bit-crd-hdr > .bit-crd-htx > .bit-crd-sub {
         color: inherit;
+    }
+}
+
+
+// The accent bar: a band of color along the inline-start edge, the look of a callout. It is the border of a layer laid
+// over the whole card rather than a border of the card, so drawing it moves nothing inside the card. The layer is
+// pulled out over the rule the root draws (a positioned box is placed against the padding box, inside that rule), so it
+// covers the border box: the bar lies over the start side of a rule drawn by Outlined or a Border, which stays whole on
+// the other three, and the outer corner it inherits is the corner of the box it is drawn on. With a rule written as a
+// bare 0 the margin is invalid, which leaves it at the 0 that rule is. The layer is the last thing the card paints at its
+// own level, so the bar runs over a cover - above the content, beside it or behind it - and under the header actions,
+// the footer, the floating actions and the stretched link, which are raised above it. It also runs over the content of
+// a card with no inset (NoPadding, or --bit-Card-padding: 0) the way it runs over a cover: it takes no room, and the
+// first few pixels along that edge lie under it. A logical edge, it follows the direction the card is laid out in
+// without a right-to-left rule of its own.
+//
+// The color decides whether there is a bar at all: an Accent publishes its role, and --bit-Card-accent-color draws one
+// wherever it is set (on the cards nested in the one it is set on too, as it inherits). With neither, the var() has no
+// fallback left, which makes the whole declaration invalid at computed-value time: the layer keeps no border, and there
+// is no bar. --bit-Card-accent-width on its own draws nothing for the same reason; it sizes a bar something else drew.
+//
+// The layer is there on every card, since the variable can draw a bar on any of them, so the card takes its root's
+// ::after for itself: an app decorating that pseudo-element of a card draws on a child of its own instead.
+.bit-crd::after {
+    content: "";
+    inset: 0;
+    position: absolute;
+    pointer-events: none;
+    box-sizing: border-box;
+    border-radius: inherit;
+    margin: calc(-1 * var(--bit-crd-rul, 0px));
+    border-inline-start: var(--bit-Card-accent-width, calc(2 * #{$shp-border-width-thick})) solid var(--bit-crd-acc, var(--bit-Card-accent-color));
+}
+
+// A disabled card dims its bar along with its words, the way it dims its selection ring, rather than keeping a live
+// accent on something that answers nothing. Only the color is set, so a card that has no bar still gets none.
+.bit-crd.bit-dis::after {
+    border-inline-start-color: currentcolor;
+}
+
+// The selection ring and the focus ring are inset outlines of the root, which its positioned layer would be painted over:
+// the bar would cut the ring on its start side. While one of them is drawn the layer steps inside it, by the width of
+// the ring that is shown - the focus ring wins over the selection ring, so it comes second at a greater weight.
+.bit-crd-sel::after {
+    inset: #{$shp-border-width-thick};
+}
+
+.bit-crd:focus-visible::after {
+    inset: #{$shp-focus-ring-width};
+}
+
+// A plain card with ScrollableBody is its own scroll container, and a layer positioned in one is laid out on what it
+// scrolls: the bar would leave with the first lines. Its bar is a background image of the root instead, which stays
+// where the box is while the content scrolls, painted from the same color and width as the layer, which it turns off.
+// It lies inside the rule rather than over it, as a background does. The image is a variable the root paints (and a Text
+// card paints over its tint), so it competes with nothing; with no color it is invalid, and the root falls back to none.
+// A forced-colors mode drops a gradient with the other backgrounds, so there this one card keeps no bar.
+.bit-crd-scb:not(.bit-crd-sct) {
+    --bit-crd-acc-img: linear-gradient(var(--bit-crd-acc-to, to right), var(--bit-crd-acc-paint, var(--bit-crd-acc, var(--bit-Card-accent-color))) var(--bit-Card-accent-width, calc(2 * #{$shp-border-width-thick})), transparent 0);
+
+    &::after {
+        display: none;
+    }
+
+    &:is(.bit-rtl, :dir(rtl)) {
+        --bit-crd-acc-to: to left;
+    }
+
+    // The color of the bar, dimmed: currentcolor alone where there is a bar, and nothing where there is none, since the
+    // mix is invalid without the color it is mixed with.
+    &.bit-dis {
+        --bit-crd-acc-paint: color-mix(in srgb, currentcolor 100%, var(--bit-crd-acc, var(--bit-Card-accent-color)));
+    }
+}
+
+// The per-role color vocabulary again, for the bar. Published only by an explicit Accent; an unset one leaves the bar to
+// --bit-Card-accent-color, read after it.
+@each $role, $tokens in $bit-color-roles {
+    .bit-crd-acc-#{$role} {
+        --bit-crd-acc: #{role($tokens, main)};
     }
 }
 
@@ -817,10 +913,12 @@ button.bit-crd-lnk {
         top: 100%;
         box-sizing: content-box;
         height: #{$crd-lift};
-        // The rule lies outside the padding box the band is placed against. A width written as a bare 0 makes the
-        // margin invalid, which leaves it at the 0 that width is.
-        margin-inline: calc(-1 * var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0px)));
-        padding-block-end: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0));
+        // The rule lies outside the padding box the band is placed against. Its width is read off the root's own, which
+        // the band inherits (the root-only width does not reach it), so it follows an Outlined card, a Border and the rule
+        // a forced-colors mode restores. A width written as a bare 0 makes the margin invalid, which leaves it at the 0
+        // that width is.
+        margin-inline: calc(-1 * var(--bit-crd-rul, 0px));
+        padding-block-end: var(--bit-crd-rul, 0px);
     }
 
     .bit-crd-int:hover {
@@ -874,15 +972,8 @@ button.bit-crd-lnk {
     .bit-crd {
         border-width: var(--bit-crd-brd-wid, #{$shp-border-width});
         border-color: CanvasText;
-    }
-
-    // The room under a lifted card spans the rule restored above rather than the one the card draws otherwise.
-    @media (hover: hover) {
-        .bit-crd-int:hover::before,
-        .bit-crd-hov:hover::before {
-            margin-inline: calc(-1 * var(--bit-crd-brd-wid, #{$shp-border-width}));
-            padding-block-end: var(--bit-crd-brd-wid, #{$shp-border-width});
-        }
+        // The accent bar and the room under a lifted card reach across the rule restored here.
+        --bit-crd-rul: var(--bit-crd-brd-wid, #{$shp-border-width});
     }
 
     // A Fill card reads its words from the role's on-color, which the palette makes Canvas for the primary role
@@ -901,6 +992,16 @@ button.bit-crd-lnk {
     .bit-crd.bit-dis {
         color: GrayText;
         border-color: GrayText;
+    }
+
+    // The accent bar is an edge, the one part of a surface this mode keeps, so it stays: in the color of the rule
+    // restored around the card, and in GrayText on a disabled one. Only the color is set, so a card with no bar gets none.
+    .bit-crd::after {
+        border-inline-start-color: CanvasText;
+    }
+
+    .bit-crd.bit-dis::after {
+        border-inline-start-color: GrayText;
     }
 
     .bit-crd:focus-visible,

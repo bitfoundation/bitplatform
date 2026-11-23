@@ -32,6 +32,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// Draws an accent bar in one of the roles of the theme along the inline-start edge of the card.
+    /// </summary>
+    public BitColor? Accent { get; set; }
+
+    /// <summary>
     /// The color kind of the background of the card.
     /// </summary>
     public BitColorKind? Background { get; set; }
@@ -250,6 +255,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (bitCard is null) return;
 
         UpdateBaseParameters(bitCard);
+
+        if (Accent.HasValue)
+        {
+            bitCard.TakeFromCascade(nameof(Accent), Accent.Value, static c => c.Accent, static (c, v) => c.Accent = v);
+        }
 
         if (Background.HasValue)
         {
