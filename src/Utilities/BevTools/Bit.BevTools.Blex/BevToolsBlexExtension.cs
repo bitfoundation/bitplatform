@@ -11,8 +11,9 @@ namespace Bit.BevTools;
 internal sealed class BevToolsBlexExtension : IBevToolsExtension
 {
     // One provider per manager: a singleton manager (a host without scopes, or Blex registered as a singleton) serves
-    // every session, and a provider per session would stay subscribed to it after its session ended.
-    private static readonly ConditionalWeakTable<BlexManager, BevToolsBlexStateProvider> Providers = new();
+    // every session, and a provider per session would stay subscribed to it after its session ended. Lazy: two sessions
+    // starting at once may both run GetValue's factory, and a provider it then drops would stay subscribed too.
+    private static readonly ConditionalWeakTable<BlexManager, Lazy<BevToolsBlexStateProvider>> Providers = new();
 
     private readonly BevToolsOptions _options;
 
@@ -23,5 +24,5 @@ internal sealed class BevToolsBlexExtension : IBevToolsExtension
     public void Configure(IBevToolsExtensionBuilder builder) => builder.AddStateProvider(services =>
         // The one AddBevToolsBlex registered, where it did: the State panel shows a provider once.
         services.GetServices<IBevToolsStateProvider>().OfType<BevToolsBlexStateProvider>().FirstOrDefault()
-        ?? Providers.GetValue(services.GetRequiredService<BlexManager>(), manager => new BevToolsBlexStateProvider(manager, _options.MaxStateChangesPerProvider)));
+        ?? Providers.GetValue(services.GetRequiredService<BlexManager>(), manager => new(() => new BevToolsBlexStateProvider(manager, _options.MaxStateChangesPerProvider))).Value);
 }

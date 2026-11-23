@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace Bit.BevTools;
@@ -16,6 +17,15 @@ public sealed class BevToolsQueryFilter
     /// filtering, not once per field of every entry.
     /// </summary>
     public static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(50);
+
+    /// <summary>
+    /// How long <see cref="Regex"/> may take over every text one filter matches it against: a match that stays under
+    /// <see cref="RegexTimeout"/> can still add up over every field of every entry. Once it is spent, the expression's
+    /// matching ends for the whole filter (<see cref="RegexTimedOut"/>), as at a time out.
+    /// </summary>
+    public static readonly TimeSpan RegexBudget = TimeSpan.FromMilliseconds(500);
+
+    private TimeSpan _regexElapsed;
 
     private BevToolsQueryFilter()
     {
@@ -45,7 +55,8 @@ public sealed class BevToolsQueryFilter
     public bool HasText => Terms.Count > 0 || RegexText is not null;
 
     /// <summary>
-    /// Whether <see cref="Regex"/> ran out of <see cref="RegexTimeout"/> on some text; from then on no text matches it.
+    /// Whether <see cref="Regex"/> ran out of <see cref="RegexTimeout"/> on some text, or of <see cref="RegexBudget"/> over
+    /// all of them; from then on no text matches it.
     /// </summary>
     public bool RegexTimedOut { get; private set; }
 
@@ -184,6 +195,7 @@ public sealed class BevToolsQueryFilter
                 continue;
             }
 
+            var started = Stopwatch.GetTimestamp();
             try
             {
                 if (regex.IsMatch(field))
@@ -194,6 +206,14 @@ public sealed class BevToolsQueryFilter
             catch (RegexMatchTimeoutException)
             {
                 RegexTimedOut = true;
+            }
+            finally
+            {
+                _regexElapsed += Stopwatch.GetElapsedTime(started);
+                if (_regexElapsed >= RegexBudget)
+                {
+                    RegexTimedOut = true;
+                }
             }
         }
 

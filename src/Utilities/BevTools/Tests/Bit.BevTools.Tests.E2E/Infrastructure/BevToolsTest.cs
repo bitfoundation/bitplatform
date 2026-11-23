@@ -87,10 +87,14 @@ public abstract class BevToolsTest
     }
 
     /// <summary>
-    /// A problem the test provokes on purpose - a download it makes fail - which does not fail it. Anything else the
-    /// page reports still does.
+    /// A problem the test provokes on purpose - a download it makes fail - which does not fail it, until the returned
+    /// scope is disposed: what matches it after that fails the test again. Anything else the page reports always does.
     /// </summary>
-    protected void ExpectProblems(Func<string, bool> expected) => _expected.Add(expected);
+    protected IDisposable ExpectProblems(Func<string, bool> expected)
+    {
+        _expected.Add(expected);
+        return new ExpectedProblems(this, expected);
+    }
 
     protected Task<IResponse?> GotoAsync(IPage page, string path) =>
         page.GotoAsync(BaseUrl + path, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle, Timeout = 90_000 });
@@ -122,5 +126,18 @@ public abstract class BevToolsTest
         };
 
         return problems;
+    }
+
+    /// <summary>Ends an expectation: what it accepted so far is let go, and what matches it from now on is a problem.</summary>
+    private sealed class ExpectedProblems(BevToolsTest test, Func<string, bool> expected) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (!test._expected.Remove(expected)) return;
+            foreach (var problems in test._problems)
+            {
+                lock (problems) problems.RemoveAll(p => expected(p));
+            }
+        }
     }
 }

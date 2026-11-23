@@ -45,7 +45,6 @@ internal sealed class BevToolsLoaderEntryPoint : IBevToolsEntryPoint
             return false;
         }
 
-        var applied = context.Options.BevToolsConfigurations.Count;
         services.AddBitBevToolsServices(options =>
         {
             Forward(context.Options, options);
@@ -56,7 +55,9 @@ internal sealed class BevToolsLoaderEntryPoint : IBevToolsEntryPoint
 
             Configure(context.Options, options, skip: 0);
         });
-        context.StartupConfigurationsApplied = applied;
+        // Counted after they ran: Configure runs the callbacks a callback registers too, and a later call must not run
+        // them again.
+        context.StartupConfigurationsApplied = context.Options.BevToolsConfigurations.Count;
 
         return true;
     }

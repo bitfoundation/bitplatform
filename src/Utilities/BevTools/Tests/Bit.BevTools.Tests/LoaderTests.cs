@@ -443,6 +443,22 @@ public class LoaderTests : BunitContext
     }
 
     [TestMethod]
+    public void A_callback_a_callback_registered_at_startup_runs_once()
+    {
+        var registered = 0;
+        Services.AddBitBevToolsLoaderServices(o => o
+            .ConfigureBevTools(_ => o.ConfigureBevTools(_ => registered++))
+            .RegisterAtStartup = true);
+        Assert.AreEqual(1, registered);
+
+        // A later call that adds no callbacks of its own.
+        Services.AddBitBevToolsLoaderServices(o => o.ShowBadge = false);
+
+        Assert.AreEqual(1, registered, "the callback the first one registered ran already");
+        Assert.IsTrue(Services.GetRequiredService<BevToolsSession>().IsEnabled);
+    }
+
+    [TestMethod]
     public async Task OpenAsync_lands_on_the_panel_and_filter_the_app_asks_for()
     {
         Services.AddBitBevToolsLoaderServices(o => o

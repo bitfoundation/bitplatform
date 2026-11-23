@@ -208,7 +208,7 @@ public sealed class LazyLoadingTests : BevToolsTest
         // request is the point of the test: the failed request, and the runtime's own unhandled rejection of the download
         // it keeps (dotnet.js), which no caller of LazyAssemblyLoader can observe.
         const string lazyAssembly = "**/_framework/Bit.BevTools.*.wasm";
-        ExpectProblems(problem => problem.Contains("/_framework/Bit.BevTools.", StringComparison.Ordinal)
+        var failedDownload = ExpectProblems(problem => problem.Contains("/_framework/Bit.BevTools.", StringComparison.Ordinal)
             || (problem.StartsWith("unhandled error: TypeError: Failed to fetch", StringComparison.Ordinal) && problem.Contains("/_framework/dotnet.js", StringComparison.Ordinal)));
         await page.RouteAsync(lazyAssembly, route => route.AbortAsync("connectionreset"));
 
@@ -219,8 +219,10 @@ public sealed class LazyLoadingTests : BevToolsTest
         await Expect(page.Locator(".fallback")).ToBeVisibleAsync();
         await Expect(Panel(page)).ToHaveCountAsync(0);
 
-        // The runtime keeps that failure for the page's life; a reload starts over.
+        // The runtime keeps that failure for the page's life; a reload starts over, and whatever goes wrong from here on
+        // fails the test.
         await page.UnrouteAsync(lazyAssembly);
+        failedDownload.Dispose();
         await page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
         await WaitForInteractiveAsync(page);
         var panel = await OpenBevToolsAsync(page);

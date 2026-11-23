@@ -256,7 +256,18 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
 
             // One call, so the assemblies download side by side; each of them is marked BlazorWebAssemblyLazyLoad, or
             // the runtime says which one is not.
-            await new LazyAssemblyLoader(js).LoadAssembliesAsync(missing.Select(name => name + ".wasm"));
+            try
+            {
+                await new LazyAssemblyLoader(js).LoadAssembliesAsync(missing.Select(name => name + ".wasm"));
+            }
+            catch (Exception ex)
+            {
+                // LazyAssemblyLoader throws when an assembly is not marked BlazorWebAssemblyLazyLoad (and the app started
+                // without it, or this would not have been reached), or when the download fails.
+                LoadError = await DescribeLoadFailureAsync(js, missing, ex);
+                return null;
+            }
+
             if (FindLoaded(AssemblyName) is not { } assembly)
             {
                 LoadError = "LazyAssemblyLoader did not load " + AssemblyName + ".";
@@ -278,9 +289,8 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
         }
         catch (Exception ex)
         {
-            // LazyAssemblyLoader throws when an assembly is not marked BlazorWebAssemblyLazyLoad (and the app started
-            // without it, or this would not have been reached), or when the download fails.
-            LoadError = await DescribeLoadFailureAsync(js, missing, ex);
+            // Not the download, which is handled above: loading what the app already has, or the entry point.
+            LoadError = "Loading " + AssemblyName + " failed: " + ex.GetType().Name + ": " + ex.Message;
             return null;
         }
     }

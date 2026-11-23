@@ -20,7 +20,7 @@
         }
         else if (_filter.RegexTimedOut)
         {
-            <div class="bev-toolbar bev-warn" role="status">The regular expression took longer than @((int)BevToolsQueryFilter.RegexTimeout.TotalMilliseconds) ms on an entry and was stopped there: the entries it had not matched yet are left out. Make it more specific.</div>
+            <div class="bev-toolbar bev-warn" role="status">The regular expression took longer than @((int)BevToolsQueryFilter.RegexTimeout.TotalMilliseconds) ms on an entry, or @((int)BevToolsQueryFilter.RegexBudget.TotalMilliseconds) ms on all of them, and was stopped there: the entries it had not matched yet are left out. Make it more specific.</div>
         }
         @if (!View.ByCommand && !View.ByCategory && View.Command is not null)
         {
@@ -388,7 +388,8 @@
         // A category has no spaces; the filter keeps whatever else was typed.
         var filter = BevToolsQueryFilter.Parse(Query);
         filter.Tokens["category"] = category;
-        Ui.SetQuery("logs", string.Join(" ", filter.Tokens.Select(t => t.Key + ":" + t.Value).Concat(filter.Terms).Concat(filter.RegexText is { } regex ? [regex] : [])));
+        // The expression before the terms: a term that starts with a slash (a path) ahead of it would start it instead.
+        Ui.SetQuery("logs", string.Join(" ", filter.Tokens.Select(t => t.Key + ":" + t.Value).Concat(filter.RegexText is { } regex ? [regex] : []).Concat(filter.Terms)));
         OnParametersSet();
     }
 

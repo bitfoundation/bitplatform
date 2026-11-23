@@ -250,6 +250,7 @@ function containsJwt(value: string) {
 }
 
 let prefetchedStylesheet: CSSStyleSheet | null = null;
+let pendingStylesheet: Promise<boolean> | null = null;
 
 /**
  * BevToolsLoader.PrefetchAsync: puts the panel's stylesheet into the page before the panel exists, so the panel needs no
@@ -260,8 +261,14 @@ let prefetchedStylesheet: CSSStyleSheet | null = null;
  * resolve against the page.) Resolves to whether the stylesheet is in the page this way; where the browser cannot adopt a
  * stylesheet it is not, and the panel keeps linking it itself.
  */
-export async function prefetchStylesheet(href: string): Promise<boolean> {
-    if (prefetchedStylesheet) return true;
+export function prefetchStylesheet(href: string): Promise<boolean> {
+    if (prefetchedStylesheet) return Promise.resolve(true);
+    // Calls while one fetches share it, so the page adopts the stylesheet once; a failed one is forgotten, and the next
+    // call tries again.
+    return pendingStylesheet ??= adoptStylesheet(href).finally(() => pendingStylesheet = null);
+}
+
+async function adoptStylesheet(href: string): Promise<boolean> {
     const doc = document as Document & { adoptedStyleSheets?: CSSStyleSheet[] };
     if (!("adoptedStyleSheets" in document) || typeof CSSStyleSheet !== "function" || typeof (CSSStyleSheet.prototype as any).replaceSync !== "function") {
         return false;
