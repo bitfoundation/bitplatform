@@ -156,7 +156,10 @@ internal static class BevToolsRuntimeAttacher
         var options = new BevToolsOptions();
         if (loader is not null)
         {
+            // The app's configuration from the loader, the one its startup registration had too: panels, extensions and
+            // every option the loader does not forward. An explicit configure (BitBevTools.Attach) comes after it.
             BevToolsLoaderEntryPoint.Forward(loader.Options, options);
+            BevToolsLoaderEntryPoint.Configure(loader.Options, options, skip: 0);
         }
 
         configure?.Invoke(options);

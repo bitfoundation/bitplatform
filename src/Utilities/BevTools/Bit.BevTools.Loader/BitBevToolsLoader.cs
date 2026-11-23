@@ -23,7 +23,8 @@ public static class BitBevToolsLoader
     /// </para>
     /// <para>
     /// Inject <see cref="BevToolsLoader"/> to open it, and render <c>&lt;BevToolsLoaderPanel /&gt;</c> in the layout.
-    /// Calling this again configures the existing options; what the first call decided stays.
+    /// Calling this again configures the existing options; what the first call decided stays, and a BevTools the first
+    /// call registered takes the <see cref="BevToolsLoaderOptions.ConfigureBevTools"/> callbacks a later one adds.
     /// </para>
     /// </summary>
     public static IServiceCollection AddBitBevToolsLoaderServices(this IServiceCollection services, Action<BevToolsLoaderOptions>? configure = null)
@@ -33,6 +34,13 @@ public static class BitBevToolsLoader
         if (services.FirstOrDefault(d => d.ServiceType == typeof(BevToolsLoaderContext))?.ImplementationInstance is BevToolsLoaderContext existing)
         {
             configure?.Invoke(existing.Options);
+            if (existing.RegisteredAtStartup && existing.EntryPoint is { } registered)
+            {
+                // A BevTools registered by the first call takes the ConfigureBevTools callbacks this one added; one
+                // attached later reads them all when it attaches.
+                existing.TryAddServices(registered, services, out _);
+            }
+
             return services;
         }
 

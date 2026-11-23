@@ -1,6 +1,7 @@
 ﻿
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.BevTools;
@@ -162,12 +163,33 @@ public sealed class BevToolsOptions
     /// </summary>
     public BevToolsValueAccess? ValueAccess { get; set; }
 
-    /// <summary>Member/header/query names matching any of these (case-insensitive substring) are redacted.</summary>
+    /// <summary>
+    /// Member, header, query, storage and key names matching any of these are redacted: case-insensitively, anywhere in
+    /// the name ("token" in <c>AccessToken</c> and <c>accesstoken</c>, "pwd" in <c>newpwdconfirm</c>). The exceptions are
+    /// "otp" and "ssn", which hide inside ordinary words and so match only where they start or end a word of the name -
+    /// "otp" in <c>Otp</c>, <c>UserOtp</c>, <c>otp_code</c> and <c>?otp=</c>, but not in <c>NotPublished</c> or
+    /// <c>Footprint</c>; "ssn" not in <c>ClassName</c>. Words end at characters other than letters and digits, and where a
+    /// lower case letter or digit meets an upper case one. Empty and blank entries are ignored.
+    /// </summary>
     public List<string> SensitiveNamePatterns { get; } =
     [
         "password", "passwd", "pwd", "secret", "token", "apikey", "api_key", "api-key", "authorization", "cookie",
         "connectionstring", "credential", "ssn", "creditcard", "cardnumber", "cvv", "privatekey", "clientsecret", "bearer",
+        "otp", "totp",
     ];
+
+    /// <summary>
+    /// Service registrations an integration needs next to its extension (<c>AddBelemetry</c>'s Belemetry hooks), which
+    /// <c>AddBitBevToolsServices</c> applies once its configure callback has run. A session attached at runtime has no
+    /// service collection left to apply them to, which the integration documents.
+    /// </summary>
+    internal List<Action<IServiceCollection>> ServiceRegistrations { get; } = [];
+
+    /// <summary>
+    /// Configuration that was not applied, and why (the loader's <c>ConfigureBevTools</c> callbacks whose assemblies were
+    /// missing); each session records them as errors, so the app's developer sees them in the panel.
+    /// </summary>
+    internal List<string> ConfigurationProblems { get; } = [];
 
     /// <summary>Namespace prefixes whose components are hidden from the component tree.</summary>
     /// <remarks>

@@ -9,7 +9,7 @@ internal sealed class BevToolsRuntimeAttachment
 
     /// <summary>
     /// The app installed Bit.BevTools.Loader's startup hooks, which stand in for most of the reflection an attach needs
-    /// otherwise: through <see cref="BevToolsLoader.OpenAsync"/>, or a <see cref="BitBevTools.Attach"/> in that app.
+    /// otherwise: through <see cref="BevToolsLoader.OpenAsync()"/>, or a <see cref="BitBevTools.Attach"/> in that app.
     /// </summary>
     public bool ThroughLoader { get; init; }
 
