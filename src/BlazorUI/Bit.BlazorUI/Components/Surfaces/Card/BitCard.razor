@@ -36,9 +36,10 @@
        pointing at a heading elsewhere on the page - needs a role for that name to be announced at all, since a
        name on a plain div is not guaranteed to be read, and "group" is the role of a box that holds related
        things without being a landmark. A role the app splatted in itself always wins, and a root rendered as a tag
-       with a role of its own (see Element) keeps that one: a named section is already a region. *@
+       with a role of its own that a name can be given to (see Element) keeps that one: a named section is already a
+       region. A tag whose role prohibits a name - a span, a paragraph, an emphasis - is a group just like a div. *@
     var isNamed = label.HasValue() || splattedLabelledBy.HasValue();
-    var role = splattedRole ?? (labelOnRoot && isNamed && _IsGenericElement ? "group" : null);
+    var role = splattedRole ?? (labelOnRoot && isNamed && _HasNameableRole is false ? "group" : null);
 
     @* A card rendered as a sectioning element - an article, an aside, a nav, a section - is a section of the page,
        and its title is what titles it: pointing the root at the title is what makes a section a region a reader

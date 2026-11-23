@@ -2890,6 +2890,15 @@ public class BitCardTests : BunitTestContext
     [DataRow("1section")]
     [DataRow("hr")]
     [DataRow("img")]
+    [DataRow("a")]
+    [DataRow("button")]
+    [DataRow("p")]
+    [DataRow("h2")]
+    [DataRow("ul")]
+    [DataRow("table")]
+    [DataRow("template")]
+    [DataRow("textarea")]
+    [DataRow("SELECT")]
     public void BitCardInvalidOrVoidElementShouldFallBackToADiv(string element)
     {
         // A name carrying whitespace or a "<" would write markup of its own, one that is not a name throws where the
@@ -3127,6 +3136,29 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow("span")]
+    [DataRow("em")]
+    [DataRow("header")]
+    [DataRow("footer")]
+    public void BitCardNamedElementWhoseRoleCannotBeNamedShouldBecomeAGroup(string element)
+    {
+        // These tags map to roles that prohibit a name (or to no role at all), so the name would never be read.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.AriaLabel, "A card");
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual(element.ToUpperInvariant(), card.TagName);
+        Assert.AreEqual("A card", card.GetAttribute("aria-label"));
+        Assert.AreEqual("group", card.GetAttribute("role"));
+        Assert.AreEqual("true", card.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
     public void BitCardElementRootControlShouldRegisterTheButtonKeysOnTheRoot()
     {
         var component = RenderSplattedCard(builder =>
@@ -3173,6 +3205,51 @@ public class BitCardTests : BunitTestContext
         component.Render();
 
         Assert.AreEqual("ARTICLE", component.Find(".bit-crd").TagName);
+
+        var invocations = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 2);
+
+        Assert.AreEqual(component.FindComponent<BitCard>().Instance.RootElement.Id, ((ElementReference)invocations[1].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitCardRootControlShouldRegisterTheButtonKeysAgainAfterItsTagChangedWhileNotAControl()
+    {
+        // The root is replaced on each change of tag, including the one made while its root was not a control, so
+        // coming back to the first tag is a new element that needs the keys again.
+        var element = "div";
+        var role = "option";
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCard>(0);
+                builder.AddAttribute(1, nameof(BitCard.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+                builder.AddAttribute(2, nameof(BitCard.Element), element);
+                if (role is not null)
+                {
+                    builder.AddAttribute(3, "role", role);
+                }
+                builder.CloseComponent();
+            });
+        });
+
+        component.Render();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 1);
+
+        element = "article";
+        role = null;
+        component.Render();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 1);
+
+        element = "div";
+        role = "option";
+        component.Render();
+
+        Assert.AreEqual("DIV", component.Find(".bit-crd").TagName);
 
         var invocations = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 2);
 
