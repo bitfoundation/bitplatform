@@ -41,8 +41,11 @@ measured overhead - keep all of them accurate when behaviour changes.
    decided by assembly and by namespace: every BevTools component lives directly in `Bit.BevTools` (the server
    package's included), and only there - `Bit.BevTools.Demo.*`, `Bit.BevTools.Tests` or an application's
    `Bit.BevTools.Anything` is application code. Never match the product namespace as a prefix. The one other owner is a
-   panel an extension contributes (`BevToolsPanelDescriptor`), with what it renders: the framework's activities and
-   meters name only a component type, so `BevToolsComponentRegistry.IsBevToolsOnlyType` tells their measurements apart
+   panel an extension or the application contributes (`BevToolsPanelDescriptor`, `BevToolsOptions.AddPanel`), with what
+   it renders - by position in the tree, not by type, since the application may render that component on its own pages
+   (`ExtensibilityTests.A_panel_component_the_application_renders_itself_is_the_applications_there`). The framework's
+   activities and meters name only a component type, so `BevToolsComponentRegistry.IsBevToolsOnlyType` tells their
+   measurements apart, for BevTools and for Belemetry's filter alike
    (`ExtensibilityTests.An_extension_panel_is_never_recorded_as_application_activity`).
 3. **Never leak secrets.** Redaction happens at capture time (`BevToolsRedactor`: names, `[BevToolsSensitive]`, credential
    shapes, sensitive pairs; browser-side storage and URL redaction). The one exception is the loader's `AutoStart`
