@@ -33,6 +33,7 @@ public partial class AppHub : Hub
 
     [AutoInject] private ILoggerFactory loggerFactory = default!;
     [AutoInject] private ILogger<AppHub> logger = default!;
+    [AutoInject] private IHttpClientFactory httpClientFactory = default!;
 
 
     public async IAsyncEnumerable<string> Chatbot(
@@ -186,7 +187,11 @@ public partial class AppHub : Hub
 
     private async Task<LibraryMcpServers> ConnectToLibraryMcpServers(CancellationToken cancellationToken)
     {
-        var clients = await Task.WhenAll(librariesWithMcpServers.Select(async library =>
+        // One HttpClient from the factory for every server: the transports don't own it, so they hold nothing of their
+        // own to dispose, and the factory pools its handler across chats.
+        var httpClient = httpClientFactory.CreateClient("LibraryMcpServers");
+
+        var connections = librariesWithMcpServers.Select(async library =>
         {
             try
             {
@@ -195,23 +200,43 @@ public partial class AppHub : Hub
                     Name = $"bit{library}",
                     Endpoint = new($"https://{library.ToLowerInvariant()}.bitplatform.dev/mcp"),
                     TransportMode = HttpTransportMode.StreamableHttp
-                }), new() { InitializationTimeout = TimeSpan.FromSeconds(10) }, loggerFactory, cancellationToken);
+                }, httpClient, loggerFactory, ownsHttpClient: false), new() { InitializationTimeout = TimeSpan.FromSeconds(10) }, loggerFactory, cancellationToken);
             }
             catch (Exception exp) when (cancellationToken.IsCancellationRequested is false)
             {
                 logger.LogWarning(exp, "The chatbot could not connect to the MCP server of {Library}.", library);
                 return null;
             }
-        }));
+        }).ToArray();
 
-        return new([.. clients.OfType<McpClient>()]);
+        try
+        {
+            return new([.. (await Task.WhenAll(connections)).OfType<McpClient>()]);
+        }
+        catch
+        {
+            // The chat ended while connecting: close the sessions that did open, as nothing else holds them.
+            foreach (var connection in connections.Where(connection => connection.IsCompletedSuccessfully))
+            {
+                if (connection.Result is { } client)
+                {
+                    await client.DisposeAsync();
+                }
+            }
+
+            throw;
+        }
     }
 
     private async Task<IList<McpClientTool>> ListTools(McpClient client, CancellationToken cancellationToken)
     {
+        // A server that connected but never answers only takes its own tools out of the chat.
+        using var listingTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        listingTimeout.CancelAfter(TimeSpan.FromSeconds(10));
+
         try
         {
-            return await client.ListToolsAsync(cancellationToken: cancellationToken);
+            return await client.ListToolsAsync(cancellationToken: listingTimeout.Token);
         }
         catch (Exception exp) when (cancellationToken.IsCancellationRequested is false)
         {

@@ -187,11 +187,13 @@ variable when they run, so if it changed after the CD run started, expect a mism
    on the branch under test: only a fix to that branch's own changes goes on it. Push to a branch of your own without
    asking, for the user to review with the report; ask before pushing to anyone else's. The All CI runs on the pushed
    branch are the final proof: `gh workflow run <file> -R bitfoundation/bitplatform --ref <branch>` for `all.other.ci.yml`,
-   `all.toolings.ci.yml` and `all.utilities.ci.yml`, since no one run covers them all. Re-running a failed
-   job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix. It has to wait for
-   the whole run to end: a new run with every other job off answers sooner. GitHub won't re-run a run whose branch is
-   gone, as after its PR was merged: start the new run on develop or on the fix branch instead. A push to a branch
-   with an open PR also starts that PR's CI workflows; cancel the ones the All CI runs cover anyway, so the runners go to it.
+   `all.toolings.ci.yml` and `all.utilities.ci.yml`, since no one run covers them all, plus the E2E workflow of a
+   failure in an end-to-end suite (its `ci.<project>.e2e.yml`, such as `ci.templates.e2e.yml` for BlazorEmpty), which
+   none of them runs. Re-running a failed job (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves
+   nothing about a fix. It has to wait for the whole run to end: a new run with every other job off answers sooner.
+   GitHub won't re-run a run whose branch is gone, as after its PR was merged: start the new run on develop or on the
+   fix branch instead. A push to a branch with an open PR also starts that PR's CI workflows; cancel the ones the All
+   CI runs cover anyway, so the runners go to it.
 
    A fix in a bit library - any `Bit.*` project, its tests, demos and samples included - gets an issue and a PR of its
    own instead, so its owners review it. Fixes to the websites and to this procedure go in the run's one PR.
