@@ -1,0 +1,6 @@
+# Temporary, for #15456 only: the folders that moved to bitfoundation/bitfabric are thousands of deleted
+# files, past what a review takes. Removed again before merge.
+reviews:
+  path_filters:
+    - "!src/Templates/Boilerplate/**"
+    - "!src/Toolings/Cli/**"
