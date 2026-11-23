@@ -177,8 +177,12 @@
         // An added button, and one whose shown mark was taken away (Blazor's DOM sync of an enhanced navigation, a
         // streaming update or an enhanced form post drops the attributes the server did not render), is put back here,
         // before the next paint and with no fade, since the reader never saw it go.
+        // A scroller named by data-bit-stt-target that is rendered, re-rendered or taken away after its button (a page
+        // whose content streams in, an interactive render replacing the pane) changes what the button reads, though no
+        // button is among the nodes, so a button naming one is read again with the rest.
         public static mutated(records: MutationRecord[]) {
             let changed = false;
+            let targeted: NodeListOf<HTMLElement> | null = null;
 
             for (const record of records) {
                 if (record.type === 'attributes') {
@@ -208,9 +212,38 @@
                         ScrollToTop.reveal(buttons[j], true);
                     }
                 }
+
+                if (changed) continue;
+
+                targeted = targeted || document.querySelectorAll<HTMLElement>('[data-bit-stt-offset][data-bit-stt-target]');
+
+                if (targeted.length === 0) continue;
+
+                changed = ScrollToTop.holdsTarget(record.addedNodes, targeted) || ScrollToTop.holdsTarget(record.removedNodes, targeted);
             }
 
             if (changed) ScrollToTop.queue();
+        }
+
+        private static holdsTarget(nodes: NodeList, buttons: NodeListOf<HTMLElement>) {
+            for (let i = 0; i < nodes.length; i++) {
+                const node = nodes[i];
+
+                if (!(node instanceof HTMLElement)) continue;
+
+                for (let j = 0; j < buttons.length; j++) {
+                    const selector = buttons[j].getAttribute('data-bit-stt-target');
+
+                    if (!selector) continue;
+
+                    // A selector that is not valid CSS names nothing, as in scroller.
+                    try {
+                        if (node.matches(selector) || node.querySelector(selector)) return true;
+                    } catch { }
+                }
+            }
+
+            return false;
         }
     }
 }
