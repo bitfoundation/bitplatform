@@ -151,6 +151,11 @@ private bool isStarred;";
 <BitCard Horizontal Reversed Width=""26rem"" CoverWidth=""8rem"" Title=""Mount Rainier"" Subtitle=""A trailing cover""
          ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg"">
     <BitText Typography=""BitTypography.Body2"">Reversed puts the thumbnail after the words.</BitText>
+</BitCard>
+
+<BitCard HorizontalMd Width=""26rem"" Title=""Mount Rainier"" Subtitle=""Beside the words from 960px up""
+         ImageUrl=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg"">
+    <BitText Typography=""BitTypography.Body2"">HorizontalMd turns the card at the medium breakpoint.</BitText>
 </BitCard>";
 
     private readonly string example7RazorCode = @"

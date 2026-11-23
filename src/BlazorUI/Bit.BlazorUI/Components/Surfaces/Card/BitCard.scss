@@ -1,4 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 // The chains the surface, the rule and the shadow of a card resolve through, written once: the resting paint, the root
 // rule and the three states read the same ones, so a change to the default surface cannot leave hover and press shading
@@ -162,8 +163,61 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, lft;
     flex-direction: column;
 }
 
+// The band of each breakpoint: the widths at which it is the widest one that matches, as BitGrid hides an item over
+// one. HorizontalXs to HorizontalXxl are resolved into the bands a card is horizontal in (bit-crd-hrz-sm, ...), so
+// each rule of a horizontal card is written once for Horizontal (bit-crd-hrz) and once per band, in the same place
+// of this file. A band that ends where the next breakpoint begins is what lets a card turn back at a wider breakpoint
+// with nothing to undo, and keeping each rule where it stands keeps its order against the rules after it: the
+// overlay still wins over the share of the width a horizontal card hands its cover.
+//
+// Each band is the half-open range from its own breakpoint up to the next one's, given as the pair of the two (null
+// where it is open), so adjacent bands meet exactly: a max-width a fraction of a pixel below the next breakpoint would
+// leave a sliver - a zoomed or scaled viewport - in which no band matches and a horizontal card falls back to a column.
+// The upper end is written as the negation of the next breakpoint (`not all and`), nested in the lower one.
+$crd-hrz-bands: ( 'xs': (null, $mq-sm-min),
+                  'sm': ($mq-sm-min, $mq-md-min),
+                  'md': ($mq-md-min, $mq-lg-min),
+                  'lg': ($mq-lg-min, $mq-xl-min),
+                  'xl': ($mq-xl-min, $mq-xxl-min),
+                  'xxl': ($mq-xxl-min, null) );
+
+@mixin crd-hrz-band-media($band) {
+    $min: nth($band, 1);
+    $max: nth($band, 2);
+
+    @if $min == null {
+        @media not all and (min-width: #{$max}) {
+            @content;
+        }
+    } @else if $max == null {
+        @media (min-width: #{$min}) {
+            @content;
+        }
+    } @else {
+        @media (min-width: #{$min}) {
+            @media not all and (min-width: #{$max}) {
+                @content;
+            }
+        }
+    }
+}
+
+@mixin crd-horizontal {
+    .bit-crd-hrz {
+        @content;
+    }
+
+    @each $name, $band in $crd-hrz-bands {
+        @include crd-hrz-band-media($band) {
+            .bit-crd-hrz-#{$name} {
+                @content;
+            }
+        }
+    }
+}
+
 // Beside rather than above: the cover takes a share of the width and the rest of the card stacks next to it.
-.bit-crd-hrz {
+@include crd-horizontal {
     flex-direction: row;
 }
 
@@ -173,8 +227,10 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, lft;
     flex-direction: column-reverse;
 }
 
-.bit-crd-hrz.bit-crd-rev {
-    flex-direction: row-reverse;
+@include crd-horizontal {
+    &.bit-crd-rev {
+        flex-direction: row-reverse;
+    }
 }
 
 
@@ -215,18 +271,20 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, lft;
     border-end-end-radius: inherit;
 }
 
-.bit-crd-hrz:not(.bit-crd-ovl) > .bit-crd-cvr {
-    border-start-start-radius: inherit;
-    border-start-end-radius: 0;
-    border-end-start-radius: inherit;
-    border-end-end-radius: 0;
-}
+@include crd-horizontal {
+    &:not(.bit-crd-ovl) > .bit-crd-cvr {
+        border-start-start-radius: inherit;
+        border-start-end-radius: 0;
+        border-end-start-radius: inherit;
+        border-end-end-radius: 0;
+    }
 
-.bit-crd-hrz.bit-crd-rev:not(.bit-crd-ovl) > .bit-crd-cvr {
-    border-start-start-radius: 0;
-    border-start-end-radius: inherit;
-    border-end-start-radius: 0;
-    border-end-end-radius: inherit;
+    &.bit-crd-rev:not(.bit-crd-ovl) > .bit-crd-cvr {
+        border-start-start-radius: 0;
+        border-start-end-radius: inherit;
+        border-end-start-radius: 0;
+        border-end-end-radius: inherit;
+    }
 }
 
 // A cover with a height or a ratio of its own shows a crop of the picture rather than the whole of it, and the crop
@@ -241,11 +299,13 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, lft;
 
 // A cover laid beside the content is sized by the width it is given rather than by the picture inside it, and
 // the picture then fills that box in both directions.
-.bit-crd-hrz > .bit-crd-cvr {
-    width: var(--bit-crd-cvr-width, var(--bit-Card-cover-width, 33%));
+@include crd-horizontal {
+    > .bit-crd-cvr {
+        width: var(--bit-crd-cvr-width, var(--bit-Card-cover-width, 33%));
 
-    > .bit-crd-img {
-        height: var(--bit-crd-img-height, 100%);
+        > .bit-crd-img {
+            height: var(--bit-crd-img-height, 100%);
+        }
     }
 }
 

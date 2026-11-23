@@ -89,7 +89,7 @@ public partial class BitCardDemo
             Name = "CoverWidth",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The width of the cover of a Horizontal card. Unset, it reads --bit-Card-cover-width, then a third of the card.",
+            Description = "The width of the cover of a horizontal card - through Horizontal or at the widths HorizontalXs to HorizontalXxl make it so. Unset, it reads --bit-Card-cover-width, then a third of the card.",
         },
         new()
         {
@@ -180,7 +180,49 @@ public partial class BitCardDemo
             Name = "Horizontal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lays the cover beside the content instead of above it.",
+            Description = "Lays the cover beside the content instead of above it. HorizontalXs to HorizontalXxl replace it from their own breakpoint upwards, and a BitParams supplies none of them to a card that set this itself. A card horizontal at every width carries the bit-crd-hrz class; one whose orientation changes with the width carries a bit-crd-hrz-xs to bit-crd-hrz-xxl class per band it is horizontal in instead, and no bit-crd-hrz.",
+        },
+        new()
+        {
+            Name = "HorizontalLg",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets the orientation of the card from the large breakpoint (from 1280px) upwards: true lays the cover beside the content and false above it. The value keeps applying to every wider breakpoint until another one replaces it.",
+        },
+        new()
+        {
+            Name = "HorizontalMd",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets the orientation of the card from the medium breakpoint (from 960px) upwards: true lays the cover beside the content and false above it. The value keeps applying to every wider breakpoint until another one replaces it.",
+        },
+        new()
+        {
+            Name = "HorizontalSm",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets the orientation of the card from the small breakpoint (from 600px) upwards: true lays the cover beside the content and false above it. The value keeps applying to every wider breakpoint until another one replaces it.",
+        },
+        new()
+        {
+            Name = "HorizontalXl",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets the orientation of the card from the extra large breakpoint (from 1920px) upwards: true lays the cover beside the content and false above it. The value keeps applying to every wider breakpoint until another one replaces it.",
+        },
+        new()
+        {
+            Name = "HorizontalXs",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets the orientation of the card from the extra small breakpoint (from 0px) upwards: true lays the cover beside the content and false above it. The value keeps applying to every wider breakpoint until another one replaces it, and Horizontal is the base of that chain. CoverWidth, Reversed and the rest of the horizontal layout follow the orientation each breakpoint gives.",
+        },
+        new()
+        {
+            Name = "HorizontalXxl",
+            Type = "bool?",
+            DefaultValue = "null",
+            Description = "Gets or sets the orientation of the card from the extra extra large breakpoint (from 2560px) upwards: true lays the cover beside the content and false above it.",
         },
         new()
         {
