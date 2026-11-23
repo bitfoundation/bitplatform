@@ -259,8 +259,9 @@ private double elevation = 4;";
 
     private readonly string example13RazorCode = @"
 <div style=""--bit-Card-radius: 1rem; --bit-Card-padding: 1.25rem; --bit-Card-shadow: none; --bit-Card-border-width: 1px;
-            --bit-Card-border-color: var(--bit-clr-brd-sec); --bit-Card-hover-shadow: var(--bit-shd-md);"">
-    <BitCard Hoverable Title=""Soft"" Subtitle=""Rounder, flat, outlined"" Width=""14rem"" />
+            --bit-Card-border-color: var(--bit-clr-brd-sec); --bit-Card-hover-shadow: var(--bit-shd-md);
+            --bit-Card-hover-border-color: var(--bit-clr-brd-pri); --bit-Card-hover-lift: 2px;"">
+    <BitCard Hoverable Title=""Soft"" Subtitle=""Flat, outlined, lifts on hover"" Width=""14rem"" />
     <BitCard Hoverable Title=""Same look"" Subtitle=""From the same ancestor"" Width=""14rem"" />
     <BitCard Hoverable Border=""BitColorKind.Primary"" Title=""Border wins"" Subtitle=""A parameter beats the variable"" Width=""14rem"" />
 </div>

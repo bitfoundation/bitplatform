@@ -117,7 +117,8 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public bool? Horizontal { get; set; }
 
     /// <summary>
-    /// Lifts the card while the pointer is over it.
+    /// Raises the card to its hover shadow while the pointer is over it, and gives it the hover border color
+    /// and the hover lift that the --bit-Card-hover-border-color and --bit-Card-hover-lift variables set.
     /// </summary>
     public bool? Hoverable { get; set; }
 

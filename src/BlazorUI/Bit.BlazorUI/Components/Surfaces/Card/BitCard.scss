@@ -1,13 +1,22 @@
 ﻿@import "../../../Styles/functions.scss";
 
-// The chains the surface and the shadow of a card resolve through, written once: the resting paint, the root rule and
-// the three states read the same ones, so a change to the default surface cannot leave hover and press shading a
-// different color from the card at rest.
+// The chains the surface, the rule and the shadow of a card resolve through, written once: the resting paint, the root
+// rule and the three states read the same ones, so a change to the default surface cannot leave hover and press shading
+// a different color from the card at rest.
 $crd-bg: var(--bit-crd-bg, var(--bit-Card-background, #{$clr-bg-sec}));
 $crd-bg-hover: var(--bit-crd-bg-hov, var(--bit-Card-hover-background, color-mix(in srgb, currentcolor 5%, #{$crd-bg})));
 $crd-bg-active: var(--bit-crd-bg-act, var(--bit-Card-active-background, color-mix(in srgb, currentcolor 10%, #{$crd-bg})));
 $crd-shd: var(--bit-crd-shd, var(--bit-Card-shadow, #{$box-shadow-card}));
 $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-Card-shadow, #{$box-shadow-card})));
+// The rule under the pointer: the color a Border or the Color of an Outline or Fill card asked for stays put, since it
+// is the more specific ask, and the hover variable then restyles the default rule, falling back to the resting one.
+$crd-brd: var(--bit-crd-brd-clr, var(--bit-Card-border-color, #{$clr-brd-pri}));
+$crd-brd-hover: var(--bit-crd-brd-clr, var(--bit-Card-hover-border-color, var(--bit-Card-border-color, #{$clr-brd-pri})));
+// How far the card rises under the pointer, as a length. Nothing by default: the hover shadow is the lift of a card at
+// rest, and a card that also moves is an app's choice. The none it falls back to is no length, which leaves every
+// declaration reading it at its fallback; a value below zero lifts nothing, since a card sinking under the pointer
+// would leave it no room to stay hovered in (see the hover block).
+$crd-lift: max(0px, var(--bit-Card-hover-lift, none));
 // The inset and the gap the Size classes (and NoPadding) publish, ahead of the public variables, ahead of the medium
 // card an unset Size stands for - the root and every part read these same two.
 $crd-pad: var(--bit-crd-pad, var(--bit-Card-padding, #{$spa-card-md}));
@@ -32,6 +41,12 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 //   --bit-Card-active-background     background of a clickable or linked card
 //                                    while pressed                                  (default: the resting background
 //                                                                                   washed 10% with the text color)
+//   --bit-Card-hover-border-color    border color of a clickable, linked or
+//                                    Hoverable card under the pointer; seen only
+//                                    on a card that draws a rule                    (default: the resting border color)
+//   --bit-Card-hover-lift            how far a clickable, linked or Hoverable card
+//                                    rises under the pointer, as a length; 2px
+//                                    lifts it by 2px, and below 0 is none           (default: none)
 //   --bit-Card-padding               inset of the card and of each of its parts    (default: $spa-card-md)
 //   --bit-Card-gap                   room between the parts and inside the header  (default: spacing(1.5))
 //   --bit-Card-title-font-size       title text size                                (default: $tg-fs-md)
@@ -57,21 +72,22 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 $crd-private-properties:
     clr, clr-txt, clr-fg, clr-tint, clr-hover, clr-active, clr-dis, clr-dis-text, fg, bg, bg-hov, bg-act, shd, shd-hov,
     shd-act, radius, brd-wid, brd-clr, dvd-clr, sel-clr, dis-txt, dis-bg, dis-brd,
-    // The surface the hover and press states below move the root to; the states set it rather than the background.
-    sbg,
+    // The surface, the rule and the lift the hover and press states below move the root to; the states set these
+    // rather than the background, the border color and the offset.
+    sbg, sbr, lft,
     // The four the cover parameters write onto the style of the root; an inline declaration wins over these.
     img-height, img-position, cvr-width, cvr-ratio,
     // The ones the Size classes publish; Size publishes nothing while it is unset, which leaves the public variables
     // and then the medium card.
     pad, gap, htx-gap, ttl-fontsize, sub-fontsize, icn-fontsize;
 
-// The ones of the list above that only the root itself reads - its shadow in each state and the width of its rule -
-// are also registered as properties that do not inherit, so a value set on an ancestor never reaches a card at all,
-// with the guaranteed-invalid value (no initial-value) leaving every var() of them to its fallback. The rest stay
-// inheriting: the parts inside the card read them off the root (its title size, its image height, its inset), and a
-// property that does not inherit cannot be read there. The root rule still resets these too, for a browser without
-// @property.
-$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;
+// The ones of the list above that only the root itself reads - its shadow in each state, the width and the hover color
+// of its rule, and its lift - are also registered as properties that do not inherit, so a value set on an ancestor
+// never reaches a card at all, with the guaranteed-invalid value (no initial-value) leaving every var() of them to its
+// fallback. The rest stay inheriting: the parts inside the card read them off the root (its title size, its image
+// height, its inset), and a property that does not inherit cannot be read there. The root rule still resets these too,
+// for a browser without @property.
+$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, lft;
 
 @each $name in $crd-root-only-properties {
     @property --bit-crd-#{$name} {
@@ -101,12 +117,18 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;
     color: var(--bit-crd-dis-txt, var(--bit-crd-fg, var(--bit-Card-color, #{$clr-fg-pri})));
     background-color: var(--bit-crd-dis-bg, var(--bit-crd-sbg, #{$crd-bg}));
     border-width: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0));
-    border-color: var(--bit-crd-dis-brd, var(--bit-crd-brd-clr, var(--bit-Card-border-color, #{$clr-brd-pri})));
+    border-color: var(--bit-crd-dis-brd, var(--bit-crd-sbr, #{$crd-brd}));
     border-radius: var(--bit-crd-radius, var(--bit-Card-radius, #{$shp-radius-surface}));
     box-shadow: $crd-shd;
+    // The lift is a relative offset of the root, which is positioned already, and never a transform. A transform would
+    // make the lifted card a stacking context, trapping the z-index of a tooltip or a menu opened inside it under the
+    // next card, and the containing block of everything fixed inside it. Neither moves anything around the card.
+    top: var(--bit-crd-lft, 0px);
+    // The move is timed by the motion tokens like the rest, so reduced motion turns it into a step rather than a glide.
     transition: box-shadow $mot-duration-short $mot-easing,
                 border-color $mot-duration-short $mot-easing,
-                background-color $mot-duration-short $mot-easing;
+                background-color $mot-duration-short $mot-easing,
+                top $mot-duration-short $mot-easing;
 
     &.bit-dis {
         cursor: default;
@@ -123,13 +145,6 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;
     padding: 0;
     display: flex;
     flex-direction: column;
-}
-
-// Only a card with a cover is clipped, and only because a full-bleed picture would otherwise paint over the
-// corner the card draws. Clipping every sectioned card would cut off anything a card legitimately lets out of
-// itself - a focus ring drawn outside a control in the footer, a badge hung over an edge.
-.bit-crd-sct:has(> .bit-crd-cvr) {
-    overflow: hidden;
 }
 
 // Beside rather than above: the cover takes a share of the width and the rest of the card stacks next to it.
@@ -161,9 +176,42 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;
     box-sizing: border-box;
 }
 
+// Only the cover is clipped, to the corners of the card it runs into, and only because a full-bleed picture would
+// otherwise paint over the corner the card draws. Clipping the card itself would cut off anything a card legitimately
+// lets out of itself - a focus ring drawn outside a control in the footer, a badge hung over an edge, the room the hover
+// keeps under a lifted card.
 .bit-crd-cvr {
     overflow: hidden;
     flex: 0 0 auto;
+    border-radius: inherit;
+}
+
+// A cover above the content runs into the two block-start corners, one under it into the two block-end ones and one
+// beside it into the two of its inline side; the others are squared. An overlay runs into all four and keeps them.
+.bit-crd-sct:not(.bit-crd-ovl) > .bit-crd-cvr {
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+}
+
+.bit-crd-rev:not(.bit-crd-ovl) > .bit-crd-cvr {
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-end-start-radius: inherit;
+    border-end-end-radius: inherit;
+}
+
+.bit-crd-hrz:not(.bit-crd-ovl) > .bit-crd-cvr {
+    border-start-start-radius: inherit;
+    border-start-end-radius: 0;
+    border-end-start-radius: inherit;
+    border-end-end-radius: 0;
+}
+
+.bit-crd-hrz.bit-crd-rev:not(.bit-crd-ovl) > .bit-crd-cvr {
+    border-start-start-radius: 0;
+    border-start-end-radius: inherit;
+    border-end-start-radius: 0;
+    border-end-end-radius: inherit;
 }
 
 // A cover with a height or a ratio of its own shows a crop of the picture rather than the whole of it, and the crop
@@ -731,8 +779,13 @@ button.bit-crd-lnk {
     outline-color: currentcolor;
 }
 
-// The lift. A card that is a control lifts on its own; Hoverable is for one that reacts to the pointer without
-// being a control. Only where hovering is a thing the input device does at all.
+// The hover. A card that is a control answers the pointer on its own; Hoverable is for one that reacts to the pointer
+// without being a control. Both rise to the hover shadow, and take the hover rule and the hover lift where the
+// variables ask for them. Only where hovering is a thing the input device does at all.
+//
+// The lift is a movement, but it is not taken away under reduced motion, any more than the scale of a hovered
+// BitRating star is: the transition is timed by the motion tokens, which collapse there, so the card steps to where
+// the pointer puts it instead of gliding there, and the feedback survives without the motion.
 //
 // A card that is a control also shades its surface under the pointer and under the press, the way every other
 // control of the library does - a lift alone is lost on a card resting at no shadow, and a design system without
@@ -747,6 +800,27 @@ button.bit-crd-lnk {
     .bit-crd-int:hover,
     .bit-crd-hov:hover {
         --bit-crd-shd: var(--bit-crd-shd-hov, var(--bit-Card-hover-shadow, #{$box-shadow-card-hover}));
+        --bit-crd-sbr: #{$crd-brd-hover};
+        --bit-crd-lft: calc(-1 * #{$crd-lift});
+    }
+
+    // The room the lift leaves under the card stays the card's. The pointer is tested against the box where it is
+    // drawn, so a pointer resting just above the bottom edge would be left behind by the lift, end the hover and bring
+    // the card back down under itself, over and over. The band runs from the bottom of the lifted card to where it
+    // rested, across its rule on every side, so it covers nothing the card did not; it is the root's own, so a press
+    // there is a press of the card. With no lift set its height is invalid, which leaves the bottom rule alone.
+    .bit-crd-int:hover::before,
+    .bit-crd-hov:hover::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        top: 100%;
+        box-sizing: content-box;
+        height: #{$crd-lift};
+        // The rule lies outside the padding box the band is placed against. A width written as a bare 0 makes the
+        // margin invalid, which leaves it at the 0 that width is.
+        margin-inline: calc(-1 * var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0px)));
+        padding-block-end: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0));
     }
 
     .bit-crd-int:hover {
@@ -755,6 +829,9 @@ button.bit-crd-lnk {
 }
 
 // The press settles the card back to where it rests rather than lifting it, unless an elevation says where to.
+//
+// That is its shadow alone: a lifted card keeps its place under the press. One that dropped back would leave a pointer
+// pressed near its top edge outside it, and the release would land on whatever is above the card, which is no click.
 //
 // A card that is a button is pressed through its root: the button stretched over it lets the pointer through, so the
 // press lands on whatever is under it and reaches the root as :active reaches every ancestor. That needs no :has,
@@ -774,14 +851,17 @@ button.bit-crd-lnk {
 }
 
 // Pressing a control in the header actions, the footer or the floating actions of a card that is a button presses
-// that control, and leaves the card at rest - or at hover, under a pointer that hovers. Where :has cannot be read the
-// card is pressed along with the control, which is the lesser of the two ways to be wrong.
+// that control, and leaves the card at rest - or at hover, under a pointer that hovers it. A key or a touch pressing the
+// control is no hover, so the hover shade waits for :hover rather than for a device that can hover. Where :has cannot
+// be read the card is pressed along with the control, which is the lesser of the two ways to be wrong.
 .bit-crd-btn:active:has(> .bit-crd-fac:active, > .bit-crd-mai > .bit-crd-hdr > .bit-crd-act:active, > .bit-crd-mai > .bit-crd-ftr:active) {
     box-shadow: $crd-shd;
     --bit-crd-sbg: #{$crd-bg};
 
     @media (hover: hover) {
-        --bit-crd-sbg: #{$crd-bg-hover};
+        &:hover {
+            --bit-crd-sbg: #{$crd-bg-hover};
+        }
     }
 }
 
@@ -794,6 +874,15 @@ button.bit-crd-lnk {
     .bit-crd {
         border-width: var(--bit-crd-brd-wid, #{$shp-border-width});
         border-color: CanvasText;
+    }
+
+    // The room under a lifted card spans the rule restored above rather than the one the card draws otherwise.
+    @media (hover: hover) {
+        .bit-crd-int:hover::before,
+        .bit-crd-hov:hover::before {
+            margin-inline: calc(-1 * var(--bit-crd-brd-wid, #{$shp-border-width}));
+            padding-block-end: var(--bit-crd-brd-wid, #{$shp-border-width});
+        }
     }
 
     // A Fill card reads its words from the role's on-color, which the palette makes Canvas for the primary role
