@@ -793,6 +793,11 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
     private async Task FillAsync(int start, int count, Operation? owner, TaskCompletionSource completion, CancellationToken token)
     {
         bool entered = false, committed = false;
+        // The waiters are told only after the reservation is settled below, so a
+        // waiter resuming on the outcome never sees the failed request's bytes still
+        // accounted (nor a cancelled range still listed as being fetched).
+        Exception? error = null;
+        bool cancelled = false;
         try
         {
             await _requests.WaitAsync(token).ConfigureAwait(false);
@@ -804,23 +809,22 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             ValidateHeaders(response, start, start + count - 1, Length, _etag);
             await ReadResponseAsync(response, start, count, owner, token).ConfigureAwait(false);
             committed = true;
-            completion.TrySetResult();
         }
         catch (BitPdfRangeVersionException ex)
         {
             _failure = ex;
             _cancellation.Cancel();
-            completion.TrySetException(ex);
+            error = ex;
         }
         // A cancelled producer lets other shared waiters acquire the range again.
         // HttpClient timeouts do not cancel our token and must surface as I/O failures.
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
-            completion.TrySetCanceled(token);
+            cancelled = true;
         }
         catch (Exception ex)
         {
-            completion.TrySetException(ex is BitPdfByteSourceIOException ? ex : new BitPdfByteSourceIOException("Reading the PDF range failed.", ex));
+            error = ex is BitPdfByteSourceIOException ? ex : new BitPdfByteSourceIOException("Reading the PDF range failed.", ex);
         }
         finally
         {
@@ -842,6 +846,19 @@ internal sealed class BitPdfHttpRangeByteSource : IBitPdfPartialByteSource, IAsy
             if (entered)
             {
                 _requests.Release();
+            }
+
+            if (committed)
+            {
+                completion.TrySetResult();
+            }
+            else if (cancelled)
+            {
+                completion.TrySetCanceled(token);
+            }
+            else
+            {
+                completion.TrySetException(error ?? new BitPdfByteSourceIOException("Reading the PDF range failed."));
             }
         }
     }

@@ -9,6 +9,8 @@ public partial class _BitStepperCustomDemo
     private int eventsChange;
     private string? eventsClicked;
 
+    private int compactIndex;
+
     private static readonly BitStepperNameSelectors<Milestone> nameSelectors = new()
     {
         Text = { Name = nameof(Milestone.Name) },

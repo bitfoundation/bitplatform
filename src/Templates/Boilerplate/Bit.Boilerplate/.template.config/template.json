@@ -75,7 +75,7 @@
         "efToolVersion": {
             "type": "generated",
             "generator": "switch",
-            "replaces": "dotnet-ef@11.0.0-rc.3.26522.148",
+            "replaces": "dotnet-ef@11.0.0",
             "parameters": {
                 "evaluator": "C++",
                 "datatype": "string",
@@ -86,7 +86,7 @@
                     },
                     {
                         "condition": "",
-                        "value": "dotnet-ef@11.0.0-rc.3.26522.148"
+                        "value": "dotnet-ef@11.0.0"
                     }
                 ]
             }

@@ -58,7 +58,7 @@
                                 @*#endif*@
                                 a description of the device and browser, your language, the app version, and the times you
                                 signed in and were last active. We hold this to keep you signed in, to
-                                <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Sessions}")">show you where your account is in use and let you sign a device out remotely</BitLink>,
+                                <BitLink Href="@CultureInfoManager.GetCurrentCultureUrl($"{PageUrls.Settings}/{PageUrls.SettingsSections.Sessions}")">show you where your account is in use and let you sign a device out remotely</BitLink>,
                                 and to investigate abuse (legitimate interests). Each session is deleted 14 days after it
                                 was last used, and immediately when you sign that device out.
                             </BitText>
@@ -198,7 +198,7 @@
                     @*#if (ads == true || appInsights == true)*@
                     <BitText Typography="BitTypography.Body1">
                         You can change these choices whenever you like under
-                        <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}")">Privacy settings</BitLink>.
+                        <BitLink Href="@CultureInfoManager.GetCurrentCultureUrl($"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}")">Privacy settings</BitLink>.
                         Withdrawing is as easy as agreeing was, and it does not affect anything we did while your agreement
                         was in place.
                     </BitText>
@@ -209,21 +209,21 @@
                         <li>
                             <BitText Typography="BitTypography.Body1">
                                 Get a copy of your data. Download everything we hold about you as a file, from
-                                <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}")">Privacy settings</BitLink>.
+                                <BitLink Href="@CultureInfoManager.GetCurrentCultureUrl($"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}")">Privacy settings</BitLink>.
                                 It is machine-readable, so you can take it elsewhere.
                             </BitText>
                         </li>
                         <li>
                             <BitText Typography="BitTypography.Body1">
                                 Correct it. Your profile, e-mail address and phone number are editable in
-                                <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}")">Profile</BitLink>
-                                and <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}")">Account settings</BitLink>.
+                                <BitLink Href="@CultureInfoManager.GetCurrentCultureUrl($"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}")">Profile</BitLink>
+                                and <BitLink Href="@CultureInfoManager.GetCurrentCultureUrl($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}")">Account settings</BitLink>.
                             </BitText>
                         </li>
                         <li>
                             <BitText Typography="BitTypography.Body1">
                                 Delete it. Deleting your account from
-                                <BitLink Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}")">Account settings</BitLink>
+                                <BitLink Href="@CultureInfoManager.GetCurrentCultureUrl($"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}")">Account settings</BitLink>
                                 removes your account and everything held under it. Two things survive it for a while:
                                 messages already queued for delivery, and technical logs, both of which age out on the
                                 schedules above.

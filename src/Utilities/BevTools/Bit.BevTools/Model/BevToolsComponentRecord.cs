@@ -74,6 +74,34 @@ public sealed class BevToolsComponentRecord
     /// <summary>Marks this record — and therefore its own descendants, which resolve their parent later — as BevTools' own.</summary>
     internal void MarkBevToolsOwned() => IsBevTools = true;
 
+    /// <summary>
+    /// True while <see cref="IsBevTools"/> is only a guess from the type: a registered panel's component, which the
+    /// application may render on its own pages too. The parent settles it once the hierarchy resolves.
+    /// </summary>
+    internal bool IsOwnerProvisional { get; private set; }
+
+    /// <summary>Whether the "created" event activation held back, while the owner was provisional, is still to be recorded.</summary>
+    internal bool IsCreatedEventPending { get; private set; }
+
+    internal void MarkOwnerProvisional(bool createdEventPending)
+    {
+        IsOwnerProvisional = true;
+        IsCreatedEventPending = createdEventPending;
+    }
+
+    /// <summary>Settles a provisional owner: BevTools' when rendered under BevTools' UI, the application's otherwise.</summary>
+    internal void SettleOwner(bool isBevTools)
+    {
+        IsOwnerProvisional = false;
+        IsBevTools = isBevTools;
+        if (isBevTools)
+        {
+            IsCreatedEventPending = false;
+        }
+    }
+
+    internal void ClearCreatedEventPending() => IsCreatedEventPending = false;
+
     /// <summary>Hidden from the tree (framework/library internals) but still tracked so parent chains stay intact.</summary>
     public bool IsHidden { get; }
 

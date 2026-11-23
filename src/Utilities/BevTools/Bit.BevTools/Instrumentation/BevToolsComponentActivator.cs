@@ -10,7 +10,7 @@ namespace Bit.BevTools;
 internal sealed class BevToolsComponentActivator : IComponentActivator
 {
     private static readonly System.Reflection.Assembly BevToolsAssembly = typeof(BevToolsComponentActivator).Assembly;
-    private readonly ConcurrentDictionary<Type, (bool Ignore, bool Hidden, bool BevTools)> _typeFlags = new();
+    private readonly ConcurrentDictionary<Type, (bool Ignore, bool Hidden, bool BevTools, bool Panel)> _typeFlags = new();
     private readonly IServiceProvider _services;
     private readonly BevToolsSession _session;
     private readonly IComponentActivator? _inner;
@@ -75,10 +75,17 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
             return;
         }
 
-        var record = _session.Components.Register(instance, instance.GetType(), flags.BevTools, flags.Hidden);
+        var record = _session.Components.Register(instance, instance.GetType(), flags.BevTools || flags.Panel, flags.Hidden);
         if (record is null)
         {
             return; // tracking budget exhausted; the application keeps working untouched.
+        }
+
+        if (flags.Panel)
+        {
+            // BevTools' until the hierarchy says otherwise, so nothing it does before then is recorded as the
+            // application's; its "created" event waits for the same answer.
+            record.MarkOwnerProvisional(createdEventPending: !existing && !flags.Hidden);
         }
 
         if (existing)
@@ -87,43 +94,36 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
         }
 
         _session.RenderTracker.Instrument(record);
-        if (!existing && !flags.BevTools && !flags.Hidden)
+        if (!existing && !flags.BevTools && !flags.Panel && !flags.Hidden)
         {
-            _session.Timeline.Record(new BevToolsEvent
-            {
-                Kind = BevToolsEventKind.Lifecycle,
-                Category = "lifecycle",
-                Title = record.DisplayName + " created",
-                ComponentInstanceId = record.InstanceId,
-                ComponentName = record.DisplayName,
-                ParentEventId = BevToolsActivityObserver.CurrentTriggerEvent(_session)?.Id,
-            });
+            _session.Components.RecordCreated(record);
         }
     }
 
-    private (bool Ignore, bool Hidden, bool BevTools) ComputeFlags(Type type)
+    private (bool Ignore, bool Hidden, bool BevTools, bool Panel) ComputeFlags(Type type)
     {
         if (type.IsDefined(typeof(BevToolsIgnoreAttribute), true))
         {
-            return (true, false, false);
+            return (true, false, false, false);
         }
 
         foreach (var predicate in _options.IgnoreComponentPredicates)
         {
             if (predicate(type))
             {
-                return (true, false, false);
+                return (true, false, false, false);
             }
         }
 
         var ns = type.Namespace ?? string.Empty;
-        // BevTools' own UI: the core assembly, panel components shipped by the BevTools extension packages, or a panel
-        // an extension contributed from its own assembly. Framework components the panels render (Virtualize,
-        // CascadingValue, DynamicComponent) are indistinguishable from the application's by type; they inherit
-        // ownership from their parent once the hierarchy resolves.
+        // BevTools' own UI: the core assembly and panel components shipped by the BevTools extension packages. Framework
+        // components the panels render (Virtualize, CascadingValue, DynamicComponent) are indistinguishable from the
+        // application's by type; they inherit ownership from their parent once the hierarchy resolves. So does a panel
+        // an extension or the application registered from its own assembly: the application may render that component
+        // on its own pages too, and only the position in the tree tells those instances apart.
         var isBevTools = type.Assembly == BevToolsAssembly
-            || ns == "Bit.BevTools"
-            || IsExtensionPanel(type);
+            || ns == "Bit.BevTools";
+        var isPanel = !isBevTools && IsExtensionPanel(type);
         var hidden = false;
         foreach (var prefix in _options.HiddenComponentNamespaces)
         {
@@ -146,7 +146,7 @@ internal sealed class BevToolsComponentActivator : IComponentActivator
             }
         }
 
-        return (false, hidden, isBevTools);
+        return (false, hidden, isBevTools, isPanel);
     }
 
     private bool IsExtensionPanel(Type type)

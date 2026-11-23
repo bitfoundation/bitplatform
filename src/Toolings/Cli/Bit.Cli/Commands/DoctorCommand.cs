@@ -22,6 +22,9 @@ public static class DoctorCommand
             yesOption
         };
 
+        var projectOptions = new ProjectOptions();
+        projectOptions.AddTo(command, projectOptions.Project, projectOptions.AppHost, projectOptions.ClientCore, projectOptions.Web);
+
         command.SetAction(async (parseResult, cancellationToken) =>
         {
             var cli = services();
@@ -38,14 +41,28 @@ public static class DoctorCommand
                 return cli.UsageError("platforms-invalid", error);
             }
 
-            var projectName = ProjectContext.FindProjectName(cli.Environment.CurrentDirectory);
-            var aspire = projectName is null || Directory.Exists(Path.Combine(cli.Environment.CurrentDirectory, "src", "Server", $"{projectName}.Server.AppHost"));
-            var requirements = projectName is null ? TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)) : TemplateRequirements.FromProject(cli.Environment.CurrentDirectory, projectName);
+            var directory = projectOptions.Folder(parseResult, cli);
+            var projectName = Directory.Exists(directory) ? ProjectContext.FindProjectName(directory) : null;
+            var (parts, partsError) = projectOptions.Read(parseResult, cli, directory);
+
+            if (partsError is not null)
+            {
+                return cli.UsageError("project-part-missing", partsError);
+            }
+
+            if (projectName is null && (projectOptions.IsGiven(parseResult) || parts.IsEmpty is false))
+            {
+                return cli.UsageError("not-a-project", $"{directory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). {ProjectOptions.ProjectName} names the project's folder.");
+            }
+
+            var project = projectName is null ? null : ProjectContext.At(directory, projectName, parts);
+            var aspire = project is null || Directory.Exists(project.AppHostDirectory);
+            var requirements = project is null ? TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)) : TemplateRequirements.FromProject(project);
             var needs = new ToolNeeds
             {
                 Aspire = aspire,
-                ContainersRequired = aspire && projectName is not null && ProjectContext.AppHostNeedsContainers(Path.Combine(cli.Environment.CurrentDirectory, "src", "Server", $"{projectName}.Server.AppHost")),
-                NativeWebAssembly = projectName is not null && ProjectContext.UsesNativeWebAssembly(cli.Environment.CurrentDirectory),
+                ContainersRequired = aspire && project is not null && ProjectContext.AppHostNeedsContainers(project.AppHostDirectory),
+                NativeWebAssembly = project is not null && project.UsesNativeWebAssembly,
                 Platforms = platforms,
                 Ide = IdeLocator.FindAll(cli.Environment, cli.Runner).FirstOrDefault()?.Id,
                 Sdk = requirements.Sdk,
@@ -54,12 +71,17 @@ public static class DoctorCommand
             };
 
             var context = NewWorkflow.CreateToolContext(cli, needs);
-            var hardware = NewWorkflow.ProbeHardwareAsync(cli, cli.Environment.CurrentDirectory, cancellationToken);
+            var hardware = NewWorkflow.ProbeHardwareAsync(cli, directory, cancellationToken);
             var (checks, facts) = await cli.Console.RunWithStatusAsync("Checking this machine", async _ => (await ToolCatalog.CheckAsync(context, cancellationToken), hardware is null ? null : await hardware));
 
             cli.Console.Out.MarkupLine(projectName is null
                 ? "[grey]Checked for a new project with Aspire and the web app. Run it in a project folder to check that project's own needs.[/]"
                 : $"[grey]Checked for {Markup.Escape(projectName)}.[/]");
+
+            foreach (var note in project?.PartsNotFound(settingUp: false) ?? [])
+            {
+                cli.Console.Warn(note);
+            }
 
             var table = new Table().Border(TableBorder.Simple).BorderColor(Color.Grey)
                 .AddColumn("")

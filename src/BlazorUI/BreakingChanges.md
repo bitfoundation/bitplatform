@@ -18,6 +18,46 @@ only in this file.
 
 ## 11.0.0
 
+### `BitCard` draws on its root's `::after` ([#15380](https://github.com/bitfoundation/bitplatform/issues/15380))
+
+The accent bar of the new `Accent` parameter and `--bit-Card-accent-color` variable is the border of a layer over the
+card, the root's `::after` pseudo-element. Since the variable can draw a bar on any card, that layer is there on every
+card, with or without an accent: `content: ""`, `position: absolute`, `inset: 0`, a negative `margin` the width of the
+card's rule, `box-sizing: border-box`, `border-radius: inherit` and `pointer-events: none`.
+
+**An app that decorates the `::after` of a card's root** (through `Class`, `Classes.Root` or a `.bit-crd::after` rule
+of its own) now has those declarations merged into its pseudo-element, so a badge placed with `top` / `right` is
+stretched over the whole card. Draw the decoration on an element of its own inside the card instead, or set each of
+those properties back in the app's rule:
+
+```css
+.my-card::after {
+    content: "NEW";
+    position: absolute;
+    inset: 4px 4px auto auto;
+    margin: 0;
+}
+```
+
+### `BitMenuButton` reads a `Description` and a `Match` off custom items ([#15375](https://github.com/bitfoundation/bitplatform/issues/15375))
+
+`BitMenuButtonNameSelectors` has two new members, `Description` and `Match`. Like the other name selectors, they read
+the property of the same name off a custom item class when no selector is given:
+
+- **A `Description` property** is rendered as a second line under the item's text and announced as its description
+  (`aria-describedby`). The item's accessible name then becomes its text and secondary text alone
+  (`aria-label`), unless it has an `AriaLabel`.
+- **A `Match` property** of type `BitNavMatch?` marks the item whose `Href` matches the current URL with
+  `aria-current="page"` and the `Current` class-style part. A property named `Match` of any other type is
+  ignored.
+
+**An app whose custom item class has a `Description` property used for something else** turns the new reading off
+with a selector that returns null:
+
+```csharp
+NameSelectors = new() { Description = { Selector = _ => null } };
+```
+
 ### `BitFullCalendarState` is read-only, but for its filters ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 `BitFullCalendar.State` is what the calendar is showing, for an app to read. The 56 members that changed it are no

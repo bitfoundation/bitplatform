@@ -14,12 +14,26 @@
         @if (BevToolsLoader.CanOpen)
         {
             <button type="button" class="btn" @onclick="BevToolsLoader.OpenAsync">Open dev tools</button>
+            @* Straight to a panel, as an error boundary's "diagnose" button or a support gesture would. *@
+            <button type="button" class="btn" @onclick='() => BevToolsLoader.OpenAsync("sample-support")'>Get support</button>
+            @* Downloads BevTools ahead of time without opening it, so a later open needs no connection. *@
+            <button type="button" class="btn" @onclick="PrefetchAsync">Prefetch dev tools</button>
         }
     </nav>
 
     @if (RendererInfo.IsInteractive && BevToolsLoader.Problem is { } problem)
     {
         <p class="problem" role="alert">@problem</p>
+        @if (BevToolsLoader.DownloadFailed)
+        {
+            @* The app's own fallback for the moment someone troubleshoots without a connection. *@
+            <p class="fallback">Dev tools need a connection the first time. Try again once you are online.</p>
+        }
+    }
+
+    @if (_prefetched is { } prefetched)
+    {
+        <p class="prefetched" role="status">@(prefetched ? "Dev tools are ready to open offline." : "Dev tools could not be prefetched.")</p>
     }
 
     <main>
@@ -29,3 +43,9 @@
 
 @* Instead of <BevToolsPanel />: renders it once BevTools runs in this app - here, once OpenAsync loaded and attached it. *@
 <BevToolsLoaderPanel />
+
+@code {
+    private bool? _prefetched;
+
+    private async Task PrefetchAsync() => _prefetched = await BevToolsLoader.PrefetchAsync();
+}

@@ -353,18 +353,21 @@ public class BitAiWebSocketTransportTests
         yield return new BitAiMessageCompletedEvent();
     }
 
+    // Never ends on its own, so its finally runs only once the server stops it: by cancelling its token while it waits,
+    // or - when the client's close cancels the send of the first event before the handler is resumed - by disposing it
+    // at that yield. Either is the handler being stopped, so the yield is inside the try too.
     private static async IAsyncEnumerable<BitAiEvent> UntilCancelled(TaskCompletionSource started, TaskCompletionSource cancelled, [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        yield return new BitAiMessageStartedEvent();
-        started.TrySetResult();
-
         try
         {
+            yield return new BitAiMessageStartedEvent();
+            started.TrySetResult();
+
             await Task.Delay(Timeout.Infinite, cancellationToken);
         }
         finally
         {
-            if (cancellationToken.IsCancellationRequested) cancelled.TrySetResult();
+            cancelled.TrySetResult();
         }
     }
 

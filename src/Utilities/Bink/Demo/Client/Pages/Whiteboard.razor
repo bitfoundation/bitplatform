@@ -332,7 +332,7 @@
         eyedropper (Chromium on the desktop), <strong>Pick</strong> takes a colour from anywhere on the screen with
         <code>PickColorAsync</code>.
     </p>
-    <pre class="bb-code"><span class="k">switch</span> (id)
+    <pre class="bb-code" tabindex="0"><span class="k">switch</span> (id)
 {
     <span class="k">case</span> <span class="s">"marker"</span>:
         _brush = <span class="k">new</span> BinkMarkerBrush { Width = MathF.Max(_width * 1.5f, 6f), Color = color };
@@ -369,7 +369,7 @@
         points; with <code>EndArrow</code> it is an elbow connector. With a shape tool, Enter adds a shape in the middle
         of the view, so shapes can be made without a drag.
     </p>
-    <pre class="bb-code">_tool = <span class="k">new</span> BinkShapeTool(BinkShapeKind.Star) { StarPoints = 5 };
+    <pre class="bb-code" tabindex="0">_tool = <span class="k">new</span> BinkShapeTool(BinkShapeKind.Star) { StarPoints = 5 };
 _tool = <span class="k">new</span> BinkPolylineTool { Smooth = <span class="k">true</span> };
 
 _shapeStyle = <span class="k">new</span> BinkShapeStyle
@@ -402,7 +402,7 @@ _shapeStyle = <span class="k">new</span> BinkShapeStyle
         committed first and replaced in a second step, so <strong>Undo</strong> once brings your ink back. Writing,
         curves and open turns stay ink.
     </p>
-    <pre class="bb-code">_tool = <span class="k">new</span> BinkDrawTool { ShapeRecognition = BinkShapeRecognitionMode.OnHold };
+    <pre class="bb-code" tabindex="0">_tool = <span class="k">new</span> BinkDrawTool { ShapeRecognition = BinkShapeRecognitionMode.OnHold };
 
 <span class="c">// Or without a tool, on any points:</span>
 <span class="k">if</span> (BinkShapeRecognizer.Recognize(stroke.Points) <span class="k">is</span> { } shape)
@@ -442,7 +442,7 @@ _shapeStyle = <span class="k">new</span> BinkShapeStyle
         <code>BinkStroke.Flatten()</code> bakes the transform in when that is wanted. The wheel pans, Ctrl+wheel or a
         trackpad pinch zooms, and two fingers pan and pinch on a touch screen.
     </p>
-    <pre class="bb-code">&lt;BinkCanvas WheelMode=<span class="s">"BinkWheelMode.PanAndZoom"</span>
+    <pre class="bb-code" tabindex="0">&lt;BinkCanvas WheelMode=<span class="s">"BinkWheelMode.PanAndZoom"</span>
             Snapping=<span class="s">"new BinkSnapOptions { GridSize = 20f }"</span>
             Grid=<span class="s">"BinkGrid.DottedDefault"</span> /&gt;
 
@@ -469,7 +469,7 @@ _tool = <span class="k">new</span> BinkSelectTool { MarqueeShape = BinkMarqueeSh
         tools are public: hit testing is geometric, so a diagonal stroke is not picked by a marquee that only overlaps its
         bounding box, and clicking inside an unfilled rectangle does not select it.
     </p>
-    <pre class="bb-code">BinkSelection selection = _canvas.Selection;
+    <pre class="bb-code" tabindex="0">BinkSelection selection = _canvas.Selection;
 selection.Set(id);
 selection.Toggle(otherId);
 BinkRect bounds = selection.Bounds;
@@ -497,7 +497,7 @@ IReadOnlyList&lt;Guid&gt; whole = BinkDocumentQuery.ExpandToGroups(_document, id
         while the rest of its layer is edited. Align needs two separate things, distribute three; groups take part as a
         whole, and flipping keeps text readable. Each command is one undo step.
     </p>
-    <pre class="bb-code">Guid? group = _canvas.GroupSelection();        <span class="c">// Ctrl+G</span>
+    <pre class="bb-code" tabindex="0">Guid? group = _canvas.GroupSelection();        <span class="c">// Ctrl+G</span>
 _canvas.UngroupSelection();                    <span class="c">// Ctrl+Shift+G</span>
 _canvas.LockSelection();                       <span class="c">// Ctrl+Shift+L</span>
 _canvas.UnlockAll();
@@ -521,7 +521,7 @@ _canvas.ArrangeSelection(BinkArrangement.BringForward);   <span class="c">// Ctr
         <strong>Opacity</strong> and <strong>Blend</strong> apply to the finished layer as one unit: Multiply darkens
         like ink on paper, Screen lightens.
     </p>
-    <pre class="bb-code">BinkLayer notes = _document.AddLayer(<span class="s">"Notes"</span>);
+    <pre class="bb-code" tabindex="0">BinkLayer notes = _document.AddLayer(<span class="s">"Notes"</span>);
 _document.UpdateLayer(notes.Id, p =&gt; p <span class="k">with</span> { Opacity = 0.6f, BlendMode = BinkBlendMode.Multiply });
 _document.UpdateLayer(notes.Id, p =&gt; p <span class="k">with</span> { IsLocked = <span class="k">true</span> });
 _document.ReorderLayer(notes.Id, index: 0);           <span class="c">// 0 is the bottom</span>
@@ -539,7 +539,7 @@ BinkLayer copy = _document.DuplicateLayer(notes.Id);   <span class="c">// direct
         <code>TextPasted</code>. With <code>EnableDrop</code> on, pictures, saved boards and SVG files dragged onto the
         canvas land where they are dropped. Both are off by default, which is what a signature field wants.
     </p>
-    <pre class="bb-code">&lt;BinkCanvas EnableClipboard=<span class="s">"true"</span> EnableDrop=<span class="s">"true"</span> /&gt;
+    <pre class="bb-code" tabindex="0">&lt;BinkCanvas EnableClipboard=<span class="s">"true"</span> EnableDrop=<span class="s">"true"</span> /&gt;
 
 <span class="k">await</span> _canvas.CopySelectionAsync();
 <span class="k">await</span> _canvas.PasteAsync();                                  <span class="c">// for a button; Ctrl+V needs none</span>
@@ -562,7 +562,7 @@ BinkSvgImportResult? result = _canvas.ImportSvg(svgText);    <span class="c">// 
         <code>BinkAutosave</code> writes it to the browser's IndexedDB two seconds after editing pauses, and when the page
         is opened again it offers the drawing back rather than restoring it unasked.
     </p>
-    <pre class="bb-code">_store = <span class="k">new</span> BinkBrowserDocumentStore(JS);
+    <pre class="bb-code" tabindex="0">_store = <span class="k">new</span> BinkBrowserDocumentStore(JS);
 <span class="k">if</span> (<span class="k">await</span> BinkAutosave.RestoreAsync(_store, <span class="s">"bink-demo-whiteboard"</span>) <span class="k">is</span> { } saved) _recovered = saved;
 _autosave = <span class="k">new</span> BinkAutosave(_document, _store, <span class="s">"bink-demo-whiteboard"</span>);
 

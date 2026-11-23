@@ -81,9 +81,9 @@ public sealed class TestHost : IDisposable
 
     public async Task<int> RunAsync(params string[] args)
     {
-        return await CliApp.BuildRootCommand(() => Services)
-            .Parse(args)
-            .InvokeAsync(new System.CommandLine.InvocationConfiguration { EnableDefaultExceptionHandler = false, Output = new StringWriter(), Error = new StringWriter() });
+        var root = CliApp.BuildRootCommand(() => Services);
+
+        return await CliApp.InvokeAsync(root, root.Parse(args), Services, args, new System.CommandLine.InvocationConfiguration { EnableDefaultExceptionHandler = false, Output = new StringWriter(), Error = new StringWriter() });
     }
 
     public void Dispose()

@@ -80,6 +80,25 @@ public class BitStepperMobileE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task ResponsiveCompact_ShowsTheCurrentStepAlone()
+    {
+        await OpenAsync(Url);
+
+        await Expect(Page.Locator("#stp-compact > .bit-str-lst")).ToBeHiddenAsync();
+        await Expect(Page.Locator("#stp-compact .bit-str-pos")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#stp-compact .bit-str-ctx")).ToBeVisibleAsync();
+        await Expect(Page.Locator("#stp-compact .bit-str-pos")).ToHaveTextAsync("Step 2 of 3");
+        await Expect(Page.Locator("#stp-compact .bit-str-ctx")).ToHaveTextAsync("Destination");
+        await Expect(Page.Locator("#stp-compact .bit-str-seg")).ToHaveCountAsync(3);
+
+        var widths = await Page.EvaluateAsync<double[]>(@"() => [
+            document.querySelector('#compact-box').getBoundingClientRect().width,
+            document.querySelector('#stp-compact').scrollWidth
+        ]");
+        Assert.IsTrue(widths[1] <= widths[0] + 1, $"the Compact stepper ({widths[1]}px) fits its container ({widths[0]}px).");
+    }
+
+    [TestMethod]
     public async Task Responsive_TheStepsStillGoWhereTheyAreTapped()
     {
         await OpenAsync(Url);

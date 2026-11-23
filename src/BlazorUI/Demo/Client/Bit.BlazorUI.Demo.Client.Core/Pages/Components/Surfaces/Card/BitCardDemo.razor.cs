@@ -6,6 +6,15 @@ public partial class BitCardDemo
     [
         new()
         {
+            Name = "Accent",
+            Type = "BitColor?",
+            DefaultValue = "null",
+            Description = "Draws a bar in a theme role along the inline-start edge of the card, the look of a callout. It is laid over the edge, so it moves nothing inside the card (and covers the first few pixels of a NoPadding card's content), lies over the start side of an Outlined card's rule, and goes along with Color, Variant, Outlined and Border. Unset, the card draws the bar only where --bit-Card-accent-color is set.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
+        },
+        new()
+        {
             Name = "Actions",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -98,10 +107,17 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "Element",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The custom html element used for the root node, a div by default - an article, a section, an aside or a nav is what tells assistive technologies which part of the page the card is. A card rendered as one of those four is titled by its Title through aria-labelledby, unless an AriaLabel, an aria-label or aria-labelledby of the page's own, a splatted role, a HeaderTemplate, an Href or an OnClick names it some other way. A name that is not one a tag can have, a void element, or a tag that cannot hold the content of a card (an a, a button, a p, a heading, a list, a table, a template, ...) falls back to the default.",
+        },
+        new()
+        {
             Name = "Elevation",
             Type = "int?",
             DefaultValue = "null",
-            Description = "A level of the theme's shadow ramp (0-24, --bit-shd-0 to --bit-shd-24) the card rests at and lifts from on hover. 0 is flat.",
+            Description = "A level of the theme's shadow ramp (0-24, --bit-shd-0 to --bit-shd-24) the card rests at and rises from on hover. 0 is flat.",
         },
         new()
         {
@@ -213,7 +229,7 @@ public partial class BitCardDemo
             Name = "Hoverable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lifts the card under the pointer. A clickable or linked card lifts on its own.",
+            Description = "Gives a card that is not a control the hover shadow under the pointer, and the hover border color and lift when --bit-Card-hover-border-color and --bit-Card-hover-lift set them. A clickable or linked card gets them on its own.",
         },
         new()
         {
@@ -338,7 +354,7 @@ public partial class BitCardDemo
             Name = "NoShadow",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Removes the resting shadow. The card still lifts on hover when it is clickable, linked or Hoverable.",
+            Description = "Removes the resting shadow. The card still takes the hover shadow when it is clickable, linked or Hoverable.",
         },
         new()
         {
@@ -662,6 +678,18 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "--bit-Card-accent-color",
+            DefaultValue = "none (no bar)",
+            Description = "Color of the bar along the inline-start edge. Set on its own it draws that bar, on every card it reaches. An Accent on the card wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Card-accent-width",
+            DefaultValue = "2 × --bit-shp-brd-width-thick",
+            Description = "Width of that bar. It draws nothing on its own: the bar needs an Accent or --bit-Card-accent-color.",
+        },
+        new()
+        {
             Name = "--bit-Card-radius",
             DefaultValue = "--bit-shp-radius-surface",
             Description = "Corner radius. Square wins over it.",
@@ -695,6 +723,18 @@ public partial class BitCardDemo
             Name = "--bit-Card-active-background",
             DefaultValue = "The resting background washed 10% with the text color",
             Description = "Background of a clickable or linked card while pressed. A Fill card uses its role's pressed shade instead.",
+        },
+        new()
+        {
+            Name = "--bit-Card-hover-border-color",
+            DefaultValue = "The resting border color",
+            Description = "Border color of a clickable, linked or Hoverable card under the pointer, on a card that draws a border. A Border or a Color on the card wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Card-hover-lift",
+            DefaultValue = "none",
+            Description = "How far a clickable, linked or Hoverable card rises under the pointer, as a length: 2px lifts it by 2px, and a value below 0 lifts nothing. The card keeps the room it left hovered and stays lifted while pressed, so the pointer never slips off it. Under reduced motion it steps there instead of gliding.",
         },
         new()
         {

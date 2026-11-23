@@ -72,4 +72,30 @@ public class BitStepperClassStyles
     /// Custom CSS classes/styles for the line connecting each step of the BitStepper to the next one.
     /// </summary>
     public string? Connector { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the compact part of a Compact BitStepper: the position, text and bar of the current
+    /// step, or the content of its CompactTemplate.
+    /// </summary>
+    public string? Compact { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the position of the current step ("Step 2 of 4") in the compact part of the BitStepper.
+    /// </summary>
+    public string? Position { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the text of the current step in the compact part of the BitStepper.
+    /// </summary>
+    public string? CompactText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the bar in the compact part of the BitStepper, which has a segment per step.
+    /// </summary>
+    public string? Progress { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for each segment of the bar in the compact part of the BitStepper.
+    /// </summary>
+    public string? Segment { get; set; }
 }

@@ -32,6 +32,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// Draws an accent bar in one of the roles of the theme along the inline-start edge of the card.
+    /// </summary>
+    public BitColor? Accent { get; set; }
+
+    /// <summary>
     /// The color kind of the background of the card.
     /// </summary>
     public BitColorKind? Background { get; set; }
@@ -75,6 +80,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
     /// The download attribute of the stretched link of the card.
     /// </summary>
     public string? Download { get; set; }
+
+    /// <summary>
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    public string? Element { get; set; }
 
     /// <summary>
     /// Sets the shadow elevation level of the card (0-24).
@@ -142,7 +152,8 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public bool? HorizontalXxl { get; set; }
 
     /// <summary>
-    /// Lifts the card while the pointer is over it.
+    /// Raises the card to its hover shadow while the pointer is over it, and gives it the hover border color
+    /// and the hover lift that the --bit-Card-hover-border-color and --bit-Card-hover-lift variables set.
     /// </summary>
     public bool? Hoverable { get; set; }
 
@@ -275,6 +286,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCard);
 
+        if (Accent.HasValue)
+        {
+            bitCard.TakeFromCascade(nameof(Accent), Accent.Value, static c => c.Accent, static (c, v) => c.Accent = v);
+        }
+
         if (Background.HasValue)
         {
             bitCard.TakeFromCascade(nameof(Background), Background.Value, static c => c.Background, static (c, v) => c.Background = v);
@@ -303,6 +319,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (Divider.HasValue)
         {
             bitCard.TakeFromCascade(nameof(Divider), Divider.Value, static c => c.Divider, static (c, v) => c.Divider = v);
+        }
+
+        if (Element.HasValue())
+        {
+            bitCard.TakeFromCascade(nameof(Element), Element, static c => c.Element, static (c, v) => c.Element = v);
         }
 
         if (Elevation.HasValue)

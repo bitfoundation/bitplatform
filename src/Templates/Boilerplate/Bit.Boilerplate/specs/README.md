@@ -7,7 +7,7 @@ This folder says what the product does and why, in plain words, next to the code
 One file per feature area, named after it, such as `orders.md`, with these sections, leaving out any that would be empty:
 
 - **Purpose**: what the feature is for, and who uses it.
-- **Requirements**: what the app does, each with acceptance criteria written as outcomes someone can check, such as "When a customer cancels an order that has already shipped, the app refuses and says why". The feature's tests check these.
+- **Requirements**: what the app does, each with acceptance criteria written as outcomes someone can check, such as "When a customer cancels an order that has already shipped, the app refuses and says why". The feature's tests check these. A criterion about how a page with an entry in the Workbench looks in one of its states, such as a failed load or a case of that page's own, names the view that shows it there by its address without the host, such as `/workbench/orders?data=error`, so the next change can open that state again.
 - **Decisions**: what was decided and why, with the options that were turned down.
 - **Open questions**: what is not decided yet.
 
