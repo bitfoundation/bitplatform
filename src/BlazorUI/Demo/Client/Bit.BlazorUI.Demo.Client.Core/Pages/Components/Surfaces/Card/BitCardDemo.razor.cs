@@ -9,7 +9,7 @@ public partial class BitCardDemo
             Name = "Accent",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "Draws a bar in a theme role along the inline-start edge of the card, the look of a callout. It is laid over the edge, so it moves nothing inside the card, and it goes along with Color, Variant, Outlined and Border. Unset, the card draws the bar only where --bit-Card-accent-color is set.",
+            Description = "Draws a bar in a theme role along the inline-start edge of the card, the look of a callout. It is laid over the edge, so it moves nothing inside the card (and covers the first few pixels of a NoPadding card's content), lies over the start side of an Outlined card's rule, and goes along with Color, Variant, Outlined and Border. Unset, the card draws the bar only where --bit-Card-accent-color is set.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },

@@ -136,9 +136,11 @@ public partial class BitCard : BitComponentBase
     /// Draws an accent bar in one of the roles of the theme along the inline-start edge of the card.
     /// </summary>
     /// <remarks>
-    /// The bar is laid over that edge rather than added to the border, so it moves nothing inside the card, follows its
-    /// corner radius, runs over a cover and stays on the start side of a right-to-left card. Setting it wins over the
-    /// <c>--bit-Card-accent-color</c> variable, which draws the bar on its own; with neither of the two there is no bar.
+    /// The bar is laid over that edge rather than added to the border, so it moves nothing inside the card, covers the
+    /// start side of an Outlined card's rule, follows its corner radius, runs over a cover and stays on the start side of
+    /// a right-to-left card. Since it takes no room, it also covers the first few pixels of the content of a card with
+    /// <see cref="NoPadding"/>. Setting it wins over the <c>--bit-Card-accent-color</c> variable, which draws the bar on
+    /// its own; with neither of the two there is no bar.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }

@@ -66,6 +66,58 @@ public partial class BitCardStylesheetTests
     }
 
     [TestMethod]
+    public void BitCardAccentBarShouldCoverTheRuleOfTheCard()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The layer is placed against the padding box, inside the rule, so it is pulled out over it: the bar lies over the
+        // start side of an Outlined card's rule, and the corner it inherits is the corner of the box it is drawn on.
+        StringAssert.Contains(Block(stylesheet, ".bit-crd::after"), "margin: calc(-1 * var(--bit-crd-rul, 0px));");
+
+        // The width of the rule is a root-only variable the layer cannot inherit, so the root resolves it into one the
+        // layer can - and does so again where a forced-colors mode restores a rule of its own.
+        var root = Block(stylesheet, ".bit-crd");
+        StringAssert.Contains(root, "--bit-crd-rul: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0px));");
+        StringAssert.Contains(stylesheet, "\n$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, lft;\n");
+
+        var forced = SourceFiles.GetScssBlock(stylesheet, "@media (forced-colors: active) {");
+        StringAssert.Contains(SourceFiles.GetScssBlock(forced, "    .bit-crd {"), "--bit-crd-rul: var(--bit-crd-brd-wid, #{$shp-border-width});");
+    }
+
+    [TestMethod]
+    public void BitCardAccentBarShouldStepInsideTheSelectionAndTheFocusRings()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // Both rings are inset outlines the positioned layer would be painted over, so it steps inside the one shown.
+        StringAssert.Contains(Block(stylesheet, ".bit-crd-sel::after"), "inset: #{$shp-border-width-thick};");
+        StringAssert.Contains(Block(stylesheet, ".bit-crd:focus-visible::after"), "inset: #{$shp-focus-ring-width};");
+
+        // The focus ring wins over the selection ring, so its rule comes later and weighs more.
+        Assert.IsTrue(stylesheet.IndexOf("\n.bit-crd:focus-visible::after {", System.StringComparison.Ordinal) >
+                      stylesheet.IndexOf("\n.bit-crd-sel::after {", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitCardThatScrollsItselfShouldKeepItsAccentBarInPlace()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A layer positioned in a scroll container scrolls with its content, so a plain card with ScrollableBody turns the
+        // layer off and paints the bar as a background image of its root, which stays put. That is the second rule of the
+        // selector, after the one handing such a card its scrollbar.
+        var scrolling = Block(stylesheet[stylesheet.IndexOf("\n// The accent bar:", System.StringComparison.Ordinal)..], ".bit-crd-scb:not(.bit-crd-sct)");
+        StringAssert.Contains(scrolling, "--bit-crd-acc-img: linear-gradient(var(--bit-crd-acc-to, to right), var(--bit-crd-acc-paint, var(--bit-crd-acc, var(--bit-Card-accent-color))) var(--bit-Card-accent-width, calc(2 * #{$shp-border-width-thick})), transparent 0);");
+        StringAssert.Contains(scrolling, "&::after {\n        display: none;\n    }");
+        StringAssert.Contains(scrolling, "&:is(.bit-rtl, :dir(rtl)) {\n        --bit-crd-acc-to: to left;\n    }");
+        StringAssert.Contains(scrolling, "&.bit-dis {\n        --bit-crd-acc-paint: color-mix(in srgb, currentcolor 100%, var(--bit-crd-acc, var(--bit-Card-accent-color)));\n    }");
+
+        // The root paints the image, and a Text card paints it over its tint, so the bar competes with no background.
+        StringAssert.Contains(Block(stylesheet, ".bit-crd"), "background-image: var(--bit-crd-acc-img, none);");
+        Assert.AreEqual(3, Regex.Matches(stylesheet, @"background-image: var\(--bit-crd-acc-img, none\)").Count, "A background image of the card leaves the accent bar out.");
+    }
+
+    [TestMethod]
     public void BitCardShouldPublishTheAccentOnlyWhereItIsSet()
     {
         var stylesheet = ReadStylesheet();
@@ -149,6 +201,7 @@ public partial class BitCardStylesheetTests
                                               .Select(m => m.Groups[1].Value)
                                               .Distinct()
                                               .Where(name => name.StartsWith("--bit-crd-clr") is false) // only read where the same class sets them
+                                              .Where(name => name != "--bit-crd-rul") // declared by every root itself, so a nested card has its own
                                               .ToArray();
 
         Assert.IsTrue(setByAClass.Length > 0, "No private variable is set by a class.");
@@ -234,7 +287,7 @@ public partial class BitCardStylesheetTests
         // The tint is the theme's own wash, laid over the surface rather than replacing it, so a Background still shows.
         Assert.IsFalse(stylesheet.Contains("role($tokens, light)"), "A card surface is painted in the role's light shade.");
         StringAssert.Contains(stylesheet, "--bit-crd-clr-tint: #{role($tokens, tint)};");
-        StringAssert.Contains(Block(stylesheet, ".bit-crd-vtx"), "background-image: linear-gradient(var(--bit-crd-clr-tint), var(--bit-crd-clr-tint));");
+        StringAssert.Contains(Block(stylesheet, ".bit-crd-vtx"), "background-image: var(--bit-crd-acc-img, none), linear-gradient(var(--bit-crd-clr-tint), var(--bit-crd-clr-tint));");
     }
 
     [TestMethod,
@@ -359,7 +412,12 @@ public partial class BitCardStylesheetTests
         StringAssert.Contains(room, "position: absolute;");
         StringAssert.Contains(room, "top: 100%;");
         StringAssert.Contains(room, "height: #{$crd-lift};");
-        StringAssert.Contains(room, "padding-block-end: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0));");
+        // It spans the rule through the width the root resolves for its layers: the root-only width does not inherit, so
+        // the band reading it would miss the rule of an Outlined card or a Border.
+        StringAssert.Contains(room, "margin-inline: calc(-1 * var(--bit-crd-rul, 0px));");
+        StringAssert.Contains(room, "padding-block-end: var(--bit-crd-rul, 0px);");
+        Assert.IsFalse(Regex.IsMatch(SourceFiles.StripScssComments(stylesheet), @"::(before|after)\s*\{[^}]*var\(--bit-crd-brd-wid"),
+                       "A layer of the card reads the root-only border width, which it does not inherit.");
 
         // Nothing clips that room: a cover is clipped to the corners of the card by itself rather than by the card.
         Assert.IsFalse(stylesheet.Contains(".bit-crd-sct:has(> .bit-crd-cvr)"), "Clipping the card clips the room under a lifted one.");
