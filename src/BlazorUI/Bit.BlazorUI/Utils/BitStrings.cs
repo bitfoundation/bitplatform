@@ -394,6 +394,31 @@ public class BitStrings
     /// </summary>
     public virtual string StepError => "Error";
 
+    /// <summary>
+    /// The position of the current step in the compact layout of a <see cref="BitStepper{TItem}"/> (its
+    /// <see cref="BitStepper{TItem}.Compact"/>), shown before the text of the step. {0} is the current step, counted from
+    /// 1, and {1} how many steps there are.
+    /// </summary>
+    public virtual string StepPositionFormat => "Step {0} of {1}";
+
+    /// <summary>
+    /// What the compact layout of a <see cref="BitStepper{TItem}"/> shows in place of the position once every step is
+    /// done (its CurrentIndex is past the last step).
+    /// </summary>
+    public virtual string StepsCompleted => "All steps completed";
+
+    /// <summary>
+    /// What the compact layout of a <see cref="BitStepper{TItem}"/> shows in place of the position before any step is
+    /// started (its CurrentIndex is negative).
+    /// </summary>
+    public virtual string StepsNotStarted => "Not started";
+
+    /// <summary>
+    /// What a screen reader is told in the compact layout of a <see cref="BitStepper{TItem}"/> about the steps in error
+    /// other than the current one, which only its bar draws. {0} is their numbers, counted from 1 and separated by commas.
+    /// </summary>
+    public virtual string StepErrorsFormat => "Steps in error: {0}";
+
 
 
     // ===== BitCalendar =====
