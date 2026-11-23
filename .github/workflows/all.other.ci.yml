@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       prerelease_packages:
-        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org (the Boilerplate build and website jobs)
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org (the websites job)
         type: boolean
         default: false
       blazorui:
@@ -37,11 +37,9 @@ concurrency:
 
 jobs:
 
-  boilerplate:
-    name: boilerplate
+  templates:
+    name: templates
     uses: ./.github/workflows/ci.templates.yml
-    with:
-      prerelease_packages: ${{ inputs.prerelease_packages }}
 
   blazorui:
     name: blazorui

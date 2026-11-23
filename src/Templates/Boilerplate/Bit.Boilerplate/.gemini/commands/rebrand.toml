@@ -1,9 +1,0 @@
-description = "Re-skin the whole app to match a design reference (a live site, Figma, images, brand guidelines, tokens or a described mood)."
-
-prompt = """
-Follow these instructions exactly:
-
-@{.github/agents/rebrand.agent.md}
-
-Reference, scope and feel: {{args}}
-"""

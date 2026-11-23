@@ -70,9 +70,6 @@ jobs:
         - name: BlazorES2019
           solution: src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj
           tooling: true
-        - name: Cli
-          solution: src/Toolings/Cli/Bit.Cli.slnx
-          tooling: true
         - name: CodeAnalyzers
           solution: src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers.slnx
           tooling: true
@@ -181,9 +178,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - name: Boilerplate
-          folder: src/Templates/Boilerplate/Bit.Boilerplate
-          solution: Boilerplate.slnx
         - name: Careers
           folder: src/Websites/Careers
           solution: Bit.Websites.Careers.slnx
