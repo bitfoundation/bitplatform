@@ -122,6 +122,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         if (_prefsApplied)
         {
             Ui.OpenRequested = false;
+            Ui.PanelRequested = false;
             _ = SavePrefsAsync();
         }
 
@@ -151,7 +152,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
         try
         {
-            _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Bit.BevTools/bit-bevtools.js");
+            _module = await JS.InvokeAsync<IJSObjectReference>("import", ModulePath);
             if (Options.EnableBrowserBridge)
             {
                 _bridgeRef = DotNetObjectReference.Create(new BevToolsJsBridge(
@@ -215,6 +216,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         _prefsApplied = true;
         var openRequested = Ui.OpenRequested;
         Ui.OpenRequested = false;
+        Ui.PanelRequested = false;
 
         if (_cts.IsCancellationRequested)
         {
@@ -740,7 +742,8 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                 Ui.Size = size;
             }
 
-            if (!string.IsNullOrEmpty(prefs.Panel) && IsPanelAvailable(prefs.Panel))
+            // A panel the app opened on (BevToolsUiState.Open with a panel) wins over the one used last time.
+            if (!string.IsNullOrEmpty(prefs.Panel) && !Ui.PanelRequested && IsPanelAvailable(prefs.Panel))
             {
                 Ui.ActivePanelId = prefs.Panel;
             }
@@ -760,6 +763,22 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         {
         }
     }
+
+    /// <summary>The panel's module, as it imports it; <c>BevToolsLoader.PrefetchAsync</c> imports the same, so the import finds it.</summary>
+    internal const string ModulePath = "./_content/Bit.BevTools/bit-bevtools.js";
+
+    /// <summary>The panel's stylesheet, as its link names it.</summary>
+    internal const string StylesheetPath = "_content/Bit.BevTools/bit-bevtools.css";
+
+    /// <summary>
+    /// Set once <c>BevToolsLoader.PrefetchAsync</c> put the stylesheet into the page (in a browser, where one process
+    /// serves one page): a link of the panel's own would request it again, and fail offline, which is what the prefetch
+    /// is for.
+    /// </summary>
+    internal static bool StylesheetInPage { get; set; }
+
+    /// <summary>The built-in panels' ids, in the order of their tabs.</summary>
+    internal static IEnumerable<string> BuiltInPanelIds => BuiltInPanels.Select(p => p.Id);
 
     /// <summary>Whether <paramref name="panelId"/> is a built-in panel's, which the host shows before it looks at extensions.</summary>
     internal static bool IsBuiltInPanelId(string panelId) =>

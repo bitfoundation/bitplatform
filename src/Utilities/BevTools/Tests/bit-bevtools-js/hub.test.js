@@ -892,6 +892,19 @@ describe('redaction in the hub', () => {
         hub.detach();
     });
 
+    it('matches a short sensitive name only where it starts or ends a word, as BevToolsRedactor does', async () => {
+        installPage();
+        const hub = await loadHub();
+        hub.attach(runtime(1), { sensitivePatterns: ['otp', 'ssn', 'token'] });
+
+        expect(hub.redactUrl('confirm?otp=482913&userOtp=1&OTPCode=2&otp_code=3&NotPublished=x&HotPath=y&ClassName=z&accesstoken=t'))
+            .toBe('confirm?otp=«redacted»&userOtp=«redacted»&OTPCode=«redacted»&otp_code=«redacted»&NotPublished=x&HotPath=y&ClassName=z&accesstoken=«redacted»');
+        for (const [name, expected] of [['otp', true], ['UserOtp', true], ['dbpwd', false], ['Footprint', false], ['hotplug', false], ['HOTPATH', false], ['IsOTPValid', true]]) {
+            expect(hub.matchesSensitivePattern(name, 'otp'), name).toBe(expected);
+        }
+        hub.detach();
+    });
+
     it('leaves dotted text with "ey" inside a word alone', async () => {
         installPage();
         const hub = await loadHub();

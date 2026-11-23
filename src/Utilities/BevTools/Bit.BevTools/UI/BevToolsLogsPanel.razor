@@ -5,7 +5,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:55%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter log entries" placeholder="Filter: text, level:warning, category:Orders, event:20101, trace:…" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
+            <input type="text" aria-label="Filter log entries" placeholder="Filter: text, /regex/, level:warning (or level:warn,fail), category:Orders, event:20101, trace:…" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <span class="bev-segmented" role="group" aria-label="Show">
                 <button type="button" aria-pressed="@(View.ByCategory || View.ByCommand ? "false" : "true")" @onclick="() => Show(byCategory: false, byCommand: false)">Entries</button>
                 <button type="button" aria-pressed="@(View.ByCategory ? "true" : "false")" title="One row per logger category, with how many entries of each level it wrote" @onclick="() => Show(byCategory: true, byCommand: false)">Categories</button>
@@ -14,6 +14,14 @@
             <button type="button" @onclick="Clear">Clear</button>
             <span class="bev-muted bev-nowrap" title="Entries in the buffer of the @Session.Options.MaxLogs kept; the counts per level are for the whole session">@_rows.Count shown · @Session.Logs.Total logged · @Session.Logs.CountOf(LogLevel.Warning) warn · @(Session.Logs.CountOf(LogLevel.Error) + Session.Logs.CountOf(LogLevel.Critical)) fail</span>
         </div>
+        @if (_filter.RegexError is { } regexError)
+        {
+            <div class="bev-toolbar bev-err" role="alert">Not a valid regular expression (@_filter.RegexText): @regexError</div>
+        }
+        else if (_filter.RegexTimedOut)
+        {
+            <div class="bev-toolbar bev-warn" role="status">The regular expression took longer than @((int)BevToolsQueryFilter.RegexTimeout.TotalMilliseconds) ms on some entries, which are left out: make it more specific.</div>
+        }
         @if (!View.ByCommand && !View.ByCategory && View.Command is not null)
         {
             <div class="bev-toolbar">
@@ -99,7 +107,7 @@
         @if (_selected is { } s)
         {
             <div class="bev-section">
-                <div class="bev-section-title"><span class="bev-chip @LevelClass(s.Level)">@s.Level</span> <span class="bev-mono">@s.Category</span></div>
+                <div class="bev-section-title"><span class="bev-chip @LevelClass(s.Level)">@s.Level</span> <span class="bev-mono">@s.Category</span> <button type="button" class="bev-link" title="Copy this entry as text: its message, category, level, values, scopes and exception, as shown here" @onclick="() => CopyAsync(s)">copy</button></div>
                 <div class="bev-section-body">
                     <div style="margin-bottom:6px; white-space:pre-wrap">@(s.Message ?? "«hidden»: value access is None, so the values the message was formatted from are not read" + (s.MessageTemplate is null ? ". It has no template with holes either: logged as one string, it may be interpolated, values and all." : "; its template is below."))</div>
                     <dl class="bev-kv">
@@ -172,6 +180,7 @@
 
     private BevToolsLogsView View => Ui.Logs;
 
+    private BevToolsQueryFilter _filter = BevToolsQueryFilter.Parse(null);
     private List<BevToolsLogRecord> _rows = [];
     private List<CategoryRow> _categories = [];
     private List<BevToolsDbCommandSummary> _commands = [];
@@ -180,7 +189,7 @@
 
     protected override void OnParametersSet()
     {
-        var filter = BevToolsQueryFilter.Parse(Query);
+        var filter = _filter = BevToolsQueryFilter.Parse(Query);
         var logs = Session.Logs.Snapshot();
         if (View.Command is { } shown && !logs.Any(l => l.DbCommand is not null && CommandKey(l) == shown))
         {
@@ -209,13 +218,14 @@
     }
 
     /// <summary>
-    /// <c>level:</c> is a minimum ("level:warning" shows warnings and worse), <c>category:</c> a part of the category,
-    /// <c>event:</c> the event id, <c>trace:</c> the start of a trace id; text matches the message, its template, values,
-    /// category, exception and sender.
+    /// <c>level:</c> is a minimum when it names one level ("level:warning" shows warnings and worse) and exactly the
+    /// levels it names when it names several ("level:debug,error" shows those two); <c>category:</c> is a part of the
+    /// category, <c>event:</c> the event id, <c>trace:</c> the start of a trace id; text and a <c>/regular expression/</c>
+    /// match the message, its template, values, category, exception and sender.
     /// </summary>
     internal static bool Matches(BevToolsLogRecord log, BevToolsQueryFilter filter)
     {
-        if (filter.Token("level") is { } levelText && (BevToolsLogLevels.Parse(levelText) is not { } level || log.Level < level))
+        if (filter.Token("level") is { } levelText && !MatchesLevel(log.Level, levelText))
         {
             return false;
         }
@@ -235,13 +245,84 @@
             return false;
         }
 
-        if (filter.Terms.Count == 0)
+        if (!filter.HasText)
         {
             return true;
         }
 
         var values = log.Properties.Count == 0 ? null : string.Join(" ", log.Properties.Select(p => p.Key + "=" + p.Value));
         return filter.MatchesText(log.Message, log.MessageTemplate, log.Category, values, log.ExceptionType, log.ExceptionMessage, log.Caller, log.EventName);
+    }
+
+    private static bool MatchesLevel(LogLevel level, string text)
+    {
+        if (!text.Contains(','))
+        {
+            return BevToolsLogLevels.Parse(text) is { } minimum && level >= minimum;
+        }
+
+        // A level that is not one makes the whole token match nothing, as a single one does: a typo is not ignored.
+        var any = false;
+        foreach (var part in text.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            if (BevToolsLogLevels.Parse(part) is not { } named)
+            {
+                return false;
+            }
+
+            any |= named == level;
+        }
+
+        return any;
+    }
+
+    /// <summary>
+    /// An entry as text, for a bug report or a chat: what the detail pane shows - already redacted, and read at the
+    /// session's value access - and nothing more.
+    /// </summary>
+    internal static string ToText(BevToolsLogRecord log)
+    {
+        var text = new System.Text.StringBuilder();
+        text.Append(BevToolsFmt.Time(log.At)).Append(' ').Append(log.Level).Append(' ').Append(log.Category);
+        if (log.EventId != 0 || log.EventName is not null)
+        {
+            text.Append(" [").Append(log.EventId).Append(log.EventName is null ? "" : " " + log.EventName).Append(']');
+        }
+
+        text.AppendLine();
+        text.AppendLine(log.Message ?? "«hidden»" + (log.MessageTemplate is null ? "" : " (template: " + log.MessageTemplate + ")"));
+        foreach (var (name, value) in log.Properties)
+        {
+            text.Append("  ").Append(name).Append(" = ").AppendLine(value);
+        }
+
+        foreach (var scope in log.Scopes)
+        {
+            text.Append("  scope: ").AppendLine(scope);
+        }
+
+        if (log.Caller is not null)
+        {
+            text.Append("  sent from: ").AppendLine(log.Caller);
+        }
+
+        if (log.TraceId is not null)
+        {
+            text.Append("  trace: ").Append(log.TraceId).Append(' ').AppendLine(log.SpanId);
+        }
+
+        if (log.ExceptionType is not null)
+        {
+            text.Append(log.ExceptionType).Append(": ").AppendLine(log.ExceptionMessage);
+        }
+
+        return text.ToString().TrimEnd();
+    }
+
+    private async Task CopyAsync(BevToolsLogRecord log)
+    {
+        var copied = await Host.CopyAsync(ToText(log));
+        Host.Notify(copied ? "Log entry copied" : "Clipboard unavailable");
     }
 
     private static string LevelClass(LogLevel level) => level switch
@@ -307,7 +388,7 @@
         // A category has no spaces; the filter keeps whatever else was typed.
         var filter = BevToolsQueryFilter.Parse(Query);
         filter.Tokens["category"] = category;
-        Ui.SetQuery("logs", string.Join(" ", filter.Tokens.Select(t => t.Key + ":" + t.Value).Concat(filter.Terms)));
+        Ui.SetQuery("logs", string.Join(" ", filter.Tokens.Select(t => t.Key + ":" + t.Value).Concat(filter.Terms).Concat(filter.RegexText is { } regex ? [regex] : [])));
         OnParametersSet();
     }
 

@@ -3,7 +3,10 @@
 @if (Session.IsEnabled && _interactive)
 {
     <div class="bev-root" data-theme="@ThemeAttribute" data-bev-target="@Session.Browser.TargetId" @onkeydown="OnRootKeyDown">
-        <link rel="stylesheet" href="_content/Bit.BevTools/bit-bevtools.css" />
+        @if (!StylesheetInPage)
+        {
+            <link rel="stylesheet" href="@StylesheetPath" />
+        }
         @if (!Ui.IsOpen)
         {
             if (Options.Ui.ShowBadge)

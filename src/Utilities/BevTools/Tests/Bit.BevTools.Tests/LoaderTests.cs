@@ -394,6 +394,149 @@ public class LoaderTests : BunitContext
     }
 
     [TestMethod]
+    public async Task The_app_configuration_reaches_a_session_attached_on_demand()
+    {
+        var configured = 0;
+        Services.AddBitBevToolsLoaderServices(o => o
+            .ConfigureBevTools(options =>
+            {
+                configured++;
+                var bevTools = (BevToolsOptions)options;
+                bevTools.AddPanel<LoaderAppPanel>("app", "App");
+                bevTools.SensitiveNamePatterns.Add("handle");
+                bevTools.CaptureHttpBodies = true;
+                bevTools.Enabled = false;
+            })
+            .RegisterAtStartup = false);
+        Assert.AreEqual(0, configured, "nothing of Bit.BevTools runs until it is attached");
+        var cut = RenderHost();
+
+        Assert.IsTrue(await Renderer.Dispatcher.InvokeAsync(() => cut.Instance.Loader.OpenAsync()), cut.Instance.Loader.Problem);
+
+        var session = cut.Instance.Session;
+        Assert.AreEqual(1, configured);
+        Assert.IsTrue(session.IsEnabled, "BevToolsOptions.Enabled from the shared configuration does not overrule the loader");
+        Assert.Contains(p => p.Id == "app", session.Registry.Panels);
+        Assert.Contains("handle", session.Options.SensitiveNamePatterns);
+        Assert.IsTrue(session.Options.CaptureHttpBodies);
+        Assert.IsTrue(session.Redactor.IsSensitiveName("SupportHandle"));
+    }
+
+    [TestMethod]
+    public void The_same_configuration_reaches_a_BevTools_registered_at_startup()
+    {
+        Services.AddBitBevToolsLoaderServices(o => o
+            .ConfigureBevTools(options =>
+            {
+                var bevTools = (BevToolsOptions)options;
+                bevTools.AddPanel<LoaderAppPanel>("app", "App");
+                bevTools.Enabled = false;
+            })
+            .RegisterAtStartup = true);
+        // A later call, from another part of the app, adds to the BevTools the first one registered.
+        Services.AddBitBevToolsLoaderServices(o => o.ConfigureBevTools(options => ((BevToolsOptions)options).SensitiveNamePatterns.Add("handle")));
+
+        var session = Services.GetRequiredService<BevToolsSession>();
+        Assert.IsTrue(session.IsEnabled);
+        Assert.Contains(p => p.Id == "app", session.Registry.Panels);
+        Assert.AreEqual(1, session.Options.SensitiveNamePatterns.Count(p => p == "handle"), "each callback runs once");
+    }
+
+    [TestMethod]
+    public async Task OpenAsync_lands_on_the_panel_and_filter_the_app_asks_for()
+    {
+        Services.AddBitBevToolsLoaderServices(o => o
+            .ConfigureBevTools(options => ((BevToolsOptions)options).AddPanel<LoaderAppPanel>("app", "App"))
+            .RegisterAtStartup = false);
+        var cut = RenderHost();
+        var loader = cut.Instance.Loader;
+
+        Assert.IsTrue(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync("logs", "level:warning")), loader.Problem);
+        var ui = cut.Instance.Session.Ui;
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(cut.FindAll(".bev-panel")));
+        Assert.IsTrue(ui.IsOpen);
+        Assert.AreEqual("logs", ui.ActivePanelId);
+        Assert.AreEqual("level:warning", ui.GetQuery("logs"));
+
+        Assert.IsTrue(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync("app")), loader.Problem);
+        Assert.AreEqual("app", ui.ActivePanelId);
+        cut.WaitForAssertion(() => Assert.IsNotEmpty(cut.FindAll(".loader-app-panel")));
+
+        Assert.IsFalse(await Renderer.Dispatcher.InvokeAsync(() => loader.OpenAsync("nope")));
+        StringAssert.Contains(loader.Problem, "no panel 'nope'");
+        StringAssert.Contains(loader.Problem, "logs");
+        StringAssert.Contains(loader.Problem, "app");
+        Assert.AreEqual("app", ui.ActivePanelId, "a panel that does not exist leaves the panel as it was");
+    }
+
+    [TestMethod]
+    public async Task Prefetching_loads_BevTools_without_attaching_it()
+    {
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false);
+        var context = Context(services);
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsTrue(await loader.PrefetchAsync());
+
+        Assert.IsNotNull(context.EntryPoint);
+        Assert.IsFalse(loader.IsActive);
+        Assert.IsNull(BevToolsRuntimeAttacher.Resolve(scope.ServiceProvider));
+        Assert.IsNull(loader.Problem);
+    }
+
+    [TestMethod]
+    public async Task Nothing_is_prefetched_where_BevTools_could_not_be_opened()
+    {
+        var services = ScopeServices(environment: "Production");
+        services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false);
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+
+        Assert.IsFalse(await loader.PrefetchAsync());
+        Assert.IsFalse(loader.IsActive);
+    }
+
+    [TestMethod]
+    public async Task An_additional_assembly_the_app_did_not_start_with_keeps_BevTools_from_registering_at_startup()
+    {
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.RegisterAtStartup = true;
+            o.AdditionalAssemblies.Add("Bit.BevTools.Tests.NoSuchIntegration");
+            o.AdditionalAssemblies.Add("Bit.BevTools.Tests");
+        });
+        var context = Context(services);
+
+        Assert.IsFalse(context.RegisteredAtStartup);
+        Assert.IsFalse(services.Any(d => d.ServiceType == typeof(BevToolsSession)));
+        StringAssert.Contains(context.StartupDecision, "Bit.BevTools.Tests.NoSuchIntegration (FileNotFoundException) is not among the assemblies this app started with");
+        Assert.DoesNotContain("Bit.BevTools.Tests (", context.StartupDecision);
+
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+        Assert.IsFalse(await loader.OpenAsync(), "outside a browser nothing can be downloaded");
+        StringAssert.Contains(loader.Problem, "Bit.BevTools.Tests.NoSuchIntegration");
+        Assert.IsFalse(loader.DownloadFailed, "the app is set up without it; nothing failed to download");
+    }
+
+    [TestMethod]
+    [DataRow("Error: download 'http://localhost/_framework/Bit.BevTools.abc.wasm' for Bit.BevTools.wasm failed 404 Not Found", "the server answered HTTP 404 Not Found.")]
+    [DataRow("download 'x' for y failed 503", "the server answered HTTP 503.")]
+    [DataRow("download 'http://localhost/_framework/Bit.BevTools.abc.wasm' for Bit.BevTools.abc.wasm failed 0 TypeError: Failed to fetch", "no answer from the server (TypeError: Failed to fetch).")]
+    [DataRow("TypeError: Failed to fetch", "TypeError: Failed to fetch.")]
+    [DataRow("NetworkError when attempting to fetch resource.", "NetworkError when attempting to fetch resource.")]
+    public void A_failed_download_is_described_in_plain_words(string message, string expected)
+    {
+        Assert.AreEqual(expected, BevToolsLoaderContext.DescribeDownloadError(message));
+    }
+
+    [TestMethod]
     public async Task The_attached_session_ends_with_the_scope_that_opened_it()
     {
         var services = ScopeServices();
@@ -699,6 +842,8 @@ public class LoaderTests : BunitContext
 
         public IBevToolsAttachment Attach(IServiceProvider services, BevToolsLoaderContext context) => throw exception;
 
+        public Task PrefetchAssetsAsync(IJSRuntime js) => throw exception;
+
         public IDisposable BeginOwnWork() => throw exception;
     }
 
@@ -755,6 +900,18 @@ public class LoaderTests : BunitContext
     private sealed class ConstructorInjected(LoaderTestService service) : ComponentBase
     {
         public LoaderTestService Service { get; } = service;
+    }
+}
+
+/// <summary>A panel of the app's own, added through <c>BevToolsLoaderOptions.ConfigureBevTools</c>.</summary>
+public class LoaderAppPanel : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, "p");
+        builder.AddAttribute(1, "class", "loader-app-panel");
+        builder.AddContent(2, "The app's own panel");
+        builder.CloseElement();
     }
 }
 

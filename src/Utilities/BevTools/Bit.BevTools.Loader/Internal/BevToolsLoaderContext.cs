@@ -39,6 +39,18 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
     public string? LoadError { get; private set; }
 
     /// <summary>
+    /// Whether the last attempt to load Bit.BevTools failed because an assembly could not be downloaded (offline, or an
+    /// HTTP error), rather than because of how the app is set up.
+    /// </summary>
+    public bool LoadFailedToDownload { get; private set; }
+
+    /// <summary>
+    /// How many of <see cref="BevToolsLoaderOptions.BevToolsConfigurations"/> the BevTools registered at startup has had
+    /// applied: a later <c>AddBitBevToolsLoaderServices</c> call can add more, and only those are applied then.
+    /// </summary>
+    internal int StartupConfigurationsApplied { get; set; }
+
+    /// <summary>
     /// What <see cref="BevToolsAutoStart.Logs"/> captured until a session takes it over; null when that part was not
     /// started (not asked for, or BevTools was registered at startup).
     /// </summary>
@@ -84,7 +96,12 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
         StartupDecision = reason;
     }
 
-    /// <summary>Loads Bit.BevTools if it is among the assemblies the app started with; never downloads anything.</summary>
+    /// <summary>
+    /// Loads Bit.BevTools if it is among the assemblies the app started with, together with every one of
+    /// <see cref="BevToolsLoaderOptions.AdditionalAssemblies"/>; never downloads anything. A BevTools whose additional
+    /// assemblies are missing is not loaded: the app's <see cref="BevToolsLoaderOptions.ConfigureBevTools"/> callbacks
+    /// may name their types, and would fail on the first one.
+    /// </summary>
     internal IBevToolsEntryPoint? TryLoadFromApp(out string? error)
     {
         error = null;
@@ -93,19 +110,61 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
             return loaded;
         }
 
-        Assembly assembly;
-        try
+        Assembly? bevTools = null;
+        List<string>? missing = null;
+        foreach (var name in AssemblyNames())
         {
-            assembly = Assembly.Load(new AssemblyName(AssemblyName));
+            if (TryLoad(name, out var exception) is { } assembly)
+            {
+                if (name == AssemblyName)
+                {
+                    bevTools = assembly;
+                }
+            }
+            else
+            {
+                (missing ??= []).Add(name + " (" + exception!.GetType().Name + ")");
+            }
         }
-        catch (Exception ex) when (ex is FileNotFoundException or FileLoadException or BadImageFormatException)
+
+        if (missing is not null)
         {
-            error = AssemblyName + " is not among the assemblies this app started with (" + ex.GetType().Name + ").";
+            error = string.Join(", ", missing) + (missing.Count == 1 ? " is" : " are") + " not among the assemblies this app started with.";
             return null;
         }
 
-        return EntryPoint = Create(assembly, out error);
+        return EntryPoint = Create(bevTools!, out error);
     }
+
+    /// <summary>Bit.BevTools first, then <see cref="BevToolsLoaderOptions.AdditionalAssemblies"/>, each once.</summary>
+    private IEnumerable<string> AssemblyNames() =>
+        new[] { AssemblyName }.Concat(Options.AdditionalAssemblies.Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => n.Trim())).Distinct(StringComparer.Ordinal);
+
+    /// <summary>
+    /// The assembly when it is loaded or among the app's own: one the runtime holds already is taken from it, since a
+    /// lazily loaded one is known to the runtime but may not be found by name again.
+    /// </summary>
+    private static Assembly? TryLoad(string name, out Exception? exception)
+    {
+        exception = null;
+        if (FindLoaded(name) is { } loaded)
+        {
+            return loaded;
+        }
+
+        try
+        {
+            return Assembly.Load(new AssemblyName(name));
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or FileLoadException or BadImageFormatException)
+        {
+            exception = ex;
+            return null;
+        }
+    }
+
+    private static Assembly? FindLoaded(string name) =>
+        AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => string.Equals(a.GetName().Name, name, StringComparison.Ordinal));
 
     /// <summary>
     /// Registers BevTools at startup through the loaded assembly. A Bit.BevTools of another version than this loader
@@ -125,9 +184,10 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
     }
 
     /// <summary>
-    /// Loads Bit.BevTools once per process: from the app's own assemblies when it is one of them, otherwise in Blazor
-    /// WebAssembly through <see cref="LazyAssemblyLoader"/>, which downloads it when it is marked BlazorWebAssemblyLazyLoad.
-    /// A failed load is retried on the next call, so a dropped connection does not disable BevTools until a reload.
+    /// Loads Bit.BevTools and <see cref="BevToolsLoaderOptions.AdditionalAssemblies"/> once per process: from the app's
+    /// own assemblies when they are among them, otherwise in Blazor WebAssembly through <see cref="LazyAssemblyLoader"/>,
+    /// which downloads the ones marked BlazorWebAssemblyLazyLoad. A failed load is retried on the next call, so a dropped
+    /// connection does not disable BevTools until a reload.
     /// </summary>
     public Task<IBevToolsEntryPoint?> LoadAsync(IJSRuntime js)
     {
@@ -151,6 +211,8 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
         Justification = "The one assembly loaded here is Bit.BevTools, which the DynamicDependency on Create keeps, and whose embedded ILLink.Descriptors.xml then keeps whole, with everything it depends on.")]
     private async Task<IBevToolsEntryPoint?> LoadCoreAsync(IJSRuntime js)
     {
+        LoadFailedToDownload = false;
+        var missing = new List<string>();
         try
         {
             var entryPoint = TryLoadFromApp(out var error);
@@ -160,9 +222,28 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
                 return entryPoint;
             }
 
-            var loaded = await new LazyAssemblyLoader(js).LoadAssembliesAsync([AssemblyName + ".wasm"]);
-            var assembly = loaded.FirstOrDefault(IsBevTools) ?? AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(IsBevTools);
-            if (assembly is null)
+            missing.AddRange(AssemblyNames().Where(name => FindLoaded(name) is null));
+            if (missing.Count == 0)
+            {
+                // Everything is loaded, and Bit.BevTools still did not give its entry point: another version of it.
+                LoadError = error;
+                return null;
+            }
+
+            // The runtime keeps a download that failed for the rest of the page's life, and answers every later request
+            // for that assembly with the same failure: a browser that knows it is offline is not asked, so the next
+            // attempt, once it is back online, can still succeed.
+            if (await IsOfflineAsync(js))
+            {
+                LoadFailedToDownload = true;
+                LoadError = string.Join(", ", missing) + " could not be downloaded: the browser is offline.";
+                return null;
+            }
+
+            // One call, so the assemblies download side by side; each of them is marked BlazorWebAssemblyLazyLoad, or
+            // the runtime says which one is not.
+            await new LazyAssemblyLoader(js).LoadAssembliesAsync(missing.Select(name => name + ".wasm"));
+            if (FindLoaded(AssemblyName) is not { } assembly)
             {
                 LoadError = "LazyAssemblyLoader did not load " + AssemblyName + ".";
                 return null;
@@ -174,13 +255,72 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
         }
         catch (Exception ex)
         {
-            // LazyAssemblyLoader throws when the assembly is not marked BlazorWebAssemblyLazyLoad (and the app started
+            // LazyAssemblyLoader throws when an assembly is not marked BlazorWebAssemblyLazyLoad (and the app started
             // without it, or this would not have been reached), or when the download fails.
-            LoadError = "Loading " + AssemblyName + " failed: " + ex.Message;
+            LoadError = await DescribeLoadFailureAsync(js, missing, ex);
             return null;
         }
+    }
 
-        static bool IsBevTools(Assembly assembly) => string.Equals(assembly.GetName().Name, AssemblyName, StringComparison.Ordinal);
+    /// <summary>
+    /// What a failed lazy load says, in words the app can show whoever pressed its button. A download failure is told
+    /// apart from a project that does not mark an assembly lazy - the runtime names that one, and the app has to change
+    /// - since a download failure is when someone troubleshoots, and the app may want to offer a fallback of its own.
+    /// </summary>
+    private async Task<string> DescribeLoadFailureAsync(IJSRuntime js, List<string> names, Exception exception)
+    {
+        var assemblies = names.Count == 0 ? AssemblyName : string.Join(", ", names);
+        var message = exception.Message;
+        if (message.Contains("BlazorWebAssemblyLazyLoad", StringComparison.Ordinal))
+        {
+            return "Loading " + assemblies + " failed: " + message;
+        }
+
+        LoadFailedToDownload = true;
+        return assemblies + " could not be downloaded: " + (await IsOfflineAsync(js) ? "the browser went offline." : DescribeDownloadError(message))
+            + " The runtime keeps a failed download until the page is reloaded: reload it to try again.";
+    }
+
+    private static async Task<bool> IsOfflineAsync(IJSRuntime js)
+    {
+        try
+        {
+            return await js.GetValueAsync<bool>("navigator.onLine") is false;
+        }
+        catch
+        {
+            // Not knowing whether the browser is online is no reason to report anything other than the error itself.
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// The runtime words a download the server refused as "download '&lt;url&gt;' for &lt;name&gt; failed &lt;status&gt;
+    /// &lt;text&gt;"; any other failure (a connection that dropped, a fetch the browser refused) is its own message.
+    /// </summary>
+    internal static string DescribeDownloadError(string message)
+    {
+        const string marker = " failed ";
+        var at = message.LastIndexOf(marker, StringComparison.Ordinal);
+        if (at >= 0)
+        {
+            var status = message.AsSpan(at + marker.Length);
+            var end = status.IndexOfAny('\r', '\n');
+            status = (end < 0 ? status : status[..end]).Trim();
+            if (status.Length >= 3 && char.IsAsciiDigit(status[0]) && char.IsAsciiDigit(status[1]) && char.IsAsciiDigit(status[2]) && (status.Length == 3 || status[3] == ' '))
+            {
+                return "the server answered HTTP " + status.ToString() + ".";
+            }
+
+            // Status 0 is a request that got no answer at all: the browser says why after it.
+            if (status.Length >= 1 && status[0] == '0' && (status.Length == 1 || status[1] == ' '))
+            {
+                var reason = status[1..].Trim().ToString();
+                return "no answer from the server" + (reason.Length == 0 ? "." : " (" + reason + ").");
+            }
+        }
+
+        return message.EndsWith('.') ? message : message + ".";
     }
 
     /// <summary>

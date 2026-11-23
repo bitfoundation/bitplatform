@@ -18,6 +18,38 @@ public class RedactorTests
     }
 
     [TestMethod]
+    [DataRow("otp", true)]
+    [DataRow("Otp", true)]
+    [DataRow("UserOtp", true)]
+    [DataRow("OTPCode", true)]
+    [DataRow("IsOTPValid", true)]
+    [DataRow("otp_code", true)]
+    [DataRow("x-otp", true)]
+    [DataRow("TotpSecret", true)]
+    [DataRow("dbpwd", true)]
+    [DataRow("UserSsn", true)]
+    [DataRow("NotPublished", false)]
+    [DataRow("IsNotPrimary", false)]
+    [DataRow("HotPath", false)]
+    [DataRow("Footprint", false)]
+    [DataRow("hotplug", false)]
+    [DataRow("HOTPATH", false)]
+    [DataRow("ClassName", false)]
+    [DataRow("CssClassName", false)]
+    public void Short_patterns_match_where_they_start_or_end_a_word(string name, bool expected)
+    {
+        Assert.AreEqual(expected, BevToolsRedactor.Default.IsSensitiveName(name), name);
+    }
+
+    [TestMethod]
+    public void One_time_passwords_are_redacted_in_urls_and_text()
+    {
+        Assert.AreEqual("confirm?email=ada%40example.com&otp=" + BevToolsRedactor.RedactedValue,
+            BevToolsRedactor.Default.RedactUrl("confirm?email=ada%40example.com&otp=482913"));
+        StringAssert.DoesNotMatch(BevToolsRedactor.RedactText("Navigating to /confirm?otp=482913"), new System.Text.RegularExpressions.Regex("482913"));
+    }
+
+    [TestMethod]
     public void Query_string_values_with_sensitive_keys_are_redacted()
     {
         var url = "https://example.com/api/login?user=ada&token=abc123&page=2";

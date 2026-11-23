@@ -4,7 +4,7 @@
 /// The parts of BevTools that start with the app when BevTools itself waits to be attached
 /// (<see cref="BevToolsLoaderOptions.AutoStart"/>). Each part runs on its own, inside Bit.BevTools.Loader, and none of
 /// them starts the rest of BevTools: no component is instrumented, no render measured, nothing loaded or downloaded.
-/// What a part collects is handed to the session <see cref="BevToolsLoader.OpenAsync"/> attaches later, so that session
+/// What a part collects is handed to the session <see cref="BevToolsLoader.OpenAsync()"/> attaches later, so that session
 /// also shows what happened before it existed.
 /// </summary>
 [Flags]

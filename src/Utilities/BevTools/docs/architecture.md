@@ -246,6 +246,39 @@ reads the existing components from the renderer's state map, and marks those tha
 is not reported as their first. The loader's scoped service disposes the session with the scope. Every scope the loader
 opens shares one `BevToolsRegistry`, and with it one service graph, as the sessions of a BevTools registered at startup do.
 
+**One configuration for both paths.** `BevToolsLoaderOptions.ConfigureBevTools` keeps `Action<object>` callbacks: typed
+`object` because nothing the app runs at startup may name `BevToolsOptions`, and safe because a lambda's body is a
+method of its own, compiled (by the WebAssembly interpreter) or resolved only when it first runs - after the load. The
+entry point runs them on the options it registers at startup (`TryAddServices`, after `Forward`; a later
+`AddBitBevToolsLoaderServices` call adds its own callbacks to that registration, counted by
+`BevToolsLoaderContext.StartupConfigurationsApplied`) and `BevToolsRuntimeAttacher.CreateRegistry` on the options of an
+attached session, both restoring `BevToolsOptions.Enabled` afterwards: the loader's policy decides whether BevTools runs,
+and a configuration shared by both paths must not turn one of them on. `BevToolsOptions.ServiceRegistrations` lets an
+integration's options method (`AddBelemetry`) register services next to its extension; `AddBitBevToolsServices`
+applies them, so they reach a startup registration and, necessarily, never an attached session.
+`BevToolsLoaderOptions.AdditionalAssemblies` names assemblies the callbacks need: `TryLoadFromApp` registers at startup
+only when every one is among the app's assemblies, and `LoadAsync` lazy loads the missing ones together with
+`Bit.BevTools`, in one `LazyAssemblyLoader` call.
+
+**Where an app's own BevTools types may live.** The router lists the exported types of the assemblies it routes as the
+app starts; a public type whose base type or interface is in a `Bit.BevTools` that is not loaded yet fails to load
+there and the app does not start (checked in the published sample: a public `.razor` panel inheriting `BevToolsTab`
+keeps it from ever becoming interactive). Internal types, and public types that only name `Bit.BevTools` types in their
+members, are fine. The lazy loading sample holds one of each kind, and its end-to-end suite runs it trimmed and
+AOT-compiled.
+
+**Opening, prefetching, failing.** `OpenAsync(panelId, query)` passes both to `IBevToolsAttachment.Open`, which checks
+the panel against the built-in ids and the registry's panels and calls `BevToolsUiState.Open(panelId, query)`; a panel
+rendered later takes that panel over its saved preference (`PanelRequested`, like `OpenRequested`). `PrefetchAsync`
+runs `LoadAsync` and then `IBevToolsEntryPoint.PrefetchAssetsAsync`, which imports the panel's module by the specifier
+the panel uses (the page's module map answers the panel's own import) and puts its stylesheet into the page, after
+which the panel renders no link of its own (`BevToolsPanel.StylesheetInPage`) - a second request for a `no-cache` asset
+would fail offline. The WebAssembly runtime keeps a lazy download that failed for the page's life and answers every
+later request for the asset with the same failure, so `LoadAsync` asks `navigator.onLine` first and attempts nothing
+offline; a failure the runtime did see is reported as one a reload retries. `LoadFailedToDownload` tells those apart
+from a project that marks nothing lazy, which the runtime names, and `BevToolsLoader.DownloadFailed` hands it to the
+app.
+
 `BitBevTools.Attach` does the same without the loader and falls back to reflection where the loader has hooks: it
 replaces the renderer's activator (`ComponentFactory._componentActivator`) and wraps the handler of the `HttpClient`
 registered in DI (`HttpMessageInvoker._handler`), unless it is transient or its pipeline already records (a factory

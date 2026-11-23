@@ -217,7 +217,7 @@ function looksLikeSecret(value: string) {
     if (/\bBearer\s+\S+/i.test(value)) return true;
     if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/i.test(value)) return true;
     if (/\b(?:AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[abposr]-[A-Za-z0-9-]{10,}|[rs]k_(?:live|test)_[A-Za-z0-9]{16,})\b/.test(value)) return true;
-    return /(?:password|passwd|pwd|api[_-]?key|access[_-]?key|account[_-]?key|access[_-]?token|id[_-]?token|refresh[_-]?token|authorization|client[_-]?secret|connectionstring|token|secret|credential|cookie|private[_ -]?key)"?\s*[:=]/i.test(value);
+    return /(?:password|passwd|pwd|(?<![a-z0-9])t?otp|api[_-]?key|access[_-]?key|account[_-]?key|access[_-]?token|id[_-]?token|refresh[_-]?token|authorization|client[_-]?secret|connectionstring|token|secret|credential|cookie|private[_ -]?key)"?\s*[:=]/i.test(value);
 }
 
 // A header of "ey" and six or more base64url characters, a dot, a payload of six or more, a dot - TryFindJwt in
@@ -249,9 +249,55 @@ function containsJwt(value: string) {
     return false;
 }
 
+/**
+ * BevToolsLoader.PrefetchAsync: loads the panel's stylesheet into the page before the panel exists, so the panel's own
+ * link to it is answered from what the page holds - offline too. Every rule of it is scoped under .bev-root, so it
+ * changes nothing else; it stays, as the panel's own link does.
+ */
+export function prefetchStylesheet(href: string) {
+    const url = new URL(href, document.baseURI).href;
+    const existing = Array.from(document.querySelectorAll<HTMLLinkElement>("link[rel=stylesheet]")).find(l => l.href === url);
+    if (existing) return Promise.resolve();
+    return new Promise<void>((resolve, reject) => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = url;
+        link.setAttribute("data-bev-prefetch", "");
+        link.onload = () => resolve();
+        link.onerror = () => { link.remove(); reject(new Error("The BevTools stylesheet could not be fetched: " + url)); };
+        document.head.appendChild(link);
+    });
+}
+
 function isSensitiveName(name: string) {
-    const lower = name.toLowerCase();
-    return sensitivePatterns.some(p => lower.includes(p));
+    return sensitivePatterns.some(p => matchesSensitivePattern(name, p));
+}
+
+/**
+ * BevToolsRedactor.MatchesPattern: case-insensitively, anywhere in the name for a pattern of four characters or more;
+ * a shorter one only where the match starts or ends a word ("otp" in "userOtp" and "otp_code", not in "NotPublished").
+ * `pattern` is lower case.
+ */
+export function matchesSensitivePattern(name: string, pattern: string) {
+    const lower = (name || "").toLowerCase();
+    if (!pattern) return false;
+    if (pattern.length > 3) return lower.includes(pattern);
+    for (let at = lower.indexOf(pattern); at >= 0; at = lower.indexOf(pattern, at + 1)) {
+        if (isWordBoundary(name, at) || isWordBoundary(name, at + pattern.length)) return true;
+    }
+    return false;
+}
+
+function isWordBoundary(name: string, at: number) {
+    if (at <= 0 || at >= name.length) return true;
+    const before = name[at - 1], after = name[at];
+    const alnum = /[\p{L}\p{N}]/u;
+    if (!alnum.test(before) || !alnum.test(after)) return true;
+    const upper = (c: string) => c !== c.toLowerCase() && c === c.toUpperCase();
+    const lowerCase = (c: string) => c !== c.toUpperCase() && c === c.toLowerCase();
+    // A hump (userOtp), or the end of an upper case run before the next word (OTPCode: between P and C).
+    return (upper(after) && !upper(before))
+        || (upper(before) && upper(after) && at + 1 < name.length && lowerCase(name[at + 1]));
 }
 
 /** Query and fragment values whose key looks sensitive, or whose value looks like a token, never leave the hub. */
@@ -2681,10 +2727,9 @@ export function getStorage(kind: string, patterns: string[] | null, previews?: b
         for (let i = 0; i < storage.length; i++) {
             const key = storage.key(i);
             const value = storage.getItem(key!) || "";
-            const lowerKey = (key || "").toLowerCase();
             // Redaction happens before the value leaves the browser: BevTools never holds the plaintext. Without
             // previews (ValueAccess None) no value leaves it at all.
-            const sensitive = lowered.some(p => lowerKey.includes(p)) || looksLikeSecret(value);
+            const sensitive = lowered.some(p => matchesSensitivePattern(key || "", p)) || looksLikeSecret(value);
             result.push({
                 key,
                 size: value.length,
