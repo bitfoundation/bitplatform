@@ -20,6 +20,8 @@ public class Operation
     public bool Checkable { get; set; }
     public bool Checked { get; set; }
     public string? SortGroup { get; set; }
+    public string? Summary { get; set; }
+    public BitNavMatch? UrlMatch { get; set; }
 
     public List<Operation> Children { get; set; } = [];
 

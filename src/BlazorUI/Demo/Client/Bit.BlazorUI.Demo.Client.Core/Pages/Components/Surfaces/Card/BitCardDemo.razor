@@ -416,7 +416,28 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Element" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Element</b> renders the card as another tag: an <code>article</code> for a card that stands on its own, a <code>section</code>
+            for one part of a page, an <code>aside</code> for content beside the main flow, a <code>nav</code> for a card of links. A card
+            rendered as one of those four is titled by its <b>Title</b> through <code>aria-labelledby</code>, which is what makes a section
+            a region of the page; an <b>AriaLabel</b> names it instead.
+        </div>
+        <br /><br />
+        <div class="card-row">
+            <BitCard Element="article" Title="Release notes" Subtitle="Posted today" HeadingLevel="3" Width="16rem">
+                <BitText Typography="BitTypography.Body2">An article: a post that stands on its own.</BitText>
+            </BitCard>
+            <BitCard Element="section" Title="Getting started" HeadingLevel="3" Width="16rem">
+                <BitText Typography="BitTypography.Body2">A section, named by its title.</BitText>
+            </BitCard>
+            <BitCard Element="aside" AriaLabel="Tip" Outlined Width="16rem">
+                <BitText Typography="BitTypography.Body2">An aside, named by its AriaLabel.</BitText>
+            </BitCard>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
         <div>
             <b>Color</b> paints the card in a theme role and <b>Variant</b> decides how: <b>Fill</b> (the default) paints the surface,
             <b>Outline</b> the border and the text, <b>Text</b> tints the surface. A disabled card uses the role's disabled colors.
@@ -458,7 +479,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Icon</b> takes a <b>BitIconInfo</b> from an external library such as FontAwesome or Bootstrap Icons; the glyph is sized to the title
             beside it.
@@ -483,7 +504,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div><b>Size</b> scales the padding, the gaps and the header type together. Medium is the default.</div>
         <br /><br />
         <div class="card-row">
@@ -499,7 +520,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part - the link, the floating actions,
             the cover and its image, the main column, the header with its icon, text, title and subtitle, the actions, the body, the footer and the
@@ -530,7 +551,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>Use <b>Dir="BitDir.Rtl"</b> to mirror the whole card: the icon, the actions and a horizontal cover all swap sides.</div>
         <br /><br />
         <div class="card-row">

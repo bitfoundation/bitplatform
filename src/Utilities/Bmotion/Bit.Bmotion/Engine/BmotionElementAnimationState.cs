@@ -66,6 +66,10 @@ internal sealed class BmotionElementAnimationState
     // properties the resting target doesn't define (an Initial-only value, say): it is what they
     // come back to when the last gesture lets go, rather than an identity value the element never had.
     private readonly Dictionary<string, object> _gestureOrigins = new(StringComparer.Ordinal);
+    // The origins the last gesture to let go of a property sent it back to, while it is still on its way there: a
+    // gesture that takes it again before it arrives keeps that origin, rather than capturing the value it shows part-way
+    // back - which each quick re-entry would move closer to the gesture's own value, until the element rested on it.
+    private readonly Dictionary<string, ReturningOrigin> _returningOrigins = new(StringComparer.Ordinal);
     private Dictionary<string, object?>? _baseValues;
     private BmotionTransitionConfig? _baseTransition;
 
@@ -240,6 +244,7 @@ internal sealed class BmotionElementAnimationState
                 _activeAnims.Remove(key);
                 SettleAuto(key);
                 NotePropFinished(key, interrupted: false); // natural completion
+                ForgetArrivedReturn(key);
             }
 
         if (Silent)
@@ -565,6 +570,7 @@ internal sealed class BmotionElementAnimationState
                 _activeAnims.Remove(key);
                 SettleAuto(key);
                 NotePropFinished(key, interrupted: false); // snapped to end value = natural completion
+                ForgetArrivedReturn(key);
             }
         }
     }
@@ -673,7 +679,17 @@ internal sealed class BmotionElementAnimationState
     /// their inline declaration) once the animation has finished.
     /// </summary>
     internal sealed record AnimationRequest(
-        Dictionary<string, object?> Values, BmotionTransitionConfig? Transition, IReadOnlyCollection<string>? StylesheetKeys = null);
+        Dictionary<string, object?> Values, BmotionTransitionConfig? Transition, IReadOnlyCollection<string>? StylesheetKeys = null)
+    {
+        /// <summary>Names the animation that plays the request, for the engine to start it with; null when nothing asks.</summary>
+        public object? Owner { get; init; }
+    }
+
+    /// <summary>
+    /// The origin a gesture that let go of a property sent it back to (<c>null</c> for one given back to the
+    /// stylesheet without a captured fallback), whether it goes back to the stylesheet, and the animation taking it there.
+    /// </summary>
+    private sealed record ReturningOrigin(object? Origin, bool Stylesheet, object Revert);
 
     /// <summary>
     /// Activates a gesture layer and returns the animation that applies it, or <c>null</c> when a higher-priority
@@ -686,6 +702,13 @@ internal sealed class BmotionElementAnimationState
         foreach (var key in values.Keys)
         {
             if (_baseValues?.ContainsKey(key) == true || _gestureOrigins.ContainsKey(key) || _stylesheetOrigins.Contains(key)) continue;
+            // Still going back to the origin an earlier gesture captured: that origin is still what it rests at.
+            if (TakeReturningOrigin(key) is { } returning)
+            {
+                if (returning.Origin is { } kept) _gestureOrigins[key] = kept;
+                if (returning.Stylesheet) _stylesheetOrigins.Add(key);
+                continue;
+            }
             // A value nothing has set yet is the stylesheet's: the gesture gives it back to the stylesheet (whatever
             // it says by then) rather than to a captured copy.
             if (CurrentValue(key) is not { } origin)
@@ -766,6 +789,8 @@ internal sealed class BmotionElementAnimationState
         // value - otherwise it would stay stuck at the gesture value. One the stylesheet gave it goes
         // back to the stylesheet (the origin is only the fallback if the stylesheet can't be read).
         HashSet<string>? stylesheet = null;
+        // Names the animation back to the captured origins (see _returningOrigins).
+        var revert = new object();
         foreach (var key in removed.Values.Keys)
         {
             if (target.ContainsKey(key)) continue;
@@ -773,18 +798,67 @@ internal sealed class BmotionElementAnimationState
             {
                 // The engine fills in what the stylesheet gives the key now; the captured origin (if any) is only
                 // the fallback for when that can't be read.
-                target[key] = _gestureOrigins.Remove(key, out var fallback) ? fallback : null;
+                var fallback = _gestureOrigins.Remove(key, out var captured) ? captured : null;
+                target[key] = fallback;
                 (stylesheet ??= new HashSet<string>(StringComparer.Ordinal)).Add(key);
+                _returningOrigins[key] = new(fallback, Stylesheet: true, revert);
             }
             else if (_gestureOrigins.Remove(key, out var origin))
+            {
                 target[key] = origin;
+                _returningOrigins[key] = new(origin, Stylesheet: false, revert);
+            }
             else if (BmotionTransformComposer.IsTransformProp(key))
                 target[key] = DefaultTransformValue(key);
             else if (!IsColorProp(key)) // colours have no safe identity to revert to
                 target[key] = DefaultNumericValue(key);
         }
 
-        return target.Count > 0 || stylesheet is not null ? new AnimationRequest(target, transition, stylesheet) : null;
+        return target.Count > 0 || stylesheet is not null ? new AnimationRequest(target, transition, stylesheet) { Owner = revert } : null;
+    }
+
+    /// <summary>
+    /// Takes the origin <paramref name="key"/> is going back to, when it is still on its way there: the animation back
+    /// has not started yet (it may be reading the stylesheet first), or it is still what plays the key. Null once it
+    /// has come to rest there - or been stopped - when what the element shows is where it rests.
+    /// </summary>
+    private ReturningOrigin? TakeReturningOrigin(string key)
+    {
+        if (!_returningOrigins.Remove(key, out var returning)) return null;
+        return Arrived(key, returning) ? null : returning;
+    }
+
+    // Whether the animation back to returning's origin has started on key and no longer plays it: it came to rest there
+    // or was stopped. Anything else that started the key since has already dropped the entry (NoteStarted).
+    private bool Arrived(string key, ReturningOrigin returning)
+        => ReferenceEquals(StartedBy(key), returning.Revert) && !StillPlays(key, returning.Revert);
+
+    /// <summary>Drops the origin <paramref name="key"/> was going back to once it is there, rather than keeping it for the element's life.</summary>
+    private void ForgetArrivedReturn(string key)
+    {
+        if (_returningOrigins.TryGetValue(key, out var returning) && Arrived(key, returning)) _returningOrigins.Remove(key);
+    }
+
+    /// <summary>
+    /// Drops the origins <paramref name="revert"/> was to take keys back to that it never started on: keys the exit
+    /// kept from it, or all of them when it was overtaken or kept from playing. Nothing takes those keys back there.
+    /// </summary>
+    internal void ForgetUnstartedReturns(object revert)
+    {
+        if (_returningOrigins.Count == 0) return;
+        List<string>? unstarted = null;
+        foreach (var (key, returning) in _returningOrigins)
+            if (ReferenceEquals(returning.Revert, revert) && !ReferenceEquals(StartedBy(key), revert))
+                (unstarted ??= new List<string>()).Add(key);
+        if (unstarted is not null)
+            foreach (var key in unstarted) _returningOrigins.Remove(key);
+    }
+
+    /// <summary>Drops the origins <paramref name="keys"/> were going back to: something wrote them outright (an instant set).</summary>
+    internal void ForgetReturningOrigins(IEnumerable<string> keys)
+    {
+        if (_returningOrigins.Count == 0) return;
+        foreach (var key in keys) _returningOrigins.Remove(key);
     }
 
     /// <summary>Whether any gesture layer is still active for <paramref name="key"/>.</summary>
@@ -845,6 +919,11 @@ internal sealed class BmotionElementAnimationState
     /// </summary>
     internal void NoteStarted(IEnumerable<string> keys, object? owner)
     {
+        // A key something other than the way back to its origin takes is no longer on its way there.
+        if (_returningOrigins.Count > 0)
+            foreach (var key in keys)
+                if (_returningOrigins.TryGetValue(key, out var returning) && !ReferenceEquals(returning.Revert, owner))
+                    _returningOrigins.Remove(key);
         if (owner is null)
         {
             if (_startedBy is { Count: > 0 } startedBy)
@@ -853,6 +932,17 @@ internal sealed class BmotionElementAnimationState
         }
         _startedBy ??= new Dictionary<string, object>(StringComparer.Ordinal);
         foreach (var key in keys) _startedBy[key] = owner;
+    }
+
+    /// <summary>
+    /// <see cref="NoteStarted(IEnumerable{string}, object?)"/> for a start that carries on what several earlier starts
+    /// played (a browser animation played again): each of <paramref name="keys"/> stays with the owner
+    /// <paramref name="owners"/> gives it.
+    /// </summary>
+    internal void NoteStartedEach(IEnumerable<string> keys, IReadOnlyDictionary<string, object?> owners)
+    {
+        foreach (var group in keys.GroupBy(key => owners.GetValueOrDefault(key), ReferenceEqualityComparer.Instance))
+            NoteStarted(group, group.Key);
     }
 
     /// <summary>
@@ -1915,7 +2005,11 @@ internal sealed class BmotionElementAnimationState
                     rewrite |= track.RewriteFinal;
                 }
             // A size played to its measured natural size lands on "auto" itself.
-            foreach (var key in plan.Keys) rewrite |= SettleAuto(key);
+            foreach (var key in plan.Keys)
+            {
+                rewrite |= SettleAuto(key);
+                ForgetArrivedReturn(key);
+            }
             return true;
         }
         return false;

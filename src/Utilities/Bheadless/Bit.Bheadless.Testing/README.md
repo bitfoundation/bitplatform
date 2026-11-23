@@ -10,6 +10,7 @@ Accessibility test tooling for Razor components, built on [bUnit](https://bunit.
 | `cut.TabSequence()` | The keyboard Tab order: positive `tabindex` first; disabled, unrendered and `inert` content skipped; one stop per native radio group. |
 | `element.Press("ArrowDown", shift: true)`, `PressSequence(…)`, `Type("abc")` | Keyboard helpers (`key` and US-layout `code`; `Type` holds Shift for uppercase letters and shifted symbols; `repeat: true` for a held key). Like a browser, one press reaches both `onkeydown` and the library's owned `onbitbhkeydown`. |
 | `element.PointerClick()` | A pointer click that reaches both `onclick` and the library's owned `onbitbhclick` - click grid cells and tree items with it rather than bUnit's `Click()`, which only dispatches `onclick`. |
+| `element.PointerHover()` | The pointer reaching a listbox's or combobox's option, as the runtime reports it: the library's own `onbitbhhover`, which options highlight on (they do not listen to `onpointerenter` / `onpointermove`). |
 | `cut.ActiveDescendant(element)` | The element referenced by `aria-activedescendant`. |
 | `context.LastFocusRequest()` | The id of the element Bit.Bheadless last asked the browser to focus (bUnit has no real focus). |
 | `BitBhTestAnnouncer` | Records live-region announcements; `await announcer.WaitForAsync("2 results")` waits for debounced ones. |

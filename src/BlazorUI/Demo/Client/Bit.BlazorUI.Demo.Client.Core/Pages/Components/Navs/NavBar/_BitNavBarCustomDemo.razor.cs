@@ -168,4 +168,5 @@ public partial class _BitNavBarCustomDemo
     private MenuItem? scrollableSelectedCustom;
     private MenuItem? eventsClickedItem;
     private MenuItem? eventsSelectedItem;
+    private bool isDrawerOpen;
 }

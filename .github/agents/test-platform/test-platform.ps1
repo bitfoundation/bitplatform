@@ -22,7 +22,8 @@
               commit; without it, from nuget.org, as users get them. Removes the container, its volumes and its image
               afterwards unless -Keep is given, and keeps the logs. Exits 1 when a setup step fails or bit doctor
               finds something missing.
-    aspire    Runs a new project's Aspire app host three times: the second run reuses the first one's containers, they
+    aspire    Creates a project with bit new and its setup, the initial migration included, without starting it, and
+              runs its Aspire app host three times: the second run reuses the first one's containers, they
               stop once it sits idle, and the third run brings them back on the same volumes. -Sha and -Keep as above.
     agents    Creates a project with bit new, then hands each scenario of agent-scenarios.json to a headless Claude Code
               that sees nothing but that project, in a copy of its own, and checks what it did: which skills it read,
@@ -1388,6 +1389,7 @@ function Invoke-AspireTest {
 
     $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-aspire-{0:MM-dd-HH-mm-ss}' -f (Get-Date))
     $appHostName = 'AspireApp.Server.AppHost'
+    $project = Join-Path $lab 'AspireApp'
     New-Item -ItemType Directory -Force $lab | Out-Null
 
     $outputEncoding = [Console]::OutputEncoding
@@ -1395,7 +1397,6 @@ function Invoke-AspireTest {
     $failures = [Collections.Generic.List[string]]::new()
     $names = @()
     $before = $null
-    $project = $null
     $allBefore = @(docker ps -a --format '{{.Names}}')
     $nugetPackages = $env:NUGET_PACKAGES
 
@@ -1406,7 +1407,7 @@ function Invoke-AspireTest {
             Use-PrereleaseFeedForNewProjects $lab
         }
 
-        $project = New-BitProject $lab $bit 'AspireApp' '--database', 'PostgreSQL', '--redis', 'true'
+        New-BitProject $lab $bit 'AspireApp' '--database', 'PostgreSQL', '--redis', 'true', '--no-run' -setup | Out-Null
         $appHost = Join-Path $project "src\Server\$appHostName"
 
         $profiles = (Get-Content (Join-Path $project 'src\Server\AspireApp.Server.Web\Properties\launchSettings.json') -Raw | ConvertFrom-Json).profiles.PSObject.Properties.Value

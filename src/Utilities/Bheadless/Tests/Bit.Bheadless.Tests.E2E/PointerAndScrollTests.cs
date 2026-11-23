@@ -104,6 +104,59 @@ public sealed class PointerAndScrollTests : DemoTest
     }
 
     [TestMethod]
+    public async Task Page_Down_keeps_the_highlight_while_the_options_scroll_under_a_resting_pointer()
+    {
+        var page = await OpenDemoAsync("/combobox");
+        var input = Sample(page, "Options of different heights (virtualized)").Locator("input[role=combobox]");
+        await input.ClickAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await PollAsync(() => input.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, "1"), "option 1 fully in view");
+
+        // The pointer moves onto the second option, which it highlights, and rests there.
+        var second = page.Locator("#" + await input.GetAttributeAsync("aria-controls")).Locator("[role=option][aria-posinset='2']");
+        var box = (await second.BoundingBoxAsync())!;
+        await page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2, new MouseMoveOptions { Steps = 2 });
+        await PollAsync(() => input.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, "2"), "option 2 highlighted by the pointer");
+
+        // Each Page Down scrolls other options under the pointer (Chromium sends them a pointerenter): the highlight
+        // stays where the keys put it.
+        foreach (var expected in new[] { "12", "22", "32" })
+        {
+            await page.Keyboard.PressAsync("PageDown");
+            await PollAsync(() => input.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, expected), $"option {expected} fully in view");
+        }
+    }
+
+    [TestMethod]
+    public async Task A_wheel_scroll_under_a_resting_pointer_highlights_the_option_it_brings_under_it()
+    {
+        var page = await OpenDemoAsync("/combobox");
+        var input = Sample(page, "Options of different heights (virtualized)").Locator("input[role=combobox]");
+        await input.ClickAsync();
+        await page.Keyboard.PressAsync("ArrowDown");
+        await PollAsync(() => input.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, "1"), "option 1 fully in view");
+
+        // The pointer rests on the second option, which it highlights.
+        var second = page.Locator("#" + await input.GetAttributeAsync("aria-controls")).Locator("[role=option][aria-posinset='2']");
+        var box = (await second.BoundingBoxAsync())!;
+        var (x, y) = (box.X + box.Width / 2, box.Y + box.Height / 2);
+        await page.Mouse.MoveAsync(x, y, new MouseMoveOptions { Steps = 2 });
+        await PollAsync(() => input.EvaluateAsync<string?>(ActiveOptionFit), fit => FullyInView(fit, "2"), "option 2 highlighted by the pointer");
+
+        // Unlike the keys' scroll, the wheel's is the pointer's own: the option it brings under the pointer takes the highlight.
+        await page.Mouse.WheelAsync(0, 400);
+        await PollAsync(() => input.EvaluateAsync<string?>(
+            """
+            (c, [x, y]) => {
+              const option = document.elementFromPoint(x, y)?.closest('[role=option]');
+              if (!option) return null;
+              return option.getAttribute('aria-posinset') + (option.id === c.getAttribute('aria-activedescendant') ? ' highlighted' : '');
+            }
+            """, new[] { (double)x, (double)y }), under => under is not null && under.EndsWith(" highlighted", StringComparison.Ordinal) && under != "2 highlighted",
+            "the option under the pointer highlighted");
+    }
+
+    [TestMethod]
     public async Task Options_of_different_heights_hold_still_as_they_are_measured()
     {
         var page = await OpenDemoAsync("/listbox");

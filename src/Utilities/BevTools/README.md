@@ -110,7 +110,8 @@ builder.Services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = builder
 
 The loader is small, trimmable and AOT compatible, and it is the only BevTools assembly the startup code touches: an
 app that lazy loads BevTools must not name a `Bit.BevTools` type in code that runs before the load, which is why the
-loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `TrackHttp`, `UseFrameworkInstrumentation`).
+loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `TrackHttp`, `UseFrameworkInstrumentation`,
+`MinimumLogLevel`, `MaxLogs`).
 
 - **Registered at startup.** When `Bit.BevTools` is among the assemblies the app starts with and should run from the
   first render (`RegisterAtStartup`; Development by default), the loader registers it exactly as
@@ -125,7 +126,37 @@ loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `Trac
   meters (.NET 10; a renderer reads them when it is created too), and the service collection for the Services panel.
   `BevToolsLoader.OpenAsync()` then loads `Bit.BevTools` (through `LazyAssemblyLoader` in Blazor WebAssembly), attaches
   it to the running app and opens the panel. It reads the components that already exist from the renderer and sees
-  everything that happens from then on; what happened before stays unrecorded. The session ends with the scope.
+  everything that happens from then on; what happened before stays unrecorded, except what the parts named in
+  `AutoStart` collected. The session ends with the scope.
+- **Parts that start with the app (`AutoStart`).** Logging is the part an app wants from the first line, so
+  `AutoStart = BevToolsAutoStart.Logs` has the loader capture what the app's `ILogger`s write from the moment its logger
+  factory is built, on its own: nothing of `Bit.BevTools` is loaded or downloaded, no component is instrumented and
+  no render measured, so the app pays for that part alone (0.7 µs and 690 B per entry, against 9.5 µs and 6.8 KB for
+  a session's full recording in the same run, for an entry with an integer and a string, see [performance](docs/performance.md#log-entries)). It keeps the newest `MaxLogs`
+  entries at `MinimumLogLevel` or above (both forwarded to the session) and counts the rest; it holds texts and
+  immutable scalars, never the objects the app logged. The session `OpenAsync` attaches takes them over into its Logs
+  panel, ahead of what it records itself, reading them then at its value access and redacting them like any entry;
+  they carry no sender, UI event, timeline row or Errors entry, which take a session that did not exist yet, and the
+  panel and About say so. In a process that serves one user the first session attached takes them; on Blazor Server
+  they are kept per circuit (what was logged on its dispatcher, once its first component was created) and only where
+  an attach is allowed, all circuits within ten times `MaxLogs` (a circuit that holds more gives up its oldest entries
+  to a newer one, so the circuit being opened keeps its share); outside Development, where such a session reads no
+  values, they are kept as names, types and templates only, without running any of the values' code (no formatter,
+  `ToString`, count or exception message). An entry written outside every circuit is nobody's, and so is one written
+  where the loader allows no attach, even if the app attaches a session itself with `BevToolsOptions.Enabled`. Until
+  a session takes them over, the entries stay in the process's memory as they were logged: the redactor is part of
+  `Bit.BevTools`, which is not loaded yet, so they are redacted at the handover, before any panel, export or protocol
+  answer can show them. A BevTools registered at startup runs
+  whole from the first render and starts no part of its own.
+
+```csharp
+builder.Services.AddBitBevToolsLoaderServices(o =>
+{
+    o.RegisterAtStartup = builder.HostEnvironment.IsDevelopment();
+    o.AutoStart = BevToolsAutoStart.Logs;
+});
+```
+
 - **Hand-built `HttpClient`s** record through `BevToolsHttpHookHandler`, which passes requests through until BevTools
   runs. Put it closest to the transport handler so every retry attempt is recorded.
 - **Blazor Server.** In a process that serves many users, `CanOpen` is false outside Development unless
@@ -313,7 +344,8 @@ How the information is obtained, in short:
   entry written outside every session (the request pipeline of a server, a hosted service) is nobody's. Each entry's
   template values and scopes are read through the inspector, at the session's value access, and redacted; a value
   redacted by its name is redacted in the message too. `TrackLogs = false` turns it off; `CaptureLogCallers = false`
-  skips the stack walk that names the sending component.
+  skips the stack walk that names the sending component. A session attached on demand also shows what was logged
+  before it, when the loader's `AutoStart` captured it.
 * **Circuits**: `CircuitHandler` (lifecycle, connection state, inbound message processing time) +
   Blazor's `components-reconnect-state-changed` in the browser (dispatched on the app's own reconnect dialog).
 * **Event handlers and callbacks**: the frames of the component's latest render, which the renderer keeps
@@ -413,6 +445,37 @@ public sealed class MyLibraryBevTools : IBevToolsExtension
 
 services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()));
 ```
+
+An application adds a panel of its own - a tab that calls its own APIs, resets a cache, switches a feature flag -
+without writing an extension:
+
+```csharp
+services.AddBitBevToolsServices(o => o.AddPanel<MyApiPanel>("my-api", "My API"));
+```
+
+```razor
+@* MyApiPanel.razor *@
+@inherits BevToolsTab
+@inject MyApiClient Api
+
+<button class="bev-btn" @onclick="() => Api.ResetCacheAsync()">Reset the cache</button>
+```
+
+A panel is an ordinary component that receives no parameters: it injects the application's services and BevTools'
+ones, and inheriting `BevToolsTab` gives it the session and a re-read whenever the panel refreshes. It is BevTools' own
+UI, so its renders and clicks don't show up as the application's, in BevTools or on Belemetry's timeline (what it
+changes in the application, such as a state change, does). Give the panel a component of its own: an instance the
+application renders on its pages stays the application's, and because the framework's events name only a component
+type, the clicks of a type rendered in both places count as the application's in the panel too. `order` places the tab
+among the extension panels, `requiredPlatform` limits it to one renderer (`"Server"`), and a built-in panel's id throws
+an `ArgumentException`. Adding the same id again replaces the panel; when an extension contributes that id too, the one
+later in `Extensions` wins and About reports the clash, as it does an extension panel that takes a built-in panel's id
+(that panel alone is left out). Panels are rendered by the in-app panel
+only; the companion window and the browser extension show what the protocol carries. A panel is a component, not a
+`RenderFragment` passed to `<BevToolsPanel>`, because the panel is often rendered where no parameter can reach it (by
+`BevToolsLoaderPanel`, as a WebAssembly root component, across a render mode boundary), and a fragment from the layout
+would re-render all of BevTools with it. Where BevTools runs in production (see the loader's `Authorize`), the APIs a
+panel calls check their callers on the server, as they would for any other page.
 
 Integrations ship as packages of their own: `Bit.BevTools.Blex` shows bit Blex's stores and actions in the State panel
 and restores through Blex's time travel (`services.AddBevToolsBlex()`). `Bit.BevTools.Belemetry` adds a Support panel

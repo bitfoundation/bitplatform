@@ -7,8 +7,15 @@ namespace Bit.BlazorUI;
 public partial class BitCard : BitComponentBase
 {
     private string? _rel;
-    private bool _buttonKeysRegistered;
     private ElementReference _stretchedRef;
+
+    // The tag the root is rendered as, resolved from Element whenever the parameters change rather than on every render.
+    private string _element = "div";
+
+    // Whether the button keys were registered on the root element the card has now. A new tag replaces the root with
+    // another element, which has none of the listeners the last one was given, so it is cleared whenever the tag
+    // changes - whether or not the root was a control at the time.
+    private bool _buttonKeysRegistered;
 
     // Whether the card was sectioned, whether it was a control and whether that control was a button the last time
     // its classes were built. None of them is a parameter the generated setter can watch for: they are read off
@@ -74,6 +81,37 @@ public partial class BitCard : BitComponentBase
                             || IconTemplate is not null
                             || Icon is not null
                             || IconName.HasValue();
+
+    // A div is a generic element, which ARIA prohibits naming, so a name given to one is not guaranteed to be read
+    // unless the card gives it a role as well. The same goes for every other tag whose role prohibits a name - a
+    // paragraph, an emphasis, a header or footer inside a section - and for a tag with no role at all, so only the tags
+    // below keep the role of their own that a name can be given to: a role the card picked would take that away.
+    private bool _HasNameableRole => _NameableRoleElements.Contains(_element);
+
+    private static readonly HashSet<string> _NameableRoleElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "address", "article", "aside", "blockquote", "fieldset", "figure", "form", "li", "main", "nav", "search", "section"
+    };
+
+    // Tags the card is never rendered as, falling back to the default instead: their content model cannot hold the
+    // card's blocks and controls, or the browser does not show what they hold. An interactive one - an anchor, a button,
+    // a label, a summary - would nest the controls of the card in another control, and a button root submits the form
+    // around it; a paragraph, a heading or an anchor is closed by the HTML parser at the first block or anchor inside
+    // it, which leaves the content of the card outside it; the list, table and select families only hold their own
+    // items; and the rest render their content hidden, as text, as fallback or not at all.
+    private static readonly HashSet<string> _UnsupportedElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "a", "audio", "body", "button", "canvas", "caption", "col", "colgroup", "datalist", "details", "dialog", "dl",
+        "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "hgroup", "html", "iframe", "label", "math", "menu",
+        "noscript", "object", "ol", "optgroup", "option", "p", "picture", "script", "select", "style", "summary", "svg",
+        "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "title", "tr", "ul", "video"
+    };
+
+    // The sectioning elements of HTML: what they hold is a section of the page, which the heading inside it titles.
+    private bool _IsSectioningElement => _element.Equals("article", StringComparison.OrdinalIgnoreCase)
+                                      || _element.Equals("aside", StringComparison.OrdinalIgnoreCase)
+                                      || _element.Equals("nav", StringComparison.OrdinalIgnoreCase)
+                                      || _element.Equals("section", StringComparison.OrdinalIgnoreCase);
 
 
 
@@ -208,6 +246,36 @@ public partial class BitCard : BitComponentBase
     /// It only reaches the anchor a card lays over itself while <see cref="Href"/> is set.
     /// </remarks>
     [Parameter] public string? Download { get; set; }
+
+    /// <summary>
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    /// <remarks>
+    /// A card is very often a section of the page, and HTML has names for those: an "article" for a card that stands
+    /// on its own - a post, a product, a comment - a "section" for one part of a page, an "aside" for content beside
+    /// the main flow and a "nav" for a card of links. The name is what tells assistive technologies which of them the
+    /// card is; the looks and every other parameter of the card work the same whichever tag is rendered.
+    /// <br />
+    /// A card rendered as one of those four is titled by its <see cref="Title"/>: the root gets an aria-labelledby
+    /// pointing at the title, which is what makes a "section" a region a reader can find among the landmarks of the
+    /// page. That is left out where the card is named some other way - an <see cref="BitComponentBase.AriaLabel"/>,
+    /// an aria-label or aria-labelledby of the page's own, a role splatted onto the root, a custom
+    /// <see cref="HeaderTemplate"/> that takes the title off - and on a card with a <see cref="Href"/> or an
+    /// <see cref="OnClick"/>, whose name belongs to the link or the button stretched over it. A card rendered as a tag
+    /// whose own role can be named - an "article", an "aside", a "nav", a "section", a "form", a "li", a "figure", a
+    /// "blockquote", a "fieldset", an "address", a "main" or a "search" - is not given the group role a named card
+    /// otherwise gets, since that role would take its own away; any other tag is, as a "div" is. A disabled card rendered
+    /// as a "fieldset" also writes the native disabled attribute, with aria-disabled beside it, which disables every form
+    /// control inside it.
+    /// <br />
+    /// The name is used as written, but only while it is a name a tag can have - a letter followed by letters, digits
+    /// and the "-", "_", "." and ":" that join them - and one that can hold the content of a card. Anything else falls
+    /// back to the default tag: a void element such as an "hr", an interactive one such as an "a", a "button" or a
+    /// "label", one the HTML parser closes at the first block inside it such as a "p" or an "h1"-"h6", the list,
+    /// table and select families, which hold only their own items, and those whose content is hidden or not
+    /// rendered, such as a "template", a "details", a "dialog", a "textarea" or a "script".
+    /// </remarks>
+    [Parameter] public string? Element { get; set; }
 
     /// <summary>
     /// Sets the shadow elevation level of the card (0-24). Maps to theme shadow variables (--bit-shd-1 to --bit-shd-24).
@@ -622,15 +690,16 @@ public partial class BitCard : BitComponentBase
     // button answers: Enter as the key goes down, Space as it comes back up, and neither one scrolling the page.
     // That is wired up in the browser, where a key pressed on the card itself can be told apart from one pressed
     // on a control it holds - which a Blazor keydown handler cannot see, nor prevent the default of per key. The
-    // root is the same element for the lifetime of the card, so it is registered once, the first time the root is
-    // a control; once registered it only ever turns a key pressed on the root into a click, and a root that
-    // stopped being a control is no longer focusable for one to be pressed on. The stretched button of every other
+    // root is the same element for as long as its tag stays the same, so it is registered once per root element,
+    // the first time that root is a control; once registered it only ever turns a key pressed on the root into a
+    // click, and a root that stopped being a control is no longer focusable for one to be pressed on. A new Element
+    // replaces the root with a new element, which is registered again. The stretched button of every other
     // clickable card is a native one and needs none of this.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_buttonKeysRegistered || _IsRootControl is false) return;
+        if (_IsRootControl is false || _buttonKeysRegistered) return;
 
         _buttonKeysRegistered = true;
 
@@ -759,6 +828,20 @@ public partial class BitCard : BitComponentBase
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        var element = ResolveContentElement(Element, "div");
+        if (_UnsupportedElements.Contains(element))
+        {
+            element = "div";
+        }
+
+        // The render tree replaces an element whose tag changed, so the root is a new element from here on and has
+        // none of the button keys the last one was given, even where it was not a control when it was replaced.
+        if (string.Equals(element, _element, StringComparison.Ordinal) is false)
+        {
+            _element = element;
+            _buttonKeysRegistered = false;
+        }
 
         var classState = (_IsSectioned, _IsLink || _IsButton, _IsButton);
         if (_classState != classState)

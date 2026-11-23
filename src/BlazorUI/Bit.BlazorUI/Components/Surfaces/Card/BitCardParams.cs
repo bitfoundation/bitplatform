@@ -77,6 +77,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public string? Download { get; set; }
 
     /// <summary>
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    public string? Element { get; set; }
+
+    /// <summary>
     /// Sets the shadow elevation level of the card (0-24).
     /// </summary>
     public int? Elevation { get; set; }
@@ -274,6 +279,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (Divider.HasValue)
         {
             bitCard.TakeFromCascade(nameof(Divider), Divider.Value, static c => c.Divider, static (c, v) => c.Divider = v);
+        }
+
+        if (Element.HasValue())
+        {
+            bitCard.TakeFromCascade(nameof(Element), Element, static c => c.Element, static (c, v) => c.Element = v);
         }
 
         if (Elevation.HasValue)

@@ -2846,6 +2846,547 @@ public class BitCardTests : BunitTestContext
 
     #endregion
 
+    #region Element
+
+    [TestMethod]
+    public void BitCardShouldRenderADivByDefault()
+    {
+        var component = RenderComponent<BitCard>(parameters => parameters.Add(p => p.Title, "Title"));
+
+        Assert.AreEqual("DIV", component.Find(".bit-crd").TagName);
+    }
+
+    [TestMethod]
+    [DataRow("article")]
+    [DataRow("section")]
+    [DataRow("aside")]
+    [DataRow("li")]
+    public void BitCardElementShouldRenderTheRootAsThatTag(string element)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.Id, "my-card");
+            parameters.Add(p => p.Outlined, true);
+            parameters.Add(p => p.Title, "Title");
+            parameters.AddChildContent("<p class=\"content\">Body</p>");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual(element.ToUpperInvariant(), card.TagName);
+        Assert.AreEqual("my-card", card.Id);
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-otl"));
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-sct"));
+        Assert.IsNotNull(card.QuerySelector(".bit-crd-ttl"));
+        Assert.IsNotNull(card.QuerySelector(".bit-crd-bdy .content"));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("   ")]
+    [DataRow("my card")]
+    [DataRow("<section>")]
+    [DataRow("1section")]
+    [DataRow("hr")]
+    [DataRow("img")]
+    [DataRow("a")]
+    [DataRow("button")]
+    [DataRow("p")]
+    [DataRow("h2")]
+    [DataRow("ul")]
+    [DataRow("table")]
+    [DataRow("template")]
+    [DataRow("textarea")]
+    [DataRow("SELECT")]
+    public void BitCardInvalidOrVoidElementShouldFallBackToADiv(string element)
+    {
+        // A name carrying whitespace or a "<" would write markup of its own, one that is not a name throws where the
+        // browser builds the element, and a void element would drop the content of the card.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.AddChildContent("<p class=\"content\">Body</p>");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("DIV", card.TagName);
+        Assert.IsNotNull(card.QuerySelector(".content"));
+    }
+
+    [TestMethod]
+    public void BitCardElementShouldBeTrimmed()
+    {
+        var component = RenderComponent<BitCard>(parameters => parameters.Add(p => p.Element, " section "));
+
+        Assert.AreEqual("SECTION", component.Find(".bit-crd").TagName);
+    }
+
+    [TestMethod]
+    public void BitCardElementShouldReplaceTheRootWhenItChanges()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, "section");
+            parameters.Add(p => p.Title, "Title");
+        });
+
+        Assert.AreEqual("SECTION", component.Find(".bit-crd").TagName);
+
+        component.Render(parameters => parameters.Add(p => p.Element, "article"));
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("ARTICLE", card.TagName);
+        Assert.AreEqual(card.QuerySelector(".bit-crd-ttl")!.Id, card.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    [DataRow("article")]
+    [DataRow("aside")]
+    [DataRow("nav")]
+    [DataRow("section")]
+    [DataRow("SECTION")]
+    public void BitCardSectioningElementShouldBeTitledByItsTitle(string element)
+    {
+        // A section named by its heading is a region a reader finds among the landmarks of the page.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.Title, "Getting started");
+            parameters.Add(p => p.Subtitle, "5 min read");
+        });
+
+        var card = component.Find(".bit-crd");
+        var title = component.Find(".bit-crd-ttl");
+
+        Assert.IsTrue(title.Id.HasValue());
+        Assert.AreEqual(title.Id, card.GetAttribute("aria-labelledby"));
+        // A sectioning element has a role of its own, which the group role of a named div would take away.
+        Assert.IsNull(card.GetAttribute("role"));
+        Assert.IsNull(card.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("div")]
+    [DataRow("li")]
+    [DataRow("header")]
+    public void BitCardElementThatIsNotSectioningShouldNotBeTitledByItsTitle(string? element)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.Title, "Title");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsNull(card.GetAttribute("aria-labelledby"));
+        Assert.IsNull(card.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitCardSectioningElementWithoutATitleShouldNotBeLabelled()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, "section");
+            parameters.Add(p => p.Subtitle, "Only a subtitle");
+        });
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardSectioningElementShouldNotPointAtATitleACustomHeaderTookOff()
+    {
+        // An aria-labelledby aimed at an element that was never rendered leaves the section with no name at all.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, "section");
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.HeaderTemplate, "<span>Custom header</span>");
+        });
+
+        Assert.IsNull(component.Find(".bit-crd").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardSectioningElementAriaLabelShouldWinOverTheTitle()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, "section");
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.AriaLabel, "Release notes");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("Release notes", card.GetAttribute("aria-label"));
+        Assert.IsNull(card.GetAttribute("aria-labelledby"));
+        Assert.IsNull(card.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitCardSectioningElementShouldKeepThePagesOwnName()
+    {
+        var labelledBy = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "section");
+            builder.AddAttribute(2, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(3, "aria-labelledby", "some-heading");
+        });
+
+        Assert.AreEqual("some-heading", labelledBy.Find(".bit-crd").GetAttribute("aria-labelledby"));
+        Assert.IsNull(labelledBy.Find(".bit-crd").GetAttribute("role"));
+
+        var label = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "section");
+            builder.AddAttribute(2, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(3, "aria-label", "The page's own name");
+        });
+
+        Assert.AreEqual("The page's own name", label.Find(".bit-crd").GetAttribute("aria-label"));
+        Assert.IsNull(label.Find(".bit-crd").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardSectioningElementWithASplattedRoleShouldNotBeTitledByItsTitle()
+    {
+        // A role of the page's own says what the card is instead of the tag, and is the page's to name.
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "article");
+            builder.AddAttribute(2, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(3, "role", "listitem");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("listitem", card.GetAttribute("role"));
+        Assert.IsNull(card.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardLinkedSectioningElementShouldLeaveTheNameToTheLink()
+    {
+        // The title already names the link stretched over the card; a section named by it as well would have the
+        // same words announced twice.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, "article");
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+        });
+
+        var card = component.Find(".bit-crd");
+        var title = component.Find(".bit-crd-ttl");
+
+        Assert.AreEqual("ARTICLE", card.TagName);
+        Assert.IsNull(card.GetAttribute("aria-labelledby"));
+        Assert.AreEqual(title.Id, component.Find(".bit-crd-lnk").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardClickableSectioningElementShouldKeepItsStretchedButton()
+    {
+        var clicked = 0;
+
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, "section");
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.OnClick, () => clicked++);
+        });
+
+        var card = component.Find(".bit-crd");
+        var button = component.Find("button.bit-crd-lnk");
+
+        Assert.AreEqual("SECTION", card.TagName);
+        Assert.IsTrue(card.ClassList.Contains("bit-crd-btn"));
+        Assert.IsNull(card.GetAttribute("aria-labelledby"));
+        Assert.AreEqual(component.Find(".bit-crd-ttl").Id, button.GetAttribute("aria-labelledby"));
+
+        card.Click();
+
+        Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod]
+    public void BitCardNamedElementWithARoleOfItsOwnShouldNotBecomeAGroup()
+    {
+        // A named section is already a region; the group role would take that away.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, "section");
+            parameters.Add(p => p.AriaLabel, "A card");
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("A card", card.GetAttribute("aria-label"));
+        Assert.IsNull(card.GetAttribute("role"));
+        Assert.IsNull(card.GetAttribute("aria-disabled"));
+        Assert.IsTrue(card.ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    [DataRow("span")]
+    [DataRow("em")]
+    [DataRow("header")]
+    [DataRow("footer")]
+    public void BitCardNamedElementWhoseRoleCannotBeNamedShouldBecomeAGroup(string element)
+    {
+        // These tags map to roles that prohibit a name (or to no role at all), so the name would never be read.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.AriaLabel, "A card");
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual(element.ToUpperInvariant(), card.TagName);
+        Assert.AreEqual("A card", card.GetAttribute("aria-label"));
+        Assert.AreEqual("group", card.GetAttribute("role"));
+        Assert.AreEqual("true", card.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitCardElementRootControlShouldRegisterTheButtonKeysOnTheRoot()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.AddAttribute(2, nameof(BitCard.Element), "article");
+            builder.AddAttribute(3, "role", "option");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("ARTICLE", card.TagName);
+        Assert.AreEqual("0", card.GetAttribute("tabindex"));
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys");
+
+        Assert.AreEqual(component.FindComponent<BitCard>().Instance.RootElement.Id, ((ElementReference)invocation.Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitCardRootControlShouldRegisterTheButtonKeysAgainOnANewElement()
+    {
+        // A new tag is a new element, which has none of the listeners the last one was given.
+        var element = "div";
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCard>(0);
+                builder.AddAttribute(1, nameof(BitCard.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+                builder.AddAttribute(2, nameof(BitCard.Element), element);
+                builder.AddAttribute(3, "role", "option");
+                builder.CloseComponent();
+            });
+        });
+
+        component.Render();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 1);
+
+        element = "article";
+        component.Render();
+
+        Assert.AreEqual("ARTICLE", component.Find(".bit-crd").TagName);
+
+        var invocations = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 2);
+
+        Assert.AreEqual(component.FindComponent<BitCard>().Instance.RootElement.Id, ((ElementReference)invocations[1].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitCardRootControlShouldRegisterTheButtonKeysAgainAfterItsTagChangedWhileNotAControl()
+    {
+        // The root is replaced on each change of tag, including the one made while its root was not a control, so
+        // coming back to the first tag is a new element that needs the keys again.
+        var element = "div";
+        var role = "option";
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCard>(0);
+                builder.AddAttribute(1, nameof(BitCard.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+                builder.AddAttribute(2, nameof(BitCard.Element), element);
+                if (role is not null)
+                {
+                    builder.AddAttribute(3, "role", role);
+                }
+                builder.CloseComponent();
+            });
+        });
+
+        component.Render();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 1);
+
+        element = "article";
+        role = null;
+        component.Render();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 1);
+
+        element = "div";
+        role = "option";
+        component.Render();
+
+        Assert.AreEqual("DIV", component.Find(".bit-crd").TagName);
+
+        var invocations = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerButtonKeys", calledTimes: 2);
+
+        Assert.AreEqual(component.FindComponent<BitCard>().Instance.RootElement.Id, ((ElementReference)invocations[1].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitCardDisabledElementShouldDropThePagesOwnOnclick()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "section");
+            builder.AddAttribute(2, nameof(BitCard.Disabled), true);
+            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.AddAttribute(4, "tabindex", "0");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("SECTION", card.TagName);
+        Assert.IsTrue(card.ClassList.Contains("bit-dis"));
+        Assert.IsNull(card.GetAttribute("tabindex"));
+        Assert.IsFalse(card.HasAttribute("blazor:onclick"));
+    }
+
+    [TestMethod]
+    public void BitCardDisabledFieldsetElementShouldBeNativelyDisabled()
+    {
+        // A fieldset is the one tag the card can be that HTML defines a disabled attribute on, which also disables
+        // every form control inside it.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, "fieldset");
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.ChildContent, "<input class=\"inner\" />");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("FIELDSET", card.TagName);
+        Assert.IsTrue(card.HasAttribute("disabled"));
+        Assert.AreEqual("true", card.GetAttribute("aria-disabled"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        card = component.Find(".bit-crd");
+
+        Assert.IsFalse(card.HasAttribute("disabled"));
+        Assert.IsNull(card.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitCardDisabledFieldsetElementShouldWinOverTheSplattedAriaDisabled()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "fieldset");
+            builder.AddAttribute(2, nameof(BitCard.Disabled), true);
+            builder.AddAttribute(3, "aria-disabled", "false");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.HasAttribute("disabled"));
+        Assert.AreEqual("true", card.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitCardEnabledFieldsetElementShouldKeepThePagesOwnDisabledState()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "fieldset");
+            builder.AddAttribute(2, "disabled", true);
+            builder.AddAttribute(3, "aria-disabled", "true");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.HasAttribute("disabled"));
+        Assert.AreEqual("true", card.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    [DataRow("div")]
+    [DataRow("section")]
+    [DataRow("button")]
+    public void BitCardDisabledElementThatIsNotAFieldsetShouldNotWriteDisabled(string element)
+    {
+        // A button root is not supported and falls back to a div; no other tag the card can be has a disabled attribute.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-crd").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("   ")]
+    public void BitCardBlankSplattedAriaLabelledByShouldFallBackToTheTitle(string labelledBy)
+    {
+        var section = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "section");
+            builder.AddAttribute(2, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(3, "aria-labelledby", labelledBy);
+        });
+
+        Assert.AreEqual(section.Find(".bit-crd-ttl").Id, section.Find(".bit-crd").GetAttribute("aria-labelledby"));
+
+        var linked = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Href), "https://bitplatform.dev");
+            builder.AddAttribute(2, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(3, "aria-labelledby", labelledBy);
+        });
+
+        Assert.AreEqual(linked.Find(".bit-crd-ttl").Id, linked.Find(".bit-crd-lnk").GetAttribute("aria-labelledby"));
+        Assert.IsNull(linked.Find(".bit-crd").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardBlankSplattedAriaLabelledByShouldNotNameAPlainCard()
+    {
+        var component = RenderSplattedCard(builder => builder.AddAttribute(1, "aria-labelledby", " "));
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsNull(card.GetAttribute("aria-labelledby"));
+        Assert.IsNull(card.GetAttribute("role"));
+    }
+
+    #endregion
+
     #region Classes & Styles
 
     [TestMethod]

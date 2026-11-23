@@ -75,7 +75,12 @@ public sealed class BevToolsLoader : IDisposable
         }
 
         _authorized = true;
-        var entryPoint = await _context.LoadAsync(_js);
+        IBevToolsEntryPoint? entryPoint;
+        using (BevToolsHooks.BeginOwnWork())
+        {
+            // What loading logs (LazyAssemblyLoader, the download) is BevTools' doing, not the app's.
+            entryPoint = await _context.LoadAsync(_js);
+        }
         if (opening != _openings)
         {
             return false;
@@ -138,7 +143,9 @@ public sealed class BevToolsLoader : IDisposable
         IDisposable? ownWork;
         try
         {
-            ownWork = _context.EntryPoint?.BeginOwnWork();
+            // Before Bit.BevTools is loaded the loader marks it itself: what the callback logs is not the app's, and the
+            // logs BevToolsAutoStart.Logs keeps for the session about to attach must not show it.
+            ownWork = _context.EntryPoint?.BeginOwnWork() ?? BevToolsHooks.BeginOwnWork();
         }
         catch (Exception ex)
         {
