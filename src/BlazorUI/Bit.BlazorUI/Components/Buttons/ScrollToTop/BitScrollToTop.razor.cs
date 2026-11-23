@@ -52,9 +52,10 @@ public partial class BitScrollToTop : BitComponentBase
     /// (<see cref="FloatPosition"/>) rather than of the viewport.
     /// </summary>
     /// <remarks>
-    /// Takes precedence over <see cref="Float"/> when both are set.
+    /// Takes precedence over <see cref="Float"/> when both are set, so a <see cref="BitParams"/> ancestor does not supply
+    /// it to a button that sets <see cref="Float"/> itself.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Float))]
     public bool FloatAbsolute { get; set; }
 
     /// <summary>

@@ -4,7 +4,8 @@
 // button and one set on the Style of an instance re-skins that one:
 //   --bit-ScrollToTop-color                foreground (text and icon) at rest             (default: $clr-pri-text)
 //   --bit-ScrollToTop-background           background at rest                             (default: $clr-pri)
-//   --bit-ScrollToTop-border-color         border color                                    (default: the background at rest)
+//   --bit-ScrollToTop-border-color         border color at rest                            (default: the background at rest; the
+//                                          border follows the background on hover and while pressed)
 //   --bit-ScrollToTop-border-width         thickness of the border                         (default: $shp-border-width)
 //   --bit-ScrollToTop-hover-color          foreground on hover                             (default: the foreground at rest)
 //   --bit-ScrollToTop-hover-background     background on hover                             (default: $clr-pri-hover)
@@ -13,7 +14,7 @@
 //   --bit-ScrollToTop-disabled-color       foreground when disabled                        (default: $clr-pri-dis-text)
 //   --bit-ScrollToTop-disabled-background  background and border when disabled             (default: $clr-pri-dis)
 //   --bit-ScrollToTop-focus-color          focus ring color                                (default: $clr-pri-focus)
-//   --bit-ScrollToTop-radius               corner radius of the box and its focus ring     (default: $shp-radius-full)
+//   --bit-ScrollToTop-radius               corner radius of the box and its focus ring     (default: $shp-radius-button)
 //   --bit-ScrollToTop-size                 height of the box, and the width of an
 //                                          icon-only one                                   (default: $siz-ctrl-lg)
 //   --bit-ScrollToTop-padding              padding of a button with a text                 (default: 0 $siz-ctrl-pad-x-md)
@@ -29,7 +30,7 @@
 $stt-private-properties: flo,
                          // The colors the hover and press states move, unset at rest so the state of one button is never
                          // inherited by anything inside it.
-                         sfg, sbg;
+                         sfg, sbg, sbr;
 
 .bit-stt {
     @each $name in $stt-private-properties {
@@ -54,14 +55,15 @@ $stt-private-properties: flo,
     padding: var(--bit-ScrollToTop-padding, 0 #{$siz-ctrl-pad-x-md});
     border-style: $shp-border-style;
     border-width: var(--bit-ScrollToTop-border-width, #{$shp-border-width});
-    border-radius: var(--bit-ScrollToTop-radius, #{$shp-radius-full});
+    border-radius: var(--bit-ScrollToTop-radius, #{$shp-radius-button});
     color: var(--bit-stt-sfg, var(--bit-ScrollToTop-color, #{$clr-pri-text}));
     background-color: var(--bit-stt-sbg, var(--bit-ScrollToTop-background, #{$clr-pri}));
-    border-color: var(--bit-ScrollToTop-border-color, var(--bit-ScrollToTop-background, #{$clr-pri}));
+    border-color: var(--bit-stt-sbr, var(--bit-ScrollToTop-border-color, var(--bit-ScrollToTop-background, #{$clr-pri})));
     // The revealing fades and grows the button in on the motion tokens, so it collapses under a reduced-motion preference
     // and comes back under ForceAnimation with nothing written here for either. Visibility is delayed by the same
     // duration on the way out, so the button stays visible while it fades and is out of reach once it has.
     transition: color $mot-duration-short $mot-easing,
+                border-color $mot-duration-short $mot-easing,
                 background-color $mot-duration-short $mot-easing,
                 opacity $mot-duration $mot-easing-decelerate,
                 scale $mot-duration $mot-easing-decelerate,
@@ -71,12 +73,14 @@ $stt-private-properties: flo,
         &:not(.bit-dis):hover {
             --bit-stt-sfg: var(--bit-ScrollToTop-hover-color, var(--bit-ScrollToTop-color, #{$clr-pri-text}));
             --bit-stt-sbg: var(--bit-ScrollToTop-hover-background, #{$clr-pri-hover});
+            --bit-stt-sbr: var(--bit-ScrollToTop-hover-background, #{$clr-pri-hover});
         }
     }
 
     &:not(.bit-dis):active {
         --bit-stt-sfg: var(--bit-ScrollToTop-active-color, var(--bit-ScrollToTop-hover-color, var(--bit-ScrollToTop-color, #{$clr-pri-text})));
         --bit-stt-sbg: var(--bit-ScrollToTop-active-background, #{$clr-pri-active});
+        --bit-stt-sbr: var(--bit-ScrollToTop-active-background, #{$clr-pri-active});
     }
 
     &:focus-visible {
@@ -91,7 +95,7 @@ $stt-private-properties: flo,
     }
 }
 
-// An icon-only button is a square of the control height, which a round radius turns into a circle.
+// An icon-only button is a square of the control height, which a full radius (--bit-ScrollToTop-radius) turns into a circle.
 .bit-stt-ion {
     padding: 0;
     min-width: var(--bit-ScrollToTop-size, #{$siz-ctrl-lg});

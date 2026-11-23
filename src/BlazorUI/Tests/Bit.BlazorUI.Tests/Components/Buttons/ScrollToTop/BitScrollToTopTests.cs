@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Bunit;
@@ -260,6 +261,22 @@ public class BitScrollToTopTests : BunitTestContext
         root = com.Find(".bit-stt");
         Assert.IsFalse(root.HasAttribute("disabled"));
         Assert.IsNull(root.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitScrollToTopShouldKeepTheDirAndAriaDisabledThePageWritesWhereNoParameterSaysOtherwise()
+    {
+        // Blazor matches parameter names regardless of case, so the splatted dir goes through HtmlAttributes itself.
+        var com = Render(p => p.Add(x => x.HtmlAttributes, new Dictionary<string, object> { ["dir"] = "rtl", ["aria-disabled"] = "true" }));
+
+        var root = com.Find(".bit-stt");
+
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+
+        com.Render(p => p.Add(x => x.Dir, BitDir.Ltr));
+
+        Assert.AreEqual("ltr", com.Find(".bit-stt").GetAttribute("dir"));
     }
 
     [TestMethod]

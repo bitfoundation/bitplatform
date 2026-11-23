@@ -32,7 +32,9 @@
 
         // Shows the button once its scroller has travelled past the offset, and hides it again within it. A button holding
         // the focus stays revealed: hiding it would drop the focus to the page under a keyboard user's feet.
-        public static reveal(button: HTMLElement) {
+        // An instant reveal skips the fade: a button that is only being put back as it was (one re-created by an
+        // interactive render, or one whose mark a DOM sync took away) must not blink out and fade back in.
+        public static reveal(button: HTMLElement, instant = false) {
             try {
                 const offset = Math.max(0, parseFloat(button.getAttribute('data-bit-stt-offset') || '0') || 0);
 
@@ -40,11 +42,23 @@
 
                 if (shown === button.hasAttribute(ScrollToTop.SHOWN)) return;
 
-                if (shown) {
-                    button.setAttribute(ScrollToTop.SHOWN, '');
-                } else {
+                if (shown === false) {
                     button.removeAttribute(ScrollToTop.SHOWN);
+                    return;
                 }
+
+                if (instant === false) {
+                    button.setAttribute(ScrollToTop.SHOWN, '');
+                    return;
+                }
+
+                // Reading the scroller above already computed the hidden style of the button, so the change is made with
+                // no transition and flushed before the transition of the button is given back.
+                const transition = button.style.transition;
+                button.style.transition = 'none';
+                button.setAttribute(ScrollToTop.SHOWN, '');
+                void getComputedStyle(button).opacity;
+                button.style.transition = transition;
             } catch (e) { console.error("BitBlazorUI.ScrollToTop.reveal:", e); }
         }
 
@@ -65,17 +79,27 @@
             let node = button.parentElement;
 
             while (node && node !== document.body && node !== document.documentElement) {
-                const overflowY = getComputedStyle(node).overflowY;
-
                 // A scrollable overflow that has nothing to scroll is not the scroller of the button: walking past it lands
                 // on the box that really scrolls.
-                if ((overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') &&
-                    node.scrollHeight > node.clientHeight) return node;
+                if (ScrollToTop.scrolls(node)) return node;
 
                 node = node.parentElement;
             }
 
+            // An app shell can make the body the scroller (html { overflow: hidden } body { overflow-y: auto }), where the
+            // window never scrolls. The overflow of the body only belongs to the body itself while the root's is not
+            // visible: otherwise the browser hands it to the viewport, which the window covers.
+            const body = document.body;
+
+            if (body && getComputedStyle(document.documentElement).overflowY !== 'visible' && ScrollToTop.scrolls(body)) return body;
+
             return window;
+        }
+
+        private static scrolls(node: HTMLElement) {
+            const overflowY = getComputedStyle(node).overflowY;
+
+            return (overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay') && node.scrollHeight > node.clientHeight;
         }
 
         public static scrollTop(target: HTMLElement | Window): number {
@@ -120,41 +144,73 @@
             const element = target === window ? document.body : target as HTMLElement;
             if (!element) return;
 
+            let restore: (() => void) | null = null;
+
             if (element.tabIndex < 0 && !element.hasAttribute('tabindex')) {
                 const outline = element.style.outline;
 
                 element.setAttribute('tabindex', '-1');
                 element.style.outline = 'none';
 
-                element.addEventListener('blur', () => {
+                restore = () => {
                     element.removeAttribute('tabindex');
                     element.style.outline = outline;
-                }, { once: true });
+                };
+
+                element.addEventListener('blur', restore, { once: true });
             }
 
             // The scroll above is already taking the scroller to its top; letting the focus scroll as well would cut a
             // smooth scroll short.
             element.focus({ preventScroll: true });
+
+            // A box that still cannot take the focus (display: contents, inert, hidden) never fires the blur that would
+            // give back its tabindex and its outline, so they are given back at once.
+            if (restore && document.activeElement !== element) {
+                element.removeEventListener('blur', restore);
+                restore();
+            }
         }
 
         // A button added to the page, or one whose offset or scroller changed, is read at once rather than at the next
         // scroll, which may never come (a page restored scrolled, a button rendered into a pane the reader is deep into).
+        // An added button, and one whose shown mark was taken away (Blazor's DOM sync of an enhanced navigation, a
+        // streaming update or an enhanced form post drops the attributes the server did not render), is put back here,
+        // before the next paint and with no fade, since the reader never saw it go.
         public static mutated(records: MutationRecord[]) {
+            let changed = false;
+
             for (const record of records) {
                 if (record.type === 'attributes') {
-                    ScrollToTop.queue();
-                    return;
+                    const target = record.target as HTMLElement;
+
+                    if (target.matches(ScrollToTop.SELECTOR) === false) continue;
+
+                    if (record.attributeName === ScrollToTop.SHOWN) {
+                        if (target.matches(ScrollToTop.REVEAL_SELECTOR)) ScrollToTop.reveal(target, true);
+                    } else {
+                        changed = true;
+                    }
+
+                    continue;
                 }
 
                 for (let i = 0; i < record.addedNodes.length; i++) {
                     const node = record.addedNodes[i];
 
-                    if (node instanceof Element && (node.matches(ScrollToTop.REVEAL_SELECTOR) || node.querySelector(ScrollToTop.REVEAL_SELECTOR))) {
-                        ScrollToTop.queue();
-                        return;
+                    if (!(node instanceof HTMLElement)) continue;
+
+                    if (node.matches(ScrollToTop.REVEAL_SELECTOR)) ScrollToTop.reveal(node, true);
+
+                    const buttons = node.querySelectorAll<HTMLElement>(ScrollToTop.REVEAL_SELECTOR);
+
+                    for (let j = 0; j < buttons.length; j++) {
+                        ScrollToTop.reveal(buttons[j], true);
                     }
                 }
             }
+
+            if (changed) ScrollToTop.queue();
         }
     }
 }
@@ -177,7 +233,7 @@ namespace BitBlazorUI {
     }, true);
 
     new MutationObserver(records => ScrollToTop.mutated(records))
-        .observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-bit-stt-offset', 'data-bit-stt-target'] });
+        .observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-bit-stt-offset', 'data-bit-stt-target', ScrollToTop.SHOWN] });
 
     ScrollToTop.queue();
 }

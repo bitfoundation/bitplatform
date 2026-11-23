@@ -113,6 +113,20 @@ public class BitScrollToTopParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitScrollToTopShouldNotTakeACascadedFloatAbsoluteWhenItSetsFloat()
+    {
+        var component = RenderWithParams(new BitScrollToTopParams { FloatAbsolute = true }, builder =>
+        {
+            builder.AddComponentParameter(1, nameof(BitScrollToTop.Float), true);
+        });
+
+        var root = component.Find(".bit-stt");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-stt-ffx"), "the Float the button sets pins it to the viewport");
+        Assert.IsFalse(root.ClassList.Contains("bit-stt-fab"));
+    }
+
+    [TestMethod]
     public void BitScrollToTopShouldKeepItsOwnValuesOverTheCascadedOnes()
     {
         var component = RenderWithParams(new BitScrollToTopParams { RevealOffset = 400, Smooth = false, IconName = "DoubleChevronUp" }, builder =>

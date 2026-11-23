@@ -135,7 +135,7 @@ public partial class BitScrollToTopDemo
     [
         new() { Name = "--bit-ScrollToTop-color", DefaultValue = "--bit-clr-pri-text", Description = "Foreground (text and icon) at rest." },
         new() { Name = "--bit-ScrollToTop-background", DefaultValue = "--bit-clr-pri", Description = "Background at rest." },
-        new() { Name = "--bit-ScrollToTop-border-color", DefaultValue = "the background at rest", Description = "Border color." },
+        new() { Name = "--bit-ScrollToTop-border-color", DefaultValue = "the background at rest", Description = "Border color at rest; on hover and while pressed the border follows the background." },
         new() { Name = "--bit-ScrollToTop-border-width", DefaultValue = "--bit-shp-border-width", Description = "Thickness of the border." },
         new() { Name = "--bit-ScrollToTop-hover-color", DefaultValue = "the foreground at rest", Description = "Foreground on hover." },
         new() { Name = "--bit-ScrollToTop-hover-background", DefaultValue = "--bit-clr-pri-hover", Description = "Background on hover." },
@@ -144,7 +144,7 @@ public partial class BitScrollToTopDemo
         new() { Name = "--bit-ScrollToTop-disabled-color", DefaultValue = "--bit-clr-pri-dis-text", Description = "Foreground when disabled." },
         new() { Name = "--bit-ScrollToTop-disabled-background", DefaultValue = "--bit-clr-pri-dis", Description = "Background and border when disabled." },
         new() { Name = "--bit-ScrollToTop-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Focus ring color." },
-        new() { Name = "--bit-ScrollToTop-radius", DefaultValue = "--bit-shp-radius-full", Description = "Corner radius of the box and its focus ring." },
+        new() { Name = "--bit-ScrollToTop-radius", DefaultValue = "--bit-shp-radius-button", Description = "Corner radius of the box and its focus ring." },
         new() { Name = "--bit-ScrollToTop-size", DefaultValue = "--bit-siz-ctrl-lg", Description = "Height of the box, and the width of an icon-only one." },
         new() { Name = "--bit-ScrollToTop-padding", DefaultValue = "0 --bit-siz-ctrl-pad-x-md", Description = "Padding of a button with a text." },
         new() { Name = "--bit-ScrollToTop-gap", DefaultValue = "spacing(1)", Description = "Room between the icon and the text." },
