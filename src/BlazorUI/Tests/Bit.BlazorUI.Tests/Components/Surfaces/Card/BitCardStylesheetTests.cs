@@ -222,7 +222,7 @@ public partial class BitCardStylesheetTests
 
         // The shadow and the rule width are read by the root alone, so they are registered as properties that do not
         // inherit, while still being reset on the root with the rest for a browser without @property.
-        StringAssert.Contains(stylesheet, "\n$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, trn;\n");
+        StringAssert.Contains(stylesheet, "\n$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, lft;\n");
         StringAssert.Contains(stylesheet, """
             @each $name in $crd-root-only-properties {
                 @property --bit-crd-#{$name} {
@@ -234,7 +234,7 @@ public partial class BitCardStylesheetTests
 
         var privateList = SourceFiles.GetPrivatePropertyLists(stylesheet).Single(l => l.Name == "crd-private-properties");
 
-        foreach (var name in new[] { "shd", "shd-hov", "shd-act", "brd-wid", "sbr", "trn" })
+        foreach (var name in new[] { "shd", "shd-hov", "shd-act", "brd-wid", "sbr", "lft" })
         {
             CollectionAssert.Contains(privateList.Names.ToArray(), name, $"{name} is registered but no longer reset on the root.");
         }
@@ -247,7 +247,7 @@ public partial class BitCardStylesheetTests
 
         // A card that is a button is pressed through its root, in a rule that needs no :has, so a browser that cannot
         // read :has keeps the press of a root that is the control rather than dropping it with the rest of a list.
-        StringAssert.Contains(stylesheet, "\n.bit-crd-btn:active {\n    box-shadow: $crd-shd-active;\n    --bit-crd-sbg: #{$crd-bg-active};\n    --bit-crd-trn: none;\n}");
+        StringAssert.Contains(stylesheet, "\n.bit-crd-btn:active {\n    box-shadow: $crd-shd-active;\n    --bit-crd-sbg: #{$crd-bg-active};\n}");
 
         // A linked card is pressed through its anchor alone, since :active on the root would also be the press of a
         // control in its header or its footer.
@@ -259,30 +259,54 @@ public partial class BitCardStylesheetTests
     }
 
     [TestMethod]
-    public void BitCardShouldMoveItsRuleAndItsOffsetUnderThePointer()
+    public void BitCardShouldMoveItsRuleAndItsLiftUnderThePointer()
     {
         var stylesheet = ReadStylesheet();
 
         // The hover rule falls back to the resting one, and the color a Border or a role asked for stays put under the
-        // pointer, since it is the more specific ask. The offset is nothing unless the variable asks for one.
+        // pointer, since it is the more specific ask. The lift is nothing unless the variable asks for one, and never
+        // below zero.
         StringAssert.Contains(stylesheet, "$crd-brd-hover: var(--bit-crd-brd-clr, var(--bit-Card-hover-border-color, var(--bit-Card-border-color, #{$clr-brd-pri})));");
-        StringAssert.Contains(stylesheet, "$crd-trn-hover: var(--bit-Card-hover-translate, none);");
+        StringAssert.Contains(stylesheet, "$crd-lift: max(0px, var(--bit-Card-hover-lift, none));");
 
         // Both are states of every card that answers the pointer - a control or a Hoverable one, like the hover shadow -
         // and move a private variable the root paints from, so a class the app hands the root keeps its paint.
         var hover = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-crd-int:hover,\n    .bit-crd-hov:hover {");
         StringAssert.Contains(hover, "--bit-crd-sbr: #{$crd-brd-hover};");
-        StringAssert.Contains(hover, "--bit-crd-trn: #{$crd-trn-hover};");
+        StringAssert.Contains(hover, "--bit-crd-lft: calc(-1 * #{$crd-lift});");
 
-        // The move is timed by the motion tokens, which is what collapses it under reduced motion.
+        // The lift is a relative offset of the positioned root, never a transform: a transformed card would be a
+        // stacking context trapping the z-index of a tooltip opened in it, and the containing block of what is fixed
+        // in it. It is timed by the motion tokens, which is what collapses it under reduced motion.
         var root = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-crd {");
-        StringAssert.Contains(root, "translate: var(--bit-crd-trn, none);");
-        StringAssert.Contains(root, "translate $mot-duration-short $mot-easing;");
+        StringAssert.Contains(root, "position: relative;");
+        StringAssert.Contains(root, "top: var(--bit-crd-lft, 0px);");
+        StringAssert.Contains(root, "top $mot-duration-short $mot-easing;");
+        Assert.IsFalse(root.Contains("translate:") || root.Contains("transform:"), "A lifted card would become a stacking context.");
 
-        // A press settles the card back to its place along with its shadow, and pressing a control inside a card that is
-        // a button leaves the card where the hover put it.
-        StringAssert.Contains(stylesheet, "\n.bit-crd-int:has(> .bit-crd-lnk:active) {\n    box-shadow: $crd-shd-active;\n    --bit-crd-sbg: #{$crd-bg-active};\n    --bit-crd-trn: none;\n}");
-        StringAssert.Contains(stylesheet, "        --bit-crd-sbg: #{$crd-bg-hover};\n        --bit-crd-trn: #{$crd-trn-hover};\n");
+        // The room the lift leaves under the card stays the card's, so a pointer near its bottom edge is not left behind
+        // by the lift, which would end the hover and drop the card under it again, over and over.
+        var room = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-crd-int:hover::before,\n    .bit-crd-hov:hover::before {");
+        StringAssert.Contains(room, "position: absolute;");
+        StringAssert.Contains(room, "top: 100%;");
+        StringAssert.Contains(room, "height: #{$crd-lift};");
+        StringAssert.Contains(room, "padding-block-end: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0));");
+
+        // Nothing clips that room: a cover is clipped to the corners of the card by itself rather than by the card.
+        Assert.IsFalse(stylesheet.Contains(".bit-crd-sct:has(> .bit-crd-cvr)"), "Clipping the card clips the room under a lifted one.");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-crd-cvr {"), "border-radius: inherit;");
+
+        // A press keeps the card where the hover lifted it, so the release lands on the card the press did.
+        foreach (var press in new[] { "\n.bit-crd-btn:active {", "\n.bit-crd-int:has(> .bit-crd-lnk:active) {" })
+        {
+            Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, press).Contains("--bit-crd-lft"), $"{press.Trim()} moves the card off the pointer.");
+        }
+
+        // Pressing a control inside a card that is a button shades the card for the hover only while it is hovered: a
+        // key or a touch pressing the control is no hover.
+        var controlPress = SourceFiles.GetScssBlock(stylesheet, "\n.bit-crd-btn:active:has(> .bit-crd-fac:active, > .bit-crd-mai > .bit-crd-hdr > .bit-crd-act:active, > .bit-crd-mai > .bit-crd-ftr:active) {");
+        StringAssert.Contains(controlPress, "    @media (hover: hover) {\n        &:hover {\n            --bit-crd-sbg: #{$crd-bg-hover};\n        }\n    }");
+        Assert.IsFalse(controlPress.Contains("--bit-crd-lft"), "Pressing a control inside the card lifts it.");
     }
 
     [TestMethod]

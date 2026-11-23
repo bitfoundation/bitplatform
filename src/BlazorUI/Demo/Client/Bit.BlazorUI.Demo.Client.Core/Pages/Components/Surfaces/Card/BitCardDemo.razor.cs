@@ -178,7 +178,7 @@ public partial class BitCardDemo
             Name = "Hoverable",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Gives a card that is not a control the hover shadow under the pointer, and the hover border color and offset when --bit-Card-hover-border-color and --bit-Card-hover-translate set them. A clickable or linked card gets them on its own.",
+            Description = "Gives a card that is not a control the hover shadow under the pointer, and the hover border color and lift when --bit-Card-hover-border-color and --bit-Card-hover-lift set them. A clickable or linked card gets them on its own.",
         },
         new()
         {
@@ -669,9 +669,9 @@ public partial class BitCardDemo
         },
         new()
         {
-            Name = "--bit-Card-hover-translate",
+            Name = "--bit-Card-hover-lift",
             DefaultValue = "none",
-            Description = "How far a clickable, linked or Hoverable card moves under the pointer, as a CSS translate value: 0 -2px lifts it by 2px. The press settles it back. Under reduced motion it steps there instead of gliding.",
+            Description = "How far a clickable, linked or Hoverable card rises under the pointer, as a length: 2px lifts it by 2px, and a value below 0 lifts nothing. The card keeps the room it left hovered and stays lifted while pressed, so the pointer never slips off it. Under reduced motion it steps there instead of gliding.",
         },
         new()
         {

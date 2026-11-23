@@ -372,11 +372,11 @@ public partial class BitCard : BitComponentBase
 
     /// <summary>
     /// Raises the card to its hover shadow while the pointer is over it, and gives it the hover border color
-    /// and the hover offset that the --bit-Card-hover-border-color and --bit-Card-hover-translate variables set.
+    /// and the hover lift that the --bit-Card-hover-border-color and --bit-Card-hover-lift variables set.
     /// </summary>
     /// <remarks>
     /// A clickable card or a linked one does so on its own (and shades its surface as well); this is for a card
-    /// that reacts to the pointer without being a control itself. Nothing moves unless --bit-Card-hover-translate
+    /// that reacts to the pointer without being a control itself. Nothing moves unless --bit-Card-hover-lift
     /// is set.
     /// </remarks>
     [Parameter, ResetClassBuilder]
