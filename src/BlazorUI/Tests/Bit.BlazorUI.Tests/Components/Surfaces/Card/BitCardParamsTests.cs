@@ -250,6 +250,30 @@ public class BitCardParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardShouldNotTakeCascadedHorizontalBreakpointsOverItsOwnHorizontal()
+    {
+        // A card that set its own orientation asked for it at every width, so a cascaded breakpoint must not turn it
+        // the other way from that breakpoint up.
+        var component = RenderWithParams(new BitCardParams
+        {
+            HorizontalSm = true,
+            HorizontalMd = true,
+        }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.ImageUrl), "/images/a.png");
+            builder.AddAttribute(2, nameof(BitCard.Horizontal), false);
+        });
+
+        var card = component.FindComponent<BitCard>().Instance;
+        var root = component.Find(".bit-crd");
+
+        Assert.IsFalse(card.Horizontal);
+        Assert.IsNull(card.HorizontalSm);
+        Assert.IsNull(card.HorizontalMd);
+        Assert.IsFalse(root.ClassList.Any(c => c.StartsWith("bit-crd-hrz", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
     public void BitCardShouldApplyCascadedCoverWidthAndImageHeight()
     {
         var component = RenderWithParams(new BitCardParams

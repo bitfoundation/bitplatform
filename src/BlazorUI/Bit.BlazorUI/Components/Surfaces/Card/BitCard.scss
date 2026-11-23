@@ -169,12 +169,38 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid, sbr, lft;
 // of this file. A band that ends where the next breakpoint begins is what lets a card turn back at a wider breakpoint
 // with nothing to undo, and keeping each rule where it stands keeps its order against the rules after it: the
 // overlay still wins over the share of the width a horizontal card hands its cover.
-$crd-hrz-bands: ( 'xs': '(max-width: #{$mq-xs-max})',
-                  'sm': '(min-width: #{$mq-sm-min}) and (max-width: #{$mq-sm-max})',
-                  'md': '(min-width: #{$mq-md-min}) and (max-width: #{$mq-md-max})',
-                  'lg': '(min-width: #{$mq-lg-min}) and (max-width: #{$mq-lg-max})',
-                  'xl': '(min-width: #{$mq-xl-min}) and (max-width: #{$mq-xl-max})',
-                  'xxl': '(min-width: #{$mq-xxl-min})' );
+//
+// Each band is the half-open range from its own breakpoint up to the next one's, given as the pair of the two (null
+// where it is open), so adjacent bands meet exactly: a max-width a fraction of a pixel below the next breakpoint would
+// leave a sliver - a zoomed or scaled viewport - in which no band matches and a horizontal card falls back to a column.
+// The upper end is written as the negation of the next breakpoint (`not all and`), nested in the lower one.
+$crd-hrz-bands: ( 'xs': (null, $mq-sm-min),
+                  'sm': ($mq-sm-min, $mq-md-min),
+                  'md': ($mq-md-min, $mq-lg-min),
+                  'lg': ($mq-lg-min, $mq-xl-min),
+                  'xl': ($mq-xl-min, $mq-xxl-min),
+                  'xxl': ($mq-xxl-min, null) );
+
+@mixin crd-hrz-band-media($band) {
+    $min: nth($band, 1);
+    $max: nth($band, 2);
+
+    @if $min == null {
+        @media not all and (min-width: #{$max}) {
+            @content;
+        }
+    } @else if $max == null {
+        @media (min-width: #{$min}) {
+            @content;
+        }
+    } @else {
+        @media (min-width: #{$min}) {
+            @media not all and (min-width: #{$max}) {
+                @content;
+            }
+        }
+    }
+}
 
 @mixin crd-horizontal {
     .bit-crd-hrz {
@@ -182,7 +208,7 @@ $crd-hrz-bands: ( 'xs': '(max-width: #{$mq-xs-max})',
     }
 
     @each $name, $band in $crd-hrz-bands {
-        @media #{$band} {
+        @include crd-hrz-band-media($band) {
             .bit-crd-hrz-#{$name} {
                 @content;
             }

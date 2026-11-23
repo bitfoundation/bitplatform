@@ -74,52 +74,6 @@ public partial class BitCard : BitComponentBase
 
     private bool _HasMain => _HasHeader || Footer is not null || Loading || ChildContent is not null;
 
-    // A card only needs a class per breakpoint when its orientation is not the same at every width.
-    private bool _IsResponsiveHorizontal => HorizontalXs.HasValue || HorizontalSm.HasValue || HorizontalMd.HasValue
-                                         || HorizontalLg.HasValue || HorizontalXl.HasValue || HorizontalXxl.HasValue;
-
-    // The orientation at each of the six breakpoints, carried up from the breakpoint below until a value of its own
-    // replaces it, with Horizontal as the base of the chain - the same mobile first chain as BitStack's. Each band the
-    // card is horizontal in is named as a class the stylesheet reads over that band alone, so a breakpoint that turns
-    // the card back has nothing to undo: the rules of a horizontal card simply stop matching there. A card that comes
-    // out the same at every width says so once, as a card that never asked for a breakpoint does.
-    private string _HorizontalClasses
-    {
-        get
-        {
-            if (_IsResponsiveHorizontal is false) return Horizontal ? "bit-crd-hrz" : string.Empty;
-
-            (string Breakpoint, bool? Horizontal)[] breakpoints =
-            [
-                ("xs", HorizontalXs),
-                ("sm", HorizontalSm),
-                ("md", HorizontalMd),
-                ("lg", HorizontalLg),
-                ("xl", HorizontalXl),
-                ("xxl", HorizontalXxl)
-            ];
-
-            var horizontal = Horizontal;
-            var bands = new List<string>(breakpoints.Length);
-
-            foreach (var (breakpoint, value) in breakpoints)
-            {
-                horizontal = value ?? horizontal;
-
-                if (horizontal)
-                {
-                    bands.Add(breakpoint);
-                }
-            }
-
-            if (bands.Count == 0) return string.Empty;
-
-            if (bands.Count == breakpoints.Length) return "bit-crd-hrz";
-
-            return string.Join(' ', bands.Select(b => $"bit-crd-hrz-{b}"));
-        }
-    }
-
     private bool _HasHeader => HeaderTemplate is not null
                             || Title.HasValue()
                             || Subtitle.HasValue()
@@ -429,7 +383,13 @@ public partial class BitCard : BitComponentBase
     /// <br />
     /// This is the orientation of the card at every width. <see cref="HorizontalXs"/> to <see cref="HorizontalXxl"/>
     /// replace it from their own breakpoint upwards, which is what puts the picture above the words on a phone and
-    /// beside them on a desktop.
+    /// beside them on a desktop. A params object supplies none of those breakpoints to a card that set this itself.
+    /// <br />
+    /// A card horizontal at every width carries the <c>bit-crd-hrz</c> class. A card whose orientation changes with the
+    /// width carries one <c>bit-crd-hrz-xs</c> to <c>bit-crd-hrz-xxl</c> class per breakpoint band it is horizontal in
+    /// instead, and no <c>bit-crd-hrz</c>. A band class names where the card is horizontal, not that it is horizontal at
+    /// the current width, so a rule of the app's own written against <c>bit-crd-hrz</c> reaches the first kind only, and
+    /// one meant for a responsive card is written against the band's class inside that band's media query.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Horizontal { get; set; }
@@ -440,7 +400,7 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
     public bool? HorizontalLg { get; set; }
 
     /// <summary>
@@ -449,7 +409,7 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
     public bool? HorizontalMd { get; set; }
 
     /// <summary>
@@ -458,7 +418,7 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
     public bool? HorizontalSm { get; set; }
 
     /// <summary>
@@ -467,7 +427,7 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
     public bool? HorizontalXl { get; set; }
 
     /// <summary>
@@ -485,7 +445,7 @@ public partial class BitCard : BitComponentBase
     /// the cover on the trailing edge rather than under the body - and <see cref="CoverOverlay"/> still wins over it at
     /// every width.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
     public bool? HorizontalXs { get; set; }
 
     /// <summary>
@@ -494,7 +454,7 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// True lays the cover beside the content and false above it.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
     public bool? HorizontalXxl { get; set; }
 
     /// <summary>
@@ -796,6 +756,54 @@ public partial class BitCard : BitComponentBase
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public string? Width { get; set; }
+
+
+
+    // A card only needs a class per breakpoint when its orientation is not the same at every width.
+    private bool _IsResponsiveHorizontal => HorizontalXs.HasValue || HorizontalSm.HasValue || HorizontalMd.HasValue
+                                         || HorizontalLg.HasValue || HorizontalXl.HasValue || HorizontalXxl.HasValue;
+
+    // The orientation at each of the six breakpoints, carried up from the breakpoint below until a value of its own
+    // replaces it, with Horizontal as the base of the chain - the same mobile first chain as BitStack's. Each band the
+    // card is horizontal in is named as a class the stylesheet reads over that band alone, so a breakpoint that turns
+    // the card back has nothing to undo: the rules of a horizontal card simply stop matching there. A card that comes
+    // out the same at every width says so once, as a card that never asked for a breakpoint does.
+    private string _HorizontalClasses
+    {
+        get
+        {
+            if (_IsResponsiveHorizontal is false) return Horizontal ? "bit-crd-hrz" : string.Empty;
+
+            (string Breakpoint, bool? Horizontal)[] breakpoints =
+            [
+                ("xs", HorizontalXs),
+                ("sm", HorizontalSm),
+                ("md", HorizontalMd),
+                ("lg", HorizontalLg),
+                ("xl", HorizontalXl),
+                ("xxl", HorizontalXxl)
+            ];
+
+            var horizontal = Horizontal;
+            var bands = new List<string>(breakpoints.Length);
+
+            foreach (var (breakpoint, value) in breakpoints)
+            {
+                horizontal = value ?? horizontal;
+
+                if (horizontal)
+                {
+                    bands.Add(breakpoint);
+                }
+            }
+
+            if (bands.Count == 0) return string.Empty;
+
+            if (bands.Count == breakpoints.Length) return "bit-crd-hrz";
+
+            return string.Join(' ', bands.Select(b => $"bit-crd-hrz-{b}"));
+        }
+    }
 
 
 

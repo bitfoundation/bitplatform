@@ -180,7 +180,7 @@ public partial class BitCardDemo
             Name = "Horizontal",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lays the cover beside the content instead of above it. HorizontalXs to HorizontalXxl replace it from their own breakpoint upwards.",
+            Description = "Lays the cover beside the content instead of above it. HorizontalXs to HorizontalXxl replace it from their own breakpoint upwards, and a BitParams supplies none of them to a card that set this itself. A card horizontal at every width carries the bit-crd-hrz class; one whose orientation changes with the width carries a bit-crd-hrz-xs to bit-crd-hrz-xxl class per band it is horizontal in instead, and no bit-crd-hrz.",
         },
         new()
         {
