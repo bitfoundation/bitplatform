@@ -985,6 +985,11 @@ public static class BevToolsSessionExporter
                 w.WriteString("caller", l.Caller);
             }
 
+            if (l.BeforeAttach)
+            {
+                w.WriteBoolean("beforeAttach", true);
+            }
+
             if (l.TriggerEventId is { } trigger)
             {
                 w.WriteNumber("triggerEventId", trigger);

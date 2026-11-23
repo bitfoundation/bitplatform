@@ -191,6 +191,8 @@ public class BitMenuButtonParamsTests : BunitTestContext
             DropDirection = BitDropDirection.All,
             FormId = "my-form",
             FullWidth = true,
+            HoverCloseDelay = 400,
+            HoverOpenDelay = 200,
             Icon = icon,
             IconName = "Share",
             IconOnly = true,
@@ -202,6 +204,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
             NoIcon = true,
             NoNewTabHint = true,
             NoOverlay = true,
+            OpenOnHover = true,
             RadioIcon = radioIcon,
             RadioIconName = "RadioBtnOn",
             Reclickable = true,
@@ -246,6 +249,8 @@ public class BitMenuButtonParamsTests : BunitTestContext
         Assert.AreEqual(BitDropDirection.All, instance.DropDirection);
         Assert.AreEqual("my-form", instance.FormId);
         Assert.IsTrue(instance.FullWidth);
+        Assert.AreEqual(400, instance.HoverCloseDelay);
+        Assert.AreEqual(200, instance.HoverOpenDelay);
         Assert.AreSame(icon, instance.Icon);
         Assert.AreEqual("Share", instance.IconName);
         Assert.IsTrue(instance.IconOnly);
@@ -257,6 +262,7 @@ public class BitMenuButtonParamsTests : BunitTestContext
         Assert.IsTrue(instance.NoIcon);
         Assert.IsTrue(instance.NoNewTabHint);
         Assert.IsTrue(instance.NoOverlay);
+        Assert.IsTrue(instance.OpenOnHover);
         Assert.AreSame(radioIcon, instance.RadioIcon);
         Assert.AreEqual("RadioBtnOn", instance.RadioIconName);
         Assert.IsTrue(instance.Reclickable);

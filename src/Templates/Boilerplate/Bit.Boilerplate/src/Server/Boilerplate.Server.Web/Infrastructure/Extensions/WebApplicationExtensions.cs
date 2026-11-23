@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Net.Http.Headers;
+using System.Text;
 using System.Text.RegularExpressions;
+using Boilerplate.Server.Web;
 //#if(module == "Sales")
 using Boilerplate.Shared.Features.Products;
 //#endif
@@ -179,15 +181,7 @@ public static partial class WebApplicationExtensions
 
             app.MapGet("/sitemap.xml", [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)] async (context) =>
             {
-                var urls = AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true)
-                     .SelectMany(asm => asm.ExportedTypes)
-                     .Where(att => att.GetCustomAttributes<AuthorizeAttribute>(inherit: true).Any() is false)
-                     .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
-                     .Where(att => RouteRegex().IsMatch(att.Template) is false)
-                     .Select(att => att.Template)
-                     // A page search engines should not index has no place in the list of pages to index.
-                     .Where(url => PageUrls.NoIndexUrls.Contains(url) is false)
-                     .ToArray();
+                var urls = SitemapPages;
 
                 // Culture-prefixed urls only: the bare url always 302s (See UseCultureUrlRedirection), and a sitemap
                 // entry that always redirects is one crawlers flag rather than index.
@@ -222,26 +216,31 @@ public static partial class WebApplicationExtensions
 
             // https://llmstxt.org - a markdown file that helps LLMs discover the app's pages.
             // Unlike sitemap.xml (which has no description element), llms.txt is where the page
-            // descriptions declared in PageUrls actually belong.
+            // descriptions declared in PageUrls actually belong. It lists the pages sitemap.xml lists, the public ones a
+            // reader can open, under the default culture's url, which answers without a redirect; its name and summary
+            // come from the LlmsTxt section of appsettings.json.
+            var llmsTxtSettings = app.Services.GetRequiredService<ServerWebSettings>().LlmsTxt;
+
             app.MapGet("/llms.txt", [AppResponseCache(SharedMaxAge = 3600 * 24 * 7)] async (context) =>
             {
                 var baseUrl = context.Request.GetBaseUrl();
 
-                var pages = string.Join(Environment.NewLine, PageUrls.GetPages()
-                    .Select(page => $"- [{page.Url}]({new Uri(baseUrl, page.Url)}): {page.Description}"));
+                var pages = string.Join('\n', PageUrls.GetPages()
+                    .Where(page => SitemapPages.Contains(page.Url, StringComparer.OrdinalIgnoreCase))
+                    .Select(page => $"- [{page.Url}]({new Uri(baseUrl, CultureInfoManager.InvariantGlobalization ? page.Url : $"{CultureInfoManager.DefaultCulture.Name}{page.Url}")}): {page.Description}"));
 
-                var llms = @$"# Boilerplate
+                var llms = new StringBuilder($"# {llmsTxtSettings.Name}\n\n");
 
-> Boilerplate is a cross-platform application available on Android, iOS, Windows, macOS and as a Web (PWA) app.
+                if (string.IsNullOrWhiteSpace(llmsTxtSettings.Summary) is false)
+                {
+                    llms.Append($"> {llmsTxtSettings.Summary}\n\n");
+                }
 
-## Pages
-
-{pages}
-";
+                llms.Append($"## Pages\n\n{pages}\n");
 
                 context.Response.Headers.ContentType = "text/plain; charset=utf-8";
 
-                await context.Response.WriteAsync(llms, context.RequestAborted);
+                await context.Response.WriteAsync(llms.ToString(), context.RequestAborted);
             }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
 
             //#if(module == "Sales")
@@ -300,7 +299,69 @@ public static partial class WebApplicationExtensions
 
             return app;
         }
+
+        /// <summary>
+        /// <c>/.well-known/security.txt</c> (https://www.rfc-editor.org/rfc/rfc9116): whom to tell about a vulnerability.
+        /// Mapped only once the SecurityTxt section of appsettings.json names a contact.
+        /// </summary>
+        public WebApplication MapSecurityTxt()
+        {
+            var securityTxtSettings = app.Services.GetRequiredService<ServerWebSettings>().SecurityTxt;
+
+            if (securityTxtSettings.Contact is not { Length: > 0 })
+                return app;
+
+            app.MapGet("/.well-known/security.txt", [AppResponseCache(SharedMaxAge = 3600 * 24)] async (context) =>
+            {
+                // RFC 9116 asks for an Expires less than a year ahead. Without a configured one, the file stays current as
+                // long as the app runs; a configured one lapses unless someone checks the file again and moves it.
+                var expires = securityTxtSettings.Expires ?? new DateTimeOffset(DateTime.UtcNow.Date.AddDays(180), TimeSpan.Zero);
+
+                var securityTxt = new StringBuilder();
+
+                foreach (var contact in securityTxtSettings.Contact)
+                {
+                    securityTxt.Append($"Contact: {contact}\n");
+                }
+
+                securityTxt.Append($"Expires: {expires.UtcDateTime.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'", CultureInfo.InvariantCulture)}\n");
+
+                if (string.IsNullOrWhiteSpace(securityTxtSettings.PreferredLanguages) is false)
+                {
+                    securityTxt.Append($"Preferred-Languages: {securityTxtSettings.PreferredLanguages}\n");
+                }
+
+                if (string.IsNullOrWhiteSpace(securityTxtSettings.Policy) is false)
+                {
+                    securityTxt.Append($"Policy: {securityTxtSettings.Policy}\n");
+                }
+
+                securityTxt.Append($"Canonical: {new Uri(context.Request.GetBaseUrl(), ".well-known/security.txt")}\n");
+
+                context.Response.Headers.ContentType = "text/plain; charset=utf-8";
+
+                await context.Response.WriteAsync(securityTxt.ToString(), context.RequestAborted);
+            }).CacheOutput("AppResponseCachePolicy").WithTags("Sitemaps");
+
+            return app;
+        }
     }
+
+    /// <summary>
+    /// The pages <c>sitemap.xml</c> and <c>llms.txt</c> list, by their culture-less url: every routable page without a
+    /// route parameter whose component carries no <see cref="AuthorizeAttribute"/>, less the ones whose
+    /// <see cref="PageUrls"/> constant keeps them out - a page search engines should not index (See
+    /// <see cref="NoIndexAttribute"/>), and one that only exists to sign in or needs an account to show anything
+    /// (See <see cref="NotInSitemapAttribute"/>).
+    /// </summary>
+    private static string[] SitemapPages => field ??= [.. AssemblyLoadContext.Default.Assemblies.Where(asm => asm.GetName().Name?.Contains("Boilerplate.Client") is true)
+        .SelectMany(asm => asm.ExportedTypes)
+        .Where(att => att.GetCustomAttributes<AuthorizeAttribute>(inherit: true).Any() is false)
+        .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
+        .Where(att => RouteRegex().IsMatch(att.Template) is false)
+        .Select(att => att.Template)
+        .Where(url => PageUrls.NotInSitemapUrls.Contains(url) is false)
+        .Distinct(StringComparer.OrdinalIgnoreCase)];
 
     [GeneratedRegex(@"\{.*?\}")]
     private static partial Regex RouteRegex();

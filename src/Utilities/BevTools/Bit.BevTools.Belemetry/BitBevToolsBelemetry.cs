@@ -21,17 +21,41 @@ public static class BitBevToolsBelemetry
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<IBelemetryComponentContextProvider, BevToolsBelemetryComponentContext>());
-        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBelemetryDiagnosticComponentFilter, BevToolsBelemetryComponentFilter>());
         services.AddBitBevToolsServices(options =>
         {
             configure?.Invoke(options);
-            if (options.Extensions.OfType<BevToolsBelemetryExtension>().Any() is false)
-            {
-                options.Extensions.Add(new BevToolsBelemetryExtension());
-            }
+            options.AddBelemetry();
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// The Belemetry integration as an option, for the configuration an app gives <c>Bit.BevTools.Loader</c>
+    /// (<c>BevToolsLoaderOptions.ConfigureBevTools</c>), which serves a BevTools registered at startup and one attached on
+    /// demand alike: <c>o.ConfigureBevTools(static options =&gt; ((BevToolsOptions)options).AddBelemetry())</c>, with
+    /// <c>"Bit.BevTools.Belemetry"</c> in <c>BevToolsLoaderOptions.AdditionalAssemblies</c> and the assembly marked
+    /// <c>BlazorWebAssemblyLazyLoad</c> wherever Bit.BevTools is. It adds the Support panel, and - where BevTools registers
+    /// at startup - the services Belemetry asks BevTools through (<see cref="IBelemetryComponentContextProvider"/>,
+    /// <see cref="IBelemetryDiagnosticComponentFilter"/>). A session attached later has the Support panel only: the
+    /// container Belemetry resolves those services from was built before Bit.BevTools was loaded, so its captures carry
+    /// no component hierarchy and its timeline does not tell BevTools' own UI events apart. Calling it twice adds nothing.
+    /// </summary>
+    public static BevToolsOptions AddBelemetry(this BevToolsOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (options.Extensions.OfType<BevToolsBelemetryExtension>().Any() is false)
+        {
+            options.Extensions.Add(new BevToolsBelemetryExtension());
+        }
+
+        options.ServiceRegistrations.Add(static services =>
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Scoped<IBelemetryComponentContextProvider, BevToolsBelemetryComponentContext>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IBelemetryDiagnosticComponentFilter, BevToolsBelemetryComponentFilter>());
+        });
+
+        return options;
     }
 }

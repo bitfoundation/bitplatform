@@ -561,4 +561,21 @@
         Assert.IsEmpty(cut.FindAll("[role=option]"));
         Assert.Contains("No fruit.", cut.Markup);
     }
+
+    [TestMethod]
+    public void The_pointer_highlights_an_option_through_the_runtime_hover()
+    {
+        // The runtime sends an option its hover once, as the pointer reaches it - not with every move, nor when the
+        // keyboard scrolls it under a resting pointer.
+        var cut = Render(Combobox(new Harness()));
+        AngleSharp.Dom.IElement Option(string text) => cut.FindAll("[role=option]").First(o => o.TextContent == text);
+
+        cut.Find("input").Press("ArrowDown");
+        cut.Find("input").Press("PageDown");
+        Assert.AreEqual("Cherry", Text(ActiveOf(cut.Find("input"))));
+
+        Option("Banana").PointerHover();
+        Assert.AreEqual("Banana", Text(ActiveOf(cut.Find("input"))));
+        Assert.IsFalse(cut.FindAll("[role=option]").Any(o => o.HasAttribute("blazor:onpointermove") || o.HasAttribute("blazor:onpointerenter")));
+    }
 }

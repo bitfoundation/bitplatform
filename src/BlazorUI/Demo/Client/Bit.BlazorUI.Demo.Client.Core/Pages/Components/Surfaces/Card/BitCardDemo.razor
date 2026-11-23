@@ -191,7 +191,9 @@
     <DemoExample Title="Horizontal" RazorCode="@example6RazorCode" Id="example6">
         <div>
             <b>Horizontal</b> puts the cover beside the content, a third of the card wide unless <b>CoverWidth</b> says otherwise;
-            <b>Reversed</b> moves it to the end. The layout mirrors in right-to-left.
+            <b>Reversed</b> moves it to the end. The layout mirrors in right-to-left. <b>HorizontalXs</b> to <b>HorizontalXxl</b>
+            change it from their own breakpoint up, the way BitStack's do: the last card keeps its picture above the words
+            below the medium breakpoint (960px) and lays it beside them from there up - resize the window to see it turn.
         </div>
         <br /><br />
         <div class="card-row">
@@ -208,6 +210,11 @@
             <BitCard Horizontal Reversed Width="26rem" CoverWidth="8rem" Title="Mount Rainier" Subtitle="A trailing cover"
                      ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg">
                 <BitText Typography="BitTypography.Body2">Reversed puts the thumbnail after the words.</BitText>
+            </BitCard>
+
+            <BitCard HorizontalMd Width="26rem" Title="Mount Rainier" Subtitle="Beside the words from 960px up"
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg">
+                <BitText Typography="BitTypography.Body2">HorizontalMd turns the card at the medium breakpoint.</BitText>
             </BitCard>
         </div>
     </DemoExample>
@@ -296,8 +303,8 @@
 
     <DemoExample Title="Elevation & Hover" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
-            <b>Elevation</b> picks a level of the theme's shadow ramp (0-24) and lifts from it on hover. <b>NoShadow</b> flattens the card,
-            and <b>Hoverable</b> lifts a card that is not clickable under the pointer.
+            <b>Elevation</b> picks a level of the theme's shadow ramp (0-24) and rises from it on hover. <b>NoShadow</b> flattens the card,
+            and <b>Hoverable</b> gives a card that is not clickable the hover shadow under the pointer.
         </div>
         <br /><br />
         <BitSlider @bind-Value="elevation" Min="0" Max="24" Step="1" Label="Elevation" />
@@ -362,11 +369,12 @@
         <div>
             The public <b>--bit-Card-*</b> variables (see the <BitLink Href="#css-variables-section">CSS variables</BitLink> table) restyle every
             card at once. They inherit, so set them on <code>:root</code>, on any ancestor - a plain element, as here - or on one card's <b>Style</b>.
-            A parameter set on the card still wins, and a disabled card keeps the disabled colors.
+            A parameter set on the card still wins, and a disabled card keeps the disabled colors. Hover the first row: <b>--bit-Card-hover-border-color</b>
+            darkens the rule and <b>--bit-Card-hover-lift</b> raises the card, while the Border of the last one keeps its color.
         </div>
         <br /><br />
-        <div class="card-row" style="--bit-Card-radius: 1rem; --bit-Card-padding: 1.25rem; --bit-Card-shadow: none; --bit-Card-border-width: 1px; --bit-Card-border-color: var(--bit-clr-brd-sec); --bit-Card-hover-shadow: var(--bit-shd-md);">
-            <BitCard Hoverable Title="Soft" Subtitle="Rounder, flat, outlined" Width="14rem" />
+        <div class="card-row" style="--bit-Card-radius: 1rem; --bit-Card-padding: 1.25rem; --bit-Card-shadow: none; --bit-Card-border-width: 1px; --bit-Card-border-color: var(--bit-clr-brd-sec); --bit-Card-hover-shadow: var(--bit-shd-md); --bit-Card-hover-border-color: var(--bit-clr-brd-pri); --bit-Card-hover-lift: 2px;">
+            <BitCard Hoverable Title="Soft" Subtitle="Flat, outlined, lifts on hover" Width="14rem" />
             <BitCard Hoverable Title="Same look" Subtitle="From the same ancestor" Width="14rem" />
             <BitCard Hoverable Border="BitColorKind.Primary" Title="Border wins" Subtitle="A parameter beats the variable" Width="14rem" />
         </div>
@@ -418,7 +426,63 @@
         </BitParams>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+    <DemoExample Title="Element" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Element</b> renders the card as another tag: an <code>article</code> for a card that stands on its own, a <code>section</code>
+            for one part of a page, an <code>aside</code> for content beside the main flow, a <code>nav</code> for a card of links. A card
+            rendered as one of those four is titled by its <b>Title</b> through <code>aria-labelledby</code>, which is what makes a section
+            a region of the page; an <b>AriaLabel</b> names it instead.
+        </div>
+        <br /><br />
+        <div class="card-row">
+            <BitCard Element="article" Title="Release notes" Subtitle="Posted today" HeadingLevel="3" Width="16rem">
+                <BitText Typography="BitTypography.Body2">An article: a post that stands on its own.</BitText>
+            </BitCard>
+            <BitCard Element="section" Title="Getting started" HeadingLevel="3" Width="16rem">
+                <BitText Typography="BitTypography.Body2">A section, named by its title.</BitText>
+            </BitCard>
+            <BitCard Element="aside" AriaLabel="Tip" Outlined Width="16rem">
+                <BitText Typography="BitTypography.Body2">An aside, named by its AriaLabel.</BitText>
+            </BitCard>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Accent" RazorCode="@example16RazorCode" Id="example16">
+        <div>
+            <b>Accent</b> draws a bar in a theme role along the inline-start edge of the card, the look of a callout. The bar is laid over
+            that edge, so it moves nothing inside the card, covers the start side of an outlined card's rule, follows its corners, runs over a
+            cover and moves to the right in right-to-left. Taking no room, it also covers the first few pixels of the content of a card with
+            <b>NoPadding</b>. It goes along with every other look of the card, steps inside the selection and focus rings, and a disabled card dims it.
+        </div>
+        <br /><br />
+        <div class="card-row">
+            <BitCard Accent="BitColor.Primary" Title="Primary" Subtitle="The callout look" Width="14rem">
+                <BitText Typography="BitTypography.Body2">A note set apart from the cards around it.</BitText>
+            </BitCard>
+            <BitCard Accent="BitColor.Success" Outlined Title="Success" Subtitle="On an outlined card" Width="14rem" />
+            <BitCard Accent="BitColor.Warning" Square Title="Warning" Subtitle="On a square card" Width="14rem" />
+            <BitCard Accent="BitColor.Error" Disabled Title="Error" Subtitle="Disabled" Width="14rem" />
+        </div>
+        <br />
+        <div class="card-row">
+            <BitCard Accent="BitColor.Info" Horizontal Width="26rem" CoverWidth="8rem" Title="Mount Rainier" Subtitle="Over a cover"
+                     ImageUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg">
+                <BitText Typography="BitTypography.Body2">The bar runs over the edge of the thumbnail.</BitText>
+            </BitCard>
+        </div>
+        <br />
+        <div>
+            <b>--bit-Card-accent-color</b> draws the bar on its own, in any color, on every card it reaches - an Accent on the card still
+            wins over it. <b>--bit-Card-accent-width</b> sets how thick the bar is, and draws nothing on its own.
+        </div>
+        <br />
+        <div class="card-row" style="--bit-Card-accent-color: #8b5cf6; --bit-Card-accent-width: 0.5rem;">
+            <BitCard Title="Any color" Subtitle="From the variable alone" Width="14rem" />
+            <BitCard Accent="BitColor.Success" Title="Accent wins" Subtitle="Over the variable" Width="14rem" />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
         <div>
             <b>Color</b> paints the card in a theme role and <b>Variant</b> decides how: <b>Fill</b> (the default) paints the surface,
             <b>Outline</b> the border and the text, <b>Text</b> tints the surface. A disabled card uses the role's disabled colors.
@@ -460,7 +524,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Icon</b> takes a <b>BitIconInfo</b> from an external library such as FontAwesome or Bootstrap Icons; the glyph is sized to the title
             beside it.
@@ -485,7 +549,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19">
         <div><b>Size</b> scales the padding, the gaps and the header type together. Medium is the default.</div>
         <br /><br />
         <div class="card-row">
@@ -501,7 +565,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
         <div>
             <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach each part - the link, the floating actions,
             the cover and its image, the main column, the header with its icon, text, title and subtitle, the actions, the body, the footer and the
@@ -532,7 +596,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21">
         <div>Use <b>Dir="BitDir.Rtl"</b> to mirror the whole card: the icon, the actions and a horizontal cover all swap sides.</div>
         <br /><br />
         <div class="card-row">

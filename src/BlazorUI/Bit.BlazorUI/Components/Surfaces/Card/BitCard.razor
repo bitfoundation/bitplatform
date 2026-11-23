@@ -22,7 +22,10 @@
     var splattedRole = _SplattedRole;
     var splattedLabel = GetSplattedAttribute("aria-label");
     var splattedTabIndex = GetSplattedAttribute("tabindex");
-    var splattedLabelledBy = GetSplattedAttribute("aria-labelledby");
+
+    @* A blank aria-labelledby points at nothing, so it is no name of the page's own: it would otherwise win over the
+       title as the name of the root and of the stretched control, and leave both with none at all. *@
+    var splattedLabelledBy = GetSplattedAttribute("aria-labelledby") is { } labelledBy && labelledBy.HasValue() ? labelledBy : null;
 
     var label = AriaLabel ?? splattedLabel;
     var tabIndex = TabIndex ?? splattedTabIndex;
@@ -35,9 +38,17 @@
     @* A card that is not a control but does carry a name - through AriaLabel, or through an aria-labelledby
        pointing at a heading elsewhere on the page - needs a role for that name to be announced at all, since a
        name on a plain div is not guaranteed to be read, and "group" is the role of a box that holds related
-       things without being a landmark. A role the app splatted in itself always wins. *@
+       things without being a landmark. A role the app splatted in itself always wins, and a root rendered as a tag
+       with a role of its own that a name can be given to (see Element) keeps that one: a named section is already a
+       region. A tag whose role prohibits a name - a span, a paragraph, an emphasis - is a group just like a div. *@
     var isNamed = label.HasValue() || splattedLabelledBy.HasValue();
-    var role = splattedRole ?? (labelOnRoot && isNamed ? "group" : null);
+    var role = splattedRole ?? (labelOnRoot && isNamed && _HasNameableRole is false ? "group" : null);
+
+    @* A card rendered as a sectioning element - an article, an aside, a nav, a section - is a section of the page,
+       and its title is what titles it: pointing the root at the title is what makes a section a region a reader
+       finds among the landmarks, and what an article is announced by. Only where the name of the card stays on the
+       root, and where the page has neither named the card nor made it something else through a role of its own. *@
+    var titleLabelledBy = labelOnRoot && isNamed is false && splattedRole is null && _IsSectioningElement ? titleId : null;
 
     @* Some roles present their children: what is inside one of them is read as the name of the control rather
        than as structure, so nothing in there is ever reached on its own. A card splatted with one - an option or
@@ -68,12 +79,17 @@
        a role that can carry it - the group it becomes with a name, or whatever the app splatted in. What
        actually takes a disabled card off the pointer and out of the tab order is the bit-dis class and the
        missing tab index, and neither of those depends on this. The states the card does not report itself are the
-       ones the app splatted in, written back rather than wiped by a null. *@
+       ones the app splatted in, written back rather than wiped by a null.
+
+       A root rendered as a fieldset is the one tag the card can be that HTML defines a disabled attribute on, so a
+       disabled one writes it - which disables every form control inside it natively, the way the card means its
+       content to be unusable - and aria-disabled beside it, which the group role of a fieldset carries. *@
+    var nativelyDisabled = Disabled && string.Equals(_element, "fieldset", StringComparison.OrdinalIgnoreCase);
     var ariaPressed = (role is "button" ? selectedState : null) ?? GetSplattedAttribute("aria-pressed");
     var ariaSelected = (selectedRole ? selectedState : null) ?? GetSplattedAttribute("aria-selected");
     var ariaChecked = (checkedRole ? selectedState : null) ?? GetSplattedAttribute("aria-checked");
     var ariaBusy = Loading ? "true" : GetSplattedAttribute("aria-busy");
-    var ariaDisabled = role is not null && Disabled ? "true" : GetSplattedAttribute("aria-disabled");
+    var ariaDisabled = (role is not null && Disabled) || nativelyDisabled ? "true" : GetSplattedAttribute("aria-disabled");
 
     @* The stretched link or button carries no text of its own, so what names it is whatever the card was named
        by: an aria-labelledby the app splatted in, or failing that the title of the card, or failing that its
@@ -111,24 +127,8 @@
     object? onClick = _IsClickable
                     ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick)
                     : splattedOnClick;
-}
 
-<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
-     onclick="@onClick"
-     @onclick:stopPropagation="StopPropagation"
-     id="@_Id"
-     role="@role"
-     tabindex="@rootTabIndex"
-     aria-label="@(labelOnRoot ? label : null)"
-     aria-labelledby="@(labelOnRoot ? splattedLabelledBy : null)"
-     aria-pressed="@ariaPressed"
-     aria-selected="@ariaSelected"
-     aria-checked="@ariaChecked"
-     aria-busy="@ariaBusy"
-     aria-disabled="@ariaDisabled"
-     style="@StyleBuilder.Value"
-     class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+    RenderFragment content = @<text>
     @if (_IsLink)
     {
         @* The card is not wrapped in the anchor: an anchor around the whole card is invalid the moment the
@@ -323,4 +323,38 @@
     {
         @ChildContent
     }
-</div>
+    </text>;
+
+    @* The root is written through the render tree rather than in the markup, since the tag it is rendered as is the
+       page's to choose (see Element). Everything the card writes comes after the splat, so it wins over the attribute
+       of the same name the page splatted, and a null one takes that attribute off the element altogether. *@
+    RenderFragment root = builder =>
+    {
+        builder.OpenElement(0, _element);
+        builder.AddMultipleAttributes(1, DisabledAwareHtmlAttributes);
+        builder.AddAttribute(2, "onclick", onClick);
+        builder.AddEventStopPropagationAttribute(3, "onclick", StopPropagation);
+        builder.AddAttribute(4, "id", _Id);
+        builder.AddAttribute(5, "role", role);
+        builder.AddAttribute(6, "tabindex", rootTabIndex);
+        builder.AddAttribute(7, "aria-label", labelOnRoot ? label : null);
+        builder.AddAttribute(8, "aria-labelledby", labelOnRoot ? (splattedLabelledBy ?? titleLabelledBy) : null);
+        builder.AddAttribute(9, "aria-pressed", ariaPressed);
+        builder.AddAttribute(10, "aria-selected", ariaSelected);
+        builder.AddAttribute(11, "aria-checked", ariaChecked);
+        builder.AddAttribute(12, "aria-busy", ariaBusy);
+        builder.AddAttribute(13, "aria-disabled", ariaDisabled);
+        if (nativelyDisabled)
+        {
+            builder.AddAttribute(14, "disabled", true);
+        }
+        builder.AddAttribute(15, "style", StyleBuilder.Value);
+        builder.AddAttribute(16, "class", ClassBuilder.Value);
+        builder.AddAttribute(17, "dir", Dir?.ToString().ToLower());
+        builder.AddElementReferenceCapture(18, v => RootElement = v);
+        builder.AddContent(19, content);
+        builder.CloseElement();
+    };
+}
+
+@root

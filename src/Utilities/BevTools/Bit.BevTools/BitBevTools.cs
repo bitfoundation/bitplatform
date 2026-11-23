@@ -27,6 +27,7 @@ public static class BitBevTools
         if (services.FirstOrDefault(d => d.ServiceType == typeof(BevToolsOptions))?.ImplementationInstance is BevToolsOptions existing)
         {
             configure?.Invoke(existing);
+            ApplyOptionRegistrations(services, existing);
             var (mergedEnabled, mergedReason) = ResolveEnabled(services, existing);
             existing.ResolvedEnabled = mergedEnabled;
             ReplaceRegistry(services, existing, mergedEnabled, mergedReason);
@@ -41,6 +42,7 @@ public static class BitBevTools
 
         var options = new BevToolsOptions();
         configure?.Invoke(options);
+        ApplyOptionRegistrations(services, options);
         var (enabled, reason) = ResolveEnabled(services, options);
         options.ResolvedEnabled = enabled;
 
@@ -121,6 +123,17 @@ public static class BitBevTools
         ArgumentNullException.ThrowIfNull(subscribe);
         services.AddScoped<IBevToolsStateProvider>(sp => new DelegateStateProvider<TService>(sp.GetRequiredService<TService>(), name, snapshot, subscribe));
         return services;
+    }
+
+    /// <summary>The service registrations an integration's options method asked for (<see cref="BevToolsOptions.ServiceRegistrations"/>), each once.</summary>
+    private static void ApplyOptionRegistrations(IServiceCollection services, BevToolsOptions options)
+    {
+        var registrations = options.ServiceRegistrations.ToArray();
+        options.ServiceRegistrations.Clear();
+        foreach (var register in registrations)
+        {
+            register(services);
+        }
     }
 
     private static void ReplaceRegistry(IServiceCollection services, BevToolsOptions options, bool enabled, string reason)

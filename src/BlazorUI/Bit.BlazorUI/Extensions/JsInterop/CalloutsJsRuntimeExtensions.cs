@@ -160,9 +160,10 @@ internal static class CalloutsJsRuntimeExtensions
                                       calloutId, dotnetObj, storeFocusOrigin, escape, escapeTriggerId, focusTrap, tabOutTriggerId);
     }
 
-    // Switches the keyboard handling of an open BitDropMenu over to the given mode ("focusIn", "focusTrap" or
-    // "tabOut"; null leaves it as it is), taking back what the previous one registered, and moves the focus into
-    // the callout last where asked for - all in one round trip (see Callouts.setupMenuKeyboard).
+    // Switches the keyboard handling of an open BitDropMenu (or of a BitMenuButton the pointer opened, in the
+    // "focusIn" mode) over to the given mode ("focusIn", "focusTrap" or "tabOut"; null leaves it as it is), taking
+    // back what the previous one registered, and moves the focus into the callout last where asked for - all in one
+    // round trip (see Callouts.setupMenuKeyboard).
     internal static ValueTask BitCalloutSetupMenuKeyboard<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         this IJSRuntime jsRuntime,
         string calloutId,
