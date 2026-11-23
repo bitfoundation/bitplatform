@@ -65,10 +65,11 @@
         <div class="ask-text">
             <BitTextField @bind-Value="text"
                           Immediate
-                          Multiline="Ask.Kind is WorkbenchProgressAskKind.Text"
-                          Rows="3"
+                          Multiline="Ask.Kind is WorkbenchProgressAskKind.Text || HasSuggestion"
+                          Rows="@(Ask.Kind is WorkbenchProgressAskKind.Text ? 3 : 2)"
                           OnKeyDown="SendOnCtrlEnter"
                           Placeholder="@Placeholder"
+                          data-suggestion="@ShownSuggestion"
                           AriaLabel="@(Ask.Kind is WorkbenchProgressAskKind.Text ? Ask.Question : Localizer[nameof(WorkbenchStrings.ProgressAddNote)].Value)"
                           MaxLength="WorkbenchProgressDocument.MaxTextLength" />
         </div>
@@ -83,7 +84,13 @@
             {
                 <BitButton IconName="@BitIconName.Send" Title="Ctrl+Enter" Disabled="CanSend is false" OnClick="() => Send(picked)">@Localizer[nameof(WorkbenchStrings.ProgressSendAnswer)]</BitButton>
             }
-            <DictationButton Value="@text" ValueChanged="(string? heard) => text = heard" Class="ask-dictation" />
+            <DictationButton Value="@text" ValueChanged="(string? heard) => text = heard" />
+            @if (ShownSuggestion is not null)
+            {
+                <BitButton Variant="BitVariant.Text" Size="BitSize.Small" IconName="@BitIconName.Lightbulb" OnClick="TakeSuggestion" Class="ask-suggestion">
+                    @Localizer[nameof(WorkbenchStrings.ProgressUseSuggestion)] <kbd aria-hidden="true">Tab</kbd>
+                </BitButton>
+            }
         </div>
     }
 </div>

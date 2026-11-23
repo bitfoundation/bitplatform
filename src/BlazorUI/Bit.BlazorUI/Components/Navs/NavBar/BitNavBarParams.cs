@@ -10,7 +10,8 @@ namespace Bit.BlazorUI;
 /// are not: the ones typed over TItem - the items themselves, the selection, the item template, the name
 /// selectors and the event callbacks - stay on the instance, which is what keeps this object usable from a
 /// single non-generic <see cref="BitParams"/> list no matter which of the three item APIs each navbar under
-/// it uses. The header and footer content are left out too, since they belong to a single navbar.
+/// it uses. The header and footer content and the open state of the drawer are left out too, since they belong
+/// to a single navbar.
 /// </remarks>
 public partial class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -56,6 +57,11 @@ public partial class BitNavBarParams : BitComponentBaseParams, IBitComponentPara
     /// The general color of the navbar, used for the icon, the text and the indicator of the selected item.
     /// </summary>
     public BitColor? Color { get; set; }
+
+    /// <summary>
+    /// The screens on which the navbar folds its items into a drawer opened by a toggle button.
+    /// </summary>
+    public BitScreenQuery? DrawerBreakpoint { get; set; }
 
     /// <summary>
     /// Fills the hovered and the selected item with the color of the navbar.
@@ -165,6 +171,23 @@ public partial class BitNavBarParams : BitComponentBaseParams, IBitComponentPara
     public BitNavBarClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// The aria-label and the tooltip of the toggle button that opens and closes the drawer of the navbar.
+    /// </summary>
+    public string? ToggleAriaLabel { get; set; }
+
+    /// <summary>
+    /// The icon of the toggle button that opens and closes the drawer of the navbar, from an external icon library.
+    /// Takes precedence over <see cref="ToggleIconName"/> when both are set, and is not applied to a navbar that
+    /// sets its own ToggleIcon or ToggleIconName.
+    /// </summary>
+    public BitIconInfo? ToggleIcon { get; set; }
+
+    /// <summary>
+    /// The name of the icon of the toggle button that opens and closes the drawer of the navbar.
+    /// </summary>
+    public string? ToggleIconName { get; set; }
+
+    /// <summary>
     /// Stacks the items in a column, which turns the navbar into a vertical navigation rail.
     /// </summary>
     public bool? Vertical { get; set; }
@@ -211,6 +234,11 @@ public partial class BitNavBarParams : BitComponentBaseParams, IBitComponentPara
         if (Color.HasValue)
         {
             bitNavBar.TakeFromCascade(nameof(Color), Color.Value, static n => n.Color, static (n, v) => n.Color = v);
+        }
+
+        if (DrawerBreakpoint.HasValue)
+        {
+            bitNavBar.TakeFromCascade(nameof(DrawerBreakpoint), DrawerBreakpoint.Value, static n => n.DrawerBreakpoint, static (n, v) => n.DrawerBreakpoint = v);
         }
 
         if (Filled.HasValue)
@@ -318,6 +346,21 @@ public partial class BitNavBarParams : BitComponentBaseParams, IBitComponentPara
         if (Styles is not null)
         {
             bitNavBar.TakeFromCascade(nameof(Styles), Styles, static n => n.Styles, static (n, v) => n.Styles = v);
+        }
+
+        if (ToggleAriaLabel is not null)
+        {
+            bitNavBar.TakeFromCascade(nameof(ToggleAriaLabel), ToggleAriaLabel, static n => n.ToggleAriaLabel, static (n, v) => n.ToggleAriaLabel = v);
+        }
+
+        if (ToggleIcon is not null)
+        {
+            bitNavBar.TakeFromCascade(nameof(ToggleIcon), ToggleIcon, static n => n.ToggleIcon, static (n, v) => n.ToggleIcon = v);
+        }
+
+        if (ToggleIconName.HasValue())
+        {
+            bitNavBar.TakeFromCascade(nameof(ToggleIconName), ToggleIconName, static n => n.ToggleIconName, static (n, v) => n.ToggleIconName = v);
         }
 
         if (Vertical.HasValue)

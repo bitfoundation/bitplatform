@@ -643,7 +643,7 @@ public class KeysTests
     {
         var template = Path.GetDirectoryName(TestHost.RepositoryFile("src", "Templates", "Boilerplate", "Bit.Boilerplate", "Boilerplate.slnx"))!;
 
-        var entitlements = AppleEntitlements.ForProject(template, "Boilerplate");
+        var entitlements = AppleEntitlements.ForProject(Bit.Cli.Projects.ProjectContext.At(template, "Boilerplate"));
 
         Assert.IsNotNull(entitlements);
         Assert.AreEqual(Path.Combine(template, "src", "Client", "Boilerplate.Client.Maui", "Platforms", "iOS", "Entitlements.Production.plist"), entitlements.FilePath);

@@ -259,8 +259,9 @@ private double elevation = 4;";
 
     private readonly string example13RazorCode = @"
 <div style=""--bit-Card-radius: 1rem; --bit-Card-padding: 1.25rem; --bit-Card-shadow: none; --bit-Card-border-width: 1px;
-            --bit-Card-border-color: var(--bit-clr-brd-sec); --bit-Card-hover-shadow: var(--bit-shd-md);"">
-    <BitCard Hoverable Title=""Soft"" Subtitle=""Rounder, flat, outlined"" Width=""14rem"" />
+            --bit-Card-border-color: var(--bit-clr-brd-sec); --bit-Card-hover-shadow: var(--bit-shd-md);
+            --bit-Card-hover-border-color: var(--bit-clr-brd-pri); --bit-Card-hover-lift: 2px;"">
+    <BitCard Hoverable Title=""Soft"" Subtitle=""Flat, outlined, lifts on hover"" Width=""14rem"" />
     <BitCard Hoverable Title=""Same look"" Subtitle=""From the same ancestor"" Width=""14rem"" />
     <BitCard Hoverable Border=""BitColorKind.Primary"" Title=""Border wins"" Subtitle=""A parameter beats the variable"" Width=""14rem"" />
 </div>
@@ -320,6 +321,19 @@ private readonly BitCardParams[] cardParams =
 ];";
 
     private readonly string example15RazorCode = @"
+<BitCard Element=""article"" Title=""Release notes"" Subtitle=""Posted today"" HeadingLevel=""3"" Width=""16rem"">
+    <BitText Typography=""BitTypography.Body2"">An article: a post that stands on its own.</BitText>
+</BitCard>
+
+<BitCard Element=""section"" Title=""Getting started"" HeadingLevel=""3"" Width=""16rem"">
+    <BitText Typography=""BitTypography.Body2"">A section, named by its title.</BitText>
+</BitCard>
+
+<BitCard Element=""aside"" AriaLabel=""Tip"" Outlined Width=""16rem"">
+    <BitText Typography=""BitTypography.Body2"">An aside, named by its AriaLabel.</BitText>
+</BitCard>";
+
+    private readonly string example16RazorCode = @"
 <BitCard Accent=""BitColor.Primary"" Title=""Primary"" Subtitle=""The callout look"" Width=""14rem"">
     <BitText Typography=""BitTypography.Body2"">A note set apart from the cards around it.</BitText>
 </BitCard>
@@ -339,7 +353,7 @@ private readonly BitCardParams[] cardParams =
     <BitCard Accent=""BitColor.Success"" Title=""Accent wins"" Subtitle=""Over the variable"" Width=""14rem"" />
 </div>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 @foreach (var color in semanticColors)
 {
     <BitCard Color=""color"" Variant=""BitVariant.Fill"" Title=""@color.ToString()"" Subtitle=""Fill"" Width=""12rem"" />
@@ -366,7 +380,7 @@ private readonly BitCardParams[] cardParams =
 <BitCard Disabled Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Title=""Primary"" Subtitle=""Fill"" Width=""12rem"" />
 <BitCard Disabled Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Title=""Success"" Subtitle=""Outline"" Width=""12rem"" />
 <BitCard Disabled Color=""BitColor.Error"" Variant=""BitVariant.Text"" Title=""Error"" Subtitle=""Text"" Width=""12rem"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private readonly BitColor[] semanticColors =
 [
     BitColor.Primary,
@@ -379,7 +393,7 @@ private readonly BitColor[] semanticColors =
     BitColor.Error,
 ];";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <!-- FontAwesome -->
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
@@ -395,7 +409,7 @@ private readonly BitColor[] semanticColors =
 <BitCard Icon=""@BitIconInfo.Bi(""github"")"" Title=""GitHub"" Subtitle=""bi bi-github"" Width=""16rem"" />
 <BitCard Icon=""@BitIconInfo.Bi(""gear-fill"")"" Title=""Gear"" Subtitle=""bi bi-gear-fill"" Width=""16rem"" />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitCard Size=""BitSize.Small"" Title=""Small"" Subtitle=""A tight card"" IconName=""@BitIconName.Album"" Width=""16rem"">
     <BitText Typography=""BitTypography.Body2"">Small padding, small type.</BitText>
 </BitCard>
@@ -408,7 +422,7 @@ private readonly BitColor[] semanticColors =
     <BitText Typography=""BitTypography.Body2"">Large padding, large type.</BitText>
 </BitCard>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <style>
     .custom-class {
         border-radius: 0.25rem;
@@ -452,7 +466,7 @@ private readonly BitColor[] semanticColors =
     <BitText Typography=""BitTypography.Body2"">And every part can take a class.</BitText>
 </BitCard>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <BitCard Dir=""BitDir.Rtl"" Title=""کارت"" Subtitle=""یک زیرعنوان"" IconName=""@BitIconName.Album"" Width=""20rem"">
     <Actions>
         <BitButton Variant=""BitVariant.Text"" IconOnly IconName=""@BitIconName.More"" Title=""بیشتر"" />

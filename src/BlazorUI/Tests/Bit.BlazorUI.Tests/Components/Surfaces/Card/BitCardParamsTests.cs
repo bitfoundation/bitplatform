@@ -228,6 +228,32 @@ public class BitCardParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardShouldApplyCascadedElementToTheRoot()
+    {
+        // A run of cards that are each an article of the page says so once, and each one is still titled by its own title.
+        var component = RenderWithParams(new BitCardParams { Element = "article" }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Title), "Title");
+        });
+
+        var root = component.Find(".bit-crd");
+
+        Assert.AreEqual("ARTICLE", root.TagName);
+        Assert.AreEqual(component.Find(".bit-crd-ttl").Id, root.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardShouldKeepItsOwnElementOverTheCascadedOne()
+    {
+        var component = RenderWithParams(new BitCardParams { Element = "article" }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "section");
+        });
+
+        Assert.AreEqual("SECTION", component.Find(".bit-crd").TagName);
+    }
+
+    [TestMethod]
     public void BitCardShouldApplyCascadedRelToTheStretchedLink()
     {
         // Rel runs the hook that resolves the rel attribute, whether the markup or the cascade wrote it.

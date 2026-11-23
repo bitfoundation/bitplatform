@@ -143,7 +143,60 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example8RazorCode" Id="example8">
+<DemoExample Title="Compact" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+    <div>
+        Compact shows the current step alone - its position, its text and a bar with a segment per step - in place of the
+        list of every step. With Responsive, it is the layout a horizontal stepper takes while it is narrower than 600px,
+        in place of the vertical one: it is the width of its own container that decides, not the screen's. CompactTemplate
+        replaces what the compact layout shows, and is given the index of the current step, the number of steps and the
+        current step. Next to a CompactTemplate, the options go in Options (the alias of the child content).
+    </div>
+    <br />
+    <div>
+        <BitStepper TItem="BitStepperOption" Compact @bind-CurrentIndex="compactIndex">
+            <BitStepperOption Text="Account" />
+            <BitStepperOption Text="Address" />
+            <BitStepperOption Text="Payment" />
+            <BitStepperOption Text="Review" />
+        </BitStepper>
+        <br />
+        <div class="example-content">
+            <BitButton Variant="BitVariant.Outline" Disabled="compactIndex == 0" OnClick="() => compactIndex--">Back</BitButton>
+            <BitButton Disabled="compactIndex >= StepCount" OnClick="() => compactIndex++">Next</BitButton>
+        </div>
+        <br /><br />
+        <BitStepper TItem="BitStepperOption" Compact Responsive CurrentIndex="1">
+            <BitStepperOption Text="Account" />
+            <BitStepperOption Text="Address" />
+            <BitStepperOption Text="Payment" />
+            <BitStepperOption Text="Review" />
+        </BitStepper>
+        <br /><br />
+        <div style="max-width: 20rem;">
+            <BitStepper TItem="BitStepperOption" Compact Responsive CurrentIndex="1">
+                <BitStepperOption Text="Account" />
+                <BitStepperOption Text="Address" />
+                <BitStepperOption Text="Payment" />
+                <BitStepperOption Text="Review" />
+            </BitStepper>
+        </div>
+        <br /><br />
+        <BitStepper TItem="BitStepperOption" Compact CurrentIndex="2">
+            <Options>
+                <BitStepperOption Text="Account" />
+                <BitStepperOption Text="Address" />
+                <BitStepperOption Text="Payment" />
+                <BitStepperOption Text="Review" />
+            </Options>
+            <CompactTemplate>
+                <b>@(context.Index + 1) / @context.Count</b>
+                <span>@context.Item?.Text</span>
+            </CompactTemplate>
+        </BitStepper>
+    </div>
+</DemoExample>
+
+<DemoExample Title="External Icons" RazorCode="@example9RazorCode" Id="example9">
     <div>
         The Icon of a step, and the CompletedIcon and ErrorIcon of the stepper, take the CSS classes of any icon library,
         such as FontAwesome or Bootstrap Icons, and win over the icon names.
@@ -176,7 +229,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example9RazorCode" Id="example9">
+<DemoExample Title="Style & Class" RazorCode="@example10RazorCode" Id="example10">
     <div>
         Style and Class reach the root, the Style and Class of a step reach that step, and Styles and Classes reach each
         part by name. The colors and sizes are also the public --bit-Stepper-* variables.
@@ -227,7 +280,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example10RazorCode" Id="example10">
+<DemoExample Title="RTL" RazorCode="@example11RazorCode" Id="example11">
     <div>Use BitStepper in right-to-left (RTL).</div>
     <br />
     <div dir="rtl">

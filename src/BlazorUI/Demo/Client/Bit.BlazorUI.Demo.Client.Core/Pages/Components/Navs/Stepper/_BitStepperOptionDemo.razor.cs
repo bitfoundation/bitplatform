@@ -10,4 +10,6 @@ public partial class _BitStepperOptionDemo
     private int eventsIndex;
     private int eventsChange;
     private string? eventsClicked;
+
+    private int compactIndex;
 }

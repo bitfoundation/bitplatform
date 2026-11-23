@@ -634,7 +634,62 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="Drawer" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+    <div>
+        <b>DrawerBreakpoint</b> folds the options into a drawer on the screens its <b>BitScreenQuery</b> matches: the bar
+        keeps its header and footer and shows a toggle button instead, which opens the very same options in a column from
+        the end edge of the screen. The open drawer covers the page, and an option, the overlay, the toggle and Escape
+        close it; <b>DrawerOpen</b> is its two-way bound state. On every other screen the navbar is its usual bar.
+    </div>
+    <br />
+    <div>Folded below 960px (LtMd) - narrow the window to see it:</div><br />
+    <div class="container drawer-screen">
+        <BitNavBar TItem="BitNavBarOption"
+                   InlineText
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedKey="home"
+                   DrawerBreakpoint="BitScreenQuery.LtMd"
+                   @bind-DrawerOpen="isDrawerOpen">
+            <HeaderTemplate>
+                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="32" Alt="bit" />
+            </HeaderTemplate>
+            <Options>
+                <BitNavBarOption Text="Home" IconName="@BitIconName.Home" Key="home" />
+                <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+                <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+                <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+            </Options>
+        </BitNavBar>
+    </div>
+    <br />
+    Drawer open: @isDrawerOpen
+    <br /><br />
+    <div>Folded below 2560px (LtXxl), with a toggle of its own:</div><br />
+    <div class="container drawer-screen">
+        <BitNavBar TItem="BitNavBarOption"
+                   InlineText
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedKey="home"
+                   DrawerBreakpoint="BitScreenQuery.LtXxl"
+                   ToggleAriaLabel="Site navigation"
+                   ToggleIconName="@BitIconName.CollapseMenu">
+            <HeaderTemplate>
+                <BitImage Src="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Width="32" Alt="bit" />
+            </HeaderTemplate>
+            <Options>
+                <BitNavBarOption Text="Home" IconName="@BitIconName.Home" Key="home" />
+                <BitNavBarOption Text="Products" IconName="@BitIconName.ProductVariant" />
+                <BitNavBarOption Text="Academy" IconName="@BitIconName.LearningTools" />
+                <BitNavBarOption Text="Profile" IconName="@BitIconName.Contact" />
+            </Options>
+            <FooterTemplate>
+                <BitButton Size="BitSize.Small">Sign in</BitButton>
+            </FooterTemplate>
+        </BitNavBar>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
     <div><b>Color</b> paints the selected option, its indicator and its fill.</div>
     <br />
     <div>Primary:</div><br />
@@ -810,7 +865,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example18RazorCode" Id="example18">
+<DemoExample Title="External Icons" RazorCode="@example19RazorCode" Id="example19">
     <div>External icon libraries like FontAwesome can be used with the <b>Icon</b> parameter.</div>
     <br />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
@@ -824,7 +879,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example19RazorCode" Id="example19" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example20RazorCode" Id="example20" PreventRenderForMcpClient>
     <div><b>Size</b> scales the icon, the text, the padding and the touch target of every option.</div>
     <br />
     <div>Small:</div><br />
@@ -858,7 +913,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example20RazorCode" Id="example20">
+<DemoExample Title="Style & Class" RazorCode="@example21RazorCode" Id="example21">
     <div>
         <b>Style</b>/<b>Class</b> for the root, <b>Styles</b>/<b>Classes</b> for its parts, an option's own
         <b>Style</b>/<b>Class</b>, and the public <b>--bit-NavBar-*</b> CSS variables, which re-skin every navbar when
@@ -937,7 +992,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example21RazorCode" Id="example21" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
     <div>Use BitNavBar in right-to-left (RTL).</div>
     <br />
     <div dir="rtl">

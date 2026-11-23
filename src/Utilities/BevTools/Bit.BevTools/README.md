@@ -37,7 +37,8 @@ Libraries integrate through the extension contracts in this package: implement `
 panels, state providers (`IBevToolsStateProvider`), diagnostic rules (`IBevToolsDiagnosticRule`), commands (`IBevToolsCommand`)
 and value formatters, write events with `IBevToolsTimeline`, and mark members with `[BevToolsSensitive]` /
 `[BevToolsIgnore]`. The application registers an extension with
-`services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()))`.
+`services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()))`, and adds a panel of its own (a tab
+that calls its own APIs, say) with `services.AddBitBevToolsServices(o => o.AddPanel<MyApiPanel>("my-api", "My API"))`.
 
 Targets .NET 10 and 11; the UI-event render causes and the framework timings need .NET 10, and the About panel says
 which capabilities this app has and why. Full guide: https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BevTools

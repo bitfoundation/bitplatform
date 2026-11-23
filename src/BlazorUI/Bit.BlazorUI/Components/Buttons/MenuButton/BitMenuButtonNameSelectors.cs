@@ -23,6 +23,11 @@ public class BitMenuButtonNameSelectors<TItem>
     public BitNameSelectorPair<TItem, string?> Class { get; set; } = new(nameof(BitMenuButtonItem.Class));
 
     /// <summary>
+    /// Description field name and selector of the custom input class (see <see cref="BitMenuButtonItem.Description"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, string?> Description { get; set; } = new(nameof(BitMenuButtonItem.Description));
+
+    /// <summary>
     /// Href field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Href { get; set; } = new(nameof(BitMenuButtonItem.Href));
@@ -67,6 +72,11 @@ public class BitMenuButtonNameSelectors<TItem>
     /// Key field name and selector of the custom input class.
     /// </summary>
     public BitNameSelectorPair<TItem, string?> Key { get; set; } = new(nameof(BitMenuButtonItem.Key));
+
+    /// <summary>
+    /// Match field name and selector of the custom input class (see <see cref="BitMenuButtonItem.Match"/>).
+    /// </summary>
+    public BitNameSelectorPair<TItem, BitNavMatch?> Match { get; set; } = new(nameof(BitMenuButtonItem.Match));
 
     /// <summary>
     /// OnClick field name and selector of the custom input class.

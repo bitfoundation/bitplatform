@@ -163,7 +163,7 @@ prerequisites, not as options.
 
 - **PostgreSQL**: the `pgvector` extension must be installed in the server. `AppDbContext.OnModelCreating` declares it
   (`HasPostgresExtension("vector")`), but declaring is not installing - use an image that ships it, e.g.
-  `pgvector/pgvector:pg18`, which is what the Aspire AppHost already uses.
+  `pgvector/pgvector:pg19`, which is what the Aspire AppHost already uses.
 - **SQL Server**: **SQL Server 2025+**, which is the first version with native vector search.
 
 Neither Sqlite nor MySql has a vector type here, which is why this feature is only generated for the two databases

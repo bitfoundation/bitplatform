@@ -105,7 +105,7 @@
     {
         _liveCount++;
         var matches = filter.MatchesText(node.Record.DisplayName, node.Record.TypeName);
-        var collapsed = Ui.CollapsedTreeNodes.Contains(node.Record.InstanceId) && filter.Terms.Count == 0;
+        var collapsed = Ui.CollapsedTreeNodes.Contains(node.Record.InstanceId) && !filter.HasText;
         var index = rows.Count;
         rows.Add(new Row(node));
         var anyChildVisible = false;
@@ -117,7 +117,7 @@
             }
         }
 
-        if (!matches && !anyChildVisible && filter.Terms.Count > 0)
+        if (!matches && !anyChildVisible && filter.HasText)
         {
             rows.RemoveAt(index);
             return false;
