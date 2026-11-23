@@ -104,13 +104,23 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
     /// </summary>
     internal IBevToolsEntryPoint? TryLoadFromApp(out string? error)
     {
-        error = null;
-        if (EntryPoint is { } loaded)
+        if (!TryLoadAssembliesFromApp(out var bevTools, out error))
         {
-            return loaded;
+            return null;
         }
 
-        Assembly? bevTools = null;
+        return EntryPoint ??= Create(bevTools!, out error);
+    }
+
+    /// <summary>
+    /// Loads Bit.BevTools and every one of <see cref="BevToolsLoaderOptions.AdditionalAssemblies"/> - those a later
+    /// <c>AddBitBevToolsLoaderServices</c> call added included - from the assemblies the app started with; never
+    /// downloads anything. False, with the missing ones in <paramref name="error"/>, when any of them is not there.
+    /// </summary>
+    internal bool TryLoadAssembliesFromApp(out Assembly? bevTools, out string? error)
+    {
+        error = null;
+        bevTools = null;
         List<string>? missing = null;
         foreach (var name in AssemblyNames())
         {
@@ -130,10 +140,10 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
         if (missing is not null)
         {
             error = string.Join(", ", missing) + (missing.Count == 1 ? " is" : " are") + " not among the assemblies this app started with.";
-            return null;
+            return false;
         }
 
-        return EntryPoint = Create(bevTools!, out error);
+        return true;
     }
 
     /// <summary>Bit.BevTools first, then <see cref="BevToolsLoaderOptions.AdditionalAssemblies"/>, each once.</summary>
@@ -187,18 +197,22 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
     /// Loads Bit.BevTools and <see cref="BevToolsLoaderOptions.AdditionalAssemblies"/> once per process: from the app's
     /// own assemblies when they are among them, otherwise in Blazor WebAssembly through <see cref="LazyAssemblyLoader"/>,
     /// which downloads the ones marked BlazorWebAssemblyLazyLoad. A failed load is retried on the next call, so a dropped
-    /// connection does not disable BevTools until a reload.
+    /// connection does not disable BevTools until a reload. An entry point loaded already is not the end of it: a later
+    /// <c>AddBitBevToolsLoaderServices</c> call may have added assemblies after it was, and the app's callbacks need those
+    /// too.
     /// </summary>
     public Task<IBevToolsEntryPoint?> LoadAsync(IJSRuntime js)
     {
-        if (EntryPoint is { } loaded)
+        if (EntryPoint is { } loaded && AssemblyNames().All(name => FindLoaded(name) is not null))
         {
             return Task.FromResult<IBevToolsEntryPoint?>(loaded);
         }
 
         lock (_lock)
         {
-            if (_loading is null || _loading is { IsCompleted: true, Result: null })
+            // A finished load that gave the entry point is done again too: reached here, an assembly it did not load is
+            // still missing.
+            if (_loading is null || _loading.IsCompleted)
             {
                 _loading = LoadCoreAsync(js);
             }
@@ -249,7 +263,16 @@ internal sealed class BevToolsLoaderContext(BevToolsLoaderOptions options, IServ
                 return null;
             }
 
-            EntryPoint = Create(assembly, out error);
+            if (EntryPoint is null)
+            {
+                EntryPoint = Create(assembly, out error);
+            }
+            else
+            {
+                // Bit.BevTools was loaded before; this load was for assemblies added after it.
+                error = null;
+            }
+
             LoadError = error;
             return EntryPoint;
         }

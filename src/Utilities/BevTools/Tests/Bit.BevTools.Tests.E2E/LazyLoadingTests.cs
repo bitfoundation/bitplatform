@@ -246,6 +246,8 @@ public sealed class LazyLoadingTests : BevToolsTest
         await page.Context.SetOfflineAsync(true);
         var panel = await OpenBevToolsAsync(page);
         await Expect(TreeItem(panel, "Home")).ToBeVisibleAsync();
+        // Styled by the prefetched stylesheet the page holds, with no link of the panel's own to fetch it again.
+        await Expect(panel).ToHaveCSSAsync("position", "fixed");
         await page.Context.SetOfflineAsync(false);
         _sample.AssertLoadedOnce(requests);
     }

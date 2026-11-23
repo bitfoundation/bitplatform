@@ -26,7 +26,6 @@ public class RedactorTests
     [DataRow("otp_code", true)]
     [DataRow("x-otp", true)]
     [DataRow("TotpSecret", true)]
-    [DataRow("dbpwd", true)]
     [DataRow("UserSsn", true)]
     [DataRow("NotPublished", false)]
     [DataRow("IsNotPrimary", false)]
@@ -36,9 +35,32 @@ public class RedactorTests
     [DataRow("HOTPATH", false)]
     [DataRow("ClassName", false)]
     [DataRow("CssClassName", false)]
-    public void Short_patterns_match_where_they_start_or_end_a_word(string name, bool expected)
+    public void Word_patterns_match_where_they_start_or_end_a_word(string name, bool expected)
     {
         Assert.AreEqual(expected, BevToolsRedactor.Default.IsSensitiveName(name), name);
+    }
+
+    [TestMethod]
+    [DataRow("dbpwd")]
+    [DataRow("newpwdconfirm")]
+    [DataRow("userpwdhash")]
+    [DataRow("mycvvcode")]
+    public void Other_short_patterns_still_match_anywhere(string name)
+    {
+        Assert.IsTrue(BevToolsRedactor.Default.IsSensitiveName(name), name);
+    }
+
+    [TestMethod]
+    public void A_short_pattern_the_app_adds_matches_anywhere()
+    {
+        Assert.IsTrue(new BevToolsRedactor(["pin"]).IsSensitiveName("userpincode"));
+    }
+
+    [TestMethod]
+    public void Empty_and_blank_patterns_match_nothing()
+    {
+        Assert.IsFalse(new BevToolsRedactor(["", "  "]).IsSensitiveName("Name"));
+        Assert.IsFalse(BevToolsRedactor.MatchesPattern("Name", ""));
     }
 
     [TestMethod]

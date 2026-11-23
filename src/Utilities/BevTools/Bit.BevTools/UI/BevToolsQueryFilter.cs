@@ -10,8 +10,10 @@ namespace Bit.BevTools;
 public sealed class BevToolsQueryFilter
 {
     /// <summary>
-    /// How long one match of <see cref="Regex"/> may take: a pattern that backtracks without end must not freeze the
-    /// panel, which in WebAssembly runs on the app's only thread. An entry it times out on does not match.
+    /// How long one match of <see cref="Regex"/> may take when it has to backtrack: a pattern that backtracks without end
+    /// must not freeze the panel, which in WebAssembly runs on the app's only thread. The first time out ends the
+    /// expression's matching for the whole filter (<see cref="RegexTimedOut"/>), so one slow pattern costs this once per
+    /// filtering, not once per field of every entry.
     /// </summary>
     public static readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(50);
 
@@ -42,7 +44,9 @@ public sealed class BevToolsQueryFilter
     /// </summary>
     public bool HasText => Terms.Count > 0 || RegexText is not null;
 
-    /// <summary>Whether <see cref="Regex"/> ran out of <see cref="RegexTimeout"/> on some text, which then did not match.</summary>
+    /// <summary>
+    /// Whether <see cref="Regex"/> ran out of <see cref="RegexTimeout"/> on some text; from then on no text matches it.
+    /// </summary>
     public bool RegexTimedOut { get; private set; }
 
     public static BevToolsQueryFilter Parse(string? query)
@@ -99,7 +103,7 @@ public sealed class BevToolsQueryFilter
                 RegexText = query[start..(end + 1)];
                 try
                 {
-                    Regex = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, RegexTimeout);
+                    Regex = Compile(pattern);
                 }
                 catch (ArgumentException ex)
                 {
@@ -113,6 +117,24 @@ public sealed class BevToolsQueryFilter
         }
 
         return query;
+    }
+
+    /// <summary>
+    /// Without backtracking where the pattern allows it, which takes time linear in the text whatever the pattern is
+    /// (<c>/(a+)+$/</c> included); a pattern that needs backtracking (backreferences, lookarounds, atomic groups) falls
+    /// back to the backtracking engine under <see cref="RegexTimeout"/>.
+    /// </summary>
+    private static Regex Compile(string pattern)
+    {
+        const RegexOptions options = RegexOptions.IgnoreCase | RegexOptions.CultureInvariant;
+        try
+        {
+            return new Regex(pattern, options | RegexOptions.NonBacktracking, RegexTimeout);
+        }
+        catch (NotSupportedException)
+        {
+            return new Regex(pattern, options, RegexTimeout);
+        }
     }
 
     public bool MatchesText(params string?[] fields)
@@ -157,7 +179,7 @@ public sealed class BevToolsQueryFilter
     {
         foreach (var field in fields)
         {
-            if (field is null)
+            if (field is null || RegexTimedOut)
             {
                 continue;
             }

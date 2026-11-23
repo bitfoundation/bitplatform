@@ -772,8 +772,8 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     /// <summary>
     /// Set once <c>BevToolsLoader.PrefetchAsync</c> put the stylesheet into the page (in a browser, where one process
-    /// serves one page): a link of the panel's own would request it again, and fail offline, which is what the prefetch
-    /// is for.
+    /// serves one page) as an adopted stylesheet, which stays there for the page's life, enhanced navigation included: a
+    /// link of the panel's own would request it again, and fail offline, which is what the prefetch is for.
     /// </summary>
     internal static bool StylesheetInPage { get; set; }
 

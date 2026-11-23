@@ -271,9 +271,12 @@ AOT-compiled.
 the panel against the built-in ids and the registry's panels and calls `BevToolsUiState.Open(panelId, query)`; a panel
 rendered later takes that panel over its saved preference (`PanelRequested`, like `OpenRequested`). `PrefetchAsync`
 runs `LoadAsync` and then `IBevToolsEntryPoint.PrefetchAssetsAsync`, which imports the panel's module by the specifier
-the panel uses (the page's module map answers the panel's own import) and puts its stylesheet into the page, after
-which the panel renders no link of its own (`BevToolsPanel.StylesheetInPage`) - a second request for a `no-cache` asset
-would fail offline. The WebAssembly runtime keeps a lazy download that failed for the page's life and answers every
+the panel uses (the page's module map answers the panel's own import) and puts its stylesheet into the page as a
+constructed stylesheet in `document.adoptedStyleSheets`, after which the panel renders no link of its own
+(`BevToolsPanel.StylesheetInPage`) - a second request for a `no-cache` asset would fail offline. Not a `<link>` in the
+head: enhanced navigation replaces the head with the server's, removing what a script added there, and the panel would
+lose its styles. Where the browser cannot adopt a stylesheet, the prefetch leaves the flag unset and the panel links the
+stylesheet itself. The WebAssembly runtime keeps a lazy download that failed for the page's life and answers every
 later request for the asset with the same failure, so `LoadAsync` asks `navigator.onLine` first and attempts nothing
 offline; a failure the runtime did see is reported as one a reload retries. `LoadFailedToDownload` tells those apart
 from a project that marks nothing lazy, which the runtime names, and `BevToolsLoader.DownloadFailed` hands it to the

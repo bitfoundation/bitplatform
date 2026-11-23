@@ -5,7 +5,7 @@
 <div class="bev-split">
     <div class="bev-left" style="flex-basis:55%">
         <div class="bev-toolbar">
-            <input type="text" aria-label="Filter log entries" placeholder="Filter: text, /regex/, level:warning (or level:warn,fail), category:Orders, event:20101, trace:…" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
+            <input type="text" aria-label="Filter log entries" placeholder="Filter: text, /regex/, level:warning (or level:warn,error,crit), category:Orders, event:20101, trace:…" @bind:get="Query" @bind:set="OnQuery" @bind:event="oninput" />
             <span class="bev-segmented" role="group" aria-label="Show">
                 <button type="button" aria-pressed="@(View.ByCategory || View.ByCommand ? "false" : "true")" @onclick="() => Show(byCategory: false, byCommand: false)">Entries</button>
                 <button type="button" aria-pressed="@(View.ByCategory ? "true" : "false")" title="One row per logger category, with how many entries of each level it wrote" @onclick="() => Show(byCategory: true, byCommand: false)">Categories</button>
@@ -20,7 +20,7 @@
         }
         else if (_filter.RegexTimedOut)
         {
-            <div class="bev-toolbar bev-warn" role="status">The regular expression took longer than @((int)BevToolsQueryFilter.RegexTimeout.TotalMilliseconds) ms on some entries, which are left out: make it more specific.</div>
+            <div class="bev-toolbar bev-warn" role="status">The regular expression took longer than @((int)BevToolsQueryFilter.RegexTimeout.TotalMilliseconds) ms on an entry and was stopped there: the entries it had not matched yet are left out. Make it more specific.</div>
         }
         @if (!View.ByCommand && !View.ByCategory && View.Command is not null)
         {

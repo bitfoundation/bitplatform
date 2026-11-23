@@ -51,12 +51,37 @@ public class QueryFilterTests
     }
 
     [TestMethod]
-    public void An_expression_that_runs_out_of_time_does_not_match_and_is_reported()
+    public void A_pattern_that_would_backtrack_without_end_runs_without_backtracking()
     {
         var filter = BevToolsQueryFilter.Parse("/(a+)+$/");
 
+        Assert.IsTrue((filter.Regex!.Options & System.Text.RegularExpressions.RegexOptions.NonBacktracking) != 0);
+        Assert.IsFalse(filter.MatchesText(new string('a', 5000) + "!"));
+        Assert.IsFalse(filter.RegexTimedOut);
+        Assert.IsTrue(filter.MatchesText("aaa"));
+    }
+
+    [TestMethod]
+    public void An_expression_that_runs_out_of_time_does_not_match_and_is_reported()
+    {
+        // The backreference needs the backtracking engine, where this pattern takes exponential time.
+        var filter = BevToolsQueryFilter.Parse(@"/(a+)+\1$/");
+        Assert.IsTrue((filter.Regex!.Options & System.Text.RegularExpressions.RegexOptions.NonBacktracking) == 0);
+
         Assert.IsFalse(filter.MatchesText(new string('a', 5000) + "!"));
         Assert.IsTrue(filter.RegexTimedOut);
+    }
+
+    [TestMethod]
+    public void After_a_time_out_the_expression_matches_nothing_more()
+    {
+        var filter = BevToolsQueryFilter.Parse(@"/(a+)+\1$/");
+        Assert.IsTrue(filter.MatchesText("aaaa"));
+
+        Assert.IsFalse(filter.MatchesText(new string('a', 5000) + "!"));
+
+        // One slow pattern costs one time out per filtering, not one per field of every entry.
+        Assert.IsFalse(filter.MatchesText("aaaa"));
     }
 
     [TestMethod]

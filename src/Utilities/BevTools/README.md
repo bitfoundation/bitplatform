@@ -464,9 +464,10 @@ trace, protocol, companion, extension - can show more:
 
 * Names: members, dictionary keys, headers, query and fragment parameters, storage keys and claim types matching the
   sensitive patterns (`password`, `token`, `authorization`, `cookie`, `connectionstring`, `apikey`, `secret`, `otp`,
-  `totp`, …; `BevToolsOptions.SensitiveNamePatterns`). A pattern of four characters or more matches anywhere in the name,
-  case-insensitively (`accesstoken` too); a shorter one only where it starts or ends a word of the name, so `otp`
-  catches `?otp=`, `UserOtp` and `otp_code` but not `NotPublished` or `Footprint`, and `ssn` not `ClassName`.
+  `totp`, …; `BevToolsOptions.SensitiveNamePatterns`). A pattern matches anywhere in the name, case-insensitively
+  (`accesstoken`, `newpwdconfirm`), except `otp` and `ssn`, which hide inside ordinary words and match only where they
+  start or end a word of the name: `otp` catches `?otp=`, `UserOtp` and `otp_code` but not `NotPublished` or
+  `Footprint`, and `ssn` not `ClassName`.
   `[BevToolsSensitive]` on fields, properties, auto-properties and a record's positional parameters; `[BevToolsIgnore]`
   hides members or whole components.
 * Shapes, whatever they are called: JSON Web Tokens, bearer tokens, PEM private keys, connection strings and key/value

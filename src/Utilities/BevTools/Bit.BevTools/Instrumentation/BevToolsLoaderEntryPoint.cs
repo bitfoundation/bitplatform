@@ -73,6 +73,19 @@ internal sealed class BevToolsLoaderEntryPoint : IBevToolsEntryPoint
             return;
         }
 
+        // A later AddBitBevToolsLoaderServices call may name assemblies the callbacks it adds use. A BevTools registered
+        // at startup is never attached, so nothing would download them later: a callback that uses one that is not here
+        // would fail the app's startup on a FileNotFoundException. Those callbacks are left out, and the session says so.
+        if (!context.TryLoadAssembliesFromApp(out _, out var missing))
+        {
+            var problem = "The ConfigureBevTools callbacks a later AddBitBevToolsLoaderServices call added were not applied: " + missing
+                + " BevTools was registered at startup, before they were named, and a BevTools registered at startup loads nothing later."
+                + " Name them in the first AddBitBevToolsLoaderServices call, or keep them among the assemblies the app starts with.";
+            services.AddBitBevToolsServices(options => options.ConfigurationProblems.Add(problem));
+            context.StartupConfigurationsApplied = configurations.Count;
+            return;
+        }
+
         services.AddBitBevToolsServices(options => Configure(context.Options, options, skip));
         context.StartupConfigurationsApplied = configurations.Count;
     }
@@ -114,8 +127,11 @@ internal sealed class BevToolsLoaderEntryPoint : IBevToolsEntryPoint
         var module = await js.InvokeAsync<IJSObjectReference>("import", BevToolsPanel.ModulePath);
         try
         {
-            await module.InvokeVoidAsync("prefetchStylesheet", BevToolsPanel.StylesheetPath);
-            BevToolsPanel.StylesheetInPage = true;
+            // False where the browser cannot hold it in the page for good; the panel then links it itself.
+            if (await module.InvokeAsync<bool>("prefetchStylesheet", BevToolsPanel.StylesheetPath))
+            {
+                BevToolsPanel.StylesheetInPage = true;
+            }
         }
         finally
         {

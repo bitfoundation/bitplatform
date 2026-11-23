@@ -48,22 +48,29 @@ public sealed partial class BevToolsRedactor
     }
 
     /// <summary>
-    /// Patterns this short or shorter match only where they start or end a word of the name: anywhere, "otp" would
-    /// redact <c>NotPublished</c>, <c>HotPath</c> and <c>Footprint</c>, and "ssn" every component's <c>ClassName</c>.
+    /// The patterns that hide inside ordinary words, which match only where they start or end a word of the name:
+    /// anywhere, "otp" would redact <c>NotPublished</c>, <c>HotPath</c> and <c>Footprint</c>, and "ssn" every component's
+    /// <c>ClassName</c>. Every other pattern - "pwd" and "cvv" among them, and whatever an app adds - matches anywhere,
+    /// so <c>newpwdconfirm</c> stays redacted: a name missed shows a secret, a name caught only hides a value.
     /// </summary>
-    internal const int ShortPatternLength = 3;
+    internal static readonly string[] WordPatterns = ["otp", "ssn"];
 
     /// <summary>
     /// Whether <paramref name="name"/> matches a sensitive name <paramref name="pattern"/>, case-insensitively: anywhere
-    /// in it when the pattern is longer than <see cref="ShortPatternLength"/> characters, so <c>accesstoken</c> is caught
-    /// as well as <c>AccessToken</c>; otherwise only where the match starts or ends a word - at either end of the name,
-    /// next to a character that is neither a letter nor a digit, or where a lower case letter or a digit meets an upper
-    /// case one (<c>UserOtp</c>, <c>OTPCode</c>, <c>otp_code</c>, <c>dbpwd</c>). The browser hub matches storage keys and
-    /// URL parameters by the same rule (<c>bit-bevtools.ts</c>, <c>matchesSensitivePattern</c>).
+    /// in it (<c>accesstoken</c> as well as <c>AccessToken</c>), except for one of <see cref="WordPatterns"/>, which
+    /// matches only where the match starts or ends a word - at either end of the name, next to a character that is
+    /// neither a letter nor a digit, or where a lower case letter or a digit meets an upper case one (<c>UserOtp</c>,
+    /// <c>OTPCode</c>, <c>otp_code</c>). An empty pattern matches nothing. The browser hub matches storage keys and URL
+    /// parameters by the same rule (<c>bit-bevtools.ts</c>, <c>matchesSensitivePattern</c>).
     /// </summary>
     internal static bool MatchesPattern(string name, string pattern)
     {
-        if (pattern.Length > ShortPatternLength)
+        if (pattern.Length == 0)
+        {
+            return false;
+        }
+
+        if (!WordPatterns.Contains(pattern, StringComparer.OrdinalIgnoreCase))
         {
             return name.Contains(pattern, StringComparison.OrdinalIgnoreCase);
         }

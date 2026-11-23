@@ -526,6 +526,50 @@ public class LoaderTests : BunitContext
     }
 
     [TestMethod]
+    public void A_later_call_naming_an_assembly_the_app_did_not_start_with_leaves_its_callbacks_out_of_a_startup_registration()
+    {
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = true);
+        Assert.IsTrue(Context(services).RegisteredAtStartup);
+
+        var ran = false;
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.AdditionalAssemblies.Add("Bit.BevTools.Tests.NoSuchIntegration");
+            o.ConfigureBevTools(_ => ran = true);
+        });
+
+        Assert.IsFalse(ran, "the callback may use a type of the missing assembly, and would fail the app's startup");
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var session = scope.ServiceProvider.GetRequiredService<BevToolsSession>();
+        Assert.IsTrue(session.IsEnabled);
+        Assert.Contains(e => e.Message.Contains("Bit.BevTools.Tests.NoSuchIntegration (FileNotFoundException) is not among the assemblies this app started with"), session.Errors.Snapshot());
+    }
+
+    [TestMethod]
+    public async Task An_assembly_named_after_BevTools_was_loaded_is_loaded_before_the_attach()
+    {
+        var services = ScopeServices();
+        services.AddBitBevToolsLoaderServices(o => o.RegisterAtStartup = false);
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        var loader = scope.ServiceProvider.GetRequiredService<BevToolsLoader>();
+        Assert.IsTrue(await loader.PrefetchAsync(), loader.Problem);
+
+        var ran = false;
+        services.AddBitBevToolsLoaderServices(o =>
+        {
+            o.AdditionalAssemblies.Add("Bit.BevTools.Tests.NoSuchIntegration");
+            o.ConfigureBevTools(_ => ran = true);
+        });
+
+        Assert.IsFalse(await loader.OpenAsync(), "outside a browser nothing can be downloaded");
+        StringAssert.Contains(loader.Problem, "Bit.BevTools.Tests.NoSuchIntegration");
+        Assert.IsFalse(ran, "no callback runs before the assemblies it may use are loaded");
+    }
+
+    [TestMethod]
     [DataRow("Error: download 'http://localhost/_framework/Bit.BevTools.abc.wasm' for Bit.BevTools.wasm failed 404 Not Found", "the server answered HTTP 404 Not Found.")]
     [DataRow("download 'x' for y failed 503", "the server answered HTTP 503.")]
     [DataRow("download 'http://localhost/_framework/Bit.BevTools.abc.wasm' for Bit.BevTools.abc.wasm failed 0 TypeError: Failed to fetch", "no answer from the server (TypeError: Failed to fetch).")]
