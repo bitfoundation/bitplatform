@@ -13,6 +13,25 @@ that nothing was lost. `rebrand` decides how the result looks; this skill decide
 **Under ai-dlc.** A port takes ai-dlc's full track (`.github/agents/ai-dlc.agent.md`): the inventory and the
 decisions of section 3 are its phase 1, and this file adds what a port needs to its phases.
 
+**Features the source lacks.** Before you read the source, ask the user one question. The app may not have some
+features this project already has, such as
+<!--#if (signalR == true)-->
+the AI chatbot,
+<!--#else-->
+several people sharing one device, each switching to their own account with a PIN,
+<!--#endif-->
+<!--#if (appInsights == true || ads == true)-->
+the dialog that asks users' consent before tracking them,
+<!--#endif-->
+or letting users download their own data and delete their account: should you make the product decisions and changes
+that keep them in the product? Offer Yes first, as the recommended answer. Don't ask when the request already
+answers it, and when the user won't be there until the end (section 5), take Yes and list it as decided without
+review.
+
+- **Yes**: each such feature stays and fits the product. The plan recommends, with section 3's decisions, where it
+  shows, who uses it and what it knows about the product.
+- **No**: the product does what the source did, and those features go the way the template's samples do (section 1).
+
 Ports fail in three predictable ways, and this file is built around them:
 
 1. **The source is translated instead of understood** - its code is carried over line by line with its framework's
@@ -227,8 +246,9 @@ section 4 says.
   source's site has, instead of that skill's two of each.
 - **When it can't be found or reached**, make one that fits the business, from the sample closest to it, with what the
   inventory says about the product and the look the app got.
-- **The AI chat stays in both cases**, even when the source's site has nothing like it. It answers from facts about
-  this product, taken from the inventory, and wears the page's look.
+- **The AI chat stays in both cases**, even when the source's site has nothing like it, unless the user chose not to
+  keep the features the source lacks. It answers from facts about this product, taken from the inventory, and wears
+  the page's look.
 - **Text a script reveals still shows without scripts.** Crawlers and benchmarks get the page without them, so an effect
   taken from the source's site can't leave its text hidden from them.
 
@@ -272,13 +292,15 @@ section 4).
 
 - Every row of the parity table is done and has its test, or its change or removal is in a spec with the user's
   agreement.
+- The features this project has and the source lacks stay, each fitted to the product, or are gone, as the user
+  answered.
 - Every decision in section 3 is in a spec, and the report lists the ones decided without review.
 - No source code was copied, and no secret came over that the report doesn't list.
 - The database is designed for this project instead of copied, and a spec says where each of the source's tables and
   columns went.
 - Every heavy client package of the source is replaced, moved to the server, or kept with its reason.
 - The landing page looks like the source's site, or fits the business when that site couldn't be found or reached, is
-  built on `src/LandingPage`, and its chat answers about this product.
+  built on `src/LandingPage`, and its chat, when it stays, answers about this product.
 - The main pages of each app are in the Workbench.
 - Each app serves only its own pages, and the tests say so.
 - The project's own instructions describe what it has become: `AGENTS.md` section 2 lists its projects, the

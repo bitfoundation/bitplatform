@@ -96,10 +96,16 @@ renderer's dispatcher, 20 000 times; net11.0, Release):
 | BevTools, `TrackLogs = false` | 0.02 µs | 64 B |
 | Recording, `CaptureLogCallers = false` | 2.9 µs | 1.8-1.9 KB |
 | Recording everything | 7.9 µs | 6.4 KB |
+| `Bit.BevTools.Loader` with `AutoStart = BevToolsAutoStart.Logs`, before the attach | 0.71 µs | 688 B |
 
 The stack walk that names the sending component is most of it, as for HTTP senders. An entry below
 `MinimumLogLevel` (or filtered by the host) is refused in `IsEnabled`, before the message is formatted. `log.flood`
 reads the buffer (at most `MaxLogs` entries) once per evaluation.
+
+The loader's auto-started capture (last row, measured in a later run of the same harness, in which recording
+everything took 9.5 µs and 6.8 KB per entry) reads the entry and its values as text and keeps it, nothing else: no
+stack walk, no session, no timeline. What it holds is bounded by `MaxLogs` entries per process, or per circuit on a
+server, until a session takes them over.
 
 Forced-render detection (parameter flattening and diffing before a render) runs for the component selected in the
 inspector, like the field diff it sits next to, and is bounded the same way (depth 2, 25 items, 150 entries per

@@ -47,6 +47,13 @@
         throw <code>BsqliteSynchronousApiNotSupportedException</code> naming the async overload. The
         <a href="limits">Limits</a> page runs that on purpose.
     </div>
+    <div class="bb-note bb-note-warn">
+        Published with AOT, an app boxes each nullable enum or struct type of its own that an entity uses -
+        <code>OrderStatus?</code>, say - once, in its context class, or the first save of such an entity stops the app
+        without an error. <code>UseBitBsqlite</code> already does it for the types the SQLite provider maps, such as
+        <code>DateOnly?</code> and <code>Guid?</code>. The code is in the guide's
+        <a href="https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/getting-started.md#aot-and-nullable-properties" target="_blank" rel="noopener noreferrer">AOT and nullable properties</a>.
+    </div>
 </section>
 
 <section class="bb-card">

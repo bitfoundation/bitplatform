@@ -64,6 +64,23 @@ public partial class CultureInfoManager
         return [.. SupportedCultures.Select(sc => $"/{sc.Culture.Name}{url}")];
     }
 
+    /// <summary>
+    /// <paramref name="url"/>, an app-relative url such as <c>/about</c>, under the current culture: <c>/en-US/about</c>,
+    /// the address a full page load serves it under (See Server.Web's <c>UseCultureUrlRedirection</c>). A link written
+    /// this way takes a search engine to the page in the language it found the link in, with no redirect on the way,
+    /// where a culture-less one redirects by the crawler's own language, usually to the default culture.
+    /// Unchanged when the app is not multilingual, and in the Blazor Hybrid apps, whose urls carry no culture.
+    /// </summary>
+    public static string GetCurrentCultureUrl(string url)
+    {
+        var culture = CultureInfo.CurrentUICulture.Name;
+
+        if (InvariantGlobalization || AppPlatform.IsBlazorHybrid || GetCultureInfo(culture) is null)
+            return url;
+
+        return $"/{culture}{url}";
+    }
+
     public static void SetCurrentCulture(string? cultureName)
     {
         var cultureInfo = GetCultureInfo(cultureName) ?? DefaultCulture;
