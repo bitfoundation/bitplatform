@@ -8,7 +8,8 @@ internal sealed class BevToolsPanelExtension(BevToolsPanelDescriptor panel) : IB
 {
     public BevToolsPanelDescriptor Panel { get; } = panel;
 
-    public string Name => Panel.Title + " panel";
+    // The id tells two panels with the same title apart, in About's list and in the prefix of an error.
+    public string Name => $"{Panel.Title} panel ({Panel.Id})";
 
     public void Configure(IBevToolsExtensionBuilder builder) => builder.AddPanel(Panel);
 }

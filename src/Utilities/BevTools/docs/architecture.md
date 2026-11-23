@@ -218,8 +218,11 @@ as the `IBevToolsCommandContext` to panels, hosts the refresh loop and the brows
 command palette are keyboard-navigable; theme follows `prefers-color-scheme` unless overridden. Extension panels are
 rendered with `DynamicComponent` and can be restricted to a platform (`RequiredPlatform = "Server"`); an application adds
 one without an extension class through `BevToolsOptions.AddPanel<T>`, which wraps it in an internal one-panel extension.
-A panel whose id is a built-in panel's is refused (an extension error in About), since the host would show the built-in
-panel for it.
+A panel whose id is a built-in panel's is refused, since the host would show the built-in panel for it: `AddPanel` throws,
+and an extension's such panel is left out with an extension error in About while the rest of its contributions stay. Two
+extensions contributing one id are reported there too; the later one wins. A registered panel's component is BevTools'
+only provisionally at activation: the hierarchy settles it, so an instance the application renders on its own pages is
+the application's (its held-back "created" event is recorded then), and the one under the panel host stays BevTools'.
 
 ### Attaching to a running app (`Bit.BevTools.Loader`, `BevToolsRuntimeAttacher`)
 

@@ -22,9 +22,10 @@ public sealed class BevToolsRegistry
         IsEnabled = isEnabled;
         EnabledReason = enabledReason;
         StartedAt = DateTimeOffset.UtcNow;
-        var builder = new ExtensionBuilder();
+        var builder = new ExtensionBuilder(ExtensionErrors);
         foreach (var extension in options.Extensions)
         {
+            builder.Current = extension.Name;
             try
             {
                 extension.Configure(builder);
@@ -83,8 +84,14 @@ public sealed class BevToolsRegistry
     internal static Lazy<BevToolsServiceGraph?> CreateGraph(IServiceCollection? services) =>
         new(() => services is null ? null : BevToolsServiceGraph.Build(services), LazyThreadSafetyMode.ExecutionAndPublication);
 
-    private sealed class ExtensionBuilder : IBevToolsExtensionBuilder
+    private sealed class ExtensionBuilder(List<string> errors) : IBevToolsExtensionBuilder
     {
+        // Which extension added each panel id, so a clash between two of them is reported rather than silent.
+        private readonly Dictionary<string, string> _panelOwners = new(StringComparer.Ordinal);
+
+        /// <summary>The name of the extension whose <c>Configure</c> is running, for the errors it causes.</summary>
+        public string Current { get; set; } = string.Empty;
+
         public List<BevToolsPanelDescriptor> Panels { get; } = [];
 
         public List<IBevToolsDiagnosticRule> Rules { get; } = [];
@@ -106,14 +113,22 @@ public sealed class BevToolsRegistry
             }
 
             // The panel host shows a built-in panel for its id before it looks at extensions, so such a tab would open the
-            // built-in panel instead of this one.
-            if (BevToolsPanel.BuiltInPanels.Any(p => string.Equals(p.Id, panel.Id, StringComparison.Ordinal)))
+            // built-in panel instead of this one. Only the panel is left out, not by throwing: that would drop the rest of
+            // the extension's Configure, its rules and commands after this call in a fluent chain.
+            if (BevToolsPanel.IsBuiltInPanelId(panel.Id))
             {
-                throw new ArgumentException($"Panel id '{panel.Id}' is a built-in panel's; choose another.");
+                errors.Add($"{Current}: Panel id '{panel.Id}' is a built-in panel's; the panel is left out.");
+                return this;
+            }
+
+            if (_panelOwners.TryGetValue(panel.Id, out var owner) && !string.Equals(owner, Current, StringComparison.Ordinal))
+            {
+                errors.Add($"{Current}: Panel id '{panel.Id}' replaces the panel {owner} added.");
             }
 
             Panels.RemoveAll(p => p.Id == panel.Id);
             Panels.Add(panel);
+            _panelOwners[panel.Id] = Current;
             return this;
         }
 

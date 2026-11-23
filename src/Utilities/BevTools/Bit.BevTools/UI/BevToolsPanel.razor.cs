@@ -59,7 +59,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
     }
 
-    internal static readonly (string Id, string Title)[] BuiltInPanels =
+    private static readonly (string Id, string Title)[] BuiltInPanels =
     [
         ("components", "Components"),
         ("profiler", "Profiler"),
@@ -761,8 +761,12 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
     }
 
+    /// <summary>Whether <paramref name="panelId"/> is a built-in panel's, which the host shows before it looks at extensions.</summary>
+    internal static bool IsBuiltInPanelId(string panelId) =>
+        BuiltInPanels.Any(p => string.Equals(p.Id, panelId, StringComparison.Ordinal));
+
     private bool IsPanelAvailable(string panelId) =>
-        BuiltInPanels.Any(p => string.Equals(p.Id, panelId, StringComparison.Ordinal)) ||
+        IsBuiltInPanelId(panelId) ||
         ExtensionPanels.Any(p => string.Equals(p.Id, panelId, StringComparison.Ordinal));
 
     private async Task SavePrefsAsync()

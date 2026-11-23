@@ -149,7 +149,7 @@ public class ExtensibilityTests : BunitContext
         var panel = Assert.ContainsSingle(p => p.Id == AppApiPanel.Id, registry.Panels);
         Assert.AreEqual(typeof(AppApiPanel), panel.ComponentType);
         Assert.AreEqual("App API", panel.Title);
-        Assert.Contains("App API panel", registry.ExtensionNames);
+        Assert.Contains("App API panel (app-api)", registry.ExtensionNames);
         Assert.IsEmpty(registry.ExtensionErrors);
     }
 
@@ -189,24 +189,88 @@ public class ExtensibilityTests : BunitContext
         var panel = Assert.ContainsSingle(p => p.Id == "mine", registry.Panels);
         Assert.AreEqual(typeof(AppApiPanel), panel.ComponentType);
         Assert.AreEqual(5, panel.Order);
-        Assert.AreEqual(1, registry.ExtensionNames.Count(n => n.EndsWith(" panel", StringComparison.Ordinal)));
+        Assert.AreEqual(1, registry.ExtensionNames.Count(n => n.EndsWith(" panel (mine)", StringComparison.Ordinal)));
     }
 
     [TestMethod]
-    public void A_panel_with_a_built_in_panels_id_is_refused_and_reported()
+    public void A_built_in_panels_id_is_refused_where_the_application_adds_it()
+    {
+        var options = new BevToolsOptions();
+
+        var ex = Assert.ThrowsExactly<ArgumentException>(() => options.AddPanel<AcmePanel>("logs", "My logs"));
+
+        Assert.Contains("'logs'", ex.Message, StringComparison.Ordinal);
+        Assert.IsEmpty(options.Extensions);
+    }
+
+    /// <summary>
+    /// An extension whose panel takes a built-in panel's id loses that panel only: the rule and the command it adds
+    /// after it in the same fluent chain still work, and About lists the extension along with the error.
+    /// </summary>
+    [TestMethod]
+    public void An_extension_panel_with_a_built_in_panels_id_is_left_out_and_the_rest_of_the_extension_kept()
     {
         var services = new ServiceCollection();
         services.AddBitBevToolsServices(o =>
         {
             o.Enabled = true;
-            o.AddPanel<AcmePanel>("logs", "My logs");
+            o.Extensions.Add(new BuiltInIdExtension());
         });
 
         using var provider = services.BuildServiceProvider();
         var registry = provider.GetRequiredService<BevToolsRegistry>();
 
-        Assert.DoesNotContain(p => p.Id == "logs", registry.Panels);
-        Assert.Contains(e => e.StartsWith("My logs panel: ", StringComparison.Ordinal) && e.Contains("'logs'", StringComparison.Ordinal), registry.ExtensionErrors);
+        Assert.DoesNotContain(p => p.ComponentType == typeof(AcmePanel), registry.Panels);
+        Assert.Contains(r => r.Id == "built-in-id.rule", registry.Rules);
+        Assert.Contains(c => c.Id == "built-in-id.command", registry.Commands);
+        Assert.Contains(BuiltInIdExtension.ExtensionName, registry.ExtensionNames);
+        Assert.Contains(e => e.StartsWith(BuiltInIdExtension.ExtensionName + ": ", StringComparison.Ordinal) && e.Contains("'logs'", StringComparison.Ordinal), registry.ExtensionErrors);
+    }
+
+    [TestMethod]
+    public void A_panel_that_replaces_another_extensions_panel_is_reported()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBevToolsServices(o =>
+        {
+            o.Enabled = true;
+            o.AddPanel<AppApiPanel>("acme", "Mine");
+            o.Extensions.Add(new AcmeBevToolsExtension());
+        });
+
+        using var provider = services.BuildServiceProvider();
+        var registry = provider.GetRequiredService<BevToolsRegistry>();
+
+        var panel = Assert.ContainsSingle(p => p.Id == "acme", registry.Panels);
+        Assert.AreEqual(typeof(AcmePanel), panel.ComponentType, "The one later in Extensions wins.");
+        Assert.Contains(e => e.StartsWith("Acme: ", StringComparison.Ordinal) && e.Contains("Mine panel (acme)", StringComparison.Ordinal), registry.ExtensionErrors);
+    }
+
+    /// <summary>
+    /// A registered panel's component that the application also renders on its own pages: that instance is the
+    /// application's (created, rendered and clicked as such), while the one in the BevTools panel stays BevTools'.
+    /// </summary>
+    [TestMethod]
+    public void A_panel_component_the_application_renders_itself_is_the_applications_there()
+    {
+        var page = Render<AppPageWithAcmePanel>();
+        page.Find("button.acme-refresh").Click();
+
+        var appInstance = Assert.ContainsSingle(r => r.Type == typeof(AcmePanel), Session.Components.All);
+        Assert.IsFalse(appInstance.IsBevTools);
+        var events = Session.Timeline.Snapshot();
+        Assert.Contains(e => e.Kind == BevToolsEventKind.Lifecycle && e.ComponentInstanceId == appInstance.InstanceId && e.Title.EndsWith(" created", StringComparison.Ordinal), events);
+        Assert.Contains(e => e.Kind == BevToolsEventKind.UiEvent, events);
+        Assert.IsFalse(Session.Components.IsBevToolsOnlyType(typeof(AcmePanel).FullName!));
+
+        var cut = Render<BevToolsPanel>();
+        cut.Find(".bev-badge").Click();
+        cut.FindAll(".bev-tab").First(t => t.TextContent.Contains("Acme", StringComparison.Ordinal)).Click();
+
+        var panelInstance = Assert.ContainsSingle(r => r.Type == typeof(AcmePanel) && r != appInstance && !r.IsDisposed, Session.Components.All);
+        Assert.IsTrue(panelInstance.IsBevTools);
+        Assert.IsFalse(appInstance.IsBevTools);
+        Assert.DoesNotContain(e => e.Kind == BevToolsEventKind.Lifecycle && e.ComponentInstanceId == panelInstance.InstanceId, Session.Timeline.Snapshot());
     }
 
     [TestMethod]
@@ -304,6 +368,53 @@ public sealed class AcmeBevToolsExtension : IBevToolsExtension
             context.ShowPanel("acme");
             return Task.CompletedTask;
         }
+    }
+}
+
+/// <summary>An extension whose panel takes a built-in panel's id, followed by a rule and a command in the same chain.</summary>
+public sealed class BuiltInIdExtension : IBevToolsExtension
+{
+    public const string ExtensionName = "Built-in id";
+
+    public string Name => ExtensionName;
+
+    public void Configure(IBevToolsExtensionBuilder builder) => builder
+        .AddPanel(new BevToolsPanelDescriptor("logs", "My logs", typeof(AcmePanel)))
+        .AddDiagnosticRule(new Rule())
+        .AddCommand(new Command());
+
+    private sealed class Rule : IBevToolsDiagnosticRule
+    {
+        public string Id => "built-in-id.rule";
+
+        public string Title => "Rule";
+
+        public string Description => "Never fires.";
+
+        public IEnumerable<BevToolsDiagnostic> Evaluate(IBevToolsDiagnosticContext context) => [];
+    }
+
+    private sealed class Command : IBevToolsCommand
+    {
+        public string Id => "built-in-id.command";
+
+        public string Title => "Command";
+
+        public string Category => "Built-in id";
+
+        public Task ExecuteAsync(IBevToolsCommandContext context, string? argument) => Task.CompletedTask;
+    }
+}
+
+/// <summary>An application page that renders a component also registered as a panel (<see cref="AcmePanel"/>).</summary>
+public class AppPageWithAcmePanel : ComponentBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, "main");
+        builder.OpenComponent<AcmePanel>(1);
+        builder.CloseComponent();
+        builder.CloseElement();
     }
 }
 
