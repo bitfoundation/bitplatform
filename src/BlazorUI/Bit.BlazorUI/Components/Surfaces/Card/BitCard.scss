@@ -87,6 +87,9 @@ $crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;
     @each $name in $crd-private-properties {
         --bit-crd-#{$name}: initial;
     }
+    // Every tag the card can be rendered as (see Element) lays out the same box: without this a span root would be
+    // inline, ignoring its padding and size, and a list item root would show a marker.
+    display: block;
     position: relative;
     box-sizing: border-box;
     width: fit-content;
