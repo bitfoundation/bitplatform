@@ -3275,6 +3275,116 @@ public class BitCardTests : BunitTestContext
         Assert.IsFalse(card.HasAttribute("blazor:onclick"));
     }
 
+    [TestMethod]
+    public void BitCardDisabledFieldsetElementShouldBeNativelyDisabled()
+    {
+        // A fieldset is the one tag the card can be that HTML defines a disabled attribute on, which also disables
+        // every form control inside it.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, "fieldset");
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.ChildContent, "<input class=\"inner\" />");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.AreEqual("FIELDSET", card.TagName);
+        Assert.IsTrue(card.HasAttribute("disabled"));
+        Assert.AreEqual("true", card.GetAttribute("aria-disabled"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        card = component.Find(".bit-crd");
+
+        Assert.IsFalse(card.HasAttribute("disabled"));
+        Assert.IsNull(card.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitCardDisabledFieldsetElementShouldWinOverTheSplattedAriaDisabled()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "fieldset");
+            builder.AddAttribute(2, nameof(BitCard.Disabled), true);
+            builder.AddAttribute(3, "aria-disabled", "false");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.HasAttribute("disabled"));
+        Assert.AreEqual("true", card.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitCardEnabledFieldsetElementShouldKeepThePagesOwnDisabledState()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "fieldset");
+            builder.AddAttribute(2, "disabled", true);
+            builder.AddAttribute(3, "aria-disabled", "true");
+        });
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsTrue(card.HasAttribute("disabled"));
+        Assert.AreEqual("true", card.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    [DataRow("div")]
+    [DataRow("section")]
+    [DataRow("button")]
+    public void BitCardDisabledElementThatIsNotAFieldsetShouldNotWriteDisabled(string element)
+    {
+        // A button root is not supported and falls back to a div; no other tag the card can be has a disabled attribute.
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-crd").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("   ")]
+    public void BitCardBlankSplattedAriaLabelledByShouldFallBackToTheTitle(string labelledBy)
+    {
+        var section = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Element), "section");
+            builder.AddAttribute(2, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(3, "aria-labelledby", labelledBy);
+        });
+
+        Assert.AreEqual(section.Find(".bit-crd-ttl").Id, section.Find(".bit-crd").GetAttribute("aria-labelledby"));
+
+        var linked = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Href), "https://bitplatform.dev");
+            builder.AddAttribute(2, nameof(BitCard.Title), "Title");
+            builder.AddAttribute(3, "aria-labelledby", labelledBy);
+        });
+
+        Assert.AreEqual(linked.Find(".bit-crd-ttl").Id, linked.Find(".bit-crd-lnk").GetAttribute("aria-labelledby"));
+        Assert.IsNull(linked.Find(".bit-crd").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCardBlankSplattedAriaLabelledByShouldNotNameAPlainCard()
+    {
+        var component = RenderSplattedCard(builder => builder.AddAttribute(1, "aria-labelledby", " "));
+
+        var card = component.Find(".bit-crd");
+
+        Assert.IsNull(card.GetAttribute("aria-labelledby"));
+        Assert.IsNull(card.GetAttribute("role"));
+    }
+
     #endregion
 
     #region Classes & Styles

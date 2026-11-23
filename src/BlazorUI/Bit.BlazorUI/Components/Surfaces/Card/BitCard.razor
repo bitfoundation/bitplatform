@@ -22,7 +22,10 @@
     var splattedRole = _SplattedRole;
     var splattedLabel = GetSplattedAttribute("aria-label");
     var splattedTabIndex = GetSplattedAttribute("tabindex");
-    var splattedLabelledBy = GetSplattedAttribute("aria-labelledby");
+
+    @* A blank aria-labelledby points at nothing, so it is no name of the page's own: it would otherwise win over the
+       title as the name of the root and of the stretched control, and leave both with none at all. *@
+    var splattedLabelledBy = GetSplattedAttribute("aria-labelledby") is { } labelledBy && labelledBy.HasValue() ? labelledBy : null;
 
     var label = AriaLabel ?? splattedLabel;
     var tabIndex = TabIndex ?? splattedTabIndex;
@@ -76,12 +79,17 @@
        a role that can carry it - the group it becomes with a name, or whatever the app splatted in. What
        actually takes a disabled card off the pointer and out of the tab order is the bit-dis class and the
        missing tab index, and neither of those depends on this. The states the card does not report itself are the
-       ones the app splatted in, written back rather than wiped by a null. *@
+       ones the app splatted in, written back rather than wiped by a null.
+
+       A root rendered as a fieldset is the one tag the card can be that HTML defines a disabled attribute on, so a
+       disabled one writes it - which disables every form control inside it natively, the way the card means its
+       content to be unusable - and aria-disabled beside it, which the group role of a fieldset carries. *@
+    var nativelyDisabled = Disabled && string.Equals(_element, "fieldset", StringComparison.OrdinalIgnoreCase);
     var ariaPressed = (role is "button" ? selectedState : null) ?? GetSplattedAttribute("aria-pressed");
     var ariaSelected = (selectedRole ? selectedState : null) ?? GetSplattedAttribute("aria-selected");
     var ariaChecked = (checkedRole ? selectedState : null) ?? GetSplattedAttribute("aria-checked");
     var ariaBusy = Loading ? "true" : GetSplattedAttribute("aria-busy");
-    var ariaDisabled = role is not null && Disabled ? "true" : GetSplattedAttribute("aria-disabled");
+    var ariaDisabled = (role is not null && Disabled) || nativelyDisabled ? "true" : GetSplattedAttribute("aria-disabled");
 
     @* The stretched link or button carries no text of its own, so what names it is whatever the card was named
        by: an aria-labelledby the app splatted in, or failing that the title of the card, or failing that its
@@ -332,11 +340,15 @@
         builder.AddAttribute(11, "aria-checked", ariaChecked);
         builder.AddAttribute(12, "aria-busy", ariaBusy);
         builder.AddAttribute(13, "aria-disabled", ariaDisabled);
-        builder.AddAttribute(14, "style", StyleBuilder.Value);
-        builder.AddAttribute(15, "class", ClassBuilder.Value);
-        builder.AddAttribute(16, "dir", Dir?.ToString().ToLower());
-        builder.AddElementReferenceCapture(17, v => RootElement = v);
-        builder.AddContent(18, content);
+        if (nativelyDisabled)
+        {
+            builder.AddAttribute(14, "disabled", true);
+        }
+        builder.AddAttribute(15, "style", StyleBuilder.Value);
+        builder.AddAttribute(16, "class", ClassBuilder.Value);
+        builder.AddAttribute(17, "dir", Dir?.ToString().ToLower());
+        builder.AddElementReferenceCapture(18, v => RootElement = v);
+        builder.AddContent(19, content);
         builder.CloseElement();
     };
 }

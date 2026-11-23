@@ -264,7 +264,9 @@ public partial class BitCard : BitComponentBase
     /// <see cref="OnClick"/>, whose name belongs to the link or the button stretched over it. A card rendered as a tag
     /// whose own role can be named - an "article", an "aside", a "nav", a "section", a "form", a "li", a "figure", a
     /// "blockquote", a "fieldset", an "address", a "main" or a "search" - is not given the group role a named card
-    /// otherwise gets, since that role would take its own away; any other tag is, as a "div" is.
+    /// otherwise gets, since that role would take its own away; any other tag is, as a "div" is. A disabled card rendered
+    /// as a "fieldset" also writes the native disabled attribute, with aria-disabled beside it, which disables every form
+    /// control inside it.
     /// <br />
     /// The name is used as written, but only while it is a name a tag can have - a letter followed by letters, digits
     /// and the "-", "_", "." and ":" that join them - and one that can hold the content of a card. Anything else falls
