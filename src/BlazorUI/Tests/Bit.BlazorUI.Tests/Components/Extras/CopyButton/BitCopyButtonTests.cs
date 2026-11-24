@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -198,6 +200,150 @@ public class BitCopyButtonTests : BunitTestContext
         component.Find("button").Click();
 
         Assert.AreEqual(0, handler.Invocations.Count);
+    }
+
+    [TestMethod]
+    public void NoValueShouldMarkTheRootDisabledAndDropThePageActivationHandlers()
+    {
+        var clicks = 0;
+
+        var withoutValue = RenderSplatted(null, () => clicks++).Find(".bit-cpb");
+
+        Assert.IsTrue(withoutValue.ClassList.Contains("bit-dis"));
+        Assert.IsFalse(withoutValue.HasAttribute("blazor:onclick"));
+
+        var withValue = RenderSplatted("hello", () => clicks++).Find(".bit-cpb");
+
+        Assert.IsFalse(withValue.ClassList.Contains("bit-dis"));
+
+        withValue.Click();
+
+        Assert.AreEqual(1, clicks);
+    }
+
+    private IRenderedComponent<BitParams> RenderSplatted(string? value, Action onClick)
+    {
+        return RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitCopyButton>(0);
+                builder.AddAttribute(1, nameof(BitCopyButton.Value), value);
+                builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, onClick));
+                builder.CloseComponent();
+            });
+        });
+    }
+
+    [TestMethod]
+    public void AFailedCopyShouldTakeOffTheConfirmationOfAnEarlierOne()
+    {
+        var handler = Context.JSInterop.SetupVoid(CopyIdentifier, _ => true);
+        handler.SetVoidResult();
+        Exception? failure = null;
+
+        var component = RenderComponent<BitCopyButton>(p => p
+            .Add(c => c.Value, "hello")
+            .Add(c => c.Text, "Copy")
+            .Add(c => c.CopiedDuration, TimeSpan.FromMinutes(1))
+            .Add(c => c.OnCopyFailed, (Exception e) => failure = e));
+
+        component.Find("button").Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual("Copied", component.Find(".bit-btn-prt").TextContent.Trim()));
+
+        handler.SetException(new JSException("denied"));
+
+        component.Find("button").Click();
+
+        component.WaitForAssertion(() => Assert.IsNotNull(failure));
+        Assert.AreEqual("Copy", component.Find(".bit-btn-prt").TextContent.Trim());
+        Assert.AreEqual(string.Empty, component.Find(".bit-cpb-liv").TextContent);
+    }
+
+    [TestMethod]
+    public void AChangedValueShouldTakeOffTheConfirmation()
+    {
+        Context.JSInterop.SetupVoid(CopyIdentifier, _ => true).SetVoidResult();
+
+        var component = RenderComponent<BitCopyButton>(p => p
+            .Add(c => c.Value, "row 1")
+            .Add(c => c.Text, "Copy")
+            .Add(c => c.CopiedDuration, TimeSpan.FromMinutes(1)));
+
+        component.Find("button").Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual("Copied", component.Find(".bit-btn-prt").TextContent.Trim()));
+
+        // The same value handed in again keeps the confirmation.
+        component.Render(p => p.Add(c => c.Value, "row 1"));
+
+        Assert.AreEqual("Copied", component.Find(".bit-btn-prt").TextContent.Trim());
+
+        component.Render(p => p.Add(c => c.Value, "row 7"));
+
+        Assert.AreEqual("Copy", component.Find(".bit-btn-prt").TextContent.Trim());
+        Assert.AreEqual(string.Empty, component.Find(".bit-cpb-liv").TextContent);
+    }
+
+    [TestMethod]
+    public void ACopyWhileConfirmedShouldStillBeAnnounced()
+    {
+        Context.JSInterop.SetupVoid(CopyIdentifier, _ => true).SetVoidResult();
+        var copies = 0;
+
+        var component = RenderComponent<BitCopyButton>(p => p
+            .Add(c => c.Value, "hello")
+            .Add(c => c.CopiedDuration, TimeSpan.FromMinutes(1))
+            .Add(c => c.OnCopy, () => copies++));
+
+        component.Find("button").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(1, copies));
+
+        component.Find("button").Click();
+        component.WaitForAssertion(() => Assert.AreEqual(2, copies));
+
+        // The text sits in a keyed node of its own, which every copy replaces.
+        Assert.AreEqual("Copied", component.Find(".bit-cpb-liv > span").TextContent);
+    }
+
+    [TestMethod]
+    public void AZeroCopiedDurationShouldCopyWithoutConfirming()
+    {
+        var handler = Context.JSInterop.SetupVoid(CopyIdentifier, _ => true);
+        handler.SetVoidResult();
+        string? copied = null;
+
+        var component = RenderComponent<BitCopyButton>(p => p
+            .Add(c => c.Value, "hello")
+            .Add(c => c.Text, "Copy")
+            .Add(c => c.CopiedDuration, TimeSpan.Zero)
+            .Add(c => c.OnCopy, (string value) => copied = value));
+
+        component.Find("button").Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual("hello", copied));
+        Assert.AreEqual("Copy", component.Find(".bit-btn-prt").TextContent.Trim());
+        Assert.AreEqual(string.Empty, component.Find(".bit-cpb-liv").TextContent);
+    }
+
+    [TestMethod]
+    public void AButtonClassChangedInPlaceShouldReachTheButton()
+    {
+        var classes = new BitCopyButtonClassStyles { Button = new() { Icon = "icon-a" } };
+
+        var component = RenderComponent<BitCopyButton>(p => p
+            .Add(c => c.Value, "hello")
+            .Add(c => c.Classes, classes));
+
+        Assert.IsNotNull(component.Find("button").QuerySelector("i.bit-icon-ex--Copy.icon-a"));
+
+        classes.Button.Icon = "icon-b";
+        component.Render();
+
+        Assert.IsNotNull(component.Find("button").QuerySelector("i.bit-icon-ex--Copy.icon-b"));
+        Assert.IsNull(component.Find("button").QuerySelector("i.icon-a"));
     }
 
     [TestMethod]

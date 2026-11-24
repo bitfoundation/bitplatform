@@ -29,7 +29,8 @@
         <BitText>
             The button needs no service. It writes through the Clipboard API of the browser, which only works in a secure context
             (https, or localhost); elsewhere, and where the browser refuses it, it falls back to the copy command of the page. It
-            only confirms a copy that happened: one that still fails leaves the button as it was and raises OnCopyFailed. Its
+            only confirms a copy that happened: one that still fails confirms nothing (taking off a confirmation still showing)
+            and raises OnCopyFailed. Its
             default texts (Copy, Copied) come from <b>BitStrings</b>, which translates them for the whole app.
         </BitText>
     </NotesTemplate>
@@ -49,12 +50,14 @@
         <DemoExample Title="Text & CopiedText" RazorCode="@example2RazorCode" Id="example2">
             <div>
                 <b>Text</b> shows a text beside the icon, and <b>CopiedText</b> takes its place while the copy is confirmed
-                (Copied by default). The live region announces the copied text too.
+                (Copied by default). The live region announces the copied text too. Without a Text, <b>AriaLabel</b> names
+                the icon button (and is its tooltip) in place of Copy.
             </div>
             <br />
             <div class="example-content">
                 <BitCopyButton Value="https://blazorui.bitplatform.dev" Text="Copy" />
                 <BitCopyButton Value="https://blazorui.bitplatform.dev" Text="Copy link" CopiedText="Link copied!" />
+                <BitCopyButton Value="https://blazorui.bitplatform.dev" AriaLabel="Copy link" CopiedText="Link copied!" />
             </div>
         </DemoExample>
 

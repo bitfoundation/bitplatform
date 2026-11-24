@@ -37,9 +37,10 @@
 
     @* A changed glyph is invisible to a screen reader, so the copy is announced as well. The region is on the page from
        the first render with nothing in it: text landing in a live region that is already there is what screen readers
-       reliably announce. *@
+       reliably announce. The text is keyed by the copy, so a second copy while the first is still confirmed replaces
+       the node rather than leaving the same text in place, which would announce nothing. *@
     <span role="status"
           aria-live="polite"
           style="@Styles?.LiveRegion"
-          class="bit-cpb-liv @Classes?.LiveRegion">@(copied ? copiedText : null)</span>
+          class="bit-cpb-liv @Classes?.LiveRegion">@if (copied) {<span @key="_copyCount">@copiedText</span>}</span>
 </span>

@@ -27,7 +27,7 @@ public partial class BitCopyButtonDemo
             Name = "CopiedDuration",
             Type = "TimeSpan",
             DefaultValue = "TimeSpan.FromSeconds(2)",
-            Description = "How long the copied state - the copied glyph and text - stays on the button after a copy, before it goes back to what it was. Another copy while it shows starts it over.",
+            Description = "How long the copied state - the copied glyph and text - stays on the button after a copy, before it goes back to what it was. Another copy while it shows starts it over. A zero or negative duration confirms nothing: the copy is made and OnCopy raised, but the copied state is never shown or announced.",
         },
         new()
         {
@@ -76,7 +76,7 @@ public partial class BitCopyButtonDemo
             Name = "OnCopyFailed",
             Type = "EventCallback<Exception>",
             DefaultValue = "",
-            Description = "The callback raised when the browser could not put the value on the clipboard (a permission denied, a copy command refused), with the error it gave. The button stays as it was.",
+            Description = "The callback raised when the browser could not put the value on the clipboard (a permission denied, a copy command refused), with the error it gave. The button confirms nothing, and a confirmation of an earlier copy still showing is taken off.",
         },
         new()
         {
@@ -108,7 +108,7 @@ public partial class BitCopyButtonDemo
             Name = "Value",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The text to put on the clipboard, read when the button is pressed. A null value disables the button; an empty text is copied like any other.",
+            Description = "The text to put on the clipboard, read when the button is pressed. A null value disables the button, the way Disabled does; an empty text is copied like any other. A confirmation still showing is taken off once the value changes.",
         },
         new()
         {

@@ -8,7 +8,8 @@ public partial class BitCopyButtonDemo
 
     private readonly string example2RazorCode = @"
 <BitCopyButton Value=""https://blazorui.bitplatform.dev"" Text=""Copy"" />
-<BitCopyButton Value=""https://blazorui.bitplatform.dev"" Text=""Copy link"" CopiedText=""Link copied!"" />";
+<BitCopyButton Value=""https://blazorui.bitplatform.dev"" Text=""Copy link"" CopiedText=""Link copied!"" />
+<BitCopyButton Value=""https://blazorui.bitplatform.dev"" AriaLabel=""Copy link"" CopiedText=""Link copied!"" />";
 
     private readonly string example3RazorCode = @"
 <BitCopyButton Value=""https://blazorui.bitplatform.dev"" IconName=""@BitIconName.Link"" Text=""Copy link"" />

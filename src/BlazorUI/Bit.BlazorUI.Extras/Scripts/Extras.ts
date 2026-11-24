@@ -443,8 +443,16 @@
             const previouslyFocused = document.activeElement as HTMLElement | null;
 
             try {
-                textarea.select();
-                if (!document.execCommand('copy')) {
+                let copied: boolean;
+                try {
+                    textarea.select();
+                    copied = document.execCommand('copy');
+                } catch (e) {
+                    // A stand-in that throws rather than returning false (a SecurityError in some engines)
+                    // still leaves the API's refusal as the reason the copy was not made.
+                    throw refusal ?? e;
+                }
+                if (!copied) {
                     throw refusal ?? new Error('the copy command was rejected');
                 }
             } finally {

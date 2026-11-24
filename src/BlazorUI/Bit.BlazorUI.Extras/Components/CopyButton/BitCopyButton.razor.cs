@@ -10,14 +10,18 @@
 /// <see cref="Color"/> and icon, and its look is restyled through the <c>--bit-Button-*</c> variables. With no
 /// <see cref="Text"/> it is an icon button named Copy. It writes through the Clipboard API of the browser, which only
 /// works in a secure context (https, or localhost); elsewhere, and where the browser refuses it, it falls back to the copy
-/// command of the page. A copy that still fails leaves the button as it was and raises <see cref="OnCopyFailed"/>.
+/// command of the page. A copy that still fails confirms nothing - a confirmation of an earlier copy still showing is
+/// taken off - and raises <see cref="OnCopyFailed"/>.
 /// </remarks>
 public partial class BitCopyButton : BitComponentBase
 {
     private bool _copied;
+    private int _copyCount;
+    private string? _copiedValue;
     private CancellationTokenSource? _resetCts;
     private BitButtonClassStyles? _buttonClasses;
     private BitButtonClassStyles? _buttonClassesSource;
+    private BitButtonClassStyles? _buttonClassesSnapshot;
 
 
 
@@ -51,7 +55,8 @@ public partial class BitCopyButton : BitComponentBase
 
     /// <summary>
     /// How long the copied state - the copied glyph and text - stays on the button after a copy, before it goes back to
-    /// what it was. Another copy while it shows starts it over.
+    /// what it was. Another copy while it shows starts it over. A zero or negative duration confirms nothing: the copy is
+    /// made and <see cref="OnCopy"/> raised, but the button never shows the copied state and nothing is announced.
     /// <br />
     /// The default value is <strong>2 seconds</strong>.
     /// </summary>
@@ -107,7 +112,8 @@ public partial class BitCopyButton : BitComponentBase
 
     /// <summary>
     /// The callback raised when the browser could not put the value on the clipboard (a permission denied, a copy
-    /// command refused), with the error it gave. The button stays as it was.
+    /// command refused), with the error it gave. The button confirms nothing, and a confirmation of an earlier copy still
+    /// showing is taken off.
     /// </summary>
     [Parameter] public EventCallback<Exception> OnCopyFailed { get; set; }
 
@@ -131,10 +137,11 @@ public partial class BitCopyButton : BitComponentBase
     [Parameter] public string? Text { get; set; }
 
     /// <summary>
-    /// The text to put on the clipboard, read when the button is pressed. A null value disables the button; an empty text
-    /// is copied like any other.
+    /// The text to put on the clipboard, read when the button is pressed. A null value disables the button, the way
+    /// <see cref="BitComponentBase.Disabled"/> does; an empty text is copied like any other. A confirmation still showing
+    /// is taken off once the value changes, since it was about the one before.
     /// </summary>
-    [Parameter] public string? Value { get; set; }
+    [Parameter, ResetClassBuilder] public string? Value { get; set; }
 
     /// <summary>
     /// The visual variant of the button.
@@ -145,9 +152,15 @@ public partial class BitCopyButton : BitComponentBase
 
     protected override string RootElementClass => "bit-cpb";
 
+    // A button with no value is as unavailable as a disabled one, so the root says so the same way (the base registers
+    // bit-dis for Disabled itself) and drops the page's activation handlers.
+    private protected override bool IsActivationDisabled => Disabled || Value is null;
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        ClassBuilder.Register(() => Disabled is false && Value is null ? "bit-dis" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -159,6 +172,13 @@ public partial class BitCopyButton : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
+        // The confirmation is about the value that was copied: a button handed another value (a reused row of a list, a
+        // text still being typed), or made unavailable, no longer has a copy to show for itself.
+        if (_copied && (Disabled || Value is null || string.Equals(Value, _copiedValue, StringComparison.Ordinal) is false))
+        {
+            ClearCopied();
+        }
+
         base.OnParametersSet();
     }
 
@@ -167,18 +187,33 @@ public partial class BitCopyButton : BitComponentBase
     // The Copy glyph is not one of the core font's, so the class of the subset font this package ships goes on the icon,
     // ahead of whatever the page gave it, the way BitNavPanel draws its toggle. The glyph classes are a literal: the
     // publish-time trimming keeps a glyph by the literals it finds in the code. The copy is made again only when the page
-    // hands in another instance, since the button resets its class builder for every new one.
+    // hands in another instance or changes a class of the one it gave, since the button resets its class builder for
+    // every new one.
     private BitButtonClassStyles ButtonClasses
     {
         get
         {
             var classes = Classes?.Button;
 
-            if (_buttonClasses is not null && ReferenceEquals(_buttonClassesSource, classes)) return _buttonClasses;
+            if (_buttonClasses is not null &&
+                ReferenceEquals(_buttonClassesSource, classes) &&
+                HaveSameClasses(_buttonClassesSnapshot, classes)) return _buttonClasses;
 
             const string iconClasses = "bit-icon-ex bit-icon-ex--Copy";
 
             _buttonClassesSource = classes;
+            _buttonClassesSnapshot = classes is null ? null : new()
+            {
+                Root = classes.Root,
+                Icon = classes.Icon,
+                Container = classes.Container,
+                Primary = classes.Primary,
+                Secondary = classes.Secondary,
+                HiddenContent = classes.HiddenContent,
+                LoadingContainer = classes.LoadingContainer,
+                Spinner = classes.Spinner,
+                LoadingLabel = classes.LoadingLabel,
+            };
 
             return _buttonClasses = new()
             {
@@ -193,6 +228,21 @@ public partial class BitCopyButton : BitComponentBase
                 LoadingLabel = classes?.LoadingLabel,
             };
         }
+    }
+
+    private static bool HaveSameClasses(BitButtonClassStyles? a, BitButtonClassStyles? b)
+    {
+        if (a is null || b is null) return a is null && b is null;
+
+        return a.Root == b.Root &&
+               a.Icon == b.Icon &&
+               a.Container == b.Container &&
+               a.Primary == b.Primary &&
+               a.Secondary == b.Secondary &&
+               a.HiddenContent == b.HiddenContent &&
+               a.LoadingContainer == b.LoadingContainer &&
+               a.Spinner == b.Spinner &&
+               a.LoadingLabel == b.LoadingLabel;
     }
 
     private async Task HandleOnClick()
@@ -213,8 +263,16 @@ public partial class BitCopyButton : BitComponentBase
         catch (Exception ex)
         {
             // A clipboard that is not there to be written to leaves the button saying what it still offers to do, which
-            // is the truth; the page is told, so it can say more than that.
+            // is the truth - a confirmation of an earlier copy still showing would claim this one worked, so it goes; the
+            // page is told, so it can say more than that.
             if (IsDisposed) return;
+
+            if (_copied)
+            {
+                ClearCopied();
+
+                StateHasChanged();
+            }
 
             await OnCopyFailed.InvokeAsync(ex);
 
@@ -223,15 +281,39 @@ public partial class BitCopyButton : BitComponentBase
 
         if (IsDisposed) return;
 
-        _copied = true;
+        if (CopiedDuration > TimeSpan.Zero)
+        {
+            _copied = true;
+            _copiedValue = value;
+            // A new key for every copy puts a new node in the live region, so a copy made while the previous one is still
+            // confirmed is announced too, rather than landing as the same text the region already holds.
+            _copyCount++;
 
-        // Started before the callback of the app is awaited, so a button removed by it stops the reset as it goes; another
-        // copy starts it over.
-        StartReset();
+            // Started before the callback of the app is awaited, so a button removed by it stops the reset as it goes;
+            // another copy starts it over.
+            StartReset();
 
-        StateHasChanged();
+            StateHasChanged();
+        }
+        else if (_copied)
+        {
+            // No confirmation is asked for (a duration that may have been set to zero since the previous copy).
+            ClearCopied();
+
+            StateHasChanged();
+        }
 
         await OnCopy.InvokeAsync(value);
+    }
+
+    private void ClearCopied()
+    {
+        _copied = false;
+        _copiedValue = null;
+
+        _resetCts?.Cancel();
+        _resetCts?.Dispose();
+        _resetCts = null;
     }
 
     private void StartReset()
@@ -241,8 +323,8 @@ public partial class BitCopyButton : BitComponentBase
 
         var cts = _resetCts = new CancellationTokenSource();
 
-        // Task.Delay takes no negative span and none longer than int.MaxValue milliseconds.
-        var delay = TimeSpan.FromMilliseconds(Math.Clamp(CopiedDuration.TotalMilliseconds, 0, int.MaxValue - 1));
+        // Task.Delay takes none longer than int.MaxValue milliseconds (a non-positive one never gets here).
+        var delay = TimeSpan.FromMilliseconds(Math.Min(CopiedDuration.TotalMilliseconds, int.MaxValue - 1));
 
         _ = ResetAfter(delay, cts.Token);
     }
@@ -265,6 +347,7 @@ public partial class BitCopyButton : BitComponentBase
             if (token.IsCancellationRequested || IsDisposed || IsDisposing) return;
 
             _copied = false;
+            _copiedValue = null;
 
             StateHasChanged();
         });
