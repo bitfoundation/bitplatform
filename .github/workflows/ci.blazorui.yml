@@ -38,6 +38,12 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    # The runtime the net10.0 unit tests run on.
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        dotnet-version: 10.0.x
+
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
@@ -45,13 +51,14 @@ jobs:
     # Bit.BlazorUI.CI.slnf is the libraries, the web demo, and the test projects this job runs or that check the
     # libraries by compiling (Bit.BlazorUI.Tests.Consumer). It leaves out the MAUI and Windows demo clients, the one
     # projects that need a workload (maui-android here), so there is no `dotnet workload restore` step, and the E2E,
-    # performance and trimming suites, which run in CI BlazorUI E2E. Debug compiles net11.0 alone: the pack job
-    # compiles net10.0 (and net11.0) in Release.
+    # performance and trimming suites, which run in CI BlazorUI E2E. BuildAllTfms=true opts back into net10.0, which
+    # the Debug configuration skips so that local inner-loop builds only compile the TFM the demo runs on, so the unit
+    # tests run on every target framework the packages ship for.
     - name: dotnet build
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.CI.slnf
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.CI.slnf -p:BuildAllTfms=true
 
     - name: Test
-      run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal
+      run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal -p:BuildAllTfms=true
 
     # The MCP server suite boots the demo server as a child process and talks to it over HTTP (about a minute).
     - name: Test MCP server
