@@ -6,6 +6,8 @@ Every workflow here is a CI workflow, a CD workflow, or an All workflow that gro
 
 Each project has a CI workflow, `ci.<project>.yml`. It runs on pull requests that touch the project, builds it, runs its unit and integration tests in Debug, and packs every package the project publishes the way the release workflows pack it. A broken package fails on the project's own pull request, long before a release.
 
+A CI workflow can split that work across parallel jobs, each building only what it needs; then a last job, named after the project the way its single job was, passes only when all the others do, so a pull request waits on one check. CI BlazorUI runs this way: its unit tests on each target framework, its MCP server suite and its pack each build what they need, and one more job compiles everything else in the solution: the web demo and the E2E, performance and trimming suites. Only the MAUI and Windows demo clients are left out, because they need a workload.
+
 Browser and other end-to-end suites live in a separate `ci.<project>.e2e.yml`. These never run on pull requests: they start by hand or from an All workflow. A suite that drives a demo drives it published in Release, the way its CD publishes it.
 
 ## CD
