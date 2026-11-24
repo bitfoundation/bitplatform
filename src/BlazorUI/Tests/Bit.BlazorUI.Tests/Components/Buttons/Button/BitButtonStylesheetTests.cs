@@ -193,11 +193,22 @@ public partial class BitButtonStylesheetTests
         // A compound button drops it onto the line of the primary text, as it does the glyph and the image.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-btn-hsc:not(.bit-btn-ntx) {"), ".bit-btn-ict");
 
-        // An svg given no size gets the icon's square, from a rule that weighs nothing so an app's own class wins.
-        var unsized = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-btn-ict > svg:not([width]):not([height])) {");
+        // An svg given no size gets the icon's square, wherever it sits in the template, from rules that weigh nothing so
+        // an app's own rules win; a side given without a viewBox to derive the other from gets the icon size for that one.
+        var unsized = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-btn-ict svg:not([width]):not([height]):not(svg svg)) {");
 
         StringAssert.Contains(unsized, "width: 1em;");
         StringAssert.Contains(unsized, "height: 1em;");
+
+        var widthOnly = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-btn-ict svg[width]:not([height]):not([viewBox]):not(svg svg)) {");
+
+        StringAssert.Contains(widthOnly, "height: 1em;");
+        Assert.DoesNotContain("width:", widthOnly, "The width the svg was given is kept.");
+
+        var heightOnly = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-btn-ict svg[height]:not([width]):not([viewBox]):not(svg svg)) {");
+
+        StringAssert.Contains(heightOnly, "width: 1em;");
+        Assert.DoesNotContain("height:", heightOnly, "The height the svg was given is kept.");
     }
 
     [TestMethod]

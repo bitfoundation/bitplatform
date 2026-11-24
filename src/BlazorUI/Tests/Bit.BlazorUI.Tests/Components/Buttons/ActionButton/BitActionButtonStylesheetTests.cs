@@ -90,11 +90,22 @@ public partial class BitActionButtonStylesheetTests
         StringAssert.Contains(box, "font-size: var(--bit-acb-ico-size, var(--bit-ActionButton-icon-size, #{$siz-icon-md}));");
         StringAssert.Contains(box, "flex-shrink: 0;");
 
-        // An svg given no size gets the icon's square, from a rule that weighs nothing so an app's own class wins.
-        var unsized = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-acb-ict > svg:not([width]):not([height])) {");
+        // An svg given no size gets the icon's square, wherever it sits in the template, from rules that weigh nothing so
+        // an app's own rules win; a side given without a viewBox to derive the other from gets the icon size for that one.
+        var unsized = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-acb-ict svg:not([width]):not([height]):not(svg svg)) {");
 
         StringAssert.Contains(unsized, "width: 1em;");
         StringAssert.Contains(unsized, "height: 1em;");
+
+        var widthOnly = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-acb-ict svg[width]:not([height]):not([viewBox]):not(svg svg)) {");
+
+        StringAssert.Contains(widthOnly, "height: 1em;");
+        Assert.DoesNotContain("width:", widthOnly, "The width the svg was given is kept.");
+
+        var heightOnly = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-acb-ict svg[height]:not([width]):not([viewBox]):not(svg svg)) {");
+
+        StringAssert.Contains(heightOnly, "width: 1em;");
+        Assert.DoesNotContain("height:", heightOnly, "The height the svg was given is kept.");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "ActionButton", "BitActionButton.scss");

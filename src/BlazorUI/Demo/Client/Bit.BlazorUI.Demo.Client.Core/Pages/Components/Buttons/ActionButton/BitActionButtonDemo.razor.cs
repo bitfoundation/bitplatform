@@ -154,7 +154,7 @@ public partial class BitActionButtonDemo
             Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "The custom template to render in place of the icon of the action button (an inline SVG, for example), which takes precedence over Icon, IconName and IconUrl. It renders in the icon's slot, so it keeps the icon's place, color, IconPlacement and the square shape of an IconOnly button, gets the Icon class/style, gives way to the spinner while loading, and is hidden from assistive technologies just as the icon is. Its font size is the icon size, so an SVG sized 1em (or one with no size of its own) is as big as the icon.",
+            Description = "The custom template to render in place of the icon of the action button (an inline SVG, for example), which takes precedence over Icon, IconName and IconUrl. It renders in the icon's slot, so it keeps the icon's place, color, IconPlacement and the square shape of an IconOnly button, gets the Icon class/style, gives way to the spinner while loading, and is hidden from assistive technologies just as the icon is while the button has a name of its own (its content, AriaLabel, aria-label or aria-labelledby) - with none, it is left exposed so an SVG with role=\"img\" and an aria-label names the button. Its font size is the icon size, so an SVG sized 1em (or one with no size of its own) is as big as the icon.",
         },
         new()
         {

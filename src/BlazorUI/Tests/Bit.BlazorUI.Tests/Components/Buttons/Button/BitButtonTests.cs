@@ -1489,6 +1489,43 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("Label", com.Find(".bit-btn-prt").TextContent.Trim());
     }
 
+    [TestMethod,
+        DataRow(null, null, false),
+        DataRow("AriaLabel", "Close", true),
+        DataRow("aria-label", "Close", true),
+        DataRow("aria-labelledby", "close-label", true),
+        DataRow("SecondaryText", "Close", true)]
+    public void BitButtonIconTemplateShouldBeHiddenOnlyWhileSomethingElseNamesTheButton(string? name, string? value, bool hidden)
+    {
+        // With nothing else to name it, the template is all a screen reader has, so an svg naming itself names the button.
+        var attributes = new Dictionary<string, object>
+        {
+            [nameof(BitButton.IconTemplate)] = (RenderFragment)(b => b.AddMarkupContent(0, "<svg role=\"img\" aria-label=\"Close\"></svg>"))
+        };
+
+        if (name is not null)
+        {
+            attributes[name] = value!;
+        }
+
+        var slot = RenderSplatted(attributes).Find(".bit-btn-ict");
+
+        Assert.AreEqual(hidden ? "true" : null, slot.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconTemplateShouldBeHiddenWhenIconOnlyKeepsTheTextAsTheName()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.AddChildContent("Menu");
+        });
+
+        Assert.AreEqual("true", com.Find(".bit-btn-ict").GetAttribute("aria-hidden"));
+    }
+
     [TestMethod]
     public void BitButtonIconTemplateShouldTakePrecedenceOverIconIconNameAndIconUrl()
     {

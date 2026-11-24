@@ -54,13 +54,18 @@
     // is shown on hover alone, so it is left to be the description of the name rather than to stand in for it.
     var srOnlyLabel = IconOnly && (hasPrimary || hasSecondary)
                    && ariaLabel.HasNoValue() && GetSplattedAttribute("aria-labelledby").HasNoValue();
+    // An IconTemplate is hidden from assistive technologies as the icon is, as long as something else names the button:
+    // its text (shown, or kept as screen-reader-only text by IconOnly), an aria-label or an aria-labelledby. With none of
+    // them the template is all the button has, so it is left exposed - an svg with a role="img" and an aria-label of its
+    // own, or a <title>, is then what names the button rather than being hidden along with everything else.
+    var hideIconTemplate = hasPrimary || hasSecondary || ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue();
 
     RenderFragment content = @<text>
-        @* The template takes the icon's slot, so it is hidden from assistive technologies as the icon is: the label (or
-           the AriaLabel of an icon-only button) is what names the button. *@
+        @* The template takes the icon's slot, so it is hidden from assistive technologies as the icon is - unless nothing
+           else names the button, in which case it is left to (see hideIconTemplate). *@
         @if (IconTemplate is not null)
         {
-            <span style="@Styles?.Icon" class="bit-btn-ict @Classes?.Icon" aria-hidden="true">@IconTemplate</span>
+            <span style="@Styles?.Icon" class="bit-btn-ict @Classes?.Icon" aria-hidden="@(hideIconTemplate ? "true" : null)">@IconTemplate</span>
         }
         else if (icon is not null)
         {

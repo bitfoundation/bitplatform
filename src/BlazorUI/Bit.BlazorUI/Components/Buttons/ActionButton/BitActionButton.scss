@@ -138,12 +138,23 @@ $acb-private-properties: clr-ico, clr-fg, clr-hover, clr-active, clr-focus, clr-
     justify-content: center;
 }
 
-// An inline svg given no size at all would be drawn at the 300x150 a browser defaults it to, so it takes the icon's
-// square instead. The whole selector is inside :where(), which weighs nothing, so a size an app gives the svg
-// through a class of its own still wins.
-:where(.bit-acb-ict > svg:not([width]):not([height])) {
+// An inline svg given no size of its own would be drawn at the 300x150 a browser defaults it to, so it takes the icon's
+// square instead - anywhere in the template, inside the wrapper an icon component renders around it included (an svg
+// nested in another svg is left to fill its parent). A side given as an attribute is kept: the other follows it through
+// the viewBox when there is one, and is the icon size when there is none, where the browser would make it 150px.
+// The selectors are inside :where(), which weighs nothing, so any rule of the app's that sizes the svg wins - a class of
+// its own, and just as well a plain svg rule of a reset, which sizes these the way it sizes every other svg of the page.
+:where(.bit-acb-ict svg:not([width]):not([height]):not(svg svg)) {
     width: 1em;
     height: 1em;
+}
+
+:where(.bit-acb-ict svg[width]:not([height]):not([viewBox]):not(svg svg)) {
+    height: 1em;
+}
+
+:where(.bit-acb-ict svg[height]:not([width]):not([viewBox]):not(svg svg)) {
+    width: 1em;
 }
 
 .bit-acb-icu {
