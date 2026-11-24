@@ -51,7 +51,7 @@ public class BitMarkdownEditorToolbarTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts { ToolbarTableInsertRowAbove = "Insérer une ligne au-dessus" });
+            parameters.Add(p => p.Strings, new BitMarkdownEditorStrings { ToolbarTableInsertRowAbove = "Insérer une ligne au-dessus" });
         });
 
         var item = component.Find("[data-cmd=trowabove]");

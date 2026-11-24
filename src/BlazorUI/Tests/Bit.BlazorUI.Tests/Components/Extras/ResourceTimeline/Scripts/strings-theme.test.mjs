@@ -1,6 +1,6 @@
-﻿// What the engine says (the texts option) and how it looks (setTheme), both of
+﻿// What the engine says (the strings option) and how it looks (setTheme), both of
 // which the BitResourceTimeline port added: every user-facing string comes from
-// config.texts with the English built-ins as its defaults, and a theme forms a
+// config.strings with the English built-ins as its defaults, and a theme forms a
 // layer under the colors and fonts the options set.
 
 import test from 'node:test';
@@ -30,11 +30,11 @@ function hidden(id, startHour, endHour, extra = {}) {
     };
 }
 
-// ---- texts ----
+// ---- strings ----
 
-test('a config without texts falls back to the built-in English ones', () => {
+test('a config without strings falls back to the built-in English ones', () => {
     const engine = makeZonedEngine('UTC');
-    assert.equal(engine.config.texts, undefined, 'fixture: the config carries no texts');
+    assert.equal(engine.config.strings, undefined, 'fixture: the config carries no strings');
 
     assert.equal(engine._text('selectionCleared'), 'Selection cleared');
     assert.equal(engine._text('resizeResourceColumn'), 'Resize resource column');
@@ -42,10 +42,10 @@ test('a config without texts falls back to the built-in English ones', () => {
     assert.equal(engine._buildOverflowTooltip([hidden('h1', 9, 10)]).split('\n')[0], '1 hidden allocation');
 });
 
-test('a texts option replaces the built-in texts key by key', () => {
+test('a strings option replaces the built-in strings key by key', () => {
     const engine = makeZonedEngine('UTC');
     const warnings = captureWarnings(() => engine._applyOptions({
-        texts: {
+        strings: {
             hiddenAllocationsFormat: '{0} verborgene Zuordnungen',
             moreHiddenAllocationsFormat: '… und {0} weitere'
         }
@@ -53,27 +53,27 @@ test('a texts option replaces the built-in texts key by key', () => {
     assert.deepEqual(warnings, []);
 
     const bars = [];
-    for (let i = 0; i < 30; i++) bars.push(hidden('h' + i, 1, 2, { textAbove: 'B' + i }));
+    for (let i = 0; i < 30; i++) bars.push(hidden('h' + i, 1, 2, { texts: { topCenter: { text: 'B' + i } } }));
     const lines = engine._buildOverflowTooltip(bars).split('\n');
     assert.equal(lines[0], '30 verborgene Zuordnungen');
     assert.equal(lines[lines.length - 1], `… und ${30 - (lines.length - 2)} weitere`);
 
     // The keys the options did not name keep their defaults.
-    assert.equal(engine.config.texts.hiddenAllocationFormat, '{0} hidden allocation');
+    assert.equal(engine.config.strings.hiddenAllocationFormat, '{0} hidden allocation');
     assert.equal(engine._buildOverflowTooltip([hidden('h1', 9, 10)]).split('\n')[0], '1 hidden allocation');
     assert.ok(lines[1].startsWith('B0 · '), 'an item keeps the built-in item format');
 });
 
-test('an unknown text key is warned about and not stored; a null text keeps the default', () => {
+test('an unknown string key is warned about and not stored; a null string keeps the default', () => {
     const engine = makeBareEngine();
     const warnings = captureWarnings(() => engine._applyOptions({
-        texts: { selectionCleard: 'typo', selectionCleared: 'Auswahl aufgehoben', editRefused: null }
+        strings: { selectionCleard: 'typo', selectionCleared: 'Auswahl aufgehoben', editRefused: null }
     }));
 
     assert.equal(warnings.length, 1);
     assert.match(warnings[0], /^BitResourceTimeline: /, 'the console prefix names the bit component');
     assert.match(warnings[0], /'selectionCleard'/);
-    assert.ok(!('selectionCleard' in engine.config.texts));
+    assert.ok(!('selectionCleard' in engine.config.strings));
     assert.equal(engine._text('selectionCleared'), 'Auswahl aufgehoben');
     assert.equal(engine._text('editRefused'), 'Edit refused');
 });
@@ -87,10 +87,10 @@ test('an unknown option or color is warned about under the BitResourceTimeline p
     }
 });
 
-test('a text is a .NET-style composite format', () => {
+test('a string is a .NET-style composite format', () => {
     const engine = makeBareEngine();
     engine._applyOptions({
-        texts: {
+        strings: {
             copiedFormat: '{{{0}}} copied',
             timeRangeFormat: '{1} back to {0}'
         }
@@ -103,7 +103,7 @@ test('a text is a .NET-style composite format', () => {
     assert.equal(engine._text('noSuchText'), 'noSuchText', 'a key with no text at all reads as itself');
 });
 
-test('announcements take their wording from the texts', async () => {
+test('announcements take their wording from the strings', async () => {
     const engine = makeIndexedEngine([{ id: 'a', resourceId: 'r0', startTime: 100, endTime: 200 }]);
     engine.timeRange = { start: 0, end: 1_000_000 };
     engine._pixelsPerMs = 1;
@@ -112,7 +112,7 @@ test('announcements take their wording from the texts', async () => {
     engine._scrollFocusIntoView = () => { };
     const announced = [];
     engine._announce = (m) => announced.push(m);
-    engine._applyOptions({ texts: { editRefused: 'Abgelehnt' } });
+    engine._applyOptions({ strings: { editRefused: 'Abgelehnt' } });
     engine.dotNetRef = { invokeMethodAsync: async (name) => name !== 'OnAllocationChanging' };
 
     const alloc = engine.allocations[0];
@@ -231,8 +231,8 @@ test('a theme invalidates the scene config snapshot and restyles a live tooltip'
 
 test('a theme reflows the stacked lanes when its font changes the label metrics', () => {
     const engine = makeIndexedEngine([
-        { id: 'a', resourceId: 'r0', startTime: 0, endTime: 100, textAbove: 'A' },
-        { id: 'b', resourceId: 'r0', startTime: 50, endTime: 150, textAbove: 'B' }
+        { id: 'a', resourceId: 'r0', startTime: 0, endTime: 100, texts: { topCenter: { text: 'A' } } },
+        { id: 'b', resourceId: 'r0', startTime: 50, endTime: 150, texts: { topCenter: { text: 'B' } } }
     ]);
     engine.render = () => { };
     engine._syncAxisSplitterChrome = () => { };

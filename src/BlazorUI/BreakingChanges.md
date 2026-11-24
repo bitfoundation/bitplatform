@@ -18,6 +18,64 @@ only in this file.
 
 ## 11.0.0
 
+### `BitResourceTimeline`'s bar texts are one `Texts` with eight positions, and its `Texts` is `Strings` ([#15441](https://github.com/bitfoundation/bitplatform/issues/15441))
+
+`BitResourceTimelineAllocation` labelled a bar through four strings, one per side. They are now the properties of one
+`Texts` (a `BitResourceTimelineBarTexts`), which adds a text at the start and the end edge above and below the bar
+(`TopStart`, `TopEnd`, `BottomStart`, `BottomEnd`). Each position is a `BitResourceTimelineBarText` with its own
+`Text`, `Color`, `Font`, `OffsetX` and `OffsetY`, and a string converts to one implicitly:
+
+| Before | After |
+|---|---|
+| `TextAbove = "LH441"` | `Texts = new() { TopCenter = "LH441" }` |
+| `TextBelow = "Gate 5"` | `Texts = new() { BottomCenter = "Gate 5" }` |
+| `TextStart = "08:00"` | `Texts = new() { Start = "08:00" }` |
+| `TextEnd = "16:00"` | `Texts = new() { End = "16:00" }` |
+| `bar.TextAbove` (read) | `bar.Texts?.TopCenter?.Text` |
+
+The four texts are drawn where they were. The label a bar's default tooltip and accessible name read is the first text
+of `TopCenter`, `TopStart`, `TopEnd`, `Start`, `End`, `BottomCenter`, `BottomStart` and `BottomEnd`, which is the
+order the old four were read in.
+
+So the bar texts and the words of the timeline itself are not both called texts, the component's `Texts` parameter
+(and its counterpart on `BitResourceTimelineParams`) is `Strings`, and its type `BitResourceTimelineTexts` is
+`BitResourceTimelineStrings`, with the same members:
+
+| Before | After |
+|---|---|
+| `<BitResourceTimeline Texts="texts" />` | `<BitResourceTimeline Strings="strings" />` |
+| `new BitResourceTimelineTexts { Loading = "..." }` | `new BitResourceTimelineStrings { Loading = "..." }` |
+
+The analyzer reports a `Texts` left on the component and the four removed allocation properties (`BITBC001`), and the
+old type (`BITBC002`). With it turned off, a `Texts` left in markup builds and is rendered as an HTML attribute, so the
+timeline speaks English again.
+
+### The words a component writes for itself are `Strings` everywhere ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The object holding every word a component writes for itself - the one that localizes it - is called `Strings`, as it is
+on `BitDataGrid` and `BitResourceTimeline`. The components that called it `Texts` are renamed to match: the parameter
+(and its counterpart on the component's `Bit*Params`) is `Strings`, and its type is `Bit*Strings`, with the same
+members. The Markdown pipeline follows: `BitMarkdownPipelineBuilder.Texts`, `BitMarkdownPipeline.Texts` and
+`BitMarkdownRenderer.Texts` are `Strings`, `UseTexts()` is `UseStrings()`, and `BitMarkdownTexts` is
+`BitMarkdownStrings`.
+
+| Before | After |
+|---|---|
+| `<BitChart Texts="texts" />`, `new BitChartTexts { ... }` | `<BitChart Strings="strings" />`, `new BitChartStrings { ... }` |
+| `<BitColorPicker Texts="texts" />`, `new BitColorPickerTexts { ... }` | `<BitColorPicker Strings="strings" />`, `new BitColorPickerStrings { ... }` |
+| `<BitFullCalendar Texts="texts" />`, `new BitFullCalendarTexts { ... }` | `<BitFullCalendar Strings="strings" />`, `new BitFullCalendarStrings { ... }` |
+| `<BitImageViewer Texts="texts" />`, `new BitImageViewerTexts { ... }` | `<BitImageViewer Strings="strings" />`, `new BitImageViewerStrings { ... }` |
+| `<BitMarkdownEditor Texts="texts" />`, `new BitMarkdownEditorTexts { ... }` | `<BitMarkdownEditor Strings="strings" />`, `new BitMarkdownEditorStrings { ... }` |
+| `<BitPdfViewer Texts="texts" />`, `new BitPdfViewerTexts { ... }` | `<BitPdfViewer Strings="strings" />`, `new BitPdfViewerStrings { ... }` |
+| `new BitChartParams { Texts = ... }` (and the other `Bit*Params`) | `new BitChartParams { Strings = ... }` |
+| `builder.UseTexts(new BitMarkdownTexts { ... })` | `builder.UseStrings(new BitMarkdownStrings { ... })` |
+| `builder.Texts.AlertNote = "..."`, `pipeline.Texts`, `renderer.Texts` | `builder.Strings.AlertNote = "..."`, `pipeline.Strings`, `renderer.Strings` |
+| `new BitMarkdownRenderer(renderers, texts)` | `new BitMarkdownRenderer(renderers, strings)` (only the parameter's name changed) |
+
+The analyzer reports a `Texts` left on any of these components, their `Bit*Params` and the Markdown pipeline types, and a
+`UseTexts()` call (`BITBC001`), and the old types (`BITBC002`). With it turned off, a `Texts` left in markup builds and
+is rendered as an HTML attribute, so the component speaks English again.
+
 ### `BitCard` draws on its root's `::after` ([#15380](https://github.com/bitfoundation/bitplatform/issues/15380))
 
 The accent bar of the new `Accent` parameter and `--bit-Card-accent-color` variable is the border of a layer over the

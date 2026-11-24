@@ -51,6 +51,13 @@ do not pack, so the tests and the demo pass and nothing says so until someone bu
   change**, with its entry in `BreakingChanges.md`. A rename is a removal: every renamed parameter, its `BitXxxParams`
   counterpart and every `BitXxxClassStyles` / `BitXxxNameSelectors` member is an entry for its getter and its setter.
   Adding API is never a break, so a new component, parameter or member needs no entry.
+- **Each package's file covers that package's breaks, and no other's.** A change whose renames or removals reach more
+  than one package - a concept renamed across components (One name per concept), a type every Extras component of a
+  kind uses - updates the `CompatibilitySuppressions.xml` of every one of them. Before calling it done, list the
+  packages whose public sources the change touches (`git diff --name-only` under `Bit.BlazorUI/`,
+  `Bit.BlazorUI.Extras/`, ...) and check that the diff carries a regenerated file for each package where something
+  public was renamed or removed. The core's file updated and the Extras' left as it was builds, tests and runs the
+  demo cleanly, and fails only CI's Release pack of the Extras.
 - **Regenerate the file, never hand-write it**: `dotnet build <Project>/<Project>.csproj -c Release
   -p:ApiCompatGenerateSuppressionFile=true`, then read the diff - every entry it adds is a break that was meant and is
   in `BreakingChanges.md`, and an entry it drops is a break that is gone. Use `build`, never `pack`: Release sets
@@ -191,7 +198,8 @@ never
 ## One name per concept
 
 A concept that more than one component has is spelled the same on all of them, and an outlier is renamed to it, the
-break recorded in `BreakingChanges.md` - never kept beside the new name as an `[Obsolete]` alias.
+break recorded in `BreakingChanges.md`, `BreakingChanges.json` and the `CompatibilitySuppressions.xml` of every package
+the rename reaches - never kept beside the new name as an `[Obsolete]` alias.
 
 - **What a component shows when it has nothing to show** has two names, one per meaning: `EmptyTemplate` /
   `EmptyText` and the `Empty` class-style part for **no items at all**, and `NoResultsTemplate` / `NoResultsText` and
@@ -785,6 +793,16 @@ all it takes for it to appear in the catalog, the search index and the completio
   several - and a long answer opens by naming its sections. A search hit below a component names the
   narrowed call rather than the whole reference, so a narrowed answer still opens with the generic
   constraints and the package line, and a picked row keeps its table's columns.
+- **A whole answer keeps its worked examples.** One answer is capped at `BlazorUIMarkdown.MaxLength`, and the
+  examples are the last section and the part an agent copies from, so a whole reference over the cap leaves out whole
+  sections instead - the ones just before the examples, backwards (the own types, the library types), never the first
+  table - and names them where they would have been, with the `section` call that returns each (`AppendFitted`). A
+  plain cut at the cap is only the last resort, for an answer whose first table and examples alone run past it.
+- **A change to a component is a change to its MCP answer.** Everything the server says about a component is read
+  off the component, its own types and its demo page, so a new parameter, type, member, example or demo section
+  changes the answer, and a component that grows can push it past the cap. After changing any of them, run the
+  suite - `dotnet run --project Tests/Bit.BlazorUI.Tests.Mcp` (a few minutes: it builds and boots the demo server) -
+  alongside the unit tests. It is a separate project that `dotnet test` of the unit suite does not run, and CI runs it.
 - **A miss answers with the nearest names** (`BlazorUISuggest`, edit distance over the names less
   their shared `Bit` prefix) rather than a refusal, and never as a failed tool call.
 

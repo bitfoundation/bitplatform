@@ -1,10 +1,10 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// The texts of the <see cref="BitPdfViewer"/> UI. All strings default to English;
+/// The strings of the <see cref="BitPdfViewer"/> UI. All strings default to English;
 /// override individual properties to localize the viewer.
 /// </summary>
-public class BitPdfViewerTexts
+public class BitPdfViewerStrings
 {
     /// <summary>The accessible name of the toolbar.</summary>
     public string ToolbarAriaLabel { get; set; } = "PDF viewer toolbar";

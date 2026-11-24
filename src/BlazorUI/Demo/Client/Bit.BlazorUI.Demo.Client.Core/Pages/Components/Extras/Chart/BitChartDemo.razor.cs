@@ -145,21 +145,21 @@ public partial class BitChartDemo
         },
         new()
         {
+            Name = "Strings",
+            Type = "BitChartStrings?",
+            DefaultValue = "null",
+            Description = "The strings written for assistive technologies and into the CSV export: the default accessible name, the legend's name, the keyboard announcements, the table headers and captions. English by default; override them to localize.",
+            LinkType = LinkType.Link,
+            Href = "#chart-strings"
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitChartClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for the parts of the chart: root, title, subtitle, legend, legend items, plot, tooltip, empty state and loading state.",
             LinkType = LinkType.Link,
             Href = "#class-styles"
-        },
-        new()
-        {
-            Name = "Texts",
-            Type = "BitChartTexts?",
-            DefaultValue = "null",
-            Description = "The texts written for assistive technologies and into the CSV export: the default accessible name, the legend's name, the keyboard announcements, the table headers and captions. English by default; override them to localize.",
-            LinkType = LinkType.Link,
-            Href = "#chart-texts"
         },
         new()
         {
@@ -492,9 +492,9 @@ public partial class BitChartDemo
         },
         new()
         {
-            Id = "chart-texts",
-            Title = "BitChartTexts",
-            Description = "The texts BitChart writes for assistive technologies and into its CSV export. All default to English; the ...Format ones are composite format strings filled in the chart's culture.",
+            Id = "chart-strings",
+            Title = "BitChartStrings",
+            Description = "The strings BitChart writes for assistive technologies and into its CSV export. All default to English; the ...Format ones are composite format strings filled in the chart's culture.",
             Parameters =
             [
                 new() { Name = "DefaultAriaLabelFormat", Type = "string", DefaultValue = "\"{0} chart with {1} data series.\"", Description = "Accessible name of a chart with neither an AriaLabel nor a displayed title. {0} is the chart type, {1} the number of series." },

@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcMiniCalendar
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
 
     private DateTime _displayMonth;
     private DateTime _lastSyncedSelectedDate;

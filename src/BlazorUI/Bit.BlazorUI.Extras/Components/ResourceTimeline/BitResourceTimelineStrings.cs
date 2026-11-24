@@ -1,12 +1,12 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// The texts of the <see cref="BitResourceTimeline"/>: its accessible name and description, the loading text, the
+/// The strings of the <see cref="BitResourceTimeline"/>: its accessible name and description, the loading text, the
 /// labels of its controls and everything it announces to screen readers. All of them default to English; an instance
 /// with the ones to override localizes the timeline. A text ending in Format is a composite format string whose
 /// placeholders the remarks of the property describe.
 /// </summary>
-public class BitResourceTimelineTexts
+public class BitResourceTimelineStrings
 {
     /// <summary>The accessible name of the timeline while its own AriaLabel is not set.</summary>
     public string AriaLabel { get; set; } = "Resource timeline";

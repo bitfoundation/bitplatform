@@ -106,10 +106,10 @@ test('edge bars do not persist onto a later bar without them', () => {
 });
 
 test('labels do not persist onto a later bar without them', () => {
-    const engine = makeSceneEngine([bar('a', 'r0', 1, 6, { textAbove: 'hello' })]);
+    const engine = makeSceneEngine([bar('a', 'r0', 1, 6, { texts: { topCenter: { text: 'hello' } } })]);
     assert.deepEqual(engine.buildScene().bars[0].labels.map(l => l.text), ['hello']);
 
-    engine.allocations[0].textAbove = null;
+    engine.allocations[0].texts.topCenter = null;
     const scene = engine.buildScene();
     assert.equal(scene.bars[0].labels, null, 'the reused node must not keep stale labels');
 });
@@ -118,12 +118,12 @@ test('a bar with fewer labels than last frame does not accumulate them', () => {
     // The backing array is reused, so it has to be cleared rather than appended
     // to - otherwise labels pile up frame after frame.
     const engine = makeSceneEngine([
-        bar('a', 'r0', 1, 6, { textAbove: 'above', textBelow: 'below' })
+        bar('a', 'r0', 1, 6, { texts: { topCenter: { text: 'above' }, bottomCenter: { text: 'below' } } })
     ]);
     assert.equal(engine.buildScene().bars[0].labels.length, 2);
     assert.equal(engine.buildScene().bars[0].labels.length, 2, 'a repeat frame must not grow the list');
 
-    engine.allocations[0].textBelow = null;
+    engine.allocations[0].texts.bottomCenter = null;
     assert.deepEqual(engine.buildScene().bars[0].labels.map(l => l.text), ['above']);
 });
 
@@ -177,8 +177,7 @@ test('inside icons hug the bar edges without displacing the labels outside it', 
     const engine = makeSceneEngine([
         bar('a', 'r0', 1, 6, {
             height: 24,
-            textStart: 'start',
-            textEnd: 'end',
+            texts: { start: { text: 'start' }, end: { text: 'end' } },
             icons: [
                 { source: 'one.png', position: 'start', inside: true },
                 { source: 'two.png', position: 'end', inside: true }
@@ -279,7 +278,7 @@ function paintedBand(engine, node) {
 
 test('nothing a stacked bar paints reaches into what its neighbour paints', () => {
     const decorated = {
-        textAbove: 'SRV01', textBelow: '2h', textStart: '08:30', textEnd: '10:30',
+        texts: { topCenter: { text: 'SRV01' }, bottomCenter: { text: '2h' }, start: { text: '08:30' }, end: { text: '10:30' } },
         icons: [{ source: 'i.png', position: 'center' }]
     };
     const engine = makeSceneEngine([
@@ -298,7 +297,7 @@ test('edge bars from one bar do not leak into the next bar in the same frame', (
     // Two bars share the pool; the second must start clean even though the
     // first filled its backing arrays.
     const engine = makeSceneEngine([
-        bar('a', 'r0', 1, 3, { startBar: { duration: HOUR, color: 'red' }, textAbove: 'x' }),
+        bar('a', 'r0', 1, 3, { startBar: { duration: HOUR, color: 'red' }, texts: { topCenter: { text: 'x' } } }),
         bar('b', 'r0', 10, 12)
     ]);
     const scene = engine.buildScene();

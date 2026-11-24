@@ -12,15 +12,15 @@
 /// number through <c>{0}</c>; <see cref="FootnoteBackReferenceOccurrence"/> takes the footnote's
 /// number and the citation's through <c>{0}</c> and <c>{1}</c>.
 /// </remarks>
-public class BitMarkdownTexts
+public class BitMarkdownStrings
 {
     /// <summary>
     /// The shared instance a renderer falls back to when it was handed none. It is process-wide, so
     /// setting a word on it translates every such renderer; a pipeline that needs its own wording
-    /// is given it with <c>UseTexts</c> (or by setting the builder's <c>Texts</c>), which starts
+    /// is given it with <c>UseStrings</c> (or by setting the builder's <c>Strings</c>), which starts
     /// from an instance of that builder's own.
     /// </summary>
-    public static BitMarkdownTexts Default { get; } = new();
+    public static BitMarkdownStrings Default { get; } = new();
 
     /// <summary>The title of a <c>&gt; [!NOTE]</c> alert.</summary>
     public string AlertNote { get; set; } = "Note";

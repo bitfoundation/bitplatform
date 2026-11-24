@@ -30,11 +30,11 @@ public sealed class BitMarkdownPipelineBuilder
     /// </summary>
     /// <remarks>
     /// Every builder starts with an instance of its own, rather than sharing
-    /// <see cref="BitMarkdownTexts.Default"/>, because these are settable: overriding one word in
-    /// place - <c>builder.Texts.AlertNote = "Hinweis"</c> - would otherwise translate every other
+    /// <see cref="BitMarkdownStrings.Default"/>, because these are settable: overriding one word in
+    /// place - <c>builder.Strings.AlertNote = "Hinweis"</c> - would otherwise translate every other
     /// pipeline in the process, the cached <see cref="BitMarkdownPipelines"/> ones included.
     /// </remarks>
-    public BitMarkdownTexts Texts { get; set; } = new();
+    public BitMarkdownStrings Strings { get; set; } = new();
 
     /// <summary>Creates a builder pre-populated with the basic CommonMark core.</summary>
     public BitMarkdownPipelineBuilder()

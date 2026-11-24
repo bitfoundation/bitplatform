@@ -23,8 +23,8 @@ function alloc(id, resourceId, startTime, endTime, extra = {}) {
 // minute, the gap in pixels.
 function legs(gap, endText = 'AAA', startText = 'AAA', extraA = {}, extraB = {}) {
     return [
-        alloc('a', 'r0', 0, 60 * MINUTE, { textStart: 'XXX', textEnd: endText, ...extraA }),
-        alloc('b', 'r0', (60 + gap) * MINUTE, (120 + gap) * MINUTE, { textStart: startText, textEnd: 'YYY', ...extraB })
+        alloc('a', 'r0', 0, 60 * MINUTE, { texts: { start: { text: 'XXX' }, end: { text: endText } }, ...extraA }),
+        alloc('b', 'r0', (60 + gap) * MINUTE, (120 + gap) * MINUTE, { texts: { start: { text: startText }, end: { text: 'YYY' } }, ...extraB })
     ];
 }
 
@@ -113,8 +113,8 @@ test('labels match trimmed and ignoring case', () => {
 
 test('bars overlapping in time stack and keep both labels', () => {
     const engine = collapsing([
-        alloc('a', 'r0', 0, 60 * MINUTE, { textEnd: 'AAA' }),
-        alloc('b', 'r0', 50 * MINUTE, 110 * MINUTE, { textStart: 'AAA' })
+        alloc('a', 'r0', 0, 60 * MINUTE, { texts: { end: { text: 'AAA' } } }),
+        alloc('b', 'r0', 50 * MINUTE, 110 * MINUTE, { texts: { start: { text: 'AAA' } } })
     ]);
 
     assert.deepEqual(lanesOf(engine), [0, 1]);
@@ -122,16 +122,17 @@ test('bars overlapping in time stack and keep both labels', () => {
 });
 
 test('the second leg\'s own end label is kept, even when it repeats the code', () => {
-    const engine = collapsing(legs(40, 'AAA', 'AAA', {}, { textEnd: 'AAA' }));
+    const engine = collapsing(legs(40, 'AAA', 'AAA', {}, { texts: { start: { text: 'AAA' }, end: { text: 'AAA' } } }));
 
+    assert.equal(edges(engine)[0].shareEnd, true);
     assert.equal(edges(engine)[1].shareEnd, false);
 });
 
 test('a chain of legs merges every turn and stays on one lane', () => {
     const engine = collapsing([
-        alloc('a', 'r0', 0, 60 * MINUTE, { textStart: 'AMS', textEnd: 'CDG' }),
-        alloc('b', 'r0', 100 * MINUTE, 160 * MINUTE, { textStart: 'CDG', textEnd: 'AMS' }),
-        alloc('c', 'r0', 200 * MINUTE, 260 * MINUTE, { textStart: 'AMS', textEnd: 'LHR' })
+        alloc('a', 'r0', 0, 60 * MINUTE, { texts: { start: { text: 'AMS' }, end: { text: 'CDG' } } }),
+        alloc('b', 'r0', 100 * MINUTE, 160 * MINUTE, { texts: { start: { text: 'CDG' }, end: { text: 'AMS' } } }),
+        alloc('c', 'r0', 200 * MINUTE, 260 * MINUTE, { texts: { start: { text: 'AMS' }, end: { text: 'LHR' } } })
     ]);
 
     assert.deepEqual(lanesOf(engine), [0, 0, 0]);
@@ -196,8 +197,8 @@ test('a web font that finishes loading measures the labels again and redoes the 
 
 test('a first leg too narrow to carry labels merges nothing', () => {
     const engine = collapsing([
-        alloc('a', 'r0', 0, 20 * MINUTE, { textEnd: 'AAA' }),
-        alloc('b', 'r0', 60 * MINUTE, 120 * MINUTE, { textStart: 'AAA' })
+        alloc('a', 'r0', 0, 20 * MINUTE, { texts: { end: { text: 'AAA' } } }),
+        alloc('b', 'r0', 60 * MINUTE, 120 * MINUTE, { texts: { start: { text: 'AAA' } } })
     ]);
 
     assert.deepEqual(edges(engine), [PLAIN, PLAIN]);
@@ -207,8 +208,8 @@ test('a second leg too narrow to carry labels still has the first one\'s label c
     // b draws no labels at 20px, so its start label is not counted: the pair is
     // merged under 21 + 3 + 21 = 45px, and the word fits in 40.
     const engine = collapsing([
-        alloc('a', 'r0', 0, 60 * MINUTE, { textEnd: 'AAA' }),
-        alloc('b', 'r0', 100 * MINUTE, 120 * MINUTE, { textStart: 'AAA' })
+        alloc('a', 'r0', 0, 60 * MINUTE, { texts: { end: { text: 'AAA' } } }),
+        alloc('b', 'r0', 100 * MINUTE, 120 * MINUTE, { texts: { start: { text: 'AAA' } } })
     ]);
 
     assert.deepEqual(lanesOf(engine), [0, 0]);
@@ -221,8 +222,8 @@ test('a pair a third bar overlaps stays on one lane', () => {
     for (const stackOnLabelCollision of [true, false]) {
         const engine = collapsing([
             alloc('z', 'r0', 0, 65 * MINUTE),
-            alloc('a', 'r0', 10 * MINUTE, 70 * MINUTE, { textEnd: 'AAA' }),
-            alloc('b', 'r0', 110 * MINUTE, 170 * MINUTE, { textStart: 'AAA' })
+            alloc('a', 'r0', 10 * MINUTE, 70 * MINUTE, { texts: { end: { text: 'AAA' } } }),
+            alloc('b', 'r0', 110 * MINUTE, 170 * MINUTE, { texts: { start: { text: 'AAA' } } })
         ], { config: { stackOnLabelCollision } });
         const [, a, b] = engine.allocations;
 
@@ -238,8 +239,8 @@ test('a pair the lane cap hides one of draws its labels as usual', () => {
     const engine = collapsing([
         alloc('z', 'r0', 0, 75 * MINUTE),
         alloc('w', 'r0', 5 * MINUTE, 72 * MINUTE),
-        alloc('a', 'r0', 10 * MINUTE, 70 * MINUTE, { textEnd: 'AAA' }),
-        alloc('b', 'r0', 110 * MINUTE, 170 * MINUTE, { textStart: 'AAA' })
+        alloc('a', 'r0', 10 * MINUTE, 70 * MINUTE, { texts: { end: { text: 'AAA' } } }),
+        alloc('b', 'r0', 110 * MINUTE, 170 * MINUTE, { texts: { start: { text: 'AAA' } } })
     ], { config: { maxStackLanes: 2 } });
 
     assert.equal(engine._laneInfo.get(engine.allocations[2]).overflow, true);
@@ -252,8 +253,8 @@ test('a merged pair keeps the lane the second bar would otherwise be capped out 
     // a third lane, which the cap hides; merged, it follows a on the second.
     const engine = collapsing([
         alloc('z', 'r0', 0, 200 * MINUTE),
-        alloc('a', 'r0', 10 * MINUTE, 70 * MINUTE, { textEnd: 'AAA' }),
-        alloc('b', 'r0', 110 * MINUTE, 170 * MINUTE, { textStart: 'AAA' })
+        alloc('a', 'r0', 10 * MINUTE, 70 * MINUTE, { texts: { end: { text: 'AAA' } } }),
+        alloc('b', 'r0', 110 * MINUTE, 170 * MINUTE, { texts: { start: { text: 'AAA' } } })
     ], { config: { maxStackLanes: 2 } });
 
     assert.deepEqual(lanesOf(engine), [0, 1, 1]);
@@ -267,8 +268,8 @@ test('the +N marker of the first leg\'s cluster sits past the second leg, not on
     const engine = collapsing([
         alloc('y', 'r0', 0, 50 * MINUTE),
         alloc('w', 'r0', 5 * MINUTE, 20 * MINUTE),
-        alloc('a', 'r0', 50 * MINUTE, 110 * MINUTE, { textEnd: 'AAA' }),
-        alloc('b', 'r0', 150 * MINUTE, 210 * MINUTE, { textStart: 'AAA' })
+        alloc('a', 'r0', 50 * MINUTE, 110 * MINUTE, { texts: { end: { text: 'AAA' } } }),
+        alloc('b', 'r0', 150 * MINUTE, 210 * MINUTE, { texts: { start: { text: 'AAA' } } })
     ], { config: { maxStackLanes: 1 } });
     const [, w, a, b] = engine.allocations;
     const cluster = engine._laneInfo.get(a).cluster;
@@ -306,8 +307,8 @@ test('the merge follows the zoom with stackOnLabelCollision off', () => {
 test('with stackOnLabelCollision off, a zoom redoes only the rows with a pair to merge', () => {
     const engine = collapsing([
         ...legs(40),
-        alloc('c', 'r1', 0, 60 * MINUTE, { textEnd: 'AAA' }),
-        alloc('d', 'r1', 100 * MINUTE, 160 * MINUTE, { textStart: 'BBB' })
+        alloc('c', 'r1', 0, 60 * MINUTE, { texts: { end: { text: 'AAA' } } }),
+        alloc('d', 'r1', 100 * MINUTE, 160 * MINUTE, { texts: { start: { text: 'BBB' } } })
     ], { config: { stackOnLabelCollision: false } });
     const restacked = [];
     const assign = engine._assignStackLanes;
@@ -366,8 +367,8 @@ test('the merge is not written onto the caller\'s allocation objects', () => {
     collapsing([a, b]);
 
     assert.deepEqual([Object.keys(a).sort(), Object.keys(b).sort()], keys);
-    assert.equal(a.textEnd, 'AAA');
-    assert.equal(b.textStart, 'AAA');
+    assert.equal(a.texts.end.text, 'AAA');
+    assert.equal(b.texts.start.text, 'AAA');
 });
 
 test('the decoration box does not change with the merge', () => {
@@ -415,8 +416,8 @@ function texts(node) {
 test('a shared label is drawn once, centered on the gap, and the next bar does not repeat it', () => {
     // 40px/h: the hour between the bars is 40px, which holds the 21px word.
     const engine = makeSceneEngine([
-        bar('a', 1, 3, { textStart: 'XXX', textEnd: 'AAA' }),
-        bar('b', 4, 6, { textStart: 'AAA', textEnd: 'YYY' })
+        bar('a', 1, 3, { texts: { start: { text: 'XXX' }, end: { text: 'AAA' } } }),
+        bar('b', 4, 6, { texts: { start: { text: 'AAA' }, end: { text: 'YYY' } } })
     ]);
     const [a, b] = engine.buildScene().bars;
 
@@ -430,8 +431,8 @@ test('a shared label is drawn once, centered on the gap, and the next bar does n
 
 test('the shared label stays when the first bar is scrolled out of view', () => {
     const engine = makeSceneEngine([
-        bar('a', 1, 3, { textStart: 'XXX', textEnd: 'AAA' }),
-        bar('b', 4, 6, { textStart: 'AAA', textEnd: 'YYY' })
+        bar('a', 1, 3, { texts: { start: { text: 'XXX' }, end: { text: 'AAA' } } }),
+        bar('b', 4, 6, { texts: { start: { text: 'AAA' }, end: { text: 'YYY' } } })
     ]);
     // a ends 10px left of the content area; the gap's middle is 10px into it.
     engine.scrollX = 130;
@@ -448,8 +449,8 @@ test('the shared label stays when the first bar is scrolled out of view', () => 
 
 test('the shared label stays when both bars are out of view and only the gap is in it', () => {
     const engine = makeSceneEngine([
-        bar('a', 1, 3, { textStart: 'XXX', textEnd: 'AAA' }),
-        bar('b', 4, 6, { textStart: 'AAA', textEnd: 'YYY' })
+        bar('a', 1, 3, { texts: { start: { text: 'XXX' }, end: { text: 'AAA' } } }),
+        bar('b', 4, 6, { texts: { start: { text: 'AAA' }, end: { text: 'YYY' } } })
     ]);
     // A 30px view on the 40px gap: a ends 5px left of it, b starts 5px right.
     engine._viewportW = engine.config.resourceAxisWidth + 30;
@@ -473,8 +474,8 @@ test('the shared label stays when both bars are out of view and only the gap is 
 
 test('a gap of a few pixels draws both labels, stacked', () => {
     const engine = makeSceneEngine([
-        bar('a', 1, 3, { textStart: 'XXX', textEnd: 'AAA' }),
-        bar('b', 3.1, 5, { textStart: 'AAA', textEnd: 'YYY' })
+        bar('a', 1, 3, { texts: { start: { text: 'XXX' }, end: { text: 'AAA' } } }),
+        bar('b', 3.1, 5, { texts: { start: { text: 'AAA' }, end: { text: 'YYY' } } })
     ]);
     const [a, b] = engine.buildScene().bars;
 
@@ -486,8 +487,8 @@ test('a gap of a few pixels draws both labels, stacked', () => {
 test('a first bar right at the label threshold draws the label it shares', () => {
     // 24px wide at 40px/h is 36 minutes: exactly minBarWidthForLabels.
     const engine = makeSceneEngine([
-        bar('a', 1, 1.6, { textEnd: 'AAA' }),
-        bar('b', 2.6, 4, { textStart: 'AAA' })
+        bar('a', 1, 1.6, { texts: { end: { text: 'AAA' } } }),
+        bar('b', 2.6, 4, { texts: { start: { text: 'AAA' } } })
     ]);
     const [a, b] = engine.buildScene().bars;
 
@@ -497,8 +498,8 @@ test('a first bar right at the label threshold draws the label it shares', () =>
 
 test('different codes are both drawn beside their bars', () => {
     const engine = makeSceneEngine([
-        bar('a', 1, 3, { textEnd: 'AAA' }),
-        bar('b', 4, 6, { textStart: 'BBB' })
+        bar('a', 1, 3, { texts: { end: { text: 'AAA' } } }),
+        bar('b', 4, 6, { texts: { start: { text: 'BBB' } } })
     ]);
     const [a, b] = engine.buildScene().bars;
 

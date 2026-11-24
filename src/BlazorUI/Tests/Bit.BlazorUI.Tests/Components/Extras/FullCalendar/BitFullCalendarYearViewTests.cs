@@ -188,9 +188,9 @@ public class BitFullCalendarYearViewTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFullCalendarYearViewShouldFormatTheCountThroughTheTexts()
+    public void BitFullCalendarYearViewShouldFormatTheCountThroughTheStrings()
     {
-        var component = RenderYear(configure: p => p.Add(c => c.Texts, new BitFullCalendarTexts { EventListCountFormat = "{0} meetings" }));
+        var component = RenderYear(configure: p => p.Add(c => c.Strings, new BitFullCalendarStrings { EventListCountFormat = "{0} meetings" }));
 
         var today = component.FindAll(".bit-bfc-year-day.has-events").Single(d => d.Id.EndsWith("20260318"));
         Assert.AreEqual("Wednesday, March 18, 2026, 1 meetings", today.GetAttribute("aria-label"));
