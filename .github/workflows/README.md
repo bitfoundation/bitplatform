@@ -14,23 +14,23 @@ Browser and other end-to-end suites live in a separate `ci.<project>.e2e.yml`. T
 
 A `cd.<app>.yml` workflow deploys a demo or a website.
 
-Two workflows publish the NuGet packages: CD Prerelease nuget packages on a `v-*-pre-*` tag, and CD Nuget packages on a push to `main`. Both pack in three parallel jobs: other, utilities and toolings. The utilities job runs on Windows, the only runner that builds every platform of Bit.BbScanner.Maui. Then one publish job, the only job that can sign and push, signs the bit assemblies, attests the packages and their SBOM, uploads them as the `nupkg-files` artifact and pushes them to nuget.org with trusted publishing.
+Two workflows publish the NuGet packages: CD Prerelease nuget packages on a `v-*-pre-*` tag, and CD Nuget packages on a push to `main`. Both pack in three parallel jobs: other, utilities and toolings. The utilities job runs on Windows, the only runner that builds every platform of Bit.BbScanner.Maui. Then one publish job, the only job that can sign and push, signs the bit assemblies, attests the packages and their SBOM, uploads them as the `nupkg-files` artifact and pushes them to nuget.org with trusted publishing. bit Boilerplate, bit CLI and their demos live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric), whose workflows read the prerelease `nupkg-files` artifact too, to try a library change in them before it is released.
 
 ## All workflows
 
 | Workflow | Runs |
 |---|---|
-| All Other CI | the CI of BlazorUI, Bswup, Butil, Brouter, the templates and the websites |
+| All Other CI | the CI of BlazorUI, Bswup, Butil, Brouter, the BlazorEmpty template and the websites |
 | All Utilities CI | the CI of everything under `src/Utilities` |
 | All Toolings CI | the CI of everything under `src/Toolings` |
-| All Other E2E CI | the end-to-end suites of the products and the templates |
+| All Other E2E CI | the end-to-end suites of the products and the BlazorEmpty template |
 | All Utilities E2E CI | the end-to-end suites of the utilities |
 | All Release Build | every solution in Release |
 | All Apps CD | deploys every demo and website |
 
 Apart from the exceptions below, each CI, E2E and CD workflow is called by exactly one All workflow, the one for its folder. A workflow can call at most 50 different workflows, so no single run covers everything: before a release, run the five CI and E2E ones.
 
-All Release Build starts on pull requests titled Prerelease, Release or Version, and by hand. It builds every folder solution in Release, each in a job of its own. The Boilerplate and the websites build there too, against packages packed from the same commit, because nuget.org doesn't have the version being released yet.
+All Release Build starts on pull requests titled Prerelease, Release or Version, and by hand. It builds every folder solution in Release, each in a job of its own. The websites build there too, against packages packed from the same commit, because nuget.org doesn't have the version being released yet.
 
 ## Concurrency
 
@@ -40,7 +40,7 @@ A newer run of a workflow on the same pull request or branch cancels the older o
 
 Libraries, their demos and their tests reference each other as projects, so they always build the code of the same commit.
 
-The templates, the websites and the demos made from the Boilerplate take the Bit packages from NuGet:
+The projects made from the BlazorEmpty template and the websites take the Bit packages from NuGet:
 
 - from nuget.org by default;
 - with `prerelease_packages`, from the newest `nupkg-files` artifact of a CD Prerelease nuget packages run on any branch. Run that workflow on a branch, then All Apps CD with `prerelease_packages`, to try a library change in those apps before it is released. That run also pushes to nuget.org any package id that is new at that version;
@@ -60,8 +60,7 @@ The templates, the websites and the demos made from the Boilerplate take the Bit
 - All Release Build calls no workflows. Its jobs are matrices, one job per solution.
 - All Apps CD and Support tracking have no concurrency group. The CDs that All Apps CD calls decide for themselves, and each Support tracking run handles another issue.
 - The Copilot entries in Actions are GitHub's own workflows, with no file here.
-- CI Templates and CI Websites skip release pull requests, because their version isn't on nuget.org yet. All Release Build builds the Boilerplate and the websites on those pull requests instead.
-- The Boilerplate's tests in CI Templates E2E run on projects made with `bit new`, in Debug, not on a published build.
+- CI Websites skips release pull requests, because its version isn't on nuget.org yet. All Release Build builds the websites on those pull requests instead.
 - The library demos take Bit.Minifier as a package, not a project.
 - The release workflows pack the utilities on Windows, the only runner that builds every platform of Bit.BbScanner.Maui. Its CI, on Linux, packs the Android target only.
 - BlazorEmpty builds only after `dotnet new`, so no workflow builds its folder as it is.

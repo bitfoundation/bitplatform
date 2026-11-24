@@ -1016,7 +1016,7 @@ file components only when the value moves rather than on every status change. Re
 
 #### Known consumers in this repo that break
 
-The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI edit boundary and was
+The Boilerplate template (`src/Templates/Boilerplate` then, now `src/Boilerplate` in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric)) is outside the BlazorUI edit boundary and was
 **not** updated:
 
 | File | Line | Use |
@@ -1024,7 +1024,7 @@ The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI e
 | `Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor` | 69 | `@bind-Color="category.Color"` -> `@bind-Value="category.Color"` (the `ValidationMessage` beside it then updates as the user picks) |
 | `Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.razor` | 235 | `OnChange="HandleOnAttachmentChange"` -> `OnFilesChange="HandleOnAttachmentChange"` |
 
-(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`.)
+(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`, now `src/Boilerplate/Bit.Boilerplate/src/Client/` in bitfoundation/bitfabric.)
 
 ### A modal container of an app's own reads its modals through `ModalReferences` ([#13558](https://github.com/bitfoundation/bitplatform/issues/13558))
 
@@ -1592,7 +1592,7 @@ counterpart (as nullable), unless noted.
 
 #### Known consumers in this repo that break
 
-The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI edit boundary and was
+The Boilerplate template (`src/Templates/Boilerplate` then, now `src/Boilerplate` in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric)) is outside the BlazorUI edit boundary and was
 **not** updated. These lines will fail to compile against this branch:
 
 | File | Line | Use |
@@ -1606,4 +1606,4 @@ The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI e
 | `Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor` | 67 | `BitDataGridColumnAlign.Center` -> `BitTextAlign.Center` |
 | `Boilerplate.Client.Core/Components/Pages/Tenants/ManageAllTenantsPage.razor` | 49 | `BitDataGridColumnAlign.Center` -> `BitTextAlign.Center` |
 
-(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`.)
+(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`, now `src/Boilerplate/Bit.Boilerplate/src/Client/` in bitfoundation/bitfabric.)

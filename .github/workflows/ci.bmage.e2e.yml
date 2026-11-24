@@ -46,8 +46,11 @@ jobs:
     - name: Install wasm-tools
       run: cd src && dotnet workload install wasm-tools
 
-    - name: Setup bit CLI
-      uses: ./.github/actions/setup-bit-cli
+    # bit CLI lives in bitfoundation/bitfabric; aot-profile comes from its newest package on nuget.org.
+    - name: Install bit CLI
+      run: |
+        dotnet tool install Bit.Cli --prerelease --tool-path "$RUNNER_TEMP/bit-cli"
+        echo "$RUNNER_TEMP/bit-cli" >> "$GITHUB_PATH"
 
     # With the pages and steps cd.bmage.demo.yml collects the deployed demo's profile with, from the same aot-profile.rsp,
     # so the tests run the code the deployed demo compiles ahead of time. The -p properties are those of the publish below:

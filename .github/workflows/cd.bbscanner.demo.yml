@@ -36,8 +36,11 @@ jobs:
     - name: Install wasm
       run:  cd src && dotnet workload install wasm-tools
 
-    - name: Setup bit CLI
-      uses: ./.github/actions/setup-bit-cli
+    # bit CLI lives in bitfoundation/bitfabric; aot-profile comes from its newest package on nuget.org.
+    - name: Install bit CLI
+      run: |
+        dotnet tool install Bit.Cli --prerelease --tool-path "$RUNNER_TEMP/bit-cli"
+        echo "$RUNNER_TEMP/bit-cli" >> "$GITHUB_PATH"
 
     - name: Collect the AOT profile
       run: bit aot-profile src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -o bbscanner.aotprofile --include Bit.BbScanner -p:AspNetCoreHostingModel=OutOfProcess -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true

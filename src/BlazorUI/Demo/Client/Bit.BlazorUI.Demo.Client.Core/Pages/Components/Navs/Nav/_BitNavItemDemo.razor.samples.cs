@@ -24,8 +24,8 @@ private static readonly List<BitNavItem> basicNavItems =
                         Text = ""Project Templates"",
                         ChildItems =
                         [
-                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://todo.bitfabric.co"" },
+                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://adminpanel.bitfabric.co"" },
                         ]
                     },
                     new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
@@ -33,7 +33,7 @@ private static readonly List<BitNavItem> basicNavItems =
                     new() { Text = ""Bit academy"", IconName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsDisabled = true },
                 ]
             },
-            new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitfabric.co/pricing"" },
             new() { Text = ""About"", IconName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
             new() { Text = ""Contact us"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         ],
@@ -75,8 +75,8 @@ private static readonly List<BitNavItem> basicNavItems =
                         Text = ""Project Templates"",
                         ChildItems =
                         [
-                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://todo.bitfabric.co"" },
+                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://adminpanel.bitfabric.co"" },
                         ]
                     },
                     new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
@@ -84,7 +84,7 @@ private static readonly List<BitNavItem> basicNavItems =
                     new() { Text = ""Bit academy"", IconName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsDisabled = true },
                 ]
             },
-            new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitfabric.co/pricing"" },
             new() { Text = ""About"", IconName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
             new() { Text = ""Contact us"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         ],
@@ -169,7 +169,7 @@ private static readonly List<BitNavItem> carNavItems =
 private static readonly List<BitNavItem> separatorNavItems =
 [
     new() { Text = ""Home"", IconName = BitIconName.Home, Url = ""https://bitplatform.dev/"" },
-    new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+    new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitfabric.co/pricing"" },
     new() { IsSeparator = true },
     new() { Text = ""LinkedIn"", IconName = BitIconName.LinkedInLogo, Url = ""https://www.linkedin.com/company/bitplatformhq"" },
     new() { Text = ""GitHub repo"", IconName = BitIconName.GitGraph, Url = ""https://github.com/bitfoundation/bitplatform"" },
@@ -345,8 +345,8 @@ private static readonly List<BitNavItem> noCollapseNavItems =
                         Text = ""Project Templates"",
                         ChildItems =
                         [
-                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""Todo sample"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://todo.bitfabric.co"" },
+                            new() { Text = ""AdminPanel sample"", IconName = BitIconName.LocalAdmin, Url = ""https://adminpanel.bitfabric.co"" },
                         ]
                     },
                     new() { Text = ""BlazorUI"", IconName = BitIconName.F12DevTools, Url = ""https://bitplatform.dev/components"" },
@@ -354,7 +354,7 @@ private static readonly List<BitNavItem> noCollapseNavItems =
                     new() { Text = ""Bit academy"", IconName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsDisabled = true },
                 ]
             },
-            new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""Pricing"", IconName = BitIconName.Money, Url = ""https://bitfabric.co/pricing"" },
             new() { Text = ""About"", IconName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
             new() { Text = ""Contact us"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         ],
@@ -815,7 +815,7 @@ private static readonly List<BitNavItem> externalIconNavItems =
                 ChildItems =
                 [
                     new() { Text = ""BlazorUI"", Icon = BitIconInfo.Fa(""solid code""), Url = ""https://bitplatform.dev/components"" },
-                    new() { Text = ""Pricing"", Icon = BitIconInfo.Css(""fa-solid fa-tag""), Url = ""https://bitplatform.dev/pricing"" },
+                    new() { Text = ""Pricing"", Icon = BitIconInfo.Css(""fa-solid fa-tag""), Url = ""https://bitfabric.co/pricing"" },
                 ]
             },
             new() { Text = ""About"", Icon = BitIconInfo.Fa(""solid circle-info""), Url = ""https://bitplatform.dev/about-us"" },
@@ -837,7 +837,7 @@ private static readonly List<BitNavItem> bootstrapIconNavItems =
         [
             new() { Text = ""Home"", Icon = BitIconInfo.Bi(""house-fill""), Url = ""https://bitplatform.dev/"" },
             new() { Text = ""BlazorUI"", Icon = BitIconInfo.Bi(""code-slash""), Url = ""https://bitplatform.dev/components"" },
-            new() { Text = ""Pricing"", Icon = BitIconInfo.Bi(""tag-fill""), Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""Pricing"", Icon = BitIconInfo.Bi(""tag-fill""), Url = ""https://bitfabric.co/pricing"" },
         ],
     },
     new() { Text = ""Iconography"", Icon = BitIconInfo.Bi(""emoji-smile""), Url = ""/iconography"" },
@@ -975,8 +975,8 @@ private static readonly List<BitNavItem> rtlNavItems =
                         Text = ""قالب های پروژه"",
                         ChildItems =
                         [
-                            new() { Text = ""نمونه ی Todo"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://bitplatform.dev/templates/overview"" },
-                            new() { Text = ""نمونه ی AdminPanel"", IconName = BitIconName.LocalAdmin, Url = ""https://bitplatform.dev/templates/overview"" },
+                            new() { Text = ""نمونه ی Todo"", IconName = BitIconName.ToDoLogoOutline, Url = ""https://todo.bitfabric.co"" },
+                            new() { Text = ""نمونه ی AdminPanel"", IconName = BitIconName.LocalAdmin, Url = ""https://adminpanel.bitfabric.co"" },
                         ]
                     },
                     new() { Text = ""رابط کاربری Blazor"", IconName = BitIconName.F12DevTools, Url = ""https://blazorui.bitplatform.dev/"" },
@@ -984,7 +984,7 @@ private static readonly List<BitNavItem> rtlNavItems =
                     new() { Text = ""آکادمی بیت"", IconName = BitIconName.LearningTools, Url = ""https://bitplatform.dev/#"", IsDisabled = true },
                 ]
             },
-            new() { Text = ""قیمت"", IconName = BitIconName.Money, Url = ""https://bitplatform.dev/pricing"" },
+            new() { Text = ""قیمت"", IconName = BitIconName.Money, Url = ""https://bitfabric.co/pricing"" },
             new() { Text = ""درباره ما"", IconName = BitIconName.Info, Url = ""https://bitplatform.dev/about-us"" },
             new() { Text = ""ارتباط با ما"", IconName = BitIconName.Contact, Url = ""https://bitplatform.dev/contact-us"" },
         ],
