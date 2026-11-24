@@ -374,6 +374,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitFullCalendarTexts</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Bit.BlazorUI.BitMapTooltipDirection</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
@@ -388,7 +395,28 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitMarkdownEditorTexts</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitMarkdownTexts</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Bit.BlazorUI.BitNavPanelPosition</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Bit.BlazorUI.BitPdfViewerTexts</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -690,6 +718,20 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitErrorBoundary.HasNotBeenSet(System.String)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFullCalendar.get_Texts</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFullCalendar.set_Texts(Bit.BlazorUI.BitFullCalendarTexts)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -1123,6 +1165,62 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMarkdownEditor.get_Texts</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMarkdownEditor.set_Texts(Bit.BlazorUI.BitMarkdownEditorTexts)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMarkdownPipeline.get_Texts</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMarkdownPipelineBuilder.get_Texts</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMarkdownPipelineBuilder.set_Texts(Bit.BlazorUI.BitMarkdownTexts)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMarkdownPipelineBuilderExtensions.UseTexts(Bit.BlazorUI.BitMarkdownPipelineBuilder,Bit.BlazorUI.BitMarkdownTexts)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMarkdownRenderer.#ctor(System.Collections.Generic.IReadOnlyList{Bit.BlazorUI.BitMarkdownNodeRenderer},Bit.BlazorUI.BitMarkdownTexts)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitMarkdownRenderer.get_Texts</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitMarkdownTableNode.get_Alignments</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
@@ -1215,6 +1313,20 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitNavPanelClassStyles.set_EmptyListMessage(System.String)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitPdfViewer.get_Texts</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitPdfViewer.set_Texts(Bit.BlazorUI.BitPdfViewerTexts)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
