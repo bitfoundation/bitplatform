@@ -1223,6 +1223,143 @@ public class BitButtonTests : BunitTestContext
         StringAssert.Contains(com.Find(".bit-btn").GetAttribute("style"), $"--bit-Button-float-offset:{expected}");
     }
 
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitVariant.Fill)]
+    public void BitButtonGradientShouldFillAFillButton(BitVariant? variant)
+    {
+        const string gradient = "linear-gradient(96deg, #524add 10%, #0d71bf 90%)";
+
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Variant, variant);
+            parameters.Add(p => p.Gradient, gradient);
+        });
+
+        var root = com.Find(".bit-btn");
+
+        // The class carries the layering, the border and the states, and the gradient itself is published as a private
+        // variable rather than as an inline background-image, which would outrank the disabled and forced-colors rules.
+        Assert.IsTrue(root.ClassList.Contains("bit-btn-grd"));
+        Assert.AreEqual($"--bit-btn-grd:{gradient}", root.GetAttribute("style"));
+    }
+
+    [TestMethod,
+        DataRow(BitVariant.Outline),
+        DataRow(BitVariant.Text)]
+    public void BitButtonGradientShouldBeIgnoredByAVariantWithoutAFill(BitVariant variant)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Variant, variant);
+            parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-btn-grd"));
+        Assert.IsFalse(root.HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitButtonGradientShouldFollowTheVariantAndTheValue()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
+        });
+
+        com.Render(parameters => parameters.Add(p => p.Variant, BitVariant.Outline));
+
+        Assert.IsFalse(com.Find(".bit-btn").ClassList.Contains("bit-btn-grd"));
+        Assert.IsFalse(com.Find(".bit-btn").HasAttribute("style"));
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Variant, BitVariant.Fill);
+            parameters.Add(p => p.Gradient, "radial-gradient(gold, orange)");
+        });
+
+        Assert.IsTrue(com.Find(".bit-btn").ClassList.Contains("bit-btn-grd"));
+        Assert.AreEqual("--bit-btn-grd:radial-gradient(gold, orange)", com.Find(".bit-btn").GetAttribute("style"));
+
+        com.Render(parameters => parameters.Add(p => p.Gradient, (string?)null));
+
+        Assert.IsFalse(com.Find(".bit-btn").ClassList.Contains("bit-btn-grd"));
+        Assert.IsFalse(com.Find(".bit-btn").HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitButtonGradientShouldStayOnADisabledButtonForTheStylesheetToTakeAway()
+    {
+        // The disabled fill is the stylesheet's to paint (.bit-btn-grd.bit-dis), so the markup keeps saying what was asked
+        // for and a button enabled again gets its gradient back without a render of its own.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(root.ClassList.Contains("bit-btn-grd"));
+    }
+
+    [TestMethod,
+        DataRow("linear-gradient(red,blue);position:fixed;inset:0;z-index:9999"),
+        DataRow("linear-gradient(red, blue)}.x{color:red"),
+        DataRow("linear-gradient(red, blue));color:red"),
+        DataRow("linear-gradient(red, blue"),
+        DataRow("linear-gradient(red, blue) /* ( */;color:red"),
+        DataRow("url(\"a\nb\");color:red"),
+        DataRow("url('a.png)"),
+        DataRow("url(a\");color:red;--x:\")"),
+        DataRow("url(a');color:red;--x:')"),
+        DataRow("url(a();color:red;--x:)"),
+        DataRow("URL(a();color:red;--x:)"),
+        DataRow("\\75 rl(a();color:red;--x:)"),
+        DataRow("u\\rl(a();color:red;--x:)"),
+        DataRow("url(a b;color:red;--x:)"),
+        DataRow("url(a\\\n;color:red;--x:)"),
+        DataRow("url(a.png")]
+    public void BitButtonGradientShouldIgnoreAValueThatIsNotOneCssValue(string gradient)
+    {
+        // The gradient is written into the style attribute of the root, where a semicolon or a brace at its top level would
+        // add declarations of the value's own to the button.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, gradient);
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-btn-grd"));
+        Assert.IsFalse(root.HasAttribute("style"));
+    }
+
+    [TestMethod,
+        DataRow("linear-gradient(96deg, #524add 10%, #0d71bf 90%), radial-gradient(circle at 0 0, gold, transparent)"),
+        DataRow("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'/>\"), linear-gradient(red, blue)"),
+        DataRow("url(data:image/png;base64,iVBORw0KGgo=)"),
+        DataRow("linear-gradient(\"a;b\", red)"),
+        DataRow("URL( \"a;b.png\" ), linear-gradient(red, blue)"),
+        DataRow("url( data:image/png;base64,iVBORw0KGgo= ), linear-gradient(red, blue)"),
+        DataRow("url(a\\)b.png), linear-gradient(red, blue)"),
+        DataRow("my-url(a(b), \"c\")")]
+    public void BitButtonGradientShouldKeepASemicolonInsideABracketOrAString(string gradient)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, gradient);
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-btn-grd"));
+        Assert.AreEqual($"--bit-btn-grd:{gradient}", root.GetAttribute("style"));
+    }
+
     [TestMethod]
     public void BitButtonShouldNotAddNoOpenerWhenNoReferrerIsAlreadyAskedFor()
     {

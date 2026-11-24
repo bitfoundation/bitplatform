@@ -36,6 +36,9 @@
     --bit-Accordion-header-padding: 1rem 1.25rem;
     --bit-Accordion-content-padding: 1rem 1.25rem;
     --bit-Accordion-border-color: color-mix(in srgb, var(--bit-clr-pri) 35%, transparent);
+    --bit-Accordion-hover-border-color: var(--bit-clr-pri);
+    --bit-Accordion-hover-shadow: var(--bit-shd-card-hover);
+    --bit-Accordion-expanded-border-color: var(--bit-clr-pri);
     --bit-Accordion-header-hover-background: color-mix(in srgb, var(--bit-clr-pri) 8%, transparent);
     --bit-Accordion-header-active-background: color-mix(in srgb, var(--bit-clr-pri) 16%, transparent);
     --bit-Accordion-header-expanded-background: color-mix(in srgb, var(--bit-clr-pri) 12%, transparent);

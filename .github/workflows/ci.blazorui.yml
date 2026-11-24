@@ -18,10 +18,64 @@ concurrency:
   group: ci-blazorui-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+# Four kinds of job side by side, each compiling only what it needs, in the configuration it needs, so the run takes
+# as long as the longest of them rather than all of them in a row: the unit tests once per target framework, the MCP
+# server suite, the Release pack, and a compile of every other project of the solution (the web demo and the E2E,
+# performance and trimming suites, which run only in CI BlazorUI E2E). None of them builds the MAUI and Windows demo
+# clients, the only projects that need a workload (maui-android here), so there is no `dotnet workload restore` step.
+# The last job, build Bit.BlazorUI, passes only when all the others do: it is the one check a pull request waits on.
 jobs:
-  build-BlazorUI:
+  test-BlazorUI:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
-    name: build Bit.BlazorUI
+    name: test Bit.BlazorUI (${{ matrix.tfm }})
+    runs-on: ubuntu-26.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        tfm: [net11.0, net10.0]
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    # The runtime the net10.0 unit tests run on.
+    - name: Setup .NET 10.0
+      if: matrix.tfm == 'net10.0'
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        dotnet-version: 10.0.x
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # BuildAllTfms=true opts back into net10.0, which the Debug configuration skips so that local inner-loop builds
+    # only compile the TFM the demo runs on; -f then compiles the tests and the libraries for this job's TFM alone.
+    - name: dotnet build
+      run: dotnet build src/BlazorUI/Tests/Bit.BlazorUI.Tests -f ${{ matrix.tfm }} -p:BuildAllTfms=true
+
+    - name: Test
+      run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build -f ${{ matrix.tfm }} --verbosity normal -p:BuildAllTfms=true
+
+    # An app the way a consumer writes one, compiled as C# 14 (see its .csproj): it checks the libraries by building,
+    # over the net11.0 libraries the tests above have just compiled. BuildAllTfms=true keeps the global properties of
+    # that build, so restore leaves the libraries' assets files as they are and the build finds them up to date.
+    - name: Build the consumer app
+      if: matrix.tfm == 'net11.0'
+      run: dotnet build src/BlazorUI/Tests/Bit.BlazorUI.Tests.Consumer -p:BuildAllTfms=true
+
+  mcp-BlazorUI:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: test the Bit.BlazorUI MCP server
     runs-on: ubuntu-26.04
 
     steps:
@@ -36,30 +90,41 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    - name: Setup .NET 10.0
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # The suite references none of the demo: its fixture builds and starts the demo server itself (`dotnet run` into
+    # an artifacts path of its own, see McpServerFixture), which is this job's one build of the libraries and the demo.
+    - name: Build the MCP server tests
+      run: dotnet build src/BlazorUI/Tests/Bit.BlazorUI.Tests.Mcp
+
+    - name: Test MCP server
+      run: dotnet run --no-build --project src/BlazorUI/Tests/Bit.BlazorUI.Tests.Mcp
+
+  pack-BlazorUI:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: pack Bit.BlazorUI
+    runs-on: ubuntu-26.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
       with:
-        dotnet-version: 10.0.x
+        global-json-file: src/global.json
 
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
-      
-    - name: dotnet workload restore
-      run:  cd src/BlazorUI && dotnet workload restore
 
-    # BuildAllTfms=true opts back into net10.0, which the Debug configuration skips so that local
-    # inner-loop builds only compile the TFM the demo and the tests actually run on.
-    - name: dotnet build
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx -p:BuildAllTfms=true
-
-    - name: Test
-      run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal -p:BuildAllTfms=true
-
-    # The MCP server suite boots the demo server as a child process and talks to it over HTTP (about a minute).
-    - name: Test MCP server
-      run: dotnet run --project src/BlazorUI/Tests/Bit.BlazorUI.Tests.Mcp
-
+    # Every package CD Nuget packages publishes from src/BlazorUI, built and then packed one by one with the same
+    # commands and flags as there, so a package that would fail the release pack fails here first.
     - name: dotnet pack
       run: |
         for project in Bit.BlazorUI Bit.BlazorUI.Extras Bit.BlazorUI.Legacy Bit.BlazorUI.Assets Bit.BlazorUI.Icons; do
@@ -69,4 +134,52 @@ jobs:
         for project in Bit.BlazorUI.AI.Core Bit.BlazorUI.AI Bit.BlazorUI.AI.Server Bit.BlazorUI.AI.SignalR Bit.BlazorUI.AI.ChatClient; do
           dotnet build src/BlazorUI/Bit.BlazorUI.AI/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
           dotnet pack src/BlazorUI/Bit.BlazorUI.AI/$project/$project.csproj --output ./packages --configuration Release
+        done
+
+  compile-BlazorUI:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: compile the rest of Bit.BlazorUI
+    runs-on: ubuntu-26.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 11.0
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # Bit.BlazorUI.Compile.slnf is every project of the solution that no job above builds, except the MAUI and Windows
+    # demo clients: the web demo, and the E2E, performance and trimming suites, which never run on a pull request.
+    # Compiling them here, every target framework of each as the whole solution used to be, catches a change to the
+    # libraries that breaks them. IncludeWasm=true makes the demo server reference the web client, as its Release build
+    # does, rather than the server-only build the MCP job runs.
+    - name: dotnet build
+      run: dotnet build src/BlazorUI/Bit.BlazorUI.Compile.slnf -p:BuildAllTfms=true -p:IncludeWasm=true
+
+  build-BlazorUI:
+    if: ${{ !cancelled() && startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true }}
+    name: build Bit.BlazorUI
+    needs: [test-BlazorUI, mcp-BlazorUI, pack-BlazorUI, compile-BlazorUI]
+    runs-on: ubuntu-26.04
+
+    steps:
+
+    - name: Check the other jobs
+      env:
+        RESULTS: ${{ join(needs.*.result, ' ') }}
+      run: |
+        for result in $RESULTS; do
+          if [ "$result" != success ]; then
+            echo "A job of this run ended $result: $RESULTS"
+            exit 1
+          fi
         done

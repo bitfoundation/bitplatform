@@ -282,6 +282,18 @@ internal sealed class BevToolsComponentRegistry
             // Leave the link unresolved so a later refresh can repair the tree.
         }
 
+        // A registered panel's component was BevTools' only provisionally: rendered outside BevTools' UI, on one of the
+        // application's pages, the instance is the application's, with the "created" event activation held back.
+        if (record.IsOwnerProvisional && record.ParentResolved)
+        {
+            record.SettleOwner(isBevTools: record.Parent?.IsBevTools == true);
+            if (record.IsCreatedEventPending)
+            {
+                record.ClearCreatedEventPending();
+                RecordCreated(record);
+            }
+        }
+
         // Anything the BevTools UI renders belongs to BevTools, including the framework components it uses. This is
         // the earliest point the owner is known: at activation the instance is not attached to the renderer yet.
         if (!record.IsBevTools && record.Parent?.IsBevTools == true)
@@ -298,6 +310,20 @@ internal sealed class BevToolsComponentRegistry
             _applicationTypes.TryAdd(record.TypeName, 0);
         }
     }
+
+    /// <summary>The application component's "created" event, stamped with the moment it was activated.</summary>
+    internal void RecordCreated(BevToolsComponentRecord record) =>
+        _session.Timeline.Record(new BevToolsEvent
+        {
+            Kind = BevToolsEventKind.Lifecycle,
+            Category = "lifecycle",
+            Title = record.DisplayName + " created",
+            Timestamp = record.CreatedAt,
+            StartTicks = record.CreatedTicks,
+            ComponentInstanceId = record.InstanceId,
+            ComponentName = record.DisplayName,
+            ParentEventId = BevToolsActivityObserver.CurrentTriggerEvent(_session)?.Id,
+        });
 
     private void MarkDisposed(BevToolsComponentRecord record, DateTimeOffset now, bool collected)
     {

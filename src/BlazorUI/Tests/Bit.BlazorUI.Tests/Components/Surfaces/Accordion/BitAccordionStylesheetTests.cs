@@ -12,6 +12,9 @@ namespace Bit.BlazorUI.Tests.Components.Surfaces.Accordion;
 [TestClass]
 public class BitAccordionStylesheetTests
 {
+    // The rule of the whole accordion under the pointer: not disabled, read-only or busy.
+    private const string HoverRule = "\n.bit-acd:not(.bit-dis, .bit-acd-rdo, :has(> .bit-acd-hwr > .bit-acd-hed > .bit-acd-bsy)) {";
+
     private static readonly string[] PublicVariables =
     [
         "--bit-Accordion-color",
@@ -20,6 +23,12 @@ public class BitAccordionStylesheetTests
         "--bit-Accordion-border-width",
         "--bit-Accordion-radius",
         "--bit-Accordion-shadow",
+        "--bit-Accordion-hover-background",
+        "--bit-Accordion-hover-border-color",
+        "--bit-Accordion-hover-shadow",
+        "--bit-Accordion-expanded-background",
+        "--bit-Accordion-expanded-border-color",
+        "--bit-Accordion-expanded-shadow",
         "--bit-Accordion-font-size",
         "--bit-Accordion-header-padding",
         "--bit-Accordion-header-hover-background",
@@ -48,7 +57,12 @@ public class BitAccordionStylesheetTests
 
         foreach (var variable in PublicVariables)
         {
-            Assert.IsTrue(stylesheet.Contains($"var({variable}, "), $"{variable} is never read with a fallback.");
+            // A variable of the hover or expanded state of the whole accordion is published bare into the private
+            // variable of its state: unset, it leaves that one guaranteed-invalid, so the root's read of the states
+            // falls on to the next state and then to the value at rest, which is its fallback.
+            var publishedIntoAState = Regex.IsMatch(stylesheet, $@"--bit-acd-[a-z]+-(hov|exp): var\({Regex.Escape(variable)}\);");
+
+            Assert.IsTrue(publishedIntoAState || stylesheet.Contains($"var({variable}, "), $"{variable} is never read with a fallback.");
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"(^|[\s;{{]){Regex.Escape(variable)}\s*:", RegexOptions.Multiline), $"{variable} is declared, which stops it from inheriting.");
         }
 
@@ -82,12 +96,85 @@ public class BitAccordionStylesheetTests
 
         StringAssert.Contains(root, "--bit-acd-bg: var(--bit-Accordion-background, #{$clr-bg-pri});");
         StringAssert.Contains(root, "--bit-acd-brd: var(--bit-Accordion-border-color, #{$clr-brd-pri});");
-        StringAssert.Contains(root, "background-color: var(--bit-acd-bg);");
+        StringAssert.Contains(root, "background-color: var(--bit-acd-bg-hov, var(--bit-acd-bg-exp, var(--bit-acd-bg)));");
 
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-tbg {"), "--bit-acd-bg: #{$clr-bg-ter};");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-sbr {"), "--bit-acd-brd: #{$clr-brd-sec};");
 
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-acd {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-acd-tbg {", System.StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldPaintTheWholeAccordionFromItsHoverAndExpandedStates()
+    {
+        var stylesheet = ReadStylesheet();
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd {");
+
+        // The root paints from the state it is in - under the pointer, then expanded, then at rest - and the states
+        // only move the variables it paints from, so a root the app paints through Class or Classes keeps that paint.
+        StringAssert.Contains(root, "box-shadow: var(--bit-acd-shd-hov, var(--bit-acd-shd-exp, var(--bit-Accordion-shadow, none)));");
+        StringAssert.Contains(root, "$shp-border-style var(--bit-acd-brd-hov, var(--bit-acd-brd-exp, var(--bit-acd-brd)));");
+
+        // Each state publishes its public variable alone: an unset one leaves the private one guaranteed-invalid, so the
+        // root's chain moves on to the next state and then to the value at rest, and nothing reads a public variable
+        // ahead of what the Background and Border classes publish. A disabled accordion keeps the look it has at rest,
+        // its outline and elevation included.
+        var expanded = SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-exp:not(.bit-dis) {");
+
+        StringAssert.Contains(expanded, "--bit-acd-shd-exp: var(--bit-Accordion-expanded-shadow);");
+        StringAssert.Contains(expanded, "--bit-acd-bg-exp: var(--bit-Accordion-expanded-background);");
+        StringAssert.Contains(expanded, "--bit-acd-brd-exp: var(--bit-Accordion-expanded-border-color);");
+        Assert.IsFalse(stylesheet.Contains("\n.bit-acd-exp {"), "A disabled accordion takes the expanded outline and elevation.");
+
+        // Hover is the pointer anywhere over the accordion, on a device that has one. A disabled, read-only or busy
+        // accordion answers the pointer with nothing, the way its header does not, and one with the pointer over an
+        // accordion nested in its panel leaves the hover look to that one.
+        var hover = SourceFiles.GetScssBlock(stylesheet, HoverRule);
+
+        StringAssert.Contains(hover, "@media (hover: hover) {");
+        StringAssert.Contains(SourceFiles.GetScssBlock(hover, "&:hover:not(:has(.bit-acd:hover)) {"), "--bit-acd-shd-hov: var(--bit-Accordion-hover-shadow);");
+        StringAssert.Contains(hover, "--bit-acd-bg-hov: var(--bit-Accordion-hover-background);");
+        StringAssert.Contains(hover, "--bit-acd-brd-hov: var(--bit-Accordion-hover-border-color);");
+        Assert.AreEqual(3, Regex.Matches(hover, @"&:hover:not\(:has\(\.bit-acd:hover\)\)").Count);
+
+        // Read by the root alone, so registered as not inheriting - an outer accordion's state never reaches one nested
+        // in its panel - and still reset on the root with the rest for a browser without @property.
+        StringAssert.Contains(stylesheet, "\n$acd-root-only-properties: bg-hov, brd-hov, shd-hov, bg-exp, brd-exp, shd-exp;\n");
+        StringAssert.Contains(stylesheet, "@each $name in $acd-root-only-properties {\n    @property --bit-acd-#{$name} {\n        syntax: \"*\";\n        inherits: false;");
+
+        var privateList = SourceFiles.GetPrivatePropertyLists(stylesheet).Single(l => l.Name == "acd-private-properties");
+
+        foreach (var name in new[] { "bg-hov", "brd-hov", "shd-hov", "bg-exp", "brd-exp", "shd-exp" })
+        {
+            CollectionAssert.Contains(privateList.Names.ToArray(), name, $"{name} is not reset on the root.");
+        }
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldLeaveAnExplicitBackgroundAndBorderToTheItemStates()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The state rules outrank the Background and Border classes, so they skip an accordion carrying one: the hover
+        // and expanded variables restyle the default fill and outline, never a choice.
+        const string notBackground = ":not(.bit-acd-pbg, .bit-acd-sbg, .bit-acd-tbg, .bit-acd-rbg) {";
+        const string notBorder = ":not(.bit-acd-pbr, .bit-acd-sbr, .bit-acd-tbr, .bit-acd-rbr) {";
+
+        var expanded = SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-exp:not(.bit-dis) {");
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(expanded, $"&{notBackground}"), "--bit-acd-bg-exp:");
+        StringAssert.Contains(SourceFiles.GetScssBlock(expanded, $"&{notBorder}"), "--bit-acd-brd-exp:");
+
+        var hover = SourceFiles.GetScssBlock(stylesheet, HoverRule);
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(hover, $"&:hover:not(:has(.bit-acd:hover)){notBackground}"), "--bit-acd-bg-hov:");
+        StringAssert.Contains(SourceFiles.GetScssBlock(hover, $"&:hover:not(:has(.bit-acd:hover)){notBorder}"), "--bit-acd-brd-hov:");
+
+        // ...and those are the only rules setting them, besides the reset of the root.
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"--bit-acd-bg-exp: (?!initial;)").Count);
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"--bit-acd-brd-exp: (?!initial;)").Count);
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"--bit-acd-bg-hov: (?!initial;)").Count);
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"--bit-acd-brd-hov: (?!initial;)").Count);
     }
 
     [TestMethod]
@@ -211,6 +298,14 @@ public class BitAccordionStylesheetTests
         // Only an open header's own fill - a state of its own - is still read before a shade of the Background.
         var publicFirst = Regex.Matches(stylesheet, @"var\(--bit-Accordion-([a-z-]+), var\(--bit-acd-").Select(m => m.Groups[1].Value).Distinct().ToArray();
         CollectionAssert.AreEqual(new[] { "header-expanded-background" }, publicFirst);
+
+        // A hover fill given to the whole accordion is what the default header shades fall back to, so the header under
+        // the pointer does not paint the shade of the default fill over it; a Background still brings its own.
+        foreach (var token in new[] { "pri", "sec" })
+        {
+            StringAssert.Contains(stylesheet, $"--bit-acd-hov: var(--bit-Accordion-header-hover-background, var(--bit-Accordion-hover-background, #{{$clr-bg-{token}-hover}}));");
+            StringAssert.Contains(stylesheet, $"--bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, var(--bit-Accordion-hover-background, #{{$clr-bg-{token}-active}})));");
+        }
     }
 
     [TestMethod]

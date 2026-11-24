@@ -113,6 +113,66 @@ app that lazy loads BevTools must not name a `Bit.BevTools` type in code that ru
 loader repeats the few options it forwards (`ShowBadge`, `ToggleShortcut`, `TrackHttp`, `UseFrameworkInstrumentation`,
 `MinimumLogLevel`, `MaxLogs`).
 
+**Everything else - the app's panels, extensions and every other option - goes through `ConfigureBevTools`**, once for
+both ways BevTools runs: it is applied when BevTools registers at startup and to every session `OpenAsync` attaches
+later. The callback gets the `BevToolsOptions` typed `object`, since the startup code cannot name the type; cast it
+inside. Its body is compiled when it first runs, once `Bit.BevTools` is loaded, so keep it a lambda or a method of its
+own and the code that registers it names no `Bit.BevTools` type. Integration packages it uses go in
+`AdditionalAssemblies`, which the loader loads with `Bit.BevTools` before any callback runs - mark them lazy wherever
+`Bit.BevTools` is - and BevTools registers at startup only when all of them are among the assemblies the app started
+with. `BevToolsOptions.Enabled` set there is ignored: whether BevTools runs stays the loader's decision.
+
+```csharp
+builder.Services.AddBitBevToolsLoaderServices(o =>
+{
+    o.RegisterAtStartup = builder.HostEnvironment.IsDevelopment();
+    o.AdditionalAssemblies.Add("Bit.BevTools.Belemetry"); // <BlazorWebAssemblyLazyLoad Include="Bit.BevTools.Belemetry.wasm" /> too
+    o.ConfigureBevTools(static options => AppBevTools.Configure((BevToolsOptions)options));
+});
+
+public static class AppBevTools
+{
+    public static void Configure(BevToolsOptions options)
+    {
+        options.AddPanel<AppSupportPanel>("app-support", "Support");
+        options.AddBelemetry();                       // Bit.BevTools.Belemetry; AddBlex() for Bit.BevTools.Blex
+        options.SensitiveNamePatterns.Add("handle");
+        options.CaptureHttpBodies = true;
+    }
+}
+```
+
+- **Where an app's panels and extensions may live.** The router lists the public types of the assemblies it routes
+  (`AppAssembly`, `AdditionalAssemblies`) as the app starts, before `Bit.BevTools.wasm` is downloaded, and a public type
+  whose base type or interface lives in `Bit.BevTools` fails to load there: the app does not start. So in such an
+  assembly a panel that needs nothing of BevTools stays a plain component (`BevToolsTab` is optional: a panel gets no
+  parameters and injects the app's services like any component), while a panel that reads the session
+  (`: BevToolsTab`), an `IBevToolsExtension`, an `IBevToolsCommand` or a rule is an `internal` C# class (a `.razor`
+  component is always public), or lives in an assembly of its own, listed in `AdditionalAssemblies` and marked lazy,
+  that the router does not route. A public type that only *names* `Bit.BevTools` types in its members, like
+  `AppBevTools` above, is safe. The [lazy loading sample](Samples/Lazy) has one of each, checked published, trimmed and
+  AOT-compiled.
+- **Opening a given panel.** `OpenAsync("errors")`, `OpenAsync("logs", "level:warning")` or `OpenAsync("app-support")`
+  opens BevTools on that panel, a built-in one or one the app added, with the query in its filter: an error boundary's
+  "diagnose" button, a hidden support gesture. A panel the session does not have leaves the panel as it was, and
+  `Problem` lists the ones it has. The same works for a BevTools registered at startup.
+- **When the download fails.** It fails exactly when someone troubleshoots: offline, on a flaky connection. `OpenAsync`
+  returns false, `DownloadFailed` turns true, so the app can offer a fallback of its own, and `Problem` says what
+  happened in plain words ("the browser is offline", "the server answered HTTP 503", "no answer from the server"). A
+  browser that reports being offline is not asked to download anything, and the next `OpenAsync` once it is online
+  downloads it; a download the runtime attempted and lost stays lost until the page is reloaded (the runtime keeps the
+  failure), which `Problem` says too.
+- **Prefetching.** `PrefetchAsync()` downloads and loads `Bit.BevTools` and `AdditionalAssemblies`, and the panel's
+  script and stylesheet, without attaching anything - BevTools observes nothing until it is opened - so an `OpenAsync`
+  later in the page needs no connection. Call it when the app is idle, for the people the app offers BevTools to
+  (`IsAuthorizedAsync`); it asks no `Authorize` itself, since it shows nothing. Where `CanOpen` is false it downloads
+  nothing.
+- **PWAs.** What survives a reload is up to the browser's cache and the app's service worker. A service worker that
+  downloads lazy assemblies only on first use never has `Bit.BevTools.wasm` cached when it is needed offline: list it,
+  the integration packages' assemblies in `AdditionalAssemblies`, and `_content/Bit.BevTools/bit-bevtools.js` and
+  `bit-bevtools.css` among the assets it caches up front - their fingerprinted names are in the publish output's
+  service worker assets manifest (`service-worker-assets.js`) - or have the app call `PrefetchAsync` while it is online.
+
 - **Registered at startup.** When `Bit.BevTools` is among the assemblies the app starts with and should run from the
   first render (`RegisterAtStartup`; Development by default), the loader registers it exactly as
   `AddBitBevToolsServices` does and `<BevToolsLoaderPanel />` renders the panel from the start; with `Authorize` set,
@@ -199,8 +259,10 @@ The [lazy loading sample](Samples/Lazy) does all of this in a Blazor Web App - i
 AOT builds, where the loader then finds `Bit.BevTools` among the assemblies the app started with - and the
 [end-to-end suite](Tests/Bit.BevTools.Tests.E2E) runs its published copy in a browser, trimmed and AOT-compiled: the
 app moves between its pages without downloading `Bit.BevTools.wasm`; its "Open dev tools" button downloads it once and
-opens a panel that lists the components that existed before the attach and follows the app from then on; and a deep
-link, prerendered by a server that serves many users, offers the button only once the page runs in the browser.
+opens a panel that lists the components that existed before the attach and follows the app from then on, with the
+app's own panels, extension and options from `ConfigureBevTools`; "Get support" opens it right on the app's panel;
+opening offline says so and works once back online; a prefetched BevTools opens offline; and a deep link, prerendered
+by a server that serves many users, offers the button only once the page runs in the browser.
 
 ---
 
@@ -276,7 +338,7 @@ since the profiler baseline* exports only what happened after the last baseline 
 | Which endpoints are slow at the 95th percentile, or called once per list row? | Network → *Endpoints* (ids in the path as `{id}`), Diagnostics (*http.per-item*) |
 | Which JS interop calls are slow or excessive, and from which component? | JS Interop |
 | Where did this exception come from and what preceded it? | Errors |
-| What did my loggers write during this click, from which component, with which values and trace id? | Logs (filter `level:warning`, `category:`, `event:`, `trace:`; *Categories*), Diagnostics (*log.flood*) |
+| What did my loggers write during this click, from which component, with which values and trace id? | Logs (filter `level:warning` - a minimum - or `level:debug,error` - exactly those -, `category:`, `event:`, `trace:`, text and a `/regular expression/`; *Categories*; *copy* puts an entry on the clipboard as text), Diagnostics (*log.flood*) |
 | Did my app catch an exception and only log it? | Errors (source *log*: an application entry at Error or above), Logs |
 | What is registered in DI, with which lifetimes, dependencies and mistakes? | Services |
 | Is my circuit blocked, reconnecting, dying? | Circuit (Server), Browser |
@@ -401,7 +463,11 @@ The prerendering summary travels in the page's HTML, so it is only persisted wit
 trace, protocol, companion, extension - can show more:
 
 * Names: members, dictionary keys, headers, query and fragment parameters, storage keys and claim types matching the
-  sensitive patterns (`password`, `token`, `authorization`, `cookie`, `connectionstring`, `apikey`, `secret`, …);
+  sensitive patterns (`password`, `token`, `authorization`, `cookie`, `connectionstring`, `apikey`, `secret`, `otp`,
+  `totp`, …; `BevToolsOptions.SensitiveNamePatterns`). A pattern matches anywhere in the name, case-insensitively
+  (`accesstoken`, `newpwdconfirm`), except `otp` and `ssn`, which hide inside ordinary words and match only where they
+  start or end a word of the name: `otp` catches `?otp=`, `UserOtp` and `otp_code` but not `NotPublished` or
+  `Footprint`, and `ssn` not `ClassName`.
   `[BevToolsSensitive]` on fields, properties, auto-properties and a record's positional parameters; `[BevToolsIgnore]`
   hides members or whole components.
 * Shapes, whatever they are called: JSON Web Tokens, bearer tokens, PEM private keys, connection strings and key/value
@@ -445,6 +511,38 @@ public sealed class MyLibraryBevTools : IBevToolsExtension
 
 services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()));
 ```
+
+An application adds a panel of its own - a tab that calls its own APIs, resets a cache, switches a feature flag -
+without writing an extension:
+
+```csharp
+services.AddBitBevToolsServices(o => o.AddPanel<MyApiPanel>("my-api", "My API"));
+```
+
+```razor
+@* MyApiPanel.razor *@
+@inherits BevToolsTab
+@inject MyApiClient Api
+
+<button class="bev-btn" @onclick="() => Api.ResetCacheAsync()">Reset the cache</button>
+```
+
+A panel is an ordinary component that receives no parameters: it injects the application's services and BevTools'
+ones, and inheriting `BevToolsTab` - optional - gives it the session and a re-read whenever the panel refreshes (in an
+app that lazy loads BevTools, mind [where such a panel may live](#opening-it-on-demand-and-lazy-loading)). It is BevTools' own
+UI, so its renders and clicks don't show up as the application's, in BevTools or on Belemetry's timeline (what it
+changes in the application, such as a state change, does). Give the panel a component of its own: an instance the
+application renders on its pages stays the application's, and because the framework's events name only a component
+type, the clicks of a type rendered in both places count as the application's in the panel too. `order` places the tab
+among the extension panels, `requiredPlatform` limits it to one renderer (`"Server"`), and a built-in panel's id throws
+an `ArgumentException`. Adding the same id again replaces the panel; when an extension contributes that id too, the one
+later in `Extensions` wins and About reports the clash, as it does an extension panel that takes a built-in panel's id
+(that panel alone is left out). Panels are rendered by the in-app panel
+only; the companion window and the browser extension show what the protocol carries. A panel is a component, not a
+`RenderFragment` passed to `<BevToolsPanel>`, because the panel is often rendered where no parameter can reach it (by
+`BevToolsLoaderPanel`, as a WebAssembly root component, across a render mode boundary), and a fragment from the layout
+would re-render all of BevTools with it. Where BevTools runs in production (see the loader's `Authorize`), the APIs a
+panel calls check their callers on the server, as they would for any other page.
 
 Integrations ship as packages of their own: `Bit.BevTools.Blex` shows bit Blex's stores and actions in the State panel
 and restores through Blex's time travel (`services.AddBevToolsBlex()`). `Bit.BevTools.Belemetry` adds a Support panel

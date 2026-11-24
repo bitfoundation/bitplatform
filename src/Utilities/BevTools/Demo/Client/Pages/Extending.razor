@@ -79,6 +79,18 @@
 
 <span class="c">// Program.cs of every host that runs BevTools - here both the server and the .Client project</span>
 builder.Services.AddBitBevToolsServices(o =&gt; o.Extensions.Add(<span class="k">new</span> DemoBevToolsExtension()));</pre>
+    <p class="bb-card-desc">
+        An app that only wants a tab of its own - one that calls its own APIs, resets a cache, flips a feature flag - skips
+        the extension class. The panel is a component that injects what it needs; inheriting <code>BevToolsTab</code> gives
+        it the session and a re-read on every refresh.
+    </p>
+    <pre class="bb-code">builder.Services.AddBitBevToolsServices(o =&gt; o.AddPanel&lt;MyApiPanel&gt;(<span class="s">"my-api"</span>, <span class="s">"My API"</span>));
+
+<span class="c">@@* MyApiPanel.razor *@@</span>
+@@inherits BevToolsTab
+@@inject MyApiClient Api
+
+&lt;button class=<span class="s">"bev-btn"</span> @@onclick=<span class="s">"() =&gt; Api.ResetCacheAsync()"</span>&gt;Reset the cache&lt;/button&gt;</pre>
     <ul class="bb-detail-list">
         <li><code>HideComponentsInNamespace("MyLibrary.Internal")</code> keeps a library's internal components out of the tree; the <em>internals</em> toggle in the Components tab still shows them.</li>
         <li>On members: <code>[BevToolsSensitive]</code> redacts a value, <code>[BevToolsIgnore]</code> leaves a member - or, on a class, a whole component - out of BevTools. The dashboard's <code>UserSession</code> uses both.</li>

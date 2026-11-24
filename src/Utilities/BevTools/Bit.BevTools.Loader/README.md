@@ -36,6 +36,26 @@ hooks that cost next to nothing until BevTools is attached: a pass-through compo
 panel. `OpenAsync` then loads BevTools, attaches it to the running app and opens it. Add `BevToolsHttpHookHandler` to a
 hand-built `HttpClient` pipeline to have its requests recorded too.
 
+The app's panels, extensions and every other BevTools option go through `ConfigureBevTools`, applied both when BevTools
+registers at startup and to every session attached later. The callback gets the `BevToolsOptions` typed `object` -
+startup code cannot name the type - and runs only once BevTools is loaded; integration packages it uses are listed in
+`AdditionalAssemblies` (and marked lazy wherever `Bit.BevTools` is):
+
+```csharp
+builder.Services.AddBitBevToolsLoaderServices(o =>
+{
+    o.AdditionalAssemblies.Add("Bit.BevTools.Belemetry");
+    o.ConfigureBevTools(static options => AppBevTools.Configure((BevToolsOptions)options));
+});
+```
+
+A public type of an assembly the router routes must not derive from or implement a Bit.BevTools type (the router lists
+those types before BevTools is loaded): keep such panels, extensions and commands `internal`, or in a lazily loaded
+assembly of their own. `OpenAsync("logs", "level:warning")` opens a given panel; `PrefetchAsync()` downloads BevTools
+ahead of time so a later open works offline; when the download fails, `DownloadFailed` is true and `Problem` says why.
+The [BevTools guide](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BevTools#opening-it-on-demand-and-lazy-loading)
+has the details, PWAs included.
+
 An attached BevTools sees what happens after the attach, plus what the parts named in `AutoStart` collected before it.
 `AutoStart = BevToolsAutoStart.Logs` captures what the app's loggers write from startup, on its own and inside the
 loader - nothing of Bit.BevTools is loaded and nothing else is instrumented - keeping the newest `MaxLogs` entries at

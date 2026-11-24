@@ -25,6 +25,7 @@ public partial class MainLayout
                 new() { Text = "Button", Url = "/components/button", AdditionalUrls = ["/components/compoundbutton", "/components/compound-button", "/components/iconbutton", "/components/icon-button"], Description = "CompoundButton, IconButton, LoadingButton", Data = "FAB, Floating Action Button, Submit" },
                 new() { Text = "ButtonGroup", Url = "/components/button-group", Description = "SegmentedControl, SegmentedButton, ToggleGroup" },
                 new() { Text = "MenuButton", Url = "/components/menubutton", AdditionalUrls = ["/components/menu-button"], Description = "DropdownButton, SplitButton, Menu" },
+                new() { Text = "ScrollToTop", Url = "/components/scrolltotop", AdditionalUrls = ["/components/scroll-to-top"], Description = "BackToTop, GoToTop", Data = "Scroll to top, Back to top, Go to top, Return to top, Top of page, Floating button" },
                 new() { Text = "ToggleButton", Url = "/components/togglebutton", AdditionalUrls = ["/components/toggle-button"] }
             ]
         },

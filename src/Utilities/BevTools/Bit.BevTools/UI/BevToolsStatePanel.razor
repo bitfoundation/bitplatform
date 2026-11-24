@@ -122,7 +122,7 @@
         _changes = _entries.ToDictionary(e => e, e => e.Changes.Reverse()
             .Where(c => _filter.MatchesText(e.Name, e.Description) || _filter.MatchesText(c.Action, c.Detail, string.Join(" ", c.Changes.Select(d => d.Path))))
             .ToArray());
-        if (_filter.Terms.Count > 0)
+        if (_filter.HasText)
         {
             foreach (var name in _changes.Where(p => p.Value.Length == 0).Select(p => p.Key).ToList())
             {

@@ -551,6 +551,55 @@ public class LogsTests
         Assert.IsNull(BevToolsLogLevels.Parse("9"));
     }
 
+    [TestMethod]
+    public void Several_levels_name_exactly_those_and_a_regular_expression_reads_the_entry()
+    {
+        BevToolsLogRecord Log(LogLevel level, string message) => new() { Id = 1, At = DateTimeOffset.UtcNow, Level = level, Category = "Shop.Sync", Message = message };
+
+        var filter = BevToolsQueryFilter.Parse("level:debug,error");
+        Assert.IsTrue(BevToolsLogsPanel.Matches(Log(LogLevel.Debug, "a"), filter));
+        Assert.IsTrue(BevToolsLogsPanel.Matches(Log(LogLevel.Error, "a"), filter));
+        Assert.IsFalse(BevToolsLogsPanel.Matches(Log(LogLevel.Warning, "a"), filter), "a list names levels, it is no minimum");
+        Assert.IsFalse(BevToolsLogsPanel.Matches(Log(LogLevel.Critical, "a"), filter));
+        Assert.IsFalse(BevToolsLogsPanel.Matches(Log(LogLevel.Debug, "a"), BevToolsQueryFilter.Parse("level:debug,nonsense")), "a typo in the list is not ignored");
+
+        var regex = BevToolsQueryFilter.Parse(@"level:warn /retr(y|ied) \d+ times/");
+        Assert.IsTrue(BevToolsLogsPanel.Matches(Log(LogLevel.Error, "Retried 3 times"), regex));
+        Assert.IsFalse(BevToolsLogsPanel.Matches(Log(LogLevel.Error, "Retried thrice"), regex));
+        Assert.IsFalse(BevToolsLogsPanel.Matches(Log(LogLevel.Information, "Retried 3 times"), regex));
+    }
+
+    [TestMethod]
+    public void An_entry_copies_as_the_text_its_detail_shows()
+    {
+        var log = new BevToolsLogRecord
+        {
+            Id = 1,
+            At = DateTimeOffset.UtcNow,
+            Level = LogLevel.Error,
+            Category = "Shop.Payments",
+            EventId = 7,
+            EventName = "ChargeFailed",
+            Message = "Charge failed for order 10423",
+            Properties = [new("OrderId", "10423"), new("Token", BevToolsRedactor.RedactedValue)],
+            Scopes = ["Checkout"],
+            ExceptionType = "System.InvalidOperationException",
+            ExceptionMessage = "Card declined",
+            TraceId = "4bf92f3577b34da6a3ce929d0e0e4736",
+            SpanId = "00f067aa0ba902b7",
+        };
+
+        var text = BevToolsLogsPanel.ToText(log);
+
+        StringAssert.Contains(text, "Error Shop.Payments [7 ChargeFailed]");
+        StringAssert.Contains(text, "Charge failed for order 10423");
+        StringAssert.Contains(text, "OrderId = 10423");
+        StringAssert.Contains(text, "Token = " + BevToolsRedactor.RedactedValue);
+        StringAssert.Contains(text, "scope: Checkout");
+        StringAssert.Contains(text, "trace: 4bf92f3577b34da6a3ce929d0e0e4736 00f067aa0ba902b7");
+        StringAssert.Contains(text, "System.InvalidOperationException: Card declined");
+    }
+
     private sealed record SensitiveScope(string User, [property: BevToolsSensitive] string Handle);
 
     private sealed record PlainScope(int Id);

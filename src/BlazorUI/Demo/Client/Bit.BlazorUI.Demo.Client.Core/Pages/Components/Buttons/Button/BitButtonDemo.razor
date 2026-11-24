@@ -575,7 +575,23 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Gradient" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            <b>Gradient</b> fills a Fill button with any CSS background-image - a linear, radial or conic gradient, or
+            several of them layered - instead of a flat color. It reaches the edge of the box and keeps the label in the
+            on-color of the Fill variant, and since the hover and pressed backgrounds would be hidden under it, the
+            pointer states wash it with that label's color instead. A disabled button drops it for its disabled fill, and
+            the Outline and Text variants, which have no fill, ignore it.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitButton Rounded Gradient="linear-gradient(96deg, #524add 10%, #0d71bf 90%)">Get started</BitButton>
+            <BitButton Rounded Gradient="linear-gradient(135deg, #c2185b, #6a1b9a)" IconName="@BitIconName.Heart">Favorite</BitButton>
+            <BitButton Rounded Disabled Gradient="linear-gradient(96deg, #524add 10%, #0d71bf 90%)">Disabled</BitButton>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>Color</b> picks the semantic role the button paints itself from - the fill of a Fill button, the border
             and text of an Outline one, the text of a Text one, and the focus ring of all three. Beyond the eight
@@ -694,7 +710,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>
             Beyond the built-in Fluent icons, the <b>Icon</b> parameter renders icons from external libraries such as
             FontAwesome and Bootstrap Icons. Pass their CSS classes directly, or use the <b>BitIconInfo</b> helpers
@@ -738,7 +754,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Size</b> sets the preset that drives the button's type, padding, icon and minimum height together, so a
             row of Small buttons lines up with the other Small controls beside it. Each size keeps an icon-only button
@@ -794,8 +810,8 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode"
-                 CodeFiles="@example17CodeFiles" Id="example17">
+    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode"
+                 CodeFiles="@example18CodeFiles" Id="example18">
         <div>
             Beyond the root <b>Style</b> and <b>Class</b>, the <b>Styles</b> and <b>Classes</b> parameters reach the
             button's individual parts - root, icon, the two lines of text, the loading container, the spinner and its
@@ -866,9 +882,25 @@
                 Raised & tracked
             </BitButton>
         </div>
+        <br /><br />
+        <div>
+            <b>--bit-Button-hover-shadow</b> is the shadow under the pointer and <b>--bit-Button-hover-lift</b> how far
+            the button rises there, as a length. Neither changes anything until it is set, on any variant. A press
+            settles the shadow back to the resting one and keeps the lift, so the button never slides out from under
+            the pointer pressing it. Like every public variable they inherit, so the row below lifts both of its buttons
+            from its container, while the first one sets its own glow.
+        </div>
+        <br />
+        <div class="example-content" style="--bit-Button-hover-lift: 2px;">
+            <BitButton Rounded Gradient="linear-gradient(96deg, #524add 10%, #0d71bf 90%)"
+                       Style="--bit-Button-shadow: 0 8px 24px -8px rgb(82 74 221 / 0.6); --bit-Button-hover-shadow: 0 12px 28px -8px rgb(82 74 221 / 0.8);">
+                Explore products
+            </BitButton>
+            <BitButton Rounded Variant="BitVariant.Outline">Get started with templates</BitButton>
+        </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
             Set the <b>Dir</b> parameter to <b>Rtl</b> to lay the button out for right-to-left languages; the icon, the
             two lines of text, and the loading indicator all mirror accordingly.
