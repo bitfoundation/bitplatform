@@ -458,6 +458,50 @@ private static readonly BitNavBarParams[] navBarParams =
 ];";
 
     private readonly string example17RazorCode = @"
+<BitNavBar TItem=""BitNavBarOption""
+           InlineText
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedKey=""home""
+           DrawerBreakpoint=""BitScreenQuery.LtMd""
+           @bind-DrawerOpen=""isDrawerOpen"">
+    <HeaderTemplate>
+        <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""32"" Alt=""bit"" />
+    </HeaderTemplate>
+    <Options>
+        <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
+        <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
+        <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
+        <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
+    </Options>
+</BitNavBar>
+
+Drawer open: @isDrawerOpen
+
+
+<BitNavBar TItem=""BitNavBarOption""
+           InlineText
+           Mode=""BitNavMode.Manual""
+           DefaultSelectedKey=""home""
+           DrawerBreakpoint=""BitScreenQuery.LtXxl""
+           ToggleAriaLabel=""Site navigation""
+           ToggleIconName=""@BitIconName.CollapseMenu"">
+    <HeaderTemplate>
+        <BitImage Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg"" Width=""32"" Alt=""bit"" />
+    </HeaderTemplate>
+    <Options>
+        <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
+        <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
+        <BitNavBarOption Text=""Academy"" IconName=""@BitIconName.LearningTools"" />
+        <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
+    </Options>
+    <FooterTemplate>
+        <BitButton Size=""BitSize.Small"">Sign in</BitButton>
+    </FooterTemplate>
+</BitNavBar>";
+    private readonly string example17CsharpCode = @"
+private bool isDrawerOpen;";
+
+    private readonly string example18RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"" Color=""BitColor.Primary"" Mode=""BitNavMode.Manual"" DefaultSelectedKey=""home"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
@@ -564,7 +608,7 @@ private static readonly BitNavBarParams[] navBarParams =
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitNavBar TItem=""BitNavBarOption"">
@@ -574,7 +618,7 @@ private static readonly BitNavBarParams[] navBarParams =
     <BitNavBarOption Text=""Profile"" Icon=""@BitIconInfo.Fa(""solid user"")"" />
 </BitNavBar>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"" Size=""BitSize.Small"" Mode=""BitNavMode.Manual"" DefaultSelectedKey=""home"">
     <BitNavBarOption Text=""Home"" IconName=""@BitIconName.Home"" Key=""home"" />
     <BitNavBarOption Text=""Products"" IconName=""@BitIconName.ProductVariant"" />
@@ -594,7 +638,7 @@ private static readonly BitNavBarParams[] navBarParams =
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example20RazorCode = @"
+    private readonly string example21RazorCode = @"
 <style>
     .custom-class {
         margin: 1rem;
@@ -686,7 +730,7 @@ private static readonly BitNavBarParams[] navBarParams =
     <BitNavBarOption Text=""Profile"" IconName=""@BitIconName.Contact"" />
 </BitNavBar>";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <BitNavBar TItem=""BitNavBarOption"" Dir=""BitDir.Rtl"">
     <BitNavBarOption Text=""خانه"" IconName=""@BitIconName.Home"" />
     <BitNavBarOption Text=""محصولات"" IconName=""@BitIconName.ProductVariant"" />

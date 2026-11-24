@@ -1,0 +1,16 @@
+﻿@* Covers BitContainerParams: the cascaded values fill in the parameters the container did not set itself,
+   and never overwrite the ones it did. *@
+
+<BitParams Parameters="@(new BitContainerParams[]
+                         {
+                             new()
+                             {
+                                 Element = "section",
+                                 MaxWidth = "40rem",
+                                 NoGutter = true,
+                                 Class = "cascaded",
+                             }
+                         })">
+    <BitContainer>Cascaded</BitContainer>
+    <BitContainer Element="main" MaxWidth="30rem" NoGutter="false">Own</BitContainer>
+</BitParams>

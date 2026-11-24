@@ -41,7 +41,7 @@ public class BitCardClassStyles
     public string? Header { get; set; }
 
     /// <summary>
-    /// The custom CSS class/style for the leading icon of the header of the card.
+    /// The custom CSS class/style for the leading icon of the header of the card (the glyph, or the image rendered for IconUrl).
     /// </summary>
     public string? Icon { get; set; }
 

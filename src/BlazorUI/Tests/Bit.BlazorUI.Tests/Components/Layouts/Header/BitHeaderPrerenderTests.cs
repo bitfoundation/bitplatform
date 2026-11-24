@@ -39,6 +39,7 @@ public class BitHeaderPrerenderTests
         // Nothing has scrolled yet, so there is nothing to slide away from or to lift above.
         Assert.IsFalse(html.Contains("bit-hdr-hdn"));
         Assert.IsFalse(html.Contains("bit-hdr-elv"));
+        Assert.IsFalse(html.Contains("bit-hdr-scr"));
         Assert.IsFalse(html.Contains(" inert"));
     }
 

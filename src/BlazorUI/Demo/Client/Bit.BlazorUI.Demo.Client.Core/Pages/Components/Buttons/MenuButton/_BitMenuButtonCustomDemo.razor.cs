@@ -47,6 +47,8 @@ public partial class _BitMenuButtonCustomDemo
         IsChecked = { Name = nameof(Operation.Checked) },
         ChildItems = { Name = nameof(Operation.Children) },
         RadioGroup = { Name = nameof(Operation.SortGroup) },
+        Description = { Name = nameof(Operation.Summary) },
+        Match = { Name = nameof(Operation.UrlMatch) },
         // Without this the selector falls back to a property named OnClick, which Operation does not
         // have, so an item's own click handler would never be found - and the Events and Checkable
         // sections below both rely on one.
@@ -219,6 +221,33 @@ public partial class _BitMenuButtonCustomDemo
 
     private static List<Operation> dropDirectionCustoms =
         Enumerable.Range(1, 8).Select(i => new Operation { Name = $"Custom {i}", Id = i.ToString() }).ToList();
+
+    private static List<Operation> navigationCustoms =
+    [
+        new()
+        {
+            Name = "MenuButton", Id = "menubutton", Image = BitIconName.ContextMenu,
+            Summary = "A button that opens a menu of actions or links",
+            Url = "/components/menubutton", UrlMatch = BitNavMatch.Exact
+        },
+        new()
+        {
+            Name = "DropMenu", Id = "dropmenu", Image = BitIconName.Dropdown,
+            Summary = "A button that opens any content",
+            Url = "/components/dropmenu", UrlMatch = BitNavMatch.Exact
+        },
+        new()
+        {
+            Name = "Navs", Id = "navs", Image = BitIconName.Nav2DMapView,
+            Summary = "The ways around an app",
+            Children =
+            [
+                new() { Name = "Nav", Id = "nav", Summary = "A tree of links", Url = "/components/nav", UrlMatch = BitNavMatch.Exact },
+                new() { Name = "NavBar", Id = "navbar", Summary = "A bar of links", Url = "/components/navbar", UrlMatch = BitNavMatch.Exact },
+                new() { Name = "Breadcrumb", Id = "breadcrumb", Summary = "The path to the current page", Url = "/components/breadcrumb", UrlMatch = BitNavMatch.Exact }
+            ]
+        }
+    ];
 
     private static List<Operation> contextCustoms =
     [

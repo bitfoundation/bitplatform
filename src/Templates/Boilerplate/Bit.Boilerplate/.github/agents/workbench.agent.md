@@ -281,10 +281,12 @@ as its host here. The rest of this section is for a page of the Workbench's own.
   than a bare address; the report also takes headings and tables. Titles, step texts and the summary are plain text.
 - Write the task in the user's language.
 - Ask on the page rather than in the chat whenever the answer is a choice or a few words: `asks`, each with `id`,
-  `question`, `kind` (`text`, `choice`, `choices`, `confirm` or `secret`), `options` for a choice and an optional `detail` and
-  `placeholder`. The page plays a sound and counts it in the tab's title, so the user notices it from another window. The
-  user may answer in the chat instead: take the answer from wherever it comes first, and `withdraw` the question on the
-  page then, as you do with one that no longer matters.
+  `question`, `kind` (`text`, `choice`, `choices`, `confirm` or `secret`), `options` for a choice and an optional `detail`,
+  `placeholder` and `suggestion`: the answer you expect, in the words you would want back, which the field shows faded
+  and the user takes with Tab, as it is or changed (never on a secret question). A choice may come back with no option
+  picked and only the user's words, when none of its options fits. The page plays a sound and counts it in the tab's
+  title, so the user notices it from another window. The user may answer in the chat instead: take the answer from
+  wherever it comes first, and `withdraw` the question on the page then, as you do with one that no longer matters.
 - Then wait for the user with `GET /api/progress/<id>/wait?cursor=<cursor>&agent=<your name>`, in the background where
   your client can, starting from `cursor=0` and passing the one each answer returns, so nothing the user sent before your
   first wait is missed (a chat that finds its task again starts from 0 too and skips what it already handled): it answers as soon as they

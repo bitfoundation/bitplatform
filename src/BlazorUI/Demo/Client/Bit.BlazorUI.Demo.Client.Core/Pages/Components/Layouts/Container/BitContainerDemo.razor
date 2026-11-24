@@ -1,0 +1,149 @@
+﻿@page "/components/container"
+
+<PageOutlet Url="components/container"
+            Title="Container"
+            Description="The BitContainer component centers the content of a page in a column with a maximum width and side gutters that grow with the width of the window." />
+<div>
+    <DemoPage Name="Container"
+              Description="The BitContainer component centers the content of a page in a column with a maximum width and side gutters: the block every site otherwise copies into its pages (a max-width, margin-inline: auto and a padding per breakpoint). It takes the whole width it is given up to MaxWidth (80rem by default, gutters included), centers itself in what is left, and pads its content with a gutter that grows from a phone to a desktop unless NoGutter removes it."
+              Parameters="componentParameters"
+              CssVariables="componentCssVariables"
+              GitHubUrl="Layouts/Container/BitContainer.cs"
+              GitHubDemoUrl="Layouts/Container/BitContainerDemo.razor">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div class="example-desc">
+                The container fills the gray band up to its maximum width and keeps its content off the edges with the
+                gutters, the tinted strips on its two sides. The gutter is <code>spacing(2)</code> on a phone,
+                <code>spacing(3)</code> from the <b>sm</b> breakpoint (600px) and <code>spacing(4)</code> from <b>md</b>
+                (960px): resize the window to watch it step.
+            </div>
+            <div class="example-content">
+                <div class="band">
+                    <BitContainer>
+                        <div class="content">The content of the page</div>
+                    </BitContainer>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="MaxWidth" RazorCode="@example2RazorCode" Id="example2">
+            <div class="example-desc">
+                <b>MaxWidth</b> takes any CSS length and caps the container at it, centering it in the room that is left.
+                The width includes the gutters, so two containers of the same width, each in a full-width parent, line their
+                content up. <code>none</code>
+                lets the container span the whole width it is given and keep only its gutters.
+            </div>
+            <div class="example-content">
+                <div class="band">
+                    <BitContainer MaxWidth="480px">
+                        <div class="content">480px</div>
+                    </BitContainer>
+                </div>
+                <br />
+                <div class="band">
+                    <BitContainer MaxWidth="40rem">
+                        <div class="content">40rem</div>
+                    </BitContainer>
+                </div>
+                <br />
+                <div class="band">
+                    <BitContainer MaxWidth="none">
+                        <div class="content">none</div>
+                    </BitContainer>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="NoGutter" RazorCode="@example3RazorCode" Id="example3">
+            <div class="example-desc">
+                <b>NoGutter</b> removes the inline paddings, so the content spans the full width of the container while it is
+                still capped and centered - for a content that brings its own inset, such as a card or an image.
+            </div>
+            <div class="example-content">
+                <div class="band">
+                    <BitContainer MaxWidth="480px" NoGutter>
+                        <div class="content">No gutter</div>
+                    </BitContainer>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Full-width bands" RazorCode="@example4RazorCode" Id="example4">
+            <div class="example-desc">
+                A band of the page that runs edge to edge - a colored hero, a footer - is an element of its own with a
+                container inside it, so the band keeps the full width while its content lines up with the rest of the page.
+            </div>
+            <div class="example-content">
+                <div class="hero">
+                    <BitContainer MaxWidth="560px">
+                        <div class="hero-title">A full-width hero</div>
+                        <div>Its text lines up with the section below.</div>
+                    </BitContainer>
+                </div>
+                <BitContainer MaxWidth="560px">
+                    <div class="section">The section under the hero, in a container of the same width.</div>
+                </BitContainer>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Element" RazorCode="@example5RazorCode" Id="example5">
+            <div class="example-desc">
+                <b>Element</b> swaps the rendered <code>div</code> for another tag: a <code>main</code> for the main content
+                of the page, a <code>section</code> or an <code>article</code> for a region of it. Only the semantics change,
+                so a landmark is worth naming: <b>AriaLabel</b> puts an <code>aria-label</code> on the root, which assistive
+                technologies read out as the name of the region.
+            </div>
+            <div class="example-content">
+                <div class="band">
+                    <BitContainer Element="section" AriaLabel="Latest news" MaxWidth="480px">
+                        <div class="content">A section landmark</div>
+                    </BitContainer>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div class="example-desc">
+                <b>BitParams</b> hands a <b>BitContainerParams</b> to every container under it, so a page sets its column once.
+                The values are defaults, not overrides: a container that sets a parameter itself keeps its own.
+            </div>
+            <div class="example-content">
+                <BitParams Parameters="@containerParams">
+                    <div class="band">
+                        <BitContainer>
+                            <div class="content">Cascaded 480px</div>
+                        </BitContainer>
+                    </div>
+                    <br />
+                    <div class="band">
+                        <BitContainer MaxWidth="320px">
+                            <div class="content">Its own 320px</div>
+                        </BitContainer>
+                    </div>
+                </BitParams>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+            <div class="example-desc">
+                <b>Style</b> and <b>Class</b> land on the root. The public variables restyle the default of every container
+                they reach: <code>--bit-Container-max-width</code>, <code>--bit-Container-padding-inline</code> (a gutter set
+                there holds at every width) and <code>--bit-Container-padding-block</code>. A <b>MaxWidth</b> or a
+                <b>NoGutter</b> written on a container still wins over them.
+            </div>
+            <div class="example-content">
+                <div class="band">
+                    <BitContainer Style="--bit-Container-max-width:400px;--bit-Container-padding-inline:3rem;--bit-Container-padding-block:1rem">
+                        <div class="content">Variables on Style</div>
+                    </BitContainer>
+                </div>
+                <br />
+                <div class="band">
+                    <BitContainer MaxWidth="400px" Class="custom-class">
+                        <div class="content">Class</div>
+                    </BitContainer>
+                </div>
+            </div>
+        </DemoExample>
+    </DemoPage>
+</div>

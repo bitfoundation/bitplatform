@@ -25,7 +25,7 @@
             <BitStack Horizontal Gap="0.75rem" VerticalAlign="BitAlignment.Center" Wrap Style="margin-top:0.25rem">
                 <BitButton AutoLoading OnClick="WrapHandled(AcceptAll)">@Localizer[nameof(AppStrings.Accept)]</BitButton>
                 <BitButton AutoLoading Variant="BitVariant.Outline" OnClick="WrapHandled(RejectAll)">@Localizer[nameof(AppStrings.Reject)]</BitButton>
-                <BitLink Underlined Href="@($"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}")">
+                <BitLink Underlined Href="@CultureInfoManager.GetCurrentCultureUrl($"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}")">
                     @Localizer[nameof(AppStrings.PrivacySettings)]
                 </BitLink>
             </BitStack>

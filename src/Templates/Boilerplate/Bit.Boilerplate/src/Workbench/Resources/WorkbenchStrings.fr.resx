@@ -5085,6 +5085,9 @@
     <data name="ProgressSendAnswer" xml:space="preserve">
         <value>Envoyer la réponse</value>
     </data>
+    <data name="ProgressUseSuggestion" xml:space="preserve">
+        <value>Utiliser la suggestion</value>
+    </data>
     <data name="ProgressAnswerFailed" xml:space="preserve">
         <value>Cette question a reçu une réponse ou a été retirée entre-temps.</value>
     </data>
@@ -5252,6 +5255,9 @@
     </data>
     <data name="SampleDeployAskEmailOption3" xml:space="preserve">
         <value>Aucun pour l’instant : afficher les e-mails dans les journaux</value>
+    </data>
+    <data name="SampleDeployAskEmailSuggestion" xml:space="preserve">
+        <value>Un service d’e-mail gratuit en attendant que le domaine soit prêt</value>
     </data>
     <data name="SampleDeployAskSsh" xml:space="preserve">
         <value>Fermer le port SSH du serveur une fois le tunnel en place ?</value>
