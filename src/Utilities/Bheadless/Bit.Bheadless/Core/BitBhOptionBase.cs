@@ -98,8 +98,10 @@ public abstract class BitBhOptionBase<TValue> : BitBhComponentBase, IBitBhCollec
         // Keep focus on the button / input while clicking an option.
         builder.AddAttribute(31, "onmousedown", On<MouseEventArgs>("onmousedown", static () => { }));
         builder.AddEventPreventDefaultAttribute(32, "onmousedown", true);
-        builder.AddAttribute(33, "onpointerenter",
-            On<PointerEventArgs>("onpointerenter", HandlePointerEnter));
+        // The runtime's hover, not the pointer events: it comes once as the pointer reaches the option, not with every
+        // move, and not when the keyboard scrolls the option under a resting pointer (see BitBhEventHandlers). With no
+        // receiver it renders nothing itself: SetActiveId refreshes the options whose highlight changes.
+        builder.AddAttribute(33, BitBhEventHandlers.Hover, new EventCallback(null, (Action)HandleHover));
         builder.AddElementReferenceCapture(40, CaptureElement);
         RenderContent(builder, 50);
         builder.CloseElement();
@@ -121,6 +123,8 @@ public abstract class BitBhOptionBase<TValue> : BitBhComponentBase, IBitBhCollec
         }
         if (Label is not null)
             attrs["data-bit-bh-text"] = Label;
+        if (ListState is not null)
+            attrs[BitBhEventHandlers.HoverAttribute] = "";
         SetDataFlag(attrs, "active", IsActive);
         SetDataFlag(attrs, "highlighted", IsActive);
         SetDataFlag(attrs, "selected", IsSelected);
@@ -131,9 +135,9 @@ public abstract class BitBhOptionBase<TValue> : BitBhComponentBase, IBitBhCollec
     private Task HandleClick(MouseEventArgs _)
         => IsItemDisabled ? Task.CompletedTask : SelectAsync();
 
-    private void HandlePointerEnter(PointerEventArgs args)
+    private void HandleHover()
     {
-        if (IsItemDisabled || ListState is null || args.PointerType == "touch") return;
+        if (ListState is null || IsItemDisabled || IsActive) return;
         ListState.SetActiveId(ItemId, scroll: false);
     }
 

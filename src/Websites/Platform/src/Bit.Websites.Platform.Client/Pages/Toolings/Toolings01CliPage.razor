@@ -89,6 +89,8 @@ bit new Contoso.Shop --dry-run</CodeBox>
                 <li><code>bit trust</code> trusts a cloned repository for VS Code and the AI coding tools.</li>
                 <li><code>bit telemetry</code>, <code>bit update</code> and <code>bit about</code> show and change what bit sends, update it, and show which build you run.</li>
             </ul>
+            A project that renamed, moved or split one of bit Boilerplate's parts names it with an option, such as <code>--server-web</code> or <code>--well-known</code>,
+            and a command that finds no part where it looks says so instead of leaving the step out.
         </div>
     </section>
 
@@ -110,7 +112,7 @@ bit setup --platforms android --no-browsers --yes</CodeBox>
                 <li><b>The tools you tick</b>, with <code>winget</code> on Windows, Homebrew on macOS and the distribution's package manager on Linux. Each command is shown before it runs.</li>
                 <li><b>Administrator rights</b>: on Windows the steps that need them run in one elevated PowerShell, so Windows asks once. On macOS and Linux, <code>sudo</code> asks for your password once.</li>
                 <li><b>Trust entries</b>, only for the folder <code>bit new</code> created or the one you pass to <code>bit trust</code>.</li>
-                <li><b>bit itself</b>: when a newer version is out, it carries on with that one and updates the installed tool once the run ends. <code>--no-update</code> keeps the one you have.</li>
+                <li><b>bit itself</b>: when a newer version is out, it carries on with that one and updates the installed tool once the run ends. <code>--no-update</code> keeps the one you have. In a project's folder, it carries on with the newest version that works with that project.</li>
                 <li><b>Its own folder</b>, <code>~/.bitplatform</code>, with its settings, the template cache and the logs of every run.</li>
             </ul>
         </div>

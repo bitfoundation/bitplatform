@@ -116,6 +116,147 @@ public sealed class LazyLoadingTests : BevToolsTest
         _sample.AssertLoadedOnce(requests);
     }
 
+    [TestMethod]
+    public async Task The_apps_panels_extension_and_options_reach_the_session_opened_on_demand()
+    {
+        var page = await NewPageAsync();
+        var requests = _sample!.Track(page);
+
+        // The client's assembly holds the app's BevTools configuration, its panels and its extension - none of which may
+        // need Bit.BevTools before someone opens it: the router lists that assembly's types as the app starts.
+        await GotoAsync(page, "/");
+        await WaitForInteractiveAsync(page);
+        await GoToCounterAndClickAsync(page, expectedCount: 1);
+        _sample.AssertNotLoaded(requests);
+
+        var panel = await OpenBevToolsAsync(page);
+        _sample.AssertLoadedOnce(requests);
+
+        // The app's own panel (BevToolsOptions.AddPanel) and its extension's, which reads the session (BevToolsTab).
+        await Expect(Tab(panel, "Support")).ToBeVisibleAsync();
+        await Tab(panel, "Session").ClickAsync();
+        var session = panel.Locator(".sample-session");
+        await Expect(session).ToContainTextAsync("WebAssembly");
+        await Expect(session).ToContainTextAsync("Support, Session");
+
+        // The extension's command, in the palette.
+        await panel.GetByRole(AriaRole.Button, new() { Name = "Search or run a command", Exact = true }).ClickAsync();
+        await page.GetByRole(AriaRole.Dialog, new() { Name = "Search and commands" }).GetByRole(AriaRole.Combobox).FillAsync(">support panel");
+        await Expect(page.GetByRole(AriaRole.Option).Filter(new() { HasText = "Open the app's support panel" })).ToBeVisibleAsync();
+    }
+
+    [TestMethod]
+    public async Task Get_support_opens_BevTools_on_the_apps_own_panel()
+    {
+        var page = await NewPageAsync();
+        var requests = _sample!.Track(page);
+
+        await GotoAsync(page, "/counter");
+        await WaitForInteractiveAsync(page);
+        _sample.AssertNotLoaded(requests);
+
+        // BevToolsLoader.OpenAsync("sample-support"): downloaded, attached and opened right on the app's panel.
+        await page.GetByRole(AriaRole.Button, new() { Name = "Get support", Exact = true }).ClickAsync();
+        var panel = Panel(page);
+        await Expect(panel).ToBeVisibleAsync();
+        await Expect(Tab(panel, "Support")).ToHaveAttributeAsync("aria-selected", "true");
+        await Expect(panel.Locator(".sample-support")).ToContainTextAsync("counter");
+        _sample.AssertLoadedOnce(requests);
+    }
+
+    [TestMethod]
+    public async Task Offline_the_open_says_so_and_once_back_online_it_downloads_BevTools()
+    {
+        if (_sample!.LazyLoads is false) Assert.Inconclusive("An AOT build starts with Bit.BevTools: nothing is downloaded on demand.");
+
+        var page = await NewPageAsync();
+        var requests = _sample.Track(page);
+        await GotoAsync(page, "/");
+        await WaitForInteractiveAsync(page);
+
+        // The moment someone troubleshoots, the connection is gone: the loader says so, attempts nothing, and the app
+        // shows its own fallback.
+        await page.Context.SetOfflineAsync(true);
+        await OpenDevTools(page).ClickAsync();
+        var problem = page.Locator(".problem");
+        await Expect(problem).ToHaveTextAsync("Bit.BevTools could not be downloaded: the browser is offline.");
+        await Expect(page.Locator(".fallback")).ToBeVisibleAsync();
+        await Expect(Panel(page)).ToHaveCountAsync(0);
+        _sample.AssertNotLoaded(requests);
+
+        // Back online, the same button downloads it.
+        await page.Context.SetOfflineAsync(false);
+        await OpenDevTools(page).ClickAsync();
+        var panel = Panel(page);
+        await Expect(panel).ToBeVisibleAsync();
+        await Expect(TreeItem(panel, "Home")).ToBeVisibleAsync();
+        await Expect(problem).ToHaveCountAsync(0);
+        await Expect(page.Locator(".fallback")).ToHaveCountAsync(0);
+        _sample.AssertLoadedOnce(requests);
+    }
+
+    [TestMethod]
+    public async Task A_download_that_gets_no_answer_says_so_and_a_reload_tries_again()
+    {
+        if (_sample!.LazyLoads is false) Assert.Inconclusive("An AOT build starts with Bit.BevTools: nothing is downloaded on demand that could fail.");
+
+        var page = await NewPageAsync();
+        await GotoAsync(page, "/");
+        await WaitForInteractiveAsync(page);
+
+        // Online as far as the browser knows, but the request gets no answer. What the page reports about that one
+        // request is the point of the test: the failed request, and the runtime's own unhandled rejection of the download
+        // it keeps (dotnet.js), which no caller of LazyAssemblyLoader can observe.
+        const string lazyAssembly = "**/_framework/Bit.BevTools.*.wasm";
+        var failedDownload = ExpectProblems(problem => problem.Contains("/_framework/Bit.BevTools.", StringComparison.Ordinal)
+            || (problem.StartsWith("unhandled error: TypeError: Failed to fetch", StringComparison.Ordinal) && problem.Contains("/_framework/dotnet.js", StringComparison.Ordinal)));
+        await page.RouteAsync(lazyAssembly, route => route.AbortAsync("connectionreset"));
+
+        await OpenDevTools(page).ClickAsync();
+        var problem = page.Locator(".problem");
+        await Expect(problem).ToContainTextAsync("Bit.BevTools could not be downloaded: no answer from the server");
+        await Expect(problem).ToContainTextAsync("reload it to try again");
+        await Expect(page.Locator(".fallback")).ToBeVisibleAsync();
+        await Expect(Panel(page)).ToHaveCountAsync(0);
+
+        // The runtime keeps that failure for the page's life; a reload starts over, and whatever goes wrong from here on
+        // fails the test.
+        await page.UnrouteAsync(lazyAssembly);
+        failedDownload.Dispose();
+        await page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
+        await WaitForInteractiveAsync(page);
+        var panel = await OpenBevToolsAsync(page);
+        await Expect(TreeItem(panel, "Home")).ToBeVisibleAsync();
+    }
+
+    [TestMethod]
+    public async Task Prefetching_downloads_BevTools_once_and_it_then_opens_offline()
+    {
+        var page = await NewPageAsync();
+        var requests = _sample!.Track(page);
+
+        await GotoAsync(page, "/");
+        await WaitForInteractiveAsync(page);
+        _sample.AssertNotLoaded(requests);
+
+        await page.GetByRole(AriaRole.Button, new() { Name = "Prefetch dev tools", Exact = true }).ClickAsync();
+        await Expect(page.Locator(".prefetched")).ToHaveTextAsync("Dev tools are ready to open offline.");
+        _sample.AssertLoadedOnce(requests);
+        await Expect(Panel(page)).ToHaveCountAsync(0);
+
+        // Nothing is downloaded at the open: it works without a connection.
+        await page.Context.SetOfflineAsync(true);
+        var panel = await OpenBevToolsAsync(page);
+        await Expect(TreeItem(panel, "Home")).ToBeVisibleAsync();
+        // Styled by the prefetched stylesheet the page holds, with no link of the panel's own to fetch it again.
+        await Expect(panel).ToHaveCSSAsync("position", "fixed");
+        await page.Context.SetOfflineAsync(false);
+        _sample.AssertLoadedOnce(requests);
+    }
+
+    /// <summary>A tab of BevTools' panel, built in or added by the app.</summary>
+    private static ILocator Tab(ILocator panel, string name) => panel.GetByRole(AriaRole.Tab, new() { Name = name, Exact = true });
+
     /// <summary>The app's own button, which the layout renders where <c>BevToolsLoader.CanOpen</c> is true.</summary>
     private static ILocator OpenDevTools(IPage page) => page.GetByRole(AriaRole.Button, new() { Name = "Open dev tools", Exact = true });
 

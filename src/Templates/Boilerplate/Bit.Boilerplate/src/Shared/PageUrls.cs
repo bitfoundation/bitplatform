@@ -5,11 +5,12 @@ namespace Boilerplate.Shared;
 
 // The [Description] attribute defines a short, human/AI friendly summary for a page.
 // Only pages that carry a [Description] are exposed by PageUrls.GetPages() (see PageUrls.Pages.cs).
-// Those are published PUBLICLY and WITHOUT authentication at GET /llms.txt
-// (Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs) and, when signalR is enabled, passed to the
-// chatbot's GetAppPages tool.
+// GET /llms.txt publishes the descriptions of the pages sitemap.xml lists, PUBLICLY and WITHOUT authentication
+// (Server.Web/Infrastructure/Extensions/WebApplicationExtensions.cs), and, when signalR is enabled, all of them are
+// passed to the chatbot's GetAppPages tool.
 // Do not describe a page here unless the description is safe for an anonymous reader.
-// [NoIndex] keeps a page out of search engines (See NoIndexAttribute and PageUrls.IsNoIndex).
+// [NoIndex] keeps a page out of search engines (See NoIndexAttribute and PageUrls.IsNoIndex), and [NotInSitemap] keeps
+// an indexable page out of sitemap.xml and llms.txt (See NotInSitemapAttribute).
 public static partial class PageUrls
 {
     [Description("Home page.")]

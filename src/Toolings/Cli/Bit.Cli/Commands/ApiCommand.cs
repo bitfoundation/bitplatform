@@ -30,7 +30,9 @@ public static class ApiCommand
             releaseOption
         };
 
-        command.SetAction((parseResult, cancellationToken) => RunAsync(services(), parseResult.GetValue(noBuildOption) is false, parseResult.GetValue(releaseOption), record: false, cancellationToken));
+        var project = new ApiProjectOptions(command);
+
+        command.SetAction((parseResult, cancellationToken) => RunAsync(services(), project, parseResult, parseResult.GetValue(noBuildOption) is false, parseResult.GetValue(releaseOption), record: false, cancellationToken));
 
         return command;
     }
@@ -44,24 +46,48 @@ public static class ApiCommand
             noBuildOption
         };
 
-        command.SetAction((parseResult, cancellationToken) => RunAsync(services(), parseResult.GetValue(noBuildOption) is false, requireRecorded: false, record: true, cancellationToken));
+        var project = new ApiProjectOptions(command);
+
+        command.SetAction((parseResult, cancellationToken) => RunAsync(services(), project, parseResult, parseResult.GetValue(noBuildOption) is false, requireRecorded: false, record: true, cancellationToken));
 
         return command;
     }
 
     private static Option<bool> NoBuildOption() => new("--no-build") { Description = "Don't build Server.Api: compare the openapi/current.json its last Debug build wrote." };
 
-    private static async Task<int> RunAsync(CliServices cli, bool build, bool requireRecorded, bool record, CancellationToken cancellationToken)
+    private sealed class ApiProjectOptions
     {
-        var directory = ProjectContext.FindProjectDirectory(cli.Environment.CurrentDirectory);
+        public ApiProjectOptions(Command command)
+        {
+            Project.AddTo(command, Project.Project, Project.ServerApi);
+            command.Options.Add(OpenApi);
+            command.Options.Add(Version);
+        }
+
+        public ProjectOptions Project { get; } = new ProjectOptions().SearchedAbove();
+
+        public Option<string?> OpenApi { get; } = new("--openapi") { Description = "The folder of the api's documents: current.json, which Server.Api's Debug build writes, and <version>.json of each release. Default: openapi, in the project's folder.", HelpName = "folder" };
+
+        public Option<string?> Version { get; } = new(ApiCompatibility.VersionOption) { Description = "The app's version, e.g. 1.2.3. Default: the <Version> in src/Directory.Build.props.", HelpName = "version" };
+    }
+
+    private static async Task<int> RunAsync(CliServices cli, ApiProjectOptions options, ParseResult parseResult, bool build, bool requireRecorded, bool record, CancellationToken cancellationToken)
+    {
+        var directory = options.Project.ProjectDirectory(parseResult, cli, out var folder);
 
         if (directory is null || ProjectContext.FindProjectName(directory) is not { } name)
-            return cli.UsageError("not-a-project", $"{cli.Environment.CurrentDirectory} isn't in a bit Boilerplate project: neither it nor a folder above it has a *.Web.slnf or *.slnx. Run bit api in the project's folder.");
+            return cli.UsageError("not-a-project", $"{ProjectOptions.NotInAProject(folder)} Run bit api in the project's folder, or name it with {ProjectOptions.ProjectName}.");
 
-        var api = new ApiCompatibility(cli, directory, name);
+        var (parts, partsError) = options.Project.Read(parseResult, cli, directory);
+
+        if (partsError is not null)
+            return cli.UsageError("project-part-missing", partsError);
+
+        var openApi = parseResult.GetValue(options.OpenApi) is { Length: > 0 } givenOpenApi ? ProjectOptions.PathOf(givenOpenApi, cli, directory) : null;
+        var api = new ApiCompatibility(cli, ProjectContext.At(directory, name, parts), openApi, parseResult.GetValue(options.Version)?.Trim());
 
         if (File.Exists(api.ServerApiProject) is false)
-            return cli.UsageError("server-api-missing", $"{api.Relative(api.ServerApiProject)} isn't there, and its api is what bit api checks.");
+            return cli.UsageError("server-api-missing", $"{api.Relative(api.ServerApiProject)} isn't there, and its api is what bit api checks. Pass Server.Api's .csproj with {options.Project.ServerApi.Name}.");
 
         var (version, versionProblem) = api.ReadVersion();
 
@@ -80,14 +106,14 @@ public static class ApiCommand
 
         if (build)
         {
-            var built = await steps.RunAsync("api-build", $"Building {name}.Server.Api", api.BuildAsync, cancellationToken);
+            var built = await steps.RunAsync("api-build", $"Building {api.ServerApiName}", api.BuildAsync, cancellationToken);
 
             if (built.Status is StepStatus.Failed)
                 return Finish(cli, steps, [], CliApp.ExitFailed);
         }
         else if (File.Exists(api.CurrentDocument) is false)
         {
-            return cli.UsageError("current-document-missing", $"{api.Relative(api.CurrentDocument)} isn't there: build {name}.Server.Api in Debug, or run this without --no-build.");
+            return cli.UsageError("current-document-missing", $"{api.Relative(api.CurrentDocument)} isn't there: build {api.ServerApiName} in Debug, or run this without --no-build. If it writes its documents to another folder, pass that folder with {options.OpenApi.Name}.");
         }
 
         var released = api.ReleasedVersions();
@@ -168,7 +194,7 @@ public static class ApiCommand
         {
             steps.Add("api-minimum", StepResult.Failed($"The server would refuse the apps {version} ships",
                 string.Join(", ", refused.Select(p => $"{p.Platform} needs {p.Minimum}")),
-                $"Raise the version in {api.Relative(api.VersionFile)} to {refused.Max(p => p.Minimum)} or above, or lower SupportedAppVersions in {api.Relative(api.SettingsFile)}, then run this again."));
+                $"Raise {api.VersionPlace} to {refused.Max(p => p.Minimum)} or above, or lower SupportedAppVersions in {api.Relative(api.SettingsFile)}, then run this again."));
         }
 
         if (requireRecorded)
@@ -179,7 +205,7 @@ public static class ApiCommand
                 ? StepResult.Succeeded($"{recordedFile} describes this api")
                 : StepResult.Failed(exists ? $"{recordedFile} describes another api" : $"{recordedFile} isn't there",
                     "so no release recorded the api this commit runs",
-                    $"{(exists ? $"Raise the version in {api.Relative(api.VersionFile)} and run" : "Run")} bit api release before the change reaches the branch Production deploys from."));
+                    $"{(exists ? $"Raise {api.VersionPlace} and run" : "Run")} bit api release before the change reaches the branch Production deploys from."));
         }
 
         if (record && broken.Count == 0 && refused.Count == 0 && toolFailed is false)
@@ -205,7 +231,7 @@ public static class ApiCommand
             var newest = broken.Max()!;
             var lowestWorking = compared.Append(version).Where(v => v > newest).Min();
             var raise = lowestWorking is null
-                ? $"Or raise SupportedAppVersions above {newest} in {api.Relative(api.SettingsFile)}, to the version the next release gives {api.Relative(api.VersionFile)},"
+                ? $"Or raise SupportedAppVersions above {newest} in {api.Relative(api.SettingsFile)}, to the version the next release gives {(api.VersionGiven ? "the app" : api.Relative(api.VersionFile))},"
                 : $"Or raise SupportedAppVersions to {lowestWorking} in {api.Relative(api.SettingsFile)},";
 
             guidance.Add($"Keep the api working for the apps at {string.Join(", ", broken)}: bring back what the list above names, or add the new shape next to the old one.");
@@ -244,7 +270,7 @@ public static class ApiCommand
         return api.DescribesCurrentApi(version)
             ? StepResult.Succeeded($"{file} already describes this api")
             : StepResult.Failed($"{file} describes another api", "and a released version's document never changes",
-                $"Raise the version in {api.Relative(api.VersionFile)}, or delete {file} if {version} was never released, then run this again.");
+                $"Raise {api.VersionPlace}, or delete {file} if {version} was never released, then run this again.");
     }
 
     private static void WriteFindings(CliServices cli, IReadOnlyList<ApiFinding> findings, string symbol, string color)

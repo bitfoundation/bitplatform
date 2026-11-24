@@ -4,8 +4,9 @@ namespace Boilerplate.Workbench.Components.Progress;
 
 /// <summary>
 /// A question an agent asks on its task, answered here: in words, by picking one or several of its options, or with a yes or
-/// no. Every kind takes a few words too, typed or dictated, which the agent gets with the answer. A secret is pasted in a
-/// hidden field and goes only where the question says, which the card tells; the agent learns only that it is there.
+/// no. Every kind takes a few words too, typed or dictated, which the agent gets with the answer, and a choice can be answered
+/// in them alone. The answer the agent suggests shows faded in the empty field, and Tab or its button takes it. A secret is
+/// pasted in a hidden field and goes only where the question says, which the card tells; the agent learns only that it is there.
 /// </summary>
 public partial class ProgressAskCard
 {
@@ -56,15 +57,17 @@ public partial class ProgressAskCard
 
     private bool CanStore => isSending is false && string.IsNullOrWhiteSpace(secret) is false;
 
-    private string Placeholder => Ask.Kind is WorkbenchProgressAskKind.Text
-        ? Ask.Placeholder ?? Localizer[nameof(WorkbenchStrings.ProgressAnswerPlaceholder)]
-        : Localizer[nameof(WorkbenchStrings.ProgressNotePlaceholder)];
+    /// <summary>Whether the agent suggests an answer, which then gets a field of two lines so it reads whole on a phone.</summary>
+    private bool HasSuggestion => string.IsNullOrWhiteSpace(Ask.Suggestion) is false;
 
-    private bool CanSend => isSending is false && Ask.Kind switch
-    {
-        WorkbenchProgressAskKind.Text => string.IsNullOrWhiteSpace(text) is false,
-        _ => picked.Count > 0
-    };
+    /// <summary>The answer the agent suggests, while the field is empty; workbench.js puts it in the field on Tab.</summary>
+    private string? ShownSuggestion => string.IsNullOrEmpty(text) && HasSuggestion ? Ask.Suggestion : null;
+
+    private string Placeholder => ShownSuggestion ?? (Ask.Kind is WorkbenchProgressAskKind.Text
+        ? Ask.Placeholder ?? Localizer[nameof(WorkbenchStrings.ProgressAnswerPlaceholder)]
+        : Localizer[nameof(WorkbenchStrings.ProgressNotePlaceholder)]);
+
+    private bool CanSend => isSending is false && (string.IsNullOrWhiteSpace(text) is false || Ask.Kind is not WorkbenchProgressAskKind.Text && picked.Count > 0);
 
     protected override void OnParametersSet()
     {
@@ -84,6 +87,8 @@ public partial class ProgressAskCard
             picked = [.. Ask.Options.Where(o => o == option || picked.Contains(o))];
         }
     }
+
+    private void TakeSuggestion() => text = Ask.Suggestion;
 
     private async Task SendOnCtrlEnter(KeyboardEventArgs e)
     {

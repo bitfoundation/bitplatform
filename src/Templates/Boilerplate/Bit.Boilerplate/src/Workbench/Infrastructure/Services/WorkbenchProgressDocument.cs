@@ -106,7 +106,8 @@ public static partial class WorkbenchProgressDocument
         {
             Secret = ReadString(ask, "secretTo") is { } to && TryParse<WorkbenchProgressSecretTo>(to, out var target)
                 ? new(target, ReadString(ask, "secretName"), ReadString(ask, "secretEnvironment"), ReadString(ask, "secretProject"))
-                : null
+                : null,
+            Suggestion = ReadString(ask, "suggestion")
         };
     }
 
@@ -199,6 +200,9 @@ public static partial class WorkbenchProgressDocument
 
             if (kind is WorkbenchProgressAskKind.Secret && CheckSecret(ask, asked) is { } secretProblem)
                 return secretProblem;
+
+            if (kind is WorkbenchProgressAskKind.Secret && string.IsNullOrWhiteSpace(ask.Suggestion) is false)
+                return $"The secret question \"{ask.Id}\" takes no suggestion.";
         }
 
         // The steps the task holds once the update is applied: those it keeps, and those the update adds.
@@ -352,13 +356,14 @@ public static partial class WorkbenchProgressDocument
         var kind = Parse(ReadString(ask, "kind"), WorkbenchProgressAskKind.Text);
         var options = ReadStrings(ask.GetArray("options")).ToArray();
         var picked = choices.Distinct(StringComparer.Ordinal).ToArray();
+        var inWords = picked.Length == 0 && string.IsNullOrWhiteSpace(text) is false;
 
-        // A secret is answered only by storing it, which MarkStored records.
+        // A secret is answered only by storing it, which MarkStored records; a choice can be answered in words alone.
         var fits = kind switch
         {
-            WorkbenchProgressAskKind.Text => picked.Length == 0 && string.IsNullOrWhiteSpace(text) is false,
-            WorkbenchProgressAskKind.Choice => picked.Length == 1 && options.Contains(picked[0]),
-            WorkbenchProgressAskKind.Choices => picked.Length > 0 && picked.All(options.Contains),
+            WorkbenchProgressAskKind.Text => inWords,
+            WorkbenchProgressAskKind.Choice => inWords || picked.Length == 1 && options.Contains(picked[0]),
+            WorkbenchProgressAskKind.Choices => inWords || picked.Length > 0 && picked.All(options.Contains),
             WorkbenchProgressAskKind.Secret => false,
             _ => picked is [Yes] or [No]
         };
@@ -549,7 +554,7 @@ public static partial class WorkbenchProgressDocument
         foreach (var ask in task.Asks)
         {
             var item = NewMap(("id", ask.Id), ("question", ask.Question), ("detail", ask.Detail), ("kind", ask.Kind.ToString()), ("placeholder", ask.Placeholder), ("at", Format(ask.At)), ("withdrawn", ask.IsWithdrawn),
-                              ("secretTo", ask.Secret?.To.ToString()), ("secretName", ask.Secret?.Name), ("secretEnvironment", ask.Secret?.Environment), ("secretProject", ask.Secret?.Project));
+                              ("secretTo", ask.Secret?.To.ToString()), ("secretName", ask.Secret?.Name), ("secretEnvironment", ask.Secret?.Environment), ("secretProject", ask.Secret?.Project), ("suggestion", ask.Suggestion));
             var options = new BcrdtArray();
 
             asks.Push(item);
@@ -683,6 +688,7 @@ public static partial class WorkbenchProgressDocument
         if (string.IsNullOrWhiteSpace(update.Question) is false) ask.Set("question", Trim(update.Question, MaxSummaryLength));
         if (update.Detail is not null) ask.Set("detail", Blank(Trim(update.Detail, MaxTextLength)));
         if (update.Placeholder is not null) ask.Set("placeholder", Blank(Trim(update.Placeholder, MaxTitleLength)));
+        if (update.Suggestion is not null) ask.Set("suggestion", Blank(Trim(update.Suggestion, MaxTextLength)));
         if (update.Kind is { } kind && TryParse<WorkbenchProgressAskKind>(kind, out var parsedKind)) ask.Set("kind", parsedKind.ToString());
 
         if (update.Secret is { } secret && ParseSecretTo(secret.To) is { } target)

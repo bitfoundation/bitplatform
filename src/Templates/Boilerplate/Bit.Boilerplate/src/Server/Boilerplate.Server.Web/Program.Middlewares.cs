@@ -273,6 +273,8 @@ public static partial class Program
 
             app.UseSiteMap();
 
+            app.MapSecurityTxt();
+
             // Handle the rest of requests with blazor
             var blazorApp = app.MapRazorComponents<Components.App>()
                 .CacheOutput("AppResponseCachePolicy")

@@ -22,6 +22,7 @@ public class BitStepperParamsTests : BunitTestContext
     [
         nameof(BitStepper<BitStepperItem>.CascadingParameters),
         nameof(BitStepper<BitStepperItem>.ChildContent),
+        nameof(BitStepper<BitStepperItem>.CompactTemplate),
         nameof(BitStepper<BitStepperItem>.CurrentIndex),
         nameof(BitStepper<BitStepperItem>.CurrentIndexChanged),
         nameof(BitStepper<BitStepperItem>.Items),
@@ -140,6 +141,17 @@ public class BitStepperParamsTests : BunitTestContext
         Assert.IsTrue(component.Find(".bit-str").ClassList.Contains("bit-str-rsp"));
         Assert.IsFalse(component.Find(".bit-str").ClassList.Contains("bit-str-hrz"));
         Assert.AreEqual(1, component.FindAll(".bit-str-rsw > ol.bit-str").Count);
+    }
+
+    [TestMethod]
+    public void BitStepperParamsShouldCascadeCompact()
+    {
+        var component = RenderWithParams(new BitStepperParams { Compact = true });
+
+        Assert.IsTrue(component.FindComponent<BitStepper<BitStepperItem>>().Instance.Compact);
+        Assert.IsTrue(component.Find(".bit-str").ClassList.Contains("bit-str-cpt"));
+        Assert.AreEqual("Step 3 of 3", component.Find(".bit-str-pos").TextContent);
+        Assert.AreEqual(0, component.FindAll("ol").Count);
     }
 
     [TestMethod]

@@ -38,6 +38,7 @@ public class BitIconCascadeTests : BunitTestContext
         [typeof(BitDropdown<,>)] = [typeof(BitDropdownItem<string>), typeof(string)],
         [typeof(BitMenuButton<>)] = [typeof(BitMenuButtonItem)],
         [typeof(BitNav<>)] = [typeof(BitNavItem)],
+        [typeof(BitNavBar<>)] = [typeof(BitNavBarItem)],
         [typeof(BitNavPanel<>)] = [typeof(BitNavItem)],
         [typeof(BitNumberField<>)] = [typeof(int)],
         [typeof(BitStepper<>)] = [typeof(BitStepperItem)],

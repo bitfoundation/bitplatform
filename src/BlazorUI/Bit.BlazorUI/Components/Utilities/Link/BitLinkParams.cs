@@ -96,6 +96,13 @@ public partial class BitLinkParams : BitComponentBaseParams, IBitComponentParams
     public BitIconInfo? Icon { get; set; }
 
     /// <summary>
+    /// The text alternative of the IconUrl picture of the link.
+    /// <br />
+    /// <see cref="BitLink.IconAlt"/>.
+    /// </summary>
+    public string? IconAlt { get; set; }
+
+    /// <summary>
     /// The name of the icon rendered beside the link content, from the built-in Fluent UI icons.
     /// <br />
     /// <see cref="BitLink.IconName"/>.
@@ -113,6 +120,13 @@ public partial class BitLinkParams : BitComponentBaseParams, IBitComponentParams
     /// in an RTL one. Every other placement leaves the icon where Start would put it.
     /// </remarks>
     public BitPlacement? IconPlacement { get; set; }
+
+    /// <summary>
+    /// The url of a custom image rendered as the icon beside the link content, used when neither Icon nor IconName is set.
+    /// <br />
+    /// <see cref="BitLink.IconUrl"/>.
+    /// </summary>
+    public string? IconUrl { get; set; }
 
     /// <summary>
     /// Follows the URL the app sits on and reports the link as the current one while its href matches it.
@@ -259,6 +273,11 @@ public partial class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.TakeFromCascade(nameof(Icon), Icon, static l => l.Icon, static (l, v) => l.Icon = v);
         }
 
+        if (IconAlt.HasValue())
+        {
+            bitLink.TakeFromCascade(nameof(IconAlt), IconAlt, static l => l.IconAlt, static (l, v) => l.IconAlt = v);
+        }
+
         if (IconName.HasValue())
         {
             bitLink.TakeFromCascade(nameof(IconName), IconName, static l => l.IconName, static (l, v) => l.IconName = v);
@@ -267,6 +286,11 @@ public partial class BitLinkParams : BitComponentBaseParams, IBitComponentParams
         if (IconPlacement.HasValue)
         {
             bitLink.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static l => l.IconPlacement, static (l, v) => l.IconPlacement = v);
+        }
+
+        if (IconUrl.HasValue())
+        {
+            bitLink.TakeFromCascade(nameof(IconUrl), IconUrl, static l => l.IconUrl, static (l, v) => l.IconUrl = v);
         }
 
         if (Match.HasValue)

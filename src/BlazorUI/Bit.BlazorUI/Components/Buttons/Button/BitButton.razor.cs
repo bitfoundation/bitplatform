@@ -170,6 +170,31 @@ public partial class BitButton : BitComponentBase
     public bool FullWidth { get; set; }
 
     /// <summary>
+    /// Fills the button with a gradient instead of a flat color.
+    /// </summary>
+    /// <remarks>
+    /// The value is painted as the <c>background-image</c> of the button, so anything a <c>background-image</c> accepts
+    /// is accepted here - a <c>linear-gradient</c>, a <c>radial-gradient</c>, a <c>conic-gradient</c>, or several of them
+    /// layered over each other. It covers the whole box, the border included, and the background color stays under it
+    /// as the fallback wherever the gradient is transparent.
+    /// <br />
+    /// A gradient is a fill, and the Fill variant is the only one that has one: the Outline and Text variants draw their
+    /// label in the role's color over the page, which a fill would hide, so they ignore it. The label keeps the
+    /// on-color of the Fill variant (the <see cref="Color"/>'s, or the <c>--bit-Button-*color</c> variables'), so check
+    /// its contrast against both ends of the gradient.
+    /// <br />
+    /// The hover and pressed backgrounds would be hidden under the gradient, so the pointer states wash it with the
+    /// button's own foreground instead. A disabled button drops it for its disabled fill, and so does a forced-colors
+    /// palette, which paints the button as a native one. It wins over the background and border color variables, which
+    /// restyle the default fill and not a chosen one.
+    /// <br />
+    /// The value has to be one CSS value: one holding a semicolon or a brace outside its brackets and strings (which would
+    /// add declarations of its own to the button's style) is ignored, and the button keeps its flat fill.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
+    public string? Gradient { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the link rendered by the button. If provided, the component will be rendered as an anchor tag instead of button.
     /// </summary>
     [Parameter]
@@ -390,7 +415,7 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The visual variant of the button.
     /// </summary>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public BitVariant? Variant { get; set; }
 
 
@@ -476,6 +501,10 @@ public partial class BitButton : BitComponentBase
 
         ClassBuilder.Register(() => FullWidth ? "bit-btn-flw" : string.Empty);
 
+        // The class carries the layering, the border and the states of a gradient fill, while the gradient itself is
+        // the one thing about it the stylesheet cannot know and is written inline (see RegisterCssStyles).
+        ClassBuilder.Register(() => PaintsGradient ? "bit-btn-grd" : string.Empty);
+
         ClassBuilder.Register(() => NoWrap ? "bit-btn-nwr" : string.Empty);
 
         ClassBuilder.Register(() => FloatAbsolute ? "bit-btn-fab"
@@ -510,7 +539,220 @@ public partial class BitButton : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
 
         StyleBuilder.Register(() => FloatOffset.HasValue() ? $"--bit-Button-float-offset:{NormalizeFloatOffset(FloatOffset!)}" : string.Empty);
+
+        // Published as a private variable rather than as an inline background-image, which would outrank the rules
+        // that take the gradient away again - a disabled button's and the forced-colors palette's.
+        StyleBuilder.Register(() => PaintsGradient ? $"--bit-btn-grd:{Gradient}" : string.Empty);
     }
+
+    // Only the Fill variant has a fill to paint the gradient into; an unset Variant is the Fill one. A value that is not
+    // one CSS value paints nothing (see IsSingleCssValue).
+    private bool PaintsGradient => Gradient.HasValue()
+                                   && Variant is not (BitVariant.Outline or BitVariant.Text)
+                                   && IsSingleCssValue(Gradient!);
+
+    // The gradient is written into the style attribute of the root, where a semicolon outside every bracket and string
+    // ends the custom property and starts declarations of the value's own on the root - a value carried in from a theme
+    // or from user data could pin the button over the whole page. So the value is read the way the CSS tokenizer reads
+    // it: a semicolon inside a function (the ";base64" of a data: url) or a string stays part of it, while one at the top
+    // level, a brace, a bracket closed that was never opened, a string or a bracket left open, a string broken by a line
+    // and a comment (which the tokenizer drops, brackets and all) each mark a value that is not one.
+    // An unquoted url( is no function but a url token of its own, read to its first closing bracket whatever brackets and
+    // quotes come before it - and one holding a quote, a bracket or a gap is a bad url, whose remnants end at that bracket
+    // too. Read as a function, the rest of such a value would be taken for the inside of a string or a bracket the
+    // tokenizer never opened, so a url token is read the tokenizer's way (see ReadUrlToken).
+    private static bool IsSingleCssValue(string value)
+    {
+        var depth = 0;
+        var quote = '\0';
+
+        for (var i = 0; i < value.Length; i++)
+        {
+            var c = value[i];
+
+            if (quote != '\0')
+            {
+                if (c == '\\') i++;
+                else if (c == quote) quote = '\0';
+                else if (c is '\n' or '\r' or '\f') return false;
+
+                continue;
+            }
+
+            // A name - escapes decoded, so that a url spelled with one (\75 rl) is still a url - and what follows it.
+            if (IsCssNameCodePoint(c) || (c == '\\' && IsCssValidEscape(value, i)))
+            {
+                var isUrl = ReadCssWord(value, i, out i);
+
+                if (isUrl && i + 1 < value.Length && value[i + 1] == '(')
+                {
+                    var start = i + 2;
+                    while (start < value.Length && IsCssWhitespace(value[start])) start++;
+
+                    // A quote after the bracket makes it a plain url() function, whose bracket is counted below.
+                    if (start == value.Length || value[start] is not ('"' or '\''))
+                    {
+                        i = ReadUrlToken(value, start);
+
+                        if (i < 0) return false;
+                    }
+                }
+
+                continue;
+            }
+
+            // A backslash before a line break escapes nothing outside a string; the break is a gap.
+            if (c == '\\')
+            {
+                i++;
+                continue;
+            }
+
+            switch (c)
+            {
+                case '"' or '\'':
+                    quote = c;
+                    break;
+                case '(' or '[':
+                    depth++;
+                    break;
+                case ')' or ']':
+                    if (--depth < 0) return false;
+                    break;
+                case ';' when depth == 0:
+                    return false;
+                // No background-image needs a block, and one left open would swallow the declarations written after it.
+                case '{' or '}':
+                    return false;
+                case '/' when i + 1 < value.Length && value[i + 1] == '*':
+                    return false;
+            }
+        }
+
+        return depth == 0 && quote == '\0';
+    }
+
+    // Reads the url token whose contents start at start, and returns the index of the bracket that closes it - or -1 for a
+    // bad url, and for one that runs to the end of the value. Stricter than the tokenizer on brackets, braces and comments,
+    // which a url seldom holds: a #url( or a @url( is a bracket after a hash or an at-keyword rather than a url token, and
+    // reading it this way has it end where the tokenizer ends that bracket too.
+    private static int ReadUrlToken(string value, int start)
+    {
+        var i = start;
+
+        while (i < value.Length)
+        {
+            var c = value[i];
+
+            if (c == ')') return i;
+
+            if (IsCssWhitespace(c))
+            {
+                while (i < value.Length && IsCssWhitespace(value[i])) i++;
+
+                return i < value.Length && value[i] == ')' ? i : -1;
+            }
+
+            if (c == '\\')
+            {
+                if (IsCssValidEscape(value, i) is false) return -1;
+
+                i = ReadCssEscape(value, i, out _);
+                continue;
+            }
+
+            if (c is '"' or '\'' or '(' or '[' or ']' or '{' or '}' || IsCssNonPrintable(c)) return -1;
+
+            if (c == '/' && i + 1 < value.Length && value[i + 1] == '*') return -1;
+
+            i++;
+        }
+
+        return -1;
+    }
+
+    // Reads the name starting at start - name code points and escapes - and says whether it spells url, ASCII case
+    // ignored; end is left on its last character.
+    private static bool ReadCssWord(string value, int start, out int end)
+    {
+        const string url = "url";
+
+        var i = start;
+        var length = 0;
+        var isUrl = true;
+
+        while (i < value.Length)
+        {
+            int codePoint;
+
+            if (value[i] == '\\')
+            {
+                if (IsCssValidEscape(value, i) is false) break;
+
+                i = ReadCssEscape(value, i, out codePoint);
+            }
+            else if (IsCssNameCodePoint(value[i]))
+            {
+                codePoint = value[i];
+                i++;
+            }
+            else
+            {
+                break;
+            }
+
+            isUrl = isUrl && length < url.Length && (codePoint | 0x20) == url[length];
+            length++;
+        }
+
+        end = i - 1;
+
+        return isUrl && length == url.Length;
+    }
+
+    // Reads the escape at start (a backslash, then up to six hex digits and one whitespace after them, or any other
+    // character) and returns the index after it.
+    private static int ReadCssEscape(string value, int start, out int codePoint)
+    {
+        var i = start + 1;
+
+        if (i == value.Length)
+        {
+            codePoint = 0xFFFD;
+            return i;
+        }
+
+        if (char.IsAsciiHexDigit(value[i]) is false)
+        {
+            codePoint = value[i];
+            return i + 1;
+        }
+
+        codePoint = 0;
+
+        for (var digits = 0; digits < 6 && i < value.Length && char.IsAsciiHexDigit(value[i]); digits++, i++)
+        {
+            var digit = value[i];
+            codePoint = codePoint * 16 + (digit <= '9' ? digit - '0' : (digit | 0x20) - 'a' + 10);
+        }
+
+        if (i < value.Length && IsCssWhitespace(value[i]))
+        {
+            i += value[i] == '\r' && i + 1 < value.Length && value[i + 1] == '\n' ? 2 : 1;
+        }
+
+        return i;
+    }
+
+    private static bool IsCssValidEscape(string value, int i)
+        => value[i] == '\\' && (i + 1 == value.Length || value[i + 1] is not ('\n' or '\r' or '\f'));
+
+    private static bool IsCssNameCodePoint(char c)
+        => char.IsAsciiLetterOrDigit(c) || c is '_' or '-' || c >= 0x80;
+
+    private static bool IsCssWhitespace(char c) => c is ' ' or '\t' or '\n' or '\r' or '\f';
+
+    private static bool IsCssNonPrintable(char c) => c is <= '\u0008' or '\u000B' or (>= '\u000E' and <= '\u001F') or '\u007F';
 
     // A bare number is not a CSS length, and an invalid value takes down every inset that reads it - the
     // button stops being pinned at all and drifts off with the content. A number is also what an offset

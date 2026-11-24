@@ -50,4 +50,6 @@ public partial class _BitNavBarOptionDemo
 
     private string? twoWaySelectedKey;
     private string? scrollableSelectedKey;
+
+    private bool isDrawerOpen;
 }

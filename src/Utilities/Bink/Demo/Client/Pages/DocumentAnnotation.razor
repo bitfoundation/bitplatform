@@ -113,7 +113,7 @@
         an anchor, the shape a review comment takes; the pointer leaves whichever edge of the box faces the anchor, so it
         stays sensible when the callout is moved. Both can be made directly, without a tool:
     </p>
-    <pre class="bb-code">_document.AddElement(<span class="k">new</span> BinkHighlightElement(lineRects)
+    <pre class="bb-code" tabindex="0">_document.AddElement(<span class="k">new</span> BinkHighlightElement(lineRects)
 {
     Color = BinkColor.Parse(<span class="s">"#fde047"</span>),
     Opacity = 0.5f,
@@ -139,7 +139,7 @@ _document.AddElement(<span class="k">new</span> BinkCalloutElement(box: <span cl
         change is still being reported, and joins the same undo step: one undo removes a comment entirely instead of
         first turning it back into a plain box.
     </p>
-    <pre class="bb-code">_document.Changed += OnDocumentEdited;
+    <pre class="bb-code" tabindex="0">_document.Changed += OnDocumentEdited;
 
 <span class="k">private void</span> OnDocumentEdited(<span class="k">object</span>? sender, BinkDocumentChangedEventArgs args)
 {

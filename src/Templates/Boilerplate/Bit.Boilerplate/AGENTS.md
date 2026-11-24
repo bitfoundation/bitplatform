@@ -28,7 +28,7 @@ You will be working with the following key technologies:
 <!--#elif (database == "Sqlite")-->
 *   **SQLite**: Primary database
 <!--#elif (database == "PostgreSQL")-->
-*   **PostgreSQL 18**: Primary database
+*   **PostgreSQL 19**: Primary database
 <!--#elif (database == "MySql")-->
 *   **MySQL**: Primary database
 <!--#endif-->

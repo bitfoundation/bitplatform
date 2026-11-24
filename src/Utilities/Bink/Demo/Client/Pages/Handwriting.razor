@@ -135,7 +135,7 @@
         (<code>SimplifyPressureTolerance</code>), so a straight line written with changing pressure keeps its changing
         width and the shape of the letters survives.
     </p>
-    <pre class="bb-code"><span class="k">private</span> IBinkTool _tool = <span class="k">new</span> BinkDrawTool { SimplifyTolerance = 0.08f };
+    <pre class="bb-code" tabindex="0"><span class="k">private</span> IBinkTool _tool = <span class="k">new</span> BinkDrawTool { SimplifyTolerance = 0.08f };
 
 <span class="k">private</span> BinkBrush _brush = <span class="k">new</span> BinkPenBrush
 {
@@ -169,7 +169,7 @@
         <li><strong>Predict ink</strong> (<code>PredictInk</code>): in browsers that offer predicted pointer events, the live stroke reaches where the pen is about to be, hiding about a frame of latency. Predictions are drawn on the overlay only, held to a few stroke widths, and replaced by the next measured sample; the committed stroke holds measured points alone. On by default in WebAssembly and off elsewhere; <code>BinkDrawTool.UsePrediction</code> turns it off for one tool.</li>
         <li><strong>Palm rejection</strong> (<code>RejectTouchWhilePen</code>), described above.</li>
     </ul>
-    <pre class="bb-code"><span class="k">var</span> pen = <span class="k">new</span> BinkPenBrush
+    <pre class="bb-code" tabindex="0"><span class="k">var</span> pen = <span class="k">new</span> BinkPenBrush
 {
     Smoothing = 0.35f,
     PressureCurve = <span class="k">new</span> BinkPressureCurve(BinkPressureCurveKind.EaseIn, minFactor: 0.1f, maxFactor: 1f),
@@ -201,7 +201,7 @@
         rotation on a pen that reports it, otherwise by how far the direction the pen leans is from a right hand's usual
         lean (<code>PenLean</code>, 45 degrees; 135 for a left hand).
     </p>
-    <pre class="bb-code"><span class="k">var</span> tool = <span class="k">new</span> BinkDrawTool { HonorPenEraserButton = <span class="k">true</span> };          <span class="c">// the default</span>
+    <pre class="bb-code" tabindex="0"><span class="k">var</span> tool = <span class="k">new</span> BinkDrawTool { HonorPenEraserButton = <span class="k">true</span> };          <span class="c">// the default</span>
 <span class="k">var</span> italic = <span class="k">new</span> BinkCalligraphyBrush { Width = 10f, NibAngle = 45f, NibThickness = 0.15f };</pre>
 </div>
 
@@ -216,7 +216,7 @@
         <code>ObservedTilt</code> become true when the device actually produces them, which is the reliable way to know
         a stylus is in use.
     </p>
-    <pre class="bb-code"><span class="k">private void</span> OnStrokeCompleted(BinkStrokeEventArgs args)
+    <pre class="bb-code" tabindex="0"><span class="k">private void</span> OnStrokeCompleted(BinkStrokeEventArgs args)
 {
     <span class="k">if</span> (args.Stroke <span class="k">is not</span> { } stroke) <span class="k">return</span>;
     <span class="k">bool</span> realPressure = args.Device == BinkPointerKind.Pen &amp;&amp; stroke.Input.HasRealPressure;
