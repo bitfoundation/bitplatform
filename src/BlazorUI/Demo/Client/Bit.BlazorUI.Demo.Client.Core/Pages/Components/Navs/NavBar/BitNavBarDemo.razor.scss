@@ -99,6 +99,16 @@
             min-height: rem2(200px);
         }
 
+        // A navbar folding into a drawer is the top bar of the app, under the status strip. The screen is made the
+        // containing block of what the navbar fixes in place - the drawer and its overlay - so the drawer opens on
+        // the phone rather than over the whole page.
+        &.drawer-screen {
+            min-height: rem2(320px);
+            justify-content: flex-start;
+            padding-top: rem2(30px);
+            transform: translateZ(0);
+        }
+
         // A vertical bar is a navigation rail: it runs down the side of the screen rather than along
         // its foot, and starts below the status strip instead of underneath it.
         &:has(> .bit-nbr-vrt) {

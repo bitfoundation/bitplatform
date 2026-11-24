@@ -5085,6 +5085,9 @@
     <data name="ProgressSendAnswer" xml:space="preserve">
         <value>Antwoord versturen</value>
     </data>
+    <data name="ProgressUseSuggestion" xml:space="preserve">
+        <value>Suggestie gebruiken</value>
+    </data>
     <data name="ProgressAnswerFailed" xml:space="preserve">
         <value>Die vraag is intussen beantwoord of ingetrokken.</value>
     </data>
@@ -5252,6 +5255,9 @@
     </data>
     <data name="SampleDeployAskEmailOption3" xml:space="preserve">
         <value>Voorlopig geen: toon e-mails in de logs</value>
+    </data>
+    <data name="SampleDeployAskEmailSuggestion" xml:space="preserve">
+        <value>Een gratis e-maildienst tot het domein klaar is</value>
     </data>
     <data name="SampleDeployAskSsh" xml:space="preserve">
         <value>De SSH-poort van de server sluiten zodra de tunnel werkt?</value>

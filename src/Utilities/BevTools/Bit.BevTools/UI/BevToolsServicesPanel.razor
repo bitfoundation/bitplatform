@@ -121,7 +121,7 @@
         var filter = BevToolsQueryFilter.Parse(Query);
         var lifetime = filter.Token("lifetime");
         _rows = graph.Services
-            .Where(s => (_showFramework || !s.IsFramework || filter.Terms.Count > 0) && !s.IsShadowed)
+            .Where(s => (_showFramework || !s.IsFramework || filter.HasText) && !s.IsShadowed)
             .Where(s => filter.MatchesText(s.ServiceTypeName, s.ServiceType.FullName, s.ImplementationName))
             .Where(s => lifetime is null || BevToolsFmt.Lifetime(s.Lifetime).StartsWith(lifetime, StringComparison.OrdinalIgnoreCase))
             .OrderBy(s => s.IsFramework).ThenBy(s => s.ServiceTypeName)

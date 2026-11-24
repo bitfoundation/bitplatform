@@ -92,15 +92,15 @@ public static class IDistributedApplicationBuilderExtensions
         //#if (database == "PostgreSQL")
         /// <summary>
         /// Adds a PostgreSQL Server instance with DbGate management UI and a database named <c>postgresdb</c>.
-        /// Uses pgvector (pg18) image which supports embedded vector search.
+        /// Uses pgvector (pg19) image which supports embedded vector search.
         /// </summary>
         public IResourceBuilder<PostgresDatabaseResource> AddPostgreSQL()
         {
             return builder.AddPostgres("postgresserver")
                 .WithDbGate()
-                .WithV18DataVolume()
+                .WithV18PlusDataVolume()
                 .WithOptimizedSetup()
-                .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
+                .WithImage("pgvector/pgvector", "pg19") // pgvector supports embedded vector search.
                 .WithOtlpExporter()
                 .PublishAsHealthyComposeService("pg_isready -U postgres -d postgres")
                 .AddDatabase("postgresdb");

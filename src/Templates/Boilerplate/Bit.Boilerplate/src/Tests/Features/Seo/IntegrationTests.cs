@@ -54,16 +54,19 @@ public partial class IntegrationTests
         Assert.DoesNotContain(PageUrls.Roles, siteMap);
 
         // The anonymous pages search engines should not index (See NoIndexAttribute) are left out in every culture -
-        // the steps of a flow the app sends you to, the troubleshooting page and the error pages - while the ones
-        // people do search for stay. The first assertion keeps the loop from passing on an empty set.
+        // the steps of a flow the app sends you to, the troubleshooting page and the error pages. So are the ones that
+        // only exist to sign in, which people do search for and so stay indexable (See NotInSitemapAttribute): the
+        // sitemap is the list of pages to crawl and rank, and a form has no place on it. The first assertion keeps the
+        // loop from passing on an empty set.
         Assert.IsTrue(PageUrls.NoIndexUrls.IsSupersetOf([PageUrls.Confirm, PageUrls.ForgotPassword, PageUrls.ResetPassword, PageUrls.OAuthConsent, PageUrls.Diagnostic, PageUrls.NotFound, PageUrls.NotAuthorized]),
             "A page that is only a step of a flow, or a page for troubleshooting, lost its [NoIndex].");
-        foreach (var noIndexUrl in PageUrls.NoIndexUrls)
+        Assert.IsTrue(PageUrls.NotInSitemapUrls.IsSupersetOf([.. PageUrls.NoIndexUrls, PageUrls.SignIn, PageUrls.SignUp]),
+            "A page that only exists to sign in lost its [NotInSitemap].");
+        foreach (var notInSitemapUrl in PageUrls.NotInSitemapUrls)
         {
-            Assert.DoesNotContain($"{noIndexUrl}</loc>", siteMap, $"{noIndexUrl} is not for search engines, so the sitemap may not list it.");
+            Assert.DoesNotContain($"{notInSitemapUrl}</loc>", siteMap, $"{notInSitemapUrl} is not for the sitemap, so it may not list it.");
         }
-        Assert.Contains($"{PageUrls.SignIn}</loc>", siteMap);
-        Assert.Contains($"{PageUrls.SignUp}</loc>", siteMap);
+        Assert.IsFalse(PageUrls.IsNoIndex(new Uri(server.WebAppAddress, PageUrls.SignIn)), "People search for the sign-in page, so it stays indexable.");
     }
 
     /// <summary>

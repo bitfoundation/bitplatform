@@ -26,6 +26,22 @@ public partial class BitStepperDemo
         },
         new()
         {
+            Name = "Compact",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Shows the current step alone in place of the list of every step: its position in words (\"Step 2 of 4\", from BitStrings.StepPositionFormat), its text and a bar with a segment per step. A Compact stepper is always compact, unless it is also Responsive and horizontal: then it is the layout taken while the stepper is narrower than 600px, in place of the vertical one, and the list of steps above that. Both are rendered and the stylesheet shows one of them through the container query of Responsive, so it works on a prerendered page too. The root of a Compact stepper is a group (a div carrying bit-str-cpt) rather than the list, which a Responsive one holds inside it (bit-str-lst).",
+        },
+        new()
+        {
+            Name = "CompactTemplate",
+            Type = "RenderFragment<BitStepperCompactContext<TItem>>?",
+            DefaultValue = "null",
+            Description = "The content of the compact layout of a Compact stepper, in place of the position, the text and the bar it shows by default. It is given the index of the current step, the number of steps and the current step.",
+            LinkType = LinkType.Link,
+            Href = "#compact-context",
+        },
+        new()
+        {
             Name = "CompletedIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -119,7 +135,7 @@ public partial class BitStepperDemo
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lays the steps of a horizontal stepper out from top to bottom while the stepper is narrower than 600px, instead of letting a row that does not fit stick out of its container, and in a row again once it is wider. It is the width of the stepper's own container that decides, not the screen's, so one in a narrow sidebar or dialog is a column on a wide screen too. The stylesheet does the switch through a container query, so no BitMediaQuery is needed: the stepper stands in a wrapper (bit-str-rsw) that takes the full width of its container, and carries bit-str-rsp in place of bit-str-hrz. It has nothing to do on a Vertical stepper.",
+            Description = "Lays the steps of a horizontal stepper out from top to bottom while the stepper is narrower than 600px, instead of letting a row that does not fit stick out of its container, and in a row again once it is wider. It is the width of the stepper's own container that decides, not the screen's, so one in a narrow sidebar or dialog is a column on a wide screen too. The stylesheet does the switch through a container query, so no BitMediaQuery is needed: the stepper stands in a wrapper (bit-str-rsw) that takes the full width of its container, and carries bit-str-rsp in place of bit-str-hrz. It has nothing to do on a Vertical stepper. On a Compact stepper, the compact layout is the one taken below 600px, in place of the vertical one.",
         },
         new()
         {
@@ -231,6 +247,23 @@ public partial class BitStepperDemo
                 new() { Name = "Text", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the text of each step of the BitStepper." },
                 new() { Name = "Description", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the description of each step of the BitStepper." },
                 new() { Name = "Connector", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the line connecting each step of the BitStepper to the next one." },
+                new() { Name = "Compact", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the compact part of a Compact BitStepper: the position, text and bar of the current step, or the content of its CompactTemplate." },
+                new() { Name = "Position", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the position of the current step (\"Step 2 of 4\") in the compact part of the BitStepper." },
+                new() { Name = "CompactText", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the text of the current step in the compact part of the BitStepper." },
+                new() { Name = "Progress", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for the bar in the compact part of the BitStepper, which has a segment per step." },
+                new() { Name = "Segment", Type = "string?", DefaultValue = "null", Description = "Custom CSS classes/styles for each segment of the bar in the compact part of the BitStepper." },
+            ]
+        },
+        new()
+        {
+            Id = "compact-context",
+            Title = "BitStepperCompactContext<TItem>",
+            Description = "The context passed to the CompactTemplate: where the process is, for the compact layout to show.",
+            Parameters =
+            [
+                new() { Name = "Index", Type = "int", DefaultValue = "0", Description = "The zero-based index of the current step, as the CurrentIndex of the stepper is: it is past the last step once every step is done, and negative while none is started." },
+                new() { Name = "Count", Type = "int", DefaultValue = "0", Description = "The number of steps." },
+                new() { Name = "Item", Type = "TItem?", DefaultValue = "null", Description = "The current step, or null while Index is outside the steps." },
             ]
         },
     ];
@@ -238,10 +271,10 @@ public partial class BitStepperDemo
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
         new() { Name = "--bit-Stepper-indicator-size", DefaultValue = "2rem", Description = "Diameter of the indicator of a step." },
-        new() { Name = "--bit-Stepper-active-color", DefaultValue = "var(--bit-clr-pri)", Description = "Fill of the indicator of the completed and current steps, and of the line after a completed step." },
+        new() { Name = "--bit-Stepper-active-color", DefaultValue = "var(--bit-clr-pri)", Description = "Fill of the indicator of the completed and current steps, of the line after a completed step, and of their segments of the compact bar." },
         new() { Name = "--bit-Stepper-active-text-color", DefaultValue = "var(--bit-clr-pri-text)", Description = "Number and icon color on the active fill." },
-        new() { Name = "--bit-Stepper-error-color", DefaultValue = "var(--bit-clr-err)", Description = "Fill of the indicator, and color of the text, of a step in error." },
-        new() { Name = "--bit-Stepper-connector-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Color of the line between two steps." },
+        new() { Name = "--bit-Stepper-error-color", DefaultValue = "var(--bit-clr-err)", Description = "Fill of the indicator, and color of the text, of a step in error, and fill of its segment of the compact bar." },
+        new() { Name = "--bit-Stepper-connector-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Color of the line between two steps, and of the segments of the upcoming steps in the compact bar." },
         new() { Name = "--bit-Stepper-connector-width", DefaultValue = "var(--bit-shp-brd-width-thick)", Description = "Thickness of the line between two steps." },
     ];
 }

@@ -76,6 +76,9 @@ public sealed record WorkbenchProgressAsk(string Id,
 
     /// <summary>Where a secret question's answer goes; the answer itself never comes back.</summary>
     public WorkbenchProgressSecret? Secret { get; init; }
+
+    /// <summary>The answer the agent expects, in its words, shown faded in the field until the user takes it with Tab.</summary>
+    public string? Suggestion { get; init; }
 }
 
 /// <summary>

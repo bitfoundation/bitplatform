@@ -101,6 +101,11 @@ public partial class BitHeaderParams : BitComponentBaseParams, IBitComponentPara
     public bool? NoGutter { get; set; }
 
     /// <summary>
+    /// Publishes the live height of the header as the --bit-env-header-height custom property of its scrolling area.
+    /// </summary>
+    public bool? PublishHeight { get; set; }
+
+    /// <summary>
     /// Slides the header out of the view while the page is scrolled down and brings it back while the page is scrolled up.
     /// </summary>
     public bool? Reveal { get; set; }
@@ -255,6 +260,11 @@ public partial class BitHeaderParams : BitComponentBaseParams, IBitComponentPara
         if (NoGutter.HasValue)
         {
             bitHeader.TakeFromCascade(nameof(NoGutter), NoGutter.Value, static h => h.NoGutter, static (h, v) => h.NoGutter = v);
+        }
+
+        if (PublishHeight.HasValue)
+        {
+            bitHeader.TakeFromCascade(nameof(PublishHeight), PublishHeight.Value, static h => h.PublishHeight, static (h, v) => h.PublishHeight = v);
         }
 
         if (Reveal.HasValue)

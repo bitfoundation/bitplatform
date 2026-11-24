@@ -140,6 +140,13 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "Gradient",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Fills the button with a gradient instead of a flat color: any CSS background-image value (a linear-gradient, a radial-gradient, a conic-gradient, or several layered). It covers the whole box, border included, over the background color, and wins over the background and border color variables. Under the pointer and while pressed it is washed with the button's foreground. Only the Fill variant has a fill, so the Outline and Text variants ignore it; a disabled button and a forced-colors palette drop it.",
+        },
+        new()
+        {
             Name = "Href",
             Type = "string?",
             DefaultValue = "null",
@@ -178,6 +185,13 @@ public partial class BitButtonDemo
             Description = "Gets or sets the position of the icon relative to the component's content. The default value is Start. Only Start and End are honoured, and they follow the reading direction; any other value leaves the icon where Start would put it.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
+        },
+        new()
+        {
+            Name = "IconTemplate",
+            Type = "RenderFragment?",
+            DefaultValue = "null",
+            Description = "The custom template to render in place of the icon of the button (an inline SVG, for example), which takes precedence over Icon, IconName and IconUrl. It renders in the icon's slot, so it keeps the icon's place, IconPlacement and the square shape of an icon-only button, gets the Icon class/style, and is hidden from assistive technologies just as the icon is while the button has a name of its own (its text, AriaLabel, aria-label or aria-labelledby) - with none, it is left exposed so an SVG with role=\"img\" and an aria-label names the button. Its font size is the icon size, so an SVG sized 1em (or one with no size of its own) is as big as the icon.",
         },
         new()
         {
@@ -352,7 +366,7 @@ public partial class BitButtonDemo
                    Name = "Icon",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "Custom class or style applied to the icon element (the glyph, or the image rendered for IconUrl)."
+                   Description = "Custom class or style applied to the icon element (the glyph, the image rendered for IconUrl, or the element IconTemplate is rendered in)."
                },
                new()
                {
@@ -541,13 +555,13 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-fill-background",
             DefaultValue = "--bit-Button-background",
-            Description = "Background in the rest state of a Fill button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Background in the rest state of a Fill button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter wins over it, and a Gradient is painted over it.",
         },
         new()
         {
             Name = "--bit-Button-fill-border-color",
             DefaultValue = "--bit-Button-border-color",
-            Description = "Border color in the rest state of a Fill button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Border color in the rest state of a Fill button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it, and a Gradient takes its place with a transparent border it shows through.",
         },
         new()
         {
@@ -773,6 +787,18 @@ public partial class BitButtonDemo
         },
         new()
         {
+            Name = "--bit-Button-hover-shadow",
+            DefaultValue = "The resting shadow",
+            Description = "Elevation of the box under the pointer, on every variant - a glow under a call to action. It falls back to --bit-Button-shadow, or to --bit-Button-float-shadow for a Float or FloatAbsolute button, and a press settles the button back to that resting shadow. The focus ring is a shadow too and replaces it while the button is focused.",
+        },
+        new()
+        {
+            Name = "--bit-Button-hover-lift",
+            DefaultValue = "none",
+            Description = "How far the box rises under the pointer, on every variant, as a length: 2px lifts it by 2px, and a value below 0 lifts nothing. A press keeps the lift, so the button never slides out from under the pointer pressing it, and the room the lift leaves under the button stays part of it. It moves the box by the translate property rather than a transform, so it composes with a transform of the button's own, and under reduced motion it steps there instead of gliding.",
+        },
+        new()
+        {
             Name = "--bit-Button-padding",
             DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-md",
             Description = "Padding of the box. An icon-only button takes its vertical padding on all four sides instead. The Size parameter wins over it.",
@@ -835,7 +861,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-icon-size",
             DefaultValue = "--bit-siz-icon-md",
-            Description = "Size of the icon, for a glyph and an IconUrl image alike. The Size parameter wins over it.",
+            Description = "Size of the icon, for a glyph, an IconUrl image and an IconTemplate alike. The Size parameter wins over it.",
         },
         new()
         {

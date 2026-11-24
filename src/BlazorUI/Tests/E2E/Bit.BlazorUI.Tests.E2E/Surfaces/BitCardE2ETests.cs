@@ -8,6 +8,7 @@ namespace Bit.BlazorUI.Tests.E2E.Surfaces;
 /// FullWidth / FullHeight / FullSize, ScrollableBody on a plain and on a sectioned card), the header (Title, Subtitle,
 /// IconName, HeadingLevel, IconTemplate, HeaderTemplate), Actions / Footer / FloatingActions / Divider, the cover
 /// (ImageUrl, ImageHeight, ImagePosition, ImageAlt, ImageLoading, CoverRatio, Reversed, Cover, CoverOverlay, Horizontal,
+/// HorizontalXs to HorizontalXxl by resizing the window,
 /// CoverWidth), the clickable card (the stretched button, pointer and keyboard, Actions and Footer kept apart, Disabled,
 /// StopPropagation, FocusAsync, hover and press shading), the bound and ready-made Selected ring, the linked card
 /// (Href, Target, Rel, Download, the name and description of the link, a disabled link), Loading with the skeleton and
@@ -295,6 +296,37 @@ public class BitCardE2ETests : E2ETestBase
         var rtlCover = await BoxAsync(Page.Locator("#crd-hrz-rtl > .bit-crd-cvr"));
         var rtlMain = await BoxAsync(Page.Locator("#crd-hrz-rtl > .bit-crd-mai"));
         Assert.IsTrue(rtlCover.X > rtlMain.X, "RTL does not mirror the horizontal card.");
+    }
+
+    [TestMethod]
+    public async Task HorizontalBreakpoints_TurnTheCardAtTheirBreakpoints_AndTheWholeHorizontalLayoutFollows()
+    {
+        await OpenAsync(Url);
+
+        // Below md: the md card is vertical - its cover as wide as the card and above the words - while the card that
+        // is horizontal below lg lays its cover on the trailing edge, at the CoverWidth it was given.
+        await Page.SetViewportSizeAsync(800, 900);
+        await Expect(El("crd-hrz-md")).ToHaveCSSAsync("flex-direction", "column");
+        var mdCard = await BoxAsync(El("crd-hrz-md"));
+        var mdCover = await BoxAsync(Page.Locator("#crd-hrz-md > .bit-crd-cvr"));
+        Near(mdCard.Width, mdCover.Width, "a vertical cover spans the card");
+        Assert.IsTrue(mdCover.Y + mdCover.Height <= (await BoxAsync(Page.Locator("#crd-hrz-md > .bit-crd-mai"))).Y + 1, "The cover is not above the words.");
+
+        await Expect(El("crd-hrz-lg-off")).ToHaveCSSAsync("flex-direction", "row-reverse");
+        Near(128, (await BoxAsync(Page.Locator("#crd-hrz-lg-off > .bit-crd-cvr"))).Width, "CoverWidth below lg");
+
+        // From md: the md card turns, and its cover takes the CoverWidth.
+        await Page.SetViewportSizeAsync(1000, 900);
+        await Expect(El("crd-hrz-md")).ToHaveCSSAsync("flex-direction", "row");
+        Near(128, (await BoxAsync(Page.Locator("#crd-hrz-md > .bit-crd-cvr"))).Width, "CoverWidth from md");
+        await Expect(El("crd-hrz-lg-off")).ToHaveCSSAsync("flex-direction", "row-reverse");
+
+        // From lg: the other card turns back, and Reversed puts its cover under the words rather than at the end.
+        await Page.SetViewportSizeAsync(1300, 900);
+        await Expect(El("crd-hrz-md")).ToHaveCSSAsync("flex-direction", "row");
+        await Expect(El("crd-hrz-lg-off")).ToHaveCSSAsync("flex-direction", "column-reverse");
+        var offCard = await BoxAsync(El("crd-hrz-lg-off"));
+        Near(offCard.Width, (await BoxAsync(Page.Locator("#crd-hrz-lg-off > .bit-crd-cvr"))).Width, "a vertical cover spans the card");
     }
 
     [TestMethod]

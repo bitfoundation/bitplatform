@@ -5085,6 +5085,9 @@
     <data name="ProgressSendAnswer" xml:space="preserve">
         <value>Antwort senden</value>
     </data>
+    <data name="ProgressUseSuggestion" xml:space="preserve">
+        <value>Vorschlag übernehmen</value>
+    </data>
     <data name="ProgressAnswerFailed" xml:space="preserve">
         <value>Diese Frage wurde inzwischen beantwortet oder zurückgezogen.</value>
     </data>
@@ -5252,6 +5255,9 @@
     </data>
     <data name="SampleDeployAskEmailOption3" xml:space="preserve">
         <value>Vorerst keiner: E-Mails im Protokoll anzeigen</value>
+    </data>
+    <data name="SampleDeployAskEmailSuggestion" xml:space="preserve">
+        <value>Ein kostenloser E-Mail-Dienst, bis die Domain bereit ist</value>
     </data>
     <data name="SampleDeployAskSsh" xml:space="preserve">
         <value>Den SSH-Port des Servers schließen, sobald der Tunnel läuft?</value>

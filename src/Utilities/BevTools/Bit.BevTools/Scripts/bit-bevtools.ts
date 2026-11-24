@@ -217,7 +217,7 @@ function looksLikeSecret(value: string) {
     if (/\bBearer\s+\S+/i.test(value)) return true;
     if (/-----BEGIN [A-Z ]*PRIVATE KEY-----/i.test(value)) return true;
     if (/\b(?:AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[abposr]-[A-Za-z0-9-]{10,}|[rs]k_(?:live|test)_[A-Za-z0-9]{16,})\b/.test(value)) return true;
-    return /(?:password|passwd|pwd|api[_-]?key|access[_-]?key|account[_-]?key|access[_-]?token|id[_-]?token|refresh[_-]?token|authorization|client[_-]?secret|connectionstring|token|secret|credential|cookie|private[_ -]?key)"?\s*[:=]/i.test(value);
+    return /(?:password|passwd|pwd|(?:^|[^a-z0-9])t?otp|api[_-]?key|access[_-]?key|account[_-]?key|access[_-]?token|id[_-]?token|refresh[_-]?token|authorization|client[_-]?secret|connectionstring|token|secret|credential|cookie|private[_ -]?key)"?\s*[:=]/i.test(value);
 }
 
 // A header of "ey" and six or more base64url characters, a dot, a payload of six or more, a dot - TryFindJwt in
@@ -249,9 +249,93 @@ function containsJwt(value: string) {
     return false;
 }
 
+let prefetchedStylesheet: CSSStyleSheet | null = null;
+let pendingStylesheet: Promise<boolean> | null = null;
+
+/**
+ * BevToolsLoader.PrefetchAsync: puts the panel's stylesheet into the page before the panel exists, so the panel needs no
+ * link of its own - which would request it again, and fail offline. Every rule of it is scoped under .bev-root, so it
+ * changes nothing else; it stays for the page's life. It is a constructed stylesheet in document.adoptedStyleSheets, not
+ * a link: enhanced navigation makes the document's head the server's, removing every element a script added there, and
+ * the panel would be left without its styles. (The stylesheet holds no url() or @import, which a constructed one would
+ * resolve against the page.) Resolves to whether the stylesheet is in the page this way; where the browser cannot adopt a
+ * stylesheet it is not, and the panel keeps linking it itself.
+ */
+export function prefetchStylesheet(href: string): Promise<boolean> {
+    if (prefetchedStylesheet) return Promise.resolve(true);
+    // Calls while one fetches share it, so the page adopts the stylesheet once; a failed one is forgotten, and the next
+    // call tries again.
+    return pendingStylesheet ??= adoptStylesheet(href).finally(() => pendingStylesheet = null);
+}
+
+async function adoptStylesheet(href: string): Promise<boolean> {
+    const doc = document as Document & { adoptedStyleSheets?: CSSStyleSheet[] };
+    if (!("adoptedStyleSheets" in document) || typeof CSSStyleSheet !== "function" || typeof (CSSStyleSheet.prototype as any).replaceSync !== "function") {
+        return false;
+    }
+    const url = new URL(href, document.baseURI).href;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("The BevTools stylesheet could not be fetched: " + url + " (" + response.status + ")");
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(await response.text());
+    doc.adoptedStyleSheets = [...(doc.adoptedStyleSheets || []), sheet];
+    prefetchedStylesheet = sheet;
+    return true;
+}
+
 function isSensitiveName(name: string) {
-    const lower = name.toLowerCase();
-    return sensitivePatterns.some(p => lower.includes(p));
+    return sensitivePatterns.some(p => matchesSensitivePattern(name, p));
+}
+
+/** BevToolsRedactor.WordPatterns: the patterns that hide inside ordinary words, matched only where a word starts or ends. */
+const WORD_PATTERNS = ["otp", "ssn"];
+
+/** The patterns as BevToolsRedactor keeps them: trimmed, without empty ones, and in lower case for matching. */
+function normalizePatterns(patterns: unknown[] | null | undefined) {
+    return (patterns || []).map(p => String(p).trim().toLowerCase()).filter(p => p.length > 0);
+}
+
+/**
+ * BevToolsRedactor.MatchesPattern: case-insensitively, anywhere in the name, except one of WORD_PATTERNS, which matches
+ * only where the match starts or ends a word ("otp" in "userOtp" and "otp_code", not in "NotPublished"). An empty
+ * pattern matches nothing. `pattern` is lower case.
+ */
+export function matchesSensitivePattern(name: string, pattern: string) {
+    name = name || "";
+    if (!pattern) return false;
+    const wordOnly = WORD_PATTERNS.indexOf(pattern) >= 0;
+    for (let at = indexOfIgnoreCase(name, pattern, 0); at >= 0; at = indexOfIgnoreCase(name, pattern, at + 1)) {
+        if (!wordOnly || isWordBoundary(name, at) || isWordBoundary(name, at + pattern.length)) return true;
+    }
+    return false;
+}
+
+/**
+ * Where lower case `pattern` occurs in `name`, compared character by character as C#'s OrdinalIgnoreCase does, so the
+ * index is one into `name` itself: name.toLowerCase() may be longer than name ("İ" becomes two code units), and its
+ * indexes would then point at other characters of name.
+ */
+function indexOfIgnoreCase(name: string, pattern: string, from: number) {
+    outer: for (let at = from; at + pattern.length <= name.length; at++) {
+        for (let i = 0; i < pattern.length; i++) {
+            const c = name[at + i];
+            if (c !== pattern[i] && c.toLowerCase() !== pattern[i]) continue outer;
+        }
+        return at;
+    }
+    return -1;
+}
+
+function isWordBoundary(name: string, at: number) {
+    if (at <= 0 || at >= name.length) return true;
+    const before = name[at - 1], after = name[at];
+    const alnum = /[\p{L}\p{N}]/u;
+    if (!alnum.test(before) || !alnum.test(after)) return true;
+    const upper = (c: string) => c !== c.toLowerCase() && c === c.toUpperCase();
+    const lowerCase = (c: string) => c !== c.toUpperCase() && c === c.toLowerCase();
+    // A hump (userOtp), or the end of an upper case run before the next word (OTPCode: between P and C).
+    return (upper(after) && !upper(before))
+        || (upper(before) && upper(after) && at + 1 < name.length && lowerCase(name[at + 1]));
 }
 
 /** Query and fragment values whose key looks sensitive, or whose value looks like a token, never leave the hub. */
@@ -2233,7 +2317,7 @@ export function attach(ref: any, options: BevAttachOptions | null) {
 
     // The last runtime to attach decides the shortcut and the patterns; every runtime gets them from the same options.
     shortcut = parseShortcut(options ? options.shortcut : undefined);
-    sensitivePatterns = (options && options.sensitivePatterns || []).map(p => String(p).toLowerCase());
+    sensitivePatterns = normalizePatterns(options && options.sensitivePatterns);
     const id = "t" + (++nextTargetId);
     const target: BevTarget = {
         id,
@@ -2673,7 +2757,7 @@ export async function fetchPdb(assemblyName: string): Promise<Uint8Array | null>
 // ----- storage, preferences, downloads -----
 
 export function getStorage(kind: string, patterns: string[] | null, previews?: boolean) {
-    const lowered = (patterns || []).map(p => String(p).toLowerCase());
+    const lowered = normalizePatterns(patterns);
     const result: BevStorageEntry[] = [];
     try {
         // Inside: the getter itself throws where storage is denied (sandboxed frames, blocked cookies).
@@ -2681,10 +2765,9 @@ export function getStorage(kind: string, patterns: string[] | null, previews?: b
         for (let i = 0; i < storage.length; i++) {
             const key = storage.key(i);
             const value = storage.getItem(key!) || "";
-            const lowerKey = (key || "").toLowerCase();
             // Redaction happens before the value leaves the browser: BevTools never holds the plaintext. Without
             // previews (ValueAccess None) no value leaves it at all.
-            const sensitive = lowered.some(p => lowerKey.includes(p)) || looksLikeSecret(value);
+            const sensitive = lowered.some(p => matchesSensitivePattern(key || "", p)) || looksLikeSecret(value);
             result.push({
                 key,
                 size: value.length,

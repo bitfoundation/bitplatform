@@ -35,6 +35,16 @@ public class BitMenuButtonItem
     public string? Class { get; set; }
 
     /// <summary>
+    /// The description of the item: a second line under its text, in a smaller and quieter type - what an entry of
+    /// a navigation (mega) menu says about where it leads.
+    /// </summary>
+    /// <remarks>
+    /// It is announced as the description it is (<c>aria-describedby</c>) rather than as part of the name of the item.
+    /// A <see cref="Template"/>, or the ItemTemplate of the menu button, renders the item in its place and leaves it out.
+    /// </remarks>
+    public string? Description { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the item. If provided, the item renders as an anchor tag instead of button.
     /// </summary>
     public string? Href { get; set; }
@@ -90,6 +100,18 @@ public class BitMenuButtonItem
     /// A unique value to use as a key of the item.
     /// </summary>
     public string? Key { get; set; }
+
+    /// <summary>
+    /// Marks the item as the one pointing at the page the app currently sits on, by matching its <see cref="Href"/>
+    /// against the current URL in the given mode. The item that matches carries <c>aria-current="page"</c> and the
+    /// Current class-style part, and so does the row of the submenu it sits in. Left unset, the item is never marked.
+    /// </summary>
+    /// <remarks>
+    /// A Wildcard (or a Regex) is run as the pattern the <see cref="Href"/> was written as, so unlike an Exact or a
+    /// Prefix one it is never normalized: it has to be app-relative and to carry its leading slash itself, as in
+    /// "/products/*".
+    /// </remarks>
+    public BitNavMatch? Match { get; set; }
 
     /// <summary>
     /// Click event handler of the item.

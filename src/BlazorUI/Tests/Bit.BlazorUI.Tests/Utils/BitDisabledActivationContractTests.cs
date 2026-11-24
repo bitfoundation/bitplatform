@@ -31,6 +31,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitButton)],
         [typeof(BitButtonGroup<BitButtonGroupItem>)],
         [typeof(BitMenuButton<BitMenuButtonItem>)],
+        [typeof(BitScrollToTop)],
         [typeof(BitToggleButton)],
         [typeof(BitCalendar)],
         [typeof(BitCheckbox)],

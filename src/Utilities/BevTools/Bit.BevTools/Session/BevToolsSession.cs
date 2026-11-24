@@ -53,6 +53,11 @@ public sealed class BevToolsSession : IDisposable
 
         if (IsEnabled)
         {
+            foreach (var problem in options.ConfigurationProblems)
+            {
+                Errors.Record(null, "bevtools", problem, exceptionType: "BevTools configuration");
+            }
+
             BevToolsSessionResolver.Register(this);
         }
     }

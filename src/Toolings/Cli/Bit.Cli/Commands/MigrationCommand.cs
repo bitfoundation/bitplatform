@@ -30,12 +30,14 @@ public static class MigrationCommand
             offlineOption
         };
 
+        var projectOptions = ProjectOptionsOf(command);
+
         command.SetAction((parseResult, cancellationToken) =>
         {
             var name = parseResult.GetValue(nameArgument)?.Trim() ?? "";
             var offline = parseResult.GetValue(offlineOption);
 
-            return RunAsync(services(), offline, async (steps, migrations) =>
+            return RunAsync(services(), parseResult, projectOptions, offline, async (steps, migrations) =>
             {
                 var before = migrations.MigrationFiles(offline);
                 var added = await steps.RunAsync("migration-add", $"Adding the {name} migration", (progress, token) => migrations.AddAsync(name, offline, progress, token), cancellationToken);
@@ -64,11 +66,13 @@ public static class MigrationCommand
             offlineOption
         };
 
+        var projectOptions = ProjectOptionsOf(command);
+
         command.SetAction((parseResult, cancellationToken) =>
         {
             var offline = parseResult.GetValue(offlineOption);
 
-            return RunAsync(services(), offline, async (steps, migrations) =>
+            return RunAsync(services(), parseResult, projectOptions, offline, async (steps, migrations) =>
             {
                 var removed = await steps.RunAsync("migration-remove", "Removing the last migration", (progress, token) => migrations.RemoveAsync(offline, progress, token), cancellationToken);
 
@@ -86,7 +90,9 @@ public static class MigrationCommand
     {
         var command = new Command("optimize", "Regenerate the offline database's compiled model, which the app needs outside Development, e.g. before the first publish. add and remove with --offline do it for you.");
 
-        command.SetAction((_, cancellationToken) => RunAsync(services(), offline: true, (steps, migrations) =>
+        var projectOptions = ProjectOptionsOf(command);
+
+        command.SetAction((parseResult, cancellationToken) => RunAsync(services(), parseResult, projectOptions, offline: true, (steps, migrations) =>
             steps.RunAsync("migration-optimize", "Regenerating the offline database's compiled model", (progress, token) => migrations.OptimizeAsync(build: true, progress, token), cancellationToken)));
 
         return command;
@@ -101,12 +107,14 @@ public static class MigrationCommand
             runtimeOption
         };
 
+        var projectOptions = ProjectOptionsOf(command);
+
         command.SetAction((parseResult, cancellationToken) =>
         {
             var cli = services();
             var runtime = parseResult.GetValue(runtimeOption)?.Trim() is { Length: > 0 } value ? value : "linux-x64";
 
-            return RunAsync(cli, offline: false, async (steps, migrations) =>
+            return RunAsync(cli, parseResult, projectOptions, offline: false, async (steps, migrations) =>
             {
                 var bundle = await steps.RunAsync("migration-bundle", $"Building the migrations bundle for {runtime}", (progress, token) => migrations.BundleAsync(runtime, progress, token), cancellationToken);
 
@@ -131,16 +139,32 @@ public static class MigrationCommand
         await steps.RunAsync("migration-optimize", "Regenerating the offline database's compiled model", (progress, token) => migrations.OptimizeAsync(build: false, progress, token), cancellationToken);
     }
 
-    private static async Task<int> RunAsync(CliServices cli, bool offline, Func<StepRunner, ProjectMigrations, Task> work)
+    private static ProjectOptions ProjectOptionsOf(Command command)
     {
-        var directory = ProjectContext.FindProjectDirectory(cli.Environment.CurrentDirectory);
+        var options = new ProjectOptions().SearchedAbove();
+        options.ServerApi.Description = "Server.Api's .csproj, which gets AppDbContext's migrations when no .cs file declares that class. Default: src/Server/<name>.Server.Api, or the *.Server.Api.csproj the project's .slnx lists.";
+        options.ServerWeb.Description = "Server.Web's .csproj, the app EF Core's tools start the offline database with when more than one app references its project. Default: src/Server/<name>.Server.Web, or the *.Server.Web.csproj the project's .slnx lists.";
+        options.ClientCore.Description = "Client.Core's folder, where AppOfflineDbContext is looked for first. Default: src/Client/<name>.Client.Core, or the folder of the *.Core.csproj the project's .slnx lists under src/Client.";
+        return options.AddTo(command, options.Project, options.ServerApi, options.ServerWeb, options.ClientCore);
+    }
+
+    private static async Task<int> RunAsync(CliServices cli, ParseResult parseResult, ProjectOptions projectOptions, bool offline, Func<StepRunner, ProjectMigrations, Task> work)
+    {
+        var directory = projectOptions.ProjectDirectory(parseResult, cli, out var folder);
 
         if (directory is null || ProjectContext.FindProjectName(directory) is not { } name)
         {
-            return cli.UsageError("not-a-project", $"{cli.Environment.CurrentDirectory} isn't in a bit Boilerplate project: neither it nor a folder above it has a *.Web.slnf or *.slnx. Run bit migration in the project's folder.");
+            return cli.UsageError("not-a-project", $"{ProjectOptions.NotInAProject(folder)} Run bit migration in the project's folder, or name it with {ProjectOptions.ProjectName}.");
         }
 
-        var project = new ProjectContext { Name = name, Directory = directory, Platforms = new HashSet<Platform> { Platform.Web } };
+        var (parts, partsError) = projectOptions.Read(parseResult, cli, directory);
+
+        if (partsError is not null)
+        {
+            return cli.UsageError("project-part-missing", partsError);
+        }
+
+        var project = new ProjectContext { Name = name, Directory = directory, Platforms = new HashSet<Platform> { Platform.Web }, Parts = parts };
         var migrations = new ProjectMigrations(cli, project);
 
         var lookup = migrations.Find(offline);

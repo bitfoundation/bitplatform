@@ -25,6 +25,45 @@ public partial class ServerWebSettings : ClientWebSettings
     /// This optional setting allows overriding HttpClient's BaseAddress specifically for the server project.
     /// </summary>
     public string? ServerSideHttpClientBaseAddress { get; set; }
+
+    /// <summary>
+    /// What <c>/llms.txt</c> (https://llmstxt.org) tells AI agents about the app. The pages it lists are the ones
+    /// <c>sitemap.xml</c> lists, with the descriptions their <see cref="PageUrls"/> constants carry.
+    /// </summary>
+    public LlmsTxtOptions LlmsTxt { get; set; } = new();
+
+    /// <summary>
+    /// <c>/.well-known/security.txt</c> (https://www.rfc-editor.org/rfc/rfc9116): whom to tell about a vulnerability.
+    /// Served only once <see cref="SecurityTxtOptions.Contact"/> has an address.
+    /// </summary>
+    public SecurityTxtOptions SecurityTxt { get; set; } = new();
+}
+
+public partial class LlmsTxtOptions
+{
+    /// <summary>The app's name, which the file opens with.</summary>
+    public string Name { get; set; } = "Boilerplate";
+
+    /// <summary>One or two sentences on what the app is and who it is for, under the name.</summary>
+    public string? Summary { get; set; }
+}
+
+public partial class SecurityTxtOptions
+{
+    /// <summary>Where to report a vulnerability: <c>mailto:</c>, <c>https:</c> or <c>tel:</c> uris, the preferred one first.</summary>
+    public string[] Contact { get; set; } = [];
+
+    /// <summary>
+    /// When what the file says should be checked again, less than a year ahead. Empty, it is 180 days from each request,
+    /// so the file never lapses while the app runs.
+    /// </summary>
+    public DateTimeOffset? Expires { get; set; }
+
+    /// <summary>The languages a report may be written in, such as <c>en, nl</c>.</summary>
+    public string? PreferredLanguages { get; set; }
+
+    /// <summary>The address of the app's vulnerability disclosure policy, if it has one.</summary>
+    public string? Policy { get; set; }
 }
 
 [OptionsValidator]
