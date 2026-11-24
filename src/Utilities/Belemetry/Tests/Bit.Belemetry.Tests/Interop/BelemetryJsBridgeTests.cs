@@ -3,6 +3,10 @@ using Microsoft.JSInterop;
 
 namespace Bit.Belemetry.Tests.Interop;
 
+/// <summary>
+/// The bridge's lifecycle as a circuit closes: a start the bridge is disposed under, or whose JS calls fail, ends
+/// without a live bridge and releases the module and callbacks it made; a start after disposal touches nothing.
+/// </summary>
 [TestClass]
 public class BelemetryJsBridgeTests
 {
