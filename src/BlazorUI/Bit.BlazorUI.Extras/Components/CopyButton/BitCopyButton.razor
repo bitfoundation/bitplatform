@@ -19,7 +19,8 @@
        screen-reader-only content, and the tooltip says it to the eye. The glyph and the text turn into the copied ones
        once the value is on the clipboard and back after CopiedDuration, since a copy leaves nothing else on the screen
        to show for itself. The Copy glyph is not in the font of the core package, so it is drawn from the subset this
-       package ships (ButtonClasses); the check mark (Accept) is one of the core font's. *@
+       package ships (ButtonClasses); the check mark (Accept) is one of the core font's. The TabIndex the base takes
+       goes to the button, the one focusable element; the root span stays out of the tab order. *@
     <BitButton Icon="@customIcon"
                IconName="@(customIcon is not null ? null : copied ? "Accept" : "Copy")"
                IconOnly="@(showText is false)"
@@ -29,6 +30,7 @@
                Size="@Size"
                Variant="@Variant"
                Disabled="@disabled"
+               TabIndex="@TabIndex"
                OnClick="HandleOnClick"
                Classes="@(copied || customIcon is not null ? Classes?.Button : ButtonClasses)"
                Styles="@Styles?.Button">

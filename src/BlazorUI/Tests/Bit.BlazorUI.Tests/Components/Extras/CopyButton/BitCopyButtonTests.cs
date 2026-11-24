@@ -60,10 +60,11 @@ public class BitCopyButtonTests : BunitTestContext
     {
         Context.JSInterop.SetupVoid(CopyIdentifier, _ => true).SetVoidResult();
 
+        // A long duration first, so the confirmation holds still while it is read.
         var component = RenderComponent<BitCopyButton>(p => p
             .Add(c => c.Value, "hello")
             .Add(c => c.Text, "Copy code")
-            .Add(c => c.CopiedDuration, TimeSpan.FromMilliseconds(50)));
+            .Add(c => c.CopiedDuration, TimeSpan.FromMinutes(1)));
 
         Assert.AreEqual("Copy code", component.Find(".bit-btn-prt").TextContent.Trim());
 
@@ -74,6 +75,11 @@ public class BitCopyButtonTests : BunitTestContext
         // The check mark of the core font, with no glyph class of the Extras subset left on it.
         Assert.IsNotNull(component.Find("button").QuerySelector("i.bit-icon--Accept"));
         Assert.IsNull(component.Find("button").QuerySelector("i.bit-icon-ex"));
+
+        // Then a short one, which the next copy starts over with, to see the confirmation go.
+        component.Render(p => p.Add(c => c.CopiedDuration, TimeSpan.FromMilliseconds(50)));
+
+        component.Find("button").Click();
 
         component.WaitForAssertion(() => Assert.AreEqual("Copy code", component.Find(".bit-btn-prt").TextContent.Trim()), TimeSpan.FromSeconds(2));
         Assert.AreEqual(string.Empty, component.Find(".bit-cpb-liv").TextContent);
@@ -285,6 +291,42 @@ public class BitCopyButtonTests : BunitTestContext
 
         Assert.AreEqual("Copy", component.Find(".bit-btn-prt").TextContent.Trim());
         Assert.AreEqual(string.Empty, component.Find(".bit-cpb-liv").TextContent);
+    }
+
+    [TestMethod]
+    public void AValueChangedWhileCopyingShouldNotBeConfirmed()
+    {
+        // Left pending, so the value can change while the browser is still writing.
+        var handler = Context.JSInterop.SetupVoid(CopyIdentifier, _ => true);
+        string? copied = null;
+
+        var component = RenderComponent<BitCopyButton>(p => p
+            .Add(c => c.Value, "row 1")
+            .Add(c => c.Text, "Copy")
+            .Add(c => c.CopiedDuration, TimeSpan.FromMinutes(1))
+            .Add(c => c.OnCopy, (string value) => copied = value));
+
+        component.Find("button").Click();
+
+        component.Render(p => p.Add(c => c.Value, "row 7"));
+
+        handler.SetVoidResult();
+
+        // The copy made is still reported, with the value that went on the clipboard.
+        component.WaitForAssertion(() => Assert.AreEqual("row 1", copied));
+        Assert.AreEqual("Copy", component.Find(".bit-btn-prt").TextContent.Trim());
+        Assert.AreEqual(string.Empty, component.Find(".bit-cpb-liv").TextContent);
+    }
+
+    [TestMethod]
+    public void TheTabIndexShouldReachTheButtonAndNotTheRoot()
+    {
+        var component = RenderComponent<BitCopyButton>(p => p
+            .Add(c => c.Value, "hello")
+            .Add(c => c.TabIndex, "3"));
+
+        Assert.AreEqual("3", component.Find("button").GetAttribute("tabindex"));
+        Assert.IsFalse(component.Find(".bit-cpb").HasAttribute("tabindex"));
     }
 
     [TestMethod]

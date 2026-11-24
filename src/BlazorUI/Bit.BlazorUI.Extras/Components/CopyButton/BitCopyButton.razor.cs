@@ -281,7 +281,11 @@ public partial class BitCopyButton : BitComponentBase
 
         if (IsDisposed) return;
 
-        if (CopiedDuration > TimeSpan.Zero)
+        // The parameters may have moved on while the browser was writing: a button handed another value, or made
+        // unavailable, in the meantime has no copy of its current value to confirm - the copy made is still reported.
+        var stillCurrent = Disabled is false && string.Equals(Value, value, StringComparison.Ordinal);
+
+        if (CopiedDuration > TimeSpan.Zero && stillCurrent)
         {
             _copied = true;
             _copiedValue = value;
