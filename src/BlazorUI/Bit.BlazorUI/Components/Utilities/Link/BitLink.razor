@@ -14,6 +14,11 @@
     @* The picture of an IconUrl stands in for the glyph only where there is none: Icon and IconName win over it. *@
     var hasIconUrl = icon is null && IconUrl.HasValue();
 
+    @* Decorative unless an IconAlt says otherwise: a picture with a text alternative is exposed, so its alt can name
+       a link that has nothing else to be named by. *@
+    var iconUrlAlt = IconAlt ?? string.Empty;
+    var iconUrlHidden = IconAlt.HasValue() ? null : "true";
+
     @* An attribute written after the splat wins over the one the app passed in through HtmlAttributes, and
        a null one takes it off the element altogether. So every attribute the link writes for itself reads
        what came in with the attributes first and writes it back when the parameter behind it was left
@@ -81,7 +86,7 @@
         }
         else if (hasIconUrl && iconAtEnd is false)
         {
-            <img src="@IconUrl" alt="" class="bit-lnk-icu bit-lnk-sic" aria-hidden="true" />
+            <img src="@IconUrl" alt="@iconUrlAlt" class="bit-lnk-icu bit-lnk-sic" aria-hidden="@iconUrlHidden" />
         }
         @ChildContent
         @if (icon is not null && iconAtEnd)
@@ -90,7 +95,7 @@
         }
         else if (hasIconUrl && iconAtEnd)
         {
-            <img src="@IconUrl" alt="" class="bit-lnk-icu bit-lnk-eic" aria-hidden="true" />
+            <img src="@IconUrl" alt="@iconUrlAlt" class="bit-lnk-icu bit-lnk-eic" aria-hidden="@iconUrlHidden" />
         }
         @if (hint.HintText.HasValue())
         {

@@ -47,13 +47,14 @@
         <div>
             <b>IconName</b> adds a glyph sized to the text beside it; <b>IconPlacement</b> moves it after the text. <b>IconUrl</b>
             renders an image there instead, at the same size. The icon is hidden from screen readers, so the text has to say
-            what it says.
+            what it says - unless <b>IconAlt</b> gives the image a text alternative, which a link made of the image alone needs.
         </div>
         <br />
         <div class="example-content">
             <BitLink IconName="@BitIconName.Link" Href="https://github.com/bitfoundation/bitplatform">Leading icon</BitLink>
             <BitLink IconName="@BitIconName.ChevronRight" IconPlacement="BitPlacement.End" Href="https://github.com/bitfoundation/bitplatform">Trailing icon</BitLink>
             <BitLink IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" Href="https://bitplatform.dev">Image icon</BitLink>
+            <BitLink IconUrl="/_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo.svg" IconAlt="bit platform" Href="https://bitplatform.dev" />
         </div>
     </DemoExample>
 

@@ -168,6 +168,20 @@ public partial class BitLink : BitComponentBase
     [Parameter] public BitIconInfo? Icon { get; set; }
 
     /// <summary>
+    /// The text alternative of the <see cref="IconUrl"/> picture.
+    /// </summary>
+    /// <remarks>
+    /// The picture sits next to link text that already says where the link goes, so it is decorative by default:
+    /// it renders with an empty alt and is hidden from assistive technologies. Set this where the picture is the
+    /// whole content of the link (a logo link with no text and no <c>AriaLabel</c>), or where it says something the
+    /// text does not; the picture is then exposed and its alt names the link.
+    /// <br />
+    /// It reaches nothing but that picture, which only renders while no <see cref="Icon"/> and no
+    /// <see cref="IconName"/> has taken its place.
+    /// </remarks>
+    [Parameter] public string? IconAlt { get; set; }
+
+    /// <summary>
     /// Gets or sets the name of the icon rendered beside the link content, from the built-in Fluent UI icons.
     /// </summary>
     /// <remarks>
@@ -200,7 +214,8 @@ public partial class BitLink : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The picture is sized to the text beside it like the glyph is, sits where <see cref="IconPlacement"/> puts the
-    /// icon, and is drawn as decoration hidden from assistive technologies, so the link text has to say what it says.
+    /// icon, and is drawn as decoration hidden from assistive technologies unless <see cref="IconAlt"/> gives it a text
+    /// alternative, so a link made of the picture alone needs an <see cref="IconAlt"/> or an <c>AriaLabel</c> to be named.
     /// </remarks>
     [Parameter] public string? IconUrl { get; set; }
 

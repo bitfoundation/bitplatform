@@ -96,6 +96,13 @@ public partial class BitLinkParams : BitComponentBaseParams, IBitComponentParams
     public BitIconInfo? Icon { get; set; }
 
     /// <summary>
+    /// The text alternative of the IconUrl picture of the link.
+    /// <br />
+    /// <see cref="BitLink.IconAlt"/>.
+    /// </summary>
+    public string? IconAlt { get; set; }
+
+    /// <summary>
     /// The name of the icon rendered beside the link content, from the built-in Fluent UI icons.
     /// <br />
     /// <see cref="BitLink.IconName"/>.
@@ -264,6 +271,11 @@ public partial class BitLinkParams : BitComponentBaseParams, IBitComponentParams
         if (Icon is not null)
         {
             bitLink.TakeFromCascade(nameof(Icon), Icon, static l => l.Icon, static (l, v) => l.Icon = v);
+        }
+
+        if (IconAlt.HasValue())
+        {
+            bitLink.TakeFromCascade(nameof(IconAlt), IconAlt, static l => l.IconAlt, static (l, v) => l.IconAlt = v);
         }
 
         if (IconName.HasValue())

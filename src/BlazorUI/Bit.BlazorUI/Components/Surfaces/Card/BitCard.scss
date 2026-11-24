@@ -58,6 +58,7 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 //   --bit-Card-subtitle-font-size    subtitle text size                             (default: $tg-fs-sm)
 //   --bit-Card-subtitle-color        subtitle text color                            (default: $clr-fg-sec)
 //   --bit-Card-icon-size             size of the header glyph or IconUrl picture    (default: $siz-icon-md)
+//   --bit-Card-disabled-icon-opacity fading of the IconUrl picture when disabled    (default: $opa-dis)
 //   --bit-Card-divider-color         color of the Divider hairlines                 (default: $clr-brd-sec)
 //   --bit-Card-selected-color        color of the Selected ring                     (default: $clr-pri)
 //   --bit-Card-focus-color           color of the keyboard focus ring               (default: the text color)
@@ -375,8 +376,9 @@ i.bit-crd-hic {
 }
 
 // The picture of an IconUrl is held to the size of the glyph it stands in for, and fitted inside that square
-// whatever its own proportions.
-img.bit-crd-hic {
+// whatever its own proportions. The tag test is wrapped in :where so the rule costs one class, and a class passed
+// through Classes.Icon (declared later, as an app's stylesheet is) can still resize the picture.
+.bit-crd-hic:where(img) {
     object-fit: contain;
     width: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));
     height: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));
@@ -922,6 +924,12 @@ button.bit-crd-lnk {
 // A disabled card dims every word on it, and the subtitle is the one line that carries a foreground of its own.
 .bit-crd.bit-dis > .bit-crd-mai > .bit-crd-hdr > .bit-crd-htx > .bit-crd-sub {
     color: inherit;
+}
+
+// The glyph of the header dims with the words, being drawn in their color; the picture of an IconUrl keeps its own
+// colors, so it is faded instead.
+.bit-crd.bit-dis > .bit-crd-mai > .bit-crd-hdr > .bit-crd-hic:where(img) {
+    opacity: var(--bit-Card-disabled-icon-opacity, #{$opa-dis});
 }
 
 

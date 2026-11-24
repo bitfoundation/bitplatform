@@ -243,6 +243,14 @@ public partial class BitLinkStylesheetTests
         StringAssert.Contains(picture, "vertical-align: -0.125em;");
     }
 
+    [TestMethod]
+    public void BitLinkShouldFadeTheIconUrlPictureWhenDisabled()
+    {
+        var dimmed = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-lnk.bit-dis > .bit-lnk-icu {");
+
+        StringAssert.Contains(dimmed, "opacity: var(--bit-Link-disabled-icon-opacity, #{$opa-dis});");
+    }
+
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();

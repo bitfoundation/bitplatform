@@ -1105,6 +1105,22 @@ public class BitLinkTests : BunitTestContext
                                   </button>");
     }
 
+    [TestMethod]
+    public void BitLinkShouldExposeTheIconUrlWithItsIconAlt()
+    {
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Href, "/");
+            parameters.Add(p => p.IconUrl, "/images/logo.svg");
+            parameters.Add(p => p.IconAlt, "bit platform");
+        });
+
+        // A link made of the picture alone is named by its alt, so the picture is not hidden.
+        component.MarkupMatches(@"<a href=""/"" class=""bit-lnk"" id:ignore>
+                                    <img src=""/images/logo.svg"" alt=""bit platform"" class=""bit-lnk-icu bit-lnk-sic"" />
+                                  </a>");
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)

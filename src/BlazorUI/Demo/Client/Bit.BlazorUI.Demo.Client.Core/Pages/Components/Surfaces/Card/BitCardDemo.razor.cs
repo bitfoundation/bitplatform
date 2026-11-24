@@ -787,6 +787,12 @@ public partial class BitCardDemo
         },
         new()
         {
+            Name = "--bit-Card-disabled-icon-opacity",
+            DefaultValue = "--bit-opa-dis",
+            Description = "Opacity of the IconUrl image of a disabled card, which keeps its own colors and so is faded instead.",
+        },
+        new()
+        {
             Name = "--bit-Card-divider-color",
             DefaultValue = "--bit-clr-brd-sec",
             Description = "Color of the Divider hairlines.",

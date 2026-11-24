@@ -73,6 +73,13 @@ public partial class BitLinkDemo
         },
         new()
         {
+            Name = "IconAlt",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The text alternative of the IconUrl image. Left unset, the image is decorative and hidden from assistive technologies; set it to name a link made of the image alone.",
+        },
+        new()
+        {
             Name = "IconName",
             Type = "string?",
             DefaultValue = "null",
@@ -225,6 +232,12 @@ public partial class BitLinkDemo
             Name = "--bit-Link-disabled-color",
             DefaultValue = "--bit-clr-pri-dis-text",
             Description = "Text color and focus ring color of a disabled link. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Link-disabled-icon-opacity",
+            DefaultValue = "--bit-opa-dis",
+            Description = "Opacity of the IconUrl image of a disabled link, which keeps its own colors and so is faded instead.",
         },
         new()
         {
