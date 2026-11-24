@@ -568,7 +568,7 @@ public partial class BitAccordionDemo
         {
             Name = "--bit-Accordion-hover-background",
             DefaultValue = "The expanded fill, then the fill at rest",
-            Description = "Fill of the whole accordion while the pointer is over it. The Background parameter wins over it.",
+            Description = "Fill of the whole accordion while the pointer is over it (not while disabled, read-only or busy, nor while the pointer is over an accordion nested in its panel); the header shades default to it too. The Background parameter wins over it.",
         },
         new()
         {
@@ -586,19 +586,19 @@ public partial class BitAccordionDemo
         {
             Name = "--bit-Accordion-expanded-background",
             DefaultValue = "The fill at rest",
-            Description = "Fill of the whole accordion while it is expanded. The Background parameter wins over it.",
+            Description = "Fill of the whole accordion while it is expanded (not while disabled). The Background parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Accordion-expanded-border-color",
             DefaultValue = "The outline at rest",
-            Description = "Color of the outline while the accordion is expanded. The Border parameter wins over it.",
+            Description = "Color of the outline while the accordion is expanded (not while disabled). The Border parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Accordion-expanded-shadow",
             DefaultValue = "--bit-Accordion-shadow",
-            Description = "Elevation of the accordion while it is expanded.",
+            Description = "Elevation of the accordion while it is expanded (not while disabled).",
         },
         new()
         {
@@ -615,13 +615,13 @@ public partial class BitAccordionDemo
         new()
         {
             Name = "--bit-Accordion-header-hover-background",
-            DefaultValue = "--bit-clr-bg-pri-hover (--bit-clr-bg-sec-hover with NoBorder)",
+            DefaultValue = "--bit-Accordion-hover-background, then --bit-clr-bg-pri-hover (--bit-clr-bg-sec-hover with NoBorder)",
             Description = "Fill of the header under the pointer. The Background parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Accordion-header-active-background",
-            DefaultValue = "The hover fill, then --bit-clr-bg-pri-active (--bit-clr-bg-sec-active with NoBorder)",
+            DefaultValue = "The header hover fill, then --bit-Accordion-hover-background, then --bit-clr-bg-pri-active (--bit-clr-bg-sec-active with NoBorder)",
             Description = "Fill of the header while pressed. The Background parameter wins over it.",
         },
         new()
