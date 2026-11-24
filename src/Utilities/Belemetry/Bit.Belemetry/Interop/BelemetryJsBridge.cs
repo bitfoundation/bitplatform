@@ -82,6 +82,8 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
         try
         {
             if (_module is not null) return true;
+            // Disposed while this call waited for the lock (another start held it).
+            if (_disposed) return false;
 
             var module = await _js.InvokeAsync<IJSObjectReference>("import", ModulePath);
             // A script started already (a server's <BelemetryScript />, before a circuit or an Auto app's WebAssembly
@@ -92,12 +94,22 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
             await module.InvokeVoidAsync("start", BelemetryBrowserConfigFactory.ToElement(BelemetryBrowserConfigFactory.Create(_settings, includeDiscoveredRoutes)));
             if (includeDiscoveredRoutes) _pipeline.WarnIfNoPageRoutes();
 
-            _callbacks = DotNetObjectReference.Create(new BelemetryJsCallbacks(this));
+            var callbacks = _callbacks = DotNetObjectReference.Create(new BelemetryJsCallbacks(this));
             var relay = _settings.BrowserTransport == BelemetryBrowserTransport.Relay;
             // A circuit's connection closes on a message over its size limit: on a server the script relays in parts.
             var maxRelayBytes = relay && _settings.IsServer ? Math.Max(0, _settings.Options.Browser.MaxRelayMessageBytes) : 0;
             using var attachOptions = JsonDocument.Parse($"{{\"relay\":{(relay ? "true" : "false")},\"unloadDrain\":{(UnloadDrain ? "true" : "false")}{(maxRelayBytes > 0 ? ",\"maxRelayBytes\":" + maxRelayBytes.ToString(CultureInfo.InvariantCulture) : "")}}}");
-            await module.InvokeVoidAsync("attachDotNet", _callbacks, attachOptions.RootElement);
+            await module.InvokeVoidAsync("attachDotNet", callbacks, attachOptions.RootElement);
+
+            if (_disposed)
+            {
+                // Disposed during the calls above (a tab closed while the page started): DisposeAsync found no module
+                // to release, so what this start made is released here, and a disposed bridge never registers itself
+                // with the process's registry.
+                callbacks.Dispose();
+                await DisposeModuleAsync(module);
+                return false;
+            }
 
             _module = module;
 
@@ -340,19 +352,22 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
             _registry.SetUser = null;
         }
 
-        if (_module is not null)
-        {
-            try
-            {
-                await _module.DisposeAsync();
-            }
-            catch (Exception ex) when (IsUnavailable(ex))
-            {
-                // Already gone.
-            }
-        }
+        if (_module is not null) await DisposeModuleAsync(_module);
 
         _callbacks?.Dispose();
-        _startLock.Dispose();
+        // _startLock is not disposed: a start in progress (a circuit closed while the page started) releases it after
+        // this, and a SemaphoreSlim whose AvailableWaitHandle was never read holds nothing to dispose.
+    }
+
+    private static async ValueTask DisposeModuleAsync(IJSObjectReference module)
+    {
+        try
+        {
+            await module.DisposeAsync();
+        }
+        catch (Exception ex) when (IsUnavailable(ex))
+        {
+            // Already gone.
+        }
     }
 }
