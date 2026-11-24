@@ -260,11 +260,11 @@ public partial class BitButton : BitComponentBase
     /// so it keeps the icon's place, <see cref="IconPlacement"/> and the square (or, <see cref="Rounded"/>, round) shape
     /// of an <see cref="IconOnly"/> button or of one with no text, gets the <c>Icon</c> class/style of
     /// <see cref="Classes"/> and <see cref="Styles"/>, and is hidden from assistive technologies just as the icon is
-    /// while the button has a name of its own (its text, an <see cref="BitComponentBase.AriaLabel"/>, an aria-label or an
-    /// aria-labelledby). With none of them the template is left exposed, so an SVG with <c>role="img"</c> and an
-    /// <c>aria-label</c> (or a <c>&lt;title&gt;</c>) names the button. Its font size is the icon size, so an SVG sized
-    /// <c>1em</c> (or with no size of its own) is drawn as big as the icon it replaces, and <c>currentColor</c> follows the
-    /// button's foreground through every state.
+    /// while the button has a name of its own (text that renders something, an
+    /// <see cref="BitComponentBase.AriaLabel"/>, an aria-label or an aria-labelledby). With none of them the template is
+    /// left exposed, so an SVG with <c>role="img"</c> and an <c>aria-label</c> (or a <c>&lt;title&gt;</c>) names the
+    /// button. Its font size is the icon size, so an SVG sized <c>1em</c> (or with no size of its own) is drawn as big as
+    /// the icon it replaces, and <c>currentColor</c> follows the button's foreground through every state.
     /// </remarks>
     [Parameter] public RenderFragment? IconTemplate { get; set; }
 

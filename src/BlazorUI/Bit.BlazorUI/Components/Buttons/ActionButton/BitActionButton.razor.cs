@@ -190,12 +190,13 @@ public partial class BitActionButton : BitComponentBase
     /// Use it for an icon an icon font cannot carry, an inline SVG most of the time. It renders in the icon's own slot,
     /// so it keeps the icon's place, color, <see cref="IconPlacement"/> and <see cref="IconOnly"/> shape, gets the
     /// <c>Icon</c> class/style of <see cref="Classes"/> and <see cref="Styles"/>, and is hidden from assistive
-    /// technologies just as the icon is while the button has a name of its own (its content, an
+    /// technologies just as the icon is while the button has a name of its own (content that renders something, an
     /// <see cref="BitComponentBase.AriaLabel"/>, an aria-label or an aria-labelledby). With none of them the template is
     /// left exposed, so an SVG with <c>role="img"</c> and an <c>aria-label</c> (or a <c>&lt;title&gt;</c>) names the
     /// button. Its font size is the icon size, so an SVG sized <c>1em</c> (or with no size of its own) is drawn as big as
     /// the icon it replaces, and <c>currentColor</c> follows the icon's color through every state. The spinner takes its
-    /// slot while the button is loading, as it does the icon's.
+    /// slot while the button is loading, as it does the icon's; a template that names the button is then kept as
+    /// screen-reader-only text, so the button does not lose its name while it works.
     /// </remarks>
     [Parameter] public RenderFragment? IconTemplate { get; set; }
 

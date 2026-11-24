@@ -113,6 +113,10 @@ $acb-private-properties: clr-ico, clr-fg, clr-hover, clr-active, clr-focus, clr-
 }
 
 .bit-acb-inn {
+    // The containing block of the visually hidden .bit-acb-icn inside it, which is absolutely positioned: held
+    // here, its pixel stays inside the button instead of adding to the scrollable overflow of a positioned
+    // ancestor outside it.
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: var(--bit-ActionButton-gap, #{spacing(1)});
@@ -177,11 +181,13 @@ $acb-private-properties: clr-ico, clr-fg, clr-hover, clr-active, clr-focus, clr-
     flex-grow: 1;
 }
 
-// The two pieces of text the button carries for a screen reader and for nobody else: the live region that
-// announces the loading label, and the description it is pointed at through aria-describedby. Both are taken
-// out of the flow rather than hidden, since display:none is also hidden from the readers they are written for.
+// The pieces the button carries for a screen reader and for nobody else: the live region that announces the
+// loading label, the description it is pointed at through aria-describedby, and an IconTemplate that names the
+// button kept while the spinner holds its slot. All are taken out of the flow rather than hidden, since
+// display:none is also hidden from the readers they are written for.
 .bit-acb-sts,
-.bit-acb-dsc {
+.bit-acb-dsc,
+.bit-acb-icn {
     @include visually-hidden;
 }
 

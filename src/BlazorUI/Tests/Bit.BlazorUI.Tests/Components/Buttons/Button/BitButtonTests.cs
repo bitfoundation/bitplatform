@@ -1513,6 +1513,29 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual(hidden ? "true" : null, slot.GetAttribute("aria-hidden"));
     }
 
+    [TestMethod,
+        DataRow(null, false),
+        DataRow("   ", false),
+        DataRow("Menu", true)]
+    public void BitButtonIconTemplateShouldBeHiddenOnlyWhileTheTextRendersSomething(string? text, bool hidden)
+    {
+        // A ChildContent written around an @if that is false is set and renders nothing, so it names nothing either:
+        // the template is then what names the button and stays exposed.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg role=\"img\" aria-label=\"Menu\"></svg>");
+            parameters.AddChildContent(b =>
+            {
+                if (text is not null)
+                {
+                    b.AddContent(0, text);
+                }
+            });
+        });
+
+        Assert.AreEqual(hidden ? "true" : null, com.Find(".bit-btn-ict").GetAttribute("aria-hidden"));
+    }
+
     [TestMethod]
     public void BitButtonIconTemplateShouldBeHiddenWhenIconOnlyKeepsTheTextAsTheName()
     {

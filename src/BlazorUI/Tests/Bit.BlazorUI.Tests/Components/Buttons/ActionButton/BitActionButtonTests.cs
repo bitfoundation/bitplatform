@@ -513,6 +513,68 @@ public class BitActionButtonTests : BunitTestContext
         Assert.AreEqual(hidden ? "true" : null, component.Find(".bit-acb-ict").GetAttribute("aria-hidden"));
     }
 
+    [TestMethod,
+        DataRow(null, false),
+        DataRow("   ", false),
+        DataRow("Copy", true)]
+    public void BitActionButtonIconTemplateShouldBeHiddenOnlyWhileTheContentRendersSomething(string? text, bool hidden)
+    {
+        // A ChildContent written around an @if that is false is set and renders nothing, so it names nothing either:
+        // the template is then what names the button and stays exposed.
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg role=\"img\" aria-label=\"Copy\"></svg>");
+            parameters.AddChildContent(b =>
+            {
+                if (text is not null)
+                {
+                    b.AddContent(0, text);
+                }
+            });
+        });
+
+        Assert.AreEqual(hidden ? "true" : null, component.Find(".bit-acb-ict").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconTemplateShouldKeepNamingTheButtonWhileLoading()
+    {
+        // The spinner takes the template's slot, so a template that is the button's only name is kept as
+        // screen-reader-only text for as long as the button loads, and is back in its slot once it is done.
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconTemplate, "<svg role=\"img\" aria-label=\"Copy\"></svg>");
+            parameters.Add(p => p.Loading, true);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-acb-spn").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-acb-ict").Count);
+        var kept = component.Find(".bit-acb-icn");
+        Assert.IsNull(kept.GetAttribute("aria-hidden"));
+        Assert.AreEqual("Copy", kept.QuerySelector("svg")!.GetAttribute("aria-label"));
+
+        component.Render(parameters => parameters.Add(p => p.Loading, false));
+
+        Assert.AreEqual(0, component.FindAll(".bit-acb-icn").Count);
+        Assert.IsNull(component.Find(".bit-acb-ict").GetAttribute("aria-hidden"));
+        Assert.AreEqual("Copy", component.Find(".bit-acb-ict svg").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitActionButtonIconTemplateShouldNotBeKeptWhileLoadingWhenSomethingElseNamesTheButton()
+    {
+        var component = RenderComponent<BitActionButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.Loading, true);
+            parameters.AddChildContent("Copy");
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-acb-icn").Count);
+        Assert.AreEqual(0, component.FindAll(".custom-svg").Count);
+    }
+
     [TestMethod]
     public void BitActionButtonIconTemplateShouldTakePrecedenceOverIconIconNameAndIconUrl()
     {

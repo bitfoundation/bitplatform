@@ -41,12 +41,25 @@
     // its content, an aria-label or an aria-labelledby. With none of them (an IconOnly button drops its content) the
     // template is all the button has, so it is left exposed - an svg with a role="img" and an aria-label of its own, or
     // a <title>, is then what names the button rather than being hidden along with everything else.
-    var hideIconTemplate = body is not null || ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue();
+    // The content counts only when it renders something: a ChildContent written around an @if that is false is set and
+    // names nothing, so it is run to find out (BitRenderFragments), after the cheaper sources have had their say.
+    var hideIconTemplate = IconTemplate is not null
+                        && (ariaLabel.HasValue()
+                            || GetSplattedAttribute("aria-labelledby").HasValue()
+                            || (body is not null && BitRenderFragments.RendersContent(Body ?? ChildContent)));
+    // While it loads, the spinner takes the icon's slot and the template with it, so a template that is the button's
+    // name is kept as screen-reader-only text instead: the name does not drop out for as long as the button works.
+    var keepIconTemplateName = IconTemplate is not null && hideIconTemplate is false;
 
     RenderFragment inner =
         @<text>
             @if (_showLoading)
             {
+                @if (keepIconTemplateName)
+                {
+                    <span class="bit-acb-icn">@IconTemplate</span>
+                }
+
                 @if (LoadingTemplate is not null)
                 {
                     @LoadingTemplate
