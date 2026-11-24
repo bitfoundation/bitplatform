@@ -87,7 +87,7 @@ Yet, bitplatform doesn't stop there. Our platform introduces exclusive tools tha
 
 ***Bsqlite***: Dreaming of an offline web application capable of saving data and syncing later? Enter Bsqlite, your solution to incorporating ef core & sqlite in your browser - and in your Blazor Hybrid app. It's a crucial aid for achieving this objective seamlessly 🕺
 
-***Bit Boilerplate Project Template***: If the aforementioned features have piqued your interest, dive into the Bit Boilerplate project template. Experience everything mentioned above along with additional features such as ASP.NET Core Identity integration, multilingualism, and other cool features that empowers you to develop unified Web, Android, iOS, Windows, and macOS apps from a single codebase, while providing seamless integration with native platform features and third-party Java, Kotlin, Swift, Objective-C, and JavaScript libraries 💯
+***Bit Boilerplate Project Template***: If the aforementioned features have piqued your interest, dive into the Bit Boilerplate project template, now part of [bit Fabric](https://bitfabric.co). Experience everything mentioned above along with additional features such as ASP.NET Core Identity integration, multilingualism, and other cool features that empowers you to develop unified Web, Android, iOS, Windows, and macOS apps from a single codebase, while providing seamless integration with native platform features and third-party Java, Kotlin, Swift, Objective-C, and JavaScript libraries 💯
 
 For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
@@ -196,7 +196,7 @@ Yet, bitplatform doesn't stop there. Our platform introduces exclusive tools tha
 
 ***Bsqlite***: Dreaming of an offline web application capable of saving data and syncing later? Enter Bsqlite, your solution to incorporating ef core & sqlite in your browser - and in your Blazor Hybrid app. It's a crucial aid for achieving this objective seamlessly 🕺
 
-***Bit Boilerplate Project Template***: If the aforementioned features have piqued your interest, dive into the Bit Boilerplate project template. Experience everything mentioned above along with additional features such as ASP.NET Core Identity integration, multilingualism, and other cool features that empowers you to develop unified Web, Android, iOS, Windows, and macOS apps from a single codebase, while providing seamless integration with native platform features and third-party Java, Kotlin, Swift, Objective-C, and JavaScript libraries 💯
+***Bit Boilerplate Project Template***: If the aforementioned features have piqued your interest, dive into the Bit Boilerplate project template, now part of [bit Fabric](https://bitfabric.co). Experience everything mentioned above along with additional features such as ASP.NET Core Identity integration, multilingualism, and other cool features that empowers you to develop unified Web, Android, iOS, Windows, and macOS apps from a single codebase, while providing seamless integration with native platform features and third-party Java, Kotlin, Swift, Objective-C, and JavaScript libraries 💯
 
 For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
