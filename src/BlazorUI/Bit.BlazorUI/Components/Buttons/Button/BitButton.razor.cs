@@ -187,6 +187,9 @@ public partial class BitButton : BitComponentBase
     /// button's own foreground instead. A disabled button drops it for its disabled fill, and so does a forced-colors
     /// palette, which paints the button as a native one. It wins over the background and border color variables, which
     /// restyle the default fill and not a chosen one.
+    /// <br />
+    /// The value has to be one CSS value: one holding a semicolon or a brace outside its brackets and strings (which would
+    /// add declarations of its own to the button's style) is ignored, and the button keeps its flat fill.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? Gradient { get; set; }
@@ -527,8 +530,64 @@ public partial class BitButton : BitComponentBase
         StyleBuilder.Register(() => PaintsGradient ? $"--bit-btn-grd:{Gradient}" : string.Empty);
     }
 
-    // Only the Fill variant has a fill to paint the gradient into; an unset Variant is the Fill one.
-    private bool PaintsGradient => Gradient.HasValue() && Variant is not (BitVariant.Outline or BitVariant.Text);
+    // Only the Fill variant has a fill to paint the gradient into; an unset Variant is the Fill one. A value that is not
+    // one CSS value paints nothing (see IsSingleCssValue).
+    private bool PaintsGradient => Gradient.HasValue()
+                                   && Variant is not (BitVariant.Outline or BitVariant.Text)
+                                   && IsSingleCssValue(Gradient!);
+
+    // The gradient is written into the style attribute of the root, where a semicolon outside every bracket and string
+    // ends the custom property and starts declarations of the value's own on the root - a value carried in from a theme
+    // or from user data could pin the button over the whole page. So the value is read the way the CSS tokenizer reads
+    // it: a semicolon inside a function (the ";base64" of a data: url) or a string stays part of it, while one at the top
+    // level, a brace, a bracket closed that was never opened, a string or a bracket left open, a string broken by a line
+    // and a comment (which the tokenizer drops, brackets and all) each mark a value that is not one.
+    private static bool IsSingleCssValue(string value)
+    {
+        var depth = 0;
+        var quote = '\0';
+
+        for (var i = 0; i < value.Length; i++)
+        {
+            var c = value[i];
+
+            if (c == '\\')
+            {
+                i++;
+                continue;
+            }
+
+            if (quote != '\0')
+            {
+                if (c == quote) quote = '\0';
+                else if (c is '\n' or '\r' or '\f') return false;
+
+                continue;
+            }
+
+            switch (c)
+            {
+                case '"' or '\'':
+                    quote = c;
+                    break;
+                case '(' or '[':
+                    depth++;
+                    break;
+                case ')' or ']':
+                    if (--depth < 0) return false;
+                    break;
+                case ';' when depth == 0:
+                    return false;
+                // No background-image needs a block, and one left open would swallow the declarations written after it.
+                case '{' or '}':
+                    return false;
+                case '/' when i + 1 < value.Length && value[i + 1] == '*':
+                    return false;
+            }
+        }
+
+        return depth == 0 && quote == '\0';
+    }
 
     // A bare number is not a CSS length, and an invalid value takes down every inset that reads it - the
     // button stops being pinned at all and drifts off with the content. A number is also what an offset

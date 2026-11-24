@@ -492,16 +492,7 @@ private readonly BitButtonParams[] buttonParams =
     private readonly string example14RazorCode = @"
 <BitButton Rounded Gradient=""linear-gradient(96deg, #524add 10%, #0d71bf 90%)"">Get started</BitButton>
 <BitButton Rounded Gradient=""linear-gradient(135deg, #c2185b, #6a1b9a)"" IconName=""@BitIconName.Heart"">Favorite</BitButton>
-<BitButton Rounded Disabled Gradient=""linear-gradient(96deg, #524add 10%, #0d71bf 90%)"">Disabled</BitButton>
-
-
-<div style=""--bit-Button-hover-translate: 0 -2px;"">
-    <BitButton Rounded Gradient=""linear-gradient(96deg, #524add 10%, #0d71bf 90%)""
-               Style=""--bit-Button-shadow: 0 8px 24px -8px rgb(82 74 221 / 0.6); --bit-Button-hover-shadow: 0 12px 28px -8px rgb(82 74 221 / 0.8);"">
-        Explore products
-    </BitButton>
-    <BitButton Rounded Variant=""BitVariant.Outline"">Get started with templates</BitButton>
-</div>";
+<BitButton Rounded Disabled Gradient=""linear-gradient(96deg, #524add 10%, #0d71bf 90%)"">Disabled</BitButton>";
 
     private readonly string example15RazorCode = @"
 <BitButton Color=""BitColor.Primary"">Primary</BitButton>
@@ -665,7 +656,17 @@ private readonly BitButtonParams[] buttonParams =
                   --bit-Button-text-transform: uppercase;
                   --bit-Button-letter-spacing: 0.06em;"">
     Raised & tracked
-</BitButton>";
+</BitButton>
+
+
+<div style=""--bit-Button-hover-lift: 2px;"">
+    <BitButton Rounded Gradient=""linear-gradient(96deg, #524add 10%, #0d71bf 90%)""
+               Style=""--bit-Button-shadow: 0 8px 24px -8px rgb(82 74 221 / 0.6);
+                      --bit-Button-hover-shadow: 0 12px 28px -8px rgb(82 74 221 / 0.8);"">
+        Explore products
+    </BitButton>
+    <BitButton Rounded Variant=""BitVariant.Outline"">Get started with templates</BitButton>
+</div>";
 
     private readonly string example18CsharpCode = @"
 private bool stylesLoading;

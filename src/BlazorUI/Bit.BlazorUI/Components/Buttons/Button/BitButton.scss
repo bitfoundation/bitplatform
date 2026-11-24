@@ -57,8 +57,8 @@
 //   --bit-Button-border-width              thickness of the border on every variant       (default: $shp-border-width)
 //   --bit-Button-shadow                    elevation of the box                           (default: none; a floating button has --bit-Button-float-shadow of its own)
 //   --bit-Button-hover-shadow              elevation of the box under the pointer         (default: the resting shadow, the floating one for a floating button)
-//   --bit-Button-hover-translate           how far the box moves under the pointer, as a
-//                                          translate value (0 -2px lifts it by 2px)       (default: none)
+//   --bit-Button-hover-lift                how far the box rises under the pointer, as a
+//                                          length (2px lifts it by 2px, below 0 is none)  (default: none)
 //   --bit-Button-padding                   padding of the box                             (default: $siz-ctrl-pad-y-md $siz-ctrl-pad-x-md)
 //   --bit-Button-min-width                 smallest width of a labeled button             (default: $siz-ctrl-min-width, 0 when FullWidth or NoWrap sizes the button by its container)
 //   --bit-Button-min-height                smallest height of the box, and the smallest
@@ -134,7 +134,10 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
     // hover shadow (see the pointer states below) is a step rather than a fade as well.
     box-shadow: var(--bit-btn-shd, var(--bit-Button-shadow, none));
     // Where the pointer states move the box to. The individual property rather than a transform, so it composes with
-    // the transform a centred floating button is positioned by and with one the app gives the button.
+    // the transform a centred floating button is positioned by and with one the app gives the button; and rather than
+    // a relative offset (the way a BitCard lifts), since a floating button is placed by its insets, which an offset of
+    // its own would take over. Left at none while nothing lifts it: any other value makes the button a stacking context
+    // and the containing block of everything fixed inside it.
     translate: var(--bit-btn-trn, none);
     // Every value an explicit Size, Color or Rounded publishes is read first, then the public variable, then the
     // medium primary button with the button corner that an unset one stands for.
@@ -354,7 +357,13 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
 }
 
 
-// The lift. Under the pointer the box rises to --bit-Button-hover-shadow and moves by --bit-Button-hover-translate,
+// How far the button rises under the pointer, as a length, the way --bit-Card-hover-lift lifts a card. The none it
+// falls back to is no length, which leaves every declaration reading it invalid and so at its initial value - no
+// translate, no band (below); a value below zero lifts nothing, since a button sinking under the pointer would leave
+// it no room to stay hovered in.
+$btn-lift: max(0px, var(--bit-Button-hover-lift, none));
+
+// The lift. Under the pointer the box casts --bit-Button-hover-shadow and rises by --bit-Button-hover-lift,
 // whatever its variant - a glow under a call to action, a step towards the pointer - and both stay where they rest
 // until a variable asks for them, so a button that sets neither does not move at all. Only where hovering is a thing
 // the input device does at all, and never for the two states that answer no pointer (see the variants below).
@@ -370,7 +379,24 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
 @media (hover: hover) {
     .bit-btn:not(.bit-dis, .bit-btn-lnc):hover {
         --bit-btn-shd: var(--bit-Button-hover-shadow, var(--bit-Button-shadow, none));
-        --bit-btn-trn: var(--bit-Button-hover-translate, none);
+        --bit-btn-trn: 0 calc(-1 * #{$btn-lift});
+    }
+
+    // The room the lift leaves under the button stays the button's. The pointer is tested against the box where it is
+    // drawn, so a pointer resting just above the bottom edge would be left behind by the lift, end the hover and bring
+    // the button back down under itself, over and over. The band runs from the bottom of the lifted button to where it
+    // rested, across its border on every side, so it covers nothing the button did not; it is the root's own, so a
+    // press there is a press of the button. With no lift set its height is invalid, which leaves it at none.
+    .bit-btn:not(.bit-dis, .bit-btn-lnc):hover::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        top: 100%;
+        box-sizing: content-box;
+        height: #{$btn-lift};
+        // The border lies outside the padding box the band is placed against, so the band reaches across it.
+        margin-inline: calc(-1 * var(--bit-Button-border-width, #{$shp-border-width}));
+        padding-block-end: var(--bit-Button-border-width, #{$shp-border-width});
     }
 
     .bit-btn-fab:not(.bit-dis, .bit-btn-lnc):hover,
@@ -379,11 +405,14 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
     }
 }
 
-// The press settles the box back to where it rests - its shadow and its place - which is what reads as pressing it
-// rather than as lifting it further. The rule follows the hover ones at the same weight, so it wins while both match.
+// The press settles the shadow back to the resting one, which is what reads as pressing the button rather than as
+// lifting it further. The rule follows the hover ones at the same weight, so it wins while both match.
+//
+// That is its shadow alone: a lifted button keeps its place under the press. One that dropped back would leave a
+// pointer pressed near its top edge outside it, and the release would land on whatever is above the button, which is
+// no click.
 .bit-btn:not(.bit-dis, .bit-btn-lnc):active {
     --bit-btn-shd: initial;
-    --bit-btn-trn: initial;
 }
 
 

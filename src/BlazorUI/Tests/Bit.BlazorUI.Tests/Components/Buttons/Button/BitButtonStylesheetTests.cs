@@ -197,19 +197,30 @@ public partial class BitButtonStylesheetTests
         }
 
         // Neither variable is a variant's, so the states that read them qualify no variant: the hover shadow falls back to
-        // the resting shadow, and to the floating one for a floating button, and the offset is nothing unless it is set.
+        // the resting shadow, and to the floating one for a floating button, and the lift is a length that is nothing
+        // unless it is set and never below zero - the way a card lifts.
+        StringAssert.Contains(stylesheet, "$btn-lift: max(0px, var(--bit-Button-hover-lift, none));");
         var hover = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-btn:not(.bit-dis, .bit-btn-lnc):hover {");
         StringAssert.Contains(hover, "--bit-btn-shd: var(--bit-Button-hover-shadow, var(--bit-Button-shadow, none));");
-        StringAssert.Contains(hover, "--bit-btn-trn: var(--bit-Button-hover-translate, none);");
+        StringAssert.Contains(hover, "--bit-btn-trn: 0 calc(-1 * #{$btn-lift});");
 
         var floatHover = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-btn-fab:not(.bit-dis, .bit-btn-lnc):hover,\n    .bit-btn-ffx:not(.bit-dis, .bit-btn-lnc):hover {");
         StringAssert.Contains(floatHover, "--bit-btn-shd: var(--bit-Button-hover-shadow, var(--bit-Button-float-shadow, #{$box-shadow-card}));");
 
-        // A press settles the button back where it rests, in a rule that follows both hover ones at the same weight.
-        var press = "\n.bit-btn:not(.bit-dis, .bit-btn-lnc):active {\n    --bit-btn-shd: initial;\n    --bit-btn-trn: initial;\n}";
+        // The room the lift leaves under the button stays the button's, so a pointer resting just above its bottom edge is
+        // not left behind by the lift, which would end the hover and bring the button down under it, over and over.
+        var band = SourceFiles.GetScssDeclarations(stylesheet, "\n    .bit-btn:not(.bit-dis, .bit-btn-lnc):hover::before {");
+        StringAssert.Contains(band, "position: absolute;");
+        StringAssert.Contains(band, "top: 100%;");
+        StringAssert.Contains(band, "height: #{$btn-lift};");
+
+        // A press settles the shadow alone, in a rule that follows both hover ones at the same weight: a lifted button keeps
+        // its place, so a press near its top edge is not left outside it by the time it is released.
+        var press = "\n.bit-btn:not(.bit-dis, .bit-btn-lnc):active {\n    --bit-btn-shd: initial;\n}";
         StringAssert.Contains(stylesheet, press);
         Assert.IsTrue(stylesheet.IndexOf(press, StringComparison.Ordinal) > stylesheet.IndexOf(".bit-btn-ffx:not(.bit-dis, .bit-btn-lnc):hover", StringComparison.Ordinal),
                       "The press is declared ahead of the hover it has to win over.");
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @":active[^{]*\{[^}]*--bit-btn-trn"), "A press moves the lifted button out from under the pointer.");
 
         foreach (var property in new[] { "--bit-btn-shd", "--bit-btn-trn", "--bit-btn-sov", "--bit-btn-grd" })
         {

@@ -575,7 +575,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Gradient & hover lift" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Gradient" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>Gradient</b> fills a Fill button with any CSS background-image - a linear, radial or conic gradient, or
             several of them layered - instead of a flat color. It reaches the edge of the box and keeps the label in the
@@ -588,21 +588,6 @@
             <BitButton Rounded Gradient="linear-gradient(96deg, #524add 10%, #0d71bf 90%)">Get started</BitButton>
             <BitButton Rounded Gradient="linear-gradient(135deg, #c2185b, #6a1b9a)" IconName="@BitIconName.Heart">Favorite</BitButton>
             <BitButton Rounded Disabled Gradient="linear-gradient(96deg, #524add 10%, #0d71bf 90%)">Disabled</BitButton>
-        </div>
-        <br /><br />
-        <div>
-            <b>--bit-Button-hover-shadow</b> is the shadow under the pointer and <b>--bit-Button-hover-translate</b> how far
-            the button moves there, as a CSS translate value. Neither changes anything until it is set, on any variant,
-            and a press settles the button back to where it rests. Like every public variable they inherit, so the row
-            below moves both of its buttons from its container, while the first one sets its own glow.
-        </div>
-        <br />
-        <div class="example-content" style="--bit-Button-hover-translate: 0 -2px;">
-            <BitButton Rounded Gradient="linear-gradient(96deg, #524add 10%, #0d71bf 90%)"
-                       Style="--bit-Button-shadow: 0 8px 24px -8px rgb(82 74 221 / 0.6); --bit-Button-hover-shadow: 0 12px 28px -8px rgb(82 74 221 / 0.8);">
-                Explore products
-            </BitButton>
-            <BitButton Rounded Variant="BitVariant.Outline">Get started with templates</BitButton>
         </div>
     </DemoExample>
 
@@ -896,6 +881,22 @@
             <BitButton Style="--bit-Button-shadow: var(--bit-shd-card); --bit-Button-text-transform: uppercase; --bit-Button-letter-spacing: 0.06em;">
                 Raised & tracked
             </BitButton>
+        </div>
+        <br /><br />
+        <div>
+            <b>--bit-Button-hover-shadow</b> is the shadow under the pointer and <b>--bit-Button-hover-lift</b> how far
+            the button rises there, as a length. Neither changes anything until it is set, on any variant. A press
+            settles the shadow back to the resting one and keeps the lift, so the button never slides out from under
+            the pointer pressing it. Like every public variable they inherit, so the row below lifts both of its buttons
+            from its container, while the first one sets its own glow.
+        </div>
+        <br />
+        <div class="example-content" style="--bit-Button-hover-lift: 2px;">
+            <BitButton Rounded Gradient="linear-gradient(96deg, #524add 10%, #0d71bf 90%)"
+                       Style="--bit-Button-shadow: 0 8px 24px -8px rgb(82 74 221 / 0.6); --bit-Button-hover-shadow: 0 12px 28px -8px rgb(82 74 221 / 0.8);">
+                Explore products
+            </BitButton>
+            <BitButton Rounded Variant="BitVariant.Outline">Get started with templates</BitButton>
         </div>
     </DemoExample>
 

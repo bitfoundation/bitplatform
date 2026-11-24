@@ -1306,6 +1306,47 @@ public class BitButtonTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-btn-grd"));
     }
 
+    [TestMethod,
+        DataRow("linear-gradient(red,blue);position:fixed;inset:0;z-index:9999"),
+        DataRow("linear-gradient(red, blue)}.x{color:red"),
+        DataRow("linear-gradient(red, blue));color:red"),
+        DataRow("linear-gradient(red, blue"),
+        DataRow("linear-gradient(red, blue) /* ( */;color:red"),
+        DataRow("url(\"a\nb\");color:red"),
+        DataRow("url('a.png)")]
+    public void BitButtonGradientShouldIgnoreAValueThatIsNotOneCssValue(string gradient)
+    {
+        // The gradient is written into the style attribute of the root, where a semicolon or a brace at its top level would
+        // add declarations of the value's own to the button.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, gradient);
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-btn-grd"));
+        Assert.IsFalse(root.HasAttribute("style"));
+    }
+
+    [TestMethod,
+        DataRow("linear-gradient(96deg, #524add 10%, #0d71bf 90%), radial-gradient(circle at 0 0, gold, transparent)"),
+        DataRow("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'/>\"), linear-gradient(red, blue)"),
+        DataRow("url(data:image/png;base64,iVBORw0KGgo=)"),
+        DataRow("linear-gradient(\"a;b\", red)")]
+    public void BitButtonGradientShouldKeepASemicolonInsideABracketOrAString(string gradient)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, gradient);
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-btn-grd"));
+        Assert.AreEqual($"--bit-btn-grd:{gradient}", root.GetAttribute("style"));
+    }
+
     [TestMethod]
     public void BitButtonShouldNotAddNoOpenerWhenNoReferrerIsAlreadyAskedFor()
     {

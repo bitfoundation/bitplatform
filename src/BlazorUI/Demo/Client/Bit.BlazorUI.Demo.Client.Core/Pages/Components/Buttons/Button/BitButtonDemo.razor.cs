@@ -786,9 +786,9 @@ public partial class BitButtonDemo
         },
         new()
         {
-            Name = "--bit-Button-hover-translate",
+            Name = "--bit-Button-hover-lift",
             DefaultValue = "none",
-            Description = "How far the box moves under the pointer, on every variant, as a CSS translate value: 0 -2px lifts it by 2px. A press settles it back. It is the translate property rather than a transform, so it composes with a transform of the button's own, and under reduced motion it steps there instead of gliding.",
+            Description = "How far the box rises under the pointer, on every variant, as a length: 2px lifts it by 2px, and a value below 0 lifts nothing. A press keeps the lift, so the button never slides out from under the pointer pressing it, and the room the lift leaves under the button stays part of it. It moves the box by the translate property rather than a transform, so it composes with a transform of the button's own, and under reduced motion it steps there instead of gliding.",
         },
         new()
         {
