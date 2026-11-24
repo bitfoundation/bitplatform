@@ -8,10 +8,16 @@
 //   --bit-Accordion-border-width              thickness of the outline                      (default: $shp-border-width)
 //   --bit-Accordion-radius                    corner radius of the accordion                (default: $shp-radius-surface)
 //   --bit-Accordion-shadow                    elevation of the accordion                    (default: none)
+//   --bit-Accordion-hover-background          fill of the accordion under the pointer       (default: the expanded fill, then the fill at rest; Background wins)
+//   --bit-Accordion-hover-border-color        outline of the accordion under the pointer    (default: the expanded outline, then the outline at rest; Border wins)
+//   --bit-Accordion-hover-shadow              elevation of the accordion under the pointer  (default: the expanded elevation, then the elevation at rest)
+//   --bit-Accordion-expanded-background       fill of the accordion while expanded          (default: the fill at rest; Background wins)
+//   --bit-Accordion-expanded-border-color     outline of the accordion while expanded       (default: the outline at rest; Border wins)
+//   --bit-Accordion-expanded-shadow           elevation of the accordion while expanded     (default: the elevation at rest)
 //   --bit-Accordion-font-size                 text size of the panel and the description    (default: $tg-fs-sm)
 //   --bit-Accordion-header-padding            padding of the header                         (default: spacing(1.5))
-//   --bit-Accordion-header-hover-background   fill of the header under the pointer          (default: $clr-bg-pri-hover; $clr-bg-sec-hover with NoBorder; Background wins)
-//   --bit-Accordion-header-active-background  fill of the header while pressed              (default: the hover fill, then $clr-bg-pri-active; Background wins)
+//   --bit-Accordion-header-hover-background   fill of the header under the pointer          (default: the accordion's hover fill, then $clr-bg-pri-hover; $clr-bg-sec-hover with NoBorder; Background wins)
+//   --bit-Accordion-header-active-background  fill of the header while pressed              (default: the header's hover fill, then the accordion's, then $clr-bg-pri-active; Background wins)
 //   --bit-Accordion-header-expanded-background fill of the header while expanded, hovered too (default: transparent)
 //   --bit-Accordion-header-expanded-color     text of the header while expanded             (default: inherited; title/icon/expander colors win)
 //   --bit-Accordion-title-color               color of the title                            (default: inherited)
@@ -35,11 +41,32 @@
 // carried the default would be indistinguishable from one that was asked for. NoBorder asks for no fill in
 // particular, so the variables still win over the secondary fill it falls back to; an open header's own fill
 // (--bit-Accordion-header-expanded-background) is a state of its own and wins over the shades of any Background.
+// The hover and expanded variables of the whole accordion restyle the default fill and outline in those states, so an
+// explicit Background keeps its fill and an explicit Border its outline under the pointer and while open as well;
+// the hover and expanded shadows have no parameter to yield to. A hover fill given to the whole accordion is also
+// what its header shades under the pointer and while pressed default to, since the shades of the default fill would
+// sit on a fill they were not made for.
 
 $acd-private-properties:
     pad, ttl-fontsize, fontsize, icn-fontsize,
+    // The fill, the outline and the shadow the hover and expanded states below move the root to; the states set
+    // these rather than the paint.
+    bg-hov, brd-hov, shd-hov, bg-exp, brd-exp, shd-exp,
     // What the component writes into an inline style, which wins over this on the element it is written on.
     max-h;
+
+// The state values are read by the root alone, so they are also registered as properties that do not inherit: a value
+// an outer accordion's state set never reaches one nested in its panel, and the guaranteed-invalid value (no
+// initial-value) leaves every var() of them to its fallback. The root rule still resets them, for a browser without
+// @property.
+$acd-root-only-properties: bg-hov, brd-hov, shd-hov, bg-exp, brd-exp, shd-exp;
+
+@each $name in $acd-root-only-properties {
+    @property --bit-acd-#{$name} {
+        syntax: "*";
+        inherits: false;
+    }
+}
 
 .bit-acd {
     width: 100%;
@@ -54,10 +81,18 @@ $acd-private-properties:
     // of the whole component and not only of its header. An explicit Size is read first, then the public
     // variable, then the medium size an unset one stands for.
     font-size: var(--bit-acd-fontsize, var(--bit-Accordion-font-size, #{$tg-fs-sm}));
-    background-color: var(--bit-acd-bg);
-    box-shadow: var(--bit-Accordion-shadow, none);
+    // Painted from the state the accordion is in - under the pointer, then expanded, then at rest - which the state
+    // rules further down move rather than paint, so a root the app paints through Class or Classes keeps that paint
+    // under the pointer and while open as well.
+    background-color: var(--bit-acd-bg-hov, var(--bit-acd-bg-exp, var(--bit-acd-bg)));
+    box-shadow: var(--bit-acd-shd-hov, var(--bit-acd-shd-exp, var(--bit-Accordion-shadow, none)));
     border-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
-    border: var(--bit-Accordion-border-width, #{$shp-border-width}) $shp-border-style var(--bit-acd-brd);
+    border: var(--bit-Accordion-border-width, #{$shp-border-width}) $shp-border-style var(--bit-acd-brd-hov, var(--bit-acd-brd-exp, var(--bit-acd-brd)));
+    // The fill and the outline fade between their states the way BitCard's do, which also eases a change of theme or of
+    // Disabled; the motion tokens collapse the fade under reduced motion.
+    transition: background-color $mot-duration-short $mot-easing 0ms,
+                border-color $mot-duration-short $mot-easing 0ms,
+                box-shadow $mot-duration-short $mot-easing 0ms;
 
     // The fill, the outline and the two header shades are resolved into private variables here, so that the
     // Background, Border and NoBorder classes below - which the instance asks for itself - can replace them on
@@ -67,8 +102,8 @@ $acd-private-properties:
     // restyle the shades of the default fill (and of the one NoBorder falls back to).
     --bit-acd-bg: var(--bit-Accordion-background, #{$clr-bg-pri});
     --bit-acd-brd: var(--bit-Accordion-border-color, #{$clr-brd-pri});
-    --bit-acd-hov: var(--bit-Accordion-header-hover-background, #{$clr-bg-pri-hover});
-    --bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, #{$clr-bg-pri-active}));
+    --bit-acd-hov: var(--bit-Accordion-header-hover-background, var(--bit-Accordion-hover-background, #{$clr-bg-pri-hover}));
+    --bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, var(--bit-Accordion-hover-background, #{$clr-bg-pri-active})));
     // The values the Size classes publish, unset here - rather than inherited from an accordion this one sits in the
     // panel of - and won back by those classes, declared further down at the same weight, on the root that carries
     // them. Left unset, each sends the var() reading it on to the public variable and then to the medium size.
@@ -177,8 +212,8 @@ $acd-private-properties:
 
     &:not(.bit-acd-pbg, .bit-acd-sbg, .bit-acd-tbg, .bit-acd-rbg) {
         --bit-acd-bg: var(--bit-Accordion-background, #{$clr-bg-sec});
-        --bit-acd-hov: var(--bit-Accordion-header-hover-background, #{$clr-bg-sec-hover});
-        --bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, #{$clr-bg-sec-active}));
+        --bit-acd-hov: var(--bit-Accordion-header-hover-background, var(--bit-Accordion-hover-background, #{$clr-bg-sec-hover}));
+        --bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, var(--bit-Accordion-hover-background, #{$clr-bg-sec-active})));
     }
 }
 
@@ -226,6 +261,46 @@ $acd-private-properties:
 
 .bit-acd-rbr {
     --bit-acd-brd: transparent;
+}
+
+
+// The whole accordion in its two states: open, and under the pointer anywhere on it (the header, the actions or the
+// open panel). Each state publishes no more than its public variable into the private one the root rule paints from,
+// and the root reads them as state, then state, then the value at rest - so an unset variable leaves its state to the
+// next one, an open accordion under the pointer keeps what its open state set wherever no hover value is given, and
+// nothing reads a public variable ahead of what the Background and Border classes publish. Those classes are a choice
+// the states restyle no more than the public variables do, so the fill and the outline are left to them - :not()
+// rather than source order, since these rules outrank their class.
+// A disabled accordion keeps the look it has at rest - its own fill, its outline and its elevation - and, like a
+// read-only one, answers the pointer with nothing, the way its header does not. So does a busy one, whose header
+// answers no click while an awaited OnToggling runs. The pointer over an accordion nested in the panel is over that
+// one alone, so the one around it leaves its hover look to it rather than lifting with it.
+.bit-acd-exp:not(.bit-dis) {
+    --bit-acd-shd-exp: var(--bit-Accordion-expanded-shadow);
+
+    &:not(.bit-acd-pbg, .bit-acd-sbg, .bit-acd-tbg, .bit-acd-rbg) {
+        --bit-acd-bg-exp: var(--bit-Accordion-expanded-background);
+    }
+
+    &:not(.bit-acd-pbr, .bit-acd-sbr, .bit-acd-tbr, .bit-acd-rbr) {
+        --bit-acd-brd-exp: var(--bit-Accordion-expanded-border-color);
+    }
+}
+
+.bit-acd:not(.bit-dis, .bit-acd-rdo, :has(> .bit-acd-hwr > .bit-acd-hed > .bit-acd-bsy)) {
+    @media (hover: hover) {
+        &:hover:not(:has(.bit-acd:hover)) {
+            --bit-acd-shd-hov: var(--bit-Accordion-hover-shadow);
+        }
+
+        &:hover:not(:has(.bit-acd:hover)):not(.bit-acd-pbg, .bit-acd-sbg, .bit-acd-tbg, .bit-acd-rbg) {
+            --bit-acd-bg-hov: var(--bit-Accordion-hover-background);
+        }
+
+        &:hover:not(:has(.bit-acd:hover)):not(.bit-acd-pbr, .bit-acd-sbr, .bit-acd-tbr, .bit-acd-rbr) {
+            --bit-acd-brd-hov: var(--bit-Accordion-hover-border-color);
+        }
+    }
 }
 
 
