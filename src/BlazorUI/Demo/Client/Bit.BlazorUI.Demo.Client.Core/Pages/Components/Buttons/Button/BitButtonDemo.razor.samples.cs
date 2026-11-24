@@ -287,6 +287,32 @@ private async Task HandleExternalFormValidSubmit()
             <span>Wait...</span>
         </div>
     </LoadingTemplate>
+</BitButton>
+
+
+<BitButton>
+    <IconTemplate>
+        <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""none"">
+            <path d=""M4 9V4h5M20 9V4h-5M20 15v5h-5M4 15v5h5"" stroke=""currentColor"" stroke-width=""2"" stroke-linecap=""round"" stroke-linejoin=""round"" />
+        </svg>
+    </IconTemplate>
+    <ChildContent>Maximize</ChildContent>
+</BitButton>
+<BitButton Variant=""BitVariant.Outline"" IconPlacement=""BitPlacement.End"">
+    <IconTemplate>
+        <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""none"">
+            <path d=""M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4"" stroke=""currentColor"" stroke-width=""2"" stroke-linecap=""round"" stroke-linejoin=""round"" />
+        </svg>
+    </IconTemplate>
+    <ChildContent>Restore</ChildContent>
+</BitButton>
+<BitButton IconOnly Variant=""BitVariant.Text"">
+    <IconTemplate>
+        <svg viewBox=""0 0 24 24"" fill=""none"">
+            <path d=""M3 6h18M3 12h18M3 18h18"" stroke=""currentColor"" stroke-width=""2"" stroke-linecap=""round"" />
+        </svg>
+    </IconTemplate>
+    <ChildContent>Menu</ChildContent>
 </BitButton>";
 
     private readonly string example7CsharpCode = @"

@@ -179,6 +179,39 @@ public partial class BitButtonStylesheetTests
     }
 
     [TestMethod]
+    public void BitButtonShouldDrawAnIconTemplateAtTheSizeOfTheIcon()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The box takes the icon size as its font size (an explicit Size still ahead of the variable), so markup sized
+        // in em matches the glyph it stands in for, and it never shrinks out of the row, as the glyph does not.
+        var box = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btn-ict {");
+
+        StringAssert.Contains(box, "font-size: var(--bit-btn-icn-size, var(--bit-Button-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(box, "flex-shrink: 0;");
+
+        // A compound button drops it onto the line of the primary text, as it does the glyph and the image.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-btn-hsc:not(.bit-btn-ntx) {"), ".bit-btn-ict");
+
+        // An svg given no size gets the icon's square, wherever it sits in the template, from rules that weigh nothing so
+        // an app's own rules win; a side given without a viewBox to derive the other from gets the icon size for that one.
+        var unsized = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-btn-ict svg:not([width]):not([height]):not(svg svg)) {");
+
+        StringAssert.Contains(unsized, "width: 1em;");
+        StringAssert.Contains(unsized, "height: 1em;");
+
+        var widthOnly = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-btn-ict svg[width]:not([height]):not([viewBox]):not(svg svg)) {");
+
+        StringAssert.Contains(widthOnly, "height: 1em;");
+        Assert.DoesNotContain("width:", widthOnly, "The width the svg was given is kept.");
+
+        var heightOnly = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-btn-ict svg[height]:not([width]):not([viewBox]):not(svg svg)) {");
+
+        StringAssert.Contains(heightOnly, "width: 1em;");
+        Assert.DoesNotContain("height:", heightOnly, "The height the svg was given is kept.");
+    }
+
+    [TestMethod]
     public void BitButtonShouldMoveItsShadowAndItsPlaceUnderThePointer()
     {
         var stylesheet = ReadStylesheet();
@@ -256,7 +289,7 @@ public partial class BitButtonStylesheetTests
                       "The gradient rule is declared ahead of the Fill variant it overrides.");
     }
 
-    private static string ReadStylesheet() =>SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "Button", "BitButton.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "Button", "BitButton.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Button-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

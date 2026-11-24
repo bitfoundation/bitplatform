@@ -356,6 +356,41 @@
                 </LoadingTemplate>
             </BitButton>
         </div>
+        <br /><br />
+        <div>
+            <b>IconTemplate</b> puts markup of your own in the place of the icon - an inline SVG an icon font cannot
+            carry - and wins over <b>Icon</b>, <b>IconName</b> and <b>IconUrl</b>. It sits in the icon's slot, so it
+            follows <b>IconPlacement</b>, keeps the square of an icon-only button and is hidden from screen readers like
+            the icon is while the button has a name of its own (with none, the template is left to name it). Its font size is the icon size: an SVG of 1em, or one with no size of its own, is drawn as big
+            as the glyph it replaces, and currentColor follows the button's foreground.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitButton>
+                <IconTemplate>
+                    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none">
+                        <path d="M4 9V4h5M20 9V4h-5M20 15v5h-5M4 15v5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </IconTemplate>
+                <ChildContent>Maximize</ChildContent>
+            </BitButton>
+            <BitButton Variant="BitVariant.Outline" IconPlacement="BitPlacement.End">
+                <IconTemplate>
+                    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </IconTemplate>
+                <ChildContent>Restore</ChildContent>
+            </BitButton>
+            <BitButton IconOnly Variant="BitVariant.Text">
+                <IconTemplate>
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </IconTemplate>
+                <ChildContent>Menu</ChildContent>
+            </BitButton>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Events" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
