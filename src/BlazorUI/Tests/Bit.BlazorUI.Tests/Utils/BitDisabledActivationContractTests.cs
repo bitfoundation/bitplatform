@@ -64,6 +64,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitPersona)],
         [typeof(BitAvatarGroup)],
         [typeof(BitImageViewer)],
+        [typeof(BitCopyButton)],
         [typeof(BitTag)],
         [typeof(BitCard)],
         [typeof(BitIcon)],
@@ -156,6 +157,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         },
         [typeof(BitAiToolApproval)] = () => new() { [nameof(BitAiToolApproval.Call)] = AiToolCall(BitAiToolCallStatus.AwaitingApproval) },
         [typeof(BitAiErrorView)] = () => new() { [nameof(BitAiErrorView.Error)] = new BitAiError("The model is overloaded.") { Detail = "503" } },
+        [typeof(BitCopyButton)] = () => new() { [nameof(BitCopyButton.Value)] = "Copied text" },
         [typeof(BitAiCopyButton)] = () => new() { [nameof(BitAiCopyButton.Content)] = "Copied text" },
         [typeof(BitAiForm)] = () => new()
         {

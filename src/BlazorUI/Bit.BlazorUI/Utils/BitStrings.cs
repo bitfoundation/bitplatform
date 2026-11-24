@@ -452,6 +452,20 @@ public class BitStrings
     /// </summary>
     public virtual string PanelSizeFormat => "Resize, size {0} of {1}";
 
+    // ===== BitCopyButton (Bit.BlazorUI.Extras) =====
+
+    /// <summary>
+    /// The name of a copy button given no text of its own, which makes it an icon button: the fallback of the Text of the
+    /// BitCopyButton of the Extras package.
+    /// </summary>
+    public virtual string Copy => "Copy";
+
+    /// <summary>
+    /// What a copy button says, and announces to screen readers, once its value is on the clipboard: the fallback of the
+    /// CopiedText of the BitCopyButton of the Extras package.
+    /// </summary>
+    public virtual string Copied => "Copied";
+
     // ===== BitScrollToTop =====
 
     /// <summary>
