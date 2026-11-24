@@ -98,6 +98,7 @@ public class WorkbenchProgressDocumentTests
     [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"github\",\"name\":\"GITHUB_TOKEN\"}}]}", "GitHub secret's name")]
     [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"github\",\"name\":\"KEY\",\"environment\":\"--repo=someone/else\"}}]}", "isn't a GitHub environment's name")]
     [DataRow("{\"asks\":[{\"id\":\"../k\",\"question\":\"Key?\",\"secret\":{\"to\":\"file\"}}]}", "letters, digits, - and _")]
+    [DataRow("{\"asks\":[{\"id\":\"k\",\"question\":\"Key?\",\"secret\":{\"to\":\"file\"},\"suggestion\":\"sk-123\"}]}", "takes no suggestion")]
     [DataRow("{\"status\":\"finished\"}", "none of working")]
     [DataRow("{\"log\":\"CI is red\",\"logKind\":\"panic\"}", "none of info")]
     public void AnUpdateThatDoesNotFit_Should_BeRefusedWithAReason(string json, string reason)
@@ -151,6 +152,39 @@ public class WorkbenchProgressDocumentTests
         Assert.AreSequenceEqual(new[] { "Online", "Gift card" }, task.Asks[2].Answer!.Choices);
         Assert.AreEqual(4, task.Feed.Count(e => e.Kind is WorkbenchProgressEntryKind.Answer));
         Assert.IsGreaterThan(0L, task.Cursor);
+    }
+
+    [TestMethod]
+    public void AChoiceQuestion_Should_TakeTheUsersOwnWordsWithoutAnOption()
+    {
+        Create(Update("Task", asks: [new("one", "Region?", null, "choice", ["Europe", "US"], null),
+                                     new("many", "Orders?", null, "choices", ["Online", "Store"], null)]));
+
+        Assert.IsFalse(Edit(() => WorkbenchProgressDocument.Answer(Progress, "t", "one", [], "  ", "Sarah")), "Neither an option nor words.");
+        Assert.IsTrue(Edit(() => WorkbenchProgressDocument.Answer(Progress, "t", "one", [], "Asia, once it opens", "Sarah")));
+        Assert.IsTrue(Edit(() => WorkbenchProgressDocument.Answer(Progress, "t", "many", [], "None of them yet", "Sarah")));
+
+        var task = Task();
+
+        Assert.AreEqual(0, task.NeedsYouCount);
+        Assert.IsEmpty(task.Asks[0].Answer!.Choices);
+        Assert.AreEqual("Asia, once it opens", task.Asks[0].Answer!.Text);
+    }
+
+    [TestMethod]
+    public void ASuggestion_Should_ReadBackAndChangeOnlyWhenTheAgentSendsIt()
+    {
+        Create(Update("Task", asks: [new("one", "Region?", null, "choice", ["Europe", "US"], null, Suggestion: "Europe, where most users are")]));
+
+        Assert.AreEqual("Europe, where most users are", Task().Asks[0].Suggestion);
+
+        Edit(() => WorkbenchProgressDocument.Apply(Progress, "t", "Claude Code", Update(asks: [new("one", "Which region?", null, null, null, null)])));
+
+        Assert.AreEqual("Europe, where most users are", Task().Asks[0].Suggestion, "An update that doesn't name it keeps it.");
+
+        Edit(() => WorkbenchProgressDocument.Apply(Progress, "t", "Claude Code", Update(asks: [new("one", null, null, null, null, null, Suggestion: "")])));
+
+        Assert.IsNull(Task().Asks[0].Suggestion, "An empty one takes it away.");
     }
 
     [TestMethod]

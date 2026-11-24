@@ -7,8 +7,15 @@ namespace Bit.BlazorUI;
 public partial class BitCard : BitComponentBase
 {
     private string? _rel;
-    private bool _buttonKeysRegistered;
     private ElementReference _stretchedRef;
+
+    // The tag the root is rendered as, resolved from Element whenever the parameters change rather than on every render.
+    private string _element = "div";
+
+    // Whether the button keys were registered on the root element the card has now. A new tag replaces the root with
+    // another element, which has none of the listeners the last one was given, so it is cleared whenever the tag
+    // changes - whether or not the root was a control at the time.
+    private bool _buttonKeysRegistered;
 
     // Whether the card was sectioned, whether it was a control and whether that control was a button the last time
     // its classes were built. None of them is a parameter the generated setter can watch for: they are read off
@@ -73,7 +80,39 @@ public partial class BitCard : BitComponentBase
                             || Actions is not null
                             || IconTemplate is not null
                             || Icon is not null
-                            || IconName.HasValue();
+                            || IconName.HasValue()
+                            || IconUrl.HasValue();
+
+    // A div is a generic element, which ARIA prohibits naming, so a name given to one is not guaranteed to be read
+    // unless the card gives it a role as well. The same goes for every other tag whose role prohibits a name - a
+    // paragraph, an emphasis, a header or footer inside a section - and for a tag with no role at all, so only the tags
+    // below keep the role of their own that a name can be given to: a role the card picked would take that away.
+    private bool _HasNameableRole => _NameableRoleElements.Contains(_element);
+
+    private static readonly HashSet<string> _NameableRoleElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "address", "article", "aside", "blockquote", "fieldset", "figure", "form", "li", "main", "nav", "search", "section"
+    };
+
+    // Tags the card is never rendered as, falling back to the default instead: their content model cannot hold the
+    // card's blocks and controls, or the browser does not show what they hold. An interactive one - an anchor, a button,
+    // a label, a summary - would nest the controls of the card in another control, and a button root submits the form
+    // around it; a paragraph, a heading or an anchor is closed by the HTML parser at the first block or anchor inside
+    // it, which leaves the content of the card outside it; the list, table and select families only hold their own
+    // items; and the rest render their content hidden, as text, as fallback or not at all.
+    private static readonly HashSet<string> _UnsupportedElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "a", "audio", "body", "button", "canvas", "caption", "col", "colgroup", "datalist", "details", "dialog", "dl",
+        "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "hgroup", "html", "iframe", "label", "math", "menu",
+        "noscript", "object", "ol", "optgroup", "option", "p", "picture", "script", "select", "style", "summary", "svg",
+        "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "title", "tr", "ul", "video"
+    };
+
+    // The sectioning elements of HTML: what they hold is a section of the page, which the heading inside it titles.
+    private bool _IsSectioningElement => _element.Equals("article", StringComparison.OrdinalIgnoreCase)
+                                      || _element.Equals("aside", StringComparison.OrdinalIgnoreCase)
+                                      || _element.Equals("nav", StringComparison.OrdinalIgnoreCase)
+                                      || _element.Equals("section", StringComparison.OrdinalIgnoreCase);
 
 
 
@@ -93,6 +132,19 @@ public partial class BitCard : BitComponentBase
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
+
+    /// <summary>
+    /// Draws an accent bar in one of the roles of the theme along the inline-start edge of the card.
+    /// </summary>
+    /// <remarks>
+    /// The bar is laid over that edge rather than added to the border, so it moves nothing inside the card, covers the
+    /// start side of an Outlined card's rule, follows its corner radius, runs over a cover and stays on the start side of
+    /// a right-to-left card. Since it takes no room, it also covers the first few pixels of the content of a card with
+    /// <see cref="NoPadding"/>. Setting it wins over the <c>--bit-Card-accent-color</c> variable, which draws the bar on
+    /// its own; with neither of the two there is no bar.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitColor? Accent { get; set; }
 
     /// <summary>
     /// The content rendered at the trailing edge of the header of the card.
@@ -163,8 +215,8 @@ public partial class BitCard : BitComponentBase
     /// over it. The picture carries no scrim unless it is given one through the <c>--bit-Card-scrim</c> variable, so
     /// give the card one - and a foreground to go with it, through <c>--bit-Card-color</c> - and give it a
     /// <see cref="Height"/> or a <see cref="MinHeight"/> - an overlaid cover is taken out of the flow and no
-    /// longer makes the card as tall as the picture. It wins over <see cref="Horizontal"/>, which lays the same
-    /// cover beside the content rather than behind it.
+    /// longer makes the card as tall as the picture. It wins over <see cref="Horizontal"/> and its breakpoints,
+    /// which lay the same cover beside the content rather than behind it.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool CoverOverlay { get; set; }
@@ -185,7 +237,8 @@ public partial class BitCard : BitComponentBase
     /// The width of the cover of a horizontal card.
     /// </summary>
     /// <remarks>
-    /// It only means anything while <see cref="Horizontal"/> is set, since a cover above the content is as wide
+    /// It only means anything while the card is horizontal - through <see cref="Horizontal"/>, or at the widths
+    /// <see cref="HorizontalXs"/> to <see cref="HorizontalXxl"/> make it so - since a cover above the content is as wide
     /// as the card is. The default is a third of the width of the card.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
@@ -208,6 +261,36 @@ public partial class BitCard : BitComponentBase
     /// It only reaches the anchor a card lays over itself while <see cref="Href"/> is set.
     /// </remarks>
     [Parameter] public string? Download { get; set; }
+
+    /// <summary>
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    /// <remarks>
+    /// A card is very often a section of the page, and HTML has names for those: an "article" for a card that stands
+    /// on its own - a post, a product, a comment - a "section" for one part of a page, an "aside" for content beside
+    /// the main flow and a "nav" for a card of links. The name is what tells assistive technologies which of them the
+    /// card is; the looks and every other parameter of the card work the same whichever tag is rendered.
+    /// <br />
+    /// A card rendered as one of those four is titled by its <see cref="Title"/>: the root gets an aria-labelledby
+    /// pointing at the title, which is what makes a "section" a region a reader can find among the landmarks of the
+    /// page. That is left out where the card is named some other way - an <see cref="BitComponentBase.AriaLabel"/>,
+    /// an aria-label or aria-labelledby of the page's own, a role splatted onto the root, a custom
+    /// <see cref="HeaderTemplate"/> that takes the title off - and on a card with a <see cref="Href"/> or an
+    /// <see cref="OnClick"/>, whose name belongs to the link or the button stretched over it. A card rendered as a tag
+    /// whose own role can be named - an "article", an "aside", a "nav", a "section", a "form", a "li", a "figure", a
+    /// "blockquote", a "fieldset", an "address", a "main" or a "search" - is not given the group role a named card
+    /// otherwise gets, since that role would take its own away; any other tag is, as a "div" is. A disabled card rendered
+    /// as a "fieldset" also writes the native disabled attribute, with aria-disabled beside it, which disables every form
+    /// control inside it.
+    /// <br />
+    /// The name is used as written, but only while it is a name a tag can have - a letter followed by letters, digits
+    /// and the "-", "_", "." and ":" that join them - and one that can hold the content of a card. Anything else falls
+    /// back to the default tag: a void element such as an "hr", an interactive one such as an "a", a "button" or a
+    /// "label", one the HTML parser closes at the first block inside it such as a "p" or an "h1"-"h6", the list,
+    /// table and select families, which hold only their own items, and those whose content is hidden or not
+    /// rendered, such as a "template", a "details", a "dialog", a "textarea" or a "script".
+    /// </remarks>
+    [Parameter] public string? Element { get; set; }
 
     /// <summary>
     /// Sets the shadow elevation level of the card (0-24). Maps to theme shadow variables (--bit-shd-1 to --bit-shd-24).
@@ -298,16 +381,91 @@ public partial class BitCard : BitComponentBase
     /// <remarks>
     /// It only changes anything on a card that has a cover, a header or a footer - a card that is only a
     /// padded box has nothing to lay out.
+    /// <br />
+    /// This is the orientation of the card at every width. <see cref="HorizontalXs"/> to <see cref="HorizontalXxl"/>
+    /// replace it from their own breakpoint upwards, which is what puts the picture above the words on a phone and
+    /// beside them on a desktop. A params object supplies none of those breakpoints to a card that set this itself.
+    /// <br />
+    /// A card horizontal at every width carries the <c>bit-crd-hrz</c> class. A card whose orientation changes with the
+    /// width carries one <c>bit-crd-hrz-xs</c> to <c>bit-crd-hrz-xxl</c> class per breakpoint band it is horizontal in
+    /// instead, and no <c>bit-crd-hrz</c>. A band class names where the card is horizontal, not that it is horizontal at
+    /// the current width, so a rule of the app's own written against <c>bit-crd-hrz</c> reaches the first kind only, and
+    /// one meant for a responsive card is written against the band's class inside that band's media query.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Horizontal { get; set; }
 
     /// <summary>
-    /// Lifts the card while the pointer is over it.
+    /// Gets or sets the orientation of the card from the large breakpoint (from 1280px) upwards.
     /// </summary>
     /// <remarks>
-    /// A clickable card or a linked one lifts on its own; this is for a card that reacts to the pointer
-    /// without being a control itself.
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
+    public bool? HorizontalLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
+    public bool? HorizontalMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
+    public bool? HorizontalSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint until another one replaces it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
+    public bool? HorizontalXl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it, and the value keeps applying to every wider breakpoint
+    /// until another one replaces it - so a card whose picture sits above its words on a phone and beside them from a
+    /// tablet up is written as <see cref="HorizontalSm"/> alone, the same way a <see cref="BitStack"/> turns from a column
+    /// into a row.
+    /// <br />
+    /// <see cref="Horizontal"/> is the base of that chain and is what applies at any breakpoint none of these reach.
+    /// Everything a horizontal card does follows the orientation each breakpoint gives - the cover taking
+    /// <see cref="CoverWidth"/> of the card, the picture filling the height of the row, <see cref="Reversed"/> putting
+    /// the cover on the trailing edge rather than under the body - and <see cref="CoverOverlay"/> still wins over it at
+    /// every width.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
+    public bool? HorizontalXs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// True lays the cover beside the content and false above it.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Horizontal))]
+    public bool? HorizontalXxl { get; set; }
+
+    /// <summary>
+    /// Raises the card to its hover shadow while the pointer is over it, and gives it the hover border color
+    /// and the hover lift that the --bit-Card-hover-border-color and --bit-Card-hover-lift variables set.
+    /// </summary>
+    /// <remarks>
+    /// A clickable card or a linked one does so on its own (and shades its surface as well); this is for a card
+    /// that reacts to the pointer without being a control itself. Nothing moves unless --bit-Card-hover-lift
+    /// is set.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Hoverable { get; set; }
@@ -349,6 +507,17 @@ public partial class BitCard : BitComponentBase
     /// and with them the name a linked card gives its stretched anchor.
     /// </remarks>
     [Parameter] public RenderFragment? IconTemplate { get; set; }
+
+    /// <summary>
+    /// The url of a custom image rendered as the leading icon of the header of the card, used when neither
+    /// <see cref="IconTemplate"/>, <see cref="Icon"/> nor <see cref="IconName"/> is set.
+    /// </summary>
+    /// <remarks>
+    /// The picture is sized like the glyph is (<c>--bit-Card-icon-size</c>) and drawn as decoration hidden from
+    /// assistive technologies, beside the title that names the card.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? IconUrl { get; set; }
 
     /// <summary>
     /// The alternate text of the cover image of the card.
@@ -602,6 +771,54 @@ public partial class BitCard : BitComponentBase
 
 
 
+    // A card only needs a class per breakpoint when its orientation is not the same at every width.
+    private bool _IsResponsiveHorizontal => HorizontalXs.HasValue || HorizontalSm.HasValue || HorizontalMd.HasValue
+                                         || HorizontalLg.HasValue || HorizontalXl.HasValue || HorizontalXxl.HasValue;
+
+    // The orientation at each of the six breakpoints, carried up from the breakpoint below until a value of its own
+    // replaces it, with Horizontal as the base of the chain - the same mobile first chain as BitStack's. Each band the
+    // card is horizontal in is named as a class the stylesheet reads over that band alone, so a breakpoint that turns
+    // the card back has nothing to undo: the rules of a horizontal card simply stop matching there. A card that comes
+    // out the same at every width says so once, as a card that never asked for a breakpoint does.
+    private string _HorizontalClasses
+    {
+        get
+        {
+            if (_IsResponsiveHorizontal is false) return Horizontal ? "bit-crd-hrz" : string.Empty;
+
+            (string Breakpoint, bool? Horizontal)[] breakpoints =
+            [
+                ("xs", HorizontalXs),
+                ("sm", HorizontalSm),
+                ("md", HorizontalMd),
+                ("lg", HorizontalLg),
+                ("xl", HorizontalXl),
+                ("xxl", HorizontalXxl)
+            ];
+
+            var horizontal = Horizontal;
+            var bands = new List<string>(breakpoints.Length);
+
+            foreach (var (breakpoint, value) in breakpoints)
+            {
+                horizontal = value ?? horizontal;
+
+                if (horizontal)
+                {
+                    bands.Add(breakpoint);
+                }
+            }
+
+            if (bands.Count == 0) return string.Empty;
+
+            if (bands.Count == breakpoints.Length) return "bit-crd-hrz";
+
+            return string.Join(' ', bands.Select(b => $"bit-crd-hrz-{b}"));
+        }
+    }
+
+
+
     /// <summary>
     /// Gives focus to the card.
     /// </summary>
@@ -620,15 +837,16 @@ public partial class BitCard : BitComponentBase
     // button answers: Enter as the key goes down, Space as it comes back up, and neither one scrolling the page.
     // That is wired up in the browser, where a key pressed on the card itself can be told apart from one pressed
     // on a control it holds - which a Blazor keydown handler cannot see, nor prevent the default of per key. The
-    // root is the same element for the lifetime of the card, so it is registered once, the first time the root is
-    // a control; once registered it only ever turns a key pressed on the root into a click, and a root that
-    // stopped being a control is no longer focusable for one to be pressed on. The stretched button of every other
+    // root is the same element for as long as its tag stays the same, so it is registered once per root element,
+    // the first time that root is a control; once registered it only ever turns a key pressed on the root into a
+    // click, and a root that stopped being a control is no longer focusable for one to be pressed on. A new Element
+    // replaces the root with a new element, which is registered again. The stretched button of every other
     // clickable card is a native one and needs none of this.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
 
-        if (_buttonKeysRegistered || _IsRootControl is false) return;
+        if (_IsRootControl is false || _buttonKeysRegistered) return;
 
         _buttonKeysRegistered = true;
 
@@ -642,6 +860,10 @@ public partial class BitCard : BitComponentBase
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
+
+        // The accent classes carry an "acc" of their own, which keeps the per-role vocabulary the Color parameter's. Like
+        // the Color, an unset Accent publishes nothing, which leaves the bar to --bit-Card-accent-color, or to no bar at all.
+        ClassBuilder.Register(() => BitCssClasses.Color(Accent, "bit-crd-acc"));
 
         // The background and the border classes carry a leading "b" so that the whole per-role vocabulary of
         // the theme (pbg, sbg, tbg, pbr, sbr, tbr, ...) stays free for the Color parameter below, the same way
@@ -694,7 +916,9 @@ public partial class BitCard : BitComponentBase
 
         ClassBuilder.Register(() => _IsSectioned ? "bit-crd-sct" : string.Empty);
 
-        ClassBuilder.Register(() => Horizontal ? "bit-crd-hrz" : string.Empty);
+        // A card whose orientation answers to the width of the window is handed one class per breakpoint band it is
+        // horizontal in instead, which the stylesheet reads inside that band alone.
+        ClassBuilder.Register(() => _HorizontalClasses);
 
         ClassBuilder.Register(() => Reversed ? "bit-crd-rev" : string.Empty);
 
@@ -757,6 +981,20 @@ public partial class BitCard : BitComponentBase
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        var element = ResolveContentElement(Element, "div");
+        if (_UnsupportedElements.Contains(element))
+        {
+            element = "div";
+        }
+
+        // The render tree replaces an element whose tag changed, so the root is a new element from here on and has
+        // none of the button keys the last one was given, even where it was not a control when it was replaced.
+        if (string.Equals(element, _element, StringComparison.Ordinal) is false)
+        {
+            _element = element;
+            _buttonKeysRegistered = false;
+        }
 
         var classState = (_IsSectioned, _IsLink || _IsButton, _IsButton);
         if (_classState != classState)

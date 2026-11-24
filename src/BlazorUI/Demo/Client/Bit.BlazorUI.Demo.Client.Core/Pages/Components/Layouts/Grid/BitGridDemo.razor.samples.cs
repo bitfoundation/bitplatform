@@ -294,6 +294,12 @@ private double horizontalSpacing = 0.5;";
     <BitGridItem Class=""grid-item"" ColumnSpan=""0"" Md=""4"">Hidden below Md</BitGridItem>
     <BitGridItem Class=""grid-item"" ColumnSpan=""12"" Md=""0"">Hidden from Md</BitGridItem>
     <BitGridItem Class=""grid-item"" ColumnSpan=""6"" Sm=""0"" Md=""6"">Hidden between Sm and Md</BitGridItem>
+</BitGrid>
+
+<BitGrid>
+    <BitGridItem Class=""grid-item"" Grow>Always shown</BitGridItem>
+    <BitGridItem Class=""grid-item"" Auto HiddenMd=""true"">Mobile menu (hidden from Md)</BitGridItem>
+    <BitGridItem Class=""grid-item"" Auto HiddenXs=""true"" HiddenMd=""false"">Desktop menu (hidden below Md)</BitGridItem>
 </BitGrid>";
 
     private readonly string example9RazorCode = @"

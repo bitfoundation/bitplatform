@@ -16,6 +16,18 @@ builder.Services.AddBitBevToolsServices();
 builder.Services.AddBevToolsBlex();
 ```
 
+An app that opens BevTools on demand (`Bit.BevTools.Loader`) adds it through the loader, once for a BevTools registered
+at startup and one attached later alike, with `Bit.BevTools.Blex.wasm` marked `BlazorWebAssemblyLazyLoad` wherever
+`Bit.BevTools.wasm` is:
+
+```csharp
+builder.Services.AddBitBevToolsLoaderServices(o =>
+{
+    o.AdditionalAssemblies.Add("Bit.BevTools.Blex");
+    o.ConfigureBevTools(static options => ((BevToolsOptions)options).AddBlex());
+});
+```
+
 State → *Blex* lists the actions newest first, each with the members it changed; *⟲ restore* on one puts every store
 back as it was right after it. BevTools offers restoring only in Development or in a process that serves one user
 (WebAssembly, Hybrid), as it does for any provider that implements `IBevToolsStateRestorer`. A restore Blex makes for another

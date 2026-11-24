@@ -290,6 +290,10 @@ public static partial class BsqliteSetupGuide
            `_content/Bit.Bsqlite/`, imported on demand - a session downloads the VFS of the backend it selected and no other.
         7. Keep the model in a project that references only EF Core Relational, as the demo's Data project does, and
            scaffold migrations with `dotnet ef` against the stock SQLite provider: the same migrations apply in the browser.
+           Published with AOT, the app boxes each nullable enum or struct type of its own that an entity uses
+           (`OrderStatus?`, say) once, in the context class, or the first save of such an entity stops the app without an
+           error. `UseBitBsqlite` already does it for the types the SQLite provider maps, such as `DateOnly?` and `Guid?` -
+           see `GetBsqliteDocument(name: "getting-started", section: "AOT and nullable properties")`.
         """;
 
     private const string LoadedWithTheApp = """

@@ -77,6 +77,13 @@
     "why": "Template version the bit CLI reads"
   },
   {
+    "id": "cli-oldest-projects",
+    "kind": "kept",
+    "files": ["src/Toolings/Cli/Bit.Cli/Projects/ProjectBit.cs"],
+    "regex": "\"{V}\"",
+    "why": "bit CLI's list of the oldest bit Boilerplate each of its versions works with; a line is written by hand, with the next version, in the change that leaves older projects behind"
+  },
+  {
     "id": "dependency-update-agent",
     "kind": "full",
     "files": [".github/agents/dependency-update.md"],

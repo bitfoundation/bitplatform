@@ -1,14 +1,18 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 internal static class BitMediaQueryJsRuntimeExtensions
 {
-    internal static ValueTask BitMediaQuerySetup(this IJSRuntime jsRuntime,
+    // Generic over the receiver of the reports (its JSInvokable "OnMatchChange"), so a component that only needs the
+    // answer of a screen query - BitNavBar's drawer - listens through the same script without rendering a BitMediaQuery.
+    internal static ValueTask BitMediaQuerySetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IJSRuntime jsRuntime,
                                                       string key,
                                                       string? elementId,
                                                       string? query,
                                                       string? screenQuery,
                                                       Dictionary<string, string>? breakpoints,
-                                                      DotNetObjectReference<BitMediaQuery>? dotnetObj)
+                                                      DotNetObjectReference<T>? dotnetObj) where T : class
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.MediaQuery.setup", key, elementId, query, screenQuery, breakpoints, dotnetObj);
     }

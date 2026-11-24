@@ -5085,6 +5085,9 @@
     <data name="ProgressSendAnswer" xml:space="preserve">
         <value>发送回答</value>
     </data>
+    <data name="ProgressUseSuggestion" xml:space="preserve">
+        <value>使用建议</value>
+    </data>
     <data name="ProgressAnswerFailed" xml:space="preserve">
         <value>这个问题在此期间已被回答或撤回。</value>
     </data>
@@ -5252,6 +5255,9 @@
     </data>
     <data name="SampleDeployAskEmailOption3" xml:space="preserve">
         <value>暂不使用：在日志中显示邮件</value>
+    </data>
+    <data name="SampleDeployAskEmailSuggestion" xml:space="preserve">
+        <value>在域名准备好之前先用免费的邮件服务</value>
     </data>
     <data name="SampleDeployAskSsh" xml:space="preserve">
         <value>隧道可用后关闭服务器的 SSH 端口吗？</value>

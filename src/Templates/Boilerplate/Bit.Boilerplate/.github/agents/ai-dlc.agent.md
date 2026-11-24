@@ -56,6 +56,7 @@ port, rebrand, landing-page, bitify-ui, template-diff and scaffold-entity, and t
 - **If the design involves CRUD operations**, invoke the **scaffold-entity** skill (`.github/agents/scaffold-entity.agent.md`) for structure and conventions - it is a recipe, not a lifecycle: its steps are tasks inside this plan, and when they're done you continue with the next phase here
 - Break the work into small, verifiable, independently completable tasks
 - Order tasks by dependency
+- End the plan with phase 5's validation as its last tasks: the build and the tests, the **review** skill on the changes, the acceptance criteria, and each check in the running app that applies, so they are ticked like every other task
 - Write the plan into a new file under `specs/changes/` and present it to the user for approval before starting. Approval is the user telling you to go ahead; answers to your questions are not approval, so fold them into the plan and present it again
 
 ### 3. Design
@@ -84,6 +85,7 @@ Before you hand anything back, these three happen, in this order, and each leave
 Then, as they apply:
 
 - When the change shows in the UI, walk its acceptance criteria in the running app, driving it as the run-app skill describes, through the UI the way a user would rather than through the API: the states it adds too - empty, invalid, busy, a long text - in light and dark, at phone width, and in an RTL culture the app ships. Tests and a clean build don't show a value that renders empty, a button that does nothing or a layout that breaks at one width. Read the browser console and the server's logs while you walk: a page can render while every request behind it fails
+- When the change reaches a complex page that has an entry in the Workbench, the kind phase 3 designs there, open the states that page has of its own on the Workbench, the way section 4 of the **workbench** skill looks at a page: each option of its catalog entry's switches, and each state its spec's acceptance criteria name a Workbench view for. Look at each one in light and dark, on a phone and a desktop and in an RTL culture, and run the Workbench's checks on it. A state every page has, like loading or empty, is opened there only when the spec names it
 - When the change produces a file or a message - a PDF, a spreadsheet, a CSV, an email - produce it through the running app and open it: look at every page, at RTL text and its fonts, at figures that should match the screen, and at placeholder text left behind. The emails arrive in the development inbox the run-app skill names
 - When the change shows in the Windows or Android app, check it there too, driving it as the run-app skill describes. What the WebView doesn't contain - the native chrome, permission prompts, file pickers, notifications - is checked the way run-app says or listed as a check left to the user, never assumed
 - Against a deployment, read its real state through **dev-mcp** (below) rather than guessing

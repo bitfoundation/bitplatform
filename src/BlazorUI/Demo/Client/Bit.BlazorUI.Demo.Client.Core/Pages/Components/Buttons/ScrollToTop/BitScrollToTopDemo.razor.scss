@@ -1,0 +1,30 @@
+﻿.example-content {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+// The positioned box a FloatAbsolute button is pinned to, around the box that scrolls: a button inside the scrolling box
+// itself would scroll away with its content.
+.pane {
+    position: relative;
+    border: 1px solid var(--bit-clr-brd-sec);
+}
+
+.pane-content {
+    height: 15rem;
+    overflow: auto;
+    padding: 0.5rem;
+}
+
+::deep {
+    .custom-root {
+        border-radius: 0.25rem;
+        box-shadow: var(--bit-shd-card);
+    }
+
+    .custom-icon {
+        color: var(--bit-clr-sec);
+    }
+}

@@ -9,7 +9,7 @@ internal sealed class BevToolsRuntimeAttachment
 
     /// <summary>
     /// The app installed Bit.BevTools.Loader's startup hooks, which stand in for most of the reflection an attach needs
-    /// otherwise: through <see cref="BevToolsLoader.OpenAsync"/>, or a <see cref="BitBevTools.Attach"/> in that app.
+    /// otherwise: through <see cref="BevToolsLoader.OpenAsync()"/>, or a <see cref="BitBevTools.Attach"/> in that app.
     /// </summary>
     public bool ThroughLoader { get; init; }
 
@@ -17,6 +17,21 @@ internal sealed class BevToolsRuntimeAttachment
     public bool FactoryClientsHooked { get; init; }
 
     public bool LoggerProviderAdded { get; set; }
+
+    /// <summary>
+    /// What became of the log entries written before the attach (<c>BevToolsLoaderOptions.AutoStart</c>): handed over,
+    /// or why not. Null when the app did not have Bit.BevTools.Loader capture them.
+    /// </summary>
+    public string? LogsBeforeAttach { get; set; }
+
+    /// <summary>The session took over the entries the loader kept, which <see cref="LogsBeforeAttach"/> describes.</summary>
+    public bool LogsBeforeAttachHandedOver { get; set; }
+
+    /// <summary>
+    /// The loader whose log entries a session attached in a process that keeps them per circuit takes over once a panel
+    /// attaches it to its renderer: only then are the circuit's next entries the session's, not the loader's.
+    /// </summary>
+    public BevToolsLoaderContext? PendingLogsBeforeAttach { get; set; }
 
     public BevToolsHttpClientAttachment HttpClient { get; set; }
 
