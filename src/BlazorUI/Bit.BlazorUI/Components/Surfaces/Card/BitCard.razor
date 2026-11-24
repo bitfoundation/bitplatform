@@ -239,6 +239,10 @@
                             {
                                 <i aria-hidden="true" style="@Styles?.Icon" class="bit-crd-hic @icon.GetCssClasses() @Classes?.Icon" />
                             }
+                            else if (IconUrl.HasValue())
+                            {
+                                <img src="@IconUrl" alt="" aria-hidden="true" style="@Styles?.Icon" class="bit-crd-hic @Classes?.Icon" />
+                            }
 
                             @if (hasTitle || hasSubtitle)
                             {

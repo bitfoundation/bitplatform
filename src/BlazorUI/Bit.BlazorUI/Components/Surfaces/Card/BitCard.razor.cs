@@ -80,7 +80,8 @@ public partial class BitCard : BitComponentBase
                             || Actions is not null
                             || IconTemplate is not null
                             || Icon is not null
-                            || IconName.HasValue();
+                            || IconName.HasValue()
+                            || IconUrl.HasValue();
 
     // A div is a generic element, which ARIA prohibits naming, so a name given to one is not guaranteed to be read
     // unless the card gives it a role as well. The same goes for every other tag whose role prohibits a name - a
@@ -506,6 +507,17 @@ public partial class BitCard : BitComponentBase
     /// and with them the name a linked card gives its stretched anchor.
     /// </remarks>
     [Parameter] public RenderFragment? IconTemplate { get; set; }
+
+    /// <summary>
+    /// The url of a custom image rendered as the leading icon of the header of the card, used when neither
+    /// <see cref="IconTemplate"/>, <see cref="Icon"/> nor <see cref="IconName"/> is set.
+    /// </summary>
+    /// <remarks>
+    /// The picture is sized like the glyph is (<c>--bit-Card-icon-size</c>) and drawn as decoration hidden from
+    /// assistive technologies, beside the title that names the card.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public string? IconUrl { get; set; }
 
     /// <summary>
     /// The alternate text of the cover image of the card.

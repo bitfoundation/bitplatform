@@ -701,6 +701,60 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardIconUrlShouldRenderTheHeaderIconAsADecorativeImage()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Title, "Title");
+            parameters.Add(p => p.IconUrl, "/images/logo.svg");
+            parameters.Add(p => p.Classes, new BitCardClassStyles { Icon = "c-icon" });
+            parameters.Add(p => p.Styles, new BitCardClassStyles { Icon = "color:indigo" });
+        });
+
+        var icon = component.Find(".bit-crd-hdr > .bit-crd-hic");
+
+        // The picture says nothing the title beside it does not, so it is decoration like the glyph is.
+        Assert.AreEqual("IMG", icon.TagName);
+        Assert.AreEqual("/images/logo.svg", icon.GetAttribute("src"));
+        Assert.AreEqual("", icon.GetAttribute("alt"));
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+        Assert.IsTrue(icon.ClassList.Contains("c-icon"));
+        Assert.AreEqual("color:indigo", icon.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitCardIconUrlAloneShouldSectionTheCard()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.IconUrl, "/images/logo.svg");
+        });
+
+        Assert.IsTrue(component.Find(".bit-crd").ClassList.Contains("bit-crd-sct"));
+        Assert.AreEqual(1, component.FindAll(".bit-crd-mai > .bit-crd-hdr > img.bit-crd-hic").Count);
+    }
+
+    [TestMethod,
+        DataRow("IconName"),
+        DataRow("Icon"),
+        DataRow("IconTemplate")
+    ]
+    public void BitCardIconUrlShouldGiveWayToTheOtherIcons(string other)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.IconUrl, "/images/logo.svg");
+
+            if (other == "IconName") parameters.Add(p => p.IconName, "Album");
+            if (other == "Icon") parameters.Add(p => p.Icon, BitIconInfo.Css("fa-solid fa-house"));
+            if (other == "IconTemplate") parameters.Add(p => p.IconTemplate, (RenderFragment)(builder => builder.AddContent(0, "Avatar")));
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-crd-hic").Count);
+        Assert.AreEqual(0, component.FindAll("img.bit-crd-hic").Count);
+    }
+
+    [TestMethod]
     public void BitCardHeaderTemplateShouldReplaceTheTitleAndSubtitle()
     {
         var component = RenderComponent<BitCard>(parameters =>

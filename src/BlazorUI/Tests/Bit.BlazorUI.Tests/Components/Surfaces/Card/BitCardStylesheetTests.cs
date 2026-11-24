@@ -265,6 +265,30 @@ public partial class BitCardStylesheetTests
     }
 
     [TestMethod]
+    public void BitCardShouldSizeTheIconUrlPictureLikeTheGlyph()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The tag test is wrapped in :where, so the rule costs one class and a class passed through Classes.Icon can
+        // still resize the picture.
+        Assert.IsFalse(stylesheet.Contains("img.bit-crd-hic"), "The IconUrl picture is sized by a rule that outweighs a class passed through Classes.Icon.");
+
+        var picture = SourceFiles.GetScssBlock(stylesheet, "\n.bit-crd-hic:where(img) {");
+
+        StringAssert.Contains(picture, "width: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(picture, "height: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(picture, "object-fit: contain;");
+    }
+
+    [TestMethod]
+    public void BitCardShouldFadeTheIconUrlPictureWhenDisabled()
+    {
+        var dimmed = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-crd.bit-dis > .bit-crd-mai > .bit-crd-hdr > .bit-crd-hic:where(img) {");
+
+        StringAssert.Contains(dimmed, "opacity: var(--bit-Card-disabled-icon-opacity, #{$opa-dis});");
+    }
+
+    [TestMethod]
     public void BitCardShouldPublishItsSizeOnlyWhereItIsSet()
     {
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-crd {");
