@@ -106,6 +106,50 @@ private int eventsChange;
 private string? eventsClicked;";
 
     private readonly string example8RazorCode = @"
+<BitStepper TItem=""BitStepperOption"" Compact @bind-CurrentIndex=""compactIndex"">
+    <BitStepperOption Text=""Account"" />
+    <BitStepperOption Text=""Address"" />
+    <BitStepperOption Text=""Payment"" />
+    <BitStepperOption Text=""Review"" />
+</BitStepper>
+
+<BitButton Variant=""BitVariant.Outline"" Disabled=""compactIndex == 0"" OnClick=""() => compactIndex--"">Back</BitButton>
+<BitButton Disabled=""compactIndex >= StepCount"" OnClick=""() => compactIndex++"">Next</BitButton>
+
+<BitStepper TItem=""BitStepperOption"" Compact Responsive CurrentIndex=""1"">
+    <BitStepperOption Text=""Account"" />
+    <BitStepperOption Text=""Address"" />
+    <BitStepperOption Text=""Payment"" />
+    <BitStepperOption Text=""Review"" />
+</BitStepper>
+
+<div style=""max-width: 20rem;"">
+    <BitStepper TItem=""BitStepperOption"" Compact Responsive CurrentIndex=""1"">
+        <BitStepperOption Text=""Account"" />
+        <BitStepperOption Text=""Address"" />
+        <BitStepperOption Text=""Payment"" />
+        <BitStepperOption Text=""Review"" />
+    </BitStepper>
+</div>
+
+<BitStepper TItem=""BitStepperOption"" Compact CurrentIndex=""2"">
+    <Options>
+        <BitStepperOption Text=""Account"" />
+        <BitStepperOption Text=""Address"" />
+        <BitStepperOption Text=""Payment"" />
+        <BitStepperOption Text=""Review"" />
+    </Options>
+    <CompactTemplate>
+        <b>@(context.Index + 1) / @context.Count</b>
+        <span>@context.Item?.Text</span>
+    </CompactTemplate>
+</BitStepper>";
+    private readonly string example8CsharpCode = @"
+private const int StepCount = 4;
+
+private int compactIndex;";
+
+    private readonly string example9RazorCode = @"
 <!-- FontAwesome -->
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
@@ -129,7 +173,7 @@ private string? eventsClicked;";
     <BitStepperOption Text=""Review"" Icon=""@BitIconInfo.Bi(""card-checklist"")"" />
 </BitStepper>";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -189,7 +233,7 @@ private string? eventsClicked;";
     <BitStepperOption Text=""Review"" />
 </BitStepper>";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <div dir=""rtl"">
     <BitStepper TItem=""BitStepperOption"" Dir=""BitDir.Rtl"" CurrentIndex=""1"">
         <BitStepperOption Text=""حساب کاربری"" />

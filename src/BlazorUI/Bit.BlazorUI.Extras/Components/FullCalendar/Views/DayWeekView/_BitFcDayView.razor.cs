@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcDayView : IDisposable
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [CascadingParameter] internal BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
@@ -295,7 +295,7 @@ public partial class _BitFcDayView : IDisposable
             return null;
 
         var start = State.SelectedDate.Date.AddHours(hour).AddMinutes(minute);
-        return $"{Texts.AddEventHoverHint}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}"
+        return $"{Strings.AddEventHoverHint}, {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}"
                + State.DescribeBackground(start, start.AddMinutes(State.SlotDurationMinutes));
     }
 

@@ -10,77 +10,77 @@ using static Bit.BlazorUI.Tests.Components.Extras.ResourceTimeline.BitResourceTi
 namespace Bit.BlazorUI.Tests.Components.Extras.ResourceTimeline;
 
 /// <summary>
-/// Drift guards between the texts of the BitResourceTimeline and the scripts. The component hands the engine every
-/// text of BitResourceTimelineTexts by its camelCase name, less the ones only its markup uses (MARKUP_TEXTS of
-/// BitResourceTimeline.ts), and the engine warns about a text it does not know (DEFAULT_TEXTS of
-/// BitResourceTimelineEngine.ts) and falls back to its own default for one it is not given - so a text renamed or
+/// Drift guards between the strings of the BitResourceTimeline and the scripts. The component hands the engine every
+/// string of BitResourceTimelineStrings by its camelCase name, less the ones only its markup uses (MARKUP_STRINGS of
+/// BitResourceTimeline.ts), and the engine warns about a string it does not know (DEFAULT_STRINGS of
+/// BitResourceTimelineEngine.ts) and falls back to its own default for one it is not given - so a string renamed or
 /// reworded on one side only is a warning in the console, or an engine and a component that say different things.
 /// </summary>
 [TestClass]
-public partial class BitResourceTimelineTextsTests
+public partial class BitResourceTimelineStringsTests
 {
     [TestMethod]
-    public void BitResourceTimelineTextsShouldBeTheTextsOfTheEngineAndOfTheMarkup()
+    public void BitResourceTimelineStringsShouldBeTheStringsOfTheEngineAndOfTheMarkup()
     {
         var engine = EngineDefaults();
-        var markup = MarkupTexts();
+        var markup = MarkupStrings();
 
-        Assert.IsGreaterThanOrEqualTo(20, engine.Count, "DEFAULT_TEXTS was not read off the engine.");
-        Assert.IsGreaterThanOrEqualTo(5, markup.Length, "MARKUP_TEXTS was not read off the facade.");
+        Assert.IsGreaterThanOrEqualTo(20, engine.Count, "DEFAULT_STRINGS was not read off the engine.");
+        Assert.IsGreaterThanOrEqualTo(5, markup.Length, "MARKUP_STRINGS was not read off the facade.");
 
         var overlap = engine.Keys.Intersect(markup).ToList();
-        Assert.IsEmpty(overlap, "A text is both one of the engine and one of the markup: " + string.Join(", ", overlap));
+        Assert.IsEmpty(overlap, "A string is both one of the engine and one of the markup: " + string.Join(", ", overlap));
 
         CollectionAssert.AreEquivalent(engine.Keys.Concat(markup).Order(StringComparer.Ordinal).ToArray(),
-                                       TextNames().Order(StringComparer.Ordinal).ToArray());
+                                       StringNames().Order(StringComparer.Ordinal).ToArray());
     }
 
     [TestMethod]
-    public void BitResourceTimelineTextsShouldDefaultToWhatTheEngineDefaultsTo()
+    public void BitResourceTimelineStringsShouldDefaultToWhatTheEngineDefaultsTo()
     {
-        var texts = new BitResourceTimelineTexts();
+        var strings = new BitResourceTimelineStrings();
         var engine = EngineDefaults();
 
-        foreach (var property in typeof(BitResourceTimelineTexts).GetProperties())
+        foreach (var property in typeof(BitResourceTimelineStrings).GetProperties())
         {
             if (engine.TryGetValue(Camel(property.Name), out var expected) is false) continue;
 
-            Assert.AreEqual(expected, (string)property.GetValue(texts)!, $"BitResourceTimelineTexts.{property.Name} is not the default of the engine.");
+            Assert.AreEqual(expected, (string)property.GetValue(strings)!, $"BitResourceTimelineStrings.{property.Name} is not the default of the engine.");
         }
     }
 
     [TestMethod]
-    public void BitResourceTimelineMarkupTextsShouldBeTheOnesItsMarkupReads()
+    public void BitResourceTimelineMarkupStringsShouldBeTheOnesItsMarkupReads()
     {
         var folder = new[] { "Bit.BlazorUI.Extras", "Components", "ResourceTimeline" };
         var razor = SourceFiles.Read([.. folder, "BitResourceTimeline.razor"]) + SourceFiles.Read([.. folder, "BitResourceTimeline.razor.cs"]);
 
-        var read = Regex.Matches(razor, @"ActiveTexts\.(\w+)").Select(m => Camel(m.Groups[1].Value)).Distinct().Order(StringComparer.Ordinal).ToArray();
+        var read = Regex.Matches(razor, @"ActiveStrings\.(\w+)").Select(m => Camel(m.Groups[1].Value)).Distinct().Order(StringComparer.Ordinal).ToArray();
 
-        // A text the markup reads but the facade hands the engine is a warning in the console; one the facade keeps from
-        // the engine but nothing reads is a text no app can change anything with.
-        CollectionAssert.AreEqual(MarkupTexts().Order(StringComparer.Ordinal).ToArray(), read);
+        // A string the markup reads but the facade hands the engine is a warning in the console; one the facade keeps from
+        // the engine but nothing reads is a string no app can change anything with.
+        CollectionAssert.AreEqual(MarkupStrings().Order(StringComparer.Ordinal).ToArray(), read);
     }
 
     [TestMethod]
-    public void BitResourceTimelineTextsShouldCrossTheInteropUnderTheNamesTheScriptsUse()
+    public void BitResourceTimelineStringsShouldCrossTheInteropUnderTheNamesTheScriptsUse()
     {
-        using var document = JsonDocument.Parse(JsonSerializer.Serialize(new BitResourceTimelineTexts(), Web));
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(new BitResourceTimelineStrings(), Web));
 
         var names = document.RootElement.EnumerateObject().Select(p => p.Name).ToArray();
 
-        CollectionAssert.AreEquivalent(TextNames(), names);
+        CollectionAssert.AreEquivalent(StringNames(), names);
         Assert.IsTrue(document.RootElement.EnumerateObject().All(p => p.Value.ValueKind == JsonValueKind.String));
     }
 
     [TestMethod]
-    public void BitResourceTimelineTextsShouldBeFormatsExactlyWhenTheirNamesSaySo()
+    public void BitResourceTimelineStringsShouldBeFormatsExactlyWhenTheirNamesSaySo()
     {
-        var texts = new BitResourceTimelineTexts();
+        var strings = new BitResourceTimelineStrings();
 
-        foreach (var property in typeof(BitResourceTimelineTexts).GetProperties())
+        foreach (var property in typeof(BitResourceTimelineStrings).GetProperties())
         {
-            var value = (string)property.GetValue(texts)!;
+            var value = (string)property.GetValue(strings)!;
 
             Assert.IsFalse(string.IsNullOrWhiteSpace(value), $"{property.Name} has no default.");
 
@@ -90,8 +90,8 @@ public partial class BitResourceTimelineTextsTests
 
                 // The markup formats the group button labels with string.Format and the name of the group alone, so a
                 // placeholder past {0} there throws; the engine formats the rest with the same syntax and up to four.
-                object[] arguments = property.Name is nameof(BitResourceTimelineTexts.ExpandGroupFormat)
-                                                    or nameof(BitResourceTimelineTexts.CollapseGroupFormat)
+                object[] arguments = property.Name is nameof(BitResourceTimelineStrings.ExpandGroupFormat)
+                                                    or nameof(BitResourceTimelineStrings.CollapseGroupFormat)
                                      ? ["a"]
                                      : ["a", "b", "c", "d"];
 
@@ -104,27 +104,27 @@ public partial class BitResourceTimelineTextsTests
         }
     }
 
-    // The camelCase names of the texts, as the interop sends them.
-    private static string[] TextNames() => typeof(BitResourceTimelineTexts).GetProperties().Select(p => Camel(p.Name)).ToArray();
+    // The camelCase names of the strings, as the interop sends them.
+    private static string[] StringNames() => typeof(BitResourceTimelineStrings).GetProperties().Select(p => Camel(p.Name)).ToArray();
 
     private static string Camel(string name) => JsonNamingPolicy.CamelCase.ConvertName(name);
 
     private static Dictionary<string, string> EngineDefaults()
     {
         var engine = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "ResourceTimeline", "BitResourceTimelineEngine.ts");
-        var block = Regex.Match(engine, @"const DEFAULT_TEXTS[^=]*= \{(.*?)\n    \};", RegexOptions.Singleline);
+        var block = Regex.Match(engine, @"const DEFAULT_STRINGS[^=]*= \{(.*?)\n    \};", RegexOptions.Singleline);
 
-        Assert.IsTrue(block.Success, "DEFAULT_TEXTS was not found in the engine.");
+        Assert.IsTrue(block.Success, "DEFAULT_STRINGS was not found in the engine.");
 
-        return EngineText().Matches(block.Groups[1].Value).ToDictionary(m => m.Groups[1].Value, m => Unescape(m.Groups[2].Value));
+        return EngineString().Matches(block.Groups[1].Value).ToDictionary(m => m.Groups[1].Value, m => Unescape(m.Groups[2].Value));
     }
 
-    private static string[] MarkupTexts()
+    private static string[] MarkupStrings()
     {
         var facade = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "ResourceTimeline", "BitResourceTimeline.ts");
-        var list = Regex.Match(facade, @"const MARKUP_TEXTS = \[([^\]]*)\]");
+        var list = Regex.Match(facade, @"const MARKUP_STRINGS = \[([^\]]*)\]");
 
-        Assert.IsTrue(list.Success, "MARKUP_TEXTS was not found in the facade.");
+        Assert.IsTrue(list.Success, "MARKUP_STRINGS was not found in the facade.");
 
         return Regex.Matches(list.Groups[1].Value, @"'(\w+)'").Select(m => m.Groups[1].Value).ToArray();
     }
@@ -146,5 +146,5 @@ public partial class BitResourceTimelineTextsTests
     });
 
     [GeneratedRegex(@"^\s*(\w+):\s*'((?:[^'\\]|\\.)*)'\s*,?\s*$", RegexOptions.Multiline)]
-    private static partial Regex EngineText();
+    private static partial Regex EngineString();
 }

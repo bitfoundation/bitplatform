@@ -122,7 +122,7 @@
                 <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Stretch">
                     @foreach (var prd in similarProducts)
                     {
-                        <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">
+                        <BitLink Href="@CultureInfoManager.GetCurrentCultureUrl(prd.PageUrl)" NoUnderline Style="width:250px">
                             <BitCard FullSize>
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Alt="@prd.PrimaryImageAltText" Width="100%" />
@@ -168,7 +168,7 @@
                 <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Stretch">
                     @foreach (var prd in siblingProducts)
                     {
-                        <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">
+                        <BitLink Href="@CultureInfoManager.GetCurrentCultureUrl(prd.PageUrl)" NoUnderline Style="width:250px">
                             <BitCard FullSize>
                                 <BitStack>
                                     <ProductImage Src="@GetProductImageUrl(prd)" Alt="@prd.PrimaryImageAltText" Width="100%" />

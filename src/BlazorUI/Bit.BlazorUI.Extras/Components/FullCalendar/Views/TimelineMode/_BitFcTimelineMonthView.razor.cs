@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcTimelineMonthView
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [CascadingParameter] internal BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
@@ -238,7 +238,7 @@ public partial class _BitFcTimelineMonthView
         if (State.CanAdd is false)
             return null;
 
-        return $"{Texts.AddEventHoverHint}, {rowLabel}, {day.ToString("D", State.Culture)}"
+        return $"{Strings.AddEventHoverHint}, {rowLabel}, {day.ToString("D", State.Culture)}"
                + State.DescribeBackground(day.Date, day.Date.AddDays(1), rowKey == _unassignedKey ? null : rowKey, anyResource: false);
     }
 

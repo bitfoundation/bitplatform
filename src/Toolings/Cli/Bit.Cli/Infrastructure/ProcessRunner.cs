@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Bit.Cli.Infrastructure;
@@ -15,6 +16,8 @@ public sealed record ProcessSpec
     public IReadOnlyDictionary<string, string?>? Environment { get; init; }
 
     public bool Interactive { get; init; }
+
+    public bool TakesOver { get; init; }
 
     public TimeSpan? Timeout { get; init; }
 
@@ -191,6 +194,8 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
             return NotFound(spec, stopwatch);
         }
 
+        using var signals = spec.TakesOver ? new SignalsLeftTo(process) : null;
+
         if (spec.Interactive is false)
         {
             process.BeginOutputReadLine();
@@ -322,5 +327,55 @@ public sealed class ProcessRunner(CliEnvironment environment, CliLog log) : IPro
         catch (Exception exp) when (exp is InvalidOperationException or Win32Exception or NotSupportedException or AggregateException)
         {
         }
+    }
+
+    // The terminal sends Ctrl+C to both processes, so this one only waits; SIGTERM comes to this one alone, so it's passed on
+    private sealed class SignalsLeftTo : IDisposable
+    {
+        private const int Terminate = 15;
+
+        private readonly List<PosixSignalRegistration> registrations = [];
+
+        public SignalsLeftTo(Process process)
+        {
+            try
+            {
+                registrations.Add(PosixSignalRegistration.Create(PosixSignal.SIGINT, context => context.Cancel = true));
+                registrations.Add(PosixSignalRegistration.Create(PosixSignal.SIGQUIT, context => context.Cancel = true));
+
+                if (OperatingSystem.IsWindows() is false)
+                {
+                    registrations.Add(PosixSignalRegistration.Create(PosixSignal.SIGTERM, context =>
+                    {
+                        context.Cancel = true;
+
+                        try
+                        {
+                            if (process.HasExited is false)
+                            {
+                                _ = kill(process.Id, Terminate);
+                            }
+                        }
+                        catch (Exception exp) when (exp is InvalidOperationException or Win32Exception or NotSupportedException or EntryPointNotFoundException or DllNotFoundException)
+                        {
+                        }
+                    }));
+                }
+            }
+            catch (Exception exp) when (exp is PlatformNotSupportedException or IOException)
+            {
+            }
+        }
+
+        public void Dispose()
+        {
+            foreach (var registration in registrations)
+            {
+                registration.Dispose();
+            }
+        }
+
+        [DllImport("libc", SetLastError = true)]
+        private static extern int kill(int pid, int signal);
     }
 }

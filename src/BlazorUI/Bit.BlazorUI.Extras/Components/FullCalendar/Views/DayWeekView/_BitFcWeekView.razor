@@ -21,7 +21,7 @@
     @if (weekDays.Length > 3)
     {
         <div class="bit-bfc-week-mobile-warning">
-            @Texts.WeekMobileWarning
+            @Strings.WeekMobileWarning
         </div>
     }
 
@@ -34,8 +34,8 @@
                 {
                     @* A name on a role-less span is not read, so the spoken form travels as hidden text. *@
                     <span class="bit-bfc-weeknum-cell">
-                        <span aria-hidden="true">@string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)</span>
-                        <span class="bit-bfc-sr-only">@string.Format(State.Culture, Texts.WeekNumberAriaLabelFormat, weekNumber)</span>
+                        <span aria-hidden="true">@string.Format(State.Culture, Strings.WeekNumberFormat, weekNumber)</span>
+                        <span class="bit-bfc-sr-only">@string.Format(State.Culture, Strings.WeekNumberAriaLabelFormat, weekNumber)</span>
                     </span>
                 }
             </div>
@@ -60,7 +60,7 @@
                         var outOfRange = State.IsDateInAllowedRange(d) is false;
                         <button type="button" class="bit-bfc-navlink bit-bfc-week-header-day-link"
                                 aria-current="@(isToday ? "date" : null)"
-                                aria-label="@($"{dayName} {dayNumber}, {string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, d.ToString("D", State.Culture))}")"
+                                aria-label="@($"{dayName} {dayNumber}, {string.Format(State.Culture, Strings.NavLinkDayAriaLabelFormat, d.ToString("D", State.Culture))}")"
                                 disabled="@outOfRange"
                                 aria-disabled="@(outOfRange ? "true" : null)"
                                 @onclick="() => GoToDayView(d)">
@@ -138,7 +138,7 @@
                                 {
                                     <div class="bit-bfc-cell-add-hint bit-bfc-cell-add-hint-hour" aria-hidden="true">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                        @Texts.AddEventHoverHint
+                                        @Strings.AddEventHoverHint
                                     </div>
                                 }
                             </div>

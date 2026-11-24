@@ -4,7 +4,7 @@
 /// The words a <see cref="BitImageViewer"/> says: the names of its buttons and the instructions of its keyboard, for
 /// a page in another language to translate.
 /// </summary>
-public class BitImageViewerTexts
+public class BitImageViewerStrings
 {
     /// <summary>
     /// What the viewer is announced as, after its name. Default: "image viewer".

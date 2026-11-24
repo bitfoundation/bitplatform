@@ -21,6 +21,10 @@ public static class RenameCommand
             yesOption
         };
 
+        var projectOptions = new ProjectOptions();
+        projectOptions.Maui.Description = "Client.Maui's .csproj, whose <ApplicationId> the rename is checked against. Default: src/Client/<name>.Client.Maui, or the *.Maui.csproj the project's .slnx lists under src/Client.";
+        projectOptions.AddTo(command, projectOptions.Maui);
+
         command.SetAction(async (parseResult, cancellationToken) =>
         {
             var cli = services();
@@ -54,9 +58,18 @@ public static class RenameCommand
 
             var renamer = new ProjectRenamer(oldName, newName);
 
-            if (ProjectContext.ReadAppId(folder, oldName) is { } appId && ProjectName.IsValidAppId(appId) && ProjectName.IsValidAppId(renamer.Replace(appId)) is false)
+            var (parts, partsError) = projectOptions.Read(parseResult, cli, folder);
+
+            if (partsError is not null)
             {
-                return cli.UsageError("app-id-invalid", $"The rename would give the native apps the app id {renamer.Replace(appId)}, and each part of an app id must start with a Latin letter. Use Latin letters in the name, or set <ApplicationId> in {ProjectContext.FindMauiProject(folder, oldName)} first.");
+                return cli.UsageError("project-part-missing", partsError);
+            }
+
+            var project = ProjectContext.At(folder, oldName, parts);
+
+            if (project.AppId is { } appId && ProjectName.IsValidAppId(appId) && ProjectName.IsValidAppId(renamer.Replace(appId)) is false)
+            {
+                return cli.UsageError("app-id-invalid", $"The rename would give the native apps the app id {renamer.Replace(appId)}, and each part of an app id must start with a Latin letter. Use Latin letters in the name, or set <ApplicationId> in {project.MauiProject} first.");
             }
 
             var inGit = false;

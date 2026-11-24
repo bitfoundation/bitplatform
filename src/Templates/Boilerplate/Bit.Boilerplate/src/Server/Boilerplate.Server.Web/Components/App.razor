@@ -58,14 +58,21 @@
 
     @* hreflang marks the per-culture urls of this page as translations of ONE document, so their ranking signals
        consolidate; x-default names the culture-less url, whose 302 (See UseCultureUrlRedirection) is the language
-       chooser. hreflang urls must be fully qualified; the culture and the query are stripped from the path. *@
+       chooser. hreflang urls must be fully qualified; the culture and the query are stripped from the path, and a
+       trailing slash as GetCanonicalUrl drops it. Each language also gets a language-only entry (nl, es, fa, ...) for
+       its first culture, so a reader of that language in another region, Spanish in Mexico say, gets the page in
+       their language rather than x-default's. *@
     @if (CultureInfoManager.InvariantGlobalization is false)
     {
         var alternateBaseUrl = HttpContext.Request.GetBaseUrl();
-        var alternateBarePath = new Uri(HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath;
+        var alternateBarePath = Uri.GetCanonicalPath(new Uri(HttpContext.Request.GetUri().GetUrlWithoutCulture()).AbsolutePath);
         foreach (var (_, supportedCulture) in CultureInfoManager.SupportedCultures)
         {
             <link rel="alternate" hreflang="@supportedCulture.Name" href="@(new Uri(alternateBaseUrl, $"/{supportedCulture.Name}{alternateBarePath}"))" />
+        }
+        foreach (var languageCulture in CultureInfoManager.SupportedCultures.Select(sc => sc.Culture).DistinctBy(c => c.TwoLetterISOLanguageName))
+        {
+            <link rel="alternate" hreflang="@languageCulture.TwoLetterISOLanguageName" href="@(new Uri(alternateBaseUrl, $"/{languageCulture.Name}{alternateBarePath}"))" />
         }
         <link rel="alternate" hreflang="x-default" href="@(new Uri(alternateBaseUrl, alternateBarePath))" />
     }

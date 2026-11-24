@@ -32,6 +32,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
 
 
     /// <summary>
+    /// Draws an accent bar in one of the roles of the theme along the inline-start edge of the card.
+    /// </summary>
+    public BitColor? Accent { get; set; }
+
+    /// <summary>
     /// The color kind of the background of the card.
     /// </summary>
     public BitColorKind? Background { get; set; }
@@ -77,6 +82,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public string? Download { get; set; }
 
     /// <summary>
+    /// The custom html element used for the root node. The default is "div".
+    /// </summary>
+    public string? Element { get; set; }
+
+    /// <summary>
     /// Sets the shadow elevation level of the card (0-24).
     /// </summary>
     public int? Elevation { get; set; }
@@ -112,7 +122,38 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
     public bool? Horizontal { get; set; }
 
     /// <summary>
-    /// Lifts the card while the pointer is over it.
+    /// Gets or sets the orientation of the card from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    public bool? HorizontalXs { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    public bool? HorizontalSm { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    public bool? HorizontalMd { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    public bool? HorizontalLg { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    public bool? HorizontalXl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the orientation of the card from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    public bool? HorizontalXxl { get; set; }
+
+    /// <summary>
+    /// Raises the card to its hover shadow while the pointer is over it, and gives it the hover border color
+    /// and the hover lift that the --bit-Card-hover-border-color and --bit-Card-hover-lift variables set.
     /// </summary>
     public bool? Hoverable { get; set; }
 
@@ -245,6 +286,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCard);
 
+        if (Accent.HasValue)
+        {
+            bitCard.TakeFromCascade(nameof(Accent), Accent.Value, static c => c.Accent, static (c, v) => c.Accent = v);
+        }
+
         if (Background.HasValue)
         {
             bitCard.TakeFromCascade(nameof(Background), Background.Value, static c => c.Background, static (c, v) => c.Background = v);
@@ -273,6 +319,11 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (Divider.HasValue)
         {
             bitCard.TakeFromCascade(nameof(Divider), Divider.Value, static c => c.Divider, static (c, v) => c.Divider = v);
+        }
+
+        if (Element.HasValue())
+        {
+            bitCard.TakeFromCascade(nameof(Element), Element, static c => c.Element, static (c, v) => c.Element = v);
         }
 
         if (Elevation.HasValue)
@@ -308,6 +359,36 @@ public partial class BitCardParams : BitComponentBaseParams, IBitComponentParams
         if (Horizontal.HasValue)
         {
             bitCard.TakeFromCascade(nameof(Horizontal), Horizontal.Value, static c => c.Horizontal, static (c, v) => c.Horizontal = v);
+        }
+
+        if (HorizontalXs.HasValue)
+        {
+            bitCard.TakeFromCascade(nameof(HorizontalXs), HorizontalXs.Value, static c => c.HorizontalXs, static (c, v) => c.HorizontalXs = v);
+        }
+
+        if (HorizontalSm.HasValue)
+        {
+            bitCard.TakeFromCascade(nameof(HorizontalSm), HorizontalSm.Value, static c => c.HorizontalSm, static (c, v) => c.HorizontalSm = v);
+        }
+
+        if (HorizontalMd.HasValue)
+        {
+            bitCard.TakeFromCascade(nameof(HorizontalMd), HorizontalMd.Value, static c => c.HorizontalMd, static (c, v) => c.HorizontalMd = v);
+        }
+
+        if (HorizontalLg.HasValue)
+        {
+            bitCard.TakeFromCascade(nameof(HorizontalLg), HorizontalLg.Value, static c => c.HorizontalLg, static (c, v) => c.HorizontalLg = v);
+        }
+
+        if (HorizontalXl.HasValue)
+        {
+            bitCard.TakeFromCascade(nameof(HorizontalXl), HorizontalXl.Value, static c => c.HorizontalXl, static (c, v) => c.HorizontalXl = v);
+        }
+
+        if (HorizontalXxl.HasValue)
+        {
+            bitCard.TakeFromCascade(nameof(HorizontalXxl), HorizontalXxl.Value, static c => c.HorizontalXxl, static (c, v) => c.HorizontalXxl = v);
         }
 
         if (Hoverable.HasValue)

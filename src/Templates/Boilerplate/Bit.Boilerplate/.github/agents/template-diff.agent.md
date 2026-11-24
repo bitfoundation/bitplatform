@@ -63,7 +63,7 @@ Some changes need more than the text of the diff:
 
 ## 4. Update what the project records
 
-- In `bit.json`, what changed - the version, the `framework` or the feature's option - so the next diff starts from here; keep the options the project really has.
+- In `bit.json`, what changed - the version, the `framework` or the feature's option - so the next diff starts from here; keep the options the project really has. A `cli.maxVersion` older than the new version goes, or bit keeps running the project's commands with the older bit CLI it names.
 - After a newer version, the version in the bit platform MCP server URL in every MCP configuration listed above, and in any other agent configuration that pins it.
 - After a newer version, search the project for the old version string and update every place that names the template or bit platform version, such as the package versions of the bit platform libraries and the bit platform actions the workflows use. Leave a package the team pinned on purpose, and other packages that happen to share the number, alone.
 

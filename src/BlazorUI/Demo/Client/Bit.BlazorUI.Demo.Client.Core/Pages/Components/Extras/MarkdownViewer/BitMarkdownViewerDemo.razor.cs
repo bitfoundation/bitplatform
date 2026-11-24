@@ -295,12 +295,12 @@ public partial class BitMarkdownViewerDemo
                 },
                 new()
                 {
-                    Name = "UseTexts",
-                    Type = "BitMarkdownPipelineBuilder UseTexts(BitMarkdownTexts texts)",
+                    Name = "UseStrings",
+                    Type = "BitMarkdownPipelineBuilder UseStrings(BitMarkdownStrings strings)",
                     DefaultValue = "",
                     Description = "Sets the words the renderers write themselves - alert titles, footnote back-links, the accessible names of the regions and controls the markup adds - so a rendered document can be in a language other than English.",
                     LinkType = LinkType.Link,
-                    Href = "#markdown-viewer-texts",
+                    Href = "#markdown-viewer-strings",
                 },
                 new()
                 {
@@ -542,8 +542,8 @@ public partial class BitMarkdownViewerDemo
         },
         new()
         {
-            Id = "markdown-viewer-texts",
-            Title = "BitMarkdownTexts",
+            Id = "markdown-viewer-strings",
+            Title = "BitMarkdownStrings",
             Description = "The words the renderers write into a document themselves, rather than taking them from the source. All strings default to English. The numbered ones take their number through {0}; FootnoteBackReferenceOccurrence takes the footnote's number and the citation's through {0} and {1}.",
             Parameters =
             [
@@ -602,12 +602,12 @@ public partial class BitMarkdownViewerDemo
             [
                 new()
                 {
-                    Name = "Texts",
-                    Type = "BitMarkdownTexts",
+                    Name = "Strings",
+                    Type = "BitMarkdownStrings",
                     DefaultValue = "",
                     Description = "The words the renderers write themselves.",
                     LinkType = LinkType.Link,
-                    Href = "#markdown-viewer-texts",
+                    Href = "#markdown-viewer-strings",
                 },
                 new()
                 {
@@ -1066,7 +1066,7 @@ And every link, like [the bit platform](https://bitplatform.dev), is a BitLink.
 
     private readonly BitMarkdownPipeline localizedPipeline = new BitMarkdownPipelineBuilder()
         .UseGitHubFlavored()
-        .UseTexts(new BitMarkdownTexts
+        .UseStrings(new BitMarkdownStrings
         {
             AlertNote = "Hinweis",
             AlertTip = "Tipp",

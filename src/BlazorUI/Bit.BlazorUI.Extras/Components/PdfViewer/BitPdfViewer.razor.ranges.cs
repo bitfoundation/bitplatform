@@ -224,7 +224,7 @@ public partial class BitPdfViewer
             PreparePages();
             await RenderCurrentPageEagerlyAsync(throwRangeFailures: true);
             CheckRangeOperation(owned, version, token);
-            _status = string.Format(ActiveTexts.PageCountFormat, document.PageCount);
+            _status = string.Format(ActiveStrings.PageCountFormat, document.PageCount);
             _loading = false; _progress = null;
             _spyPending = true;
             _rangePublished = true; published = true;
@@ -299,7 +299,7 @@ public partial class BitPdfViewer
             _documentTitle = null;
             _outline = []; _attachments = []; _layers = [];
             _rangeSource = null; ResetRangeDetails();
-            _errorMessage = message; _status = string.Format(ActiveTexts.ErrorFormat, message);
+            _errorMessage = message; _status = string.Format(ActiveStrings.ErrorFormat, message);
             _loading = false; _progress = null;
         }
         finally { _renderGate.Release(); }

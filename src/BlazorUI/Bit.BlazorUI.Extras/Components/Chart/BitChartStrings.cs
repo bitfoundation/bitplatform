@@ -1,11 +1,11 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// The texts <see cref="BitChart"/> writes for assistive technologies and into its exports. All strings default to
+/// The strings <see cref="BitChart"/> writes for assistive technologies and into its exports. All strings default to
 /// English; override individual properties to localize the chart. The <c>...Format</c> ones are composite format
 /// strings, filled with <see cref="string.Format(IFormatProvider, string, object[])"/> in the chart's culture.
 /// </summary>
-public class BitChartTexts
+public class BitChartStrings
 {
     /// <summary>
     /// The accessible name of a chart that has neither an <c>AriaLabel</c> nor a displayed title.
@@ -88,8 +88,8 @@ public class BitChartTexts
 
 
 
-    /// <summary>The English texts, used by a chart that is given none.</summary>
-    internal static BitChartTexts Default { get; } = new();
+    /// <summary>The English strings, used by a chart that is given none.</summary>
+    internal static BitChartStrings Default { get; } = new();
 
     /// <summary>The name of a chart type, or its enum member when the map has none.</summary>
     internal string TypeName(BitChartType type)

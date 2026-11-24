@@ -20,12 +20,12 @@ namespace Bit.BevTools;
 [ProviderAlias("BevTools")]
 internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILoggerProvider, ISupportExternalScope
 {
-    private const int MaxProperties = 20;
+    internal const int MaxProperties = 20;
     // A message template's holes, the most read of one entry's state; far more than any template has.
     private const int MaxPairs = 128;
-    private const int MaxScopes = 8;
-    private const int MaxMessageLength = 4000;
-    private const int MaxScopeLength = 300;
+    internal const int MaxScopes = 8;
+    internal const int MaxMessageLength = 4000;
+    internal const int MaxScopeLength = 300;
 
     private static readonly string[] FrameworkPrefixes =
     [
@@ -70,6 +70,92 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// The template with each hole filled with what its property shows: a sensitive value redacted, an object under
+    /// <see cref="BevToolsValueAccess.Shallow"/> as its type. The n-th hole takes the n-th value when that one bears its
+    /// name, as <c>LoggerMessage.Define</c> and <c>ILogger.Log*</c> fill them, a name repeated included; otherwise the
+    /// first value of its name, as the source generator does, which lists each parameter once, in the method's order.
+    /// </summary>
+    internal static string Render(string template, List<(string Name, object? Value, BevToolsInspectedNode Node)>? values)
+    {
+        var sb = new StringBuilder(template.Length + 32);
+        var hole = 0;
+        var i = 0;
+        while (i < template.Length)
+        {
+            var c = template[i];
+            if ((c == '{' || c == '}') && i + 1 < template.Length && template[i + 1] == c)
+            {
+                sb.Append(c);
+                i += 2;
+                continue;
+            }
+
+            var end = c == '{' ? template.IndexOf('}', i + 1) : -1;
+            if (end < 0)
+            {
+                sb.Append(c);
+                i++;
+                continue;
+            }
+
+            var text = template.AsSpan(i + 1, end - i - 1);
+            var stop = text.IndexOfAny(',', ':');
+            var name = (stop < 0 ? text : text[..stop]).Trim().TrimStart('@').TrimStart('$').ToString();
+            var found = values is not null && hole < values.Count && values[hole].Name == name ? hole : values?.FindIndex(v => v.Name == name) ?? -1;
+            hole++;
+            if (found < 0)
+            {
+                sb.Append(template, i, end - i + 1);
+            }
+            else
+            {
+                var (_, value, node) = values![found];
+                var format = stop >= 0 && text[stop] == ':' ? text[(stop + 1)..].ToString() : null;
+                sb.Append(node.Kind is BevToolsNodeKind.Primitive && format is not null && value is IFormattable formattable
+                    ? Safe(() => formattable.ToString(format, CultureInfo.InvariantCulture)) ?? Unquoted(node)
+                    : Unquoted(node));
+            }
+
+            i = end + 1;
+        }
+
+        return BevToolsRedactor.RedactText(sb.ToString());
+    }
+
+    /// <summary>
+    /// The message of an entry whose logger text holds more than may be shown and that has no template to rebuild it
+    /// from (a state of the app's own type): its values as its properties show them, or hidden when it has none. Never
+    /// the formatter's text, which may print a value redacted here or an object only its type may stand for.
+    /// </summary>
+    internal static string RenderWithoutTemplate(List<(string Name, object? Value, BevToolsInspectedNode Node)>? values) =>
+        values is null ? BevToolsRedactor.HiddenValue : string.Join(", ", values.Select(v => v.Name + "=" + Unquoted(v.Node)));
+
+    internal static string Unquoted(BevToolsInspectedNode node) =>
+        node.Kind == BevToolsNodeKind.String && node.Display.Length >= 2 && node.Display[0] == '"' && node.Display[^1] == '"'
+            ? node.Display[1..^1]
+            : node.Display;
+
+    internal static string ShortCategory(string category)
+    {
+        var dot = category.LastIndexOf('.');
+        return dot < 0 ? category : category[(dot + 1)..];
+    }
+
+    internal static string Shorten(string text, int max) => text.Length <= max ? text : text[..(max - 1)] + "…";
+
+    internal static string? Safe(Func<string?> read)
+    {
+        try
+        {
+            return read();
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            return "«" + ex.GetType().Name + " while formatting»";
+        }
     }
 
     public void Dispose()
@@ -255,9 +341,9 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
             {
                 message = null;
             }
-            else if (rebuild && template is not null)
+            else if (rebuild)
             {
-                message = Render(template, values);
+                message = template is not null ? Render(template, values) : RenderWithoutTemplate(values);
             }
             else
             {
@@ -347,66 +433,10 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
 
             return scope is string text
                 ? BevToolsRedactor.RedactText(text)
-                : inspector.ValueAccess == BevToolsValueAccess.Full ? BevToolsRedactor.RedactText(Safe(scope.ToString) ?? "") : BevToolsTypeNames.Short(scope.GetType());
+                : inspector.ValueAccess == BevToolsValueAccess.Full && inspector.MayShowToString(scope.GetType())
+                    ? BevToolsRedactor.RedactText(Safe(scope.ToString) ?? "")
+                    : BevToolsTypeNames.Short(scope.GetType());
         }
-
-        /// <summary>
-        /// The template with each hole filled with what its property shows: a sensitive value redacted, an object under
-        /// <see cref="BevToolsValueAccess.Shallow"/> as its type. The n-th hole takes the n-th value when that one bears its
-        /// name, as <c>LoggerMessage.Define</c> and <c>ILogger.Log*</c> fill them, a name repeated included; otherwise the
-        /// first value of its name, as the source generator does, which lists each parameter once, in the method's order.
-        /// </summary>
-        private static string Render(string template, List<(string Name, object? Value, BevToolsInspectedNode Node)>? values)
-        {
-            var sb = new StringBuilder(template.Length + 32);
-            var hole = 0;
-            var i = 0;
-            while (i < template.Length)
-            {
-                var c = template[i];
-                if ((c == '{' || c == '}') && i + 1 < template.Length && template[i + 1] == c)
-                {
-                    sb.Append(c);
-                    i += 2;
-                    continue;
-                }
-
-                var end = c == '{' ? template.IndexOf('}', i + 1) : -1;
-                if (end < 0)
-                {
-                    sb.Append(c);
-                    i++;
-                    continue;
-                }
-
-                var text = template.AsSpan(i + 1, end - i - 1);
-                var stop = text.IndexOfAny(',', ':');
-                var name = (stop < 0 ? text : text[..stop]).Trim().TrimStart('@').TrimStart('$').ToString();
-                var found = values is not null && hole < values.Count && values[hole].Name == name ? hole : values?.FindIndex(v => v.Name == name) ?? -1;
-                hole++;
-                if (found < 0)
-                {
-                    sb.Append(template, i, end - i + 1);
-                }
-                else
-                {
-                    var (_, value, node) = values![found];
-                    var format = stop >= 0 && text[stop] == ':' ? text[(stop + 1)..].ToString() : null;
-                    sb.Append(node.Kind is BevToolsNodeKind.Primitive && format is not null && value is IFormattable formattable
-                        ? Safe(() => formattable.ToString(format, CultureInfo.InvariantCulture)) ?? Unquoted(node)
-                        : Unquoted(node));
-                }
-
-                i = end + 1;
-            }
-
-            return BevToolsRedactor.RedactText(sb.ToString());
-        }
-
-        private static string Unquoted(BevToolsInspectedNode node) =>
-            node.Kind == BevToolsNodeKind.String && node.Display.Length >= 2 && node.Display[0] == '"' && node.Display[^1] == '"'
-                ? node.Display[1..^1]
-                : node.Display;
 
         private static string DescribeException(Exception exception)
         {
@@ -418,26 +448,6 @@ internal sealed class BevToolsLoggerProvider(BevToolsRegistry registry) : ILogge
             }
 
             return Shorten(sb.ToString(), MaxMessageLength);
-        }
-
-        private static string ShortCategory(string category)
-        {
-            var dot = category.LastIndexOf('.');
-            return dot < 0 ? category : category[(dot + 1)..];
-        }
-
-        private static string Shorten(string text, int max) => text.Length <= max ? text : text[..(max - 1)] + "…";
-
-        private static string? Safe(Func<string?> read)
-        {
-            try
-            {
-                return read();
-            }
-            catch (Exception ex) when (ex is not OutOfMemoryException)
-            {
-                return "«" + ex.GetType().Name + " while formatting»";
-            }
         }
     }
 }

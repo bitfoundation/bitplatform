@@ -13,7 +13,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// auto pairs, auto close, Tab indenting and the Escape-then-Tab way out, indent unit, list continuation, line moves),
 /// the markdown spellings, ReadOnly, Disabled (with the page's handlers dropped), find and replace, the table tools,
 /// image upload through the picker, paste and drop (with rejections), pasted tables and links, the status bar,
-/// localized texts, EditForm validation, labels and descriptions, submit, the BitParams cascade, Style/Class/Styles/
+/// localized strings, EditForm validation, labels and descriptions, submit, the BitParams cascade, Style/Class/Styles/
 /// Classes and the public CSS variables, RTL, the help dialog, Escape inside a dialog, autosaved drafts, prerendering
 /// and unmounting.
 /// </summary>
@@ -1423,7 +1423,7 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Localization_TextsReplaceEveryStringTheEditorRenders()
+    public async Task Localization_StringsReplaceEveryWordTheEditorRenders()
     {
         await OpenAsync(Route);
 

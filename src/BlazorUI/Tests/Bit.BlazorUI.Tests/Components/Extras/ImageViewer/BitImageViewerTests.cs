@@ -332,9 +332,9 @@ public class BitImageViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitImageViewerShouldSayItsTexts()
+    public void BitImageViewerShouldSayItsStrings()
     {
-        var com = Render(p => p.Add(x => x.Texts, new BitImageViewerTexts
+        var com = Render(p => p.Add(x => x.Strings, new BitImageViewerStrings
         {
             RoleDescription = "visor",
             Instructions = "Usa más y menos.",

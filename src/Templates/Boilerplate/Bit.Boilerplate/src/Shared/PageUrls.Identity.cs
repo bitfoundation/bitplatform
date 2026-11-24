@@ -21,8 +21,10 @@ public static partial class PageUrls
     public const string ResetPassword = "/reset-password";
 
     [Description("Sign in to your account.")]
+    [NotInSitemap]
     public const string SignIn = "/sign-in";
 
     [Description("Create a new account.")]
+    [NotInSitemap]
     public const string SignUp = "/sign-up";
 }

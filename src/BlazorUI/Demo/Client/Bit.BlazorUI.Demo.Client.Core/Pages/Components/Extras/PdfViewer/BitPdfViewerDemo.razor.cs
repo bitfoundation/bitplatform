@@ -296,6 +296,15 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "Strings",
+            Type = "BitPdfViewerStrings?",
+            DefaultValue = "null",
+            Description = "The strings of the viewer UI. Defaults to English; assign an instance with the properties you want to override to localize the toolbar, the sidebars and the status messages.",
+            LinkType = LinkType.Link,
+            Href = "#pdf-strings"
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitPdfViewerClassStyles?",
             DefaultValue = "null",
@@ -311,15 +320,6 @@ public partial class BitPdfViewerDemo
             Description = "How painted text is emitted. Compact merges same-line, same-style runs into one span per visual line (far fewer DOM nodes on per-glyph pdfs).",
             LinkType = LinkType.Link,
             Href = "#pdf-text-coalescing-enum"
-        },
-        new()
-        {
-            Name = "Texts",
-            Type = "BitPdfViewerTexts?",
-            DefaultValue = "null",
-            Description = "The texts of the viewer UI. Defaults to English; assign an instance with the properties you want to override to localize the toolbar, the sidebars and the status messages.",
-            LinkType = LinkType.Link,
-            Href = "#pdf-texts"
         },
         new()
         {
@@ -1239,9 +1239,9 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
-            Id = "pdf-texts",
-            Title = "BitPdfViewerTexts",
-            Description = "The texts of the BitPdfViewer UI. All strings default to English; override individual properties to localize the viewer. The table lists the groups; every property is a plain settable string.",
+            Id = "pdf-strings",
+            Title = "BitPdfViewerStrings",
+            Description = "The strings of the BitPdfViewer UI. All strings default to English; override individual properties to localize the viewer. The table lists the groups; every property is a plain settable string.",
             Parameters =
             [
                 new()
@@ -1305,7 +1305,7 @@ public partial class BitPdfViewerDemo
                     Name = "PasswordTitle, PasswordPrompt, PasswordRejected, PasswordSubmit, Cancel",
                     Type = "string",
                     DefaultValue = "\"Password required\", \"This document is protected...\", ...",
-                    Description = "The texts of the built-in password dialog.",
+                    Description = "The strings of the built-in password dialog.",
                 },
                 new()
                 {
@@ -1743,7 +1743,7 @@ public partial class BitPdfViewerDemo
     private BitPdfDestination? FirstBookmarkDestination()
         => pdfViewerRef?.Outline.FirstOrDefault()?.Destination;
 
-    private readonly BitPdfViewerTexts germanTexts = new()
+    private readonly BitPdfViewerStrings germanStrings = new()
     {
         ToolbarAriaLabel = "PDF-Werkzeugleiste",
         DocumentAriaLabel = "Dokument",
@@ -1800,7 +1800,7 @@ public partial class BitPdfViewerDemo
             Height = "300px",
             InitialZoomMode = BitPdfZoomMode.FitPage,
             ToolbarItems = BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom | BitPdfToolbarItems.Search,
-            Texts = new() { NoDocument = "Both viewers share their defaults - load a document." },
+            Strings = new() { NoDocument = "Both viewers share their defaults - load a document." },
         }
     ];
 

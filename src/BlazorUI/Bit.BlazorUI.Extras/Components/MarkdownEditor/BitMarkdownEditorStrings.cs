@@ -1,10 +1,10 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// The texts of the BitMarkdownEditor UI. All strings default to English;
+/// The strings of the BitMarkdownEditor UI. All strings default to English;
 /// override individual properties to localize the editor.
 /// </summary>
-public class BitMarkdownEditorTexts
+public class BitMarkdownEditorStrings
 {
     public string ToolbarAriaLabel { get; set; } = "Markdown formatting";
     public string EditorAriaLabel { get; set; } = "Markdown editor";

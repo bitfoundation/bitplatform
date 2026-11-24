@@ -152,7 +152,7 @@ public static class DocsCatalog
                 typeof(Share)),
             new("/extending", "Extending",
                 "Panels, state providers, rules, commands, value formatters and timeline events of your own - shown by the extension this site registers.",
-                "extension IBevToolsExtension panel state provider adapter diagnostic rule command value formatter IBevToolsTimeline custom events BevToolsSensitive BevToolsIgnore",
+                "extension IBevToolsExtension panel AddPanel custom tab own api state provider adapter diagnostic rule command value formatter IBevToolsTimeline custom events BevToolsSensitive BevToolsIgnore",
                 typeof(Extending)),
         ]),
     ];

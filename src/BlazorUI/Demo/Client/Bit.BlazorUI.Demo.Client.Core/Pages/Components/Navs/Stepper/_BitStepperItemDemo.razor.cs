@@ -9,6 +9,8 @@ public partial class _BitStepperItemDemo
     private int eventsChange;
     private string? eventsClicked;
 
+    private int compactIndex;
+
     private readonly List<BitStepperItem> basicItems =
     [
         new() { Text = "Account" },

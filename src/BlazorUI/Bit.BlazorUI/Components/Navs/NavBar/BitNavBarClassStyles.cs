@@ -13,6 +13,12 @@ public class BitNavBarClassStyles
     public string? Container { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the drawer of the BitNavBar, which holds the container of the items below the
+    /// DrawerBreakpoint.
+    /// </summary>
+    public string? Drawer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the footer of the BitNavBar, rendered after the items.
     /// </summary>
     public string? Footer { get; set; }
@@ -53,7 +59,17 @@ public class BitNavBarClassStyles
     public string? ItemWrapper { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the overlay rendered behind the open drawer of the BitNavBar.
+    /// </summary>
+    public string? Overlay { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the selected item of the BitNavBar.
     /// </summary>
     public string? SelectedItem { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the toggle button that opens and closes the drawer of the BitNavBar.
+    /// </summary>
+    public string? ToggleButton { get; set; }
 }

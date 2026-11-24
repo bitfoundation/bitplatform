@@ -28,6 +28,9 @@ public static class RunCommand
             propertyOption
         };
 
+        var projectOptions = new ProjectOptions();
+        projectOptions.AddTo(command, projectOptions.Project, projectOptions.ServerApi, projectOptions.ServerWeb, projectOptions.AppHost, projectOptions.Maui, projectOptions.Windows);
+
         command.SetAction(async (parseResult, cancellationToken) =>
         {
             var cli = services();
@@ -55,26 +58,33 @@ public static class RunCommand
                 return cli.UsageError("properties-invalid", propertyError);
             }
 
-            var directory = cli.Environment.CurrentDirectory;
+            var directory = projectOptions.Folder(parseResult, cli);
 
-            if (ProjectContext.FindProjectName(directory) is not { } name)
+            if (Directory.Exists(directory) is false || ProjectContext.FindProjectName(directory) is not { } name)
             {
-                return cli.UsageError("not-a-project", $"{directory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit run in the project's folder.");
+                return cli.UsageError("not-a-project", $"{directory} isn't a bit Boilerplate project folder (no *.Web.slnf or *.slnx). Run bit run in the project's folder, or name it with {ProjectOptions.ProjectName}.");
             }
+
+            var (parts, partsError) = projectOptions.Read(parseResult, cli, directory);
+
+            if (partsError is not null)
+            {
+                return cli.UsageError("project-part-missing", partsError);
+            }
+
+            var context = new ProjectContext { Name = name, Directory = directory, Platforms = new HashSet<Platform> { Platform.Web, platform }, BuildProperties = properties, Parts = parts };
 
             var app = platform switch
             {
                 Platform.Web => null,
-                Platform.Windows => ProjectContext.FindWindowsProject(directory, name),
-                _ => ProjectContext.FindMauiProject(directory, name)
+                Platform.Windows => context.WindowsProject,
+                _ => context.MauiProject
             };
 
             if (app is not null && File.Exists(Path.Combine(directory, app)) is false)
             {
-                return cli.UsageError("app-missing", $"{name} has no {app}, so it has no {Platforms.Title(platform)} app to run.");
+                return cli.UsageError("app-missing", $"{name} has no {app}, so it has no {Platforms.Title(platform)} app to run. {(platform is Platform.Windows ? projectOptions.Windows.Name : projectOptions.Maui.Name)} names its .csproj when it's somewhere else.");
             }
-
-            var context = new ProjectContext { Name = name, Directory = directory, Platforms = new HashSet<Platform> { Platform.Web, platform }, BuildProperties = properties };
             var steps = new StepRunner(cli);
             var projectSteps = new ProjectSteps(cli, context);
 

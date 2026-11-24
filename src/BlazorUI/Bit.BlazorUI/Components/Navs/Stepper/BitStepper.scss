@@ -5,10 +5,13 @@
 // ancestor, on the Style of a stepper or on the Style of a single step inherits down to whatever reads it:
 //   --bit-Stepper-indicator-size      diameter of the indicator of a step                        (default: spacing(4))
 //   --bit-Stepper-active-color        fill of the indicator of the completed and current steps,
-//                                     and of the line after a completed step                     (default: $clr-pri)
+//                                     of the line after a completed step,
+//                                     and of their segments of the compact bar                   (default: $clr-pri)
 //   --bit-Stepper-active-text-color   number and icon color on that fill                         (default: $clr-pri-text)
-//   --bit-Stepper-error-color         fill of the indicator and color of the text of a step in error (default: $clr-err)
-//   --bit-Stepper-connector-color     color of the line between two steps                        (default: $clr-brd-sec)
+//   --bit-Stepper-error-color         fill of the indicator and color of the text of a step in error,
+//                                     and fill of its segment of the compact bar                 (default: $clr-err)
+//   --bit-Stepper-connector-color     color of the line between two steps,
+//                                     and of the segments of the upcoming steps in the compact bar (default: $clr-brd-sec)
 //   --bit-Stepper-connector-width     thickness of the line between two steps                    (default: $shp-border-width-thick)
 // The colors never override a disabled step, which keeps its disabled palette.
 
@@ -20,6 +23,19 @@
     color: $clr-fg-pri;
     font-size: $tg-fs-md;
     font-family: $tg-font-family;
+}
+
+// A Compact stepper is a group holding the compact part, and the list of the steps (bit-str-lst) too when it is
+// Responsive, one under the other: only one of them shows at a time (at the foot of the file).
+.bit-str-cpt {
+    flex-direction: column;
+}
+
+.bit-str-lst {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    list-style: none;
 }
 
 // Each layout is written once, as a mixin, and taken by a stepper of that orientation and by a Responsive one while it
@@ -196,6 +212,62 @@ button.bit-str-btn {
     @include stp-vertical-connector;
 }
 
+// The compact part: the position of the current step, its text, and a bar of a segment per step, which fills up with
+// the way already come.
+.bit-str-sum {
+    display: flex;
+    gap: spacing(0.5);
+    flex-direction: column;
+}
+
+.bit-str-pos {
+    color: $clr-fg-sec;
+    font-size: $tg-fs-sm;
+}
+
+.bit-str-ctx {
+    font-weight: $tg-fw-semibold;
+}
+
+.bit-str-cte {
+    color: var(--bit-Stepper-error-color, #{$clr-err});
+}
+
+.bit-str-prg {
+    display: flex;
+    gap: spacing(0.5);
+}
+
+.bit-str-seg {
+    flex: 1 1 0;
+    min-width: 0;
+    height: $siz-track-sm;
+    border-radius: $shp-radius-progress;
+    background-color: var(--bit-Stepper-connector-color, #{$clr-brd-sec});
+}
+
+.bit-str-sga {
+    background-color: var(--bit-Stepper-active-color, #{$clr-pri});
+}
+
+.bit-str-sge {
+    background-color: var(--bit-Stepper-error-color, #{$clr-err});
+}
+
+// A disabled step keeps its disabled palette in the compact part too, as it does in the list (bit-str-sdi): its text,
+// and its segment, which still tells a step done from one to come.
+.bit-str-ctd {
+    color: $clr-fg-dis;
+}
+
+.bit-str-sgd {
+    background-color: $clr-brd-dis;
+}
+
+.bit-str-sgd:is(.bit-str-sga, .bit-str-sge) {
+    background-color: $clr-fg-dis;
+}
+
 // A Responsive horizontal stepper is a row while it is 600px wide or more and a column below that, by the width of its
 // own container rather than the screen's: one in a sidebar, a card or a dialog takes the column on a wide screen too.
 // An element cannot be queried against its own width, so the list stands in a wrapper (bit-str-rsw) that is the query
@@ -219,6 +291,12 @@ button.bit-str-btn {
     .bit-str-rsp .bit-str-con {
         @include stp-horizontal-connector;
     }
+
+    // A Responsive Compact stepper shows its list, a row, while it is wide enough. The part hidden is important, so a
+    // display an app writes into Styles.Compact or Classes.Compact never shows both layouts at once.
+    .bit-str-rsw > .bit-str-cpt > .bit-str-sum {
+        display: none !important;
+    }
 }
 
 @container bit-stepper (width < #{$mq-sm-min}) {
@@ -232,6 +310,11 @@ button.bit-str-btn {
 
     .bit-str-rsp .bit-str-con {
         @include stp-vertical-connector;
+    }
+
+    // ...and its compact part in place of the column below that.
+    .bit-str-rsw > .bit-str-cpt > .bit-str-lst {
+        display: none !important;
     }
 }
 
@@ -260,14 +343,65 @@ button.bit-str-btn {
     background-color: transparent;
 }
 
-// A disabled stepper draws no way already come either.
-.bit-dis:where(.bit-str) .bit-str-con {
+// A disabled stepper draws no way already come either. Its compact bar still tells the steps done from the ones to come,
+// in the disabled palette.
+.bit-dis:where(.bit-str) .bit-str-con,
+.bit-dis:where(.bit-str) .bit-str-seg {
     background-color: $clr-brd-dis;
 }
 
+.bit-dis:where(.bit-str) .bit-str-sga,
+.bit-dis:where(.bit-str) .bit-str-sge {
+    background-color: $clr-fg-dis;
+}
+
+.bit-dis:where(.bit-str) .bit-str-pos,
+.bit-dis:where(.bit-str) .bit-str-ctx {
+    color: $clr-fg-dis;
+}
+
 // Forced-colors modes drop the fills of the indicators and the painted lines, so the active and error indicators
-// become Highlight discs, the lines are drawn in the text color, and a disabled step in GrayText.
+// become Highlight discs, the lines are drawn in the text color, and a disabled step in GrayText. The segments of the
+// compact bar are Highlight for the way already come and GrayText for the steps to come; a step in error is dashed,
+// since the palette has no color of its own for an error, and a disabled one (or every one of a disabled stepper)
+// draws the way already come in the text color, so it still stands apart from GrayText.
 @media (forced-colors: active) {
+    .bit-str-seg {
+        forced-color-adjust: none;
+        background-color: GrayText;
+    }
+
+    .bit-str-sga {
+        background-color: Highlight;
+    }
+
+    .bit-str-sge {
+        background-color: Canvas;
+        background-image: repeating-linear-gradient(90deg, Highlight 0 #{spacing(0.5)}, transparent #{spacing(0.5)} #{spacing(0.75)});
+    }
+
+    .bit-str-sgd,
+    .bit-dis:where(.bit-str) .bit-str-seg {
+        background-color: GrayText;
+    }
+
+    .bit-str-sgd.bit-str-sga,
+    .bit-dis:where(.bit-str) .bit-str-sga {
+        background-color: CanvasText;
+    }
+
+    .bit-str-sgd.bit-str-sge,
+    .bit-dis:where(.bit-str) .bit-str-sge {
+        background-color: Canvas;
+        background-image: repeating-linear-gradient(90deg, CanvasText 0 #{spacing(0.5)}, transparent #{spacing(0.5)} #{spacing(0.75)});
+    }
+
+    .bit-str-ctd,
+    .bit-dis:where(.bit-str) .bit-str-pos,
+    .bit-dis:where(.bit-str) .bit-str-ctx {
+        color: GrayText;
+    }
+
     .bit-str-cmp .bit-str-ind,
     .bit-str-cur .bit-str-ind,
     .bit-str-err .bit-str-ind {

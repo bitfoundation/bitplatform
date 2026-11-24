@@ -48,16 +48,16 @@
 
 <div id="@_scrollContainerId" class="bit-bfc-agenda">
     <div class="bit-bfc-agenda-search">
-        <input type="search" placeholder="@Texts.SearchEventsPlaceholder" aria-label="@Texts.SearchEventsPlaceholder" aria-controls="@_resultsId" @bind="_search" @bind:event="oninput" />
+        <input type="search" placeholder="@Strings.SearchEventsPlaceholder" aria-label="@Strings.SearchEventsPlaceholder" aria-controls="@_resultsId" @bind="_search" @bind:event="oninput" />
     </div>
 
     @* The result count is announced as the search narrows the list, without moving the focus off the box. *@
-    <div class="bit-bfc-sr-only" role="status">@(string.IsNullOrWhiteSpace(_search) ? null : string.Format(State.Culture, Texts.EventListCountFormat, agendaGroups.Sum(g => g.Items.Count)))</div>
+    <div class="bit-bfc-sr-only" role="status">@(string.IsNullOrWhiteSpace(_search) ? null : string.Format(State.Culture, Strings.EventListCountFormat, agendaGroups.Sum(g => g.Items.Count)))</div>
 
     <div id="@_resultsId">
     @if (agendaGroups.Count == 0)
     {
-        <div class="bit-bfc-agenda-empty">@Texts.NoEventsFound</div>
+        <div class="bit-bfc-agenda-empty">@Strings.NoEventsFound</div>
     }
     else
     {
@@ -68,7 +68,7 @@
                 @foreach (var ev in items)
                 {
                     <button type="button" class="bit-bfc-agenda-item @Parts.Classes?.Event @ev.CssClass" style="@Parts.Styles?.Event" data-bit-bfc-event="@ev.Id" data-agenda-date="@ev.StartDate.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)"
-                            title="@BitFullCalendarHelpers.BuildEventTooltip(ev, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
+                            title="@BitFullCalendarHelpers.BuildEventTooltip(ev, State.Use24HourFormat, State.Culture, Strings.AllDayLabel)"
                             @onclick="() => ShowDetails(ev)">
                         @if (Parts.AgendaEventTemplate is { } rowTemplate)
                         {
@@ -92,7 +92,7 @@
                                         @BitFullCalendarHelpers.FormatCultureDate(ev.StartDate, State.Culture)
                                         <span> · </span>
                                     }
-                                    @Texts.AllDayLabel
+                                    @Strings.AllDayLabel
                                 }
                                 else if (State.AgendaModeGroupBy == BitFullCalendarAgendaGroupBy.Date)
                                 {

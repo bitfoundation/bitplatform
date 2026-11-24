@@ -24,16 +24,16 @@ internal static class BitResourceTimelineJsRuntimeExtensions
     [DynamicDependency(All, typeof(BitResourceTimelineRowStripes))]
     [DynamicDependency(All, typeof(BitResourceTimelineAxisLines))]
     [DynamicDependency(All, typeof(BitResourceTimelineGroupSeparators))]
-    [DynamicDependency(All, typeof(BitResourceTimelineTexts))]
+    [DynamicDependency(All, typeof(BitResourceTimelineStrings))]
     public static ValueTask<BitResourceTimelineLayout?> BitResourceTimelineSetup(this IJSRuntime jsRuntime,
                                                                                     string id,
                                                                                     ElementReference viewport,
                                                                                     DotNetObjectReference<BitResourceTimeline> dotnetObj,
                                                                                     BitResourceTimelineOptions? options,
-                                                                                    BitResourceTimelineTexts texts,
+                                                                                    BitResourceTimelineStrings strings,
                                                                                     bool disabled)
     {
-        return jsRuntime.Invoke<BitResourceTimelineLayout?>("BitBlazorUI.ResourceTimeline.setup", id, viewport, dotnetObj, options, texts, disabled);
+        return jsRuntime.Invoke<BitResourceTimelineLayout?>("BitBlazorUI.ResourceTimeline.setup", id, viewport, dotnetObj, options, strings, disabled);
     }
 
     [DynamicDependency(All, typeof(BitResourceTimelineLayout))]
@@ -45,14 +45,14 @@ internal static class BitResourceTimelineJsRuntimeExtensions
     [DynamicDependency(All, typeof(BitResourceTimelineRowStripes))]
     [DynamicDependency(All, typeof(BitResourceTimelineAxisLines))]
     [DynamicDependency(All, typeof(BitResourceTimelineGroupSeparators))]
-    [DynamicDependency(All, typeof(BitResourceTimelineTexts))]
+    [DynamicDependency(All, typeof(BitResourceTimelineStrings))]
     public static ValueTask<BitResourceTimelineLayout?> BitResourceTimelineSetOptions(this IJSRuntime jsRuntime,
                                                                                          string id,
                                                                                          BitResourceTimelineOptions? options,
-                                                                                         BitResourceTimelineTexts texts,
+                                                                                         BitResourceTimelineStrings strings,
                                                                                          bool disabled)
     {
-        return jsRuntime.Invoke<BitResourceTimelineLayout?>("BitBlazorUI.ResourceTimeline.setOptions", id, options, texts, disabled);
+        return jsRuntime.Invoke<BitResourceTimelineLayout?>("BitBlazorUI.ResourceTimeline.setOptions", id, options, strings, disabled);
     }
 
     public static ValueTask BitResourceTimelineEnableResourceTemplate(this IJSRuntime jsRuntime, string id, ElementReference overlayInner)
@@ -85,6 +85,8 @@ internal static class BitResourceTimelineJsRuntimeExtensions
     [DynamicDependency(All, typeof(BitResourceTimelineBarIcon))]
     [DynamicDependency(All, typeof(BitResourceTimelineEdgeBar))]
     [DynamicDependency(All, typeof(BitResourceTimelineBarSection))]
+    [DynamicDependency(All, typeof(BitResourceTimelineBarTexts))]
+    [DynamicDependency(All, typeof(BitResourceTimelineBarText))]
     public static ValueTask BitResourceTimelineSetData(this IJSRuntime jsRuntime,
                                                        string id,
                                                        IReadOnlyList<BitResourceTimelineResource> resources,
@@ -115,6 +117,8 @@ internal static class BitResourceTimelineJsRuntimeExtensions
     [DynamicDependency(All, typeof(BitResourceTimelineBarIcon))]
     [DynamicDependency(All, typeof(BitResourceTimelineEdgeBar))]
     [DynamicDependency(All, typeof(BitResourceTimelineBarSection))]
+    [DynamicDependency(All, typeof(BitResourceTimelineBarTexts))]
+    [DynamicDependency(All, typeof(BitResourceTimelineBarText))]
     public static ValueTask BitResourceTimelineAppendAllocations(this IJSRuntime jsRuntime, string id, IReadOnlyList<BitResourceTimelineAllocation> allocations)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.appendAllocations", id, allocations);
@@ -145,6 +149,8 @@ internal static class BitResourceTimelineJsRuntimeExtensions
     [DynamicDependency(All, typeof(BitResourceTimelineBarIcon))]
     [DynamicDependency(All, typeof(BitResourceTimelineEdgeBar))]
     [DynamicDependency(All, typeof(BitResourceTimelineBarSection))]
+    [DynamicDependency(All, typeof(BitResourceTimelineBarTexts))]
+    [DynamicDependency(All, typeof(BitResourceTimelineBarText))]
     public static ValueTask BitResourceTimelineApplyAllocationWindow(this IJSRuntime jsRuntime,
                                                                      string id,
                                                                      long requestId,
@@ -165,6 +171,8 @@ internal static class BitResourceTimelineJsRuntimeExtensions
     [DynamicDependency(All, typeof(BitResourceTimelineBarIcon))]
     [DynamicDependency(All, typeof(BitResourceTimelineEdgeBar))]
     [DynamicDependency(All, typeof(BitResourceTimelineBarSection))]
+    [DynamicDependency(All, typeof(BitResourceTimelineBarTexts))]
+    [DynamicDependency(All, typeof(BitResourceTimelineBarText))]
     public static ValueTask BitResourceTimelineUpsertAllocations(this IJSRuntime jsRuntime, string id, IReadOnlyList<BitResourceTimelineAllocation> allocations)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.ResourceTimeline.upsertAllocations", id, allocations);

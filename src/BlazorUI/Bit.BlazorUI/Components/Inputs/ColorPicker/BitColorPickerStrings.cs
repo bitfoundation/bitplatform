@@ -15,7 +15,7 @@
 /// to drop <see cref="BitColorPicker.ColorDescription"/> from an announcement, since the color is named
 /// from an English vocabulary.
 /// </remarks>
-public class BitColorPickerTexts
+public class BitColorPickerStrings
 {
     /// <summary>
     /// The accessible name of the saturation-brightness area.

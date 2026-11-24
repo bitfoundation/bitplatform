@@ -1,11 +1,11 @@
 ﻿namespace Bit.BlazorUI;
 
 /// <summary>
-/// Every word <see cref="BitFullCalendar"/> shows or announces (<see cref="BitFullCalendar.Texts"/>), in English by
+/// Every word <see cref="BitFullCalendar"/> shows or announces (<see cref="BitFullCalendar.Strings"/>), in English by
 /// default: set the ones to translate or reword. A text ending in <c>Format</c> is a composite format string whose
 /// placeholders are described on it, so a translation decides the word order.
 /// </summary>
-public class BitFullCalendarTexts
+public class BitFullCalendarStrings
 {
     /// <summary>Name of the day view on the view tabs (<see cref="GetViewLabel"/>).</summary>
     public string ViewDay { get; set; } = "Day";

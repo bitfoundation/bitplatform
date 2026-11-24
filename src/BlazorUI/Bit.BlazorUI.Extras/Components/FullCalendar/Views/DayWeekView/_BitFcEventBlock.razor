@@ -23,7 +23,7 @@
     var inv = System.Globalization.CultureInfo.InvariantCulture;
     var translateY = BitFullCalendarHelpers.HoursToCssLength(translateYHours);
     var blockStyle = $"{colorStyleVar}height:{height};transform:translateY({translateY});";
-    var tooltip = BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel);
+    var tooltip = BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Strings.AllDayLabel);
     var resizeClasses = "";
     if (_isResizing)
     {
@@ -31,7 +31,7 @@
         if (_resizeDirection is "top" or "bottom")
             resizeClasses += $" bit-bfc-resize-dir-{_resizeDirection}";
     }
-    var ariaLabel = BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel);
+    var ariaLabel = BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Strings.AllDayLabel);
     var templated = EventTemplate is not null;
 }
 
@@ -102,7 +102,7 @@
 
     @if (_isResizing)
     {
-        <div class="bit-bfc-resize-preview" role="status" aria-label="@Texts.ResizePreviewAriaLabel">
+        <div class="bit-bfc-resize-preview" role="status" aria-label="@Strings.ResizePreviewAriaLabel">
             <svg class="bit-bfc-resize-preview-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <span class="bit-bfc-resize-preview-time">@BitFullCalendarHelpers.FormatTime(displayStart, State.Use24HourFormat, State.Culture) - @BitFullCalendarHelpers.FormatTime(displayEnd, State.Use24HourFormat, State.Culture)</span>
         </div>

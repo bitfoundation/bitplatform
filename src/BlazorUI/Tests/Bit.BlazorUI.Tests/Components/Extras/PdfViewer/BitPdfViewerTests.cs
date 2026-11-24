@@ -528,9 +528,9 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPdfViewerShouldApplyLocalizedTexts()
+    public void BitPdfViewerShouldApplyLocalizedStrings()
     {
-        var texts = new BitPdfViewerTexts
+        var strings = new BitPdfViewerStrings
         {
             NoDocument = "Kein Dokument geladen.",
             ZoomIn = "Vergrößern",
@@ -539,7 +539,7 @@ public class BitPdfViewerTests : BunitTestContext
 
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
-            parameters.Add(p => p.Texts, texts);
+            parameters.Add(p => p.Strings, strings);
         });
 
         var root = component.Find(".bit-pdv");
