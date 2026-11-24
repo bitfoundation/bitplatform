@@ -238,6 +238,7 @@ public class BitButtonParamsTests : BunitTestContext
             FloatPosition = BitPosition.TopLeft,
             FormId = "my-form",
             FullWidth = true,
+            Gradient = "linear-gradient(red, blue)",
             Href = "https://bitplatform.dev",
             Icon = icon,
             IconName = "Share",
@@ -285,6 +286,7 @@ public class BitButtonParamsTests : BunitTestContext
         Assert.AreEqual(BitPosition.TopLeft, instance.FloatPosition);
         Assert.AreEqual("my-form", instance.FormId);
         Assert.IsTrue(instance.FullWidth);
+        Assert.AreEqual("linear-gradient(red, blue)", instance.Gradient);
         Assert.AreEqual("https://bitplatform.dev", instance.Href);
         Assert.AreSame(icon, instance.Icon);
         Assert.AreEqual("Share", instance.IconName);
