@@ -542,6 +542,10 @@ public partial class BitButton : BitComponentBase
     // it: a semicolon inside a function (the ";base64" of a data: url) or a string stays part of it, while one at the top
     // level, a brace, a bracket closed that was never opened, a string or a bracket left open, a string broken by a line
     // and a comment (which the tokenizer drops, brackets and all) each mark a value that is not one.
+    // An unquoted url( is no function but a url token of its own, read to its first closing bracket whatever brackets and
+    // quotes come before it - and one holding a quote, a bracket or a gap is a bad url, whose remnants end at that bracket
+    // too. Read as a function, the rest of such a value would be taken for the inside of a string or a bracket the
+    // tokenizer never opened, so a url token is read the tokenizer's way (see ReadUrlToken).
     private static bool IsSingleCssValue(string value)
     {
         var depth = 0;
@@ -551,17 +555,41 @@ public partial class BitButton : BitComponentBase
         {
             var c = value[i];
 
-            if (c == '\\')
+            if (quote != '\0')
             {
-                i++;
+                if (c == '\\') i++;
+                else if (c == quote) quote = '\0';
+                else if (c is '\n' or '\r' or '\f') return false;
+
                 continue;
             }
 
-            if (quote != '\0')
+            // A name - escapes decoded, so that a url spelled with one (\75 rl) is still a url - and what follows it.
+            if (IsCssNameCodePoint(c) || (c == '\\' && IsCssValidEscape(value, i)))
             {
-                if (c == quote) quote = '\0';
-                else if (c is '\n' or '\r' or '\f') return false;
+                var isUrl = ReadCssWord(value, i, out i);
 
+                if (isUrl && i + 1 < value.Length && value[i + 1] == '(')
+                {
+                    var start = i + 2;
+                    while (start < value.Length && IsCssWhitespace(value[start])) start++;
+
+                    // A quote after the bracket makes it a plain url() function, whose bracket is counted below.
+                    if (start == value.Length || value[start] is not ('"' or '\''))
+                    {
+                        i = ReadUrlToken(value, start);
+
+                        if (i < 0) return false;
+                    }
+                }
+
+                continue;
+            }
+
+            // A backslash before a line break escapes nothing outside a string; the break is a gap.
+            if (c == '\\')
+            {
+                i++;
                 continue;
             }
 
@@ -588,6 +616,128 @@ public partial class BitButton : BitComponentBase
 
         return depth == 0 && quote == '\0';
     }
+
+    // Reads the url token whose contents start at start, and returns the index of the bracket that closes it - or -1 for a
+    // bad url, and for one that runs to the end of the value. Stricter than the tokenizer on brackets, braces and comments,
+    // which a url seldom holds: a #url( or a @url( is a bracket after a hash or an at-keyword rather than a url token, and
+    // reading it this way has it end where the tokenizer ends that bracket too.
+    private static int ReadUrlToken(string value, int start)
+    {
+        var i = start;
+
+        while (i < value.Length)
+        {
+            var c = value[i];
+
+            if (c == ')') return i;
+
+            if (IsCssWhitespace(c))
+            {
+                while (i < value.Length && IsCssWhitespace(value[i])) i++;
+
+                return i < value.Length && value[i] == ')' ? i : -1;
+            }
+
+            if (c == '\\')
+            {
+                if (IsCssValidEscape(value, i) is false) return -1;
+
+                i = ReadCssEscape(value, i, out _);
+                continue;
+            }
+
+            if (c is '"' or '\'' or '(' or '[' or ']' or '{' or '}' || IsCssNonPrintable(c)) return -1;
+
+            if (c == '/' && i + 1 < value.Length && value[i + 1] == '*') return -1;
+
+            i++;
+        }
+
+        return -1;
+    }
+
+    // Reads the name starting at start - name code points and escapes - and says whether it spells url, ASCII case
+    // ignored; end is left on its last character.
+    private static bool ReadCssWord(string value, int start, out int end)
+    {
+        const string url = "url";
+
+        var i = start;
+        var length = 0;
+        var isUrl = true;
+
+        while (i < value.Length)
+        {
+            int codePoint;
+
+            if (value[i] == '\\')
+            {
+                if (IsCssValidEscape(value, i) is false) break;
+
+                i = ReadCssEscape(value, i, out codePoint);
+            }
+            else if (IsCssNameCodePoint(value[i]))
+            {
+                codePoint = value[i];
+                i++;
+            }
+            else
+            {
+                break;
+            }
+
+            isUrl = isUrl && length < url.Length && (codePoint | 0x20) == url[length];
+            length++;
+        }
+
+        end = i - 1;
+
+        return isUrl && length == url.Length;
+    }
+
+    // Reads the escape at start (a backslash, then up to six hex digits and one whitespace after them, or any other
+    // character) and returns the index after it.
+    private static int ReadCssEscape(string value, int start, out int codePoint)
+    {
+        var i = start + 1;
+
+        if (i == value.Length)
+        {
+            codePoint = 0xFFFD;
+            return i;
+        }
+
+        if (char.IsAsciiHexDigit(value[i]) is false)
+        {
+            codePoint = value[i];
+            return i + 1;
+        }
+
+        codePoint = 0;
+
+        for (var digits = 0; digits < 6 && i < value.Length && char.IsAsciiHexDigit(value[i]); digits++, i++)
+        {
+            var digit = value[i];
+            codePoint = codePoint * 16 + (digit <= '9' ? digit - '0' : (digit | 0x20) - 'a' + 10);
+        }
+
+        if (i < value.Length && IsCssWhitespace(value[i]))
+        {
+            i += value[i] == '\r' && i + 1 < value.Length && value[i + 1] == '\n' ? 2 : 1;
+        }
+
+        return i;
+    }
+
+    private static bool IsCssValidEscape(string value, int i)
+        => value[i] == '\\' && (i + 1 == value.Length || value[i + 1] is not ('\n' or '\r' or '\f'));
+
+    private static bool IsCssNameCodePoint(char c)
+        => char.IsAsciiLetterOrDigit(c) || c is '_' or '-' || c >= 0x80;
+
+    private static bool IsCssWhitespace(char c) => c is ' ' or '\t' or '\n' or '\r' or '\f';
+
+    private static bool IsCssNonPrintable(char c) => c is <= '\u0008' or '\u000B' or (>= '\u000E' and <= '\u001F') or '\u007F';
 
     // A bare number is not a CSS length, and an invalid value takes down every inset that reads it - the
     // button stops being pinned at all and drifts off with the content. A number is also what an offset

@@ -1313,7 +1313,16 @@ public class BitButtonTests : BunitTestContext
         DataRow("linear-gradient(red, blue"),
         DataRow("linear-gradient(red, blue) /* ( */;color:red"),
         DataRow("url(\"a\nb\");color:red"),
-        DataRow("url('a.png)")]
+        DataRow("url('a.png)"),
+        DataRow("url(a\");color:red;--x:\")"),
+        DataRow("url(a');color:red;--x:')"),
+        DataRow("url(a();color:red;--x:)"),
+        DataRow("URL(a();color:red;--x:)"),
+        DataRow("\\75 rl(a();color:red;--x:)"),
+        DataRow("u\\rl(a();color:red;--x:)"),
+        DataRow("url(a b;color:red;--x:)"),
+        DataRow("url(a\\\n;color:red;--x:)"),
+        DataRow("url(a.png")]
     public void BitButtonGradientShouldIgnoreAValueThatIsNotOneCssValue(string gradient)
     {
         // The gradient is written into the style attribute of the root, where a semicolon or a brace at its top level would
@@ -1333,7 +1342,11 @@ public class BitButtonTests : BunitTestContext
         DataRow("linear-gradient(96deg, #524add 10%, #0d71bf 90%), radial-gradient(circle at 0 0, gold, transparent)"),
         DataRow("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'/>\"), linear-gradient(red, blue)"),
         DataRow("url(data:image/png;base64,iVBORw0KGgo=)"),
-        DataRow("linear-gradient(\"a;b\", red)")]
+        DataRow("linear-gradient(\"a;b\", red)"),
+        DataRow("URL( \"a;b.png\" ), linear-gradient(red, blue)"),
+        DataRow("url( data:image/png;base64,iVBORw0KGgo= ), linear-gradient(red, blue)"),
+        DataRow("url(a\\)b.png), linear-gradient(red, blue)"),
+        DataRow("my-url(a(b), \"c\")")]
     public void BitButtonGradientShouldKeepASemicolonInsideABracketOrAString(string gradient)
     {
         var com = RenderComponent<BitButton>(parameters =>
