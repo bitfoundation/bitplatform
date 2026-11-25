@@ -264,6 +264,85 @@ public class BitTextRotatorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitTextRotatorShouldShowTheFirstOfNewItemsForAWholeInterval()
+    {
+        var component = RenderComponent<BitTextRotator>(parameters =>
+        {
+            parameters.Add(p => p.Interval, 1000d);
+            parameters.Add(p => p.Items, _items);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-trt-prv").Count), _timeout);
+
+        // Most of the way into the next turn of the rotation the new items replace.
+        await Task.Delay(700);
+
+        component.Render(parameters => parameters.Add(p => p.Items, ["one", "two"]));
+
+        // Past the moment that turn was due, but well short of a whole Interval from the change.
+        await Task.Delay(500);
+
+        Assert.AreEqual(0, CurrentIndex(component));
+        Assert.AreEqual(0, component.FindAll(".bit-trt-prv").Count);
+    }
+
+    [TestMethod]
+    public async Task BitTextRotatorShouldNotRotateUnderReducedMotion()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitTextRotator>(parameters =>
+        {
+            parameters.Add(p => p.Interval, 50d);
+            parameters.Add(p => p.Items, _items);
+            parameters.Add(p => p.Styles, new() { CurrentItem = "color:red" });
+        });
+
+        await Task.Delay(300);
+
+        // The stylesheet shows the first item alone, so it stays the current one and keeps its style.
+        Assert.AreEqual(0, CurrentIndex(component));
+        Assert.AreEqual(0, component.FindAll(".bit-trt-prv").Count);
+        StringAssert.Contains(component.FindAll(".bit-trt-itm")[0].GetAttribute("style"), "color:red");
+        Assert.IsFalse(GetTimer(component.Instance)?.Enabled ?? false);
+    }
+
+    [TestMethod]
+    public void BitTextRotatorShouldNotRotateBeforeTheMotionPreferenceIsRead()
+    {
+        // An answer that never comes.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true);
+
+        var component = RenderComponent<BitTextRotator>(parameters =>
+        {
+            parameters.Add(p => p.Interval, 50d);
+            parameters.Add(p => p.Items, _items);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Interval, 60d));
+
+        Assert.IsNull(GetTimer(component.Instance));
+    }
+
+    [TestMethod,
+        DataRow(null, false),
+        DataRow("span", false),
+        DataRow("b", false),
+        DataRow("h2", true),
+        DataRow("P", true),
+        DataRow("div", true)]
+    public void BitTextRotatorShouldLayItselfOutAsABlockForABlockTag(string? element, bool block)
+    {
+        var component = RenderComponent<BitTextRotator>(parameters =>
+        {
+            parameters.Add(p => p.Element, element);
+            parameters.Add(p => p.Items, _items);
+        });
+
+        Assert.AreEqual(block, component.Find(".bit-trt").ClassList.Contains("bit-trt-blk"));
+    }
+
+    [TestMethod]
     public void BitTextRotatorShouldKeepItsPlaceWhenTheSameItemsArePassedAgain()
     {
         var component = RenderComponent<BitTextRotator>(parameters =>

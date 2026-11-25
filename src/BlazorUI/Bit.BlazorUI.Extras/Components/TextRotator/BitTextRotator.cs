@@ -14,7 +14,9 @@ namespace Bit.BlazorUI;
 /// "--bit-TextRotator-*" custom properties.
 /// <br />
 /// Under a reduced motion preference only the first item is shown and nothing moves, unless the rotator, or an
-/// ancestor of it, opts out through <see cref="BitComponentBase.ForceAnimation"/>.
+/// ancestor of it, opts out through <see cref="BitComponentBase.ForceAnimation"/>: the rotation does not start, so the
+/// item shown is the current one and carries the CurrentItem class and style. The preference, and the opt-out, are
+/// read once the component is interactive.
 /// <br />
 /// The rotation is not announced: the items that are seen are hidden from assistive technologies, which are given all
 /// the items at once instead, as one stable text - so a screen reader reads every word the rotator stands for, and
@@ -25,12 +27,27 @@ public partial class BitTextRotator : BitComponentBase
     private const string DefaultElement = "span";
     private const double DefaultInterval = 3000;
 
+    // The tags that are laid out as blocks of their own rather than as a run of text, which the rotator follows by
+    // laying itself out as a block too, so it keeps the line breaks and the spacing the tag has.
+    private static readonly HashSet<string> _BlockElements = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "address", "article", "aside", "blockquote", "caption", "dd", "details", "dialog", "div", "dl", "dt",
+        "fieldset", "figcaption", "figure", "footer", "form", "h1", "h2", "h3", "h4", "h5", "h6", "header", "hgroup",
+        "legend", "li", "main", "nav", "ol", "p", "pre", "section", "summary", "ul"
+    };
+
     private string?[] _items = [];
     private int _current;
     // The item that is moving out as the current one comes in. It is -1 until the first turn, so the item shown first
     // is shown at rest rather than played in - on the first render and on the one that takes over a prerendered page.
     private int _previous = -1;
     private System.Timers.Timer? _timer;
+    // Whether the reader asked for less motion, read off the root once it is rendered interactively; until it is read
+    // nothing rotates, so a rotator under the preference never moves on before it is known.
+    private bool _reducedMotion;
+    private bool _reducedMotionRead;
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
 
 
@@ -115,6 +132,8 @@ public partial class BitTextRotator : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
+        ClassBuilder.Register(() => _BlockElements.Contains(ResolveElement()) ? "bit-trt-blk" : string.Empty);
+
         ClassBuilder.Register(() => Classes?.Root);
     }
 
@@ -129,11 +148,13 @@ public partial class BitTextRotator : BitComponentBase
 
         var items = Items?.ToArray() ?? [];
 
-        // New items are a new rotation, started from the first of them and at rest, the same as the first render.
+        // New items are a new rotation, started from the first of them and at rest, the same as the first render -
+        // and given a whole Interval, so the count of the rotation they replace does not cut the first one short.
         if (items.SequenceEqual(_items, StringComparer.Ordinal) is false)
         {
             _current = 0;
             _previous = -1;
+            _timer?.Stop();
         }
 
         _items = items;
@@ -143,28 +164,35 @@ public partial class BitTextRotator : BitComponentBase
         UpdateTimer();
     }
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        base.OnAfterRender(firstRender);
+        await base.OnAfterRenderAsync(firstRender);
 
         // The rotation starts here rather than with the parameters: there is no render after the first one while
         // prerendering or rendering statically, so a timer started before it would tick on the server against a
         // rotator that is not on screen.
-        if (firstRender)
+        if (firstRender is false) return;
+
+        // Under reduced motion the stylesheet holds the first item still, so the rotation does not start at all:
+        // the classes and styles of the current item stay on the item that is seen, and no render goes out every
+        // Interval to change nothing on screen.
+        try
         {
-            UpdateTimer();
+            _reducedMotion = await _js.BitUtilsPrefersReducedMotion(RootElement);
         }
+        catch (JSDisconnectedException) { return; } // the circuit went away; there is nothing left to rotate
+        catch (JSException) { } // the preference could not be read, so the rotator rotates as it would without it
+
+        _reducedMotionRead = true;
+
+        UpdateTimer();
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        var element = Element?.Trim();
-        if (element.HasNoValue() || IsValidElement(element!) is false)
-        {
-            element = DefaultElement;
-        }
+        var element = ResolveElement();
 
-        builder.OpenElement(0, element!);
+        builder.OpenElement(0, element);
         // The splatted attributes come first so everything the component builds itself is written over them. The
         // values the component would otherwise write as null are resolved against them below, since a null written
         // over a splatted attribute does not leave that attribute alone - it removes it.
@@ -181,7 +209,7 @@ public partial class BitTextRotator : BitComponentBase
         builder.AddElementReferenceCapture(9, v => RootElement = v);
         // A void element is defined to hold no content: the static renderer writes it self-closed, so anything put
         // inside it would either be dropped or end up as a sibling of the element in the rendered markup.
-        if (IsVoidElement(element!) is false)
+        if (IsVoidElement(element) is false)
         {
             for (var i = 0; i < _items.Length; i++)
             {
@@ -229,6 +257,13 @@ public partial class BitTextRotator : BitComponentBase
 
 
 
+    private string ResolveElement()
+    {
+        var element = Element?.Trim();
+
+        return element.HasNoValue() || IsValidElement(element!) is false ? DefaultElement : element!;
+    }
+
     private string GetItemClass(int index)
     {
         if (index == _current)
@@ -240,15 +275,16 @@ public partial class BitTextRotator : BitComponentBase
         return index == _previous ? "bit-trt-itm bit-trt-prv" : "bit-trt-itm";
     }
 
-    private bool ShouldRotate() => Paused is false && Disabled is false && _items.Length > 1;
+    private bool ShouldRotate() => Paused is false && Disabled is false && _reducedMotion is false && _items.Length > 1;
 
     private void UpdateTimer()
     {
         // A timer created once the disposal has started would be left ticking for the rest of the process.
         if (IsDisposing || IsDisposed) return;
 
-        // Before the first render there is nothing on screen to rotate (see OnAfterRender).
-        if (IsRendered is false) return;
+        // Before the first render there is nothing on screen to rotate, and until the motion preference is read
+        // nothing is known to be allowed to move (see OnAfterRenderAsync).
+        if (_reducedMotionRead is false) return;
 
         if (ShouldRotate() is false)
         {
@@ -295,5 +331,15 @@ public partial class BitTextRotator : BitComponentBase
             });
         }
         catch (ObjectDisposedException) { } // the renderer went away between the tick and the dispatch
+        catch (Exception ex)
+        {
+            // An exception that escapes an async void handler takes the whole process down, so anything else is
+            // handed back to the renderer, where it is treated like an exception of any ordinary event handler.
+            try
+            {
+                await DispatchExceptionAsync(ex);
+            }
+            catch { } // the renderer itself went away; there is nothing left to report the exception to
+        }
     }
 }

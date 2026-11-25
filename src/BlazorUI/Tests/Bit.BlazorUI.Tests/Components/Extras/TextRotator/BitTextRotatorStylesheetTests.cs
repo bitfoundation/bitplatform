@@ -19,7 +19,8 @@ public class BitTextRotatorStylesheetTests
         DataRow("\n.bit-trt-cur {"),
         DataRow("\n.bit-trt-ent {"),
         DataRow("\n.bit-trt-prv {"),
-        DataRow("\n.bit-trt-srt {")]
+        DataRow("\n.bit-trt-srt {"),
+        DataRow("\n.bit-trt-blk {")]
     public void EveryClassTheComponentWritesIsStyled(string rule)
     {
         Assert.IsFalse(string.IsNullOrWhiteSpace(SourceFiles.GetScssBlock(ReadStylesheet(), rule)), $"{rule.Trim()} has no rule.");
@@ -33,6 +34,18 @@ public class BitTextRotatorStylesheetTests
 
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-trt {"), "display: inline-grid;");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-trt-itm {"), "grid-area: 1 / 1;");
+    }
+
+    // A rotator rendered as a heading or a paragraph keeps the block layout and the spacing of its tag; only one in a
+    // run of text has its margin taken away.
+    [TestMethod]
+    public void ARotatorOfABlockTagIsABlockWithTheSpacingOfItsTag()
+    {
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-trt-blk {"), "display: grid;");
+        Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, "\n.bit-trt {").Contains("margin"));
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-trt:where(:not(.bit-trt-blk)) {"), "margin: 0;");
     }
 
     // The item going out is hidden like any other one and only its exit shows it, so where the animation does not run
@@ -97,6 +110,8 @@ public class BitTextRotatorStylesheetTests
         var stylesheet = ReadStylesheet();
 
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-trt-srt {"), "@include visually-hidden;");
+        // Copied text holds the item that is seen, never every item after it as well.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-trt-srt {"), "user-select: none;");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-trt {"), "position: relative;");
     }
 

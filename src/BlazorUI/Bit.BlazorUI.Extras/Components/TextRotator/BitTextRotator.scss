@@ -19,7 +19,6 @@
     --bit-trt-eas: var(--bit-TextRotator-easing, #{$mot-easing});
     --bit-trt-dst: var(--bit-TextRotator-distance, 0.5em);
 
-    margin: 0;
     // Every item is laid in the one cell of the grid, so the rotator is as wide as its widest item whichever one is
     // shown, and the text around it never moves. Its baseline is the first item's, which lines it up with that text.
     display: inline-grid;
@@ -33,6 +32,17 @@
     &:focus-visible:not([tabindex="-1"]) {
         @include focus-ring;
     }
+}
+
+// A rotator in a run of text sits on the line with no spacing of its own.
+.bit-trt:where(:not(.bit-trt-blk)) {
+    margin: 0;
+}
+
+// A rotator rendered as a tag that is a block of its own (a heading, a paragraph) stays one, with the spacing the
+// tag has, rather than being pulled into the line of the text after it.
+.bit-trt-blk {
+    display: grid;
 }
 
 // An item that is not the one shown is still laid out, which is what reserves its width, but is not painted.
@@ -82,6 +92,9 @@
 // Every item is hidden from assistive technologies, which read all of them from this text instead.
 .bit-trt-srt {
     @include visually-hidden;
+    // Never part of a selection, so text copied across the rotator holds the item that is seen and not every item
+    // after it as well.
+    user-select: none;
 }
 
 // A disabled rotator is dimmed rather than recolored, and holds the item it shows.
