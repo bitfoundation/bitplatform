@@ -245,8 +245,9 @@ $vkb-private-properties: kh;
     stroke-linejoin: round;
 }
 
-// A right-to-left layout turns the keys whose icons point along the line (Backspace, Enter, Tab).
-.bit-vkb-mir > .bit-vkb-lyr > :is(.bit-vkb-fnc, .bit-vkb-pri) > .bit-vkb-ico {
+// A right-to-left layout turns the keys whose icons point along the line (Backspace, Enter, Tab), never the left and
+// right arrows, which point where they move the caret.
+.bit-vkb-mir > .bit-vkb-lyr > :is(.bit-vkb-fnc, .bit-vkb-pri):not(.bit-vkb-arw) > .bit-vkb-ico {
     transform: scaleX(-1);
 }
 

@@ -65,6 +65,7 @@ public class BitVirtualKeyboardLayoutCompilerTests
         Throws(Layout(Layer("base", "a {layer:missing}")), "missing");
         Throws(Layout(Layer("base", "a {dead:acute}")), "acute");
         Throws(Layout(Layer("base", "a*0.3")), "0.25");
+        Throws(Layout(Layer("base", "a")) with { Keys = new() { ["a"] = new() { Width = 1e-12 } } }, "0.25");
         Throws(Layout(Layer("base", "a")) with { Keys = new() { ["a"] = new() { Height = 2 } } }, "past the last row");
         Throws(Layout(new BitVirtualKeyboardLayer { Id = "base", Rows = [new() { Keys = [new() { Action = BitVirtualKeyboardKeyAction.Custom, Id = "x" }] }] })
                with { Keys = new() { ["x"] = new() { Action = BitVirtualKeyboardKeyAction.Custom } } }, "Command");
@@ -141,6 +142,32 @@ public class BitVirtualKeyboardLayoutCompilerTests
     }
 
     [TestMethod]
+    public void ADerivedShiftLayerShouldUpperCaseTheMultiTapItemsOfALetter()
+    {
+        var layout = Layout(Layer("base", "a {shift}")) with { Keys = new() { ["a"] = new() { MultiTap = ["a", "b", "c"] } } };
+
+        var shift = Compile(layout).GetLayer("shift")!;
+
+        Assert.AreEqual("A", shift.Keys[0].Output);
+        CollectionAssert.AreEqual(new[] { "A", "B", "C" }, shift.Keys[0].MultiTap.ToArray());
+        CollectionAssert.AreEqual(new[] { "a", "b", "c" }, Compile(layout).Layers[0].Keys[0].MultiTap.ToArray());
+    }
+
+    [TestMethod]
+    public void TheDeadKeysOfACompiledLayoutShouldBeACopy()
+    {
+        var acute = new System.Collections.Generic.Dictionary<string, string> { ["e"] = "é", [" "] = "´" };
+        var layout = Layout(Layer("base", "a {dead:acute} e")) with { Id = "dead-copy-test", DeadKeys = new() { ["acute"] = acute } };
+
+        var compiled = Compile(layout);
+        acute["e"] = "x";
+        layout.DeadKeys["grave"] = new() { [" "] = "`" };
+
+        Assert.AreEqual("é", compiled.DeadKeys["acute"]["e"]);
+        Assert.IsFalse(compiled.DeadKeys.ContainsKey("grave"));
+    }
+
+    [TestMethod]
     public void ACapsLockKeyShouldGetACapsLayerThatLeavesDigitsAndSymbols()
     {
         var compiled = Compile(BitVirtualKeyboardLayouts.English);
@@ -166,6 +193,22 @@ public class BitVirtualKeyboardLayoutCompilerTests
         var layout = Layout(Layer("base", "1 {decimal}")) with { Id = "x-test" };
 
         Assert.AreEqual(separator, Key(Compile(layout, culture: culture, digits: digits).Layers[0], "decimal").Output);
+    }
+
+    [TestMethod]
+    public void ACultureOfTheSameNameWithOtherSeparatorsShouldCompileApart()
+    {
+        var layout = Layout(Layer("base", "1 {decimal} {datesep}")) with { Id = "x-test" };
+        var custom = (System.Globalization.CultureInfo)System.Globalization.CultureInfo.GetCultureInfo("en-US").Clone();
+        custom.NumberFormat.NumberDecimalSeparator = ",";
+        custom.DateTimeFormat.DateSeparator = "-";
+
+        var english = Compile(layout).Layers[0];
+        var customized = BitVirtualKeyboardLayoutCompiler.Compile(layout, new() { Culture = custom, LanguagesCount = 1 }).Layers[0];
+
+        Assert.AreEqual(".", Key(english, "decimal").Output);
+        Assert.AreEqual(",", Key(customized, "decimal").Output);
+        Assert.AreEqual("-", Key(customized, "datesep").Output);
     }
 
     [TestMethod]
@@ -286,6 +329,23 @@ public class BitVirtualKeyboardLayoutCompilerTests
         Assert.AreEqual(0, Key(layer, "7").Column, "a row sharing cells with a tall key starts at the start");
         Assert.AreEqual(12, Key(layer, "enter").Column);
         Assert.AreEqual(3, Key(layer, "enter").RowSpan);
+    }
+
+    [TestMethod]
+    public void ATallStretchingKeyShouldTakeNoMoreRoomThanEveryRowItSpansHasLeft()
+    {
+        var layout = Layout(Layer("base", "a b {big}", "c d k l", "m n o p q r")) with
+        {
+            Keys = new() { ["big"] = new() { Output = "_", Stretch = true, Height = 2 } },
+        };
+
+        var compiled = Compile(layout);
+        var layer = compiled.Layers[0];
+
+        Assert.AreEqual(24, compiled.Columns);
+        AssertNoOverlap(compiled);
+        Assert.AreEqual(8, Key(layer, "big").ColumnSpan, "row 2 has one key of room left, not the three row 1 has");
+        CollectionAssert.AreEqual(new[] { 16, 24, 24 }, RowCoverage(layer), "the room row 1 has left beyond that stays empty");
     }
 
     [TestMethod]

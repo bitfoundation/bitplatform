@@ -146,7 +146,7 @@ public class BitVirtualKeyboardLayoutDataTests
     {
         var compiled = Compile(BitVirtualKeyboardLayouts.Turkish);
 
-        Assert.AreEqual("A S D F G H J K L Ş İ ,", Row(compiled.GetLayer("shift")!, 2).Replace(" ;", " ,").Replace(";", ","));
+        Assert.AreEqual("A S D F G H J K L Ş İ ;", Row(compiled.GetLayer("shift")!, 2), "the ISO key of row C: a comma, a semicolon shifted");
         Assert.AreEqual("î", compiled.DeadKeys["circumflex"]["\x0131"]);
 
         var compact = Compile(BitVirtualKeyboardLayouts.Get("tr-compact")!, culture: "tr-TR");

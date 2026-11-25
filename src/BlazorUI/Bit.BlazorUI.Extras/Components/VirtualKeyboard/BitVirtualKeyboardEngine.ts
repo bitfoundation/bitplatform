@@ -123,20 +123,41 @@
             return result;
         }
 
-        public static previousGraphemeStart(text: string, index: number): number {
-            let previous = 0;
-            for (const boundary of BitVirtualKeyboardEngine.boundaries(text)) {
-                if (boundary >= index) break;
-                previous = boundary;
+        private static segmenter: any;
+
+        // The grapheme segments of the text, which find the cluster around an index without walking the rest of the text;
+        // null where there is no Intl.Segmenter.
+        private static segments(text: string): any {
+            if (BitVirtualKeyboardEngine.segmenter === undefined) {
+                const segmenter = (Intl as any).Segmenter;
+                BitVirtualKeyboardEngine.segmenter = typeof segmenter === 'function' ? new segmenter(undefined, { granularity: 'grapheme' }) : null;
             }
-            return previous;
+            return BitVirtualKeyboardEngine.segmenter ? BitVirtualKeyboardEngine.segmenter.segment(text) : null;
         }
 
+        // The last grapheme cluster boundary before the index (the code point before it where there is no Intl.Segmenter).
+        public static previousGraphemeStart(text: string, index: number): number {
+            if (index <= 0) return 0;
+            if (index > text.length) return text.length;
+
+            const segments = BitVirtualKeyboardEngine.segments(text);
+            return segments ? segments.containing(index - 1).index : BitVirtualKeyboardEngine.previousCodePoint(text, index);
+        }
+
+        // The first grapheme cluster boundary after the index (the code point after it where there is no Intl.Segmenter).
         public static nextGraphemeEnd(text: string, index: number): number {
-            for (const boundary of BitVirtualKeyboardEngine.boundaries(text)) {
-                if (boundary > index) return boundary;
-            }
-            return text.length;
+            if (index >= text.length) return text.length;
+
+            const segments = BitVirtualKeyboardEngine.segments(text);
+            if (!segments) return BitVirtualKeyboardEngine.nextCodePoint(text, Math.max(0, index));
+
+            const segment = segments.containing(Math.max(0, index));
+            return segment.index + segment.segment.length;
+        }
+
+        // The start of the line of a textarea's text the index is on.
+        public static lineStart(text: string, index: number): number {
+            return index <= 0 ? 0 : text.lastIndexOf('\n', index - 1) + 1;
         }
 
         public static graphemes(text: string): string[] {

@@ -241,13 +241,13 @@ public static readonly BitVirtualKeyboardLayout PersianIsiri = new()
         new() { Id = "shift", Modifiers = BitVirtualKeyboardModifiers.Shift, Mode = BitVirtualKeyboardLayerMode.Latched, Rows =
         [
             "÷ ! ٬ ٫ ﷼ ٪ × ، * ) ( ـ + {bksp*2}",
-            "{tab*1.5} \u{652} \u{64C} \u{64D} \u{64B} \u{64F} \u{650} \u{64E} \u{651} ] [ } {",
+            "{tab*1.5} \\u{652} \\u{64C} \\u{64D} \\u{64B} \\u{64F} \\u{650} \\u{64E} \\u{651} ] [ } {",
             "{caps*1.75} ؤ ئ ي إ أ آ ة » « : ؛ {enter*2.25}",
-            "{shift*2.25} ك \u{653} ژ \u{670} {zwnj} \u{654} ء > < ؟ {shift*2.75}",
+            "{shift*2.25} ك \\u{653} ژ \\u{670} {zwnj} \\u{654} ء > < ؟ {shift*2.75}",
             "{sym*1.5} {lang} {zwnj*1.5} {space*6} {altgr*1.5} {hide}",
         ]},
     ],
-    Displays = { ["\u{652}"] = "◌ْ", ["\u{64E}"] = "◌َ" /* … one entry per haraka */ },
+    Displays = { ["\u0652"] = "◌ْ", ["\u064E"] = "◌َ" /* … one entry per haraka */ },
 };
 ```
 

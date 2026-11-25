@@ -254,7 +254,7 @@ public partial class BitVirtualKeyboardDemo
             Name = "Secure",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Secure mode: no pressed paint, no preview, no sound, no announcement, and no typed text sent to .NET. Also on for a password input.",
+            Description = "Secure mode: no pressed paint, no preview, no sound, no announcement, and no typed text in OnKeyPress or OnInput. A bound Value still takes the text typed into it, through ValueChanged. Also on for a password input.",
         },
         new()
         {
@@ -396,7 +396,7 @@ public partial class BitVirtualKeyboardDemo
             Title = "BitVirtualKeyboardKeyPressArgs",
             Parameters =
             [
-                new() { Name = "KeyId", Type = "string", DefaultValue = "\"\"", Description = "The id of the key: its bag id, its built-in name, or the text it types." },
+                new() { Name = "KeyId", Type = "string", DefaultValue = "\"\"", Description = "The id of the key: its bag id, its built-in name, or the text it types. Empty for a key that types a character in secure mode." },
                 new() { Name = "Action", Type = "BitVirtualKeyboardKeyAction", DefaultValue = "Character", Description = "What the key does.", LinkType = LinkType.Link, Href = "#key-action-enum" },
                 new() { Name = "Text", Type = "string?", DefaultValue = "null", Description = "What the key will type; a handler may replace it. Null in secure mode." },
                 new() { Name = "Layer", Type = "string", DefaultValue = "\"\"", Description = "The id of the layer the key is on." },

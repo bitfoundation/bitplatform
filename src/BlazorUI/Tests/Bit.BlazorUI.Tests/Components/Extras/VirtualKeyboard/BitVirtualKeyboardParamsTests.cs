@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using Bunit;
@@ -44,6 +45,10 @@ public class BitVirtualKeyboardParamsTests : BunitTestContext
 
     private IRenderedComponent<BitParams> RenderWithParams(BitVirtualKeyboardParams keyboardParams, Action<RenderTreeBuilder>? attributes = null)
     {
+        // the layout of the culture is the default one, so an English culture keeps the layouts the tests expect whatever
+        // the culture of the machine running them
+        keyboardParams.Culture ??= CultureInfo.GetCultureInfo("en-US");
+
         return RenderComponent<BitParams>(parameters =>
         {
             parameters.Add(p => p.Parameters, new List<IBitComponentParams> { keyboardParams });

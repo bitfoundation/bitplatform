@@ -224,8 +224,9 @@ public partial class BitVirtualKeyboard : BitComponentBase
     [Parameter] public bool Scramble { get; set; }
 
     /// <summary>
-    /// Secure mode: no pressed paint, no preview, no sound, no announcement, and no typed text sent to .NET. Also on for
-    /// a password input.
+    /// Secure mode: no pressed paint, no preview, no sound, no announcement, and no typed text in <see cref="OnKeyPress"/>
+    /// (whose KeyId is empty for a key that types a character) or <see cref="OnInput"/>. A bound <see cref="Value"/> still
+    /// takes the text typed into it, through ValueChanged. Also on for a password input.
     /// </summary>
     [Parameter, ResetClassBuilder] public bool Secure { get; set; }
 
@@ -333,6 +334,10 @@ public partial class BitVirtualKeyboard : BitComponentBase
         // and again every time it opens or attaches to an input.
         if (Scramble is false) _scrambleSeed = null;
         else _scrambleSeed ??= System.Security.Cryptography.RandomNumberGenerator.GetInt32(int.MaxValue);
+
+        // a shorter list of Languages keeps the language key on one of them, so the layout shown, the next one's indicator
+        // and the next one the key moves to are read off the same index
+        if (Languages is { Count: > 0 } languages && _languageIndex >= languages.Count) _languageIndex = languages.Count - 1;
 
         Compile();
         RefreshScriptState();
@@ -564,7 +569,10 @@ public partial class BitVirtualKeyboard : BitComponentBase
             _ => ("bit-vkb-chr", Classes?.CharacterKey),
         };
 
-        return JoinClasses("bit-vkb-key", kind, Classes?.Key, part, key.Class);
+        // the left and right arrows point where they move the caret, which a right-to-left layout does not turn around
+        var arrow = key.Action is BitVirtualKeyboardKeyAction.ArrowLeft or BitVirtualKeyboardKeyAction.ArrowRight ? "bit-vkb-arw" : null;
+
+        return JoinClasses("bit-vkb-key", kind, arrow, Classes?.Key, part, key.Class);
     }
 
     private string GetKeyStyle(BitVirtualKeyboardCompiledKey key)

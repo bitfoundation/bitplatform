@@ -32,7 +32,12 @@ public partial class BitVirtualKeyboard
 
     private int? _scrambleSeed;
 
-    private sealed record ScriptState(BitVirtualKeyboardCompiledLayout Compiled, BitVirtualKeyboardStrings Strings, bool Docked, bool Open, bool ValueMode,
+    // The words the script is told, as values: a Strings object changed in place is a change of them. The names of the
+    // layers are compared joined, and sent as GetLayerName reads them.
+    private sealed record ScriptStrings(string Alternates, string LayerAnnouncement, string ShiftOn, string ShiftLocked, string ShiftOff,
+                                        string CapsLockOn, string CapsLockOff, string LayerNames);
+
+    private sealed record ScriptState(BitVirtualKeyboardCompiledLayout Compiled, ScriptStrings Strings, bool Docked, bool Open, bool ValueMode,
                                       bool FollowFocus, string? TargetSelector, BitVirtualKeyboardEnterBehavior EnterBehavior, string? AllowedCharacters,
                                       int? MaxLength, bool Secure, bool ShowKeyPreview, bool Sound, bool Haptics, bool HasKeyPress, bool HasInput,
                                       int LongPressDelay, int MultiTapTimeout, int RepeatDelay, int RepeatInterval, bool AutoForm, bool Compact,
@@ -338,7 +343,10 @@ public partial class BitVirtualKeyboard
         Compile();
         RefreshAndRender();
 
-        if (before is not null && ReferenceEquals(before.Source, _compiled.Source) is false && before.Id != _compiled.Id)
+        // another layout, told by its content: a copy of the same one (a scramble, a `with` copy made on every render) is none,
+        // and two layouts of the same Id may still differ
+        if (before is not null && ReferenceEquals(before.Source, _compiled.Source) is false
+            && (before.Id != _compiled.Id || before.Source.ToJson() != _compiled.Source.ToJson()))
         {
             await OnLayoutChange.InvokeAsync(_compiled.Source);
         }
@@ -354,8 +362,12 @@ public partial class BitVirtualKeyboard
     // A new version for every change of what the script is told; the keys are rendered with it.
     private void RefreshScriptState()
     {
+        var strings = ActiveStrings;
+        var scriptStrings = new ScriptStrings(strings.Alternates, strings.LayerAnnouncement, strings.ShiftOn, strings.ShiftLocked, strings.ShiftOff,
+                                              strings.CapsLockOn, strings.CapsLockOff, string.Join('\u001F', _compiled.Layers.Select(GetLayerName)));
+
         var state = new ScriptState(
-            _compiled, ActiveStrings, Mode is BitVirtualKeyboardMode.Docked, Open, IsValueMode, FollowFocus, TargetSelector, EnterBehavior,
+            _compiled, scriptStrings, Mode is BitVirtualKeyboardMode.Docked, Open, IsValueMode, FollowFocus, TargetSelector, EnterBehavior,
             AllowedCharacters, MaxLength, IsSecure, ShowKeyPreview, Sound, Haptics, OnKeyPress.HasDelegate, OnInput.HasDelegate,
             LongPressDelay, MultiTapTimeout, RepeatDelay, RepeatInterval, Form is BitVirtualKeyboardForm.Auto, _compact,
             CompactBreakpoint, ReserveSpace, Disabled, Value != _lastJsValue, Value, _lastJsSeq,
@@ -432,13 +444,13 @@ public partial class BitVirtualKeyboard
             PopupKeyStyle = state.PopupKeyStyle,
             Strings = new()
             {
-                Alternates = ActiveStrings.Alternates,
-                LayerAnnouncement = ActiveStrings.LayerAnnouncement,
-                ShiftOn = ActiveStrings.ShiftOn,
-                ShiftLocked = ActiveStrings.ShiftLocked,
-                ShiftOff = ActiveStrings.ShiftOff,
-                CapsLockOn = ActiveStrings.CapsLockOn,
-                CapsLockOff = ActiveStrings.CapsLockOff,
+                Alternates = state.Strings.Alternates,
+                LayerAnnouncement = state.Strings.LayerAnnouncement,
+                ShiftOn = state.Strings.ShiftOn,
+                ShiftLocked = state.Strings.ShiftLocked,
+                ShiftOff = state.Strings.ShiftOff,
+                CapsLockOn = state.Strings.CapsLockOn,
+                CapsLockOff = state.Strings.CapsLockOff,
                 LayerNames = compiled.Layers.ToDictionary(layer => layer.Id, GetLayerName),
             },
         };

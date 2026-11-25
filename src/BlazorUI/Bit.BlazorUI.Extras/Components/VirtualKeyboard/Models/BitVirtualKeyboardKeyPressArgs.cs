@@ -6,7 +6,8 @@
 public sealed class BitVirtualKeyboardKeyPressArgs
 {
     /// <summary>
-    /// The id of the key: its bag id, its built-in name, or the text it types.
+    /// The id of the key: its bag id, its built-in name, or the text it types. Empty for a key that types a character in
+    /// secure mode, whose id could tell it.
     /// </summary>
     public string KeyId { get; init; } = "";
 

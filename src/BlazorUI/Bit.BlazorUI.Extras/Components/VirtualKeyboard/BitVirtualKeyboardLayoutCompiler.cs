@@ -31,8 +31,10 @@ internal static class BitVirtualKeyboardLayoutCompiler
 
         if (options.ScrambleSeed.HasValue) return CompileCore(layout, options);
 
+        // the separators the built-in keys type, which a culture of the same name may set apart
         var cacheKey = string.Join('\u001F', layout.ToJson(), options.Purpose, options.Mode, options.LanguagesCount,
-                                   options.NextIndicator, options.Culture.Name, options.AutoShift, options.Digits, options.NumberTarget);
+                                   options.NextIndicator, options.Culture.Name, options.Culture.NumberFormat.NumberDecimalSeparator,
+                                   options.Culture.DateTimeFormat.DateSeparator, options.AutoShift, options.Digits, options.NumberTarget);
 
         if (_cache.TryGetValue(cacheKey, out var cached)) return cached;
 
@@ -196,7 +198,9 @@ internal static class BitVirtualKeyboardLayoutCompiler
             Form = layout.Form,
             Columns = columns,
             Layers = compiledLayers,
-            DeadKeys = layout.DeadKeys ?? [],
+            // copied, both levels: the compiled layout is cached, and the page may go on changing its own layout's tables
+            DeadKeys = layout.DeadKeys?.ToDictionary(entry => entry.Key, entry => entry.Value is null ? [] : new Dictionary<string, string>(entry.Value, entry.Value.Comparer),
+                                                     layout.DeadKeys.Comparer) ?? [],
             ShiftLayer = shiftLayer,
             CapsLayer = capsLayer,
             AltGrLayer = layout.Layers.FirstOrDefault(l => l.Modifiers == BitVirtualKeyboardModifiers.AltGr)?.Id,
@@ -247,7 +251,7 @@ internal static class BitVirtualKeyboardLayoutCompiler
         var height = key.Height ?? 1;
         var offset = key.Offset ?? 0;
 
-        if (width <= 0 || IsQuarter(width) is false) throw Error(layout, $"has {where} {Num(width)} units wide; a width is a positive multiple of 0.25");
+        if (width <= 0 || IsQuarter(width) is false || width * 4 > int.MaxValue || Q(width) < 1) throw Error(layout, $"has {where} {Num(width)} units wide; a width is a positive multiple of 0.25");
         if (offset < 0 || IsQuarter(offset) is false) throw Error(layout, $"has {where} with an offset of {Num(offset)}; an offset is a multiple of 0.25, 0 or more");
         if (height < 1) throw Error(layout, $"has {where} {height} rows high; a key is at least one row high");
 
@@ -366,7 +370,22 @@ internal static class BitVirtualKeyboardLayoutCompiler
                     var share = leftover / stretching.Count;
                     for (var i = 0; i < stretching.Count; i++)
                     {
-                        stretching[i].ColumnSpan += share + (i == stretching.Count - 1 ? leftover - share * stretching.Count : 0);
+                        var key = stretching[i];
+                        var extra = share + (i == stretching.Count - 1 ? leftover - share * stretching.Count : 0);
+
+                        // a key more than one row high takes its extra width in every row it spans, so it takes no more than
+                        // the room each of those rows has left; that room is then held there, as the key's own width is
+                        for (var below = r + 1; below < r + key.RowSpan; below++)
+                        {
+                            extra = Math.Min(extra, Math.Max(0, columns - naturals[l][below]));
+                        }
+                        for (var below = r + 1; below < r + key.RowSpan; below++)
+                        {
+                            naturals[l][below] += extra;
+                            helds[l][below] += extra;
+                        }
+
+                        key.ColumnSpan += extra;
                     }
                 }
                 else if (helds[l][r] == 0)
@@ -449,7 +468,13 @@ internal static class BitVirtualKeyboardLayoutCompiler
 
             return new Resolved
             {
-                Key = key with { Output = upper, Label = key.Label is null ? null : ToUpper(key.Label, culture), LongPress = longPress },
+                Key = key with
+                {
+                    Output = upper,
+                    Label = key.Label is null ? null : ToUpper(key.Label, culture),
+                    LongPress = longPress,
+                    MultiTap = key.MultiTap?.Select(item => ToUpper(item, culture)).ToList(),
+                },
                 BuiltIn = resolved.BuiltIn,
                 BuiltInLabel = resolved.BuiltInLabel,
                 RowText = resolved.RowText,

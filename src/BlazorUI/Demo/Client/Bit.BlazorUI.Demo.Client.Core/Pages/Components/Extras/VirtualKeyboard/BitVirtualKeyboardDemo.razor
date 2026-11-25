@@ -187,8 +187,8 @@
 
         <DemoExample Title="Secure & Scramble" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
-                <b>Secure</b> shows nothing of a press and sends no typed text to .NET events; <b>Scramble</b> shuffles the digit
-                keys. Both are weak against screen capture: a way to keep a PIN from the eyes of someone nearby.
+                <b>Secure</b> shows nothing of a press and gives OnKeyPress and OnInput no typed text; a bound <b>Value</b> still
+                takes what is typed, through ValueChanged. <b>Scramble</b> shuffles the digit keys. Both are weak against screen capture: a way to keep a PIN from the eyes of someone nearby.
             </div>
             <br />
             <div class="example-content narrow">

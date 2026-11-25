@@ -121,7 +121,9 @@
         private caps = false;
         private altGr = false;
         private pendingDead: string | null = null;
-        private multiTap: { key: number, item: number, time: number, typed: boolean } | null = null;
+        // The last tap of a multitap key: the item it typed (empty when nothing was), and the input, the text and the caret
+        // it left, in which the next tap replaces that item only while they are still as it left them.
+        private multiTap: { key: number, item: number, time: number, typed: string, target: BitVirtualKeyboardTarget | null, value: string, caret: number } | null = null;
 
         private target: BitVirtualKeyboardTarget | null = null;
         private explicitTarget: BitVirtualKeyboardTarget | null = null;
@@ -148,6 +150,8 @@
         private readonly presses = new Map<number, BitVirtualKeyboardPress>();
         private popupState: { index: number, items: string[], selected: number, moved: boolean } | null = null;
         private lastPointerAct = { index: -1, time: 0 };
+        // The key the last Enter or Space was pressed on: the click it makes is the keyboard's, never the echo of a pointer.
+        private keyActivation: HTMLElement | null = null;
         private audio: AudioContext | null = null;
         private readonly resizeObserver: ResizeObserver | null = null;
         private readonly activeStyles = new WeakMap<HTMLElement, string | null>();
@@ -201,6 +205,18 @@
             // a Value .NET holds that is not one this side sent it (or is a newer one), taken as the text
             if (next.setValue && next.valueSeq >= this.seq) {
                 this.buffer = this.valueBaseline = next.value ?? '';
+            }
+
+            // a key held down repeats, or opens its alternates, only while the new table keeps it where it was: a press whose
+            // index another key took is let go
+            if (next.keysVersion !== previous.keysVersion) {
+                for (const [pointerId, press] of Array.from(this.presses.entries())) {
+                    const before = previous.keys[press.index];
+                    const after = next.keys[press.index];
+                    if (!before || !after || before.id !== after.id || before.a !== after.a || before.ly !== after.ly || before.o !== after.o) {
+                        this.endPress(pointerId, press);
+                    }
+                }
             }
 
             if (next.followFocus !== previous.followFocus) this.applyFollowFocus(previous.followFocus, next.followFocus);
@@ -340,6 +356,7 @@
 
         private readonly onPointerDown = (e: PointerEvent) => {
             if (this.disposed) return;
+            this.keyActivation = null;
 
             if (this.itemOf(e.target)) {
                 e.preventDefault();
@@ -449,8 +466,12 @@
             }
 
             const hit = this.keyOf(e.target);
+            const byKeyboard = hit !== null && this.keyActivation === hit.element;
+            this.keyActivation = null;
             if (!hit || this.opts.disabled || this.isCurrent() === false) return;
-            if (this.lastPointerAct.index === hit.index && Date.now() - this.lastPointerAct.time < 500) return;
+            // assistive technology may send a pointer press and a click of its own for one activation; Enter or Space
+            // pressed on the key right after a tap is a press of its own
+            if (byKeyboard === false && this.lastPointerAct.index === hit.index && Date.now() - this.lastPointerAct.time < 500) return;
 
             this.act(hit.index, 'keyboard');
         }
@@ -489,13 +510,21 @@
             let typed = text ?? this.textOf(key, index);
 
             if (this.opts.hasKeyPressHandler && source !== 'repeat') {
+                // what the press was made against, which the handler may outlive
+                const target = this.target;
+                const keysVersion = this.opts.keysVersion;
+                // secure, nothing the handler is given tells the character: a key typing one goes without its id (a digit's
+                // id is the digit)
+                const id = this.secure && (key.a === 'Character' || key.a === 'DeadKey') ? '' : key.id;
+
                 try {
-                    const result = await Utils.invokeDotNet<BitVirtualKeyboardKeyPressResult>(this.dotnet, 'OnKeyPress', key.id, key.a, this.secure ? null : typed, key.ly);
+                    const result = await Utils.invokeDotNet<BitVirtualKeyboardKeyPressResult>(this.dotnet, 'OnKeyPress', id, key.a, this.secure ? null : typed, key.ly);
                     if (result?.cancel) return false;
                     if (result && this.secure === false && result.text !== undefined && result.text !== typed) typed = result.text ?? '';
                 } catch { /* a handler that failed leaves the key to act */ }
 
-                if (this.disposed) return false;
+                // the keyboard moved on to another input or another key table, or was disabled, while the handler ran
+                if (this.disposed || this.opts.disabled || this.target !== target || this.opts.keysVersion !== keysVersion) return false;
             }
 
             this.feedback();
@@ -521,7 +550,7 @@
                         break;
                     }
                     this.multiTap = null;
-                    this.withKeyEvents('Backspace', false, () => this.deleteBackward(false));
+                    this.withKeyEvents('Backspace', false, () => this.deleteBackward());
                     break;
                 case 'Delete':
                     this.withKeyEvents('Delete', false, () => this.deleteForward());
@@ -590,9 +619,28 @@
             return true;
         }
 
+        // A tap of the multitap key tapped last, in time, with the input, its text and its caret as that tap left them: anything
+        // else moved since, and the tap starts a new cycle at the caret.
         private multiTapCycling(index: number): boolean {
             const m = this.multiTap;
-            return m !== null && m.key === index && Date.now() - m.time <= this.opts.multiTapTimeout;
+            if (m === null || m.key !== index || Date.now() - m.time > this.opts.multiTapTimeout || m.target !== this.target) return false;
+
+            const now = this.caretState();
+            return now.value === m.value && now.start === m.caret && now.end === m.caret;
+        }
+
+        // The text the keyboard types into and the selection in it, as an edit reads them.
+        private caretState(): { value: string, start: number, end: number } {
+            const t = this.target;
+            if (!t) return { value: this.buffer, start: this.buffer.length, end: this.buffer.length };
+
+            if (t instanceof HTMLInputElement && t.type === 'number') {
+                const value = t.value === this.numberValue ? this.numberBuffer : t.value;
+                return { value, start: value.length, end: value.length };
+            }
+
+            const [start, end] = this.selection(t);
+            return { value: t.value, start, end };
         }
 
         private textOf(key: BitVirtualKeyboardKeyOptions, index: number): string | null {
@@ -610,11 +658,13 @@
 
         private typeCharacter(key: BitVirtualKeyboardKeyOptions, index: number, text: string, alternate: boolean) {
             if (key.mt && key.mt.length > 0 && alternate === false) {
-                const cycling = this.multiTapCycling(index);
-                if (cycling && this.multiTap!.typed) this.deleteBackward(true);
-                const item = cycling ? BitVirtualKeyboardEngine.nextMultiTap(key.mt.length, this.multiTap!.item) : 0;
-                const typed = this.insert(text);
-                this.multiTap = { key: index, item, time: Date.now(), typed };
+                const previous = this.multiTapCycling(index) ? this.multiTap! : null;
+                const item = previous ? BitVirtualKeyboardEngine.nextMultiTap(key.mt.length, previous.item) : 0;
+                // the next item replaces the one the last tap typed in one edit, which the input takes or refuses as a whole:
+                // refused, the last item stays
+                const typed = this.insert(text, previous ? previous.typed.length : 0) ?? (previous ? previous.typed : '');
+                const now = this.caretState();
+                this.multiTap = { key: index, item, time: Date.now(), typed, target: this.target, value: now.value, caret: now.end };
             } else {
                 this.multiTap = null;
                 this.pendingDead = null;
@@ -648,44 +698,68 @@
             return this.selectable ? [t.selectionStart ?? length, t.selectionEnd ?? length] : [length, length];
         }
 
-        private insert(text: string): boolean {
-            if (!text) return false;
-            if (BitVirtualKeyboardEngine.isAllowed(text, this.opts.allowedCharacters) === false) return false;
+        // An input made read-only or disabled since the keyboard attached to it takes no more edits.
+        private writable(t: BitVirtualKeyboardTarget): boolean {
+            return t.readOnly === false && t.disabled === false;
+        }
+
+        // Whether a beforeinput listener left the input as the edit found it: an edit worked out from a value or a selection
+        // it changed would land in the wrong place, so it is dropped.
+        private unchanged(t: BitVirtualKeyboardTarget, value: string, start: number, end: number): boolean {
+            if (this.target !== t || t.value !== value) return false;
+
+            const [s, e] = this.selection(t);
+            return s === start && e === end;
+        }
+
+        // Types the text at the caret: over the selection, or over the code units before the caret a multitap key's last tap
+        // typed. Returns what was typed once maxlength took its share, or null when nothing was.
+        private insert(text: string, replace = 0): string | null {
+            if (!text) return null;
+            if (BitVirtualKeyboardEngine.isAllowed(text, this.opts.allowedCharacters) === false) return null;
 
             const t = this.target;
             if (!t) {
-                const edit = BitVirtualKeyboardEngine.insert(this.buffer, this.buffer.length, this.buffer.length, text, this.maxLength);
-                if (!edit) return false;
+                const end = this.buffer.length;
+                const edit = BitVirtualKeyboardEngine.insert(this.buffer, end - replace, end, text, this.maxLength);
+                if (!edit) return null;
                 this.setBuffer(edit.text);
-                return true;
+                return edit.inserted;
             }
+
+            if (this.writable(t) === false) return null;
 
             if (t instanceof HTMLInputElement && t.type === 'number') {
-                if (BitVirtualKeyboardEngine.isNumberCharacter(text) === false) return false;
+                if (BitVirtualKeyboardEngine.isNumberCharacter(text) === false) return null;
                 this.syncNumber(t);
-                return this.setNumber(this.numberBuffer + text, 'insertText', text);
+                const kept = this.numberBuffer.slice(0, this.numberBuffer.length - replace);
+                return this.setNumber(kept + text, 'insertText', text) ? text : null;
             }
 
-            const [start, end] = this.selection(t);
-            const edit = BitVirtualKeyboardEngine.insert(t.value, start, end, text, this.maxLength);
-            if (!edit) return false;
+            const value = t.value;
+            const [caret, end] = this.selection(t);
+            const start = caret - replace;
+            const edit = BitVirtualKeyboardEngine.insert(value, start, end, text, this.maxLength);
+            if (!edit) return null;
 
-            if (this.dispatchBefore('insertText', edit.inserted) === false) return false;
+            if (this.dispatchBefore('insertText', edit.inserted) === false || this.unchanged(t, value, caret, end) === false) return null;
 
             if (this.selectable) t.setRangeText(edit.inserted, start, end, 'end');
             else t.value = edit.text;
 
             this.dispatchInput('insertText', edit.inserted);
-            return true;
+            return edit.inserted;
         }
 
-        private deleteBackward(quiet: boolean) {
+        private deleteBackward() {
             const t = this.target;
             if (!t) {
                 const edit = BitVirtualKeyboardEngine.deleteBackward(this.buffer, this.buffer.length, this.buffer.length);
                 if (edit) this.setBuffer(edit.text);
                 return;
             }
+
+            if (this.writable(t) === false) return;
 
             if (t instanceof HTMLInputElement && t.type === 'number') {
                 this.syncNumber(t);
@@ -694,11 +768,12 @@
                 return;
             }
 
+            const value = t.value;
             const [start, end] = this.selection(t);
-            const edit = BitVirtualKeyboardEngine.deleteBackward(t.value, start, end);
+            const edit = BitVirtualKeyboardEngine.deleteBackward(value, start, end);
             if (!edit) return;
 
-            if (quiet === false && this.dispatchBefore('deleteContentBackward', null) === false) return;
+            if (this.dispatchBefore('deleteContentBackward', null) === false || this.unchanged(t, value, start, end) === false) return;
 
             if (this.selectable) t.setRangeText('', edit.start, start === end ? start : end, 'end');
             else t.value = edit.text;
@@ -708,15 +783,16 @@
 
         private deleteForward() {
             const t = this.target;
-            if (!t || this.selectable === false) return;
+            if (!t || this.selectable === false || this.writable(t) === false) return;
 
+            const value = t.value;
             const [start, end] = this.selection(t);
-            const edit = BitVirtualKeyboardEngine.deleteForward(t.value, start, end);
+            const edit = BitVirtualKeyboardEngine.deleteForward(value, start, end);
             if (!edit) return;
 
-            if (this.dispatchBefore('deleteContentForward', null) === false) return;
+            const to = start === end ? value.length - (edit.text.length - start) : end;
+            if (this.dispatchBefore('deleteContentForward', null) === false || this.unchanged(t, value, start, end) === false) return;
 
-            const to = start === end ? t.value.length - (edit.text.length - start) : end;
             t.setRangeText('', start, to, 'end');
             this.dispatchInput('deleteContentForward', null);
         }
@@ -728,7 +804,13 @@
                 return;
             }
 
-            if (t.value === '') return;
+            if (this.writable(t) === false) return;
+
+            // an empty type=number input may still hold what was typed into it and is not a number yet ("-")
+            if (t.value === '') {
+                this.numberBuffer = this.numberValue = '';
+                return;
+            }
             if (this.dispatchBefore('deleteContent', null) === false) return;
 
             t.value = '';
@@ -740,10 +822,14 @@
         // into it is kept here and written only once it is a number.
         private setNumber(buffer: string, inputType: string, data: string | null): boolean {
             const t = this.target as HTMLInputElement;
-            this.numberBuffer = buffer;
-            if (buffer !== '' && BitVirtualKeyboardEngine.isNumber(buffer) === false) return true;
+            if (buffer !== '' && BitVirtualKeyboardEngine.isNumber(buffer) === false) {
+                this.numberBuffer = buffer;
+                return true;
+            }
 
+            // a number goes to the input, and is kept, only once its beforeinput is let through
             if (this.dispatchBefore(inputType, data) === false) return false;
+            this.numberBuffer = buffer;
             t.value = buffer;
             this.numberValue = t.value;
             this.dispatchInput(inputType, data);
@@ -775,7 +861,7 @@
                     break;
                 }
                 case 'Home':
-                    next = t instanceof HTMLTextAreaElement ? value.lastIndexOf('\n', caret - 1) + 1 : 0;
+                    next = t instanceof HTMLTextAreaElement ? BitVirtualKeyboardEngine.lineStart(value, caret) : 0;
                     break;
                 case 'End': {
                     const lineEnd = t instanceof HTMLTextAreaElement ? value.indexOf('\n', caret) : -1;
@@ -785,11 +871,11 @@
                 case 'ArrowUp':
                 case 'ArrowDown': {
                     if (t instanceof HTMLTextAreaElement === false) return;
-                    const lineStart = value.lastIndexOf('\n', caret - 1) + 1;
+                    const lineStart = BitVirtualKeyboardEngine.lineStart(value, caret);
                     const column = caret - lineStart;
                     if (action === 'ArrowUp') {
                         if (lineStart === 0) return;
-                        const previousStart = value.lastIndexOf('\n', lineStart - 2) + 1;
+                        const previousStart = BitVirtualKeyboardEngine.lineStart(value, lineStart - 1);
                         next = Math.min(previousStart + column, lineStart - 1);
                     } else {
                         const lineEnd = value.indexOf('\n', caret);
@@ -931,7 +1017,7 @@
 
         private cancel() {
             const t = this.target;
-            if (t && t.value !== this.atAttach) {
+            if (t && t.value !== this.atAttach && this.writable(t)) {
                 t.value = this.atAttach;
                 this.numberBuffer = this.numberValue = this.atAttach;
                 this.dispatchInput('insertReplacementText', null);
@@ -1260,6 +1346,8 @@
         // Typing into its own Value, the keys are a grid the focus moves through with the arrow keys.
         private readonly onRootKeyDown = (e: KeyboardEvent) => {
             if (Utils.isComposingKey(e)) return;
+
+            if (e.key === 'Enter' || e.key === ' ') this.keyActivation = this.keyOf(e.target)?.element ?? null;
 
             if (e.key === 'Escape') {
                 // a modified Escape, or one a part inside claimed first, is left to whoever it belongs to

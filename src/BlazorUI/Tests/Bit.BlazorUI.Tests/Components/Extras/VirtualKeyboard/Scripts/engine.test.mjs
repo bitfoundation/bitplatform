@@ -87,4 +87,15 @@ test('grapheme boundaries move the caret by whole clusters', () => {
     assert.equal(Engine.nextGraphemeEnd(text, 1), 5);
     assert.equal(Engine.previousGraphemeStart(text, 7), 5);
     assert.deepEqual(Engine.graphemes(text), ['a', '\u{1F44D}\u{1F3FD}', 'e\u{301}']);
+    assert.equal(Engine.previousGraphemeStart(text, 3), 1, 'from inside a cluster, to its start');
+    assert.equal(Engine.nextGraphemeEnd(text, 2), 5, 'from inside a cluster, to its end');
+    assert.equal(Engine.previousGraphemeStart(text, 0), 0);
+    assert.equal(Engine.nextGraphemeEnd(text, text.length), text.length);
+});
+
+test('a line starts after the newline before the index, and the text starts the first one', () => {
+    assert.equal(Engine.lineStart('\nab', 0), 0, 'a leading newline is not the start of the line at 0');
+    assert.equal(Engine.lineStart('\nab', 1), 1);
+    assert.equal(Engine.lineStart('ab\ncd', 4), 3);
+    assert.equal(Engine.lineStart('ab\ncd', 2), 0);
 });
