@@ -175,6 +175,59 @@ public class BitVirtualKeyboardE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task ANumberInput_GoesOnFromWhatWasTypedOnAPhysicalKeyboard()
+    {
+        await OpenAsync(Route);
+
+        await Page.Locator("#ff-num").FocusAsync();
+        await Page.Locator("#ff-num").PressSequentiallyAsync("12");
+        await PressAsync("vkb-follow", "3");
+
+        Assert.AreEqual("123", await ValueAsync("ff-num"));
+    }
+
+    [TestMethod]
+    public async Task TheCancelKey_PutsTheValueBack()
+    {
+        await OpenAsync(Route);
+
+        await PressAsync("vkb-atm", "1", "2", "3");
+        await Expect(Page.Locator("#atm-out")).ToHaveTextAsync("123");
+
+        await PressAsync("vkb-atm", "Cancel");
+        await Expect(Page.Locator("#atm-out")).ToHaveTextAsync("");
+    }
+
+    [TestMethod]
+    public async Task AModifiedEscape_IsLeftToTheSurfaceAround_AndAPlainOneLeavesTheKeys()
+    {
+        await OpenAsync(Route);
+
+        var key = Page.Locator("#vkb-value .bit-vkb-lyr[data-bit-vkb-on] > button[tabindex=\"0\"]");
+        await key.FocusAsync();
+
+        await Page.Keyboard.PressAsync("Shift+Escape");
+        await Expect(key).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+        await Expect(key).Not.ToBeFocusedAsync();
+    }
+
+    [TestMethod]
+    public async Task AnInputAttachedAtRunTime_StaysAttached()
+    {
+        await OpenAsync(Route);
+
+        await Page.Locator("#btn-attach").ClickAsync();
+        await Expect(Page.Locator("#att-in")).ToHaveAttributeAsync("inputmode", "none");
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(Page.Locator("#att-in")).ToHaveAttributeAsync("inputmode", "none");
+
+        await PressAsync("vkb-attach", "q", "w");
+        await Expect(Page.Locator("#att-out")).ToHaveTextAsync("qw");
+    }
+
+    [TestMethod]
     public async Task ADeadKey_ComposesWithTheNextLetter()
     {
         await OpenAsync(Route);
@@ -254,6 +307,25 @@ public class BitVirtualKeyboardE2ETests : E2ETestBase
 
         await Page.WaitForTimeoutAsync(300);
         Assert.AreEqual(length, (await ValueAsync("tgt")).Length, "it stops once let go");
+    }
+
+    [TestMethod]
+    public async Task AKeyAHandlerCancels_DoesNotRepeatEither()
+    {
+        await OpenAsync(Route);
+        await Page.Locator("#guard-in").FocusAsync();
+        await SetValueAsync("guard-in", "abcdef", 6);
+        await SyncedAsync("vkb-guard");
+
+        var backspace = Key("vkb-guard", "Backspace");
+        await backspace.ScrollIntoViewIfNeededAsync();
+        var box = (await backspace.BoundingBoxAsync())!;
+        await Page.Mouse.MoveAsync(box.X + box.Width / 2, box.Y + box.Height / 2);
+        await Page.Mouse.DownAsync();
+        await Page.WaitForTimeoutAsync(1000);
+        await Page.Mouse.UpAsync();
+
+        Assert.AreEqual("abcdef", await ValueAsync("guard-in"));
     }
 
     [TestMethod]

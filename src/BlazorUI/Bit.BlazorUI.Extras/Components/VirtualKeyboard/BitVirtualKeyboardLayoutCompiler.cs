@@ -104,12 +104,12 @@ internal static class BitVirtualKeyboardLayoutCompiler
                         continue;
                     }
 
-                    // 6. the digits of a purpose pad
+                    // 6. the digits of a purpose pad, a key typing several of them (the 00 and 000 of the POS pad) included
                     if (isPad && options.NumberTarget is false && options.Digits is not BitVirtualKeyboardDigits.Latin
-                        && key.Output is [>= '0' and <= '9'] digit)
+                        && key.Output is { Length: > 0 } digits && digits.All(char.IsAsciiDigit))
                     {
                         var zero = options.Digits is BitVirtualKeyboardDigits.Persian ? 0x06F0 : 0x0660;
-                        key = key with { Output = ((char)(zero + digit[0] - '0')).ToString() };
+                        key = key with { Output = string.Concat(digits.Select(d => (char)(zero + d - '0'))) };
                     }
 
                     resolvedRow.Add(new() { Key = key, BuiltIn = resolved.BuiltIn, BuiltInLabel = resolved.BuiltInLabel, RowText = resolved.RowText });

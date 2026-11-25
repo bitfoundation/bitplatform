@@ -22,6 +22,11 @@ public partial class BitVirtualKeyboard : BitComponentBase
     private BitVirtualKeyboardCompiledLayout _compiled = default!;
     private BitVirtualKeyboardPurpose _purpose;
 
+    // What the scrambled layout shown was compiled from, so a render that changes none of it keeps it.
+    private BitVirtualKeyboardCompileOptions? _scrambledOptions;
+    private BitVirtualKeyboardLayout? _scrambledLayout;
+    private string? _scrambledLayoutJson;
+
     // The form an Auto form shows, as the script measures the keyboard's width (Compact until it has).
     private bool _compact = true;
 
@@ -371,7 +376,7 @@ public partial class BitVirtualKeyboard : BitComponentBase
             nextIndicator = BitVirtualKeyboardLayouts.Get(next)?.Indicator ?? next.ToUpperInvariant();
         }
 
-        _compiled = BitVirtualKeyboardLayoutCompiler.Compile(layout, new()
+        BitVirtualKeyboardCompileOptions options = new()
         {
             Purpose = _purpose,
             Mode = Mode,
@@ -382,7 +387,31 @@ public partial class BitVirtualKeyboard : BitComponentBase
             Digits = Digits,
             NumberTarget = IsNumberTarget,
             ScrambleSeed = Scramble ? _scrambleSeed : null,
-        });
+        };
+
+        // The compiler caches no scrambled layout, so the one compiled for this seed is kept while nothing it is compiled
+        // from changes: a new instance would move the keys' version on and hold the presses back until the script is told.
+        if (options.ScrambleSeed.HasValue && _compiled is not null && options == _scrambledOptions
+            && (ReferenceEquals(layout, _scrambledLayout) || layout.ToJson() == _scrambledLayoutJson))
+        {
+            _scrambledLayout = layout;
+            return;
+        }
+
+        _compiled = BitVirtualKeyboardLayoutCompiler.Compile(layout, options);
+
+        if (options.ScrambleSeed.HasValue)
+        {
+            _scrambledOptions = options;
+            _scrambledLayout = layout;
+            _scrambledLayoutJson = layout.ToJson();
+        }
+        else
+        {
+            _scrambledOptions = null;
+            _scrambledLayout = null;
+            _scrambledLayoutJson = null;
+        }
     }
 
     private BitVirtualKeyboardLayout ResolveLayout()

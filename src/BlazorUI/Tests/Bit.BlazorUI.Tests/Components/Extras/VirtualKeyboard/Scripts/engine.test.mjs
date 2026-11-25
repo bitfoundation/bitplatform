@@ -76,8 +76,8 @@ test('Shift latches, locks on a double tap and lets go after a character', () =>
 });
 
 test('a type=number input takes only whole numbers', () => {
-    for (const valid of ['1', '-1', '1.5', '.5', '1e3', '1.']) assert.equal(Engine.isNumber(valid), true, valid);
-    for (const invalid of ['-', '1e', '1,5', '', 'e']) assert.equal(Engine.isNumber(invalid), false, invalid);
+    for (const valid of ['1', '-1', '1.5', '.5', '1e3']) assert.equal(Engine.isNumber(valid), true, valid);
+    for (const invalid of ['-', '1e', '1,5', '', 'e', '1.', '-1.']) assert.equal(Engine.isNumber(invalid), false, invalid);
     assert.equal(Engine.isNumberCharacter('5'), true);
     assert.equal(Engine.isNumberCharacter('\u{6F5}'), false);
 });

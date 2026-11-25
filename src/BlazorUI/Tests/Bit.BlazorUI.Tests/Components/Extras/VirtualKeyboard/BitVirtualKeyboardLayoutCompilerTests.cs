@@ -190,6 +190,17 @@ public class BitVirtualKeyboardLayoutCompilerTests
     }
 
     [TestMethod]
+    public void AKeyTypingSeveralDigitsShouldTypeThemAllInTheDigitSet()
+    {
+        var layer = Compile(BitVirtualKeyboardLayouts.Pos, purpose: BitVirtualKeyboardPurpose.Pos, digits: BitVirtualKeyboardDigits.Persian).Layers[0];
+
+        var zeros = layer.Keys.Where(k => k.Row == 3 && k.Action is BitVirtualKeyboardKeyAction.Character).Select(k => k.Output).ToArray();
+
+        CollectionAssert.AreEqual(new[] { "\U000006F0", "\U000006F0\U000006F0", "\U000006F0\U000006F0\U000006F0" }, zeros[..3]);
+        Assert.AreEqual("\U000006F0\U000006F0", layer.Keys.First(k => k.Output == zeros[1]).Label, "the keycap shows what it types");
+    }
+
+    [TestMethod]
     public void TheDateSeparatorShouldLeaveOutTheBidiMarks()
     {
         var layout = Layout(Layer("base", "1 {datesep}"));

@@ -21,7 +21,8 @@ public partial class BitVirtualKeyboard
     private int _keysVersion;
     private int _sentVersion = -1;
 
-    // The explicit target the script was last handed.
+    // The Target parameter the script was last handed. AttachAsync and DetachAsync leave it alone, so the render they cause
+    // never hands the script a Target that has not changed and takes their input away from it.
     private string? _sentTargetId;
 
     // What the script last reported of the input it types into, and of the Value it holds.
@@ -65,7 +66,6 @@ public partial class BitVirtualKeyboard
     public async ValueTask AttachAsync(ElementReference input)
     {
         if (_handle is null || IsDisposed) return;
-        _sentTargetId = input.Id;
         await _handle.InvokeVoidAsync("attach", input);
     }
 
@@ -75,7 +75,6 @@ public partial class BitVirtualKeyboard
     public async ValueTask DetachAsync()
     {
         if (_handle is null || IsDisposed) return;
-        _sentTargetId = null;
         await _handle.InvokeVoidAsync("attach", (object?)null);
     }
 
@@ -180,10 +179,17 @@ public partial class BitVirtualKeyboard
 
         if (open && Scramble) _scrambleSeed = RandomNumberGenerator.GetInt32(int.MaxValue);
 
-        // An Open the parent holds one way stays as it is: the script is given it back.
-        if (await AssignOpen(open) is false) _payloadVersion++;
+        var assigned = await AssignOpen(open);
 
         await RecompileAndRender();
+
+        // An Open the parent holds one way stays as it is: the script is given it back by a render of its own, since
+        // nothing the script is told has changed on this side.
+        if (assigned is false)
+        {
+            _payloadVersion++;
+            StateHasChanged();
+        }
     }
 
     [JSInvokable("OnCompact")]
@@ -238,6 +244,9 @@ public partial class BitVirtualKeyboard
             {
                 _sentVersion = _payloadVersion;
                 await _handle.InvokeVoidAsync("update", BuildOptions());
+
+                // disposed while the update was on its way: the handle is gone
+                if (IsDisposed || _handle is null) return;
             }
 
             if (Target?.Id != _sentTargetId)

@@ -129,10 +129,15 @@
         private committed = '';
         private atAttach = '';
         private numberBuffer = '';
+        // The value of a type=number input as the keyboard last left it: a value that differs from it was typed or set some
+        // other way, and is what the keyboard goes on from.
+        private numberValue = '';
 
         // The Value of a keyboard with no input to type into, and the sequence number of its last change.
         private buffer = '';
         private seq = 0;
+        // The Value the Cancel key puts back: the one the keyboard was given, opened with, or last accepted.
+        private valueBaseline = '';
         private sendScheduled = false;
 
         private open = false;
@@ -155,7 +160,7 @@
             this.live = root.querySelector(':scope > .bit-vkb-liv');
             this.reserve = root.querySelector(':scope > .bit-vkb-rsv');
             this.selected = options.baseLayer;
-            this.buffer = options.value ?? '';
+            this.buffer = this.valueBaseline = options.value ?? '';
 
             root.addEventListener('pointerdown', this.onPointerDown);
             root.addEventListener('pointermove', this.onPointerMove);
@@ -195,7 +200,7 @@
 
             // a Value .NET holds that is not one this side sent it (or is a newer one), taken as the text
             if (next.setValue && next.valueSeq >= this.seq) {
-                this.buffer = next.value ?? '';
+                this.buffer = this.valueBaseline = next.value ?? '';
             }
 
             if (next.followFocus !== previous.followFocus) this.applyFollowFocus(previous.followFocus, next.followFocus);
@@ -361,12 +366,15 @@
 
             if (key.r) {
                 press.acted = true;
-                this.act(hit.index, 'pointer');
-                if (this.opts.repeatDelay > 0) {
+                const pressed = Date.now();
+                // the repeats ask no handler, so a key repeats only once its first press acted (no handler cancelled it)
+                this.act(hit.index, 'pointer').then(acted => {
+                    if (acted === false || this.presses.get(e.pointerId) !== press || this.opts.repeatDelay <= 0) return;
+
                     press.repeat = window.setTimeout(() => {
                         press.repeat = window.setInterval(() => this.act(hit.index, 'repeat'), Math.max(16, this.opts.repeatInterval));
-                    }, this.opts.repeatDelay);
-                }
+                    }, Math.max(0, this.opts.repeatDelay - (Date.now() - pressed)));
+                });
             } else if (key.lp && key.lp.length > 0) {
                 press.long = window.setTimeout(() => {
                     press.long = 0;
@@ -472,21 +480,22 @@
             if (index >= 0) this.act(index, 'api');
         }
 
-        private async act(index: number, source: 'pointer' | 'repeat' | 'keyboard' | 'api' | 'popup', text?: string) {
+        // Whether the key acted: a key press handler can cancel it.
+        private async act(index: number, source: 'pointer' | 'repeat' | 'keyboard' | 'api' | 'popup', text?: string): Promise<boolean> {
             const key = this.opts.keys[index];
-            if (!key || this.opts.disabled || this.disposed) return;
-            if (this.opts.valueMode === false && !this.target) return;
+            if (!key || this.opts.disabled || this.disposed) return false;
+            if (this.opts.valueMode === false && !this.target) return false;
 
             let typed = text ?? this.textOf(key, index);
 
             if (this.opts.hasKeyPressHandler && source !== 'repeat') {
                 try {
                     const result = await Utils.invokeDotNet<BitVirtualKeyboardKeyPressResult>(this.dotnet, 'OnKeyPress', key.id, key.a, this.secure ? null : typed, key.ly);
-                    if (result?.cancel) return;
+                    if (result?.cancel) return false;
                     if (result && this.secure === false && result.text !== undefined && result.text !== typed) typed = result.text ?? '';
                 } catch { /* a handler that failed leaves the key to act */ }
 
-                if (this.disposed) return;
+                if (this.disposed) return false;
             }
 
             this.feedback();
@@ -577,6 +586,8 @@
                     Utils.notifyDotNet(this.dotnet, 'OnCommand', key.c ?? '', key.id);
                     break;
             }
+
+            return true;
         }
 
         private multiTapCycling(index: number): boolean {
@@ -651,6 +662,7 @@
 
             if (t instanceof HTMLInputElement && t.type === 'number') {
                 if (BitVirtualKeyboardEngine.isNumberCharacter(text) === false) return false;
+                this.syncNumber(t);
                 return this.setNumber(this.numberBuffer + text, 'insertText', text);
             }
 
@@ -676,6 +688,7 @@
             }
 
             if (t instanceof HTMLInputElement && t.type === 'number') {
+                this.syncNumber(t);
                 const edit = BitVirtualKeyboardEngine.deleteBackward(this.numberBuffer, this.numberBuffer.length, this.numberBuffer.length);
                 if (edit) this.setNumber(edit.text, 'deleteContentBackward', null);
                 return;
@@ -719,7 +732,7 @@
             if (this.dispatchBefore('deleteContent', null) === false) return;
 
             t.value = '';
-            this.numberBuffer = '';
+            this.numberBuffer = this.numberValue = '';
             this.dispatchInput('deleteContent', null);
         }
 
@@ -732,8 +745,16 @@
 
             if (this.dispatchBefore(inputType, data) === false) return false;
             t.value = buffer;
+            this.numberValue = t.value;
             this.dispatchInput(inputType, data);
             return true;
+        }
+
+        // A value typed on a physical keyboard, or set by the page, since the keyboard last wrote one is the text it goes on
+        // from; what it holds back while that is not a number yet ("1.") is kept while the input shows what it last wrote.
+        private syncNumber(t: HTMLInputElement) {
+            if (t.value === this.numberValue) return;
+            this.numberBuffer = this.numberValue = t.value;
         }
 
         private moveCaret(action: string) {
@@ -898,7 +919,11 @@
         // baseline, and no change is fired twice.
         private commit() {
             const t = this.target;
-            if (!t || t.value === this.committed) return;
+            if (!t) {
+                this.valueBaseline = this.buffer;
+                return;
+            }
+            if (t.value === this.committed) return;
 
             this.committed = t.value;
             t.dispatchEvent(new Event('change', { bubbles: true }));
@@ -908,9 +933,11 @@
             const t = this.target;
             if (t && t.value !== this.atAttach) {
                 t.value = this.atAttach;
-                this.numberBuffer = this.atAttach;
+                this.numberBuffer = this.numberValue = this.atAttach;
                 this.dispatchInput('insertReplacementText', null);
                 this.commit();
+            } else if (!t && this.buffer !== this.valueBaseline) {
+                this.setBuffer(this.valueBaseline);
             }
 
             if (this.opts.docked) this.setOpen(false, true);
@@ -951,7 +978,7 @@
             const inputMode = element.getAttribute('inputmode');
             this.saved = { inputMode, esc: element.getAttribute('data-bit-esc'), claimed: false };
             this.target = element;
-            this.committed = this.atAttach = this.numberBuffer = element.value;
+            this.committed = this.atAttach = this.numberBuffer = this.numberValue = element.value;
 
             // the OS keyboard stays away while this one types
             element.setAttribute('inputmode', 'none');
@@ -1095,6 +1122,7 @@
 
             const changed = open !== this.open;
             this.open = open;
+            if (changed && open && !this.target) this.valueBaseline = this.buffer;
 
             this.panel.toggleAttribute('data-bit-vkb-open', open);
             (this.panel as any).inert = this.opts.docked && open === false;
@@ -1234,6 +1262,11 @@
             if (Utils.isComposingKey(e)) return;
 
             if (e.key === 'Escape') {
+                // a modified Escape, or one a part inside claimed first, is left to whoever it belongs to
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                const claimer = Utils.escapeClaimer(e);
+                if (claimer ? claimer !== this.root : e.defaultPrevented) return;
+
                 if (this.popupState) {
                     this.closePopup();
                 } else if (this.opts.valueMode && !this.target) {

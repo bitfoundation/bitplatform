@@ -203,9 +203,9 @@
             return state.mode === 'latched' ? { mode: 'off', lastTap: state.lastTap } : state;
         }
 
-        // Whether a type=number input takes the text as its value (anything else it sanitizes to empty).
+        // Whether a type=number input takes the text as its value (anything else, "1." included, it sanitizes to empty).
         public static isNumber(text: string): boolean {
-            return /^-?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?$/.test(text);
+            return /^-?(\d+(\.\d+)?|\.\d+)([eE][-+]?\d+)?$/.test(text);
         }
 
         // Whether a character can be part of what a type=number input holds.

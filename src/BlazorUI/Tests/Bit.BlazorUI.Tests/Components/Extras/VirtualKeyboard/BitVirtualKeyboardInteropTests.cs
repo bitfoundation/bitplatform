@@ -123,10 +123,41 @@ public class BitVirtualKeyboardInteropTests : BunitTestContext
         var oneWay = RenderComponent<BitVirtualKeyboard>(p => p.Add(c => c.Mode, BitVirtualKeyboardMode.Docked).Add(c => c.Open, false));
         var before = Updates(handle).Count;
         oneWay.InvokeAsync(() => oneWay.Instance._OnOpen(true)).Wait();
-        oneWay.Render();
 
         Assert.IsFalse(oneWay.Instance.Open);
         Assert.IsTrue(Updates(handle).Skip(before).Any(u => u.Open is false), "the script is told the Open the parent holds");
+    }
+
+    [TestMethod]
+    public void AnInputAttachedAtRunTimeShouldStayAttachedThroughTheRenderItCauses()
+    {
+        var handle = SetupHandle();
+        var component = RenderComponent<BitVirtualKeyboard>();
+
+        component.InvokeAsync(() => component.Instance.AttachAsync(new ElementReference("input-1")).AsTask()).Wait();
+        component.InvokeAsync(() => component.Instance._OnTarget("text", null, null, null, false, "input-1")).Wait();
+        component.Render();
+
+        var attaches = handle.Invocations.Where(i => i.Identifier == "attach").ToList();
+        Assert.AreEqual(1, attaches.Count, "no render hands the script the unset Target");
+        Assert.IsNotNull(attaches[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void AScrambledKeyboardShouldKeepItsKeysThroughARenderOfItsParent()
+    {
+        var handle = SetupHandle();
+        var component = RenderComponent<BitVirtualKeyboard>(p => p.Add(c => c.Purpose, BitVirtualKeyboardPurpose.Pin).Add(c => c.Scramble, true));
+        var version = component.Find(".bit-vkb").GetAttribute("data-bit-vkb-v");
+        var digits = component.FindAll("[data-bit-vkb-k]").Select(k => k.TextContent).ToList();
+
+        component.Render(p => p.Add(c => c.Purpose, BitVirtualKeyboardPurpose.Pin));
+
+        Assert.AreEqual(version, component.Find(".bit-vkb").GetAttribute("data-bit-vkb-v"), "the presses are not held back");
+        CollectionAssert.AreEqual(digits, component.FindAll("[data-bit-vkb-k]").Select(k => k.TextContent).ToList());
+
+        component.InvokeAsync(() => component.Instance._OnTarget("text", null, null, "pin", false, null)).Wait();
+        Assert.AreNotEqual(version, component.Find(".bit-vkb").GetAttribute("data-bit-vkb-v"), "attaching scrambles the keys again");
     }
 
     [TestMethod]

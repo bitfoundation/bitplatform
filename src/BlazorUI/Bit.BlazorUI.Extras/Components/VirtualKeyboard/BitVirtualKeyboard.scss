@@ -198,11 +198,12 @@ $vkb-private-properties: kh;
 // A key that shows nothing it does (a blank key of an ATM pad or an AltGr layer) is drawn but never acts.
 .bit-vkb-blk {
     cursor: default;
-    opacity: -dis;
+    opacity: $opa-dis;
 }
 
-// Secure, a key shows nothing of being pressed or pointed at.
-.bit-vkb-sec .bit-vkb-key,
+// Secure, a key shows nothing of being pressed or pointed at: both selectors outweigh the hover rules, so a Secure keyboard
+// shows none before its script has set data-bit-vkb-sec either.
+.bit-vkb.bit-vkb-sec .bit-vkb-key,
 .bit-vkb[data-bit-vkb-sec] .bit-vkb-key {
     transition: none;
 

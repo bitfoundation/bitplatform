@@ -74,6 +74,30 @@
     </div>
 </E2ESection>
 
+<E2ESection Id="atm" Title="ATM pad, its own Value">
+    <span id="atm-out">@_atmValue</span>
+    <div style="width: 400px;">
+        <BitVirtualKeyboard Id="vkb-atm" Purpose="BitVirtualKeyboardPurpose.Atm" @bind-Value="_atmValue" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="guard" Title="A key press handler cancelling Backspace">
+    <input id="guard-in" @ref="_guardTarget" aria-label="Guarded" />
+    <div style="width: 700px;">
+        <BitVirtualKeyboard Id="vkb-guard" Form="BitVirtualKeyboardForm.Full" Target="_guardTarget"
+                            OnKeyPress="args => args.Cancel = args.Action is BitVirtualKeyboardKeyAction.Backspace" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="attach" Title="Attached at run time">
+    <input id="att-in" @ref="_attachTarget" @bind="_attachValue" @bind:event="oninput" aria-label="Attached" />
+    <span id="att-out">@_attachValue</span>
+    <button id="btn-attach" type="button" @onclick="() => _attachKeyboard.AttachAsync(_attachTarget)">Attach</button>
+    <div style="width: 700px;">
+        <BitVirtualKeyboard Id="vkb-attach" @ref="_attachKeyboard" Form="BitVirtualKeyboardForm.Full" />
+    </div>
+</E2ESection>
+
 <div style="height: 400px;"></div>
 
 <div style="position: fixed; right: 8px; top: 8px;">
@@ -103,6 +127,12 @@
     private string? _deValue;
     private ElementReference _cpTarget;
     private string? _cpValue;
+
+    private string? _atmValue;
+    private ElementReference _guardTarget;
+    private ElementReference _attachTarget;
+    private string? _attachValue;
+    private BitVirtualKeyboard _attachKeyboard = default!;
 
     // The inputs are taken by @ref in this render, so the keyboards are handed them in the next one.
     protected override void OnAfterRender(bool firstRender)
