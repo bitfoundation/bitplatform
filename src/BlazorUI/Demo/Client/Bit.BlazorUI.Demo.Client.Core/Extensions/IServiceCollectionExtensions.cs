@@ -43,6 +43,9 @@ public static class IServiceCollectionExtensions
             options.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss;
             options.Persistence = BitAccentColorPersistence.LocalStorage;
         });
+        // The command palette's registry, open state and history (per circuit, or per WebAssembly app), which the
+        // CommandPalette demo page registers its commands with.
+        services.AddBitCommandPaletteServices();
         // The AI package, set up the way the AI scenarios (/ai/scenarios/...) and the AI component pages use it. No
         // model behind it: every reply comes from a scripted IBitAiTransport (Services/AI), so the pages need no API
         // key and nothing downstream of the transport can tell the difference. The registered transport is the echo

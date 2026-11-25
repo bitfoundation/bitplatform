@@ -110,9 +110,6 @@
     "<PackageReference Include=\"Bit.CodeAnalyzers\" Version=\"{V}\">",
     "<PackageReference Include=\"Bit.SourceGenerators\" Version=\"{V}\">"
   ],
-  "src/Utilities/Balette/Demo/Client/Bit.Balette.Demo.Client.csproj": [
-    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
-  ],
   "src/Utilities/BbScanner/Demo/Client/Bit.BbScanner.Demo.Client.csproj": [
     "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
   ],

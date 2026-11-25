@@ -1,0 +1,72 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every trigger and
+// one set on the Style of an instance that one:
+//   --bit-CommandPaletteTrigger-height        height of the button                  (default: $siz-ctrl-md)
+//   --bit-CommandPaletteTrigger-background    fill of the button                    (default: $clr-bg-sec)
+//   --bit-CommandPaletteTrigger-color         text and icon of the button           (default: $clr-fg-sec)
+//   --bit-CommandPaletteTrigger-border-color  edge of the button                    (default: $clr-brd-pri)
+//   --bit-CommandPaletteTrigger-radius        corner radius of the button           (default: $shp-radius-control)
+//   --bit-CommandPaletteTrigger-focus-color   focus ring of the button              (default: the global ring)
+
+.bit-cpt {
+    font: inherit;
+    cursor: pointer;
+    gap: spacing(1);
+    align-items: center;
+    display: inline-flex;
+    font-size: $tg-fs-sm;
+    padding-block: 0;
+    padding-inline: spacing(1.5) spacing(1.25);
+    height: var(--bit-CommandPaletteTrigger-height, #{$siz-ctrl-md});
+    background: var(--bit-CommandPaletteTrigger-background, #{$clr-bg-sec});
+    border-radius: var(--bit-CommandPaletteTrigger-radius, #{$shp-radius-control});
+    border: $shp-border-width $shp-border-style var(--bit-CommandPaletteTrigger-border-color, #{$clr-brd-pri});
+    --bit-cpt-sfg: initial;
+    color: var(--bit-cpt-sfg, var(--bit-CommandPaletteTrigger-color, #{$clr-fg-sec}));
+    transition: color $mot-duration $mot-easing;
+
+    // The hover moves the variable the button is painted from rather than its color, so a button the app paints
+    // through a class keeps that paint under the pointer.
+    &:hover:not(:disabled) {
+        --bit-cpt-sfg: #{$clr-fg-pri};
+    }
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-CommandPaletteTrigger-focus-color));
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: default;
+        color: $clr-fg-dis;
+        border-color: $clr-brd-dis;
+    }
+
+    @media (forced-colors: active) {
+        color: ButtonText;
+        border-color: ButtonText;
+
+        &:disabled {
+            color: GrayText;
+            border-color: GrayText;
+        }
+    }
+}
+
+.bit-cpt-ico {
+    flex: none;
+}
+
+.bit-cpt-lbl {
+    flex: 1 1 auto;
+    text-align: start;
+}
+
+.bit-cpt-sct {
+    margin-inline-start: spacing(1);
+}
+
+.bit-cpt-vhd {
+    @include visually-hidden;
+}

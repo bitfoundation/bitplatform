@@ -85,6 +85,9 @@ public sealed class BitFieldLabelFontWeightContractTests
         ".bit-bfc-time-slot-label", // the time of a full calendar's slot
         ".bit-bfc-timeline-label", // the time on a full calendar's timeline
         ".bit-bfc-tl-time-cell-label", // the time of a full calendar's timeline cell
+        ".bit-cpl-item-label", // the title of a command palette's row
+        ".bit-cpl-confirm-label", // the "Confirm:" before the title of a command palette's row asking for a second Enter
+        ".bit-cpt-lbl", // the text of a command palette trigger
     ];
 
     // A class named like a caption: a part of a component whose name ends in lbl, rlb or label. The name must end

@@ -1,0 +1,190 @@
+﻿@page "/components/commandpalette"
+@page "/components/command-palette"
+
+<PageOutlet Url="components/commandpalette"
+            Title="CommandPalette"
+            Description="BitCommandPalette is the Ctrl+K box that fuzzy-searches every page, action and setting of an app and runs the one picked." />
+
+<DemoPage Name="CommandPalette"
+          SecondaryNames="@(["CommandMenu", "Cmdk", "Spotlight"])"
+          Description="BitCommandPalette is an accessible, keyboard-first command palette: the Ctrl+K (Cmd+K on a Mac) box that fuzzy-searches every page, action and setting of an app and runs the one picked, with nested pages, prompts, multi-select, async sources, recents and global shortcuts. Matching, ranking and every decision run in C#; the browser only shows the native dialog and listens for keys."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubExtrasUrl="CommandPalette/BitCommandPalette.razor"
+          GitHubDemoUrl="Extras/CommandPalette/BitCommandPaletteDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            Register its services with <code>builder.Services.AddBitCommandPaletteServices()</code> (in both the server and
+            the client project of a Blazor Web App), place one modal palette in a layout, and register commands from anywhere
+            through the injected <code>IBitCommandPaletteService</code>. An Inline palette renders in the page instead, for a
+            settings search or a docs search page.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                Commands declared in markup, grouped under headings. Type to fuzzy-search them ("gs" finds "Go to settings"),
+                move with the arrow keys and run one with Enter. An Inline palette is always open, in the page.
+            </div>
+            <br />
+            <div>
+                <BitCommandPalette Inline IncludeRegisteredCommands="false" OnCommandExecuted="e => basicLastRun = e.Command.Title">
+                    <BitCommandPaletteGroup Heading="Navigation">
+                        <BitCommandPaletteOption Title="Go to home" Keywords="start, dashboard" />
+                        <BitCommandPaletteOption Title="Go to settings" Keywords="preferences, options" />
+                        <BitCommandPaletteOption Title="Go to profile" Subtitle="Your account" />
+                    </BitCommandPaletteGroup>
+                    <BitCommandPaletteGroup Heading="Actions">
+                        <BitCommandPaletteOption Title="Create a document" Badge="New" />
+                        <BitCommandPaletteOption Title="Invite a teammate" />
+                        <BitCommandPaletteOption Title="Archive the project" Disabled DisabledReason="Only owners can archive" />
+                    </BitCommandPaletteGroup>
+                </BitCommandPalette>
+                <br />
+                <BitText>Last run: <b>@basicLastRun</b></BitText>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Modal" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                The modal palette opens over the page from its toggle shortcut (Ctrl+K, Cmd+K on a Mac), from a
+                BitCommandPaletteTrigger, or by binding Open. Escape goes back a page and then closes it, handing the focus
+                back to where it was. Besides its own Commands it lists every command registered with
+                IBitCommandPaletteService - the ones the next sections register too.
+            </div>
+            <br />
+            <div>
+                <div class="example-content">
+                    <BitCommandPaletteTrigger />
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => isModalOpen = true">Open from code</BitButton>
+                </div>
+                <BitCommandPalette @bind-Open="isModalOpen" Commands="modalCommands" />
+                <br />
+                <BitText>Open: <b>@isModalOpen</b>, last run: <b>@modalLastRun</b></BitText>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Commands from code" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                BitCommandPaletteCmd builds commands in C#: nested pages (Backspace goes back), toggles whose switch shows
+                their state, a destructive command asking for a second Enter, and a prompt asking for a value. Nested
+                commands are found from the root page too: type "dark".
+            </div>
+            <br />
+            <div>
+                <BitCommandPalette Inline IncludeRegisteredCommands="false" Commands="codeCommands" />
+                <br />
+                <BitText>@codeStatus</BitText>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Registering commands" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                BitCommandPaletteCommands registers commands with IBitCommandPaletteService while it is rendered, and removes
+                them when it goes - commands of one page. A command's Shortcut runs it from anywhere on the page, without the
+                palette open: a chord (Ctrl+Shift+L) or a sequence (G then L). The modal palette above lists them, with their
+                shortcuts.
+            </div>
+            <br />
+            <div>
+                <BitCommandPaletteCommands Commands="pageCommands" />
+                <BitText>@registeredStatus</BitText>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Modes and sources" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                A mode scopes the palette to what its prefix asks for, and an async source searches as the user types -
+                debounced, cancelled when the query changes, and retried when it fails. Type "#" and then a fruit; the
+                empty query lists the modes there are.
+            </div>
+            <br />
+            <div>
+                <BitCommandPalette Inline Placeholder="Type # to search fruits…" />
+                <br />
+                <BitText>Picked: <b>@fruitPicked</b></BitText>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Multi-select" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                A page of MultiSelect checks its rows with Enter (or Space) and applies them all with Ctrl+Enter (Cmd+Enter),
+                handing the handler the checked commands.
+            </div>
+            <br />
+            <div>
+                <BitCommandPalette Inline IncludeRegisteredCommands="false" Commands="labelCommands" />
+                <br />
+                <BitText>@labelsStatus</BitText>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                NoResultsTemplate replaces what a search that matched nothing shows, and DetailTemplate renders a pane beside
+                the list for the active command.
+            </div>
+            <br />
+            <div>
+                <BitCommandPalette Inline IncludeRegisteredCommands="false" Commands="detailCommands">
+                    <NoResultsTemplate Context="query">
+                        <div class="no-results">Nothing matches "@query". Try a fruit.</div>
+                    </NoResultsTemplate>
+                    <DetailTemplate Context="command">
+                        <b>@command.Title</b>
+                        <p>@command.Description</p>
+                    </DetailTemplate>
+                </BitCommandPalette>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                Classes and Styles reach the parts of the palette, and the --bit-CommandPalette-* variables restyle its
+                defaults.
+            </div>
+            <br />
+            <div>
+                <BitCommandPalette Inline
+                                   IncludeRegisteredCommands="false"
+                                   Style="--bit-CommandPalette-accent: #7c3aed; --bit-CommandPalette-active-background: #ede9fe; --bit-CommandPalette-item-radius: 0;"
+                                   Styles="@(new() { Footer = "display: none;" })"
+                                   Classes="@(new() { GroupHeading = "custom-heading" })">
+                    <BitCommandPaletteGroup Heading="Colors">
+                        <BitCommandPaletteOption Title="Violet" Badge="Accent" />
+                        <BitCommandPaletteOption Title="Indigo" />
+                        <BitCommandPaletteOption Title="Teal" />
+                    </BitCommandPaletteGroup>
+                </BitCommandPalette>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>Use BitCommandPalette in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl">
+                <BitCommandPalette Dir="BitDir.Rtl" Inline IncludeRegisteredCommands="false" Strings="persianStrings">
+                    <BitCommandPaletteGroup Heading="رفتن به">
+                        <BitCommandPaletteOption Title="خانه" />
+                        <BitCommandPaletteOption Title="تنظیمات" />
+                        <BitCommandPaletteOption Title="نمایه" />
+                    </BitCommandPaletteGroup>
+                </BitCommandPalette>
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

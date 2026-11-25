@@ -1,0 +1,20 @@
+﻿::deep {
+    .example-content {
+        gap: 0.5rem;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+    }
+
+    .no-results {
+        padding: 2rem 1rem;
+        text-align: center;
+        color: var(--bit-clr-fg-sec);
+    }
+
+    .custom-heading {
+        color: #7c3aed;
+        letter-spacing: 0;
+        text-transform: none;
+    }
+}

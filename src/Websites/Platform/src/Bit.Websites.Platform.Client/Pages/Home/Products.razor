@@ -221,17 +221,17 @@ _open = await _live.RefreshAsync();</CodeBox>
         new()
         {
             Title = "A Ctrl+K command palette for your app",
-            Subtitle = "bit Balette · keyboard-first command palette",
-            LinkUrl = Urls.Balette,
+            Subtitle = "bit BlazorUI · BitCommandPalette",
+            LinkUrl = Urls.BlazorUICommandPalette,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Balette gives your app the Ctrl+K / ⌘K box from VS Code, Linear and Raycast: fuzzy, typo-tolerant search over every
+                    BitCommandPalette gives your app the Ctrl+K / ⌘K box from VS Code, Linear and Raycast: fuzzy, typo-tolerant search over every
                     page, action and API result, with nested pages, global shortcuts and full screen-reader support.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>Palette.Register(
-    BaletteCmd.Navigate("Settings", "/settings").Keywords("preferences").Shortcut("G S"),
-    BaletteCmd.Action("Toggle sidebar", Toggle).Shortcut("Mod+B"));</CodeBox>
+    BitCommandPaletteCmd.Navigate("Settings", "/settings").Keywords("preferences").Shortcut("G S"),
+    BitCommandPaletteCmd.Action("Toggle sidebar", Toggle).Shortcut("Mod+B"));</CodeBox>
                 </div>
             </text>
         },

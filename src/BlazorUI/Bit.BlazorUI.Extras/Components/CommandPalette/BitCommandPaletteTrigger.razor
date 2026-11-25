@@ -1,0 +1,36 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@* A native button, so it is reached and pressed like any other; disabled, it says so with both attributes and drops the
+   page's activation handlers. Its name starts with the label it shows (see AccessibleName). *@
+<button @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+        type="button"
+        id="@_Id"
+        style="@StyleBuilder.Value"
+        class="@ClassBuilder.Value"
+        dir="@Dir?.ToString().ToLower()"
+        disabled="@Disabled"
+        aria-disabled="@(Disabled ? "true" : null)"
+        data-bit-cpl="trigger"
+        @onclick="OnClick"
+        aria-label="@AccessibleName"
+        aria-keyshortcuts="@ShortcutText">
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+        @if (AccessibleName is null)
+        {
+            @* Named from its content, so text it shows starts the name; this ends it, joined as the default trigger's is. *@
+            <span class="bit-cpt-vhd">@(S.TriggerNameSeparator + S.OpenPalette)</span>
+        }
+    }
+    else
+    {
+        <svg class="bit-cpt-ico @Classes?.Icon" style="@Styles?.Icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11 4a7 7 0 1 0 4.2 12.6l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 4zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z" /></svg>
+        <span class="bit-cpt-lbl @Classes?.Label" style="@Styles?.Label">@(Label ?? S.Search)</span>
+        @if (ShowShortcut && Shortcut is not null)
+        {
+            <BitCommandPaletteShortcutHint Shortcut="Shortcut" MacKeys="EffectiveMacKeys" Strings="S" Class="@($"bit-cpt-sct {Classes?.Shortcut}".TrimEnd())" />
+        }
+    }
+</button>
