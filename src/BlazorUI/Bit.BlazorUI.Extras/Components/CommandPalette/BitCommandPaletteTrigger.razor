@@ -30,7 +30,7 @@
         <span class="bit-cpt-lbl @Classes?.Label" style="@Styles?.Label">@(Label ?? S.Search)</span>
         @if (ShowShortcut && Shortcut is not null)
         {
-            <BitCommandPaletteShortcutHint Shortcut="Shortcut" MacKeys="EffectiveMacKeys" Strings="S" Class="@($"bit-cpt-sct {Classes?.Shortcut}".TrimEnd())" />
+            <BitCommandPaletteShortcutHint Shortcut="Shortcut" MacKeys="EffectiveMacKeys" Strings="S" Class="@($"bit-cpt-sct {Classes?.Shortcut}".TrimEnd())" Style="@Styles?.Shortcut" />
         }
     }
 </button>

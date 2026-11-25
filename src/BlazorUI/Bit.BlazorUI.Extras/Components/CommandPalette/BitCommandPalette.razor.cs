@@ -47,6 +47,8 @@ public partial class BitCommandPalette : BitComponentBase
     private bool _disposed;
     // Whether the page behind the modal dialog is held still (BitUtilsLockScroll), which closing or disposing gives back.
     private bool _scrollLocked;
+    // The id the scroll lock was taken under, so it is released under the same one even if Id changed meanwhile.
+    private string? _scrollLockKey;
 
     private bool _isOpen;
     private bool _pendingOpen;
@@ -489,8 +491,14 @@ public partial class BitCommandPalette : BitComponentBase
             if (_isOpen)
             {
                 await TryInvokeAsync("open", _inputEl, _selectOnOpen);
-                await LockScrollAsync();
-                _pendingScroll = true;
+
+                // A close that ran while the browser was opening the dialog has already unlocked, finding nothing locked:
+                // locking now would leave the page unable to scroll under a closed palette.
+                if (_isOpen)
+                {
+                    await LockScrollAsync();
+                    _pendingScroll = true;
+                }
             }
         }
 
@@ -623,6 +631,8 @@ public partial class BitCommandPalette : BitComponentBase
 
     internal void AddDeclarative(BitCommandPaletteCommand command)
     {
+        if (IsDisposing) return;
+
         _declarative.RemoveAll(c => c.Id == command.Id);
         _declarative.Add(command);
         _declarativeVersion++;
@@ -635,6 +645,10 @@ public partial class BitCommandPalette : BitComponentBase
 
     internal void RemoveDeclarative(string id)
     {
+        // The options of a palette going away unregister one by one; rebuilding for each would only talk to a page
+        // that is being torn down.
+        if (IsDisposing) return;
+
         if (_declarative.RemoveAll(c => c.Id == id) > 0)
         {
             _declarativeVersion++;
@@ -682,6 +696,10 @@ public partial class BitCommandPalette : BitComponentBase
     private Task ExecuteFromServiceAsync(string commandId) => InvokeAsync(async () =>
     {
         var command = FindCommand(commandId) ?? throw new KeyNotFoundException($"Command '{commandId}' is not registered.");
+
+        // A disabled palette runs nothing, from code either.
+        if (Disabled) return;
+
         await ExecuteCommandAsync(command, BitCommandPaletteExecutionTrigger.Programmatic);
         StateHasChanged();
     });
@@ -725,6 +743,8 @@ public partial class BitCommandPalette : BitComponentBase
 
         if (Inline)
         {
+            if (Disabled) return;
+
             // Always open: only the query or the page changes, and the input takes the focus.
             if (query is not null || pageCommandId is not null)
             {
@@ -1041,6 +1061,17 @@ public partial class BitCommandPalette : BitComponentBase
             return;
         }
 
+        // Disabled while open, a dialog can still be dismissed; nothing else a key does runs.
+        if (Disabled)
+        {
+            if (key == "Escape" && !Inline)
+            {
+                await CloseCoreAsync();
+            }
+
+            return;
+        }
+
         // Esc while a toast's close is pending is the close it was waiting for, not a step back from the page the
         // command ran on - unless that close would change nothing: an inline palette that keeps its place goes back a
         // page or clears its query, as always. Any other key means the palette is in use again.
@@ -1199,7 +1230,8 @@ public partial class BitCommandPalette : BitComponentBase
     [JSInvokable("OnGlobalShortcut")]
     public Task _OnGlobalShortcut(string normalized) => IsDisposing ? Task.CompletedTask : FromBrowserAsync(async () =>
     {
-        if (Inline)
+        // Disabled, the shortcuts are withdrawn from the browser; one already on its way runs nothing either.
+        if (Inline || Disabled)
         {
             return;
         }
@@ -1251,8 +1283,8 @@ public partial class BitCommandPalette : BitComponentBase
     {
         if (IsDisposing) return Task.CompletedTask;
 
-        _pointerSelectionSuspended = false;
-        return Task.CompletedTask;
+        // Called from the browser, off the renderer's dispatcher on Blazor Server, so it would race the handlers that set it.
+        return InvokeAsync(() => _pointerSelectionSuspended = false);
     }
 
     private void Move(int delta, bool clamp = false)
@@ -1304,6 +1336,8 @@ public partial class BitCommandPalette : BitComponentBase
 
     private Task OnItemClick(BitCommandPaletteRow row)
     {
+        if (Disabled) return Task.CompletedTask;
+
         if (row.ItemIndex != _activeIndex)
         {
             _activeIndex = row.ItemIndex;
@@ -1320,6 +1354,8 @@ public partial class BitCommandPalette : BitComponentBase
     /// <summary>A right click opens a row's action panel, as Tab does; a row without one keeps the browser's own menu.</summary>
     private Task OnItemContextMenu(BitCommandPaletteRow row)
     {
+        if (Disabled) return Task.CompletedTask;
+
         if (!HasActionPanel(row.Command) || CurrentPage.MultiSelect)
         {
             return Task.CompletedTask;
@@ -1681,6 +1717,9 @@ public partial class BitCommandPalette : BitComponentBase
         {
             await EnsureOpenAsync();
 
+            // A confirmation needs the palette, and a disabled one does not open: nothing is armed.
+            if (!_isOpen) return;
+
             // The second Enter runs the active row, so the command being confirmed has to be it. Started from a
             // shortcut or from code, it may not be on the current page at all: it then gets a page of its own, which has
             // nothing to do with the page under it. A row's secondary action (Mod+Enter) gets one too, but under that row
@@ -1711,6 +1750,8 @@ public partial class BitCommandPalette : BitComponentBase
         if (HasPage(cmd))
         {
             await EnsureOpenAsync();
+
+            if (!_isOpen) return;
 
             // A nested page found from the root opens with its ancestors' pages under it.
             var frame = PushPageWithAncestors(cmd, _query, detached: trigger != BitCommandPaletteExecutionTrigger.Palette);
@@ -2277,8 +2318,11 @@ public partial class BitCommandPalette : BitComponentBase
                 _pendingFocus = true;
                 break;
             case BitCommandPaletteCommandResult.PageResult p:
-                // A handler run from a global shortcut or from code can answer with UI while the palette is closed.
+                // A handler run from a global shortcut or from code can answer with UI while the palette is closed - and
+                // a disabled palette stays closed, with nothing pushed into it.
                 await EnsureOpenAsync();
+                if (!_isOpen) break;
+
                 PushPage(new BitCommandPalettePageFrame
                 {
                     Title = p.Title,
@@ -2295,6 +2339,8 @@ public partial class BitCommandPalette : BitComponentBase
                 break;
             case BitCommandPaletteCommandResult.PromptResult pr:
                 await EnsureOpenAsync();
+                if (!_isOpen) break;
+
                 PushPage(new BitCommandPalettePageFrame
                 {
                     Title = pr.Title,
@@ -2307,6 +2353,8 @@ public partial class BitCommandPalette : BitComponentBase
                 break;
             case BitCommandPaletteCommandResult.ErrorResult e:
                 await EnsureOpenAsync();
+                if (!_isOpen) break;
+
                 ShowToast(e.Message, error: true);
                 _pendingFocus = true;
                 break;
@@ -2893,13 +2941,13 @@ public partial class BitCommandPalette : BitComponentBase
 
         void AddHeader(string group)
         {
-            headerId = $"{_Id}-g-{rows.Count}";
+            headerId = FormattableString.Invariant($"{_Id}-g-{rows.Count}");
             rows.Add(new BitCommandPaletteRow(BitCommandPaletteRowKind.GroupHeader, group, null, -1, headerId) { Position = rows.Count });
         }
 
         void AddItem(BitCommandPaletteMatch m, string? group)
         {
-            var row = new BitCommandPaletteRow(BitCommandPaletteRowKind.Item, group, m, itemCounter, $"{_Id}-i-{itemCounter}") { Position = rows.Count, GroupHeaderId = headerId };
+            var row = new BitCommandPaletteRow(BitCommandPaletteRowKind.Item, group, m, itemCounter, FormattableString.Invariant($"{_Id}-i-{itemCounter}")) { Position = rows.Count, GroupHeaderId = headerId };
             itemCounter++;
             rows.Add(row);
             items.Add(row);
@@ -3453,9 +3501,10 @@ public partial class BitCommandPalette : BitComponentBase
         if (_scrollLocked || Inline) return;
 
         _scrollLocked = true;
+        _scrollLockKey = _Id;
         try
         {
-            await _js.BitUtilsLockScroll(_Id);
+            await _js.BitUtilsLockScroll(_scrollLockKey);
         }
         catch (Exception ex) when (IsInteropFailure(ex))
         {
@@ -3467,9 +3516,11 @@ public partial class BitCommandPalette : BitComponentBase
         if (_scrollLocked is false) return;
 
         _scrollLocked = false;
+        var key = _scrollLockKey ?? _Id;
+        _scrollLockKey = null;
         try
         {
-            await _js.BitUtilsUnlockScroll(_Id);
+            await _js.BitUtilsUnlockScroll(key);
         }
         catch (Exception ex) when (IsInteropFailure(ex))
         {

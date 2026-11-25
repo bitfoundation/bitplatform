@@ -6,7 +6,7 @@
     var then = Then;
     @* Key caps read left to right in every language, as on the keys themselves; screen readers get the words instead
        of the caps (an aria-label on a span is ignored by most of them). *@
-    <span class="bit-cpl-shortcut @Class" data-bit-cpl="shortcut" dir="ltr">
+    <span class="bit-cpl-shortcut @Class" style="@Style" data-bit-cpl="shortcut" dir="ltr">
         <span class="bit-cpl-vhd">@Shortcut.ToDisplayString(MacKeys, then)</span>
         <span class="bit-cpl-shortcut-keys" aria-hidden="true">
             @for (var c = 0; c < chords.Count; c++)
@@ -38,6 +38,9 @@
 
     /// <summary>The strings to use; by default <see cref="BitCommandPaletteOptions.Strings"/>.</summary>
     [Parameter] public BitCommandPaletteStrings? Strings { get; set; }
+
+    /// <summary>Extra CSS style on the hint.</summary>
+    [Parameter] public string? Style { get; set; }
 
     private string Then => (Strings ?? (Services.GetService(typeof(BitCommandPaletteOptions)) as BitCommandPaletteOptions)?.Strings)?.ShortcutThen ?? "then";
 }

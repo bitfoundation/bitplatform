@@ -117,4 +117,68 @@ public class BitCommandPaletteBaseTests : BunitTestContext
         Assert.IsFalse(cut.Instance.IsOpen);
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.lockScroll");
     }
+
+    [TestMethod]
+    public async Task A_disabled_inline_palette_runs_no_row_it_is_clicked_on()
+    {
+        var ran = false;
+        _service.Register(BitCommandPaletteCmd.Action("Save", () => ran = true));
+        var cut = Context.Render<BitCommandPalette>(p => p.Add(x => x.Inline, true).Add(x => x.Disabled, true));
+
+        var item = cut.WaitForElement("[data-bit-cpl=item]");
+        await cut.InvokeAsync(() => item.Click());
+        await cut.InvokeAsync(() => cut.Instance._OnKeyDown("Enter", false, false, false, false));
+
+        Assert.IsFalse(ran);
+    }
+
+    [TestMethod]
+    public async Task A_disabled_palette_runs_nothing_from_code_and_arms_no_confirmation()
+    {
+        var ran = false;
+        _service.Register(BitCommandPaletteCmd.Action("Delete everything", () => ran = true).Id("delete").Destructive("Really delete?"));
+        var cut = Context.Render<BitCommandPalette>(p => p.Add(x => x.Disabled, true));
+
+        await cut.InvokeAsync(() => _service.ExecuteAsync("delete"));
+
+        Assert.IsFalse(ran);
+        Assert.IsFalse(cut.Instance.IsOpen);
+        Assert.IsEmpty(cut.FindAll("[data-confirming=true]"));
+    }
+
+    [TestMethod]
+    public void A_page_supplied_aria_label_names_the_palette()
+    {
+        var dialog = Context.Render<BitCommandPalette>(p => p.Add(x => x.HtmlAttributes, new Dictionary<string, object> { ["aria-label"] = "Search the docs" }));
+        Assert.AreEqual("Search the docs", dialog.Find("dialog").GetAttribute("aria-label"));
+
+        var inline = Context.Render<BitCommandPalette>(p => p.Add(x => x.Inline, true).Add(x => x.HtmlAttributes, new Dictionary<string, object> { ["aria-label"] = "Search the docs" }));
+        Assert.AreEqual("Search the docs", inline.Find("section").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void The_triggers_shortcut_style_reaches_the_hint()
+    {
+        var trigger = Context.Render<BitCommandPaletteTrigger>(p => p
+            .Add(x => x.Classes, new BitCommandPaletteTriggerClassStyles { Shortcut = "mine" })
+            .Add(x => x.Styles, new BitCommandPaletteTriggerClassStyles { Shortcut = "color:red" }));
+
+        var hint = trigger.Find("[data-bit-cpl=shortcut]");
+        Assert.Contains("mine", hint.ClassList);
+        Assert.AreEqual("color:red", hint.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void The_active_rows_style_adds_to_the_rows_own()
+    {
+        _service.Register(BitCommandPaletteCmd.New("Alpha"), BitCommandPaletteCmd.New("Beta"));
+        var cut = Context.Render<BitCommandPalette>(p => p
+            .Add(x => x.Inline, true)
+            .Add(x => x.Styles, new BitCommandPaletteClassStyles { Item = "padding:12px", ActiveItem = "background:gold" }));
+
+        cut.WaitForAssertion(() => Assert.HasCount(2, cut.FindAll("[data-bit-cpl=item]")));
+        var items = cut.FindAll("[data-bit-cpl=item]");
+        Assert.AreEqual("padding:12px;background:gold", items[0].GetAttribute("style"));
+        Assert.AreEqual("padding:12px", items[1].GetAttribute("style"));
+    }
 }

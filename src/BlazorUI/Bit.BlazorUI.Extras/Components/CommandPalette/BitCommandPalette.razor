@@ -34,7 +34,7 @@
              data-has-detail="@(DetailTemplate is not null ? "true" : "false")"
              data-busy="@(_busy ? "true" : null)"
              data-hover-suspended="@HoverSuspended"
-             aria-label="@(AriaLabel ?? S.DialogLabel)">
+             aria-label="@(ResolveAriaLabel() ?? S.DialogLabel)">
         @RenderBody()
     </section>
 }
@@ -56,7 +56,7 @@ else
             data-has-detail="@(DetailTemplate is not null ? "true" : "false")"
             data-busy="@(_busy ? "true" : null)"
             data-hover-suspended="@HoverSuspended"
-            aria-label="@(AriaLabel ?? S.DialogLabel)">
+            aria-label="@(ResolveAriaLabel() ?? S.DialogLabel)">
         @if (_isOpen)
         {
             @RenderBody()
@@ -392,7 +392,7 @@ else
            where selection follows the active descendant; aria-checked marks the checked rows of a multi-select one, where
            aria-activedescendant alone says which row is active. *@
         <div id="@row.ElementId"
-             style="@(isActive ? Styles?.ActiveItem ?? Styles?.Item : Styles?.Item)"
+             style="@(isActive && Styles?.ActiveItem is { } activeItemStyle ? $"{Styles?.Item};{activeItemStyle}".TrimStart(';') : Styles?.Item)"
              class="bit-cpl-item @Classes?.Item @(isActive ? Classes?.ActiveItem : null)"
              data-bit-cpl="item"
              role="option"
