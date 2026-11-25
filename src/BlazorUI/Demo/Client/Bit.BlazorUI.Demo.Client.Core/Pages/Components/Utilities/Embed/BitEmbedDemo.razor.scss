@@ -19,6 +19,18 @@
     background-color: rgba(0, 0, 0, 0.7);
 }
 
+// The caption of the right-to-left example sits at the inline start of the placeholder, so it moves to the right
+// corner when the embed reads right to left.
+.caption {
+    color: white;
+    bottom: 0.75rem;
+    position: absolute;
+    border-radius: 0.25rem;
+    inset-inline-start: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
 // Handed to the component through Classes, so reached through ::deep from the plain div the example sits in.
 ::deep {
     .custom-root {

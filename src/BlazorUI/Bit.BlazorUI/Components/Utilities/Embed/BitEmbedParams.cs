@@ -78,6 +78,10 @@ public partial class BitEmbedParams : BitComponentBaseParams, IBitComponentParam
     /// <summary>
     /// Applies extra restrictions to the embedded content, as the value of the sandbox attribute of the iframe.
     /// </summary>
+    /// <remarks>
+    /// Only a list of tokens is handed down. An empty value - every restriction at once - is no value to the cascade,
+    /// which lets go of an empty string like any other, so it is set on the embed itself.
+    /// </remarks>
     public string? Sandbox { get; set; }
 
     /// <summary>
@@ -144,7 +148,7 @@ public partial class BitEmbedParams : BitComponentBaseParams, IBitComponentParam
             bitEmbed.TakeFromCascade(nameof(ReferrerPolicy), ReferrerPolicy.Value, static e => e.ReferrerPolicy, static (e, v) => e.ReferrerPolicy = v);
         }
 
-        if (Sandbox is not null)
+        if (Sandbox.HasValue())
         {
             bitEmbed.TakeFromCascade(nameof(Sandbox), Sandbox, static e => e.Sandbox, static (e, v) => e.Sandbox = v);
         }

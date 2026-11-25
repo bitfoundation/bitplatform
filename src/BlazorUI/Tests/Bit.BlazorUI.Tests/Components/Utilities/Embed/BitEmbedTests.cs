@@ -16,6 +16,11 @@ public class BitEmbedTests : BunitTestContext
         public override string LoadFormat => "{0} laden";
     }
 
+    private sealed class BrokenStrings : BitStrings
+    {
+        public override string LoadFormat => "Load {title}";
+    }
+
     [TestCleanup]
     public void ResetStrings() => BitStrings.Current = null;
 
@@ -204,6 +209,59 @@ public class BitEmbedTests : BunitTestContext
         com.Render(p => p.Add(x => x.Title, (string?)null));
 
         Assert.AreEqual("Load", com.Find(".bit-emb-plh").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitEmbedShouldNameThePlaceholderWithItsTitleWhenTheTranslatedFormatIsBroken()
+    {
+        BitStrings.Current = new BrokenStrings();
+
+        var com = Render(p => p.Add(x => x.PlaceholderTemplate, Thumbnail));
+
+        Assert.AreEqual("Getting started", com.Find(".bit-emb-plh").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitEmbedShouldAskAgainBeforeLoadingAnotherAddress()
+    {
+        var com = Render(p => p.Add(x => x.PlaceholderTemplate, Thumbnail));
+
+        com.Find(".bit-emb-plh").Click();
+
+        Assert.AreEqual(VIDEO, com.Find(".bit-emb-frm").GetAttribute("src"));
+
+        // The click agreed to load one address: another one waits for its own.
+        com.Render(p => p.Add(x => x.Src, "https://player.example.com/video/1?autoplay=1"));
+
+        Assert.AreEqual(0, com.FindAll("iframe").Count);
+
+        com.Find(".bit-emb-plh").Click();
+
+        Assert.AreEqual("https://player.example.com/video/1?autoplay=1", com.Find(".bit-emb-frm").GetAttribute("src"));
+
+        // The same address handed again is no new address, so the loaded embed stays.
+        com.Render(p => p.Add(x => x.Src, " https://player.example.com/video/1?autoplay=1 "));
+
+        Assert.AreEqual(0, com.FindAll(".bit-emb-plh").Count);
+        Assert.AreEqual(1, com.FindAll("iframe").Count);
+    }
+
+    [TestMethod]
+    public void BitEmbedShouldShowNoPlaceholderWithoutAnAddressToLoad()
+    {
+        var com = Render(p => p.Add(x => x.PlaceholderTemplate, Thumbnail), src: "javascript:alert(1)");
+
+        Assert.AreEqual(0, com.FindAll(".bit-emb-plh").Count);
+        Assert.AreEqual(0, com.FindAll("iframe").Count);
+
+        com.Render(p => p.Add(x => x.Src, (string?)null));
+
+        Assert.AreEqual(0, com.FindAll(".bit-emb-plh").Count);
+
+        com.Render(p => p.Add(x => x.Src, VIDEO));
+
+        Assert.AreEqual(1, com.FindAll(".bit-emb-plh").Count);
+        Assert.AreEqual(0, com.FindAll("iframe").Count);
     }
 
     [TestMethod]

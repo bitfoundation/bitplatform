@@ -27,7 +27,10 @@
     }
     else if (_src is not null)
     {
-        <iframe @ref="_frameElement"
+        @*  Keyed by its address, so a new one replaces the iframe rather than navigating the loaded one - which would
+            add an entry to the history of the browser, and make Back step through the earlier embeds first. *@
+        <iframe @key="_src"
+                @ref="_frameElement"
                 style="@Styles?.Frame"
                 class="bit-emb-frm @Classes?.Frame"
                 src="@_src"

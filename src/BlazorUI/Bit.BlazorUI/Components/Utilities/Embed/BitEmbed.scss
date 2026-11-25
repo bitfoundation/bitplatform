@@ -15,6 +15,17 @@
 
 $emb-private-properties: ar, mxw;
 
+// Both are read by the root rule alone, so they are registered as non-inheriting too: an ancestor's value never reaches
+// the root, even in a browser that would otherwise inherit it past the reset below.
+$emb-root-only-properties: ar, mxw;
+
+@each $name in $emb-root-only-properties {
+    @property --bit-emb-#{$name} {
+        syntax: "*";
+        inherits: false;
+    }
+}
+
 // The frame. It takes the width of its container, up to its largest width, and the height its aspect ratio gives
 // that width, which is what makes the content scale with the page and what reserves its room before it has loaded.
 // Everything inside it is positioned against it and fills it, and it clips, so a rounded corner crops the content.

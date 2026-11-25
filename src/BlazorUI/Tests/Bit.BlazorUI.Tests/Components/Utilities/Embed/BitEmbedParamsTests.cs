@@ -118,6 +118,28 @@ public class BitEmbedParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitEmbedShouldNotTakeAnEmptyCascadedSandbox()
+    {
+        // The cascade lets go of an empty string like any other, so one it wrote could never be put back: an empty
+        // sandbox - every restriction - is set on the embed itself.
+        var component = RenderWithParams(new BitEmbedParams { Sandbox = "" });
+
+        Assert.IsFalse(component.Find(".bit-emb-frm").HasAttribute("sandbox"));
+    }
+
+    [TestMethod]
+    public void BitEmbedShouldLetGoOfACascadedSandboxOnceTheCascadeStopsGivingIt()
+    {
+        var component = RenderWithParams(new BitEmbedParams { Sandbox = "allow-scripts" });
+
+        Assert.AreEqual("allow-scripts", component.Find(".bit-emb-frm").GetAttribute("sandbox"));
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitEmbedParams() }));
+
+        Assert.IsFalse(component.Find(".bit-emb-frm").HasAttribute("sandbox"));
+    }
+
+    [TestMethod]
     public void BitEmbedShouldKeepItsOwnValuesOverTheCascadedOnes()
     {
         var component = RenderWithParams(new BitEmbedParams { AspectRatio = "4 / 3", Loading = BitImageLoading.Eager }, builder =>

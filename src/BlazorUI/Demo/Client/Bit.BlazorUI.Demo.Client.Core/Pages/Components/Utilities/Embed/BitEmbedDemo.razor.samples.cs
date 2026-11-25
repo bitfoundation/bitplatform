@@ -91,4 +91,54 @@ public partial class BitEmbedDemo
           AspectRatio=""4 / 3""
           MaxWidth=""400px""
           Styles=""@(new() { Root = ""border: 2px solid var(--bit-clr-pri);"", Frame = ""filter: grayscale(1);"" })"" />";
+
+    private readonly string example6RazorCode = @"
+<style>
+    .thumbnail {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+    }
+
+    .play-icon {
+        width: 4rem;
+        height: 4rem;
+        display: flex;
+        color: white;
+        position: absolute;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .caption {
+        color: white;
+        bottom: 0.75rem;
+        position: absolute;
+        border-radius: 0.25rem;
+        inset-inline-start: 0.75rem;
+        padding: 0.25rem 0.5rem;
+        background-color: rgba(0, 0, 0, 0.7);
+    }
+</style>
+
+<div dir=""rtl"">
+    <BitEmbed Dir=""BitDir.Rtl""
+              Src=""https://www.youtube-nocookie.com/embed/79ssLqSInxc?autoplay=1""
+              Title=""معرفی امکانات bit Boilerplate""
+              Allow=""autoplay; encrypted-media; picture-in-picture""
+              AllowFullScreen
+              MaxWidth=""560px""
+              PlaceholderAriaLabel=""پخش ویدیوی معرفی امکانات bit Boilerplate"">
+        <PlaceholderTemplate>
+            <img class=""thumbnail"" src=""https://i.ytimg.com/vi/79ssLqSInxc/hqdefault.jpg"" alt="""" />
+            <span class=""play-icon"" aria-hidden=""true"">
+                <svg width=""28"" height=""28"" viewBox=""0 0 24 24""><path d=""M8 5v14l11-7z"" fill=""currentColor"" /></svg>
+            </span>
+            <span class=""caption"">معرفی امکانات bit Boilerplate</span>
+        </PlaceholderTemplate>
+    </BitEmbed>
+</div>";
 }

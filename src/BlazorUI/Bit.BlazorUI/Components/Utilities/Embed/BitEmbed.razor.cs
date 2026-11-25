@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Globalization;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// BitEmbed frames embedded content - a video, a map, a document of another site - in an iframe kept at an aspect ratio
@@ -164,11 +166,13 @@ public partial class BitEmbed : BitComponentBase
 
 
 
-    private bool _ShowsPlaceholder => PlaceholderTemplate is not null && _activated is false;
+    // With no address that passed the check there is nothing for the placeholder to load: activating it would only
+    // empty the frame and drop the focus to the page.
+    private bool _ShowsPlaceholder => PlaceholderTemplate is not null && _activated is false && _src is not null;
 
     private string _PlaceholderAriaLabel => PlaceholderAriaLabel.HasValue()
         ? PlaceholderAriaLabel!
-        : string.Format(BitStrings.Current.LoadFormat, Title).Trim();
+        : FormatLoadLabel(BitStrings.Current.LoadFormat, Title);
 
 
 
@@ -218,12 +222,20 @@ public partial class BitEmbed : BitComponentBase
 
     private void OnSetSrc()
     {
-        _src = GetSafeSrc(Src);
+        var src = GetSafeSrc(Src);
+
+        if (src == _src) return;
+
+        _src = src;
+
+        // The click on the placeholder agreed to load one address, not every address the embed is handed after it:
+        // another one waits for its own click, so nothing is sent to its site before the user asks for it.
+        _activated = false;
     }
 
     private void HandleOnPlaceholderClick()
     {
-        if (Disabled) return;
+        if (Disabled || _src is null) return;
 
         _activated = true;
         _focusFrame = true;
@@ -241,6 +253,20 @@ public partial class BitEmbed : BitComponentBase
         BitImageReferrerPolicy.UnsafeUrl => "unsafe-url",
         _ => null
     };
+
+    // The format is app-supplied through BitStrings, so a wrong one is a typo rather than an exception: the button is
+    // then named by the title alone.
+    private static string FormatLoadLabel(string format, string? title)
+    {
+        try
+        {
+            return string.Format(CultureInfo.CurrentCulture, format, title).Trim();
+        }
+        catch (FormatException)
+        {
+            return title?.Trim() ?? string.Empty;
+        }
+    }
 
     /// <summary>
     /// The address an iframe may be given: an http or https one, or a relative one, which the browser resolves against

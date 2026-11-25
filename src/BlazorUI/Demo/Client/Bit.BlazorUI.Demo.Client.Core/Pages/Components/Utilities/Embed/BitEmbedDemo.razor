@@ -122,5 +122,28 @@
                           Styles="@(new() { Root = "border: 2px solid var(--bit-clr-pri);", Frame = "filter: grayscale(1);" })" />
             </div>
         </DemoExample>
+        <DemoExample Title="RTL" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                The embedded page keeps its own direction; Dir changes the flow of the frame and of the placeholder drawn in it.
+            </div>
+            <br />
+            <div dir="rtl">
+                <BitEmbed Dir="BitDir.Rtl"
+                          Src="https://www.youtube-nocookie.com/embed/79ssLqSInxc?autoplay=1"
+                          Title="معرفی امکانات bit Boilerplate"
+                          Allow="autoplay; encrypted-media; picture-in-picture"
+                          AllowFullScreen
+                          MaxWidth="560px"
+                          PlaceholderAriaLabel="پخش ویدیوی معرفی امکانات bit Boilerplate">
+                    <PlaceholderTemplate>
+                        <img class="thumbnail" src="https://i.ytimg.com/vi/79ssLqSInxc/hqdefault.jpg" alt="" />
+                        <span class="play-icon" aria-hidden="true">
+                            <svg width="28" height="28" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+                        </span>
+                        <span class="caption">معرفی امکانات bit Boilerplate</span>
+                    </PlaceholderTemplate>
+                </BitEmbed>
+            </div>
+        </DemoExample>
     </Examples>
 </DemoPage>

@@ -5,9 +5,10 @@
 /// <see href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy"/>
 /// </summary>
 /// <remarks>
-/// The policy decides how much of the address of the page the image sits on is sent to whoever serves
-/// that image. It matters for an image loaded from another origin - a CDN, an avatar service, a
-/// tracking pixel - since the full URL of the current page is otherwise handed to it.
+/// The policy decides how much of the address of the page an image or an embed sits on is sent to
+/// whoever serves it. It matters for content loaded from another origin - a CDN, an avatar service, a
+/// tracking pixel, an embedded video player - since the full URL of the current page is otherwise
+/// handed to it.
 /// </remarks>
 public enum BitImageReferrerPolicy
 {
