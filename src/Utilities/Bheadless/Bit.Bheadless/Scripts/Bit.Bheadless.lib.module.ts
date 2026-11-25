@@ -10,7 +10,8 @@
 type RuntimeModule = typeof import('./bit-bheadless.js');
 
 interface CustomEventTypeOptions {
-    browserEventName: string;
+    /** The DOM event it fires with; the event's own name when left out. */
+    browserEventName?: string;
     createEventArgs: (event: Event) => unknown;
 }
 
@@ -71,6 +72,9 @@ function registerEvents(blazor?: BlazorInstance) {
             };
         },
     });
+
+    // Sent by the runtime itself, to a list option the pointer reaches (see 'option hover' in bit-bheadless.ts).
+    blazor.registerCustomEventType('bitbhhover', { createEventArgs: () => ({}) });
 }
 
 let runtime: Promise<RuntimeModule | undefined> | undefined;

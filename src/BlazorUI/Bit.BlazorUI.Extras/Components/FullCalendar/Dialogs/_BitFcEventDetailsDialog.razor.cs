@@ -14,7 +14,7 @@ public partial class _BitFcEventDetailsDialog : IAsyncDisposable
 
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] internal BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [Parameter] public BitFullCalendarEvent Event { get; set; } = default!;
@@ -75,7 +75,7 @@ public partial class _BitFcEventDetailsDialog : IAsyncDisposable
         get
         {
             var master = Event.Recurrence is null ? SeriesMaster : Event;
-            return master?.Recurrence is { } rule ? Texts.GetRecurrenceSummary(rule, State.Culture, master.StartDate) : null;
+            return master?.Recurrence is { } rule ? Strings.GetRecurrenceSummary(rule, State.Culture, master.StartDate) : null;
         }
     }
 
@@ -85,7 +85,7 @@ public partial class _BitFcEventDetailsDialog : IAsyncDisposable
         get
         {
             if (string.IsNullOrEmpty(Event.Resource))
-                return Texts.NoResourceLabel;
+                return Strings.NoResourceLabel;
 
             var match = State.Resources.FirstOrDefault(r => string.Equals(r.Id, Event.Resource, StringComparison.Ordinal));
             // An id with no matching resource is still worth showing verbatim - it is what the event

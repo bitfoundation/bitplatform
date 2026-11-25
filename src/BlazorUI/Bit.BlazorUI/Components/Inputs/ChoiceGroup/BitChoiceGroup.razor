@@ -31,7 +31,7 @@
      aria-invalid="@ariaInvalid"
      aria-readonly="@ariaReadOnly"
      aria-disabled="@ariaDisabled"
-     aria-orientation="@(Horizontal ? "horizontal" : "vertical")">
+     aria-orientation="@(IsGrid ? null : Horizontal ? "horizontal" : "vertical")">
 
     @if (HasLabel)
     {

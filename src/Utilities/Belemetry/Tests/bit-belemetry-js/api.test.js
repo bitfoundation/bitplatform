@@ -131,6 +131,34 @@ describe('public API', () => {
         expect(relays.filter(part => part.logs.some(log => log.eventName === 'checkout.failed')), 'the events go in one call').toHaveLength(1);
     });
 
+    it('stops calling a detached bridge, but keeps one attached since', async () => {
+        // A disposed .NET bridge (a WebAssembly or Hybrid scope, an Auto app's circuit) whose page lives on.
+        await load();
+        api.start(relayConfig({ consent: { default: 4095 } }));
+        const circuit = fakeDotNet();
+        const first = api.attachDotNet(circuit, { relay: true });
+        expect(first).toBeGreaterThan(0);
+        await api.flush();
+
+        api.detachDotNet(first);
+        const before = circuit.calls.length;
+        api.trackEvent('held');
+        await api.flush();
+        expect(circuit.calls.slice(before), 'a released object is never called').toEqual([]);
+
+        const wasm = fakeDotNet();
+        const second = api.attachDotNet(wasm, { relay: true });
+        expect(second).not.toBe(first);
+        await api.flush();
+        expect(wasm.calls.filter(c => c[0] === 'Belemetry.Relay').flatMap(c => c[1].logs).map(log => log.eventName), 'the records waited in the queue').toContain('held');
+
+        api.detachDotNet(first); // The earlier bridge's late detach.
+        api.trackEvent('later');
+        await api.flush();
+        expect(wasm.calls.filter(c => c[0] === 'Belemetry.Relay').flatMap(c => c[1].logs).map(log => log.eventName)).toContain('later');
+        expect(api.attachDotNet(null)).toBe(0);
+    });
+
     it('sends a batch that fits whole, and nothing when the resource alone fills maxRelayBytes', async () => {
         vi.resetModules();
         const { splitRelayBatch, utf8Length } = await import('../../Bit.Belemetry/Scripts/exporters/relay.ts');

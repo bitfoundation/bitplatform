@@ -24,7 +24,7 @@
 
     @if (ShowToolbar)
     {
-        <div role="toolbar" aria-label="@ActiveTexts.ToolbarAriaLabel" aria-controls="@TextAreaId"
+        <div role="toolbar" aria-label="@ActiveStrings.ToolbarAriaLabel" aria-controls="@TextAreaId"
              style="@Styles?.Toolbar" class="bit-mde-tlb @Classes?.Toolbar">
             @for (var index = 0; index < ActiveToolbar.Count; index++)
             {
@@ -120,14 +120,14 @@
         @* data-bit-esc on the find and the replace box claims the Escape that closes the panel (OnFindKeyDown,
            OnReplaceKeyDown, see Utils.claimEscape), so a dialog around the editor does not close on that same press.
            The boxes are only rendered while the panel is open, which is when their handlers act on the key. *@
-        <div class="bit-mde-fnd" role="region" aria-label="@ActiveTexts.FindReplaceTitle">
+        <div class="bit-mde-fnd" role="region" aria-label="@ActiveStrings.FindReplaceTitle">
             <input @ref="_findRef"
                    type="search"
                    autocomplete="off"
                    spellcheck="false"
                    class="bit-mde-fni"
-                   placeholder="@ActiveTexts.FindPlaceholder"
-                   aria-label="@ActiveTexts.FindPlaceholder"
+                   placeholder="@ActiveStrings.FindPlaceholder"
+                   aria-label="@ActiveStrings.FindPlaceholder"
                    value="@_findText"
                    @oninput="e => OnFindTextChanged(e.Value?.ToString() ?? string.Empty)"
                    @onkeydown="OnFindKeyDown"
@@ -136,8 +136,8 @@
                    type="text"
                    autocomplete="off"
                    spellcheck="false"
-                   placeholder="@ActiveTexts.ReplacePlaceholder"
-                   aria-label="@ActiveTexts.ReplacePlaceholder"
+                   placeholder="@ActiveStrings.ReplacePlaceholder"
+                   aria-label="@ActiveStrings.ReplacePlaceholder"
                    value="@_replaceText"
                    @oninput="e => _replaceText = e.Value?.ToString() ?? string.Empty"
                    @onkeydown="OnReplaceKeyDown"
@@ -145,22 +145,22 @@
             <button type="button"
                     class="bit-mde-fnb bit-mde-fnc @(_matchCase ? "bit-mde-act" : null)"
                     aria-pressed="@(_matchCase ? "true" : "false")"
-                    title="@ActiveTexts.MatchCaseAriaLabel"
-                    aria-label="@ActiveTexts.MatchCaseAriaLabel"
+                    title="@ActiveStrings.MatchCaseAriaLabel"
+                    aria-label="@ActiveStrings.MatchCaseAriaLabel"
                     @onclick="ToggleMatchCase">Aa</button>
-            <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindPreviousAriaLabel" aria-label="@ActiveTexts.FindPreviousAriaLabel" @onclick="FindPreviousMatch">&uarr;</button>
-            <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindNextAriaLabel" aria-label="@ActiveTexts.FindNextAriaLabel" @onclick="FindNextMatch">&darr;</button>
+            <button type="button" class="bit-mde-fnb" title="@ActiveStrings.FindPreviousAriaLabel" aria-label="@ActiveStrings.FindPreviousAriaLabel" @onclick="FindPreviousMatch">&uarr;</button>
+            <button type="button" class="bit-mde-fnb" title="@ActiveStrings.FindNextAriaLabel" aria-label="@ActiveStrings.FindNextAriaLabel" @onclick="FindNextMatch">&darr;</button>
             <span class="bit-mde-fns" aria-live="polite">@FindStatusText</span>
             @{ var replaceDisabled = ReadOnly || Disabled; }
-            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@replaceDisabled" aria-disabled="@(replaceDisabled ? "true" : null)">@ActiveTexts.ReplaceButton</button>
+            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@replaceDisabled" aria-disabled="@(replaceDisabled ? "true" : null)">@ActiveStrings.ReplaceButton</button>
             <button type="button"
                     class="bit-mde-fnb"
-                    title="@ActiveTexts.ReplaceAllAriaLabel"
-                    aria-label="@ActiveTexts.ReplaceAllAriaLabel"
+                    title="@ActiveStrings.ReplaceAllAriaLabel"
+                    aria-label="@ActiveStrings.ReplaceAllAriaLabel"
                     @onclick="ReplaceAll"
                     disabled="@replaceDisabled"
-                    aria-disabled="@(replaceDisabled ? "true" : null)">@ActiveTexts.ReplaceAllButton</button>
-            <button type="button" class="bit-mde-hcl" @onclick="CloseFind" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
+                    aria-disabled="@(replaceDisabled ? "true" : null)">@ActiveStrings.ReplaceAllButton</button>
+            <button type="button" class="bit-mde-hcl" @onclick="CloseFind" aria-label="@ActiveStrings.CloseAriaLabel">&times;</button>
         </div>
     }
 
@@ -207,7 +207,7 @@
              class="bit-mde-pne bit-mde-ppn @Classes?.Preview"
              tabindex="0"
              role="group"
-             aria-label="@ActiveTexts.PreviewAriaLabel"
+             aria-label="@ActiveStrings.PreviewAriaLabel"
              data-bit-esc="@EscapeClaim">
             @* Edit mode hides this pane, and rendering markdown nobody can see would re-parse the
                whole document on every keystroke for nothing. *@
@@ -220,7 +220,7 @@
             }
             else if (string.IsNullOrWhiteSpace(_previewValue))
             {
-                <div class="bit-mde-emp">@ActiveTexts.PreviewEmptyText</div>
+                <div class="bit-mde-emp">@ActiveStrings.PreviewEmptyText</div>
             }
             else
             {
@@ -256,7 +256,7 @@
              aria-disabled="@(Disabled ? "true" : null)"
              style="@Styles?.StatusBar"
              class="bit-mde-sbr @Classes?.StatusBar">
-            <span class="bit-mde-mod">@ActiveTexts.GetModeLabel(Mode)</span>
+            <span class="bit-mde-mod">@ActiveStrings.GetModeLabel(Mode)</span>
             @if (ShowCursorPosition)
             {
                 <span class="bit-mde-pos">@CursorPositionText</span>
@@ -266,11 +266,11 @@
                 }
             }
             <span class="bit-mde-spc"></span>
-            <span>@string.Format(ActiveTexts.WordsFormat, WordCount)</span>
+            <span>@string.Format(ActiveStrings.WordsFormat, WordCount)</span>
             <span id="@CounterId" class="@(IsAtLimit ? "bit-mde-lim" : null)">@CharCountText</span>
             @if (ShowReadingTime)
             {
-                <span>@string.Format(ActiveTexts.ReadingTimeFormat, ReadingMinutes)</span>
+                <span>@string.Format(ActiveStrings.ReadingTimeFormat, ReadingMinutes)</span>
             }
         </div>
     }
@@ -293,8 +293,8 @@
                  data-bit-esc="claim"
                  @onclick:stopPropagation="true">
                 <header>
-                    <h2 id="@HelpTitleId">@ActiveTexts.KeyboardShortcutsTitle</h2>
-                    <button type="button" class="bit-mde-hcl" @onclick="CloseHelp" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
+                    <h2 id="@HelpTitleId">@ActiveStrings.KeyboardShortcutsTitle</h2>
+                    <button type="button" class="bit-mde-hcl" @onclick="CloseHelp" aria-label="@ActiveStrings.CloseAriaLabel">&times;</button>
                 </header>
                 <dl>
                     @foreach (var (label, keys) in HelpShortcuts)
@@ -323,7 +323,7 @@
 
         @if (item.Text is not null)
         {
-            <span class="bit-mde-mit">@ActiveTexts.GetToolbarTitle(item.Name, item.Text)</span>
+            <span class="bit-mde-mit">@ActiveStrings.GetToolbarTitle(item.Name, item.Text)</span>
         }
     };
 }

@@ -19,8 +19,8 @@
          style="@Styles?.Viewport"
          tabindex="@(TabIndex ?? "0")"
          role="application"
-         aria-label="@(AriaLabel ?? ActiveTexts.AriaLabel)"
-         aria-roledescription="@ActiveTexts.RoleDescription"
+         aria-label="@(AriaLabel ?? ActiveStrings.AriaLabel)"
+         aria-roledescription="@ActiveStrings.RoleDescription"
          aria-keyshortcuts="@KeyShortcuts"
          aria-disabled="@(Disabled ? "true" : null)">
     </div>
@@ -62,7 +62,7 @@
                                     disabled="@Disabled"
                                     aria-disabled="@(Disabled ? "true" : null)"
                                     aria-expanded="@(row.Collapsed ? "false" : "true")"
-                                    aria-label="@string.Format(System.Globalization.CultureInfo.CurrentCulture, row.Collapsed ? ActiveTexts.ExpandGroupFormat : ActiveTexts.CollapseGroupFormat, row.Name)"
+                                    aria-label="@string.Format(System.Globalization.CultureInfo.CurrentCulture, row.Collapsed ? ActiveStrings.ExpandGroupFormat : ActiveStrings.CollapseGroupFormat, row.Name)"
                                     @onclick="() => ToggleGroupAsync(row.Id)">
                                 <span class="bit-rtm-tgi@(row.Collapsed ? " bit-rtm-tgc" : null)" aria-hidden="true"></span>
                             </button>
@@ -95,7 +95,7 @@
             else
             {
                 <div class="bit-rtm-spn @Classes?.Spinner" style="@Styles?.Spinner"></div>
-                <span class="bit-rtm-ldt @Classes?.LoadingText" style="@Styles?.LoadingText">@ActiveTexts.Loading</span>
+                <span class="bit-rtm-ldt @Classes?.LoadingText" style="@Styles?.LoadingText">@ActiveStrings.Loading</span>
             }
         </div>
     }

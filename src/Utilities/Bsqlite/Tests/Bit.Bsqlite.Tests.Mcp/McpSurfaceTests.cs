@@ -15,8 +15,7 @@ public class McpSurfaceTests
 {
     /// <summary>
     /// The published set, spelled out. A tool added without being added here fails on purpose: a new tool
-    /// needs its own coverage, and a renamed one breaks every client that had learned the old name -
-    /// including bitplatform.dev/mcp, which proxies these names as they are.
+    /// needs its own coverage, and a renamed one breaks every client that had learned the old name.
     /// </summary>
     internal static readonly string[] ExpectedTools =
     [
@@ -128,9 +127,9 @@ public class McpSurfaceTests
     [TestMethod]
     public void Every_tool_name_carries_the_library_name()
     {
-        // bitplatform.dev/mcp merges the tools of every bit library into one list, where a name is the only
-        // address a client has and the first server to claim one wins. "Bsqlite" in every name is what keeps
-        // these from colliding with SearchBink, GetBmageDocument and the rest.
+        // A client connected to several bit libraries' MCP servers, as bitplatform.dev's chatbot is, gets
+        // all their tools in one list, where a name is the only address a tool has. "Bsqlite" in every name
+        // is what keeps these from colliding with SearchBink, GetBmageDocument and the rest.
         foreach (var tool in _tools) Assert.Contains("Bsqlite", tool.Name, $"'{tool.Name}' would be ambiguous next to the other libraries' tools.");
     }
 

@@ -4,12 +4,10 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Bit.Websites.Platform.Server.Services;
-using Bit.Websites.Platform.Server.Services.Mcp;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.Extensions.AI;
 using System.ClientModel.Primitives;
 using Bit.Belemetry;
-using ModelContextProtocol.Protocol;
 
 namespace Bit.Websites.Platform.Server.Startup;
 
@@ -70,8 +68,6 @@ public static class Services
         {
             options.EnableDetailedErrors = env.IsDevelopment();
         });
-
-        AddMcpServer(services);
 
         services.Configure<ForwardedHeadersOptions>(options =>
         {
@@ -168,68 +164,4 @@ public static class Services
 
         services.AddHealthChecks(configuration);
     }
-
-    /// <summary>
-    /// Serves every tool of every MCP server the team develops against from this site's own /mcp endpoint
-    /// (mapped in <see cref="Middlewares"/>), so that an agent pointed at bitplatform.dev/mcp gets them from a
-    /// single connection, though of the bit libraries only BlazorUI and Butil unless its libraries query is all.
-    /// <see cref="McpProxyService"/> does the forwarding, and the v query of
-    /// the connection picks which release answers.
-    /// </summary>
-    private static void AddMcpServer(IServiceCollection services)
-    {
-        // Singletons: the proxy keeps one session per upstream server, shared by every caller, and the
-        // versions it serves are prepared once for the whole process.
-        services.AddSingleton<McpVersions>();
-        services.AddSingleton<CodebaseMemoryCli>();
-        services.AddSingleton<McpProxyService>();
-        services.AddSingleton<McpReleasesTool>();
-        services.AddHostedService<McpVersionsService>();
-
-        services.AddScoped<McpFeedbackTool>();
-
-        services.AddMcpServer(options =>
-        {
-            options.ServerInfo = new()
-            {
-                Name = "bitplatform",
-                Title = "bit platform",
-                Version = typeof(Services).Assembly.GetName().Version!.ToString()
-            };
-            options.ServerInstructions = $"Provides the bit {BitLibraries.Names(BitLibraries.ServedHere)} documentation tools, a source code index of the bitfoundation/bitplatform repository and the tools of the other MCP servers the bit platform team develops against. Every other bit library - {BitLibraries.Names(BitLibraries.Deployed)} - has an MCP server of its own at https://<name in lowercase>.bitplatform.dev/mcp, such as https://bmotion.bitplatform.dev/mcp: plain HTTP with no sign-in, so when one is not in your MCP configuration, send its JSON-RPC requests (tools/list, then tools/call) to that address directly.";
-        })
-            // Stateless: no session state is kept between requests, so the endpoint keeps working when the
-            // site runs behind a load balancer without session affinity. Nothing is lost by it here, since
-            // the proxied tools are documentation lookups that never call back into the client.
-            .WithHttpTransport(options =>
-            {
-                options.Stateless = true;
-                // Invoked on every request in stateless mode, so the instructions name the release answering this one.
-                options.ConfigureSessionOptions = (httpContext, serverOptions, cancellationToken) =>
-                {
-                    if (httpContext.RequestServices.GetRequiredService<McpVersions>().Describe(httpContext.Request.Query["v"].FirstOrDefault()) is { } release)
-                    {
-                        serverOptions.ServerInstructions = $"{serverOptions.ServerInstructions} {release}";
-                    }
-
-                    return Task.CompletedTask;
-                };
-            })
-            .WithListToolsHandler(async (request, cancellationToken) => new ListToolsResult
-            {
-                Tools = [.. await request.Services!.GetRequiredService<McpProxyService>().ListTools(RequestedVersion(request.Services!), RequestsEveryLibrary(request.Services!), cancellationToken)]
-            })
-            .WithCallToolHandler((request, cancellationToken) =>
-                request.Services!.GetRequiredService<McpProxyService>().CallTool(RequestedVersion(request.Services!), request.Services!, request.Params!, cancellationToken));
-    }
-
-    /// <summary>
-    /// The release a caller connected for, from the v query of the request being served. The transport is
-    /// stateless, so every request carries it and there is no session to remember it in.
-    /// </summary>
-    private static string? RequestedVersion(IServiceProvider requestServices)
-        => requestServices.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request.Query["v"].FirstOrDefault();
-
-    private static bool RequestsEveryLibrary(IServiceProvider requestServices)
-        => requestServices.GetRequiredService<IHttpContextAccessor>().HttpContext?.Request.Query["libraries"].FirstOrDefault() is "all";
 }

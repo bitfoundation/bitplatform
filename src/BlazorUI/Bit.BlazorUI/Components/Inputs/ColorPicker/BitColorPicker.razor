@@ -2,7 +2,7 @@
 @inherits BitInputBase<string?>
 
 @{
-    var texts = _Texts;
+    var strings = _Strings;
     var disabled = _IsInputDisabled;
     var readOnly = _IsReadOnly;
     var eyeDropperIcon = BitIconInfo.From(EyeDropperIcon, EyeDropperIconName ?? "Eyedropper");
@@ -75,10 +75,10 @@
              aria-valuemax="100"
              tabindex="@_TabIndex"
              style="@_SaturationPickerStyle"
-             aria-roledescription="@texts.SaturationAreaRoleDescription"
+             aria-roledescription="@strings.SaturationAreaRoleDescription"
              aria-valuenow="@_SaturationValueNow"
              aria-valuetext="@_SaturationValueText"
-             aria-label="@texts.SaturationAreaLabel"
+             aria-label="@strings.SaturationAreaLabel"
              aria-readonly="@(readOnly ? "true" : null)"
              aria-invalid="@ariaInvalid"
              aria-describedby="@describes"
@@ -113,7 +113,7 @@
                                    max="360"
                                    step="1"
                                    type="range"
-                                   aria-label="@texts.HueLabel"
+                                   aria-label="@strings.HueLabel"
                                    value="@_HueSliderValue"
                                    tabindex="@_TabIndex"
                                    disabled="@disabled"
@@ -144,7 +144,7 @@
                                    max="1"
                                    step="0.01"
                                    type="range"
-                                   aria-label="@texts.AlphaLabel"
+                                   aria-label="@strings.AlphaLabel"
                                    value="@_AlphaSliderValue"
                                    tabindex="@_TabIndex"
                                    disabled="@disabled"
@@ -169,8 +169,8 @@
                         tabindex="@(disabled ? "-1" : TabIndex)"
                         aria-disabled="@((disabled || readOnly) ? "true" : null)"
                         style="@Styles?.EyeDropper"
-                        title="@texts.EyeDropperLabel"
-                        aria-label="@texts.EyeDropperLabel"
+                        title="@strings.EyeDropperLabel"
+                        aria-label="@strings.EyeDropperLabel"
                         class="bit-clp-eyd @Classes?.EyeDropper">
                     <i aria-hidden="true"
                        style="@Styles?.EyeDropperIcon"
@@ -214,7 +214,7 @@
                            id="@($"{_Id}-hex")"
                            style="@Styles?.FieldInput"
                            class="bit-clp-fin @Classes?.FieldInput" />
-                    <label for="@($"{_Id}-hex")" style="@Styles?.FieldLabel" class="bit-clp-flb @Classes?.FieldLabel">@texts.HexFieldLabel</label>
+                    <label for="@($"{_Id}-hex")" style="@Styles?.FieldLabel" class="bit-clp-flb @Classes?.FieldLabel">@strings.HexFieldLabel</label>
                 </div>
             }
 
@@ -255,7 +255,7 @@
                            max="100"
                            step="1"
                            type="number"
-                           title="@texts.AlphaLabel"
+                           title="@strings.AlphaLabel"
                            autocomplete="off"
                            disabled="@disabled"
                            aria-disabled="@(disabled ? "true" : null)"
@@ -267,7 +267,7 @@
                            id="@($"{_Id}-alpha")"
                            style="@Styles?.FieldInput"
                            class="bit-clp-fin @Classes?.FieldInput" />
-                    <label for="@($"{_Id}-alpha")" title="@texts.AlphaLabel" style="@Styles?.FieldLabel" class="bit-clp-flb @Classes?.FieldLabel">@texts.AlphaFieldLabel</label>
+                    <label for="@($"{_Id}-alpha")" title="@strings.AlphaLabel" style="@Styles?.FieldLabel" class="bit-clp-flb @Classes?.FieldLabel">@strings.AlphaFieldLabel</label>
                 </div>
             }
 
@@ -283,8 +283,8 @@
                             aria-disabled="@(Disabled ? "true" : null)"
                             tabindex="@(Disabled ? "-1" : TabIndex)"
                             style="@Styles?.InputsModeSwitch"
-                            title="@string.Format(texts.InputsModeFormat, _InputsModeLabel)"
-                            aria-label="@string.Format(texts.InputsModeSwitchFormat, _InputsModeLabel)"
+                            title="@string.Format(strings.InputsModeFormat, _InputsModeLabel)"
+                            aria-label="@string.Format(strings.InputsModeSwitchFormat, _InputsModeLabel)"
                             class="bit-clp-swb @Classes?.InputsModeSwitch">
                         <i aria-hidden="true"
                            style="@Styles?.InputsModeSwitchIcon"
@@ -306,17 +306,17 @@
             <span role="img"
                   style="@Styles?.ContrastRatio"
                   class="bit-clp-cnv @Classes?.ContrastRatio"
-                  aria-label="@string.Format(texts.ContrastRatioFormat, contrastText)">@contrastText:1</span>
+                  aria-label="@string.Format(strings.ContrastRatioFormat, contrastText)">@contrastText:1</span>
             @* Both bars, because a color that is fine for a heading is not necessarily fine for body text,
                and the whole point of showing the number here is to answer that before the page ships. *@
             <span role="img"
                   style="@Styles?.ContrastBadge"
                   class="bit-clp-cnb @(aaNormal ? "bit-clp-cnp" : "bit-clp-cnf") @Classes?.ContrastBadge"
-                  aria-label="@string.Format(texts.ContrastAaFormat, aaNormal ? texts.ContrastPassLabel : texts.ContrastFailLabel)">@texts.ContrastAaBadge</span>
+                  aria-label="@string.Format(strings.ContrastAaFormat, aaNormal ? strings.ContrastPassLabel : strings.ContrastFailLabel)">@strings.ContrastAaBadge</span>
             <span role="img"
                   style="@Styles?.ContrastBadge"
                   class="bit-clp-cnb @(aaLarge ? "bit-clp-cnp" : "bit-clp-cnf") @Classes?.ContrastBadge"
-                  aria-label="@string.Format(texts.ContrastAaLargeFormat, aaLarge ? texts.ContrastPassLabel : texts.ContrastFailLabel)">@texts.ContrastAaLargeBadge</span>
+                  aria-label="@string.Format(strings.ContrastAaLargeFormat, aaLarge ? strings.ContrastPassLabel : strings.ContrastFailLabel)">@strings.ContrastAaLargeBadge</span>
         </div>
     }
 
@@ -329,7 +329,7 @@
              class="bit-clp-prs @(PresetsPerRow > 0 ? "bit-clp-prg" : null) @Classes?.Presets"
              style="@presetsStyle"
              role="toolbar"
-             aria-label="@texts.PresetsLabel">
+             aria-label="@strings.PresetsLabel">
             @{
                 var tabStop = _PresetTabStop;
                 var presets = _Presets;
@@ -357,7 +357,7 @@
                         disabled="@disabled"
                         aria-disabled="@((disabled || readOnly) ? "true" : null)"
                         style="@presetStyle"
-                        aria-label="@string.Format(texts.PresetLabelFormat, preset.Color.ColorDescription, preset.Value)"
+                        aria-label="@string.Format(strings.PresetLabelFormat, preset.Color.ColorDescription, preset.Value)"
                         tabindex="@(disabled || index != tabStop ? "-1" : TabIndex ?? "0")"
                         aria-pressed="@(isSelected ? "true" : "false")"
                         class="bit-clp-prt @(isSelected ? "bit-clp-prt-sel" : null) @Classes?.Preset @(isSelected ? Classes?.SelectedPreset : null)">

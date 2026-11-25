@@ -87,7 +87,7 @@ public class BitColorPickerParamsTests : BunitTestContext
         var presets = new[] { "#FF0000", "#00FF00" };
         var classes = new BitColorPickerClassStyles { Root = "cascaded-root" };
         var styles = new BitColorPickerClassStyles { Root = "z-index: 1;" };
-        var texts = new BitColorPickerTexts { HueLabel = "Farbton" };
+        var strings = new BitColorPickerStrings { HueLabel = "Farbton" };
         var eyeDropperIcon = BitIconInfo.Fa("solid eye-dropper");
         var switchIcon = BitIconInfo.Fa("solid sort");
         RenderFragment labelTemplate = builder => builder.AddContent(0, "Cascaded label template");
@@ -123,7 +123,7 @@ public class BitColorPickerParamsTests : BunitTestContext
             ShowValidationMessage = true,
             Size = BitSize.Small,
             Styles = styles,
-            Texts = texts,
+            Strings = strings,
             ReadOnly = true,
             Required = true,
             AriaLabel = "Cascaded aria label",
@@ -167,7 +167,7 @@ public class BitColorPickerParamsTests : BunitTestContext
         Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);
         Assert.AreSame(styles, instance.Styles);
-        Assert.AreSame(texts, instance.Texts);
+        Assert.AreSame(strings, instance.Strings);
         Assert.IsTrue(instance.ReadOnly);
         Assert.IsTrue(instance.Required);
         Assert.AreEqual("Cascaded aria label", instance.AriaLabel);

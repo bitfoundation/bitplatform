@@ -76,7 +76,6 @@
                 </div>
             </div>
             <BitLink Class="@($"header-link {(navMenuService.IsCurrentUrl(Urls.Demos) ? "header-link--active" : null)}")" Href="@Urls.Demos" NoColor NoUnderline>Demos</BitLink>
-            <BitLink Class="@($"header-link {(navMenuService.IsCurrentUrl(Urls.Pricing) ? "header-link--active" : null)}")" Href="@Urls.Pricing" NoColor NoUnderline>Pricing</BitLink>
             <BitLink Class="@($"header-link {(navMenuService.IsCurrentUrl(Urls.AboutUs) ? "header-link--active" : null)}")" Href="@Urls.AboutUs" NoColor NoUnderline>About us</BitLink>
             <BitLink Class="@($"header-link {(navMenuService.IsCurrentUrl(Urls.ContactUs) ? "header-link--active" : null)}")" Href="@Urls.ContactUs" NoColor NoUnderline>Contact us</BitLink>
         </div>
@@ -171,7 +170,6 @@
             }
         </div>
         <BitLink Class="@($"header-nav-link {(navMenuService.IsCurrentUrl(Urls.Demos) ? "header-nav-link--active" : null)}")" Href="@Urls.Demos" OnClick=@WrapHandled(ToggleHeaderMenu) NoColor NoUnderline>Demos</BitLink>
-        <BitLink Class="@($"header-nav-link {(navMenuService.IsCurrentUrl(Urls.Pricing) ? "header-nav-link--active" : null)}")" Href="@Urls.Pricing" OnClick=@WrapHandled(ToggleHeaderMenu) NoColor NoUnderline>Pricing</BitLink>
         <BitLink Class="@($"header-nav-link {(navMenuService.IsCurrentUrl(Urls.AboutUs) ? "header-nav-link--active" : null)}")" Href="@Urls.AboutUs" OnClick=@WrapHandled(ToggleHeaderMenu) NoColor NoUnderline>About us</BitLink>
         <BitLink Class="@($"header-nav-link {(navMenuService.IsCurrentUrl(Urls.ContactUs) ? "header-nav-link--active" : null)}")" Href="@Urls.ContactUs" OnClick=@WrapHandled(ToggleHeaderMenu) NoColor NoUnderline>Contact us</BitLink>
     </nav>

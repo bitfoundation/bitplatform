@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcTimelineLayout
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
     /// <summary>Total number of time-axis columns (e.g. 24 for day, 168 for week, days-in-month for month).</summary>

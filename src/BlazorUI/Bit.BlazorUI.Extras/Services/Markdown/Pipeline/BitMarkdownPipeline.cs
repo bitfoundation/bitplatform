@@ -44,8 +44,8 @@ public sealed partial class BitMarkdownPipeline
         DelimiterByChar = delimByChar;
         DelimiterChars = new HashSet<char>(delimByChar.Keys);
 
-        Texts = builder.Texts ?? BitMarkdownTexts.Default;
-        _renderer = new BitMarkdownRenderer(Renderers, Texts);
+        Strings = builder.Strings ?? BitMarkdownStrings.Default;
+        _renderer = new BitMarkdownRenderer(Renderers, Strings);
     }
 
     private readonly BitMarkdownRenderer _renderer;
@@ -143,10 +143,10 @@ public sealed partial class BitMarkdownPipeline
     /// The words this pipeline's renderers write themselves - alert titles, footnote back-links,
     /// the accessible names of the regions and controls the markup adds.
     /// </summary>
-    public BitMarkdownTexts Texts { get; }
+    public BitMarkdownStrings Strings { get; }
 
     /// <summary>Creates a renderer bound to this pipeline's node renderers.</summary>
-    public BitMarkdownRenderer CreateRenderer() => new(Renderers, Texts);
+    public BitMarkdownRenderer CreateRenderer() => new(Renderers, Strings);
 
     /// <summary>
     /// The renderer this pipeline hands its own callers. A renderer holds nothing but the

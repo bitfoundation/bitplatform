@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.Toggle;
@@ -51,10 +52,128 @@ public class BitToggleStylesheetTests
         foreach (var property in new[] { "--bit-tgl-clr", "--bit-tgl-clr-hover", "--bit-tgl-clr-text", "--bit-tgl-clr-focus", "--bit-tgl-gap",
                                          "--bit-tgl-trk-w-base", "--bit-tgl-trk-h-base", "--bit-tgl-thb-size-base", "--bit-tgl-trk-w-ico",
                                          "--bit-tgl-trk-h-ico", "--bit-tgl-thb-size-ico", "--bit-tgl-cnn-fontsize", "--bit-tgl-cnn-pad",
-                                         "--bit-tgl-lbl-fontsize", "--bit-tgl-stx-fontsize", "--bit-tgl-des-fontsize" })
+                                         "--bit-tgl-lbl-fontsize", "--bit-tgl-stx-fontsize", "--bit-tgl-des-fontsize", "--bit-tgl-card-padding" })
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }
+    }
+
+    [TestMethod]
+    public void BitToggleCardShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An explicit Size publishes the padding of the card, an explicit Color the checked border, the hover border and
+        // the tint of the checked card - each read ahead of the public variable restyling the default.
+        StringAssert.Contains(stylesheet, "padding: var(--bit-tgl-card-padding, var(--bit-Toggle-card-padding, #{spacing(1.5)}));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tgl-md {"), "--bit-tgl-card-padding: #{spacing(1.5)};");
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-tgl-crd-sbrd, var(--bit-tgl-clr, var(--bit-Toggle-card-checked-border-color, var(--bit-Toggle-checked-background, #{$clr-pri}))));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgl-crd-sbg, var(--bit-tgl-crd-tint, var(--bit-tgl-crd-bg-checked)));");
+        StringAssert.Contains(stylesheet, "--bit-tgl-crd-sbrd: var(--bit-tgl-clr-hover, var(--bit-Toggle-card-hover-border-color, ");
+
+        // The accent of the checked card is the checked fill of the track, resolved on the root no variant qualifies.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tgl {"), "--bit-tgl-acc: var(--bit-tgl-clr, var(--bit-Toggle-checked-background, #{$clr-pri}));");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-tgl-fil", "card-background"),
+        DataRow("fill", ".bit-tgl-fil", "card-hover-background"),
+        DataRow("fill", ".bit-tgl-fil", "card-checked-background"),
+        DataRow("fill", ".bit-tgl-fil", "card-border-color"),
+        DataRow("outline", ".bit-tgl-otl", "card-background"),
+        DataRow("outline", ".bit-tgl-otl", "card-hover-background"),
+        DataRow("outline", ".bit-tgl-otl", "card-checked-background"),
+        DataRow("outline", ".bit-tgl-otl", "card-border-color")]
+    public void BitToggleShouldReadTheCardVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector, string name)
+    {
+        // The variant's own rule, not the card rule the Outline and Fill variants share (".bit-tgl-otl,\n.bit-tgl-fil {").
+        var stylesheet = ReadStylesheet();
+        var own = SourceFiles.GetScssRules(stylesheet).Single(r => r.Header == selector && r.Ancestors.Count == 0);
+        var block = SourceFiles.GetScssBlock(stylesheet[own.Index..], $"{selector} {{");
+
+        // Each variant reads a tier of its own ahead of the shared card variables, so a theme can set outline and filled
+        // cards apart on :root - and the card rules both variants share read only what each variant resolved.
+        StringAssert.Contains(block, $"var(--bit-Toggle-{variant}-{name}, var(--bit-Toggle-{name}, ",
+                              $"{selector} does not read --bit-Toggle-{variant}-{name} ahead of --bit-Toggle-{name}.");
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-Toggle-(?!{variant}-)(?:fill|outline)-"),
+                       $"{selector} reads the variables of another variant.");
+    }
+
+    [TestMethod]
+    public void BitToggleCardHoverShouldMoveAVariableRatherThanPaint()
+    {
+        var stylesheet = ReadStylesheet();
+        var hover = SourceFiles.GetScssBlock(stylesheet, ":is(.bit-tgl-otl, .bit-tgl-fil):hover:not(.bit-dis):not(.bit-inv):not(.bit-tgl-rdl):not(.bit-tgl-ldg) {");
+
+        // A hover that painted the border itself would outrank a class the app hands the root, so it moves the variables
+        // the card paints from - which the root starts out unset, so a card nested in another never inherits its hover.
+        StringAssert.Contains(hover, "--bit-tgl-crd-sbrd:");
+        StringAssert.Contains(hover, "--bit-tgl-crd-sbg: var(--bit-tgl-crd-bg-hover);");
+        Assert.IsFalse(Regex.IsMatch(hover, @"(^|[\s;{])(border-color|background-color)\s*:"), "The hover of a card paints instead of moving a variable.");
+
+        // Only the card of a toggle that is off takes the hover surface, so a hovered card of one that is on keeps the
+        // tint that says it is on.
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(hover, "&:not(.bit-tgl-chk) {"), "--bit-tgl-crd-sbg: var(--bit-tgl-crd-bg-hover);");
+        Assert.IsFalse(SourceFiles.GetScssDeclarations(stylesheet, ":is(.bit-tgl-otl, .bit-tgl-fil):hover:not(.bit-dis):not(.bit-inv):not(.bit-tgl-rdl):not(.bit-tgl-ldg) {").Contains("--bit-tgl-crd-sbg"),
+                       "The hover moves the surface of a card that is on to the neutral hover surface too.");
+
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tgl {");
+
+        StringAssert.Contains(root, "--bit-tgl-crd-sbg: initial;");
+        StringAssert.Contains(root, "--bit-tgl-crd-sbrd: initial;");
+    }
+
+    [TestMethod]
+    public void BitToggleCardShouldTintAStateWithTheFillOfItsTrack()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The card of a toggle that is on and invalid or disabled is tinted with the fill its track takes in that state,
+        // which each variant mixes at its own alpha.
+        var state = SourceFiles.GetScssBlock(stylesheet, ".bit-tgl-otl.bit-tgl-chk:is(.bit-inv, .bit-dis),");
+
+        StringAssert.Contains(state, "background-color: var(--bit-tgl-crd-trk-tint);");
+        StringAssert.Contains(VariantDeclarations(stylesheet, ".bit-tgl-otl"), "--bit-tgl-crd-trk-tint: #{translucent(var(--bit-tgl-trk-clr-bg), 8%)};");
+        StringAssert.Contains(VariantDeclarations(stylesheet, ".bit-tgl-fil"), "--bit-tgl-crd-trk-tint: #{translucent(var(--bit-tgl-trk-clr-bg), 14%)};");
+    }
+
+    [TestMethod]
+    public void BitToggleCardHitAreaShouldLieUnderTheContent()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The hit area lies under the content, above the surface of the card the root isolates a stacking context for,
+        // so it never covers the label, the switch or the state text - which keep their titles and their press.
+        var hit = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tgl-hit {");
+
+        StringAssert.Contains(hit, "z-index: -1;");
+        StringAssert.Contains(hit, "position: absolute;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, ".bit-tgl-otl,\n.bit-tgl-fil {"), "isolation: isolate;");
+
+        // The row of the switch and the lines under it let the pointer through to it, and whatever in them answers the
+        // pointer takes it back - without being positioned or stacked, which would move what an app lays out inside it.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ":where(.bit-tgl-otl, .bit-tgl-fil) :where(.bit-tgl-cnt, .bit-tgl-des, .bit-tgl-erm) {"), "pointer-events: none;");
+
+        var handBack = SourceFiles.GetScssBlock(stylesheet, ":where(.bit-tgl-otl, .bit-tgl-fil) :where(.bit-tgl-cnt, .bit-tgl-des, .bit-tgl-erm) :where(");
+
+        foreach (var interactive in new[] { "a", "button", "input", "label", "[contenteditable]", "[role]", "[tabindex]" })
+        {
+            StringAssert.Contains(handBack, interactive);
+        }
+
+        StringAssert.Contains(handBack, "pointer-events: auto;");
+        Assert.IsFalse(Regex.IsMatch(handBack, @"(z-index|position)\s*:"), "The card positions what an app puts in its lines.");
+
+        // A press anywhere else on the card dips the knob, as a press on the switch does.
+        StringAssert.Contains(stylesheet, ".bit-tgl-btn:has(~ .bit-tgl-hit:active) .bit-tgl-sta {");
+    }
+
+    // The own rule of a variant, not the card rule the Outline and Fill variants share.
+    private static string VariantDeclarations(string stylesheet, string selector)
+    {
+        var own = SourceFiles.GetScssRules(stylesheet).Single(r => r.Header == selector && r.Ancestors.Count == 0);
+
+        return SourceFiles.GetScssDeclarations(stylesheet[own.Index..], $"{selector} {{");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "Toggle", "BitToggle.scss");

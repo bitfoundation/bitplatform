@@ -1073,7 +1073,7 @@ public class BitFullCalendarHelpersTests
     [TestMethod]
     public void GetRecurrenceSummaryShouldNameTheWeekdaysOfAWeeklySeries()
     {
-        var texts = new BitFullCalendarTexts();
+        var strings = new BitFullCalendarStrings();
         var rule = new BitFullCalendarRecurrence
         {
             Frequency = BitFullCalendarRecurrenceFrequency.Weekly,
@@ -1082,13 +1082,13 @@ public class BitFullCalendarHelpersTests
             DaysOfWeek = [DayOfWeek.Friday, DayOfWeek.Monday, DayOfWeek.Wednesday]
         };
 
-        Assert.AreEqual("Weekly · every 2 · on Mon, Wed, Fri · 6 times", texts.GetRecurrenceSummary(rule, EnUs));
+        Assert.AreEqual("Weekly · every 2 · on Mon, Wed, Fri · 6 times", strings.GetRecurrenceSummary(rule, EnUs));
     }
 
     [TestMethod]
     public void GetRecurrenceSummaryShouldNameTheWeekdayOfTheMonth()
     {
-        var texts = new BitFullCalendarTexts();
+        var strings = new BitFullCalendarStrings();
         var rule = new BitFullCalendarRecurrence
         {
             Frequency = BitFullCalendarRecurrenceFrequency.Monthly,
@@ -1096,26 +1096,26 @@ public class BitFullCalendarHelpersTests
             DaysOfWeek = [DayOfWeek.Tuesday]
         };
 
-        Assert.AreEqual("Monthly · on the third Tuesday", texts.GetRecurrenceSummary(rule, EnUs));
+        Assert.AreEqual("Monthly · on the third Tuesday", strings.GetRecurrenceSummary(rule, EnUs));
     }
 
     [TestMethod]
     public void GetRecurrenceSummaryShouldReadTheWeekdayOfTheMonthOffTheSeriesStart()
     {
-        var texts = new BitFullCalendarTexts();
+        var strings = new BitFullCalendarStrings();
         var rule = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Monthly, WeekOfMonth = BitFullCalendarWeekOfMonth.Last };
 
         // 2024-05-31 is a Friday.
-        Assert.AreEqual("Monthly · on the last Friday", texts.GetRecurrenceSummary(rule, EnUs, new DateTime(2024, 5, 31)));
+        Assert.AreEqual("Monthly · on the last Friday", strings.GetRecurrenceSummary(rule, EnUs, new DateTime(2024, 5, 31)));
     }
 
     [TestMethod]
     public void GetRecurrenceSummaryShouldLeaveTheStartWeekdayOfAWeeklySeriesUnsaid()
     {
-        var texts = new BitFullCalendarTexts();
+        var strings = new BitFullCalendarStrings();
         var rule = new BitFullCalendarRecurrence { Frequency = BitFullCalendarRecurrenceFrequency.Weekly };
 
-        Assert.AreEqual("Weekly", texts.GetRecurrenceSummary(rule, EnUs, new DateTime(2024, 5, 31)));
+        Assert.AreEqual("Weekly", strings.GetRecurrenceSummary(rule, EnUs, new DateTime(2024, 5, 31)));
     }
 
     #endregion

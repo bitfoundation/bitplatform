@@ -70,14 +70,14 @@ const HALF = TEXT.length * CHAR / 2;
 
 test('a label fully in view stays at the bar center', () => {
     // Bar 10h-20h: x 550-950, centered at 750.
-    const engine = makeSceneEngine([longBar({ startTime: at(10), endTime: at(20), textAbove: TEXT })]);
+    const engine = makeSceneEngine([longBar({ startTime: at(10), endTime: at(20), texts: { topCenter: { text: TEXT } } })]);
     const node = barNode(engine);
 
     assert.equal(label(node, TEXT).x, 750);
 });
 
 test('a label whose bar center is scrolled past the left edge is pinned at that edge', () => {
-    const engine = makeSceneEngine([longBar({ textAbove: TEXT, textBelow: TEXT + '!' })]);
+    const engine = makeSceneEngine([longBar({ texts: { topCenter: { text: TEXT }, bottomCenter: { text: TEXT + '!' } } })]);
     scrollTo(engine, 1000);
     const node = barNode(engine);
     const gap = engine.config.barLabelGap;
@@ -92,7 +92,7 @@ test('a label whose bar center is scrolled past the left edge is pinned at that 
 });
 
 test('the option off keeps the label at the bar center, off screen', () => {
-    const engine = makeSceneEngine([longBar({ textAbove: TEXT })], false);
+    const engine = makeSceneEngine([longBar({ texts: { topCenter: { text: TEXT } } })], false);
     scrollTo(engine, 1000);
     const node = barNode(engine);
 
@@ -101,7 +101,7 @@ test('the option off keeps the label at the bar center, off screen', () => {
 
 test('a label whose bar center is past the right edge is pinned at that edge', () => {
     // Bar 20h-47h: x 950-2030 unscrolled, centered at 1490.
-    const engine = makeSceneEngine([longBar({ startTime: at(20), textBelow: TEXT })]);
+    const engine = makeSceneEngine([longBar({ startTime: at(20), texts: { bottomCenter: { text: TEXT } } })]);
     const node = barNode(engine);
     const gap = engine.config.barLabelGap;
 
@@ -109,7 +109,7 @@ test('a label whose bar center is past the right edge is pinned at that edge', (
 });
 
 test('a pinned label leaves the view with the edge of its bar', () => {
-    const engine = makeSceneEngine([longBar({ textAbove: TEXT })]);
+    const engine = makeSceneEngine([longBar({ texts: { topCenter: { text: TEXT } } })]);
     // The bar ends at x 180: less room in view than the label takes.
     scrollTo(engine, 1850);
     const node = barNode(engine);
@@ -119,7 +119,7 @@ test('a pinned label leaves the view with the edge of its bar', () => {
 
 test('a label wider than its bar stays centered', () => {
     // A 1h bar (40px) under a 77px label, its center under the resource column.
-    const engine = makeSceneEngine([longBar({ startTime: at(0), endTime: at(1), textAbove: TEXT })]);
+    const engine = makeSceneEngine([longBar({ startTime: at(0), endTime: at(1), texts: { topCenter: { text: TEXT } } })]);
     scrollTo(engine, 20);
     const node = barNode(engine);
 
@@ -128,7 +128,7 @@ test('a label wider than its bar stays centered', () => {
 
 test('above and below icons move with the labels, center icons on a line of their own', () => {
     const engine = makeSceneEngine([longBar({
-        textAbove: TEXT,
+        texts: { topCenter: { text: TEXT } },
         icons: [
             { source: 'above.png', position: 'above' },
             { source: 'below.png', position: 'below' },
@@ -156,7 +156,7 @@ test('a label wider than its bar does not hold the others back', () => {
     // Bar 10h-15h: x 550-750 unscrolled (200px), at x 50-250 scrolled, its
     // center (150) at the edge of the bars area.
     const wide = 'X'.repeat(40); // 280px
-    const engine = makeSceneEngine([longBar({ startTime: at(10), endTime: at(15), textAbove: 'A1', textBelow: wide })]);
+    const engine = makeSceneEngine([longBar({ startTime: at(10), endTime: at(15), texts: { topCenter: { text: 'A1' }, bottomCenter: { text: wide } } })]);
     scrollTo(engine, 500);
     const node = barNode(engine);
     const gap = engine.config.barLabelGap;
@@ -299,7 +299,7 @@ test('a section\'s pinned centered text steps aside for the center icons, clear 
 
 test('a label wider than the bars area is centered in it', () => {
     const wide = 'X'.repeat(42); // 294px
-    const engine = makeSceneEngine([longBar({ textAbove: wide })]);
+    const engine = makeSceneEngine([longBar({ texts: { topCenter: { text: wide } } })]);
     // A 250px bars area: x 150-400.
     engine._viewportW = 400;
     engine._visibleWidth = 250;
@@ -310,7 +310,7 @@ test('a label wider than the bars area is centered in it', () => {
 });
 
 test('the start and end labels stay beside the bar', () => {
-    const engine = makeSceneEngine([longBar({ textStart: 'AMS', textEnd: 'JFK' })]);
+    const engine = makeSceneEngine([longBar({ texts: { start: { text: 'AMS' }, end: { text: 'JFK' } } })]);
     scrollTo(engine, 1000);
     const node = barNode(engine);
     const gap = engine.config.barLabelGap;
@@ -350,7 +350,7 @@ test('a section\'s centered icon and text stay one group when pinned', () => {
 });
 
 test('scrolling back puts the label at the bar center again', () => {
-    const engine = makeSceneEngine([longBar({ startTime: at(10), endTime: at(20), textAbove: TEXT })]);
+    const engine = makeSceneEngine([longBar({ startTime: at(10), endTime: at(20), texts: { topCenter: { text: TEXT } } })]);
     // Bar at x -100-300: its center, x 100, is under the resource column.
     scrollTo(engine, 650);
     assert.equal(label(barNode(engine), TEXT).x, 150 + engine.config.barLabelGap + HALF);

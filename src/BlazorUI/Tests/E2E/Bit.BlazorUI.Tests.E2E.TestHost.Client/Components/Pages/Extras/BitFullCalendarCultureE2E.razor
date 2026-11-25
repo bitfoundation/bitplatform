@@ -2,7 +2,7 @@
 
 <PageTitle>BitFullCalendar E2E - cultures and directions</PageTitle>
 
-@* Cultures and directions: Persian (fa-IR, the Persian calendar, right to left, with Texts translating the UI), Arabic
+@* Cultures and directions: Persian (fa-IR, the Persian calendar, right to left, with Strings translating the UI), Arabic
    (ar-SA, the Hijri calendar, right to left), an explicit Dir="BitDir.Rtl" on an English calendar, an English calendar
    inside a right-to-left page and a Persian one inside a left-to-right page (the culture decides when Dir is unset),
    and Dir="BitDir.Auto". "Today" is pinned to Wednesday 2025-07-16 10:30 (25 Tir 1404, 21 Muharram 1447). *@
@@ -10,7 +10,7 @@
     <BitFullCalendar Id="fa-cal"
                      CultureName="fa-IR"
                      TimeProvider="Clock"
-                     Texts="_persianTexts"
+                     Strings="_persianStrings"
                      Events="_faEvents"
                      Resources="_resources"
                      OnDateChange="args => _faRange = args.Start.ToString(DateFormat) + '|' + args.End.ToString(DateFormat)" />
@@ -57,7 +57,7 @@
                          CultureName="fa-IR"
                          Dir="BitDir.Auto"
                          TimeProvider="Clock"
-                         Texts="_persianTexts" />
+                         Strings="_persianStrings" />
     </div>
 </E2ESection>
 
@@ -98,7 +98,7 @@
         new() { Id = "r1", Title = "Review", StartDate = Today.AddHours(10), EndDate = Today.AddHours(11), Color = "purple", Resource = "a" },
     ];
 
-    private readonly BitFullCalendarTexts _persianTexts = new()
+    private readonly BitFullCalendarStrings _persianStrings = new()
     {
         ViewDay = "روز",
         ViewWeek = "هفته",

@@ -628,8 +628,8 @@ public class BitMarkdownEditorAccessibilityTests : BunitTestContext
         Assert.AreEqual(250, Read("ChangeDebounceMs"));
         Assert.AreEqual("draft-1", Read("AutoSaveKey"));
         Assert.AreEqual(true, Read("ImageUpload"));
-        // The default texts travel with it, so the script never hard-codes a word of its own.
-        Assert.AreEqual(new BitMarkdownEditorTexts().UploadingText, Read("UploadingText"));
+        // The default strings travel with it, so the script never hard-codes a word of its own.
+        Assert.AreEqual(new BitMarkdownEditorStrings().UploadingText, Read("UploadingText"));
     }
 
     [TestMethod]

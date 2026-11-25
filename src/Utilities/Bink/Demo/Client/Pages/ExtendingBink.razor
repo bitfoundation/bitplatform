@@ -105,7 +105,7 @@
             <code>"type": "@StickyNoteConverter.Name"</code> with its text, votes and <code>bounds</code>. The stroke points
             are the compact binary encoding.
         </p>
-        <pre class="bb-code bink-output">@_saved</pre>
+        <pre class="bb-code bink-output" tabindex="0">@_saved</pre>
     </div>
 }
 
@@ -119,7 +119,7 @@
         <code>WithParameters</code>, which clamps them because a file or a collaborator can say anything.
         <code>BinkCalligraphyBrush</code> is built exactly this way.
     </p>
-    <pre class="bb-code"><span class="k">public sealed record</span> DashedBrush : BinkBrush
+    <pre class="bb-code" tabindex="0"><span class="k">public sealed record</span> DashedBrush : BinkBrush
 {
     <span class="k">public override string</span> Kind =&gt; <span class="s">"demo-dashed"</span>;
     <span class="k">public float</span> DashLength { <span class="k">get</span>; <span class="k">init</span>; } = 12f;
@@ -154,7 +154,7 @@ BinkBrushRegistry.Default.Register&lt;DashedBrush&gt;();   <span class="c">// so
         groups) and the bounds itself, and the converter only the note's own fields. Whatever it reads is untrusted, so it
         checks every value and throws <code>FormatException</code>, which is reported as a malformed document.
     </p>
-    <pre class="bb-code"><span class="k">public sealed record</span> StickyNote(BinkRect Rect, <span class="k">string</span> Text) : BinkElement
+    <pre class="bb-code" tabindex="0"><span class="k">public sealed record</span> StickyNote(BinkRect Rect, <span class="k">string</span> Text) : BinkElement
 {
     <span class="k">public override</span> BinkRect LocalBounds =&gt; Rect;
     <span class="k">public override string</span> TypeName =&gt; <span class="s">"Sticky note"</span>;
@@ -182,7 +182,7 @@ BinkElementRegistry.Default.Register(<span class="k">new</span> StickyNoteConver
         was read. <strong>Save and reload</strong> then brings everything back unchanged, because nothing was lost on the way
         through.
     </p>
-    <pre class="bb-code"><span class="k">var</span> write = <span class="k">new</span> BinkSerializerOptions { BrushRegistry = _brushes, ElementRegistry = _elements };
+    <pre class="bb-code" tabindex="0"><span class="k">var</span> write = <span class="k">new</span> BinkSerializerOptions { BrushRegistry = _brushes, ElementRegistry = _elements };
 <span class="k">var</span> read = <span class="k">new</span> BinkDeserializerOptions { BrushRegistry = _brushes, ElementRegistry = _elements };
 <span class="k">string</span> json = BinkSerializer.Serialize(document, write);
 
@@ -206,7 +206,7 @@ BinkDocument elsewhere = BinkSerializer.Deserialize(json);   <span class="c">// 
         for a real one: <code>PushGroup</code> must genuinely isolate, because content inside it may erase, and fills must
         honour <code>BinkFillRule.NonZero</code>, which keeps a self-overlapping stroke solid.
     </p>
-    <pre class="bb-code"><span class="k">var</span> counter = <span class="k">new</span> DrawCallCounter();
+    <pre class="bb-code" tabindex="0"><span class="k">var</span> counter = <span class="k">new</span> DrawCallCounter();
 BinkDocumentRenderer.Render(_document, counter);
 
 <span class="c">// Server-side PNG export has no font engine of its own; give it one to draw text:</span>

@@ -13,15 +13,15 @@ public sealed class BitMarkdownRenderer
 
     /// <summary>Creates a renderer that writes its own words in English.</summary>
     public BitMarkdownRenderer(IReadOnlyList<BitMarkdownNodeRenderer> renderers)
-        : this(renderers, BitMarkdownTexts.Default)
+        : this(renderers, BitMarkdownStrings.Default)
     {
     }
 
-    /// <summary>Creates a renderer that writes its own words from <paramref name="texts"/>.</summary>
-    public BitMarkdownRenderer(IReadOnlyList<BitMarkdownNodeRenderer> renderers, BitMarkdownTexts texts)
+    /// <summary>Creates a renderer that writes its own words from <paramref name="strings"/>.</summary>
+    public BitMarkdownRenderer(IReadOnlyList<BitMarkdownNodeRenderer> renderers, BitMarkdownStrings strings)
     {
         _renderers = renderers;
-        Texts = texts ?? BitMarkdownTexts.Default;
+        Strings = strings ?? BitMarkdownStrings.Default;
     }
 
     /// <summary>
@@ -29,7 +29,7 @@ public sealed class BitMarkdownRenderer
     /// names of the regions and controls the markup adds. A renderer reads them from here rather
     /// than hard-coding English.
     /// </summary>
-    public BitMarkdownTexts Texts { get; }
+    public BitMarkdownStrings Strings { get; }
 
     /// <summary>
     /// The address of the page the output is placed in, without a fragment. When set, an in-page
@@ -54,7 +54,7 @@ public sealed class BitMarkdownRenderer
 
     /// <summary>
     /// When <c>true</c>, the text the renderers write for assistive technology alone (the
-    /// <see cref="BitMarkdownTexts.NewTab"/> notice, the footnotes heading) carries the declarations
+    /// <see cref="BitMarkdownStrings.NewTab"/> notice, the footnotes heading) carries the declarations
     /// that hide it in a <c>style</c> attribute of its own, so output read without the viewer's
     /// stylesheet - an email, a static file, markup placed outside a <c>bit-mdv</c> root - does not
     /// show it. Leave it <c>false</c> where the stylesheet is in play: a strict
@@ -77,7 +77,7 @@ public sealed class BitMarkdownRenderer
     // is still fixed to the source position it is written at, which is all ASP0006 is there to ensure.
 #pragma warning disable ASP0006
     /// <summary>
-    /// Writes the <see cref="BitMarkdownTexts.NewTab"/> notice a link opening in a new tab ends with:
+    /// Writes the <see cref="BitMarkdownStrings.NewTab"/> notice a link opening in a new tab ends with:
     /// text a screen reader reads as part of the link's name, which takes no room on the page and is
     /// left out of what a reader copies. Call it as the last thing inside the <c>&lt;a&gt;</c>.
     /// </summary>
@@ -87,12 +87,12 @@ public sealed class BitMarkdownRenderer
     /// </param>
     public void WriteNewTabNotice(RenderTreeBuilder builder, int sequence)
     {
-        if (string.IsNullOrEmpty(Texts.NewTab)) return;
+        if (string.IsNullOrEmpty(Strings.NewTab)) return;
 
         builder.OpenElement(sequence, "span");
         AddScreenReaderOnly(builder, sequence + 1, "bit-mdv-new-tab");
         // The space keeps the notice a word apart in the accessible name, which runs inline text together.
-        builder.AddContent(sequence + 3, " " + Texts.NewTab);
+        builder.AddContent(sequence + 3, " " + Strings.NewTab);
         builder.CloseElement();
     }
 

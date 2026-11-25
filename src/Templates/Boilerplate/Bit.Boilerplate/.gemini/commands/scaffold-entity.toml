@@ -1,9 +1,0 @@
-description = "Scaffold a CRUD entity across every layer once its fields, rules and screens are settled."
-
-prompt = """
-Follow these instructions exactly:
-
-@{.github/agents/scaffold-entity.agent.md}
-
-Entity to scaffold: {{args}}
-"""

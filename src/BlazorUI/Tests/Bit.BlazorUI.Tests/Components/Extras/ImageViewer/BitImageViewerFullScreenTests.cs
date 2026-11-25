@@ -301,7 +301,7 @@ public class BitImageViewerFullScreenTests : BunitTestContext
         var com = Render(p =>
         {
             p.Add(x => x.FullScreen, true);
-            p.Add(x => x.Texts, new BitImageViewerTexts { ExitFullScreen = "Cerrar" });
+            p.Add(x => x.Strings, new BitImageViewerStrings { ExitFullScreen = "Cerrar" });
             p.Add(x => x.Classes, new BitImageViewerClassStyles { FullScreen = "c-fsc", CloseButton = "c-cls" });
             p.Add(x => x.Styles, new BitImageViewerClassStyles { FullScreen = "margin:1px", CloseButton = "margin:2px" });
         });

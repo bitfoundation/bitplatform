@@ -17,12 +17,12 @@
         In a Blazor Web App the package belongs in the <code>.Client</code> project, so the component's assembly
         is downloaded to the browser; the server project gets it transitively and prerenders the same pages.
     </p>
-    <pre class="bb-code">dotnet add package Bit.Bink</pre>
+    <pre class="bb-code" tabindex="0">dotnet add package Bit.Bink</pre>
     <p class="bb-card-desc">
         Then the namespace, in <code>_Imports.razor</code>. Points and sizes in the API are
         <code>System.Numerics.Vector2</code>, so code that builds documents usually wants that namespace too:
     </p>
-    <pre class="bb-code"><span class="k">@@using</span> Bit.Bink
+    <pre class="bb-code" tabindex="0"><span class="k">@@using</span> Bit.Bink
 <span class="k">@@using</span> System.Numerics</pre>
 </div>
 
@@ -34,7 +34,7 @@
         the input surface, the text editor - and leaves the look of the surrounding UI to you. To control it
         yourself, link it in the host page and the automatic injection stands down:
     </p>
-    <pre class="bb-code">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Bink/bit-bink.css"</span> /&gt;</pre>
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">link</span> rel=<span class="s">"stylesheet"</span> href=<span class="s">"_content/Bit.Bink/bit-bink.css"</span> /&gt;</pre>
 </div>
 
 <div class="bb-card">
@@ -46,7 +46,7 @@
         state such as <code>CurrentDocument.IsEmpty</code> or <code>History.CanUndo</code>: a child component cannot
         re-render its parent by itself, and drawing never re-renders anything.
     </p>
-    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> @@ref=<span class="s">"_canvas"</span> Height=<span class="s">"260px"</span> EnableTouchGestures=<span class="s">"true"</span>
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">BinkCanvas</span> @@ref=<span class="s">"_canvas"</span> Height=<span class="s">"260px"</span> EnableTouchGestures=<span class="s">"true"</span>
             DocumentChanged=<span class="s">"() =&gt; StateHasChanged()"</span> /&gt;
 
 &lt;<span class="k">button</span> @@onclick=<span class="s">"() =&gt; _canvas!.Undo()"</span>&gt;Undo&lt;/<span class="k">button</span>&gt;
@@ -92,7 +92,7 @@
         <code>BinkPanTool</code>. Brushes are immutable records, so a variant is derived with <code>with</code>.
         Shapes take their look from <code>ShapeStyle</code>, and nothing else has to be told that the tool changed.
     </p>
-    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> Tool=<span class="s">"_tool"</span> Brush=<span class="s">"_brush"</span> Height=<span class="s">"400px"</span> /&gt;
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">BinkCanvas</span> Tool=<span class="s">"_tool"</span> Brush=<span class="s">"_brush"</span> Height=<span class="s">"400px"</span> /&gt;
 
 <span class="k">@@code</span> {
     <span class="k">private</span> IBinkTool _tool = <span class="k">new</span> BinkDrawTool();
@@ -107,7 +107,7 @@
         Only Chromium browsers on the desktop have one, so ask <code>SupportsEyeDropperAsync</code> before offering it,
         and call it straight from the click, which is what lets the browser open it. The whiteboard has one.
     </p>
-    <pre class="bb-code"><span class="k">if</span> (<span class="k">await</span> _canvas.PickColorAsync() <span class="k">is</span> { } picked) _brush = _brush <span class="k">with</span> { Color = picked };</pre>
+    <pre class="bb-code" tabindex="0"><span class="k">if</span> (<span class="k">await</span> _canvas.PickColorAsync() <span class="k">is</span> { } picked) _brush = _brush <span class="k">with</span> { Color = picked };</pre>
 </div>
 
 <div class="bb-card">
@@ -118,7 +118,7 @@
         <code>UndoLabel</code> and the stacks themselves, for a history list. <code>HistoryLimit</code> (200 steps)
         and <code>HistoryMemoryBudget</code> bound what it keeps.
     </p>
-    <pre class="bb-code">_canvas.Undo();
+    <pre class="bb-code" tabindex="0">_canvas.Undo();
 _canvas.Redo();
 _canvas.Clear();             <span class="c">// one undo step, like everything else</span>
 _canvas.DeleteSelection();
@@ -141,7 +141,7 @@ _canvas.DeleteSelection();
         reason instead of throwing. <code>IsDirty</code> says whether anything changed since <code>MarkSaved</code>,
         for an "unsaved changes" prompt. Exports go through the same renderer as the screen, so they match it.
     </p>
-    <pre class="bb-code"><span class="k">string</span> json = BinkSerializer.Serialize(_canvas.CurrentDocument);
+    <pre class="bb-code" tabindex="0"><span class="k">string</span> json = BinkSerializer.Serialize(_canvas.CurrentDocument);
 <span class="k">if</span> (BinkSerializer.TryDeserialize(json, <span class="k">out</span> BinkDocument? loaded, <span class="k">out string</span>? error)) _canvas.LoadDocument(loaded!);
 
 <span class="k">bool</span> unsaved = _canvas.CurrentDocument.IsDirty;
@@ -165,7 +165,7 @@ _canvas.DeleteSelection();
         beside this code was built by it and written by <code>BinkSvgExporter</code>; no canvas was involved.
     </p>
     <div class="bb-split">
-        <pre class="bb-code"><span class="k">var</span> document = <span class="k">new</span> BinkDocument(<span class="k">new</span> BinkDocumentSettings { Width = 400, Height = 160 });
+        <pre class="bb-code" tabindex="0"><span class="k">var</span> document = <span class="k">new</span> BinkDocument(<span class="k">new</span> BinkDocumentSettings { Width = 400, Height = 160 });
 
 <span class="k">var</span> points = BinkStrokePoints.FromPositions([<span class="k">new</span>(40, 112), <span class="k">new</span>(120, 52), <span class="k">new</span>(200, 104), <span class="k">new</span>(280, 48), <span class="k">new</span>(360, 100)]);
 document.AddElement(<span class="k">new</span> BinkStroke(points, <span class="k">new</span> BinkPenBrush { Width = 7f, Color = blue }));
@@ -222,12 +222,12 @@ document.AddElement(<span class="k">new</span> BinkTextElement(<span class="k">n
         the browser, outside AOT builds, with a runtime switch next to the mark so the router knows the assembly is there
         to load, and load it before that page first renders:
     </p>
-    <pre class="bb-code"><span class="c">&lt;!-- AOT builds are left out: see below. --&gt;</span>
+    <pre class="bb-code" tabindex="0"><span class="c">&lt;!-- AOT builds are left out: see below. --&gt;</span>
 &lt;<span class="k">ItemGroup</span> Condition=<span class="s">" '$(RunAOTCompilation)' != 'true' "</span>&gt;
   &lt;<span class="k">BlazorWebAssemblyLazyLoad</span> Include=<span class="s">"Bit.Bink.wasm"</span> /&gt;
   &lt;<span class="k">RuntimeHostConfigurationOption</span> Include=<span class="s">"MyApp.LazyLoadsBink"</span> Value=<span class="s">"true"</span> Trim=<span class="s">"true"</span> /&gt;
 &lt;/<span class="k">ItemGroup</span>&gt;</pre>
-    <pre class="bb-code"><span class="c">@@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
+    <pre class="bb-code" tabindex="0"><span class="c">@@* App.razor - in a Blazor Web App, the client project's Routes.razor: the router waits for OnNavigateAsync
    before it renders the page. typeof(Program) is the project the router's file is in, in either kind of app. *@@</span>
 <span class="k">@@using</span> Microsoft.AspNetCore.Components.WebAssembly.Services
 <span class="k">@@inject</span> LazyAssemblyLoader LazyAssemblyLoader
@@ -282,7 +282,7 @@ document.AddElement(<span class="k">new</span> BinkTextElement(<span class="k">n
         inert markup too, but nothing has failed, so <code>AttachFailed</code> stays null and it attaches when
         interactivity arrives.
     </p>
-    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> Unavailable=<span class="s">"reason =&gt; _unavailable = reason"</span> /&gt;
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">BinkCanvas</span> Unavailable=<span class="s">"reason =&gt; _unavailable = reason"</span> /&gt;
 
 <span class="k">@@if</span> (_unavailable <span class="k">is not null</span>)
 {
@@ -302,7 +302,7 @@ document.AddElement(<span class="k">new</span> BinkTextElement(<span class="k">n
         drawn. Pointer input never triggers a Blazor render: samples arrive once per frame, the active tool processes
         them, and only the affected canvas layer is redrawn.
     </p>
-    <pre class="bb-code">Pointer events (browser)
+    <pre class="bb-code" tabindex="0">Pointer events (browser)
   -&gt; batched once per animation frame
   -&gt; BinkStrokeBuilder        spacing filter, streamline smoothing, pressure
   -&gt; BinkStroke + BinkBrush   immutable vector model
@@ -315,7 +315,7 @@ document.AddElement(<span class="k">new</span> BinkTextElement(<span class="k">n
         immutable records with a stable id: an edit is a copy made with <code>with</code> that replaces the original,
         sharing its points. <code>BeginBatch</code> makes a burst of changes one event and one undo step.
     </p>
-    <pre class="bb-code">BinkDrawingOperation inverse = document.Apply(<span class="k">new</span> BinkAddElementOperation(layerId, stroke));
+    <pre class="bb-code" tabindex="0">BinkDrawingOperation inverse = document.Apply(<span class="k">new</span> BinkAddElementOperation(layerId, stroke));
 
 <span class="k">using</span> (document.BeginBatch(<span class="s">"Import"</span>))
 {

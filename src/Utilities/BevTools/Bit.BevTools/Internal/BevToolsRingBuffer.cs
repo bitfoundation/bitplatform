@@ -59,6 +59,24 @@ internal sealed class BevToolsRingBuffer<T>
         }
     }
 
+    /// <summary>
+    /// Replaces the contents, computed from the current ones (oldest first), in one step: a reader sees the old items
+    /// or the new ones, never a part of either. Only the newest <see cref="Capacity"/> of the new items are kept.
+    /// </summary>
+    public void Replace(Func<T[], IEnumerable<T>> replace)
+    {
+        lock (_lock)
+        {
+            var next = replace(ToArray()).ToArray();
+            var skip = Math.Max(0, next.Length - _items.Length);
+            Array.Clear(_items);
+            _head = 0;
+            _count = next.Length - skip;
+            Array.Copy(next, skip, _items, 0, _count);
+            _version++;
+        }
+    }
+
     public T[] ToArray()
     {
         lock (_lock)

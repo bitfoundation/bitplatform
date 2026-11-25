@@ -69,6 +69,8 @@ interface Bridge {
     relay: boolean;
     unloadDrain: boolean;
     maxRelayBytes: number;
+    /** What attachDotNet returned for it: detachDotNet takes it off only while no other bridge attached since. */
+    id: number;
 }
 
 interface State {
@@ -102,6 +104,7 @@ const INSTRUMENTATIONS: Installer[] = [
 
 let state: State | null = null;
 let bridge: Bridge | null = null;
+let attachments = 0;
 let lastContext = '';
 
 // Module-level, so a page can register them before the script starts (or before .NET starts it).
@@ -613,20 +616,39 @@ export function getContext(): BelemetryContext {
     return { consent: s.consent.granted(), decided: s.consent.decided, sessionId: s.session.peek(), pseudoId: s.session.pseudoId, userId: s.session.userId };
 }
 
-/** Registers the .NET bridge (BelemetryJsCallbacks). */
-export function attachDotNet(dotNetRef: DotNetRef, options?: AttachOptions | null): void {
+/**
+ * Registers the .NET bridge (BelemetryJsCallbacks). Returns its attachment id for detachDotNet (0 when none was
+ * registered).
+ */
+export function attachDotNet(dotNetRef: DotNetRef, options?: AttachOptions | null): number {
     try {
         const maxRelayBytes = options && typeof options.maxRelayBytes === 'number' && options.maxRelayBytes > 0 ? options.maxRelayBytes : 0;
-        bridge = dotNetRef ? { ref: dotNetRef, relay: !!(options && options.relay), unloadDrain: !!(options && options.unloadDrain), maxRelayBytes } : null;
+        const id = dotNetRef ? ++attachments : 0;
+        bridge = dotNetRef ? { ref: dotNetRef, relay: !!(options && options.relay), unloadDrain: !!(options && options.unloadDrain), maxRelayBytes, id } : null;
         lastContext = '';
         if (state) {
             updateSink(state);
             syncContext();
             state.pipeline.flush();
         }
+        return id;
     } catch (e) {
         debug('attachDotNet failed', e);
+        return 0;
     }
+}
+
+/**
+ * Takes off the .NET bridge attachDotNet returned the id of, as its .NET side is disposed while the page lives on (a
+ * WebAssembly or Hybrid scope, an Auto app's circuit): the page stops calling a released object. A bridge attached
+ * since (an Auto app's WebAssembly runtime after its circuit) stays. Relayed records then wait in the queue, as before
+ * the first attach.
+ */
+export function detachDotNet(id: number): void {
+    if (!bridge || !id || bridge.id !== id) return;
+    bridge = null;
+    lastContext = '';
+    if (state) updateSink(state);
 }
 
 function sendRequestsCore(requests: DotNetRequest[] | null | undefined, unload: boolean): Promise<void> {
@@ -705,7 +727,7 @@ export function _getState(): State | null {
 
 const api = {
     start, isStarted, setConsent, getConsent, isConsentDecided, setUser, trackEvent, trackPageView, trackException, addProcessor, setAttributes, flush, getContext,
-    getStats, attachDotNet, sendRequests, getDiagnostics, getDiagnosticsStream, clearDiagnostics, downloadFile, Features,
+    getStats, attachDotNet, detachDotNet, sendRequests, getDiagnostics, getDiagnosticsStream, clearDiagnostics, downloadFile, Features,
 };
 
 if (typeof window !== 'undefined') {

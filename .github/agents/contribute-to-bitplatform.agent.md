@@ -55,7 +55,7 @@ If multiple apply, prefer the most specific one.
 | `bug` | Something is broken or behaves incorrectly |
 | `enhancement` | Improving an existing feature |
 | `area / BlazorUI` | Relates to bit BlazorUI components |
-| `area / templates` | Relates to the bit Boilerplate project template |
+| `area / templates` | Relates to the BlazorEmpty project template (bit Boilerplate and bit CLI live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric): open their issues there) |
 | `area / Bswup` | Relates to the bit Bswup PWA service-worker |
 | `area / Butil` | Relates to the bit Butil browser APIs |
 | `area / pipeline` | Relates to CI/CD or GitHub Actions |

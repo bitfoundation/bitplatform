@@ -293,6 +293,8 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
             var tokens = state.RealizeWaapiPlans(values.Keys, continueOthers: true);
             if (tokens != null) CancelWaapiTokens(elementId, tokens, commit: false);
 
+            // What it writes is where those keys rest now, not an origin a gesture's way back was still taking them to.
+            state.ForgetReturningOrigins(values.Where(kv => kv.Value is not null).Select(kv => kv.Key));
             state.SetInstant(values);
             // Kick the loop for a single frame so the change is flushed to the DOM even when
             // the element is otherwise at rest (an instant Set has dirty values but no active
@@ -426,6 +428,7 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         var tokens = state.RealizeWaapiPlans(null, overwritten: start);
         if (tokens != null) CancelWaapiTokens(elementId, tokens, commit: false);
         state.CancelAll();
+        state.ForgetReturningOrigins(start.Where(kv => kv.Value is not null).Select(kv => kv.Key));
         state.SetInstant(start);
         state.ForgetVelocity();
         KickFlush(elementId, state);
@@ -539,13 +542,36 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     public async ValueTask DeactivateGestureLayerAsync(string elementId, string gesture)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return;
-        _gestureGenerations.Remove((elementId, gesture));
-        // Nor while it exits for the properties the exit animates (see ActivateGestureLayerAsync): going back to the
-        // Animate target would cancel the exit for them. The rest go back now.
-        if (state.DeactivateGestureLayer(gesture) is not { } deactivation
-            || state.WithoutExitKeys(deactivation) is not { } request) return;
-        await PlayAsync(elementId, state, request.Values, request.Transition, tcs: null, claim: false,
-            stylesheetKeys: request.StylesheetKeys, yieldsToExit: true);
+        // The way back is a start of the gesture of its own: it overtakes an activation still reading, and an
+        // activation that comes while it reads overtakes it - it must not then play the gesture's keys back over it.
+        var generation = ++_gestureGeneration;
+        _gestureGenerations[(elementId, gesture)] = generation;
+        if (state.DeactivateGestureLayer(gesture) is not { } deactivation)
+        {
+            _gestureGenerations.Remove((elementId, gesture));
+            return;
+        }
+        var revert = deactivation.Owner!;
+        try
+        {
+            // Nor while it exits for the properties the exit animates (see ActivateGestureLayerAsync): going back to the
+            // Animate target would cancel the exit for them. The rest go back now.
+            if (state.WithoutExitKeys(deactivation) is not { } request) return;
+            // Named, so a gesture that takes a key again while it is still on its way back keeps the origin it goes back
+            // to, rather than the value it shows part-way (see BmotionElementAnimationState.ActivateGestureLayer).
+            await PlayAsync(elementId, state, request.Values, request.Transition, tcs: null, claim: false,
+                stylesheetKeys: request.StylesheetKeys,
+                isCurrent: () => _gestureGenerations.TryGetValue((elementId, gesture), out var g) && g == generation,
+                yieldsToExit: true, owner: revert);
+        }
+        finally
+        {
+            // Done with the generation, unless a later start of the gesture has taken it over.
+            if (_gestureGenerations.TryGetValue((elementId, gesture), out var g) && g == generation)
+                _gestureGenerations.Remove((elementId, gesture));
+            // What it didn't start, nothing takes back to the origin it recorded: the next gesture reads where it rests.
+            state.ForgetUnstartedReturns(revert);
+        }
     }
 
     /// <summary>
@@ -688,8 +714,11 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         try
         {
-            // Still the animation that was interrupted: whoever started it can still stop it.
-            await PlayAsync(elementId, state, values, transition, tcs, claim: false, owner: state.StartedBy(replay.Keys[0]));
+            // Still the animations that were interrupted: whoever started each key can still stop it. One plan may carry
+            // keys several starts gave it (a gesture's way back and an AnimateTo), so each key keeps its own owner.
+            var owners = new Dictionary<string, object?>(StringComparer.Ordinal);
+            foreach (var key in replay.Keys) owners[key] = state.StartedBy(key);
+            await PlayAsync(elementId, state, values, transition, tcs, claim: false, owners: owners);
         }
         catch
         {
@@ -1018,12 +1047,16 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
     /// Names this start, so what can stop it later stops only what is still its own
     /// (<see cref="StopOwned(string, IEnumerable{string}, object)"/>); <c>null</c> when nothing will ask.
     /// </param>
+    /// <param name="owners">
+    /// In place of <paramref name="owner"/>, the owner of each key, for a start that carries on what several starts
+    /// played (see <see cref="ReplayInBrowserAsync"/>).
+    /// </param>
     private async ValueTask PlayAsync(
         string elementId, BmotionElementAnimationState state,
         Dictionary<string, object?> values, BmotionTransitionConfig? transition,
         TaskCompletionSource<bool>? tcs, bool claim = true,
         IReadOnlyCollection<string>? stylesheetKeys = null, Func<bool>? isCurrent = null,
-        bool yieldsToExit = false, object? owner = null)
+        bool yieldsToExit = false, object? owner = null, IReadOnlyDictionary<string, object?>? owners = null)
     {
         if (claim) state.Claim(values.Keys);
 
@@ -1073,7 +1106,8 @@ public sealed partial class BmotionAnimationEngine : IAsyncDisposable
         }
 
         // From here the keys play this start: whoever named an earlier one no longer stops them.
-        state.NoteStarted(values.Keys, owner);
+        if (owners is not null) state.NoteStartedEach(values.Keys, owners);
+        else state.NoteStarted(values.Keys, owner);
 
         var (loopValues, instantValues, browserValues, loopReason) = Partition(state, values, transition, explain: observed);
 

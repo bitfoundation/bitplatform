@@ -1,0 +1,11 @@
+﻿@* The app's own panel in BevTools: a plain component that needs nothing of Bit.BevTools, so it can be the public .razor
+   component every .razor file is. It injects the app's services as any component does. *@
+@inject NavigationManager Navigation
+
+<div class="sample-support">
+    <p>The app's own support panel, added through <code>BevToolsLoaderOptions.ConfigureBevTools</code>.</p>
+    <dl>
+        <dt>Page</dt>
+        <dd>@Navigation.ToBaseRelativePath(Navigation.Uri)</dd>
+    </dl>
+</div>

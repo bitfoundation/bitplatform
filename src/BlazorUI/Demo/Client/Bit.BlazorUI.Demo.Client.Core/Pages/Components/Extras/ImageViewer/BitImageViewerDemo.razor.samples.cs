@@ -99,9 +99,9 @@ private BitImageViewer viewerRef = default!;";
 <BitImageViewer Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" Alt=""A granite cliff above a misty autumn forest"" Disabled />";
 
     private readonly string example10RazorCode = @"
-<BitImageViewer Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" Alt=""Una carretera de montaña sobre un lago entre colinas"" Texts=""spanishTexts"" />";
+<BitImageViewer Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg"" Alt=""Una carretera de montaña sobre un lago entre colinas"" Strings=""spanishStrings"" />";
     private readonly string example10CsharpCode = @"
-private static readonly BitImageViewerTexts spanishTexts = new()
+private static readonly BitImageViewerStrings spanishStrings = new()
 {
     RoleDescription = ""visor de imágenes"",
     Instructions = ""Más y menos amplían, las flechas mueven la imagen ampliada y 0 la ajusta de nuevo."",
@@ -134,10 +134,10 @@ private static readonly BitImageViewerTexts spanishTexts = new()
 
     private readonly string example12RazorCode = @"
 <div dir=""rtl"">
-    <BitImageViewer Dir=""BitDir.Rtl"" Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" Alt=""صخره‌ای گرانیتی بالای جنگلی مه‌آلود در پاییز"" Texts=""persianTexts"" />
+    <BitImageViewer Dir=""BitDir.Rtl"" Src=""/_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg"" Alt=""صخره‌ای گرانیتی بالای جنگلی مه‌آلود در پاییز"" Strings=""persianStrings"" />
 </div>";
     private readonly string example12CsharpCode = @"
-private static readonly BitImageViewerTexts persianTexts = new()
+private static readonly BitImageViewerStrings persianStrings = new()
 {
     RoleDescription = ""نمایشگر تصویر"",
     Instructions = ""مثبت و منفی بزرگ‌نمایی می‌کنند، کلیدهای جهت تصویر بزرگ‌شده را جابه‌جا می‌کنند و ۰ آن را دوباره جا می‌دهد."",

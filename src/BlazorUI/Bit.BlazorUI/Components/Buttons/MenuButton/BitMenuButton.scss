@@ -115,11 +115,15 @@ $mnb-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-dark, 
 //   --bit-MenuButton-item-focus-color          focus ring color of the focused item           (default: $clr-pri-focus)
 //   --bit-MenuButton-item-separator-color      the hairline of a separator item                (default: $clr-brd-sec)
 //   --bit-MenuButton-item-secondary-color      the secondary text of an item (a shortcut)     (default: $clr-fg-sec)
+//   --bit-MenuButton-item-description-color    the description under the text of an item      (default: $clr-fg-sec)
+//   --bit-MenuButton-item-current-color        text and icon color of the item pointing at
+//                                              the current page, and of the row of the
+//                                              submenu that holds it                          (default: $clr-pri)
 //   --bit-MenuButton-item-header-color         the label of a group header item               (default: $clr-fg-sec)
 //
 // A parameter written on the menu button wins over the variable that restyles what it sets: an explicit Color
 // over every color above that the role paints - the button's resting, hovered, pressed, open, toggled, disabled
-// and focus colors, its divider, and the focus ring and check mark of the items - an explicit Size over the
+// and focus colors, its divider, and the focus ring, check mark and current color of the items - an explicit Size over the
 // min-height, padding, font size, icon size and chevron width of the button and the min-height and padding of
 // the items, and an explicit Background over the callout background. The variables keep what a Color leaves
 // alone: the transparent background of the Outline and Text variants and the transparent border of Text. The
@@ -689,6 +693,32 @@ $mnb-cal-private-properties: cal-bg;
     color: var(--bit-MenuButton-item-secondary-color, #{$clr-fg-sec});
 }
 
+// The text of an item with a description, and the description under it: one column taking the room the label alone
+// takes otherwise, so the secondary text and the chevron stay at the far end of the row.
+.bit-mnb-ilb {
+    min-width: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+// The description is a line of its own under the text, in a quieter type, and gives way to an ellipsis like the
+// label does rather than widening the menu.
+.bit-mnb-ids {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: max(#{$tg-fs-2xs}, 0.85em);
+    color: var(--bit-MenuButton-item-description-color, #{$clr-fg-sec});
+}
+
+// The item pointing at the current page, and the row of the submenu that holds it, are drawn in the color of the
+// menu button, so the way to where the user is can be read off the menu. It is declared after .bit-mnb-itm at the
+// same weight, so the disabled color, which weighs more, still wins over it.
+.bit-mnb-cur {
+    color: var(--bit-mnb-clr-fg, var(--bit-MenuButton-item-current-color, #{$clr-pri}));
+}
+
 // Every color the Color role paints is read from the role first - published only by an explicit Color (see
 // .bit-mnb) - then from the public variables, then from the primary role an unset Color stands for. A color the
 // role leaves alone (the transparent background of Outline and Text, the transparent border of Text) is the
@@ -950,8 +980,16 @@ $mnb-cal-private-properties: cal-bg;
     // on does not include.
     .bit-mnb-ick,
     .bit-mnb-sch,
-    .bit-mnb-isc {
+    .bit-mnb-isc,
+    .bit-mnb-ids {
         color: currentColor;
+    }
+
+    // The color that marks the current item is replaced by the system pair, so the mark is drawn in a way of its
+    // own: an underline of its label.
+    .bit-mnb-cur > .bit-mnb-btx,
+    .bit-mnb-cur > .bit-mnb-ilb > .bit-mnb-btx {
+        text-decoration: underline;
     }
 
     .bit-mnb.bit-dis {

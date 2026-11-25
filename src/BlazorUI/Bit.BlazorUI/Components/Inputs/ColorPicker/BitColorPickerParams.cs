@@ -208,7 +208,7 @@ public partial class BitColorPickerParams : BitInputBaseParams<string?>, IBitCom
     /// component, and the one most worth cascading: a translation belongs to the application rather than
     /// to one picker in it.
     /// </summary>
-    public BitColorPickerTexts? Texts { get; set; }
+    public BitColorPickerStrings? Strings { get; set; }
 
 
 
@@ -371,9 +371,9 @@ public partial class BitColorPickerParams : BitInputBaseParams<string?>, IBitCom
             bitColorPicker.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (Texts is not null)
+        if (Strings is not null)
         {
-            bitColorPicker.TakeFromCascade(nameof(Texts), Texts, static c => c.Texts, static (c, v) => c.Texts = v);
+            bitColorPicker.TakeFromCascade(nameof(Strings), Strings, static c => c.Strings, static (c, v) => c.Strings = v);
         }
     }
 }

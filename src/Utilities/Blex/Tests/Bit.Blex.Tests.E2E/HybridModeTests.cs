@@ -43,6 +43,16 @@ public class HybridModeTests : InteractiveHarnessTests
     // The page belongs to the shared app window; the session closes it at the end of the run.
     protected override Task ClosePageAsync() => Task.CompletedTask;
 
+    [TestMethod]
+    public async Task A_reload_while_the_app_is_still_starting_does_not_leave_it_loading()
+    {
+        await using var host = await HybridHarnessHost.StartAsync();
+
+        await host.Page.GotoAsync(HybridHarnessHost.AppOrigin + "/", new() { WaitUntil = WaitUntilState.Commit });
+
+        await WaitForInteractiveAsync(host.Page);
+    }
+
     /// <summary>
     /// A failed hybrid test is most often the app itself having gone, which the page cannot say - so the
     /// app's own console output goes into the test's.

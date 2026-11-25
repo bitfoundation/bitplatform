@@ -25,6 +25,7 @@ public partial class MainLayout
                 new() { Text = "Button", Url = "/components/button", AdditionalUrls = ["/components/compoundbutton", "/components/compound-button", "/components/iconbutton", "/components/icon-button"], Description = "CompoundButton, IconButton, LoadingButton", Data = "FAB, Floating Action Button, Submit" },
                 new() { Text = "ButtonGroup", Url = "/components/button-group", Description = "SegmentedControl, SegmentedButton, ToggleGroup" },
                 new() { Text = "MenuButton", Url = "/components/menubutton", AdditionalUrls = ["/components/menu-button"], Description = "DropdownButton, SplitButton, Menu" },
+                new() { Text = "ScrollToTop", Url = "/components/scrolltotop", AdditionalUrls = ["/components/scroll-to-top"], Description = "BackToTop, GoToTop", Data = "Scroll to top, Back to top, Go to top, Return to top, Top of page, Floating button" },
                 new() { Text = "ToggleButton", Url = "/components/togglebutton", AdditionalUrls = ["/components/toggle-button"] }
             ]
         },
@@ -69,6 +70,7 @@ public partial class MainLayout
             Text = "Layouts",
             ChildItems =
             [
+                new() { Text = "Container", Url = "/components/container", Data = "Max width, Centered column, Content width, Page width, Gutter, Wrapper, Section" },
                 new() { Text = "Footer", Url = "/components/footer" },
                 new() { Text = "Grid", Url = "/components/grid" },
                 new() { Text = "Header", Url = "/components/header", Description = "AppBar, TopBar" },
@@ -177,6 +179,7 @@ public partial class MainLayout
                 new() { Text = "AvatarGroup", Url = "/components/avatargroup", Description = "Facepile, PersonaGroup, AvatarStack", Data = "Avatars, Team members, People, Collaborators, Participants, Overflow, +N, Presence", AdditionalUrls = ["/components/avatar-group"] },
                 new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
                 new() { Text = "ContextMenu", Url = "/components/contextmenu", Description = "RightClickMenu, PopupMenu, ShortcutMenu", Data = "Context menu, Right click, Right-click menu, Shift+F10, Menu key, Popup menu, Actions menu", AdditionalUrls = ["/components/context-menu"] },
+                new() { Text = "CopyButton", Url = "/components/copybutton", Description = "ClipboardButton, CopyToClipboardButton", Data = "Copy, Clipboard, Copy to clipboard, Copied, Code snippet, Share link, Install command", AdditionalUrls = ["/components/copy-button"] },
                 new() { Text = "CountryPicker", Url = "/components/countrypicker", Description = "CountrySelector, CountrySelect", Data = "Country, Nationality, Country of residence, Billing country, Flag, ISO code" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"], Description = "DataTable, TreeGrid, TreeList" },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
