@@ -760,9 +760,10 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
 }
 
 // The ring outlines the card, so the track inside it draws none of its own - in any state, which the root class and
-// the row of the switch carried along let this outweigh.
-.bit-tgl.bit-tgl-otl .bit-tgl-cnt .bit-tgl-btn:focus-visible,
-.bit-tgl.bit-tgl-fil .bit-tgl-cnt .bit-tgl-btn:focus-visible {
+// the row of the switch carried along let this outweigh. Only the card's own switch is reached, through child
+// combinators, so a Text toggle nested in the card keeps its ring.
+.bit-tgl.bit-tgl-otl > .bit-tgl-cnt > .bit-tgl-btn:focus-visible,
+.bit-tgl.bit-tgl-fil > .bit-tgl-cnt > .bit-tgl-btn:focus-visible {
     outline: none;
     box-shadow: none;
 }

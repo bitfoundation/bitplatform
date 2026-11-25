@@ -127,8 +127,11 @@ public class BitCheckboxStylesheetTests
 
         // A box carrying the mixed state as well as the value renders the mixed state, so the card does not read as
         // checked - in the forced colors mode either.
-        StringAssert.Contains(stylesheet, ".bit-chb-otl.bit-chb-ckd:not(.bit-chb-ind),\n.bit-chb-fil.bit-chb-ckd:not(.bit-chb-ind) {");
+        // The exclusion adds no weight, so the invalid and the disabled card declared after it still win over its border.
+        StringAssert.Contains(stylesheet, ".bit-chb-otl.bit-chb-ckd:where(:not(.bit-chb-ind)),\n.bit-chb-fil.bit-chb-ckd:where(:not(.bit-chb-ind)) {");
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"\.bit-chb-(otl|fil)\.bit-chb-ckd\s*[,{]"), "A checked card rule leaves the mixed state in.");
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"\.bit-chb-(otl|fil)\.bit-chb-ckd:not\(\.bit-chb-ind\)\s*[,{]"),
+                       "A checked card rule outweighs the border of the invalid and the disabled card.");
 
         // A checked card that is invalid or disabled is tinted with the fill its box takes in that state, which each
         // variant mixes at its own alpha.

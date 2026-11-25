@@ -788,11 +788,12 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 }
 
 // The ring outlines the card, so neither the box nor a custom face inside it draws one of its own - in any state,
-// which the root class carried along lets this outweigh.
+// which the root class carried along lets this outweigh. Only the card's own input, label and box are reached, through
+// child combinators, so a Text checkbox nested in the card keeps its ring.
 .bit-chb.bit-chb-otl,
 .bit-chb.bit-chb-fil {
-    .bit-chb-inp:focus-visible ~ .bit-chb-lbl,
-    .bit-chb-inp:focus-visible ~ .bit-chb-lbl .bit-chb-box {
+    > .bit-chb-inp:focus-visible ~ .bit-chb-lbl,
+    > .bit-chb-inp:focus-visible ~ .bit-chb-lbl > .bit-chb-box {
         outline: none;
         box-shadow: none;
     }
@@ -805,9 +806,10 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 // unset. The border reads the variable the hover moves first, so a hovered checked card answers the pointer; its
 // surface keeps the tint that says it is checked, which the hover leaves alone. A checkbox carrying the mixed state
 // too - a one-way bound Indeterminate the component refuses to move while the click still moves Value - renders a
-// mixed box, so its card stays the card of a box that is not checked, the way the box itself does.
-.bit-chb-otl.bit-chb-ckd:not(.bit-chb-ind),
-.bit-chb-fil.bit-chb-ckd:not(.bit-chb-ind) {
+// mixed box, so its card stays the card of a box that is not checked, the way the box itself does. That exclusion is
+// written in :where(), so it adds no weight and the invalid and the disabled card below still win over this border.
+.bit-chb-otl.bit-chb-ckd:where(:not(.bit-chb-ind)),
+.bit-chb-fil.bit-chb-ckd:where(:not(.bit-chb-ind)) {
     border-color: var(--bit-chb-crd-sbrd, var(--bit-chb-clr, var(--bit-Checkbox-card-checked-border-color, var(--bit-Checkbox-checked-background, #{$clr-pri}))));
     background-color: var(--bit-chb-crd-sbg, var(--bit-chb-crd-tint, var(--bit-chb-crd-bg-checked)));
 }
@@ -888,8 +890,8 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
         border-color: ButtonBorder;
     }
 
-    .bit-chb-otl.bit-chb-ckd:not(.bit-chb-ind),
-    .bit-chb-fil.bit-chb-ckd:not(.bit-chb-ind) {
+    .bit-chb-otl.bit-chb-ckd:where(:not(.bit-chb-ind)),
+    .bit-chb-fil.bit-chb-ckd:where(:not(.bit-chb-ind)) {
         border-color: Highlight;
     }
 
