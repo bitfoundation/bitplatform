@@ -44,6 +44,17 @@ public partial class BitMenuButtonOption : IDisposable
     [Parameter] public string? Class { get; set; }
 
     /// <summary>
+    /// The description of the option: a second line under its text, in a smaller and quieter type - what an entry
+    /// of a navigation (mega) menu says about where it leads.
+    /// </summary>
+    /// <remarks>
+    /// It is announced as the description it is (<c>aria-describedby</c>) rather than as part of the name of the
+    /// option. A <see cref="Template"/>, or the ItemTemplate of the menu button, renders the option in its place and
+    /// leaves it out.
+    /// </remarks>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>
     /// The value of the href attribute of the option. If provided, the option renders as an anchor tag instead of button.
     /// </summary>
     [Parameter] public string? Href { get; set; }
@@ -105,6 +116,18 @@ public partial class BitMenuButtonOption : IDisposable
     /// A unique value to use as a key of the option.
     /// </summary>
     [Parameter] public string? Key { get; set; }
+
+    /// <summary>
+    /// Marks the option as the one pointing at the page the app currently sits on, by matching its <see cref="Href"/>
+    /// against the current URL in the given mode. The option that matches carries <c>aria-current="page"</c> and the
+    /// Current class-style part, and so does the row of the submenu it sits in. Left unset, the option is never marked.
+    /// </summary>
+    /// <remarks>
+    /// A Wildcard (or a Regex) is run as the pattern the <see cref="Href"/> was written as, so unlike an Exact or a
+    /// Prefix one it is never normalized: it has to be app-relative and to carry its leading slash itself, as in
+    /// "/products/*".
+    /// </remarks>
+    [Parameter] public BitNavMatch? Match { get; set; }
 
     /// <summary>
     /// Click event handler of the option.

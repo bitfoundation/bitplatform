@@ -15,8 +15,8 @@ public partial class Header : IDisposable
 
     private sealed record ProductSubMenu(string Id, string Title, string Description, ProductLink[] Items);
 
-    // The entries themselves live in ProductCatalog, shared with the products page. The utilities and
-    // toolings sit in submenus, so the root of the Products menu stays focused on the main products.
+    // The entries themselves live in ProductCatalog, shared with the products page. The utilities, the
+    // toolings and bit Fabric sit in submenus, so the root of the Products menu stays focused on the main products.
     private static readonly ProductLink[] mainProductMenuItems = ProductCatalog.Main;
 
     // Closes the root list, so the products page is reachable from every page, not only the home page.
@@ -26,6 +26,7 @@ public partial class Header : IDisposable
     [
         new("utilities", "Utilities", $"{ProductCatalog.Utilities.Length} focused Blazor libraries", ProductCatalog.Utilities),
         new("toolings", "Toolings", $"{ProductCatalog.Toolings.Length} tools to build apps with", ProductCatalog.Toolings),
+        new("fabric", "bit Fabric", "Full apps on these libraries", ProductCatalog.Fabric),
     ];
 
 
@@ -156,8 +157,6 @@ public partial class Header : IDisposable
 
     private bool IsMenuItemActive(ProductLink item)
     {
-        if (item.Url == Urls.Templates) return navMenuService.IsTemplateDocRoute;
-
         return item.External is false && navMenuService.IsCurrentUrl(item.Url);
     }
 
@@ -167,7 +166,6 @@ public partial class Header : IDisposable
     {
         if (navMenuService.IsCurrentUrl(Urls.Home)) return "Home";
         if (navMenuService.IsCurrentUrl(Urls.Demos)) return "Demos";
-        if (navMenuService.IsCurrentUrl(Urls.Pricing)) return "Pricing";
         if (navMenuService.IsCurrentUrl(Urls.AboutUs)) return "About us";
         if (navMenuService.IsCurrentUrl(Urls.ContactUs)) return "Contact us";
 

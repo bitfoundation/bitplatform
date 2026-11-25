@@ -312,16 +312,16 @@ public class BitMarkdownPipelineTests
     }
 
     [TestMethod]
-    public void BitMarkdownPipelineShouldGiveEachBuilderTextsOfItsOwn()
+    public void BitMarkdownPipelineShouldGiveEachBuilderStringsOfItsOwn()
     {
         var builder = new BitMarkdownPipelineBuilder();
-        builder.Texts.AlertNote = "Hinweis";
+        builder.Strings.AlertNote = "Hinweis";
 
         // Overriding one word in place must not translate every other pipeline in the process.
-        Assert.AreEqual("Hinweis", builder.Build().Texts.AlertNote);
-        Assert.AreEqual("Note", BitMarkdownTexts.Default.AlertNote);
-        Assert.AreEqual("Note", new BitMarkdownPipelineBuilder().Build().Texts.AlertNote);
-        Assert.AreEqual("Note", BitMarkdownPipelines.GitHub.Texts.AlertNote);
+        Assert.AreEqual("Hinweis", builder.Build().Strings.AlertNote);
+        Assert.AreEqual("Note", BitMarkdownStrings.Default.AlertNote);
+        Assert.AreEqual("Note", new BitMarkdownPipelineBuilder().Build().Strings.AlertNote);
+        Assert.AreEqual("Note", BitMarkdownPipelines.GitHub.Strings.AlertNote);
     }
 
     [TestMethod]

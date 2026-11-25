@@ -20,7 +20,7 @@ public sealed class BitMarkdownTableRenderer : BitMarkdownNodeRenderer
         b.OpenElement(0, "div");
         b.AddAttribute(1, "class", "bit-mdv-table-wrapper");
         b.AddAttribute(2, "role", "region");
-        b.AddAttribute(3, "aria-label", r.Texts.Table);
+        b.AddAttribute(3, "aria-label", r.Strings.Table);
         b.AddAttribute(4, "tabindex", "0");
 
         b.OpenElement(5, "table");

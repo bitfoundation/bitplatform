@@ -1,9 +1,0 @@
-description = "Find and reproduce the cause of a problem seen in Test or Production."
-
-prompt = """
-Follow these instructions exactly:
-
-@{.github/agents/troubleshoot.agent.md}
-
-The problem, where and when it was seen: {{args}}
-"""

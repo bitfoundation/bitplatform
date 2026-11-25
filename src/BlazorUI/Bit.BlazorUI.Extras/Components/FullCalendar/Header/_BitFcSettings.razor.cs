@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcSettings : IDisposable
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     private bool _open;
 
     private static readonly int[] _slotDurations = BitFullCalendarSettings.SlotDurations;

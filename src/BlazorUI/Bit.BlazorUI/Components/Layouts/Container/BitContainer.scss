@@ -1,0 +1,55 @@
+﻿@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
+
+// Public CSS variables (read here with a fallback and never declared, so they inherit: set one on :root, on any
+// ancestor, or on the Style of a container - where it also reaches the containers nested in it):
+//   --bit-Container-max-width       maximum width of the container, gutters included  (default: 80rem; the MaxWidth parameter wins)
+//   --bit-Container-padding-inline  the gutters on the two sides of the content       (default: spacing(2), spacing(3) from the sm
+//                                                                                      breakpoint and spacing(4) from md; NoGutter wins)
+//   --bit-Container-padding-block   room above and below the content                  (default: 0)
+//
+// A parameter written on the container wins over the variable that restyles what it sets: MaxWidth over the maximum
+// width and NoGutter over the gutters. The variables restyle the default, not a choice - which is why both publish
+// nothing while they are left unset. A value given to --bit-Container-padding-inline holds at every width; the steps
+// are the default's alone, so a gutter of its own that should still step is set per breakpoint by the app.
+
+$cnt-private-properties: gut, max-width;
+
+.bit-cnt {
+    // Set rather than left to the tag, so an inline Element (a span, an a) is still capped and centered.
+    display: block;
+    width: 100%;
+    margin-inline: auto;
+    box-sizing: border-box;
+    max-width: var(--bit-cnt-max-width, var(--bit-Container-max-width, #{rem2(1280px)}));
+    padding-block: var(--bit-Container-padding-block, 0);
+    padding-inline: var(--bit-cnt-gut, var(--bit-Container-padding-inline, var(--bit-cnt-dgut)));
+
+    // The default gutter, which the breakpoints below widen. It is declared on every root, so a container nested
+    // in another one steps with the width of the window rather than inheriting the outer one's step.
+    --bit-cnt-dgut: #{spacing(2)};
+
+    // Every value a parameter publishes starts out unset on every root, so a container nested in another one never
+    // inherits the outer one's choice; the NoGutter class - declared further down at the same weight - and the inline
+    // MaxWidth still win on the root that carries them.
+    @each $name in $cnt-private-properties {
+        --bit-cnt-#{$name}: initial;
+    }
+}
+
+@media (min-width: $mq-sm-min) {
+    .bit-cnt {
+        --bit-cnt-dgut: #{spacing(3)};
+    }
+}
+
+@media (min-width: $mq-md-min) {
+    .bit-cnt {
+        --bit-cnt-dgut: #{spacing(4)};
+    }
+}
+
+// NoGutter is asked for by the instance itself, so it outranks a gutter inherited from an ancestor.
+.bit-cnt-ngt {
+    --bit-cnt-gut: 0;
+}

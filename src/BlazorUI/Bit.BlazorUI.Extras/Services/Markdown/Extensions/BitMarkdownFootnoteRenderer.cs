@@ -42,7 +42,7 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
                 b.OpenElement(23, "h" + Math.Clamp(footnotes.HeadingLevel, 1, 6));
                 b.AddAttribute(24, "id", $"{Scope(footnotes.IdScope)}footnotes-label");
                 r.AddScreenReaderOnly(b, 25, "bit-mdv-sr-only");
-                b.AddContent(27, r.Texts.Footnotes);
+                b.AddContent(27, r.Strings.Footnotes);
                 b.CloseElement();
                 b.OpenElement(11, "hr");
                 b.CloseElement();
@@ -95,8 +95,8 @@ public sealed class BitMarkdownFootnoteRenderer : BitMarkdownNodeRenderer
             b.AddAttribute(18, "href", r.ResolveInPageUrl($"#{Scope(definition.IdScope)}fnref-{definition.Number}{(i > 1 ? "-" + i : string.Empty)}"));
             b.AddAttribute(19, "class", "footnote-backref");
             b.AddAttribute(20, "aria-label", definition.ReferenceCount > 1
-                ? string.Format(CultureInfo.CurrentCulture, r.Texts.FootnoteBackReferenceOccurrence, definition.Number, i)
-                : string.Format(CultureInfo.CurrentCulture, r.Texts.FootnoteBackReference, definition.Number));
+                ? string.Format(CultureInfo.CurrentCulture, r.Strings.FootnoteBackReferenceOccurrence, definition.Number, i)
+                : string.Format(CultureInfo.CurrentCulture, r.Strings.FootnoteBackReference, definition.Number));
             b.AddContent(21, i > 1 ? $"↩︎{i}" : "↩︎");
             b.CloseElement();
         }

@@ -1,9 +1,0 @@
-description = "Rebuild an existing app's features on this project instead of copying it, and prove feature parity."
-
-prompt = """
-Follow these instructions exactly:
-
-@{.github/agents/port.agent.md}
-
-Source app, scope and constraints: {{args}}
-"""

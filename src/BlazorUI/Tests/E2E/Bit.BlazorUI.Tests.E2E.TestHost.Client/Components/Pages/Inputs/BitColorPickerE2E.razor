@@ -185,8 +185,8 @@
     <span id="a11y-value">@_a11y</span>
 </E2ESection>
 
-<E2ESection Id="texts" Title="Texts">
-    <BitColorPicker ShowAlphaSlider ShowInputs ShowInputsModeSwitch ShowContrast ShowEyeDropper Presets="_brand" Texts="_texts" @bind-Value="_textsValue" />
+<E2ESection Id="strings" Title="Strings">
+    <BitColorPicker ShowAlphaSlider ShowInputs ShowInputsModeSwitch ShowContrast ShowEyeDropper Presets="_brand" Strings="_strings" @bind-Value="_stringsValue" />
 </E2ESection>
 
 @* ---------------------------------------------------------------- Compact pickers *@
@@ -375,7 +375,7 @@
         BitColorFormat.Oklch, BitColorFormat.Oklcha
     ];
 
-    private readonly BitColorPickerTexts _texts = new()
+    private readonly BitColorPickerStrings _strings = new()
     {
         SaturationAreaLabel = "Sattigung",
         SaturationAreaRoleDescription = "Flaeche",
@@ -460,7 +460,7 @@
     private BitColorChangeEventArgs? _lastColor, _lastEnd;
     private string? _lastChange;
     private string? _a11y = "#00FF00";
-    private string? _textsValue = "#FF0000";
+    private string? _stringsValue = "#FF0000";
     private BitColorPicker? _palette;
     private string? _paletteValue = "#107C10";
     private string? _tint = "#0078D4";

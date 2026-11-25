@@ -114,9 +114,9 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFullCalendarMiniCalendarShouldNameTheSelectedDayThroughTheTexts()
+    public void BitFullCalendarMiniCalendarShouldNameTheSelectedDayThroughTheStrings()
     {
-        var component = RenderDay(p => p.Add(c => c.Texts, new BitFullCalendarTexts
+        var component = RenderDay(p => p.Add(c => c.Strings, new BitFullCalendarStrings
         {
             PickerSelectedDayAriaLabel = "chosen",
             PreviousMonthAriaLabel = "Back",

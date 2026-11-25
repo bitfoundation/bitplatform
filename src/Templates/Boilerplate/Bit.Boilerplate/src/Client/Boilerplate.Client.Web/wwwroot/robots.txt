@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: 
-
-Sitemap: https://use-your-web-app-url-here.com/sitemap_index.xml

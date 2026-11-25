@@ -2360,7 +2360,7 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSearchBoxRecoveringSuggestItemsProviderShouldClearTheFailure()
+    public async Task BitSearchBoxRecoveringSuggestItemsProviderShouldClearTheFailure()
     {
         var shouldFail = true;
 
@@ -2381,7 +2381,11 @@ public class BitSearchBoxTests : BunitTestContext
         component.WaitForState(() => component.FindAll(".bit-srb-fld").Count == 1);
 
         shouldFail = false;
-        component.Find(".bit-srb-inp").Input("apples");
+
+        // The failed search is still finishing its renders (the callout it opens re-renders the input) when the
+        // failure first shows, so the input is found and typed into on the renderer's dispatcher: found out here,
+        // its handler could be replaced by the next render before the event reaches it.
+        await component.InvokeAsync(() => component.Find(".bit-srb-inp").Input("apples"));
 
         // The next search starts from a clean slate, so a provider that recovers is not left reported as broken.
         component.WaitForState(() => component.FindAll(".bit-srb-itm").Count == 1);

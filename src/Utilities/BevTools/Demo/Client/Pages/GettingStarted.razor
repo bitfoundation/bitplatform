@@ -183,7 +183,9 @@ builder.Services.AddBitBevToolsLoaderServices(o =&gt;
 }</pre>
     <p class="bb-card-desc">
         Opened later, BevTools reads the components that already exist and sees everything from then on; About lists
-        exactly what such a session can see. On Blazor Server one process serves many users, so outside Development
+        exactly what such a session can see. Logging can start with the app anyway: with
+        <code>o.AutoStart = BevToolsAutoStart.Logs</code> the loader alone captures what the app logs from its first line,
+        without running the rest of BevTools, and the session that attaches shows those entries in its Logs panel. On Blazor Server one process serves many users, so outside Development
         <code>CanOpen</code> stays false unless the app sets <code>AllowInMultiUserHost</code> together with
         <code>Authorize</code>, a callback that decides who may open it - asked on every open, logged on every attach,
         and with <code>ValueAccess</code> at <code>None</code> unless the app raises it.

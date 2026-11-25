@@ -44,7 +44,7 @@
             @* data-bit-esc claims the Escape OnKeyDown lets go of the keyboard position or a tooltip with (see
                Utils.claimEscape), only while there is one to let go of. *@
             <svg class="bit-cht-svg" viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="@SvgRole"
-                 aria-roledescription="@ActiveTexts.RoleDescription"
+                 aria-roledescription="@ActiveStrings.RoleDescription"
                  aria-label="@ChartAriaLabel" aria-describedby="@DescribedBy"
                  style="@AnimStyle" tabindex="@SvgTabIndex"
                  data-bit-esc="@EscapeClaim"
@@ -363,7 +363,7 @@
         bool vertical = legend.Placement is not (BitPlacement.Top or BitPlacement.Bottom);
         bool interactive = IsLegendInteractive(legend);
         <div class="bit-cht-lgd @(vertical ? $"bit-cht-lgd-v {SideClass(legend.Placement)}" : "bit-cht-lgd-h") @Classes?.Legend"
-             role="group" aria-label="@(legend.Title ?? ActiveTexts.LegendAriaLabel)"
+             role="group" aria-label="@(legend.Title ?? ActiveStrings.LegendAriaLabel)"
              style="justify-content:@AlignToFlex(legend.Align);gap:4px @(BitChartSvg.N(legend.Labels.Padding))px@(legend.MaxHeight is { } mh ? $";max-height:{BitChartSvg.N(mh)}px;overflow-y:auto" : "");@Styles?.Legend">
             @if (!string.IsNullOrEmpty(legend.Title))
             {
@@ -432,12 +432,12 @@
                 bool radius = HasRadiusData;
                 <thead>
                     <tr>
-                        <th scope="col">@ActiveTexts.Series</th>
-                        <th scope="col">@PointHeader(x: true, ActiveTexts.X)</th>
-                        <th scope="col">@PointHeader(x: false, ActiveTexts.Y)</th>
+                        <th scope="col">@ActiveStrings.Series</th>
+                        <th scope="col">@PointHeader(x: true, ActiveStrings.X)</th>
+                        <th scope="col">@PointHeader(x: false, ActiveStrings.Y)</th>
                         @if (radius)
                         {
-                            <th scope="col">@ActiveTexts.Radius</th>
+                            <th scope="col">@ActiveStrings.Radius</th>
                         }
                     </tr>
                 </thead>
@@ -472,7 +472,7 @@
                 var columns = Math.Min(TableColumnCount, TableColumnLimit);
                 <thead>
                     <tr>
-                        <th scope="col">@ActiveTexts.Series</th>
+                        <th scope="col">@ActiveStrings.Series</th>
                         @for (int ci = 0; ci < columns; ci++)
                         {
                             <th scope="col">@(ci < data.Labels.Count ? data.Labels[ci] : "")</th>

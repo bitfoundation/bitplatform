@@ -30,7 +30,7 @@
     // then a clock range, with the dates in it once the event crosses a day), and one of a single day adds the date
     // after it, which a block in a day column shows by where it sits and a badge does not.
     var badgeAriaLabel = Event.IsAllDay
-        ? $"{Event.Title}, {Texts.AllDayLabel}, {Event.StartDate.ToString("d", State.Culture)} - {displayEnd.ToString("d", State.Culture)}"
+        ? $"{Event.Title}, {Strings.AllDayLabel}, {Event.StartDate.ToString("d", State.Culture)} - {displayEnd.ToString("d", State.Culture)}"
         : Event.IsSingleDay
             ? $"{BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture)}, {Event.StartDate.ToString("d", State.Culture)}"
             : BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture);
@@ -43,7 +43,7 @@
 <div id="@(Lead && templated ? _BitFcEventTemplateHost.SurfaceId(_instanceId) : null)"
      class="bit-bfc-event-badge @colorClass @positionClass @(Event.IsAllDay ? "bit-bfc-event-allday" : null) @Parts.Classes?.Event @Event.CssClass"
      style="@($"{colorStyleVar}{MarginStyle}{Parts.Styles?.Event}")"
-     title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
+     title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Strings.AllDayLabel)"
      data-bit-bfc-event="@Event.Id"
      data-bit-bfc-move="@(Lead && canDrag ? "x" : null)"
      role="@(Lead ? "button" : null)"
@@ -89,7 +89,7 @@
         }
         else if (Event.IsAllDay && Position is "last" or "none")
         {
-            <span class="bit-bfc-event-badge-time">@Texts.AllDayLabel</span>
+            <span class="bit-bfc-event-badge-time">@Strings.AllDayLabel</span>
         }
     }
 </div>

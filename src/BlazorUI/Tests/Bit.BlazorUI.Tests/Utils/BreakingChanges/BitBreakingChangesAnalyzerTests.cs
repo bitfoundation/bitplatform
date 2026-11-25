@@ -707,7 +707,7 @@ public sealed class BitBreakingChangesAnalyzerTests
                              var aliased = B.BitPanelPosition.End;
                              var conditional = button?.IsEnabled;
                              var copy = marker with { TooltipDirection = null };
-                             var texts = new global::Bit.BlazorUI.BitFullCalendarTexts { BitFcTodayButton = "Today" };
+                             var texts = new global::Bit.BlazorUI.BitFullCalendarStrings { BitFcTodayButton = "Today" };
                          }
                      }
                      """;

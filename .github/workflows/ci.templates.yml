@@ -2,29 +2,16 @@ name: CI Templates
 
 on:
   workflow_dispatch:
-    inputs:
-      prerelease_packages:
-        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org
-        type: boolean
-        default: false
   workflow_call:
-    inputs:
-      prerelease_packages:
-        type: boolean
-        default: false
   pull_request:
     paths:
     - 'src/Templates/**'
-    - 'src/Toolings/Minifier/**'
-    - 'src/Toolings/Cli/**'
-    - '.github/actions/setup-bit-cli/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
 
 permissions:
   contents: read
-  actions: read
 
 concurrency:
   group: ci-templates-${{ github.event.pull_request.number || github.ref }}
@@ -32,7 +19,6 @@ concurrency:
 
 jobs:
   build-Templates:
-    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Templates
     runs-on: ubuntu-26.04
 
@@ -48,25 +34,6 @@ jobs:
       with:
         global-json-file: src/global.json
 
+    # BlazorEmpty builds only after dotnet new, which CI Templates E2E does.
     - name: dotnet pack
-      run: |
-        dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output ./packages --configuration Release
-        dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output ./packages --configuration Release
-
-    - name: Use prerelease packages
-      if: inputs.prerelease_packages
-      uses: ./.github/actions/use-prerelease-packages
-      with:
-        project-folder: src/Templates/Boilerplate/Bit.Boilerplate
-
-    - name: Setup bit CLI
-      uses: ./.github/actions/setup-bit-cli
-
-    # It takes about 5 minutes here, and has a time limit of its own well past that, so a step that gets stuck fails under
-    # its own name instead of running to the job's limit.
-    - name: Set up and build Boilerplate with bit setup
-      run: bit setup src/Templates/Boilerplate/Bit.Boilerplate --platforms android --no-browsers --yes -p:EnforceCodeStyleInBuild=true
-      timeout-minutes: 20
-
-    - name: Verify formatting
-      run: dotnet format whitespace src/Templates/Boilerplate/Bit.Boilerplate/Boilerplate.slnx --verify-no-changes
+      run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output ./packages --configuration Release

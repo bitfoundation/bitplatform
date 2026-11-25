@@ -288,12 +288,12 @@
 
             <DemoExample Title="Localization" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
                 <div>
-                    <b>Texts</b> holds every string the editor renders - tooltips, accessible names, status bar templates,
+                    <b>Strings</b> holds every string the editor renders - tooltips, accessible names, status bar templates,
                     panels and announcements. Override only what you need; the counts are <code>{0}</code> templates so the
                     translation owns the word order.
                 </div>
                 <br />
-                <BitMarkdownEditor Texts="frenchTexts" DefaultValue="@localizationDefaultValue" ShowReadingTime />
+                <BitMarkdownEditor Strings="frenchStrings" DefaultValue="@localizationDefaultValue" ShowReadingTime />
             </DemoExample>
 
             <DemoExample Title="Forms & accessibility" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
@@ -328,7 +328,7 @@
 
             <DemoExample Title="Cascading parameters" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
                 <div>
-                    <b>BitParams</b> with a <b>BitMarkdownEditorParams</b> sets defaults - texts, toolbar, upload handler,
+                    <b>BitParams</b> with a <b>BitMarkdownEditorParams</b> sets defaults - strings, toolbar, upload handler,
                     sizes, styles - for every editor under it. An editor's own value wins (the second keeps its own
                     placeholder).
                 </div>
@@ -343,7 +343,7 @@
             <DemoExample Title="Accessibility" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
                 <div>
                     The text is typed into a plain textarea. A <b>Label</b> names it through its <code>for</code> attribute;
-                    with no label the <b>EditorAriaLabel</b> of <b>Texts</b> ("Markdown editor") names it, and an
+                    with no label the <b>EditorAriaLabel</b> of <b>Strings</b> ("Markdown editor") names it, and an
                     <b>AriaLabel</b> overrides both. <b>Description</b> and, while <b>MaxLength</b> is set, the status bar's
                     character counter describe it through <code>aria-describedby</code>. <b>Required</b> adds
                     <code>aria-required</code>, and <b>Disabled</b> adds <code>disabled</code> and <code>aria-disabled</code>.

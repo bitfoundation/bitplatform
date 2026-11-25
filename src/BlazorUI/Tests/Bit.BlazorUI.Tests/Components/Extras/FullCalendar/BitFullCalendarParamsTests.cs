@@ -143,7 +143,7 @@ public class BitFullCalendarParamsTests : BunitTestContext
             ResourceTemplate = r => b => b.AddContent(0, r.Title),
             Settings = new() { Use24HourFormat = false },
             Styles = new() { Root = "color: red" },
-            Texts = new() { TodayButton = "Now" },
+            Strings = new() { TodayButton = "Now" },
             TimeProvider = new FixedTimeProvider(Anchor.AddHours(11)),
             TimelineEventTemplate = e => b => b.AddContent(0, e.Title),
             Views = [BitFullCalendarView.Week, BitFullCalendarView.Month],
@@ -330,7 +330,7 @@ public class BitFullCalendarParamsTests : BunitTestContext
             DefaultView = BitFullCalendarView.Week,
             HideHeader = true,
             ReadOnly = true,
-            Texts = new() { TodayButton = "Now" },
+            Strings = new() { TodayButton = "Now" },
         }, builder =>
         {
             builder.AddComponentParameter(10, nameof(BitFullCalendar.Class), "own");
@@ -338,7 +338,7 @@ public class BitFullCalendarParamsTests : BunitTestContext
             builder.AddComponentParameter(12, nameof(BitFullCalendar.DefaultView), (BitFullCalendarView?)BitFullCalendarView.Month);
             builder.AddComponentParameter(13, nameof(BitFullCalendar.HideHeader), false);
             builder.AddComponentParameter(14, nameof(BitFullCalendar.ReadOnly), false);
-            builder.AddComponentParameter(15, nameof(BitFullCalendar.Texts), new BitFullCalendarTexts { TodayButton = "Own today" });
+            builder.AddComponentParameter(15, nameof(BitFullCalendar.Strings), new BitFullCalendarStrings { TodayButton = "Own today" });
         });
 
         var root = component.Find(".bit-bfc");

@@ -1,8 +1,0 @@
-{
-    "engines": {
-        "node": ">=24"
-    },
-    "devDependencies": {
-        "sass": "1.108.2"
-    }
-}

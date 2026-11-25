@@ -434,6 +434,43 @@ private readonly BitCheckboxParams[] checkboxParams =
 ];";
 
     private readonly string example15RazorCode = @"
+<style>
+    .card-panel {
+        gap: 0.5rem;
+        width: 24rem;
+        display: flex;
+        max-width: 100%;
+        flex-direction: column;
+    }
+</style>
+
+
+<div class=""card-panel"">
+    <BitCheckbox Variant=""BitVariant.Outline"" FullWidth DefaultValue=""true""
+                 Label=""An AI assistant for your users""
+                 Description=""Answers their questions from your app's data."" />
+    <BitCheckbox Variant=""BitVariant.Outline"" FullWidth
+                 Label=""Push notifications""
+                 Description=""On phones, computers and browsers."" />
+    <BitCheckbox Variant=""BitVariant.Outline"" FullWidth Disabled
+                 Label=""Offline sync""
+                 Description=""Not available on the free plan."" />
+</div>
+
+
+<div class=""card-panel"">
+    <BitCheckbox Variant=""BitVariant.Fill"" FullWidth Reversed DefaultValue=""true""
+                 Label=""Daily summary""
+                 Description=""One email every morning."" />
+    <BitCheckbox Variant=""BitVariant.Fill"" FullWidth Reversed
+                 Label=""Weekly report""
+                 Description=""Every Monday, with the numbers of the week before."" />
+    <BitCheckbox Variant=""BitVariant.Fill"" FullWidth Reversed Color=""BitColor.Success"" DefaultValue=""true""
+                 Label=""Security alerts""
+                 Description=""Sign-ins from a new device."" />
+</div>";
+
+    private readonly string example16RazorCode = @"
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" />
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" Indeterminate />
 <BitCheckbox Color=""BitColor.Primary"" Label=""Primary"" Value />
@@ -573,7 +610,7 @@ private readonly BitCheckboxParams[] checkboxParams =
 <BitCheckbox Disabled Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Indeterminate />
 <BitCheckbox Disabled Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Value />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitCheckbox Label=""House (CheckIcon string)"" CheckIcon=""@(""fa-solid fa-house"")"" />
@@ -595,7 +632,7 @@ private readonly BitCheckboxParams[] checkboxParams =
 
 <BitCheckbox Label=""Square (UncheckedIcon)"" UncheckedIcon=""@BitIconInfo.Bi(""app"")"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" />
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Indeterminate />
 <BitCheckbox Size=""BitSize.Small"" Label=""Checkbox"" Value />
@@ -608,7 +645,7 @@ private readonly BitCheckboxParams[] checkboxParams =
 <BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Indeterminate />
 <BitCheckbox Size=""BitSize.Large"" Label=""Checkbox"" Value />";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -683,7 +720,7 @@ private readonly BitCheckboxParams[] checkboxParams =
     <BitCheckbox Label=""Crash reports"" Description=""Stack traces only, never your data."" />
 </div>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس راست به چپ"" />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال"" Disabled />
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال چک شده"" Disabled Value=""true"" />";

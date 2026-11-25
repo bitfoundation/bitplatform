@@ -224,7 +224,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// <remarks>
     /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
     /// <br />
-    /// The intended use is to allow shared configuration or settings (the texts of a localized app, its toolbar and
+    /// The intended use is to allow shared configuration or settings (the strings of a localized app, its toolbar and
     /// its size, above all) to be applied to multiple viewers through the <see cref="BitParams"/> component.
     /// </remarks>
     [CascadingParameter(Name = BitPdfViewerParams.ParamName)]
@@ -285,7 +285,7 @@ public partial class BitPdfViewer : BitComponentBase
 
     /// <summary>
     /// Custom content shown in place of the pages while no document is loaded - a hint that a file can be
-    /// dropped or picked, say. Defaults to the <see cref="BitPdfViewerTexts.NoDocument"/> text.
+    /// dropped or picked, say. Defaults to the <see cref="BitPdfViewerStrings.NoDocument"/> text.
     /// </summary>
     [Parameter] public RenderFragment? EmptyTemplate { get; set; }
 
@@ -500,6 +500,13 @@ public partial class BitPdfViewer : BitComponentBase
     [Parameter] public BitPdfSpreadMode SpreadMode { get; set; } = BitPdfSpreadMode.None;
 
     /// <summary>
+    /// The strings of the viewer UI. Defaults to English; assign a
+    /// <see cref="BitPdfViewerStrings"/> with the properties you want to override
+    /// to localize the toolbar, the sidebars and the status messages.
+    /// </summary>
+    [Parameter] public BitPdfViewerStrings? Strings { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for the different parts of the viewer.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -513,13 +520,6 @@ public partial class BitPdfViewer : BitComponentBase
     /// Default is <see cref="BitPdfTextCoalescing.Exact"/>.
     /// </summary>
     [Parameter] public BitPdfTextCoalescing TextCoalescing { get; set; } = BitPdfTextCoalescing.Exact;
-
-    /// <summary>
-    /// The texts of the viewer UI. Defaults to English; assign a
-    /// <see cref="BitPdfViewerTexts"/> with the properties you want to override
-    /// to localize the toolbar, the sidebars and the status messages.
-    /// </summary>
-    [Parameter] public BitPdfViewerTexts? Texts { get; set; }
 
     /// <summary>
     /// Custom content rendered at the end of the toolbar, after the built-in controls. The context is the
@@ -1291,7 +1291,7 @@ public partial class BitPdfViewer : BitComponentBase
         {
             if (IsDisposed) return;
 
-            _status = string.Format(ActiveTexts.ErrorFormat, ex.Message);
+            _status = string.Format(ActiveStrings.ErrorFormat, ex.Message);
             // With no document on screen the failure takes its place, as a load's does. With
             // one - or with a load still on its way (a URL Source downloading, say), which owns
             // the surface and its progress bar - only the live region says the pick went wrong.
@@ -1472,7 +1472,7 @@ public partial class BitPdfViewer : BitComponentBase
                     {
                         _loading = true;
                         _progress = 0;
-                        Announce(ActiveTexts.PreparingPrint);
+                        Announce(ActiveStrings.PreparingPrint);
                         StateHasChanged();
                         await Task.Delay(1);
                         if (IsDisposed || version != _loadVersion || epoch != _renderEpoch) return;
@@ -1491,7 +1491,7 @@ public partial class BitPdfViewer : BitComponentBase
                     // lazy pump is fine - only a still-empty slot means a real failure.
                     if (!ok && _pages[i] is null)
                     {
-                        Announce(ActiveTexts.PrintAborted);
+                        Announce(ActiveStrings.PrintAborted);
                         return;
                     }
                     _progress = (i - from + 2) / (double)(to - from + 1);
@@ -2318,10 +2318,10 @@ public partial class BitPdfViewer : BitComponentBase
 
     // One shared instance backs every viewer that does not localize, so the
     // default strings are not re-allocated per component.
-    private static readonly BitPdfViewerTexts _defaultTexts = new();
+    private static readonly BitPdfViewerStrings _defaultStrings = new();
 
-    /// <summary>The texts in effect: the host's, or the shared English defaults.</summary>
-    private BitPdfViewerTexts ActiveTexts => Texts ?? _defaultTexts;
+    /// <summary>The strings in effect: the host's, or the shared English defaults.</summary>
+    private BitPdfViewerStrings ActiveStrings => Strings ?? _defaultStrings;
 
     /// <summary>Puts the focused page into the polite live region. The page box is an
     /// <c>&lt;input&gt;</c>, and moving its value announces nothing, so scrolling or
@@ -2333,7 +2333,7 @@ public partial class BitPdfViewer : BitComponentBase
             _announcement = string.Empty;
             return;
         }
-        _announcement = string.Format(ActiveTexts.PageAnnouncementFormat, CurrentPage, _pages.Count);
+        _announcement = string.Format(ActiveStrings.PageAnnouncementFormat, CurrentPage, _pages.Count);
     }
 
     /// <summary>Puts a message into the polite live region. The region speaks only when its
@@ -3016,7 +3016,7 @@ public partial class BitPdfViewer : BitComponentBase
         if (IsDisposed || version != _loadVersion) return;
         if (source is null)
         {
-            _status = ActiveTexts.NoDocument;
+            _status = ActiveStrings.NoDocument;
             return;
         }
 
@@ -3051,7 +3051,7 @@ public partial class BitPdfViewer : BitComponentBase
                     _loadDeferred = true;
                     return;
                 }
-                _status = ActiveTexts.HttpClientRequired;
+                _status = ActiveStrings.HttpClientRequired;
                 _errorMessage = _status;
                 _loading = false;
                 await OnError.InvokeAsync(_status);
@@ -3085,7 +3085,7 @@ public partial class BitPdfViewer : BitComponentBase
                     _progress = null;
                     return;
                 }
-                _status = string.Format(ActiveTexts.FetchFailedFormat, ex.Message);
+                _status = string.Format(ActiveStrings.FetchFailedFormat, ex.Message);
                 _errorMessage = _status;
                 _loading = false;
                 _progress = null;
@@ -3096,7 +3096,7 @@ public partial class BitPdfViewer : BitComponentBase
         }
         if (bytes is null)
         {
-            _status = ActiveTexts.NoDocument;
+            _status = ActiveStrings.NoDocument;
             _loading = false;
             return;
         }
@@ -3201,7 +3201,7 @@ public partial class BitPdfViewer : BitComponentBase
                 _hiddenLayers = null;
                 _hiddenLayersView = null;
             }
-            _status = string.Format(ActiveTexts.PageCountFormat, _document.PageCount);
+            _status = string.Format(ActiveStrings.PageCountFormat, _document.PageCount);
             _spyPending = true;
             if (_document.Warnings.Count > 0 && OnWarnings.HasDelegate)
             {
@@ -3219,7 +3219,7 @@ public partial class BitPdfViewer : BitComponentBase
             // A superseded load's failure is not this document's failure: don't
             // publish a stale error over the newer load's state.
             if (version != _loadVersion) return;
-            _status = string.Format(ActiveTexts.ErrorFormat, ex.Message);
+            _status = string.Format(ActiveStrings.ErrorFormat, ex.Message);
             _errorMessage = ex.Message;
             await OnError.InvokeAsync(ex.Message);
         }
@@ -3328,7 +3328,7 @@ public partial class BitPdfViewer : BitComponentBase
             EmitCanvasOps = renderMode == BitPdfRenderMode.Canvas,
             // A thumbnail is one option of a listbox: a link inside it would be a tab stop nobody can see.
             EmitLinks = thumbnail is false,
-            InternalLinkLabelFormat = ActiveTexts.LinkAriaLabelFormat,
+            InternalLinkLabelFormat = ActiveStrings.LinkAriaLabelFormat,
             // The frozen snapshot, never the live set: a background build must not read
             // it while the UI thread is switching a layer.
             HiddenLayers = _hiddenLayersView,
@@ -3661,7 +3661,7 @@ public partial class BitPdfViewer : BitComponentBase
     /// already reduced to text (an absent value becomes the "unknown" placeholder).</summary>
     private IEnumerable<(string Label, string Value)> PropertyRows()
     {
-        var texts = ActiveTexts;
+        var strings = ActiveStrings;
         BitPdfMetadata? meta = null;
         try
         {
@@ -3669,23 +3669,23 @@ public partial class BitPdfViewer : BitComponentBase
         }
         catch { /* a damaged /Info dictionary must not break the dialog */ }
 
-        yield return (texts.PropertyFileName, Text(_source?.FileName));
-        yield return (texts.PropertyFileSize, _document is null ? texts.PropertyUnknown : FormatFileSize(FileSize));
-        yield return (texts.PropertyTitle, Text(meta?.Title));
-        yield return (texts.PropertyAuthor, Text(meta?.Author));
-        yield return (texts.PropertySubject, Text(meta?.Subject));
-        yield return (texts.PropertyKeywords, Text(meta?.Keywords));
-        yield return (texts.PropertyCreationDate, Text(FormatDate(meta?.CreationDate)));
-        yield return (texts.PropertyModificationDate, Text(FormatDate(meta?.ModificationDate)));
-        yield return (texts.PropertyCreator, Text(meta?.Creator));
-        yield return (texts.PropertyProducer, Text(meta?.Producer));
-        yield return (texts.PropertyVersion, Text(_document?.Version));
-        yield return (texts.PropertyPageCount, _pages.Count > 0
+        yield return (strings.PropertyFileName, Text(_source?.FileName));
+        yield return (strings.PropertyFileSize, _document is null ? strings.PropertyUnknown : FormatFileSize(FileSize));
+        yield return (strings.PropertyTitle, Text(meta?.Title));
+        yield return (strings.PropertyAuthor, Text(meta?.Author));
+        yield return (strings.PropertySubject, Text(meta?.Subject));
+        yield return (strings.PropertyKeywords, Text(meta?.Keywords));
+        yield return (strings.PropertyCreationDate, Text(FormatDate(meta?.CreationDate)));
+        yield return (strings.PropertyModificationDate, Text(FormatDate(meta?.ModificationDate)));
+        yield return (strings.PropertyCreator, Text(meta?.Creator));
+        yield return (strings.PropertyProducer, Text(meta?.Producer));
+        yield return (strings.PropertyVersion, Text(_document?.Version));
+        yield return (strings.PropertyPageCount, _pages.Count > 0
             ? _pages.Count.ToString(System.Globalization.CultureInfo.CurrentCulture)
-            : texts.PropertyUnknown);
-        yield return (texts.PropertyPageSize, Text(CurrentPageSize));
+            : strings.PropertyUnknown);
+        yield return (strings.PropertyPageSize, Text(CurrentPageSize));
 
-        string Text(string? value) => string.IsNullOrWhiteSpace(value) ? texts.PropertyUnknown : value;
+        string Text(string? value) => string.IsNullOrWhiteSpace(value) ? strings.PropertyUnknown : value;
     }
 
     private static string? FormatDate(DateTimeOffset? value)
@@ -3982,8 +3982,8 @@ public partial class BitPdfViewer : BitComponentBase
     {
         // A query that matches nothing says so in words: "0/0" reads as a counter
         // that has not run yet, which is exactly the wrong thing to tell a reader.
-        <= 0 => string.IsNullOrEmpty(_searchQuery) ? "" : ActiveTexts.PhraseNotFound,
-        _ => string.Format(ActiveTexts.MatchCountFormat, _searchIndex + 1, _searchTotal),
+        <= 0 => string.IsNullOrEmpty(_searchQuery) ? "" : ActiveStrings.PhraseNotFound,
+        _ => string.Format(ActiveStrings.MatchCountFormat, _searchIndex + 1, _searchTotal),
     };
 
     private async Task ToggleSearch()
@@ -4702,10 +4702,10 @@ public partial class BitPdfViewer : BitComponentBase
     }
 
     /// <summary>The accessible name of a thumbnail: "Page iv", not a bare "iv" a screen reader cannot place.</summary>
-    private string ThumbAriaLabel(int index) => string.Format(ActiveTexts.ThumbnailAriaLabelFormat, ThumbLabel(index));
+    private string ThumbAriaLabel(int index) => string.Format(ActiveStrings.ThumbnailAriaLabelFormat, ThumbLabel(index));
 
     /// <summary>The accessible name of a page on the surface: "Page iv", by the label the document gives it.</summary>
-    private string PageAriaLabel(int index) => string.Format(ActiveTexts.PageAriaLabelFormat, ThumbLabel(index));
+    private string PageAriaLabel(int index) => string.Format(ActiveStrings.PageAriaLabelFormat, ThumbLabel(index));
 
     /// <summary>The loading bar's position as a whole percent, or null while it is indeterminate.</summary>
     private string? ProgressPercent => _progress is double p
@@ -4718,7 +4718,7 @@ public partial class BitPdfViewer : BitComponentBase
         : null;
 
     /// <summary>The accessible name of the document surface: the host's, then the document's, then a generic one.</summary>
-    private string SurfaceAriaLabel => AriaLabel.HasValue() ? AriaLabel! : DocumentTitle ?? ActiveTexts.DocumentAriaLabel;
+    private string SurfaceAriaLabel => AriaLabel.HasValue() ? AriaLabel! : DocumentTitle ?? ActiveStrings.DocumentAriaLabel;
 
     /// <summary>What the document is called: its file name, or - for a source that carries none (a buffer,
     /// a stream) - the title its own metadata declares.</summary>

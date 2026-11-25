@@ -77,7 +77,7 @@ public partial class _BitChartLocalizationDemo
         }
     };
 
-    private readonly BitChartTexts _persianTexts = new()
+    private readonly BitChartStrings _persianStrings = new()
     {
         RoleDescription = "نمودار",
         LegendAriaLabel = "راهنمای نمودار",
@@ -122,10 +122,10 @@ private readonly BitChartOptions _currency = new()
           Type=""BitChartType.Bar""
           Data=""Persian()""
           Options=""_rtl""
-          Texts=""_persianTexts""
+          Strings=""_persianStrings""
           NavigationHint=""با کلیدهای جهت‌نما میان فصل‌ها و سری‌ها حرکت کنید."" />";
     private readonly string rtlCsharpCode = @"
-private readonly BitChartTexts _persianTexts = new()
+private readonly BitChartStrings _persianStrings = new()
 {
     RoleDescription = ""نمودار"",
     LegendAriaLabel = ""راهنمای نمودار"",

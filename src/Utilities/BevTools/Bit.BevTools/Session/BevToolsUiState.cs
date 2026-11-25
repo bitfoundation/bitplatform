@@ -75,20 +75,44 @@ public sealed class BevToolsUiState
     public void Touch() => Version++;
 
     /// <summary>
-    /// Set by <see cref="Open"/> until a panel has reconciled it with the saved preferences, so a saved preference to
+    /// Set by <see cref="Open(string?, string?)"/> until a panel has reconciled it with the saved preferences, so a saved preference to
     /// keep the panel closed does not close it again right after the app opened it.
     /// </summary>
     internal bool OpenRequested { get; set; }
 
-    /// <summary>Raised by <see cref="Open"/>, so a panel that is already rendered shows it at once instead of on its next poll.</summary>
+    /// <summary>Raised by <see cref="Open(string?, string?)"/>, so a panel that is already rendered shows it at once instead of on its next poll.</summary>
     internal event Action? OpenedFromCode;
+
+    /// <summary>
+    /// Set by <see cref="Open(string?, string?)"/> with a panel until a panel has read the saved preferences, so the
+    /// panel used last time does not replace the one the app asked for.
+    /// </summary>
+    internal bool PanelRequested { get; set; }
 
     /// <summary>
     /// Opens the panel from code, for example from the app's own "Open dev tools" button. A rendered panel opens at
     /// once; one rendered later opens even when the saved preferences say it was closed last time.
     /// </summary>
-    public void Open()
+    public void Open() => Open(panelId: null, query: null);
+
+    /// <summary>
+    /// Opens the panel from code on <paramref name="panelId"/> (a built-in panel's id, such as <c>"logs"</c>, or one an
+    /// extension or <c>BevToolsOptions.AddPanel</c> added), with <paramref name="query"/> in its filter when given; a null
+    /// <paramref name="panelId"/> keeps the panel that was shown. As <see cref="Open()"/>, it wins over the saved
+    /// preferences of a panel rendered later.
+    /// </summary>
+    public void Open(string? panelId, string? query = null)
     {
+        if (panelId is not null)
+        {
+            ActivePanelId = panelId;
+            PanelRequested = true;
+            if (query is not null)
+            {
+                SetQuery(panelId, query);
+            }
+        }
+
         IsOpen = true;
         OpenRequested = true;
         Touch();

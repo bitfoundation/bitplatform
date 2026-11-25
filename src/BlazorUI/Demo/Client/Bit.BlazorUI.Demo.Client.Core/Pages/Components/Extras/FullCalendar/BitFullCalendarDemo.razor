@@ -376,12 +376,12 @@
         <DemoExample Title="Localization" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
             <div>
                 <b>CultureName</b> (or <b>Culture</b>) decides the calendar system, the names, the first day of the week and
-                the direction - a right-to-left culture flips the layout on its own. <b>Texts</b> translates every string,
+                the direction - a right-to-left culture flips the layout on its own. <b>Strings</b> translates every string,
                 including the accessible names. <b>TimeProvider</b> sets the clock "today" is read from - on Blazor Server,
                 hand it the user's time zone. Here: Persian (<code>fa-IR</code>).
             </div>
             <br />
-            <BitFullCalendar Events="localizationEvents" CultureName="fa-IR" Texts="persianTexts" />
+            <BitFullCalendar Events="localizationEvents" CultureName="fa-IR" Strings="persianStrings" />
         </DemoExample>
 
         <DemoExample Title="Accessibility" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">

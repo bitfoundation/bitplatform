@@ -112,6 +112,15 @@
     const LABEL_LINE_HEIGHT_RATIO = 1.2;
     const DEFAULT_LABEL_FONT_SIZE = 11;
 
+    // The pixel size of a CSS font shorthand, or null when its size is not in
+    // px (a keyword, rem, em, %). The size is the length that stands on its own
+    // or before a `/line-height`, so a line height in px ("0.75rem/24px") is
+    // never read as the size.
+    function fontPxSize(font: string): number | null {
+        const match = /(?:^|\s)(\d*\.?\d+)px(?=\s|\/|$)/.exec(font);
+        return match ? parseFloat(match[1]) : null;
+    }
+
     // The built-in colors: the lowest layer of config.colors, under the colors of
     // the theme in force (setTheme) and every color the options have set.
     const DEFAULT_COLORS: { readonly [key: string]: string } = {
@@ -152,9 +161,9 @@
 
     // Everything the engine says to the user - the live-region announcements, the
     // built-in tooltips, the drag readout and the splitter's accessible name - as
-    // the defaults of the texts option. A text ending in Format is a .NET-style
+    // the defaults of the strings option. A string ending in Format is a .NET-style
     // composite format string (see _text).
-    const DEFAULT_TEXTS: { readonly [key: string]: string } = {
+    const DEFAULT_STRINGS: { readonly [key: string]: string } = {
         // Alt+arrow on a locked bar.
         barLocked: 'Bar is locked',
         // Escape cleared the selection.
@@ -214,10 +223,7 @@
         endTime: number;
         color?: string | null;
         height?: number | null;
-        textAbove?: string | null;
-        textBelow?: string | null;
-        textStart?: string | null;
-        textEnd?: string | null;
+        texts?: ResourceTimelineBarTexts | null;
         tooltip?: string | null;
         startBar?: ResourceTimelineEdgeBar | null;
         endBar?: ResourceTimelineEdgeBar | null;
@@ -226,6 +232,56 @@
         data?: any;
         locked?: boolean;
         className?: string | null;
+    }
+
+    /** A text around a bar, as BitResourceTimelineBarText is serialized; offsets in pixels. */
+    export interface ResourceTimelineBarText {
+        text?: string | null;
+        color?: string | null;
+        font?: string | null;
+        offsetX?: number | null;
+        offsetY?: number | null;
+    }
+
+    /** The texts around a bar, one per position, as BitResourceTimelineBarTexts is serialized. */
+    export interface ResourceTimelineBarTexts {
+        topStart?: ResourceTimelineBarText | null;
+        topCenter?: ResourceTimelineBarText | null;
+        topEnd?: ResourceTimelineBarText | null;
+        start?: ResourceTimelineBarText | null;
+        end?: ResourceTimelineBarText | null;
+        bottomStart?: ResourceTimelineBarText | null;
+        bottomCenter?: ResourceTimelineBarText | null;
+        bottomEnd?: ResourceTimelineBarText | null;
+    }
+
+    /** The positions of ResourceTimelineBarTexts, in the order the first one that has a text names its bar. */
+    const BAR_TEXT_LABEL_ORDER: readonly (keyof ResourceTimelineBarTexts)[] = [
+        'topCenter', 'topStart', 'topEnd', 'start', 'end', 'bottomCenter', 'bottomStart', 'bottomEnd'
+    ];
+
+    // The text of a bar at a position, or null when it has none there (or an
+    // empty one): what every reader of the texts goes through.
+    function barText(alloc: ResourceTimelineAllocation, position: keyof ResourceTimelineBarTexts): ResourceTimelineBarText | null {
+        const texts = alloc.texts;
+        if (!texts) return null;
+        const t = texts[position];
+        return t && t.text ? t : null;
+    }
+
+    // The text of a bar's label: the first of its texts in BAR_TEXT_LABEL_ORDER.
+    function barTextLabel(alloc: ResourceTimelineAllocation): string {
+        if (!alloc.texts) return '';
+        for (const position of BAR_TEXT_LABEL_ORDER) {
+            const t = barText(alloc, position);
+            if (t) return String(t.text);
+        }
+        return '';
+    }
+
+    // Whether a bar has any text to draw around it.
+    function hasBarTexts(alloc: ResourceTimelineAllocation): boolean {
+        return barTextLabel(alloc) !== '';
     }
 
     /** A delay bar drawn before the start or after the end of a bar; duration in milliseconds. */
@@ -347,6 +403,11 @@
         // Width of the icon group drawn centered on the bar ('center' icons), which
         // overhangs both its ends on the center line once wider than the bar.
         centerIcons: number;
+        // Widest of the top and bottom texts aligned with the bar's start edge,
+        // which overhang its end once wider than the bar, and of the ones aligned
+        // with its end edge, which overhang its start.
+        startAligned: number;
+        endAligned: number;
     }
 
     /**
@@ -575,7 +636,7 @@
         resourceAxisMaxWidth: number;
         renderer: string;
         disabled: boolean;
-        texts: { [key: string]: string };
+        strings: { [key: string]: string };
     }
 
     export class ResourceTimelineEngine {
@@ -681,6 +742,9 @@
         private _labelMetricsCache: ResourceTimelineLabelMetrics | null;
         private _labelWidths: Map<string, number> | null;
         private _labelWidthsGen: number;
+        private _validFonts: Map<string, number | null | false> | null;
+        private _validFontsGen: number;
+        private _lineTextBoxes: number[];
         private _spanScratch: ResourceTimelineSpan;
         private _centeredSections: ResourceTimelineCenteredSection[];
         private _edgeLabels: WeakMap<ResourceTimelineAllocation, ResourceTimelineEdgeLabels>;
@@ -1006,9 +1070,9 @@
                 // and the resource-column splitter is inert. Takes effect at once
                 // when switched (an in-progress gesture is canceled).
                 disabled: false,
-                // What the engine says to the user (see DEFAULT_TEXTS). Merged key
+                // What the engine says to the user (see DEFAULT_STRINGS). Merged key
                 // by key, like colors.
-                texts: { ...DEFAULT_TEXTS }
+                strings: { ...DEFAULT_STRINGS }
             };
 
             // Bumped on every config change, invalidating the frozen scene config
@@ -1166,6 +1230,11 @@
             this._labelMetricsCache = null;
             this._labelWidths = null;
             this._labelWidthsGen = 0;
+            this._validFonts = null;
+            this._validFontsGen = 0;
+            // Reused per line of bar texts, so leaving out the ones that would
+            // overlap allocates nothing (see _placeLineTexts).
+            this._lineTextBoxes = [];
             // Reused by the lane pass so measuring a painted span allocates nothing.
             this._spanScratch = { lead: 0, trail: 0 };
             this._centeredSections = [];
@@ -1417,7 +1486,7 @@
 
         // Shallow-merges caller-provided visual options into the config, ignoring
         // null/undefined values (so a partial options object only overrides the
-        // keys it sets). Colors and texts are merged one level deeper. Keys are
+        // keys it sets). Colors and strings are merged one level deeper. Keys are
         // expected to already be camelCased (Blazor's JSON interop does this for
         // .NET models). Every color and default font set here is recorded as
         // explicit, which no theme overrides from then on (see setTheme).
@@ -1428,7 +1497,7 @@
             if (!options) return;
             const c = this.config as any;
             for (const key of Object.keys(options)) {
-                if (key === 'colors' || key === 'texts') continue;
+                if (key === 'colors' || key === 'strings') continue;
                 const value = options[key];
                 if (value === null || value === undefined) continue;
                 // Only keys the default config declares are accepted. An unknown key
@@ -1456,16 +1525,16 @@
                     explicit[key] = value;
                 }
             }
-            if (options.texts) {
-                const texts = c.texts || (c.texts = { ...DEFAULT_TEXTS });
-                for (const key of Object.keys(options.texts)) {
-                    const value = options.texts[key];
+            if (options.strings) {
+                const strings = c.strings || (c.strings = { ...DEFAULT_STRINGS });
+                for (const key of Object.keys(options.strings)) {
+                    const value = options.strings[key];
                     if (value === null || value === undefined) continue;
-                    if (!Object.prototype.hasOwnProperty.call(texts, key)) {
-                        console.warn(`BitResourceTimeline: ignoring unknown text '${key}'`);
+                    if (!Object.prototype.hasOwnProperty.call(strings, key)) {
+                        console.warn(`BitResourceTimeline: ignoring unknown string '${key}'`);
                         continue;
                     }
-                    texts[key] = value;
+                    strings[key] = value;
                 }
             }
         }
@@ -1507,14 +1576,14 @@
             }
         }
 
-        // The text of a key of the texts option (DEFAULT_TEXTS) with its {0}, {1}, ...
+        // The string of a key of the strings option (DEFAULT_STRINGS) with its {0}, {1}, ...
         // placeholders replaced by the arguments, the way a .NET composite format
         // string is ({{ and }} stand for a literal brace; a null argument is empty).
         // A key the config carries no text for falls back to the built-in one.
         private _text(key: string, ...args: any[]): string {
-            const texts = this.config.texts;
-            let format: string | undefined = texts ? texts[key] : undefined;
-            if (typeof format !== 'string') format = DEFAULT_TEXTS[key];
+            const strings = this.config.strings;
+            let format: string | undefined = strings ? strings[key] : undefined;
+            if (typeof format !== 'string') format = DEFAULT_STRINGS[key];
             if (typeof format !== 'string') return key;
             return format.replace(/\{\{|\}\}|\{(\d+)\}/g, (match: string, index: string | undefined) => {
                 if (index === undefined) return match === '{{' ? '{' : '}';
@@ -3596,7 +3665,7 @@
                     // overlapping text on dense timelines. The width test is the
                     // one the lane pass makes, not one on the pixels above, so the
                     // two never disagree at the threshold.
-                    const hasDecorations = alloc.icons?.length || alloc.textAbove || alloc.textBelow || alloc.textStart || alloc.textEnd;
+                    const hasDecorations = alloc.icons?.length || hasBarTexts(alloc);
                     if (hasDecorations && this._carriesLabels(alloc, this._pixelsPerMs)) {
                         this._buildBarDecorations(alloc, node, barX, barEndX, drawStartX, drawEndX, barTop, stackCenterY, barHeight, c);
                         decorated = alloc;
@@ -3609,14 +3678,19 @@
             }
         }
 
-        // Lays out the optional icons and labels around a single bar.
-        // Label positions:
-        //   above  -> centered over the main bar, baseline just above it
-        //   below  -> centered under the main bar, baseline just below it
+        // Lays out the optional icons and texts around a single bar.
+        // Text positions (alloc.texts):
+        //   topStart/topCenter/topEnd -> over the main bar, bottom just above it:
+        //       left-aligned at its start edge, centered on it, right-aligned at
+        //       its end edge
+        //   bottomStart/bottomCenter/bottomEnd -> the same under the main bar, top
+        //       just below it
         //   start  -> right-aligned, ending just before the full span's left edge
         //   end    -> left-aligned, starting just after the full span's right edge
-        // Icons share these anchor positions and are laid out first; labels are
-        // then pushed outward so they never overlap an icon at the same position.
+        // Icons share the above/below/start/end anchors and are laid out first;
+        // texts are then pushed outward so they never overlap an icon at the same
+        // anchor. Each text is then moved by its own offsetX/offsetY, and drawn in
+        // its own color and font when it has them.
         // Icons also support 'center': drawn on top of the main bar, centered in
         // both axes, several of them side by side as one centered group. An icon
         // with `inside` set keeps its anchor but is placed within the main bar,
@@ -3730,14 +3804,29 @@
                 }
             }
 
+            // The texts aligned with an edge of the bar; with stickyBarLabels,
+            // held the label gap in from the edge of the bars area the bar
+            // reaches past (see _stickyEdge). Placed ahead of the centered ones,
+            // which keep clear of them.
+            const topStart = barText(alloc, 'topStart');
+            const topEnd = barText(alloc, 'topEnd');
+            const bottomStart = barText(alloc, 'bottomStart');
+            const bottomEnd = barText(alloc, 'bottomEnd');
+            const topStartX = topStart !== null ? this._stickyEdge(topStart, barX, barEndX, sticky, false) : 0;
+            const topEndX = topEnd !== null ? this._stickyEdge(topEnd, barX, barEndX, sticky, true) : 0;
+            const bottomStartX = bottomStart !== null ? this._stickyEdge(bottomStart, barX, barEndX, sticky, false) : 0;
+            const bottomEndX = bottomEnd !== null ? this._stickyEdge(bottomEnd, barX, barEndX, sticky, true) : 0;
+
             // Only what is on the line moves; a label wider than the bar keeps
             // the bar's center (see _stickyCenter).
+            const topCenter = barText(alloc, 'topCenter');
+            const bottomCenter = barText(alloc, 'bottomCenter');
             let aboveX = barCenterX;
             let belowX = barCenterX;
-            if (sticky && (stickyIcons !== null || alloc.textAbove || alloc.textBelow)) {
+            if (sticky && (stickyIcons !== null || topCenter !== null || bottomCenter !== null)) {
                 const room = barEndX - barX;
-                const aboveWidth = alloc.textAbove ? this._labelWidth(alloc.textAbove) : 0;
-                const belowWidth = alloc.textBelow ? this._labelWidth(alloc.textBelow) : 0;
+                const aboveWidth = topCenter !== null ? this._textWidth(topCenter) : 0;
+                const belowWidth = bottomCenter !== null ? this._textWidth(bottomCenter) : 0;
                 let lineWidth = 0;
                 if (stickyIcons !== null) {
                     for (const icon of stickyIcons) {
@@ -3747,7 +3836,27 @@
                 if (aboveWidth < room && aboveWidth > lineWidth) lineWidth = aboveWidth;
                 if (belowWidth < room && belowWidth > lineWidth) lineWidth = belowWidth;
                 if (lineWidth > 0) {
-                    const lineX = this._stickyCenter(barCenterX, lineWidth, barX, barEndX);
+                    // The line slides between the edge-aligned texts on the lines
+                    // of the centered texts moving with it, so a long bar never
+                    // draws its centered text over an edge-aligned one held in at
+                    // the same edge of the view. With no room between them it
+                    // slides within the bar, and the edge-aligned text it would
+                    // overlap is left out (see _placeLineText).
+                    let lo = barX;
+                    let hi = barEndX;
+                    if (aboveWidth > 0 && aboveWidth < room) {
+                        if (topStart !== null) lo = Math.max(lo, this._textLeft(topStart, topStartX, 'left') + this._textWidth(topStart) + gap);
+                        if (topEnd !== null) hi = Math.min(hi, this._textLeft(topEnd, topEndX, 'right') - gap);
+                    }
+                    if (belowWidth > 0 && belowWidth < room) {
+                        if (bottomStart !== null) lo = Math.max(lo, this._textLeft(bottomStart, bottomStartX, 'left') + this._textWidth(bottomStart) + gap);
+                        if (bottomEnd !== null) hi = Math.min(hi, this._textLeft(bottomEnd, bottomEndX, 'right') - gap);
+                    }
+                    if (!this._fitsWithin(lineWidth, lo, hi)) {
+                        lo = barX;
+                        hi = barEndX;
+                    }
+                    const lineX = this._stickyCenter(barCenterX, lineWidth, lo, hi);
                     const dx = lineX - barCenterX;
                     if (dx !== 0) {
                         if (stickyIcons !== null) {
@@ -3790,27 +3899,115 @@
             }
 
             const labels = node._labels;
-            if (alloc.textAbove) {
-                labels.push({ text: alloc.textAbove, x: aboveX, y: aboveY, align: 'center', baseline: 'bottom' });
-            }
-            if (alloc.textBelow) {
-                labels.push({ text: alloc.textBelow, x: belowX, y: belowY, align: 'center', baseline: 'top' });
-            }
-            // A start label the bar before already draws, or an end label shared
-            // with the bar after - drawn once, centered in the gap between them
-            // (see _resolveSharedEdgeLabels).
-            const edge = this._edgeLabelState(alloc);
-            if (alloc.textStart && !edge.hideStart) {
-                labels.push({ text: alloc.textStart, x: startEdgeX - gap, y: barCenterY, align: 'right', baseline: 'middle' });
-            }
-            if (alloc.textEnd) {
-                if (edge.shareEnd) {
-                    labels.push(this._sharedEndLabel(alloc, edge, barCenterY));
-                } else {
-                    labels.push({ text: alloc.textEnd, x: endEdgeX + gap, y: barCenterY, align: 'left', baseline: 'middle' });
+            if (alloc.texts) {
+                this._placeLineTexts(labels, aboveY, 'bottom', topCenter, aboveX, topStart, topStartX, topEnd, topEndX);
+                this._placeLineTexts(labels, belowY, 'top', bottomCenter, belowX, bottomStart, bottomStartX, bottomEnd, bottomEndX);
+                // A start text the bar before already draws, or an end text shared
+                // with the bar after - drawn once, centered in the gap between them
+                // (see _resolveSharedEdgeLabels).
+                const edge = this._edgeLabelState(alloc);
+                const start = barText(alloc, 'start');
+                if (start !== null && !edge.hideStart) {
+                    labels.push(this._barTextLabel(start, startEdgeX - gap, barCenterY, 'right', 'middle'));
+                }
+                const end = barText(alloc, 'end');
+                if (end !== null) {
+                    if (edge.shareEnd) {
+                        labels.push(this._sharedEndLabel(alloc, edge, barCenterY));
+                    } else {
+                        labels.push(this._barTextLabel(end, endEdgeX + gap, barCenterY, 'left', 'middle'));
+                    }
                 }
             }
             if (labels.length) node.labels = labels;
+        }
+
+        // The scene label of a bar text whose anchor its position puts at (x, y):
+        // moved by the text's offsets, in its color and font when it has them.
+        private _barTextLabel(t: ResourceTimelineBarText, x: number, y: number, align: 'left' | 'center' | 'right', baseline: 'top' | 'middle' | 'bottom'): any {
+            return {
+                text: t.text,
+                x: x + (t.offsetX || 0),
+                y: y + (t.offsetY || 0),
+                align,
+                baseline,
+                color: t.color || null,
+                font: this._textFont(t)
+            };
+        }
+
+        // The left edge of a bar text drawn `align`ed at anchor `x`, moved by its
+        // horizontal offset.
+        private _textLeft(t: ResourceTimelineBarText, x: number, align: 'left' | 'center' | 'right'): number {
+            const ax = x + (t.offsetX || 0);
+            if (align === 'left') return ax;
+            const width = this._textWidth(t);
+            return align === 'right' ? ax - width : ax - width / 2;
+        }
+
+        // Draws the texts of the line above (baseline 'bottom') or below
+        // (baseline 'top') a bar: the centered one, then the start-aligned one,
+        // then the end-aligned one, each left out where it would overlap one
+        // drawn before it - on a bar too narrow for all three, the earlier one
+        // in the order that names the bar is the one kept. A line of one text is
+        // drawn without measuring it.
+        private _placeLineTexts(labels: any[], y: number, baseline: 'top' | 'bottom',
+            center: ResourceTimelineBarText | null, centerX: number,
+            start: ResourceTimelineBarText | null, startX: number,
+            end: ResourceTimelineBarText | null, endX: number): void {
+            const count = (center !== null ? 1 : 0) + (start !== null ? 1 : 0) + (end !== null ? 1 : 0);
+            if (count === 0) return;
+            if (count === 1) {
+                if (center !== null) labels.push(this._barTextLabel(center, centerX, y, 'center', baseline));
+                else if (start !== null) labels.push(this._barTextLabel(start, startX, y, 'left', baseline));
+                else labels.push(this._barTextLabel(end!, endX, y, 'right', baseline));
+                return;
+            }
+            const boxes = this._lineTextBoxes;
+            boxes.length = 0;
+            this._placeLineText(labels, boxes, center, centerX, y, 'center', baseline);
+            this._placeLineText(labels, boxes, start, startX, y, 'left', baseline);
+            this._placeLineText(labels, boxes, end, endX, y, 'right', baseline);
+        }
+
+        // Draws one text of a line unless its box overlaps one of `boxes` - the
+        // texts of the line drawn so far, as left, right, top, bottom runs - and
+        // adds its own box when it is drawn.
+        private _placeLineText(labels: any[], boxes: number[], t: ResourceTimelineBarText | null, x: number, y: number,
+            align: 'left' | 'center' | 'right', baseline: 'top' | 'bottom'): void {
+            if (t === null) return;
+            const left = this._textLeft(t, x, align);
+            const right = left + this._textWidth(t);
+            const height = this._textLineHeight(t, this._labelMetrics());
+            const ay = y + (t.offsetY || 0);
+            const top = baseline === 'bottom' ? ay - height : ay;
+            const bottom = top + height;
+            for (let i = 0; i < boxes.length; i += 4) {
+                if (left < boxes[i + 1] && boxes[i] < right && top < boxes[i + 3] && boxes[i + 2] < bottom) return;
+            }
+            boxes.push(left, right, top, bottom);
+            labels.push(this._barTextLabel(t, x, y, align, baseline));
+        }
+
+        // Where a top or bottom text aligned with an edge of its bar - the start
+        // edge, or with `atEnd` the end one - is anchored: at that edge, or with
+        // stickyBarLabels, while the bar reaches past the edge of the bars area
+        // on that side, held the label gap in from it (the way _stickyCenter
+        // holds a centered one), but never so far that the text would leave its
+        // bar past the other edge, so it leaves the view with its bar. A text
+        // wider than its bar stays at the edge.
+        private _stickyEdge(t: ResourceTimelineBarText, barX: number, barEndX: number, sticky: boolean, atEnd: boolean): number {
+            const edgeX = atEnd ? barEndX : barX;
+            if (!sticky) return edgeX;
+            const width = this._textWidth(t);
+            if (width > barEndX - barX) return edgeX;
+            const pad = this.config.barLabelGap;
+            if (atEnd) {
+                const viewMax = this._viewportW - pad;
+                return edgeX > viewMax ? Math.max(viewMax, barX + width) : edgeX;
+            }
+            const viewMin = this.config.resourceAxisWidth + pad;
+            return edgeX < viewMin ? Math.min(viewMin, barEndX - width) : edgeX;
         }
 
         // Where stickyBarLabels draws content `width` pixels wide that is centered
@@ -3900,17 +4097,18 @@
             if (!node._labels.length) node.labels = null;
         }
 
-        // The end label a bar shares with the next one, centered in the gap
-        // between them on the line both are drawn on.
+        // The end text a bar shares with the next one, centered in the gap
+        // between them on the line both are drawn on, in the end text's style.
         private _sharedEndLabel(alloc: ResourceTimelineAllocation, edge: ResourceTimelineEdgeLabels, centerY: number): any {
-            return { text: alloc.textEnd, x: this.getTimeToX(edge.anchorTime), y: centerY, align: 'center', baseline: 'middle' };
+            return this._barTextLabel(barText(alloc, 'end')!, this.getTimeToX(edge.anchorTime), centerY, 'center', 'middle');
         }
 
-        // Whether a shared end label (see _sharedEndLabel) reaches into the bars
+        // Whether a shared end text (see _sharedEndLabel) reaches into the bars
         // area between `startX` and `endX`, by its own drawn width.
         private _sharedEndLabelInView(alloc: ResourceTimelineAllocation, edge: ResourceTimelineEdgeLabels, startX: number, endX: number): boolean {
-            const x = this.getTimeToX(edge.anchorTime);
-            const half = this._labelWidth(alloc.textEnd!) / 2;
+            const end = barText(alloc, 'end')!;
+            const x = this.getTimeToX(edge.anchorTime) + (end.offsetX || 0);
+            const half = this._textWidth(end) / 2;
             return x + half >= startX && x - half <= endX;
         }
 
@@ -4953,7 +5151,7 @@
             const a = this._focusAlloc;
             const start = this._time.formatDateTime(a.startTime);
             const end = this._time.formatDateTime(a.endTime);
-            const label = a.textAbove || a.textStart || a.textEnd || a.textBelow || '';
+            const label = barTextLabel(a);
             const focused = label
                 ? this._text('focusedLabeledBarFormat', resource.name, label, start, end)
                 : this._text('focusedBarFormat', resource.name, start, end);
@@ -5272,7 +5470,7 @@
             let newStart = alloc.startTime;
             let newEnd = alloc.endTime;
             let newIndex = this._focusResource;
-            // The text announcing the edit (a key of texts), and for a move to
+            // The text announcing the edit (a key of strings), and for a move to
             // another row the name of that row, which it is announced with.
             let verb: string;
             let target: string | null = null;
@@ -5800,11 +5998,12 @@
             return lines.join('\n');
         }
 
-        // Shortest text that identifies a bar: whichever label it carries, falling
-        // back to the first line of a host-supplied tooltip.
+        // Shortest text that identifies a bar: the first of its texts (see
+        // BAR_TEXT_LABEL_ORDER), falling back to the first line of a
+        // host-supplied tooltip.
         private _barLabel(alloc: ResourceTimelineAllocation): string {
-            const label = alloc.textAbove || alloc.textStart || alloc.textEnd || alloc.textBelow;
-            if (label) return String(label);
+            const label = barTextLabel(alloc);
+            if (label) return label;
             return alloc.tooltip ? String(alloc.tooltip).split('\n')[0] : '';
         }
 
@@ -6014,7 +6213,7 @@
         }
 
         // Also where the splitter follows the options it reads after creation:
-        // the focus color, its accessible name (texts) and the disabled state,
+        // the focus color, its accessible name (strings) and the disabled state,
         // which takes it out of the tab order.
         private _syncAxisSplitterChrome(): void {
             if (!this.config.resourceAxisResizable) {
@@ -6860,8 +7059,7 @@
             let metrics = this._labelMetricsCache;
             if (metrics === null || metrics.gen !== this._decorGen) {
                 const c = this.config;
-                const match = /(\d*\.?\d+)px/.exec(c.barLabelFont || '');
-                const fontSize = match ? parseFloat(match[1]) : DEFAULT_LABEL_FONT_SIZE;
+                const fontSize = fontPxSize(c.barLabelFont || '') ?? DEFAULT_LABEL_FONT_SIZE;
                 metrics = this._labelMetricsCache = {
                     gen: this._decorGen,
                     gap: c.barLabelGap,
@@ -6873,25 +7071,78 @@
             return metrics;
         }
 
-        // Drawn width of one bar label, in the configured bar-label font. Widths are
-        // cached by text: a row of bars is measured once per data load, not once per
-        // frame, and labels repeat across bars.
-        private _labelWidth(text: string): number {
+        // Drawn width of one bar label, in `font` or else the configured bar-label
+        // font. Widths are cached by text (and font): a row of bars is measured
+        // once per data load, not once per frame, and labels repeat across bars.
+        private _labelWidth(text: string, font?: string | null): number {
             let widths = this._labelWidths;
             if (widths === null || this._labelWidthsGen !== this._decorGen) {
                 widths = this._labelWidths = new Map();
                 this._labelWidthsGen = this._decorGen;
             }
-            let width = widths.get(text);
+            const key = font ? font + '\u0000' + text : text;
+            let width = widths.get(key);
             if (width === undefined) {
                 const ctx = this._measureCtx;
                 // The context is shared with the axis, which measures in its own
                 // font, so the font is set per measurement rather than per pass.
-                ctx.font = this.config.barLabelFont;
+                ctx.font = font || this.config.barLabelFont;
                 width = ctx.measureText(text).width;
-                widths.set(text, width);
+                widths.set(key, width);
             }
             return width;
+        }
+
+        // The font a bar text is drawn and measured in: its own, or null for the
+        // bar-label font when it has none or one the canvas cannot parse. Such a
+        // font is ignored by the assignment to ctx.font, which would leave the
+        // font the context last held in force - another label's, or the axis's.
+        // Checked once per font, by assigning it over the bar-label font.
+        private _textFont(t: ResourceTimelineBarText): string | null {
+            const font = t.font;
+            if (!font) return null;
+            return this._resolvedFontPx(font) === false ? null : font;
+        }
+
+        // A bar text's own font as the canvas resolves it: false when the canvas
+        // cannot parse it, else its effective size in px, or null when that cannot
+        // be read. The canvas serializes the font it was handed with its size
+        // computed to px whatever unit the shorthand gave it (pt, em, rem, %, a
+        // keyword), so the size is read back off ctx.font; a px size in the font
+        // itself is taken as written. Resolved once per font.
+        private _resolvedFontPx(font: string): number | null | false {
+            let fonts = this._validFonts;
+            if (fonts === null || this._validFontsGen !== this._decorGen) {
+                fonts = this._validFonts = new Map();
+                this._validFontsGen = this._decorGen;
+            }
+            let resolved = fonts.get(font);
+            if (resolved === undefined) {
+                const ctx = this._measureCtx;
+                ctx.font = this.config.barLabelFont;
+                const before = ctx.font;
+                ctx.font = font;
+                const after = ctx.font;
+                resolved = after === before ? false : (fontPxSize(font) ?? fontPxSize(after));
+                fonts.set(font, resolved);
+            }
+            return resolved;
+        }
+
+        // Drawn width of a bar text, in its own font.
+        private _textWidth(t: ResourceTimelineBarText): number {
+            return this._labelWidth(String(t.text), this._textFont(t));
+        }
+
+        // Line height of a bar text: that of the bar-label font, or of its own
+        // font's effective size in px, in whatever unit the font gives it (a font
+        // the canvas cannot parse, or whose size it does not resolve, keeps the
+        // bar-label font's).
+        private _textLineHeight(t: ResourceTimelineBarText, metrics: { lineHeight: number }): number {
+            const font = t.font;
+            if (!font) return metrics.lineHeight;
+            const size = this._resolvedFontPx(font);
+            return typeof size === 'number' ? Math.ceil(size * LABEL_LINE_HEIGHT_RATIO) : metrics.lineHeight;
         }
 
         // Pixel extents of one bar's decorations, mirroring how
@@ -6921,7 +7172,6 @@
             const c = this.config;
             const metrics = this._labelMetrics();
             const gap = metrics.gap;
-            const lineHeight = metrics.lineHeight;
             const barHeight = alloc.height && alloc.height > 0 ? alloc.height : c.barHeight;
             // Label widths are only needed to decide whether decorations collide
             // horizontally; without that, the text is never measured.
@@ -6942,7 +7192,10 @@
             let centerWidth = 0;
             let centerGroup = 0;
 
-            if (alloc.textStart || alloc.textEnd) centerHeight = lineHeight;
+            const start = barText(alloc, 'start');
+            const end = barText(alloc, 'end');
+            if (start !== null) centerHeight = this._textLineHeight(start, metrics);
+            if (end !== null) centerHeight = Math.max(centerHeight, this._textLineHeight(end, metrics));
 
             if (alloc.icons) {
                 for (const icon of alloc.icons) {
@@ -6977,18 +7230,35 @@
                 }
             }
 
-            if (alloc.textAbove) {
-                above = Math.max(above, aboveRun + lineHeight);
-                if (measure) centerWidth = Math.max(centerWidth, this._labelWidth(alloc.textAbove));
-            }
-            if (alloc.textBelow) {
-                below = Math.max(below, belowRun + lineHeight);
-                if (measure) centerWidth = Math.max(centerWidth, this._labelWidth(alloc.textBelow));
+            // The top texts share one line above the bar, past the icons there,
+            // and the bottom ones one below it: the tallest of each sets its
+            // height. Their widths count where they reach past the bar: the
+            // centered ones as wide as they are, the ones aligned with an edge
+            // past the other edge.
+            let startAligned = 0;
+            let endAligned = 0;
+            if (alloc.texts) {
+                for (const position of BAR_TEXT_LABEL_ORDER) {
+                    if (position === 'start' || position === 'end') continue;
+                    const t = barText(alloc, position);
+                    if (t === null) continue;
+                    const height = this._textLineHeight(t, metrics);
+                    if (position === 'topStart' || position === 'topCenter' || position === 'topEnd') {
+                        above = Math.max(above, aboveRun + height);
+                    } else {
+                        below = Math.max(below, belowRun + height);
+                    }
+                    if (!measure) continue;
+                    const width = this._textWidth(t);
+                    if (position === 'topCenter' || position === 'bottomCenter') centerWidth = Math.max(centerWidth, width);
+                    else if (position === 'topStart' || position === 'bottomStart') startAligned = Math.max(startAligned, width);
+                    else endAligned = Math.max(endAligned, width);
+                }
             }
             const startIcons = left;
             const endIcons = right;
-            if (alloc.textStart && measure) left += gap + this._labelWidth(alloc.textStart);
-            if (alloc.textEnd && measure) right += gap + this._labelWidth(alloc.textEnd);
+            if (start !== null && measure) left += gap + this._textWidth(start);
+            if (end !== null && measure) right += gap + this._textWidth(end);
 
             const spill = (centerHeight - barHeight) / 2;
             return {
@@ -7001,7 +7271,9 @@
                 width: Math.max(centerWidth, centerGroup),
                 startIcons,
                 endIcons,
-                centerIcons: centerGroup
+                centerIcons: centerGroup,
+                startAligned,
+                endAligned
             };
         }
 
@@ -7026,8 +7298,12 @@
             const overhang = Math.max(0, (box.width - width) / 2) / scale;
             const left = edge.hideStart ? box.startIcons : box.left;
             const right = edge.shareEnd ? box.endIcons : box.right;
-            out.lead = Math.max(startEdge + left / scale, overhang);
-            out.trail = Math.max(endEdge + right / scale, overhang);
+            // A text aligned with one edge of the bar reaches past the other one
+            // once it is wider than the bar.
+            const leadText = Math.max(0, box.endAligned - width) / scale;
+            const trailText = Math.max(0, box.startAligned - width) / scale;
+            out.lead = Math.max(startEdge + left / scale, overhang, leadText);
+            out.trail = Math.max(endEdge + right / scale, overhang, trailText);
             return out;
         }
 
@@ -7097,7 +7373,9 @@
                 const left = list[i - 1];
                 const right = list[i];
                 if (!(left.endTime <= right.startTime)) continue;
-                if (!this._edgeLabelsMatch(left.textEnd, right.textStart)) continue;
+                const leftEnd = barText(left, 'end');
+                const rightStart = barText(right, 'start');
+                if (leftEnd === null || rightStart === null || !this._edgeLabelsMatch(leftEnd.text, rightStart.text)) continue;
                 pairs = true;
                 // There is no scale before the first layout; _syncLanesToScale
                 // resolves again once there is one.
@@ -7117,9 +7395,9 @@
                         right.startTime - this._centerIconOverhang(right, scale) / scale)
                     : this._effectiveStartTime(right);
                 const gapPx = (to - from) * scale;
-                const endWidth = this._labelWidth(left.textEnd!);
+                const endWidth = this._textWidth(leftEnd);
                 if (gapPx < endWidth + 2 * gap) continue;
-                const startWidth = rightShows ? this._labelWidth(right.textStart!) : 0;
+                const startWidth = rightShows ? this._textWidth(rightStart) : 0;
                 const collideAt = endWidth + gap + (rightShows ? startWidth + gap : 0);
                 if (gapPx >= collideAt + Math.max(endWidth, startWidth)) continue;
 
@@ -7368,10 +7646,7 @@
             dest.endTime = src.endTime;
             dest.color = src.color;
             dest.height = src.height;
-            dest.textAbove = src.textAbove;
-            dest.textBelow = src.textBelow;
-            dest.textStart = src.textStart;
-            dest.textEnd = src.textEnd;
+            dest.texts = src.texts;
             dest.tooltip = src.tooltip;
             dest.startBar = src.startBar;
             dest.endBar = src.endBar;
