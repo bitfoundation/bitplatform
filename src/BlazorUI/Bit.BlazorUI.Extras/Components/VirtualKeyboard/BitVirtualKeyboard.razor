@@ -1,0 +1,96 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@using System.Globalization
+
+@* The root holds the panel of the keys, every layer of the layout in it - the script shows the active one
+   (data-bit-vkb-on) - and the popup, the preview and the live region the script fills. What the script changes is
+   marked with attributes this markup never renders, so a render never takes it back. Docked, the panel is fixed to the
+   bottom of the viewport and the reserve spacer keeps its height in the page while it is open. *@
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     role="group"
+     aria-roledescription="@ActiveStrings.RoleDescription"
+     aria-label="@(AriaLabel ?? _compiled.Name)"
+     data-bit-esc="@EscapeClaim"
+     data-bit-vkb-v="@_keysVersion.ToString(CultureInfo.InvariantCulture)"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+
+    @if (Mode is BitVirtualKeyboardMode.Docked)
+    {
+        <div class="bit-vkb-rsv" aria-hidden="true"></div>
+    }
+
+    <div style="@Styles?.Panel" class="bit-vkb-pnl @Classes?.Panel">
+        <div style="@Styles?.Layers" class="@JoinClasses("bit-vkb-lys", _compiled.Direction is BitDir.Rtl ? "bit-vkb-mir" : null, Classes?.Layers)">
+            @foreach (var layer in _compiled.Layers)
+            {
+                <div @key="layer.Id"
+                     role="group"
+                     aria-label="@GetLayerName(layer)"
+                     data-bit-vkb-layer="@layer.Id"
+                     style="@GetLayerStyle(layer)"
+                     class="@JoinClasses("bit-vkb-lyr", layer == _compiled.Layers[0] ? "bit-vkb-lyb" : null, Classes?.Layer)">
+                    @foreach (var key in layer.Keys)
+                    {
+                        if (key.Gap)
+                        {
+                            <span aria-hidden="true"
+                                  style="@JoinStyleList(GetGridArea(key), Styles?.Gap, key.Style)"
+                                  class="@JoinClasses("bit-vkb-gap", Classes?.Gap, key.Class)"></span>
+                        }
+                        else if (key.Blank)
+                        {
+                            <span aria-hidden="true"
+                                  style="@JoinStyleList(GetGridArea(key), Styles?.Key, Styles?.Blank, key.Style)"
+                                  class="@JoinClasses("bit-vkb-key bit-vkb-blk", Classes?.Key, Classes?.Blank, key.Class)"></span>
+                        }
+                        else
+                        {
+                            var label = GetLabel(key);
+                            <button type="button"
+                                    tabindex="@GetKeyTabIndex(layer, key)"
+                                    data-bit-vkb-k="@key.Index.ToString(CultureInfo.InvariantCulture)"
+                                    aria-label="@GetAriaLabel(key)"
+                                    aria-pressed="@(IsModifier(key) ? "false" : null)"
+                                    disabled="@Disabled"
+                                    aria-disabled="@(Disabled ? "true" : null)"
+                                    style="@GetKeyStyle(key)"
+                                    class="@GetKeyClass(key)">
+                                @if (KeyTemplate is not null)
+                                {
+                                    @KeyTemplate(GetKeyContext(key))
+                                }
+                                else
+                                {
+                                    @if (string.IsNullOrEmpty(label) && key.Icon is not null)
+                                    {
+                                        <i aria-hidden="true" style="@Styles?.KeyIcon" class="@JoinClasses("bit-vkb-ico", key.Icon.GetCssClasses(), Classes?.KeyIcon)" />
+                                    }
+                                    else if (string.IsNullOrEmpty(label) && key.BuiltIn is not null && Icons.TryGetValue(key.BuiltIn, out var icon))
+                                    {
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" style="@Styles?.KeyIcon" class="@JoinClasses("bit-vkb-ico", Classes?.KeyIcon)">@icon</svg>
+                                    }
+                                    else
+                                    {
+                                        <span style="@Styles?.KeyLabel" class="@JoinClasses("bit-vkb-lbl", label is { Length: > 3 } ? "bit-vkb-lbs" : null, Classes?.KeyLabel)"><bdi>@label</bdi></span>
+                                    }
+                                    @if (key.Hint is not null)
+                                    {
+                                        <span aria-hidden="true" style="@Styles?.KeyHint" class="@JoinClasses("bit-vkb-hnt", Classes?.KeyHint)"><bdi>@key.Hint</bdi></span>
+                                    }
+                                }
+                            </button>
+                        }
+                    }
+                </div>
+            }
+        </div>
+
+        <div style="@Styles?.Popup" class="bit-vkb-pop @Classes?.Popup"></div>
+        <div aria-hidden="true" style="@Styles?.Preview" class="bit-vkb-prv @Classes?.Preview"></div>
+    </div>
+
+    <div aria-live="polite" style="@Styles?.LiveRegion" class="bit-vkb-liv @Classes?.LiveRegion"></div>
+</div>

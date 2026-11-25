@@ -374,6 +374,7 @@ public static class ComponentCatalog
         ["TextShimmer"] = BitIconName.ChatBot,
         ["TimeZonePicker"] = BitIconName.WorldClock,
         ["Virtualize"] = BitIconName.RowsGroup,
+        ["VirtualKeyboard"] = BitIconName.KeyboardClassic,
 
         // AI
         ["AiAgentRunView"] = BitIconName.FlowChart,
@@ -567,6 +568,7 @@ public static class ComponentCatalog
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",
         ["TimeZonePicker"] = "A searchable time zone selector with UTC offsets, bound to a TimeZoneInfo or its IANA id.",
         ["Virtualize"] = "Renders only the rows currently in view, for very long lists.",
+        ["VirtualKeyboard"] = "An on-screen keyboard of language layouts and purpose pads (phone, PIN, POS, ...), typing into a value or into the focused input.",
 
         // AI
         ["AiAgentRunView"] = "An agent's run: its goal, its plan, each step's state and timing, and the question it is waiting on.",

@@ -1,0 +1,112 @@
+﻿@page "/e2e/virtual-keyboard"
+
+<PageTitle>BitVirtualKeyboard E2E</PageTitle>
+
+<h1>BitVirtualKeyboard</h1>
+
+<E2ESection Id="value" Title="Value mode">
+    <div style="width: 700px;">
+        <BitVirtualKeyboard Id="vkb-value" Form="BitVirtualKeyboardForm.Full" @bind-Value="_value" />
+    </div>
+    <span id="value-out">@_value</span>
+</E2ESection>
+
+<E2ESection Id="target" Title="One input">
+    <input id="tgt" @ref="_target" @bind="_targetValue" @bind:event="oninput" aria-label="Typed into" />
+    <span id="tgt-out">@_targetValue</span>
+    <input id="tgt-change" @ref="_changeTarget" @bind="_changeValue" @bind:after="() => _changeCount++" aria-label="Committed" />
+    <span id="tgt-change-out">@_changeValue</span>
+    <span id="tgt-change-count">@_changeCount</span>
+    <div style="width: 700px;">
+        <BitVirtualKeyboard Id="vkb-target" Form="BitVirtualKeyboardForm.Full" Target="_target" />
+    </div>
+    <button id="btn-target-change" type="button" @onclick="() => _keyboardForChange = !_keyboardForChange">Type into the committed input</button>
+    @if (_keyboardForChange)
+    {
+        <div style="width: 700px;">
+            <BitVirtualKeyboard Id="vkb-change" Form="BitVirtualKeyboardForm.Full" Target="_changeTarget" />
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="follow" Title="Follow focus, docked">
+    <form id="ff-form" @onsubmit="() => _submitted++">
+        <input id="ff-text" data-bit-vkb enterkeyhint="next" @bind="_ffText" @bind:event="oninput" aria-label="Text" />
+        <input id="ff-next" data-bit-vkb @bind="_ffNext" @bind:event="oninput" aria-label="Next" />
+        <input id="ff-tel" type="tel" data-bit-vkb aria-label="Phone" />
+        <input id="ff-email" type="email" data-bit-vkb @bind="_ffEmail" @bind:event="oninput" aria-label="Email" />
+        <input id="ff-num" type="number" data-bit-vkb @bind="_ffNumber" @bind:event="oninput" aria-label="Number" />
+        <input id="ff-dec" inputmode="decimal" data-bit-vkb aria-label="Decimal" />
+        <input id="ff-date" type="date" data-bit-vkb aria-label="Date" />
+        <input id="ff-pass" type="password" data-bit-vkb aria-label="Password" />
+        <textarea id="ff-area" data-bit-vkb aria-label="Notes"></textarea>
+        <input id="ff-plain" aria-label="Not opted in" />
+    </form>
+    <span id="ff-text-out">@_ffText</span>
+    <span id="ff-email-out">@_ffEmail</span>
+    <span id="ff-num-out">@_ffNumber</span>
+    <span id="ff-open">@_ffOpen</span>
+    <span id="ff-submitted">@_submitted</span>
+    <BitVirtualKeyboard Id="vkb-follow" Mode="BitVirtualKeyboardMode.Docked" FollowFocus Form="BitVirtualKeyboardForm.Compact" @bind-Open="_ffOpen" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="Persian">
+    <input id="fa-in" dir="rtl" @ref="_faTarget" @bind="_faValue" @bind:event="oninput" aria-label="Persian" />
+    <span id="fa-out">@_faValue</span>
+    <div style="width: 700px;">
+        <BitVirtualKeyboard Id="vkb-fa" Language="fa" Form="BitVirtualKeyboardForm.Full" Target="_faTarget" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="german" Title="German">
+    <input id="de-in" @ref="_deTarget" @bind="_deValue" @bind:event="oninput" aria-label="German" />
+    <span id="de-out">@_deValue</span>
+    <div style="width: 700px;">
+        <BitVirtualKeyboard Id="vkb-de" Language="de" Form="BitVirtualKeyboardForm.Full" Target="_deTarget" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="compact" Title="Compact, long press">
+    <input id="cp-in" @ref="_cpTarget" @bind="_cpValue" @bind:event="oninput" aria-label="Compact" />
+    <span id="cp-out">@_cpValue</span>
+    <div style="width: 400px;">
+        <BitVirtualKeyboard Id="vkb-cp" Form="BitVirtualKeyboardForm.Compact" Target="_cpTarget" LongPressDelay="300" />
+    </div>
+</E2ESection>
+
+<div style="height: 400px;"></div>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private string? _value;
+
+    private ElementReference _target;
+    private string? _targetValue;
+    private bool _keyboardForChange;
+    private ElementReference _changeTarget;
+    private string? _changeValue;
+    private int _changeCount;
+
+    private string? _ffText;
+    private string? _ffNext;
+    private string? _ffEmail;
+    private string? _ffNumber;
+    private bool _ffOpen;
+    private int _submitted;
+
+    private ElementReference _faTarget;
+    private string? _faValue;
+    private ElementReference _deTarget;
+    private string? _deValue;
+    private ElementReference _cpTarget;
+    private string? _cpValue;
+
+    // The inputs are taken by @ref in this render, so the keyboards are handed them in the next one.
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) StateHasChanged();
+    }
+}
