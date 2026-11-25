@@ -603,6 +603,11 @@ public partial class BitCheckbox : BitInputBase<bool>
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
     /// <summary>
+    /// Whether the checkbox is drawn as a card, which is what the hit area laid over the whole card is rendered for.
+    /// </summary>
+    private bool IsCard => Variant is BitVariant.Outline or BitVariant.Fill;
+
+    /// <summary>
     /// Whether the checkbox carries a visible error message, which is what the error line is rendered for.
     /// </summary>
     private bool HasErrorMessage => ErrorMessageTemplate is not null || ErrorMessage.HasValue();

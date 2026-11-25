@@ -108,10 +108,76 @@ public class BitCheckboxStylesheetTests
         StringAssert.Contains(hover, "--bit-chb-crd-sbg: var(--bit-chb-crd-bg-hover);");
         Assert.IsFalse(Regex.IsMatch(hover, @"(^|[\s;{])(border-color|background-color)\s*:"), "The hover of a card paints instead of moving a variable.");
 
+        // Only a card that does not read as checked takes the hover surface - one that is not checked, or one whose box
+        // shows the mixed state - so a hovered checked card keeps the tint that says it is checked.
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(hover, "&:is(:not(.bit-chb-ckd), .bit-chb-ind) {"), "--bit-chb-crd-sbg: var(--bit-chb-crd-bg-hover);");
+        Assert.IsFalse(SourceFiles.GetScssDeclarations(stylesheet, ":is(.bit-chb-otl, .bit-chb-fil):hover:not(.bit-chb-rdl):not(.bit-chb-ldg):not(.bit-inv) {").Contains("--bit-chb-crd-sbg"),
+                       "The hover moves the surface of a checked card to the neutral hover surface too.");
+
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-chb {");
 
         StringAssert.Contains(root, "--bit-chb-crd-sbg: initial;");
         StringAssert.Contains(root, "--bit-chb-crd-sbrd: initial;");
+    }
+
+    [TestMethod]
+    public void BitCheckboxCardShouldPaintTheStateItsBoxShows()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A box carrying the mixed state as well as the value renders the mixed state, so the card does not read as
+        // checked - in the forced colors mode either.
+        StringAssert.Contains(stylesheet, ".bit-chb-otl.bit-chb-ckd:not(.bit-chb-ind),\n.bit-chb-fil.bit-chb-ckd:not(.bit-chb-ind) {");
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"\.bit-chb-(otl|fil)\.bit-chb-ckd\s*[,{]"), "A checked card rule leaves the mixed state in.");
+
+        // A checked card that is invalid or disabled is tinted with the fill its box takes in that state, which each
+        // variant mixes at its own alpha.
+        var state = SourceFiles.GetScssBlock(stylesheet, ".bit-chb-otl.bit-chb-ckd:not(.bit-chb-ind):is(.bit-inv, .bit-dis),");
+
+        StringAssert.Contains(state, "background-color: var(--bit-chb-crd-box-tint);");
+        StringAssert.Contains(VariantDeclarations(stylesheet, ".bit-chb-otl"), "--bit-chb-crd-box-tint: #{translucent(var(--bit-chb-box-clr-bg), 8%)};");
+        StringAssert.Contains(VariantDeclarations(stylesheet, ".bit-chb-fil"), "--bit-chb-crd-box-tint: #{translucent(var(--bit-chb-box-clr-bg), 14%)};");
+    }
+
+    [TestMethod]
+    public void BitCheckboxCardHitAreaShouldLieUnderTheContent()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The hit area lies under the content, above the surface of the card the root isolates a stacking context for,
+        // so it never covers the label - which keeps its Title and its press to itself.
+        var hit = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-chb-hit {");
+
+        StringAssert.Contains(hit, "z-index: -1;");
+        StringAssert.Contains(hit, "position: absolute;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, ".bit-chb-otl,\n.bit-chb-fil {"), "isolation: isolate;");
+        StringAssert.Contains(stylesheet, ".bit-chb-inp:focus-visible ~ .bit-chb-hit {");
+        Assert.IsFalse(stylesheet.Contains(".bit-chb-lbl::after"), "The label is still stretched over the card, Title and all.");
+
+        // The lines under the box let the pointer through to it, and whatever in them answers the pointer takes it
+        // back - without being positioned or stacked, which would move what an app lays out inside it.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ":where(.bit-chb-otl, .bit-chb-fil) :where(.bit-chb-des, .bit-chb-erm) {"), "pointer-events: none;");
+
+        var handBack = SourceFiles.GetScssBlock(stylesheet, ":where(.bit-chb-otl:not(.bit-dis), .bit-chb-fil:not(.bit-dis)) :where(.bit-chb-des, .bit-chb-erm) :where(");
+
+        foreach (var interactive in new[] { "a", "button", "input", "label", "[contenteditable]", "[role]", "[tabindex]" })
+        {
+            StringAssert.Contains(handBack, interactive);
+        }
+
+        StringAssert.Contains(handBack, "pointer-events: auto;");
+        Assert.IsFalse(Regex.IsMatch(handBack, @"(z-index|position)\s*:"), "The card positions what an app puts in its lines.");
+
+        // A press anywhere on the card dips the box, as a press on the label does.
+        StringAssert.Contains(stylesheet, ".bit-chb-hit:active ~ .bit-chb-lbl .bit-chb-box");
+    }
+
+    // The own rule of a variant, not the card rule the Outline and Fill variants share.
+    private static string VariantDeclarations(string stylesheet, string selector)
+    {
+        var own = SourceFiles.GetScssRules(stylesheet).Single(r => r.Header == selector && r.Ancestors.Count == 0);
+
+        return SourceFiles.GetScssDeclarations(stylesheet[own.Index..], $"{selector} {{");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "Checkbox", "BitCheckbox.scss");

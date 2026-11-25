@@ -763,33 +763,7 @@ public partial class BitCheckboxDemo
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitSize(),
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines how the checkbox is drawn: as a bare box and label or as a selectable card.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Fill",
-                    Description="The checkbox is a selectable card drawn as a filled surface.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Outline",
-                    Description="The checkbox is a selectable card drawn as a border.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="The bare box and label, with no surface of their own.",
-                    Value="2",
-                }
-            ]
-        }
+        DemoSharedEnums.BitVariant(description: "Determines how the checkbox is drawn: as a bare box and label or as a selectable card.")
     ];
 
 

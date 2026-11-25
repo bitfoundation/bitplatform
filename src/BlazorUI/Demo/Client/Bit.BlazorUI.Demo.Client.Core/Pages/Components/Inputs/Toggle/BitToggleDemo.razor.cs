@@ -507,33 +507,7 @@ public partial class BitToggleDemo
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitSize(),
-        new()
-        {
-            Id = "variant-enum",
-            Name = "BitVariant",
-            Description = "Determines how the toggle is drawn: as a bare switch and label or as a selectable card.",
-            Items =
-            [
-                new()
-                {
-                    Name= "Fill",
-                    Description="The toggle is a selectable card drawn as a filled surface.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "Outline",
-                    Description="The toggle is a selectable card drawn as a border.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Text",
-                    Description="The bare switch and label, with no surface of their own.",
-                    Value="2",
-                }
-            ]
-        }
+        DemoSharedEnums.BitVariant(description: "Determines how the toggle is drawn: as a bare switch and label or as a selectable card.")
     ];
 
 

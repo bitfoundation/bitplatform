@@ -462,7 +462,8 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 // the same transition as the colors, so it eases back - and under reduced motion, where the motion tokens
 // collapse, it stops easing and becomes what a hover color change already is: a state the box is in for
 // as long as the pointer is held, arrived at and left instantly.
-.bit-chb:not(.bit-dis):not(.bit-chb-rdl):not(.bit-chb-ldg) .bit-chb-lbl:active .bit-chb-box {
+.bit-chb:not(.bit-dis):not(.bit-chb-rdl):not(.bit-chb-ldg) .bit-chb-lbl:active .bit-chb-box,
+.bit-chb:not(.bit-dis):not(.bit-chb-rdl):not(.bit-chb-ldg) .bit-chb-hit:active ~ .bit-chb-lbl .bit-chb-box {
     scale: 0.9;
 }
 
@@ -727,13 +728,18 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 // ---- Card variants ----
 // Outline and Fill turn the whole checkbox into a selectable card, the way BitChoiceGroup's Variant turns each of its
 // items into one. The surface is drawn on the root, around the box, the label, the error line and the description.
-// The label is the one element that hands a click to the input, so it is stretched over the whole card through a
-// pseudo-element - which makes every part of the card the click target, the description included, and is also what
-// carries the focus ring, so the ring outlines the card instead of the box inside it. The label is taken out of the
-// positioning chain for that, so the pseudo-element is laid out against the root, border included.
+// The input takes a click from a label of its own, so the card renders one more label of it (.bit-chb-hit) laid over
+// the whole card, border included, and under everything in it: every part of the card that does not answer the
+// pointer itself - the padding, the gaps, the description and the error line - is then the click target, and the
+// same label carries the focus ring, so the ring outlines the card instead of the box inside it. The hit area is put
+// under the content with a negative z-index, and the root isolates a stacking context for it, so it still lies above
+// the surface of the card. Lying under the content rather than over it, it never covers the visible label, which
+// keeps its own title, its own press and the click it hands the input - and nothing in the card has to be positioned
+// or stacked to be reached.
 // Text - the default - draws no surface at all and is the bare box and label the checkbox has always been.
 .bit-chb-otl,
 .bit-chb-fil {
+    isolation: isolate;
     box-sizing: border-box;
     padding: var(--bit-chb-card-padding, var(--bit-Checkbox-card-padding, #{spacing(1.5)}));
     border-radius: var(--bit-Checkbox-card-radius, #{$shp-radius-surface});
@@ -741,37 +747,44 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
     border: var(--bit-Checkbox-card-border-width, #{$shp-border-width}) $shp-border-style var(--bit-chb-crd-sbrd, var(--bit-chb-crd-brd));
     transition: border-color $mot-duration $mot-easing, background-color $mot-duration $mot-easing;
 
-    .bit-chb-lbl {
-        position: static;
-
-        &::after {
-            content: "";
-            position: absolute;
-            inset: calc(-1 * var(--bit-Checkbox-card-border-width, #{$shp-border-width}));
-            border-radius: var(--bit-Checkbox-card-radius, #{$shp-radius-surface});
-        }
-    }
-
-    .bit-chb-inp:focus-visible ~ .bit-chb-lbl::after {
+    .bit-chb-inp:focus-visible ~ .bit-chb-hit {
         @include focus-ring-own(var(--bit-chb-clr-focus, var(--bit-Checkbox-focus-color)));
     }
 
-    &.bit-inv .bit-chb-inp:focus-visible ~ .bit-chb-lbl::after {
+    &.bit-inv .bit-chb-inp:focus-visible ~ .bit-chb-hit {
         @include focus-ring($clr-err-focus);
     }
 
-    &.bit-dis .bit-chb-inp:focus-visible ~ .bit-chb-lbl::after {
+    &.bit-dis .bit-chb-inp:focus-visible ~ .bit-chb-hit {
         @include focus-ring(var(--bit-chb-clr-dis, var(--bit-Checkbox-disabled-color, #{$clr-pri-dis})));
     }
 }
 
-// The stretched label lies over everything in the card, so whatever in it answers the pointer on its own - a link in
-// a DescriptionTemplate, a button in an ErrorMessageTemplate or a LabelTemplate - is lifted above it and keeps
-// working, while the rest of the card toggles the checkbox. Written at no weight, so the page's own positioning of
-// such an element still wins.
-:where(.bit-chb-otl, .bit-chb-fil) :where(.bit-chb-tpl, .bit-chb-des, .bit-chb-erm) :where(a, button, input, select, textarea, summary, [tabindex]) {
-    z-index: 1;
-    position: relative;
+// The hit area of a card. It is rendered for a card alone, and takes the cursor of the root, which the states no click
+// can change turn back to the default.
+.bit-chb-hit {
+    z-index: -1;
+    cursor: inherit;
+    user-select: none;
+    position: absolute;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    inset: calc(-1 * var(--bit-Checkbox-card-border-width, #{$shp-border-width}));
+    border-radius: var(--bit-Checkbox-card-radius, #{$shp-radius-surface});
+}
+
+// The lines under the box let the pointer through to the hit area under them, so a click on their text toggles the
+// checkbox the way a click on the label does. Whatever in them answers the pointer on its own - a link in a
+// DescriptionTemplate, a button in an ErrorMessageTemplate, the label of another checkbox, an element given a role or
+// a tabindex - takes it back and keeps working. Nothing is positioned or stacked for that, so the layout of what an
+// app puts there stays the app's own. Written at no weight, so a page's own pointer-events still win; a disabled
+// checkbox takes no pointer events at all, and nothing inside it is handed them back.
+:where(.bit-chb-otl, .bit-chb-fil) :where(.bit-chb-des, .bit-chb-erm) {
+    pointer-events: none;
+}
+
+:where(.bit-chb-otl:not(.bit-dis), .bit-chb-fil:not(.bit-dis)) :where(.bit-chb-des, .bit-chb-erm) :where(a, button, input, select, textarea, summary, label, audio, video, iframe, [contenteditable], [role], [tabindex]) {
+    pointer-events: auto;
 }
 
 // The ring outlines the card, so neither the box nor a custom face inside it draws one of its own - in any state,
@@ -789,9 +802,12 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 // border, then the public variable, then the checked fill of the box. The tint of an explicit Color is a value of its
 // own, which is left unset - and so falls through to the public checked background, then to the tint of the checked
 // fill - while the Color is: a color-mix() over an unset property is invalid, and an invalid custom property reads as
-// unset. Each reads the variable the hover moves first, so a hovered checked card answers the pointer as well.
-.bit-chb-otl.bit-chb-ckd,
-.bit-chb-fil.bit-chb-ckd {
+// unset. The border reads the variable the hover moves first, so a hovered checked card answers the pointer; its
+// surface keeps the tint that says it is checked, which the hover leaves alone. A checkbox carrying the mixed state
+// too - a one-way bound Indeterminate the component refuses to move while the click still moves Value - renders a
+// mixed box, so its card stays the card of a box that is not checked, the way the box itself does.
+.bit-chb-otl.bit-chb-ckd:not(.bit-chb-ind),
+.bit-chb-fil.bit-chb-ckd:not(.bit-chb-ind) {
     border-color: var(--bit-chb-crd-sbrd, var(--bit-chb-clr, var(--bit-Checkbox-card-checked-border-color, var(--bit-Checkbox-checked-background, #{$clr-pri}))));
     background-color: var(--bit-chb-crd-sbg, var(--bit-chb-crd-tint, var(--bit-chb-crd-bg-checked)));
 }
@@ -810,12 +826,25 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
     border-color: var(--bit-chb-clr-dis, var(--bit-Checkbox-disabled-color, #{$clr-pri-dis}));
 }
 
+// A checked card that is invalid or disabled tints its surface with the fill its box takes in that state - the error
+// color, the disabled color - rather than with the accent, so the surface and the box say the same thing. Neither
+// state hovers, so nothing has to be read ahead of it.
+.bit-chb-otl.bit-chb-ckd:not(.bit-chb-ind):is(.bit-inv, .bit-dis),
+.bit-chb-fil.bit-chb-ckd:not(.bit-chb-ind):is(.bit-inv, .bit-dis) {
+    background-color: var(--bit-chb-crd-box-tint);
+}
+
 // The hover of a card leaves out the states the hover of the box leaves out: a read-only or busy card must not
-// promise a change no click can make, and an invalid one keeps the error border that is the point of the state.
+// promise a change no click can make, and an invalid one keeps the error border that is the point of the state. Only
+// a card that does not read as checked takes the hover surface: a checked one keeps the tint that says it is checked
+// and answers the pointer with its border.
 @media (hover: hover) {
     :is(.bit-chb-otl, .bit-chb-fil):hover:not(.bit-chb-rdl):not(.bit-chb-ldg):not(.bit-inv) {
         --bit-chb-crd-sbrd: var(--bit-chb-clr-hover, var(--bit-Checkbox-card-hover-border-color, var(--bit-Checkbox-checked-hover-background, #{$clr-pri-hover})));
-        --bit-chb-crd-sbg: var(--bit-chb-crd-bg-hover);
+
+        &:is(:not(.bit-chb-ckd), .bit-chb-ind) {
+            --bit-chb-crd-sbg: var(--bit-chb-crd-bg-hover);
+        }
     }
 }
 
@@ -829,6 +858,7 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
     --bit-chb-crd-brd: var(--bit-Checkbox-outline-card-border-color, var(--bit-Checkbox-card-border-color, #{$clr-brd-sec}));
     --bit-chb-crd-bg-hover: var(--bit-Checkbox-outline-card-hover-background, var(--bit-Checkbox-card-hover-background, #{$clr-bg-sec-hover}));
     --bit-chb-crd-tint: #{translucent(var(--bit-chb-clr), 8%)};
+    --bit-chb-crd-box-tint: #{translucent(var(--bit-chb-box-clr-bg), 8%)};
     --bit-chb-crd-bg-checked: var(--bit-Checkbox-outline-card-checked-background, var(--bit-Checkbox-card-checked-background, #{translucent(var(--bit-chb-acc), 8%)}));
 }
 
@@ -839,6 +869,7 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
     --bit-chb-crd-brd: var(--bit-Checkbox-fill-card-border-color, var(--bit-Checkbox-card-border-color, transparent));
     --bit-chb-crd-bg-hover: var(--bit-Checkbox-fill-card-hover-background, var(--bit-Checkbox-card-hover-background, #{$clr-bg-ter}));
     --bit-chb-crd-tint: #{translucent(var(--bit-chb-clr), 14%)};
+    --bit-chb-crd-box-tint: #{translucent(var(--bit-chb-box-clr-bg), 14%)};
     --bit-chb-crd-bg-checked: var(--bit-Checkbox-fill-card-checked-background, var(--bit-Checkbox-card-checked-background, #{translucent(var(--bit-chb-acc), 14%)}));
 }
 
@@ -857,8 +888,8 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
         border-color: ButtonBorder;
     }
 
-    .bit-chb-otl.bit-chb-ckd,
-    .bit-chb-fil.bit-chb-ckd {
+    .bit-chb-otl.bit-chb-ckd:not(.bit-chb-ind),
+    .bit-chb-fil.bit-chb-ckd:not(.bit-chb-ind) {
         border-color: Highlight;
     }
 

@@ -2026,10 +2026,24 @@ public class BitCheckboxTests : BunitTestContext
         Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-chb-otl" or "bit-chb-fil"));
 
         // The card is the root itself: the markup inside it - the input, the label and the lines under it - is the
-        // markup of the bare checkbox, which the stylesheet stretches the label over.
+        // markup of the bare checkbox, plus the hit area the stylesheet lays under it.
         Assert.AreEqual(1, component.FindAll(".bit-chb-inp").Count);
         Assert.AreEqual(1, component.FindAll(".bit-chb-lbl").Count);
         Assert.AreEqual(1, component.FindAll(".bit-chb-des").Count);
+
+        // The hit area is a label of the input, so a click anywhere on the card is handed to it. It carries no text and no
+        // title - the Title stays on the visible label - and is hidden from assistive technologies. It follows the input
+        // and precedes the label, which is what its focus ring and the press of the box are styled through.
+        var hit = component.Find(".bit-chb-hit");
+        var input = component.Find(".bit-chb-inp");
+
+        Assert.AreEqual("LABEL", hit.TagName);
+        Assert.AreEqual(input.Id, hit.GetAttribute("for"));
+        Assert.AreEqual("true", hit.GetAttribute("aria-hidden"));
+        Assert.AreEqual(string.Empty, hit.TextContent);
+        Assert.IsFalse(hit.HasAttribute("title"));
+        Assert.AreEqual(input, hit.PreviousElementSibling);
+        Assert.IsTrue(hit.NextElementSibling!.ClassList.Contains("bit-chb-lbl"));
     }
 
     [TestMethod,
@@ -2050,6 +2064,7 @@ public class BitCheckboxTests : BunitTestContext
         // Text is the bare box and label the checkbox has always been, so it renders exactly what it rendered before.
         Assert.IsFalse(root.ClassList.Any(c => c is "bit-chb-otl" or "bit-chb-fil"));
         Assert.AreEqual(bare.Find(".bit-chb").GetAttribute("class"), root.GetAttribute("class"));
+        Assert.AreEqual(0, component.FindAll(".bit-chb-hit").Count);
     }
 
     [TestMethod]

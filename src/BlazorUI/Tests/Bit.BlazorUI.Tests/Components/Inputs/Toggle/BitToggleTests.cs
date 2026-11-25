@@ -2302,6 +2302,9 @@ public class BitToggleTests : BunitTestContext
         Assert.AreEqual("true", hit.GetAttribute("aria-hidden"));
         Assert.AreEqual(string.Empty, hit.TextContent);
         Assert.IsTrue(hit.ParentElement!.ClassList.Contains("bit-tgl-cnt"));
+
+        // Its empty title keeps the Title of the row it sits in from popping up over the description and the error line.
+        Assert.AreEqual(string.Empty, hit.GetAttribute("title"));
         Assert.AreEqual(button.Id, hit.PreviousElementSibling?.Id);
 
         // The name of the switch is still the visible label alone.

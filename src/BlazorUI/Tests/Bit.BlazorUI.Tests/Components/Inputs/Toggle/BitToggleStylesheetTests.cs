@@ -111,10 +111,69 @@ public class BitToggleStylesheetTests
         StringAssert.Contains(hover, "--bit-tgl-crd-sbg: var(--bit-tgl-crd-bg-hover);");
         Assert.IsFalse(Regex.IsMatch(hover, @"(^|[\s;{])(border-color|background-color)\s*:"), "The hover of a card paints instead of moving a variable.");
 
+        // Only the card of a toggle that is off takes the hover surface, so a hovered card of one that is on keeps the
+        // tint that says it is on.
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(hover, "&:not(.bit-tgl-chk) {"), "--bit-tgl-crd-sbg: var(--bit-tgl-crd-bg-hover);");
+        Assert.IsFalse(SourceFiles.GetScssDeclarations(stylesheet, ":is(.bit-tgl-otl, .bit-tgl-fil):hover:not(.bit-dis):not(.bit-inv):not(.bit-tgl-rdl):not(.bit-tgl-ldg) {").Contains("--bit-tgl-crd-sbg"),
+                       "The hover moves the surface of a card that is on to the neutral hover surface too.");
+
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tgl {");
 
         StringAssert.Contains(root, "--bit-tgl-crd-sbg: initial;");
         StringAssert.Contains(root, "--bit-tgl-crd-sbrd: initial;");
+    }
+
+    [TestMethod]
+    public void BitToggleCardShouldTintAStateWithTheFillOfItsTrack()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The card of a toggle that is on and invalid or disabled is tinted with the fill its track takes in that state,
+        // which each variant mixes at its own alpha.
+        var state = SourceFiles.GetScssBlock(stylesheet, ".bit-tgl-otl.bit-tgl-chk:is(.bit-inv, .bit-dis),");
+
+        StringAssert.Contains(state, "background-color: var(--bit-tgl-crd-trk-tint);");
+        StringAssert.Contains(VariantDeclarations(stylesheet, ".bit-tgl-otl"), "--bit-tgl-crd-trk-tint: #{translucent(var(--bit-tgl-trk-clr-bg), 8%)};");
+        StringAssert.Contains(VariantDeclarations(stylesheet, ".bit-tgl-fil"), "--bit-tgl-crd-trk-tint: #{translucent(var(--bit-tgl-trk-clr-bg), 14%)};");
+    }
+
+    [TestMethod]
+    public void BitToggleCardHitAreaShouldLieUnderTheContent()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The hit area lies under the content, above the surface of the card the root isolates a stacking context for,
+        // so it never covers the label, the switch or the state text - which keep their titles and their press.
+        var hit = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tgl-hit {");
+
+        StringAssert.Contains(hit, "z-index: -1;");
+        StringAssert.Contains(hit, "position: absolute;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, ".bit-tgl-otl,\n.bit-tgl-fil {"), "isolation: isolate;");
+
+        // The row of the switch and the lines under it let the pointer through to it, and whatever in them answers the
+        // pointer takes it back - without being positioned or stacked, which would move what an app lays out inside it.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, ":where(.bit-tgl-otl, .bit-tgl-fil) :where(.bit-tgl-cnt, .bit-tgl-des, .bit-tgl-erm) {"), "pointer-events: none;");
+
+        var handBack = SourceFiles.GetScssBlock(stylesheet, ":where(.bit-tgl-otl, .bit-tgl-fil) :where(.bit-tgl-cnt, .bit-tgl-des, .bit-tgl-erm) :where(");
+
+        foreach (var interactive in new[] { "a", "button", "input", "label", "[contenteditable]", "[role]", "[tabindex]" })
+        {
+            StringAssert.Contains(handBack, interactive);
+        }
+
+        StringAssert.Contains(handBack, "pointer-events: auto;");
+        Assert.IsFalse(Regex.IsMatch(handBack, @"(z-index|position)\s*:"), "The card positions what an app puts in its lines.");
+
+        // A press anywhere else on the card dips the knob, as a press on the switch does.
+        StringAssert.Contains(stylesheet, ".bit-tgl-btn:has(~ .bit-tgl-hit:active) .bit-tgl-sta {");
+    }
+
+    // The own rule of a variant, not the card rule the Outline and Fill variants share.
+    private static string VariantDeclarations(string stylesheet, string selector)
+    {
+        var own = SourceFiles.GetScssRules(stylesheet).Single(r => r.Header == selector && r.Ancestors.Count == 0);
+
+        return SourceFiles.GetScssDeclarations(stylesheet[own.Index..], $"{selector} {{");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "Toggle", "BitToggle.scss");

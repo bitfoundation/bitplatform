@@ -690,13 +690,18 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
 // Outline and Fill turn the whole toggle into a selectable card, the way BitChoiceGroup's Variant turns each of its
 // items into one. The surface is drawn on the root, around the label, the switch, the state text, the error line and
 // the description. The switch is a button, which takes a click from a label of its own, so the card renders one more
-// label of it (.bit-tgl-hit) stretched over the whole card: every part of the card is then the click target, the
-// description included, and the same label carries the focus ring, so the ring outlines the card instead of the
-// track inside it. The row of the switch is taken out of the positioning chain for that, so the hit area is laid out
-// against the root, border included.
+// label of it (.bit-tgl-hit) laid over the whole card, border included, and under everything in it: every part of the
+// card that does not answer the pointer itself - the padding, the gaps, the description and the error line - is then
+// the click target, and the same label carries the focus ring, so the ring outlines the card instead of the track
+// inside it. The row of the switch is taken out of the positioning chain for that, so the hit area is laid out against
+// the root. It is put under the content with a negative z-index, and the root isolates a stacking context for it, so
+// it still lies above the surface of the card. Lying under the content rather than over it, it never covers the
+// label, the switch or the state text, which keep their own titles, their own press and their own clicks - and
+// nothing in the card has to be positioned or stacked to be reached.
 // Text - the default - draws no surface at all and is the bare switch and label the toggle has always been.
 .bit-tgl-otl,
 .bit-tgl-fil {
+    isolation: isolate;
     box-sizing: border-box;
     padding: var(--bit-tgl-card-padding, var(--bit-Toggle-card-padding, #{spacing(1.5)}));
     border-radius: var(--bit-Toggle-card-radius, #{$shp-radius-surface});
@@ -721,8 +726,9 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     }
 }
 
-// The hit area of a card. It is rendered for a card alone, and lies over everything in it.
+// The hit area of a card. It is rendered for a card alone, and lies under everything in it.
 .bit-tgl-hit {
+    z-index: -1;
     cursor: pointer;
     user-select: none;
     position: absolute;
@@ -732,12 +738,25 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     border-radius: var(--bit-Toggle-card-radius, #{$shp-radius-surface});
 }
 
-// Whatever in the card answers the pointer on its own - a link in a DescriptionTemplate, a button in an
-// ErrorMessageTemplate or a LabelTemplate - is lifted above the hit area and keeps working, while the rest of the card
-// flips the switch. Written at no weight, so the page's own positioning of such an element still wins.
-:where(.bit-tgl-otl, .bit-tgl-fil) :where(.bit-tgl-lbl, .bit-tgl-des, .bit-tgl-erm) :where(a, button, input, select, textarea, summary, [tabindex]) {
-    z-index: 1;
-    position: relative;
+// The row of the switch and the lines under it let the pointer through to the hit area under them, so a click on the
+// gaps of the row or on the text of a line flips the switch the way a click on the label does. Whatever in them
+// answers the pointer on its own takes it back and keeps working: the switch, the state text and the hit area itself,
+// a link in a DescriptionTemplate, a button in an ErrorMessageTemplate, the label of another toggle, an element given
+// a role or a tabindex. Nothing is positioned or stacked for that, so the layout of what an app puts there stays the
+// app's own. Written at no weight, so a page's own pointer-events still win.
+:where(.bit-tgl-otl, .bit-tgl-fil) :where(.bit-tgl-cnt, .bit-tgl-des, .bit-tgl-erm) {
+    pointer-events: none;
+}
+
+:where(.bit-tgl-otl, .bit-tgl-fil) :where(.bit-tgl-cnt, .bit-tgl-des, .bit-tgl-erm) :where(a, button, input, select, textarea, summary, label, audio, video, iframe, [contenteditable], [role], [tabindex]) {
+    pointer-events: auto;
+}
+
+// The switch takes a press on itself, which dips the knob through the rule of the bare toggle; a press anywhere else
+// on the card lands on the hit area that follows it, and dips the knob all the same. An engine without :has() drops
+// this rule alone, and still dips the knob for a press on the switch.
+.bit-tgl:not(.bit-dis):not(.bit-tgl-rdl):not(.bit-tgl-ldg) .bit-tgl-btn:has(~ .bit-tgl-hit:active) .bit-tgl-sta {
+    scale: var(--bit-Toggle-thumb-active-scale, 0.9);
 }
 
 // The ring outlines the card, so the track inside it draws none of its own - in any state, which the root class and
@@ -752,8 +771,9 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
 // first for the border, then the public variable, then the checked fill of the track. The tint of an explicit Color
 // is a value of its own, which is left unset - and so falls through to the public checked background, then to the
 // tint of the checked fill - while the Color is: a color-mix() over an unset property is invalid, and an invalid
-// custom property reads as unset. Each reads the variable the hover moves first, so a hovered card answers the
-// pointer in both states.
+// custom property reads as unset. The border reads the variable the hover moves first, so a hovered card answers the
+// pointer in both states; the surface of a card that is on keeps the tint that says it is on, which the hover leaves
+// alone.
 .bit-tgl-otl.bit-tgl-chk,
 .bit-tgl-fil.bit-tgl-chk {
     border-color: var(--bit-tgl-crd-sbrd, var(--bit-tgl-clr, var(--bit-Toggle-card-checked-border-color, var(--bit-Toggle-checked-background, #{$clr-pri}))));
@@ -774,13 +794,25 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     border-color: var(--bit-Toggle-disabled-color, #{$clr-brd-dis});
 }
 
+// The card of a toggle that is on and invalid or disabled tints its surface with the fill its track takes in that
+// state - the error color, the disabled color, disabled winning as it does on the track - rather than with the accent,
+// so the surface and the track say the same thing. Neither state hovers, so nothing has to be read ahead of it.
+.bit-tgl-otl.bit-tgl-chk:is(.bit-inv, .bit-dis),
+.bit-tgl-fil.bit-tgl-chk:is(.bit-inv, .bit-dis) {
+    background-color: var(--bit-tgl-crd-trk-tint);
+}
+
 // The hover of a card leaves out the states the hover of the switch leaves out: a disabled, read-only or busy card
 // must not promise a change no click can make, and an invalid one keeps the error border that is the point of the
-// state.
+// state. Only the card of a toggle that is off takes the hover surface: the card of one that is on keeps the tint
+// that says it is on and answers the pointer with its border.
 @media (hover: hover) {
     :is(.bit-tgl-otl, .bit-tgl-fil):hover:not(.bit-dis):not(.bit-inv):not(.bit-tgl-rdl):not(.bit-tgl-ldg) {
         --bit-tgl-crd-sbrd: var(--bit-tgl-clr-hover, var(--bit-Toggle-card-hover-border-color, var(--bit-Toggle-checked-hover-background, #{$clr-pri-hover})));
-        --bit-tgl-crd-sbg: var(--bit-tgl-crd-bg-hover);
+
+        &:not(.bit-tgl-chk) {
+            --bit-tgl-crd-sbg: var(--bit-tgl-crd-bg-hover);
+        }
     }
 }
 
@@ -795,6 +827,7 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     --bit-tgl-crd-brd: var(--bit-Toggle-outline-card-border-color, var(--bit-Toggle-card-border-color, #{$clr-brd-sec}));
     --bit-tgl-crd-bg-hover: var(--bit-Toggle-outline-card-hover-background, var(--bit-Toggle-card-hover-background, #{$clr-bg-sec-hover}));
     --bit-tgl-crd-tint: #{translucent(var(--bit-tgl-clr), 8%)};
+    --bit-tgl-crd-trk-tint: #{translucent(var(--bit-tgl-trk-clr-bg), 8%)};
     --bit-tgl-crd-bg-checked: var(--bit-Toggle-outline-card-checked-background, var(--bit-Toggle-card-checked-background, #{translucent(var(--bit-tgl-acc), 8%)}));
 }
 
@@ -805,6 +838,7 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     --bit-tgl-crd-brd: var(--bit-Toggle-fill-card-border-color, var(--bit-Toggle-card-border-color, transparent));
     --bit-tgl-crd-bg-hover: var(--bit-Toggle-fill-card-hover-background, var(--bit-Toggle-card-hover-background, #{$clr-bg-ter}));
     --bit-tgl-crd-tint: #{translucent(var(--bit-tgl-clr), 14%)};
+    --bit-tgl-crd-trk-tint: #{translucent(var(--bit-tgl-trk-clr-bg), 14%)};
     --bit-tgl-crd-bg-checked: var(--bit-Toggle-fill-card-checked-background, var(--bit-Toggle-card-checked-background, #{translucent(var(--bit-tgl-acc), 14%)}));
 }
 
