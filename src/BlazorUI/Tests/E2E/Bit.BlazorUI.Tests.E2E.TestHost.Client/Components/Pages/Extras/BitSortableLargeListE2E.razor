@@ -1,0 +1,42 @@
+﻿@page "/e2e/sortable/large-list"
+
+@* Three hundred BitSortable rows in a scrolling panel, with IsolateItems and ForceFallback on checkboxes: a pointer
+   drag near the panel's edge scrolls it, and the script's diagnostics count what a drag sends .NET. *@
+
+<PageTitle>BitSortable large list E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable large list</h1>
+
+<E2ESection Id="large" Title="Large list">
+    <div class="srt-controls">
+        <label><input id="large-isolate" type="checkbox" @bind="_isolate" /> IsolateItems</label>
+        <label><input id="large-fallback" type="checkbox" @bind="_fallback" /> ForceFallback</label>
+    </div>
+    <div class="large-panel" id="large-panel">
+        <BitSortable @bind-Items="_rows" TItem="Row" Id="large-list" AriaLabel="Rows" IsolateItems="_isolate"
+                     ForceFallback="_fallback" ItemLabel="r => r.Name" Class="demo-list" Classes="_classes">
+            <ItemTemplate Context="row">
+                <span class="large-name">@row.Name</span>
+                <span class="large-note">@row.Note</span>
+            </ItemTemplate>
+        </BitSortable>
+    </div>
+    <p class="demo-order">First five: <span id="large-order">@string.Join(", ", _rows.Take(5).Select(r => r.Name))</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private sealed record Row(string Name, string Note);
+
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item" };
+
+    private IList<Row> _rows = Enumerable.Range(1, 300)
+        .Select(i => new Row($"Row {i}", $"#{i:000} · {(i % 3 == 0 ? "blocked" : i % 2 == 0 ? "in review" : "open")}"))
+        .ToList();
+
+    private bool _isolate;
+    private bool _fallback;
+}

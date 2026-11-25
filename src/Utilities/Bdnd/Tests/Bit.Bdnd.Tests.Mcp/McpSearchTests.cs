@@ -46,7 +46,7 @@ public partial class McpSearchTests
         ("grip", "Drag handles"),
         ("dropzone", "Drop targets"),
         ("prevent dropping a node into its own children", "Trees"),
-        ("bortable or bdnd", "Bdnd and the other bit utilities"),
+        ("bitsortable or bdnd", "Bdnd and the other bit utilities"),
         ("change the keyboard shortcuts", "Choosing the keys"),
         ("KeyBindings", "BdndProvider.KeyBindings"),
     ];

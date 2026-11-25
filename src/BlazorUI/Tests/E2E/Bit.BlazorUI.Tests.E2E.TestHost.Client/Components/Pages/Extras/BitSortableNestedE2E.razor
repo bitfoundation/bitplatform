@@ -1,0 +1,62 @@
+﻿@page "/e2e/sortable/nested"
+
+@* A tree of BitSortable lists: every item renders a list of its own (empty or not), and every level shares the
+   "nested" group, so items move between branches - but never into a list inside themselves. A list's id follows the
+   item that owns it ("nested-item-1-1" holds the children of "Item 1.1"), wherever the item is moved. *@
+
+<PageTitle>BitSortable nested E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable nested</h1>
+
+<E2ESection Id="nested" Title="Nested lists">
+    @NestedList(_tree, "nested-root")
+    <p class="demo-order">Tree: <span id="nested-order">@Describe(_tree)</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public sealed class NestedItem
+    {
+        public required string Name { get; set; }
+        public List<NestedItem> Children { get; set; } = [];
+    }
+
+    private readonly BitSortableClassStyles _classes = new() { Item = "nested-item", Ghost = "demo-ghost" };
+
+    private readonly List<NestedItem> _tree =
+    [
+        new()
+        {
+            Name = "Item 1.1",
+            Children =
+            [
+                new() { Name = "Item 2.1" },
+                new() { Name = "Item 2.2", Children = [new() { Name = "Item 3.1" }, new() { Name = "Item 3.2" }] },
+                new() { Name = "Item 2.3" },
+            ]
+        },
+        new() { Name = "Item 1.2" },
+        new() { Name = "Item 1.3", Children = [new() { Name = "Item 2.4" }, new() { Name = "Item 2.5" }] },
+        new() { Name = "Item 1.4" },
+    ];
+
+    private RenderFragment NestedList(List<NestedItem> items, string id) =>
+        @<BitSortable Items="items" TItem="NestedItem" Group="nested" SwapThreshold="0.65" Id="@id" AriaLabel="@id"
+                      ItemsChanged="OnTreeChanged" EmptyText="" Class="nested-list" Classes="_classes">
+            <ItemTemplate Context="item">
+                <div class="nested-item__name">@item.Name</div>
+                @NestedList(item.Children, ListIdOf(item))
+            </ItemTemplate>
+        </BitSortable>;
+
+    private void OnTreeChanged(IList<NestedItem> items) => StateHasChanged();
+
+    private static string ListIdOf(NestedItem item) => "nested-" + item.Name.ToLowerInvariant().Replace(' ', '-').Replace('.', '-');
+
+    // "Item 1.1 [Item 2.1, Item 2.2 [Item 3.1, Item 3.2]], Item 1.2": every item, its children in brackets.
+    private static string Describe(List<NestedItem> items)
+        => string.Join(", ", items.Select(i => i.Children.Count == 0 ? i.Name : $"{i.Name} [{Describe(i.Children)}]"));
+}

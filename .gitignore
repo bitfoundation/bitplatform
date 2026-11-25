@@ -332,9 +332,6 @@ _book
 /src/Utilities/Bonboarding/Bit.Bonboarding/wwwroot/**/*.js
 /src/Utilities/Bonboarding/Bit.Bonboarding/wwwroot/**/*.css
 
-/src/Utilities/Bortable/Bit.Bortable/Scripts/**/*.js
-/src/Utilities/Bortable/Bit.Bortable/wwwroot/**/*.js
-/src/Utilities/Bortable/Bit.Bortable/wwwroot/**/*.css
 
 /src/Utilities/Belemetry/Bit.Belemetry/Scripts/**/*.js
 /src/Utilities/Belemetry/Bit.Belemetry/wwwroot/**/*.js

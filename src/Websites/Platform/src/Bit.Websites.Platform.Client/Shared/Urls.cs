@@ -31,7 +31,6 @@ public static class Urls
     public const string Borm = "https://borm.bitplatform.dev/";
     public const string Bcrdt = "https://bcrdt.bitplatform.dev/";
     public const string Bonboarding = "https://bonboarding.bitplatform.dev/";
-    public const string Bortable = "https://bortable.bitplatform.dev/";
     public const string Blex = "https://blex.bitplatform.dev/";
     public const string Belemetry = "https://belemetry.bitplatform.dev/";
     public const string Bheadless = "https://bheadless.bitplatform.dev/";

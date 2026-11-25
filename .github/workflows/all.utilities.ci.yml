@@ -71,10 +71,6 @@ jobs:
     name: borm
     uses: ./.github/workflows/ci.borm.yml
 
-  bortable:
-    name: bortable
-    uses: ./.github/workflows/ci.bortable.yml
-
   belemetry:
     name: belemetry
     uses: ./.github/workflows/ci.belemetry.yml

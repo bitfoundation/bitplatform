@@ -25,7 +25,7 @@ public partial class AppHub : Hub
     private static readonly string[] librariesWithMcpServers =
     [
         "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "Balette", "BbScanner", "Bdnd", "BlazeDb",
-        "Blow", "Borm", "Bcrdt", "Bonboarding", "Bortable", "Blex", "Bsqlite", "Belemetry", "Bheadless"
+        "Blow", "Borm", "Bcrdt", "Bonboarding", "Blex", "Bsqlite", "Belemetry", "Bheadless"
     ];
 
     [AutoInject] private IServiceProvider serviceProvider = default!;

@@ -74,8 +74,8 @@ lazy loading also has a lazy loading sample and a browser suite that drives its 
 - Balette and BbScanner: the README's section and the Getting Started page.
 - Bmage: `docs/getting-started.md` and the demo's Hosting page.
 - BlazeDb: the README's section, the demo's Hosting page, the setup guide, the debug prompt and its completions.
-- Bmotion, Bonboarding and Bortable: the README's section, the Getting Started page, the setup guide and the debug
-  prompt (Bonboarding's and Bortable's completions too).
+- Bmotion and Bonboarding: the README's section, the Getting Started page, the setup guide and the debug prompt
+  (Bonboarding's completions too).
 - BevTools: the README's "Opening it on demand, and lazy loading" and the Getting Started page. It lazy loads from
   `BevToolsLoader.OpenAsync` rather than from the router.
 - Bsqlite: `docs/getting-started.md`'s "Lazy loading on WebAssembly" and the README's summary of it, the Getting

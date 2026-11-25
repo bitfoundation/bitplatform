@@ -529,40 +529,6 @@
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/Bit.Bonboarding.Tests.E2E.csproj" />
   </Folder>
-  <Folder Name="/Utilities/Bortable/">
-    <File Path="Utilities/Bortable/README.md" />
-    <Project Path="Utilities/Bortable/Bit.Bortable/Bit.Bortable.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Demo/">
-    <Project Path="Utilities/Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj" />
-    <Project Path="Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/">
-    <Project Path="Utilities/Bortable/Samples/Core/Bit.Bortable.Samples.Core.csproj" />
-    <Project Path="Utilities/Bortable/Samples/Maui/Bit.Bortable.Samples.Maui.csproj">
-      <Deploy />
-    </Project>
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/Auto/">
-    <Project Path="Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto/Bit.Bortable.Samples.Auto.csproj" />
-    <Project Path="Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto.Client/Bit.Bortable.Samples.Auto.Client.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/Lazy/">
-    <Project Path="Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj" />
-    <Project Path="Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy.Client/Bit.Bortable.Samples.Lazy.Client.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/Server/">
-    <Project Path="Utilities/Bortable/Samples/Server/Bit.Bortable.Samples.Server.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/Wasm/">
-    <Project Path="Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm/Bit.Bortable.Samples.Wasm.csproj" />
-    <Project Path="Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm.Client/Bit.Bortable.Samples.Wasm.Client.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Tests/">
-    <Project Path="Utilities/Bortable/Tests/Bit.Bortable.Tests/Bit.Bortable.Tests.csproj" />
-    <Project Path="Utilities/Bortable/Tests/Bit.Bortable.Tests.Mcp/Bit.Bortable.Tests.Mcp.csproj" />
-    <Project Path="Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj" />
-  </Folder>
   <Folder Name="/Utilities/Belemetry/">
     <File Path="Utilities/Belemetry/README.md" />
     <Project Path="Utilities/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj" />

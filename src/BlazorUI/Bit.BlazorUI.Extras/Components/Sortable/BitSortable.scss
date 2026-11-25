@@ -1,0 +1,180 @@
+﻿@import "../../../Bit.BlazorUI/Styles/functions.scss";
+
+// Public CSS variables (read here with a fallback and never declared, so they inherit: set one on :root, on any
+// ancestor, or on the Style of a single list - a list nested in an item of another one inherits it too):
+//   --bit-Sortable-ghost-opacity          the item being dragged, and the drop preview     (default: 0.4)
+//   --bit-Sortable-chosen-background      the item picked up                               (default: $clr-bg-pri-hover)
+//   --bit-Sortable-selected-background    an item of a MultiDrag selection                 (default: $clr-pri-light)
+//   --bit-Sortable-selected-ring-color    the ring around an item of the selection         (default: $clr-pri)
+//   --bit-Sortable-swap-background        the item a dragged one would trade places with   (default: $clr-pri-light)
+//   --bit-Sortable-swap-outline-color     the dashed outline of that item                  (default: $clr-pri)
+//   --bit-Sortable-filtered-opacity       an item Filter locks                             (default: 1)
+//   --bit-Sortable-drag-opacity           the preview that follows a finger, a pen or a ForceFallback mouse (default: 0.92)
+//   --bit-Sortable-drag-shadow            that preview's shadow                            (default: $box-shadow-popup)
+//   --bit-Sortable-count-background       the count a multi-drag's picture carries         (default: $clr-pri)
+//   --bit-Sortable-count-color            its text                                         (default: $clr-pri-text)
+//   --bit-Sortable-accepts-outline        a list that takes the drag in progress           (default: none)
+//   --bit-Sortable-over-outline           the list under the pointer                       (default: none)
+//   --bit-Sortable-refused-outline        the list under the pointer that refused the position (default: none)
+//   --bit-Sortable-target-offset          the offset of those three outlines               (default: 2px)
+//   --bit-Sortable-empty-padding          padding of what an empty list shows              (default: spacing(2))
+//   --bit-Sortable-empty-color            text of what an empty list shows                 (default: $clr-fg-sec)
+//
+// The preview and the count are placed above the page by the script, outside the list, so only a value set on :root
+// (or an ancestor of the body) reaches them; the preview takes the item's own look off its computed style.
+
+.bit-srt {
+    position: relative;
+}
+
+.bit-srt-itm {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    // A long press drags on a touch screen: no callout menu for it.
+    -webkit-touch-callout: none;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    &:active {
+        cursor: grabbing;
+    }
+
+    &:focus-visible {
+        @include focus-ring;
+    }
+}
+
+// With a Handle, only the handle drags: the rest of the item behaves normally.
+.bit-srt-hnd > .bit-srt-itm {
+    cursor: auto;
+    user-select: auto;
+    -webkit-user-select: auto;
+
+    &:active {
+        cursor: auto;
+    }
+}
+
+.bit-srt.bit-dis > .bit-srt-itm {
+    cursor: default;
+}
+
+// The item being dragged, and the drop preview shown in another list.
+.bit-srt-gst {
+    opacity: var(--bit-Sortable-ghost-opacity, 0.4);
+}
+
+// The item picked up.
+.bit-srt-chs {
+    background-color: var(--bit-Sortable-chosen-background, #{$clr-bg-pri-hover});
+}
+
+// The item picked up from the keyboard is chosen and focused: its ring is dashed, which tells it from a focused one.
+.bit-srt-chs:focus-visible {
+    outline: $shp-border-width-thick dashed $clr-pri-focus;
+    outline-offset: $shp-focus-ring-offset;
+}
+
+// The original item is hidden in its source list while it is previewed as the placeholder in a target list (as
+// SortableJS does). A clone keeps its original visible.
+.bit-srt-hid {
+    display: none !important;
+}
+
+// An item Filter locks. Its content stays live (only the dragging is taken away), so it is not dimmed by default: a
+// faded item would read as disabled and its text would fall below the contrast its content needs. The pointer says it
+// cannot be dragged; an app that wants it faded sets the variable.
+.bit-srt-flt {
+    cursor: not-allowed;
+    opacity: var(--bit-Sortable-filtered-opacity, 1);
+}
+
+// The item highlighted as the swap target while dragging in swap mode.
+.bit-srt-swp {
+    background-color: var(--bit-Sortable-swap-background, #{$clr-pri-light});
+    outline: $shp-border-width-thick dashed var(--bit-Sortable-swap-outline-color, #{$clr-pri});
+    outline-offset: calc(-1 * #{$shp-border-width-thick});
+}
+
+// An item of a MultiDrag selection.
+.bit-srt-sel {
+    background-color: var(--bit-Sortable-selected-background, #{$clr-pri-light});
+    box-shadow: inset 0 0 0 $shp-border-width-thick var(--bit-Sortable-selected-ring-color, #{$clr-pri});
+}
+
+// The preview of the item that follows a finger, a pen, or the mouse with ForceFallback: a copy of the item placed
+// above the page, which keeps the item's own look.
+.bit-srt-drg {
+    cursor: grabbing;
+    opacity: var(--bit-Sortable-drag-opacity, 0.92);
+    box-shadow: var(--bit-Sortable-drag-shadow, #{$box-shadow-popup});
+}
+
+// A multi-drag that carries several items says how many on its picture: the preview that follows a finger, a pen or
+// a ForceFallback mouse, and the copy of the item the browser takes its drag image of. The count is an element of its
+// own: the item itself, its positioning and its pseudo-elements are left alone.
+.bit-srt-cnt {
+    position: absolute;
+    top: spacing(0.5);
+    inset-inline-end: spacing(0.5);
+    min-width: 1.6em;
+    margin: 0;
+    padding: spacing(0.25) spacing(0.75);
+    box-sizing: border-box;
+    border-radius: $shp-radius-full;
+    color: var(--bit-Sortable-count-color, #{$clr-pri-text});
+    background-color: var(--bit-Sortable-count-background, #{$clr-pri});
+    font-size: $tg-fs-2xs;
+    font-weight: $tg-fw-semibold;
+    line-height: 1.2;
+    text-align: center;
+    pointer-events: none;
+}
+
+// While a drag runs, the script marks the lists: those that take the drag, the one under the pointer and, when it
+// refused the position, that one too. Nothing is drawn unless the public variables are set - an outline for the
+// valid and the invalid targets of a board, say.
+.bit-srt[data-bit-srt-accepts] {
+    outline: var(--bit-Sortable-accepts-outline, none);
+    outline-offset: var(--bit-Sortable-target-offset, 2px);
+}
+
+.bit-srt[data-bit-srt-over] {
+    outline: var(--bit-Sortable-over-outline, none);
+}
+
+.bit-srt[data-bit-srt-refused] {
+    outline: var(--bit-Sortable-refused-outline, none);
+}
+
+// What an empty list shows. It keeps an empty list tall enough to drop an item into.
+.bit-srt-emp {
+    color: var(--bit-Sortable-empty-color, #{$clr-fg-sec});
+    padding: var(--bit-Sortable-empty-padding, #{spacing(2)});
+}
+
+// The keyboard instructions every item refers to (aria-describedby): read, never shown.
+.bit-srt-ins {
+    display: none !important;
+}
+
+// Windows high contrast and other forced colors: the states are drawn with system colors instead of tints.
+@media (forced-colors: active) {
+    .bit-srt-chs,
+    .bit-srt-sel,
+    .bit-srt-swp {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+
+    .bit-srt-gst {
+        outline: 2px dashed GrayText;
+        outline-offset: -2px;
+    }
+
+    .bit-srt-cnt {
+        color: HighlightText;
+        background-color: Highlight;
+        forced-color-adjust: none;
+    }
+}

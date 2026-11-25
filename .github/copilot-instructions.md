@@ -41,7 +41,7 @@ bit Boilerplate and bit CLI live in [bitfoundation/bitfabric](https://github.com
 ## Rules
 
 **RULE 1:** If a task (question, code modification or review) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
-or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Bink`, `bit Balette`, `bit BbScanner`, `bit Bdnd`, `bit BlazeDb`, `bit Blow`, `bit Borm`, `bit Bcrdt`, `bit Bonboarding`, `bit Bortable`, `bit Blex`, `bit Bmage`, `bit Bsqlite`, `bit Bheadless` or `bit Brouter`, or involves UI components without explicitly specifying their UI toolkit,
+or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Bink`, `bit Balette`, `bit BbScanner`, `bit Bdnd`, `bit BlazeDb`, `bit Blow`, `bit Borm`, `bit Bcrdt`, `bit Bonboarding`, `bit Blex`, `bit Bmage`, `bit Bsqlite`, `bit Bheadless` or `bit Brouter`, or involves UI components without explicitly specifying their UI toolkit,
 you **MUST** read that library's source code and README in this repository before writing or changing any code. A library that has an MCP server of its own at `https://<name in lowercase>.bitplatform.dev/mcp` (e.g. `https://bmotion.bitplatform.dev/mcp`) also answers through its tools - start with its `Search<Library>` tool and follow the calls it names.
 
 **End of RULE 1**

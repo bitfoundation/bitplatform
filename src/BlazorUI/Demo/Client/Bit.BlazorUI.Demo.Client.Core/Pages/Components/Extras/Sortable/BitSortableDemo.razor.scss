@@ -1,0 +1,165 @@
+﻿// The frames of the lists and what the item templates render are plain elements of the page, which carry its scope
+// attribute. The items keep no background of their own, so the drag states the list paints on their wrappers show.
+.panels {
+    gap: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.panel {
+    min-width: 0;
+    flex: 1 1 12rem;
+    display: flex;
+    flex-direction: column;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--bit-clr-brd-sec);
+}
+
+// A list fills its frame, so the space under its last item takes a drop too.
+.panel ::deep .bit-srt {
+    flex-grow: 1;
+}
+
+.title {
+    padding: 0.25rem 0;
+    color: var(--bit-clr-fg-sec);
+}
+
+.item {
+    margin: 0.25rem 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--bit-clr-brd-pri);
+}
+
+.row {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.grow {
+    flex-grow: 1;
+}
+
+.note {
+    color: var(--bit-clr-fg-sec);
+}
+
+.order {
+    margin-top: 0.5rem;
+    color: var(--bit-clr-fg-sec);
+}
+
+.controls {
+    gap: 1rem;
+    display: grid;
+    align-items: end;
+    margin-bottom: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+}
+
+.empty {
+    gap: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+// The swap zones of the thresholds example: a band across the middle of each item, or with InvertSwap two bands at
+// its edges - the geometry the list measures the pointer against.
+.zones .item {
+    background-image: linear-gradient(to bottom,
+        transparent calc(50% - var(--zone) * 50%),
+        var(--bit-clr-pri-light) calc(50% - var(--zone) * 50%),
+        var(--bit-clr-pri-light) calc(50% + var(--zone) * 50%),
+        transparent calc(50% + var(--zone) * 50%));
+}
+
+.zones.inverted .item {
+    background-image: linear-gradient(to bottom,
+        var(--bit-clr-pri-light) calc(var(--inverted-zone) * 50%),
+        transparent calc(var(--inverted-zone) * 50%),
+        transparent calc(100% - var(--inverted-zone) * 50%),
+        var(--bit-clr-pri-light) calc(100% - var(--inverted-zone) * 50%));
+}
+
+// The lists are laid out from a plain element of the page, which carries its scope attribute.
+.grid ::deep .bit-srt {
+    gap: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(3.5rem, 1fr));
+}
+
+.strip ::deep .bit-srt {
+    gap: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.tile {
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: 0.25rem;
+    background-color: var(--bit-clr-bg-sec);
+    border: 1px solid var(--bit-clr-brd-pri);
+}
+
+.chip {
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    border: 1px solid var(--bit-clr-brd-pri);
+}
+
+// The nested lists: indented under their item, and an empty one kept low enough not to crowd the tree.
+.children {
+    padding-inline-start: 1.5rem;
+}
+
+.tree ::deep .bit-srt-emp {
+    padding: 0.25rem;
+}
+
+.scroller {
+    overflow-y: auto;
+    max-height: 20rem;
+}
+
+.log {
+    overflow-y: auto;
+    max-height: 12rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    font-family: monospace;
+    border-radius: 0.25rem;
+    border: 1px solid var(--bit-clr-brd-sec);
+}
+
+// Classes handed to the lists (ItemClass, Class, Classes), which land on what the list renders: reached through ::deep
+// from the plain elements around the lists.
+::deep {
+    .tinted .item {
+        border-inline-start: 0.25rem solid var(--bit-clr-ter);
+    }
+
+    .handle {
+        cursor: grab;
+        touch-action: none;
+        color: var(--bit-clr-fg-sec);
+    }
+
+    .custom-class {
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .custom-item .item {
+        font-style: italic;
+        border-color: var(--bit-clr-sec);
+    }
+
+    .custom-ghost {
+        opacity: 0.2;
+    }
+}

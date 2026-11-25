@@ -1,0 +1,833 @@
+﻿@page "/components/sortable"
+@page "/components/sortable-list"
+
+<PageOutlet Url="components/sortable"
+            Title="Sortable"
+            Description="BitSortable is a drag-and-drop sortable list: reorder its items, or drag them between lists of a group, by pointer, touch or keyboard." />
+
+<DemoPage Name="Sortable"
+          SecondaryNames="@(["SortableList", "ReorderableList", "DragAndDropList"])"
+          Description="BitSortable is a drag-and-drop sortable list, inspired by SortableJS: reorder the items of a list, or drag them between lists that share a Group - with live reordering, slide animations, clone and move pull modes, swap thresholds, drag handles, filters, nested lists, swap mode, multi-drag and the keyboard, every step announced to screen readers."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubExtrasUrl="Sortable/BitSortable.razor"
+          GitHubDemoUrl="Extras/Sortable/BitSortableDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The list needs no service. It changes the page's own IList in place and raises ItemsChanged once a drag changed it,
+            so it is bound with @@bind-Items to a field declared as an IList&lt;TItem&gt; (a List&lt;TItem&gt;, or any list that
+            is not read-only). Its items are told apart the way @@key tells them apart - by their Equals, or by the key ItemKey
+            gives them - so a list must not hold the same item twice. The look of the list and its items is the page's: the
+            component's stylesheet only draws the drag states.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                Bind the list with <b>@@bind-Items</b> and render each item with <b>ItemTemplate</b>. Drag an item: the list
+                reorders live as the pointer moves, the other items slide out of its way, and the bound list is changed in place.
+            </div>
+            <br />
+            <div class="panel">
+                <BitSortable @bind-Items="basicItems">
+                    <ItemTemplate Context="item">
+                        <div class="item">@item</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+            <div class="order">Order: @string.Join(", ", basicItems)</div>
+        </DemoExample>
+
+        <DemoExample Title="Animation" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>Animation</b> is how long, in milliseconds, the items take to slide into their new places (150 by default);
+                0 turns the slide off. Like every animation of the library it follows the reduced-motion preference.
+            </div>
+            <br />
+            <div class="controls">
+                <BitSlider Label="Animation (ms)" Min="0" Max="1000" Step="50" @bind-Value="animation" />
+            </div>
+            <div class="panel">
+                <BitSortable @bind-Items="animationItems" Animation="(int)animation">
+                    <ItemTemplate Context="item">
+                        <div class="item">@item</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Group" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                Lists with the same <b>Group</b> exchange items: drag an item from one list onto an item of the other, or into its
+                empty space. While it is over the other list a placeholder shows where it will land. <b>ItemClass</b> gives an
+                item's wrapper a class chosen per item, which follows the item from list to list - the B items keep their mark
+                wherever they go, and so does the placeholder.
+            </div>
+            <br />
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">List A</div>
+                    <BitSortable @bind-Items="groupA" Group="shared" ItemClass="@(item => item.StartsWith('B') ? "tinted" : null)">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">List B</div>
+                    <BitSortable @bind-Items="groupB" Group="shared" ItemClass="@(item => item.StartsWith('B') ? "tinted" : null)">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+            <div class="order">A: @string.Join(", ", groupA)</div>
+            <div class="order">B: @string.Join(", ", groupB)</div>
+        </DemoExample>
+
+        <DemoExample Title="EmptyText & EmptyTemplate" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                A list with no items says so, and still takes a drop. <b>EmptyTemplate</b> is what it shows then, <b>EmptyText</b>
+                a text in its place, and with neither it shows the NoItemsFound text of BitStrings. Move every message out of the
+                Inbox, then drag them back.
+            </div>
+            <br />
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">Inbox</div>
+                    <BitSortable @bind-Items="inbox" Group="mail" EmptyText="Inbox zero - nothing left to sort.">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Archive</div>
+                    <BitSortable @bind-Items="mailArchive" Group="mail">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                        <EmptyTemplate>
+                            <div class="empty">
+                                <BitIcon IconName="@BitIconName.Archive" />
+                                Nothing archived yet - drop a message here.
+                            </div>
+                        </EmptyTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Spam</div>
+                    <BitSortable @bind-Items="spam" Group="mail">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Clone" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                With <b>Pull</b> set to <b>Clone</b>, what leaves a list is a copy and the original stays, so the same item can be
+                dragged out again and again. The <b>Clone</b> factory makes the copy; without one an ICloneable item is cloned and
+                any other is shared. The palette here is a plain array: a read-only list is shown and cloned from, but never
+                sorted or dropped into, so it is bound one way, with <b>Items</b>.
+            </div>
+            <br />
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">Palette</div>
+                    <BitSortable Items="palette" Group="form" Pull="BitSortablePull.Clone" Clone="@(field => new FormField(field.Name))">
+                        <ItemTemplate Context="field">
+                            <div class="item">@field.Name</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Form</div>
+                    <BitSortable @bind-Items="form" Group="form" EmptyText="Drag fields from the palette.">
+                        <ItemTemplate Context="field">
+                            <div class="item">@field.Name</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+            <div class="order">Form: @string.Join(", ", form.Select(f => f.Name))</div>
+        </DemoExample>
+
+        <DemoExample Title="Sort, Put & Pull" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Each list says what it allows. <b>Sort</b> set to false keeps its own order, <b>Put</b> set to false refuses the
+                items of other lists, and <b>Pull</b> set to <b>None</b> keeps its items in it while it still sorts and takes
+                items in. The items of the first list can only be dragged out; those of the second never leave.
+            </div>
+            <br />
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">Pick from (no Sort, no Put)</div>
+                    <BitSortable @bind-Items="pickFrom" Group="rules" Sort="false" Put="false">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Pinned (Pull None)</div>
+                    <BitSortable @bind-Items="pinned" Group="rules" Pull="BitSortablePull.None">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Target</div>
+                    <BitSortable @bind-Items="target" Group="rules">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                A <b>Disabled</b> list takes part in no drag: its items cannot be picked up, by the pointer or the keyboard, and
+                nothing is dropped into it. What its items render stays live.
+            </div>
+            <br />
+            <div class="controls">
+                <BitToggle Label="Disabled" @bind-Value="archiveDisabled" />
+            </div>
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">Archive</div>
+                    <BitSortable @bind-Items="archive" Group="desk" Disabled="archiveDisabled">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Desk</div>
+                    <BitSortable @bind-Items="desk" Group="desk">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Handle" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                <b>Handle</b> is the CSS selector of a drag handle inside each item. Only the handle starts a drag, and the rest of
+                the item keeps its own pointer behavior - here a checkbox that is checked with a click.
+            </div>
+            <br />
+            <div class="panel">
+                <BitSortable @bind-Items="steps" Handle=".handle">
+                    <ItemTemplate Context="step">
+                        <div class="item row">
+                            <BitIcon IconName="@BitIconName.GripperDotsVertical" Class="handle" />
+                            <BitCheckbox Label="@step.Text" @bind-Value="step.Done" />
+                        </div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+            <div class="order">Steps: @string.Join(", ", steps.Select(s => s.Done ? $"{s.Text} (done)" : s.Text))</div>
+        </DemoExample>
+
+        <DemoExample Title="Filter" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>Filter</b> is asked about every item, and an item it returns true for cannot be dragged. It does not pin the
+                item to its index: the other items can still be dragged past it. Here it reads a flag of the task, which the
+                button of the task toggles.
+            </div>
+            <br />
+            <div class="panel">
+                <BitSortable @bind-Items="tasks" Filter="@(task => task.Locked)">
+                    <ItemTemplate Context="task">
+                        <div class="item row">
+                            <span class="grow">@task.Title</span>
+                            <BitButton IconName="@(task.Locked ? BitIconName.Lock : BitIconName.Unlock)"
+                                       Variant="BitVariant.Text"
+                                       Size="BitSize.Small"
+                                       AriaLabel="@($"Lock {task.Title}")"
+                                       OnClick="@(() => task.Locked = !task.Locked)" />
+                        </div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Swap thresholds" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>SwapThreshold</b> is the part of an item, across its middle, that the pointer has to reach before the dragged
+                item swaps past it; a smaller one leaves a dead zone near each edge. <b>InvertSwap</b> moves the zones to the edges
+                of the item, <b>InvertedSwapThreshold</b> wide, for a sort-between-items feel. <b>Direction</b> says along which
+                axis the zones run. The tinted bands show the zones.
+            </div>
+            <br />
+            <div class="controls">
+                <BitSlider Label="SwapThreshold" Min="0.1" Max="1" Step="0.05" @bind-Value="swapThreshold" />
+                <BitToggle Label="InvertSwap" @bind-Value="invertSwap" />
+                <BitSlider Label="InvertedSwapThreshold" Min="0.1" Max="1" Step="0.05" @bind-Value="invertedSwapThreshold" />
+            </div>
+            <div class="panel zones @(invertSwap ? "inverted" : null)" style="@ZoneStyle">
+                <BitSortable @bind-Items="thresholdItems"
+                             Direction="BitSortableDirection.Vertical"
+                             SwapThreshold="swapThreshold"
+                             InvertSwap="invertSwap"
+                             InvertedSwapThreshold="invertedSwapThreshold">
+                    <ItemTemplate Context="item">
+                        <div class="item">@item</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Grid & horizontal lists" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" CodeFiles="@example11CodeFiles" Id="example11">
+            <div>
+                The list does not mind its layout: laid out as a CSS grid it is a sortable grid, as a wrapping row a horizontal
+                list. Its items are measured as they are laid out, so a grid sorts across a row and from row to row. The
+                default <b>Direction</b>, Auto, tells the axis from the layout; the row of tags sets it.
+            </div>
+            <br />
+            <div class="panel grid">
+                <BitSortable @bind-Items="numbers">
+                    <ItemTemplate Context="number">
+                        <div class="tile">@number</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+            <br />
+            <div class="panel strip">
+                <BitSortable @bind-Items="tags" Direction="BitSortableDirection.Horizontal">
+                    <ItemTemplate Context="tag">
+                        <div class="chip">@tag</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Nested lists" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                A list can render another one inside each of its items. Every level shares the group, so an item - with its
+                children - moves from branch to branch. Each item renders a list of its own, empty or not, so any item can take
+                children.
+            </div>
+            <br />
+            <div class="panel tree">
+                @NestedList(tree)
+            </div>
+            <div class="order">Tree: @Describe(tree)</div>
+        </DemoExample>
+
+        <DemoExample Title="PutGroups" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                <b>PutGroups</b> names the groups whose items a list takes besides its own. Tasks and Bugs are groups of their own
+                and never exchange items, while the Trash takes both. It lets items in only: what is in the Trash stays there.
+            </div>
+            <br />
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">Tasks</div>
+                    <BitSortable @bind-Items="todo" Group="tasks">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Bugs</div>
+                    <BitSortable @bind-Items="bugs" Group="bugs">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Trash</div>
+                    <BitSortable @bind-Items="trash" Group="trash" PutGroups="@(["tasks", "bugs"])" EmptyText="Drop a task or a bug here.">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="MaxItems & MinItems" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <b>MaxItems</b> is the most items a list holds: once full, it takes nothing from other lists. <b>MinItems</b> is
+                the fewest it keeps: nothing is moved out of it that would leave fewer. Both lists still sort their own items.
+            </div>
+            <br />
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">Pipeline (at least 2)</div>
+                    <BitSortable @bind-Items="pipeline" Group="limits" MinItems="2">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Shelf (at most 3)</div>
+                    <BitSortable @bind-Items="shelf" Group="limits" MaxItems="3">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="CanDrop, ConfirmDrop & RevertOnSpill" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                <b>CanDrop</b> is asked, as the dragged item reaches a position, whether it may take it - here Done takes cards from
+                In progress only (<b>FromId</b> is the <b>Id</b> of the list the item comes from). <b>ConfirmDrop</b> is asked once
+                the item is dropped, for a check that has to wait: refused, every list goes back as it was. With
+                <b>RevertOnSpill</b>, a card released outside every list that takes it goes back where it came from.
+            </div>
+            <br />
+            <div class="controls">
+                <BitToggle Label="The server approves drops into Done" @bind-Value="approve" />
+            </div>
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">To do</div>
+                    <BitSortable @bind-Items="boardTodo" Group="board" Id="board-todo" RevertOnSpill>
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">In progress</div>
+                    <BitSortable @bind-Items="boardDoing" Group="board" Id="board-doing" RevertOnSpill>
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Done (from In progress)</div>
+                    <BitSortable @bind-Items="boardDone"
+                                 Group="board"
+                                 Id="board-done"
+                                 RevertOnSpill
+                                 CanDrop="CanDropInDone"
+                                 ConfirmDrop="ConfirmDoneAsync">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+            <div class="order">Server: @serverStatus</div>
+        </DemoExample>
+
+        <DemoExample Title="MoveAsync & MoveToAsync" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                Dragging is not the only way to move an item. <b>MoveAsync</b> moves one within its list and <b>MoveToAsync</b> into
+                another list, named by its <b>Id</b>, as a drag would - the rules apply, the items slide, and the events follow.
+                They are the move-up and move-to buttons an accessible app offers beside dragging.
+            </div>
+            <br />
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">Backlog</div>
+                    <BitSortable @ref="backlogList" @bind-Items="backlog" Group="sprint" Id="move-backlog">
+                        <ItemTemplate Context="item">
+                            <div class="item row">
+                                <span class="grow">@item</span>
+                                <BitButton IconName="@BitIconName.Up"
+                                           Variant="BitVariant.Text"
+                                           Size="BitSize.Small"
+                                           AriaLabel="@($"Move {item} up")"
+                                           OnClick="@(() => backlogList.MoveAsync(item, backlog.IndexOf(item) - 1))" />
+                                <BitButton IconName="@BitIconName.Down"
+                                           Variant="BitVariant.Text"
+                                           Size="BitSize.Small"
+                                           AriaLabel="@($"Move {item} down")"
+                                           OnClick="@(() => backlogList.MoveAsync(item, backlog.IndexOf(item) + 1))" />
+                                <BitButton IconName="@BitIconName.Forward"
+                                           Variant="BitVariant.Text"
+                                           Size="BitSize.Small"
+                                           AriaLabel="@($"Move {item} to the sprint")"
+                                           OnClick="@(() => backlogList.MoveToAsync(item, "move-sprint", sprint.Count))" />
+                            </div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Sprint</div>
+                    <BitSortable @ref="sprintList" @bind-Items="sprint" Group="sprint" Id="move-sprint">
+                        <ItemTemplate Context="item">
+                            <div class="item row">
+                                <span class="grow">@item</span>
+                                <BitButton IconName="@BitIconName.Back"
+                                           Variant="BitVariant.Text"
+                                           Size="BitSize.Small"
+                                           AriaLabel="@($"Move {item} back to the backlog")"
+                                           OnClick="@(() => sprintList.MoveToAsync(item, "move-backlog", backlog.Count))" />
+                            </div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Swap" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <div>
+                In <b>Swap</b> mode the dragged item trades places with the item it is dropped on, and nothing moves meanwhile:
+                the item under the pointer is highlighted instead. The events of a swap say so with <b>IsSwap</b>, and
+                <b>SwappedWith</b> names the other item, so that a handler can save both moves.
+            </div>
+            <br />
+            <div class="panel">
+                <BitSortable @bind-Items="swapItems" TItem="string" Swap OnUpdate="HandleSwap">
+                    <ItemTemplate Context="item">
+                        <div class="item">@item</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+            <div class="order">Order: @string.Join(", ", swapItems)</div>
+            <div class="order">Last swap: @lastSwap</div>
+        </DemoExample>
+
+        <DemoExample Title="MultiDrag" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <div>
+                With <b>MultiDrag</b>, a click selects an item and another click deselects it; dragging any selected item carries
+                the whole selection, which lands together. <b>@@bind-SelectedItems</b> keeps the selection and a field of the page
+                in step, both ways.
+            </div>
+            <br />
+            <div class="controls">
+                <BitButton Variant="BitVariant.Outline" OnClick="@(() => selectedItems = multiItems.ToList())">Select all</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="@(() => selectedItems = [])">Clear the selection</BitButton>
+            </div>
+            <div class="panel">
+                <BitSortable @bind-Items="multiItems" @bind-SelectedItems="selectedItems" MultiDrag>
+                    <ItemTemplate Context="item">
+                        <div class="item">@item</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+            <div class="order">Selected: @(selectedItems.Count == 0 ? "nothing" : string.Join(", ", selectedItems))</div>
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+            <div>
+                A drag raises <b>OnStart</b> on the list it starts in, <b>OnChange</b> each time the item takes a new position,
+                <b>OnUpdate</b> when a list's own order changed, <b>OnRemove</b> and <b>OnAdd</b> when an item crossed from one list
+                into another, <b>OnSort</b> on every list it changed, and <b>OnEnd</b> on the source list, whatever happened.
+                Each comes with a <b>BitSortableEventArgs</b>.
+            </div>
+            <br />
+            <div class="controls">
+                <BitToggle Label="Log OnChange too" @bind-Value="logChange" />
+                <BitButton Variant="BitVariant.Outline" OnClick="@(() => eventLog.Clear())">Clear the log</BitButton>
+            </div>
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">events-left</div>
+                    <BitSortable @bind-Items="eventsLeft"
+                                 TItem="string"
+                                 Group="events"
+                                 Id="events-left"
+                                 OnStart="@(e => Log("OnStart", "events-left", e))"
+                                 OnChange="@(e => Log("OnChange", "events-left", e))"
+                                 OnUpdate="@(e => Log("OnUpdate", "events-left", e))"
+                                 OnRemove="@(e => Log("OnRemove", "events-left", e))"
+                                 OnAdd="@(e => Log("OnAdd", "events-left", e))"
+                                 OnSort="@(e => Log("OnSort", "events-left", e))"
+                                 OnEnd="@(e => Log("OnEnd", "events-left", e))">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">events-right</div>
+                    <BitSortable @bind-Items="eventsRight"
+                                 TItem="string"
+                                 Group="events"
+                                 Id="events-right"
+                                 OnStart="@(e => Log("OnStart", "events-right", e))"
+                                 OnChange="@(e => Log("OnChange", "events-right", e))"
+                                 OnUpdate="@(e => Log("OnUpdate", "events-right", e))"
+                                 OnRemove="@(e => Log("OnRemove", "events-right", e))"
+                                 OnAdd="@(e => Log("OnAdd", "events-right", e))"
+                                 OnSort="@(e => Log("OnSort", "events-right", e))"
+                                 OnEnd="@(e => Log("OnEnd", "events-right", e))">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+            <div class="log">
+                @if (eventLog.Count == 0)
+                {
+                    <div>No events yet.</div>
+                }
+                @foreach (var line in eventLog)
+                {
+                    <div>@line</div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Keyboard & Strings" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+            <div>
+                With <b>Keyboard</b> on (the default) a list is one tab stop: the arrow keys move between its items, Space or
+                Enter picks the focused one up, the arrows move it - into the next list of the group too - Home and End to the
+                ends, Space or Enter drops it and Escape puts it back. Every step is announced, naming the item by
+                <b>ItemLabel</b> and the list by its <b>AriaLabel</b>. <b>Strings</b> rewords or translates what is announced.
+            </div>
+            <br />
+            <div class="controls">
+                <BitToggle Label="Keyboard" @bind-Value="keyboard" />
+                <BitToggle Label="Deutsch" @bind-Value="german" />
+            </div>
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">Backlog</div>
+                    <BitSortable @bind-Items="ticketBacklog"
+                                 Group="tickets"
+                                 AriaLabel="Backlog"
+                                 ItemLabel="@(ticket => ticket.Title)"
+                                 Keyboard="keyboard"
+                                 Strings="@(german ? germanStrings : null)">
+                        <ItemTemplate Context="ticket">
+                            <div class="item">#@ticket.Id @ticket.Title</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Sprint</div>
+                    <BitSortable @bind-Items="ticketSprint"
+                                 Group="tickets"
+                                 AriaLabel="Sprint"
+                                 ItemLabel="@(ticket => ticket.Title)"
+                                 Keyboard="keyboard"
+                                 Strings="@(german ? germanStrings : null)">
+                        <ItemTemplate Context="ticket">
+                            <div class="item">#@ticket.Id @ticket.Title</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Touch & pen" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+            <div>
+                A finger drags an item after resting on it for <b>TouchDelay</b> milliseconds, so a swipe over the list still
+                scrolls the page; <b>Delay</b> is the same wait for the mouse and the pen. A pointer that moves more than
+                <b>DelayTolerance</b> pixels first is a scroll or a click instead. With <b>ForceFallback</b> the mouse drags the way
+                a finger does, with a preview of the item that follows it, instead of the browser's own drag image.
+            </div>
+            <br />
+            <div class="controls">
+                <BitSlider Label="TouchDelay (ms)" Min="0" Max="1000" Step="50" @bind-Value="touchDelay" />
+                <BitSlider Label="Delay (ms)" Min="0" Max="1000" Step="50" @bind-Value="delay" />
+                <BitSlider Label="DelayTolerance (px)" Min="0" Max="40" @bind-Value="delayTolerance" />
+                <BitToggle Label="ForceFallback" @bind-Value="forceFallback" />
+            </div>
+            <div class="panel">
+                <BitSortable @bind-Items="groceries"
+                             TouchDelay="(int)touchDelay"
+                             Delay="(int)delay"
+                             DelayTolerance="(int)delayTolerance"
+                             ForceFallback="forceFallback">
+                    <ItemTemplate Context="item">
+                        <div class="item">@item</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Large list" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+            <div>
+                Three hundred rows in a scrolling panel. Drag a row toward the panel's edge and it scrolls: the browser scrolls for
+                the mouse's own drag, the list for a finger, a pen or a ForceFallback mouse - when <b>Scroll</b> is on, within
+                <b>ScrollSensitivity</b> pixels of the edge and at up to <b>ScrollSpeed</b> pixels a frame. <b>IsolateItems</b>
+                renders each row's template in a component of its own, which a step of the drag does not render again.
+            </div>
+            <br />
+            <div class="controls">
+                <BitToggle Label="IsolateItems" @bind-Value="isolateItems" />
+                <BitToggle Label="Scroll" @bind-Value="scroll" />
+                <BitSlider Label="ScrollSensitivity (px)" Min="10" Max="120" Step="5" @bind-Value="scrollSensitivity" />
+                <BitSlider Label="ScrollSpeed (px)" Min="2" Max="60" Step="2" @bind-Value="scrollSpeed" />
+            </div>
+            <div class="panel scroller">
+                <BitSortable @bind-Items="rows"
+                             IsolateItems="isolateItems"
+                             Scroll="scroll"
+                             ScrollSensitivity="(int)scrollSensitivity"
+                             ScrollSpeed="(int)scrollSpeed">
+                    <ItemTemplate Context="row">
+                        <div class="item row">
+                            <span class="grow">@row.Name</span>
+                            <span class="note">@row.Note</span>
+                        </div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="ItemKey" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+            <div>
+                <b>ItemKey</b> says what identifies an item - its id - for rows that a server sends again as new objects. Select two
+                rows and load them again: with ItemKey they keep their elements and their selection; without it, the new objects
+                are new items to the list, and the selection is gone.
+            </div>
+            <br />
+            <div class="controls">
+                <BitButton Variant="BitVariant.Outline" OnClick="ReloadRows">Load the rows again</BitButton>
+                <BitToggle Label="ItemKey" @bind-Value="keyById" />
+            </div>
+            <div class="panel">
+                <BitSortable @bind-Items="taskRows" ItemKey="@(keyById ? byId : null)" MultiDrag>
+                    <ItemTemplate Context="row">
+                        <div class="item">@row.Title</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+            <div class="order">Loaded @loads time(s)</div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+            <div>
+                <b>BitParams</b> with a <b>BitSortableParams</b> sets the animation, the texts and the look of every sortable list
+                inside it; a parameter of the list itself still wins (the second list has an EmptyText of its own).
+            </div>
+            <br />
+            <BitParams Parameters="sortableParams">
+                <div class="panels">
+                    <div class="panel">
+                        <BitSortable @bind-Items="paramsFirst" Group="params">
+                            <ItemTemplate Context="item">
+                                <div class="item">@item</div>
+                            </ItemTemplate>
+                        </BitSortable>
+                    </div>
+                    <div class="panel">
+                        <BitSortable @bind-Items="paramsSecond" Group="params" EmptyText="My own empty text.">
+                            <ItemTemplate Context="item">
+                                <div class="item">@item</div>
+                            </ItemTemplate>
+                        </BitSortable>
+                    </div>
+                </div>
+            </BitParams>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" Id="example25">
+            <div>
+                <b>Style</b> and <b>Class</b> reach the root of the list, <b>Styles</b> and <b>Classes</b> its parts - the items,
+                the drag states and the empty state - and <b>ItemStyle</b> gives each item an inline style of its own, the way
+                ItemClass gives it a class. The drag states read the public <b>--bit-Sortable-*</b> variables, which inherit: set
+                them on :root, on an ancestor, or on the Style of a list. The last two lists set the ghost, the picked-up item and
+                outlines for the lists that take the drag.
+            </div>
+            <br />
+            <div class="panels">
+                <div class="panel">
+                    <div class="title">Style & Class</div>
+                    <BitSortable @bind-Items="styledItems"
+                                 Style="border:1px dashed var(--bit-clr-brd-pri);border-radius:0.25rem;padding:0 0.25rem"
+                                 Class="custom-class">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">Styles & Classes</div>
+                    <BitSortable @bind-Items="classedItems"
+                                 Styles="@(new() { Chosen = "background-color:var(--bit-clr-sec-light)" })"
+                                 Classes="@(new() { Item = "custom-item", Ghost = "custom-ghost" })">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <div class="title">ItemStyle</div>
+                    <BitSortable @bind-Items="itemStyled" ItemStyle="@(item => item == "Important" ? "font-weight:bold" : null)">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+            <br />
+            <div class="panels" style="@cssVariablesStyle">
+                <div class="panel">
+                    <BitSortable @bind-Items="fruits" Group="variables">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+                <div class="panel">
+                    <BitSortable @bind-Items="basket" Group="variables">
+                        <ItemTemplate Context="item">
+                            <div class="item">@item</div>
+                        </ItemTemplate>
+                    </BitSortable>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" Id="example26">
+            <div>
+                Use BitSortable in right-to-left (RTL). The list is measured in its own order, so dragging an item toward the left
+                moves it forward, and from the keyboard the left arrow moves it to the next place.
+            </div>
+            <br />
+            <div dir="rtl" class="panel strip">
+                <BitSortable @bind-Items="rtlSteps" Dir="BitDir.Rtl">
+                    <ItemTemplate Context="step">
+                        <div class="chip">@step</div>
+                    </ItemTemplate>
+                </BitSortable>
+            </div>
+            <div dir="rtl" class="order">ترتیب: @string.Join("، ", rtlSteps)</div>
+        </DemoExample>
+    </Examples>
+</DemoPage>
+
+@code {
+    // A list inside every item: each level shares the group, so an item moves from branch to branch with its children.
+    private RenderFragment NestedList(IList<TreeNode> nodes) =>
+        @<BitSortable TItem="TreeNode" Items="nodes" ItemsChanged="StateHasChanged" Group="tree" SwapThreshold="0.65" EmptyText="">
+            <ItemTemplate Context="node">
+                <div class="item">@node.Name</div>
+                <div class="children">
+                    @NestedList(node.Children)
+                </div>
+            </ItemTemplate>
+        </BitSortable>;
+}

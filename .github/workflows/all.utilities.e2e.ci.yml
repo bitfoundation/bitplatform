@@ -64,10 +64,6 @@ jobs:
     name: borm e2e
     uses: ./.github/workflows/ci.borm.e2e.yml
 
-  bortable_e2e:
-    name: bortable e2e
-    uses: ./.github/workflows/ci.bortable.e2e.yml
-
   belemetry_e2e:
     name: belemetry e2e
     uses: ./.github/workflows/ci.belemetry.e2e.yml
