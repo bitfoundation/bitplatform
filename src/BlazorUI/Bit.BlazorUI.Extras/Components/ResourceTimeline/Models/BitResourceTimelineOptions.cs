@@ -114,8 +114,8 @@ public class BitResourceTimelineOptions
     /// <summary>
     /// When <c>true</c>, two bars of a row that do not overlap in time and whose
     /// facing labels say the same - the first bar's
-    /// <see cref="BitResourceTimelineAllocation.TextEnd"/> and the next one's
-    /// <see cref="BitResourceTimelineAllocation.TextStart"/>, such as the airport
+    /// <see cref="BitResourceTimelineBarTexts.End"/> and the next one's
+    /// <see cref="BitResourceTimelineBarTexts.Start"/>, such as the airport
     /// between two legs of a flight - draw that text once instead of twice into
     /// the gap between them. The labels are compared trimmed and ignoring case;
     /// empty ones and placeholders never match: a label with no letter or digit
@@ -140,13 +140,16 @@ public class BitResourceTimelineOptions
     public bool? CollapseMatchingEdgeLabels { get; set; }
 
     /// <summary>
-    /// When <c>true</c>, what is drawn centered on a bar - its
-    /// <see cref="BitResourceTimelineAllocation.TextAbove"/> and
-    /// <see cref="BitResourceTimelineAllocation.TextBelow"/>, its icons positioned
-    /// above, below or at the center, and the centered text and icon of its
-    /// sections - follows the part of the bar that is in view instead of staying
-    /// at the bar's center, so a long bar keeps its labels on screen wherever it
-    /// is scrolled to.
+    /// When <c>true</c>, what is drawn above and below a bar - its
+    /// <see cref="BitResourceTimelineBarTexts.TopCenter"/> and
+    /// <see cref="BitResourceTimelineBarTexts.BottomCenter"/> texts, its icons
+    /// positioned above, below or at the center, and the centered text and icon
+    /// of its sections - follows the part of the bar that is in view instead of
+    /// staying at the bar's center, so a long bar keeps its labels on screen
+    /// wherever it is scrolled to. Its top and bottom start texts are likewise
+    /// held in from the start edge of the timeline, and its top and bottom end
+    /// texts from its end edge, while the bar reaches past it, and the centered
+    /// ones slide between them rather than over them where there is room.
     /// <para>
     /// The labels stay where they are while they are in view and at least
     /// <see cref="BarLabelGap"/> clear of the edge of the timeline, are held that
@@ -156,7 +159,7 @@ public class BitResourceTimelineOptions
     /// below a bar move together; a label or icon wider than its bar stays
     /// centered without holding the others back. The center icons move between
     /// the icons inside the bar's start and end, and a section's centered content
-    /// steps aside for them. The start and end labels, which are drawn beside the
+    /// steps aside for them. The Start and End texts, which are drawn beside the
     /// bar, are not moved. Only the drawing changes: stacking, tooltips and
     /// accessible names are the same either way. Defaults to <c>false</c>.
     /// </para>

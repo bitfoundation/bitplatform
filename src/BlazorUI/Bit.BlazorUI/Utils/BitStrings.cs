@@ -372,6 +372,16 @@ public class BitStrings
 
 
 
+    // ===== BitNavBar =====
+
+    /// <summary>
+    /// The name of the toggle button that opens the drawer of a navbar, and of the drawer itself: the fallback of
+    /// <see cref="BitNavBar{TItem}.ToggleAriaLabel"/>.
+    /// </summary>
+    public virtual string Menu => "Menu";
+
+
+
     // ===== BitStepper =====
 
     /// <summary>
@@ -383,6 +393,31 @@ public class BitStrings
     /// What a screen reader is told after the text of a step of a <see cref="BitStepper{TItem}"/> that is in error.
     /// </summary>
     public virtual string StepError => "Error";
+
+    /// <summary>
+    /// The position of the current step in the compact layout of a <see cref="BitStepper{TItem}"/> (its
+    /// <see cref="BitStepper{TItem}.Compact"/>), shown before the text of the step. {0} is the current step, counted from
+    /// 1, and {1} how many steps there are.
+    /// </summary>
+    public virtual string StepPositionFormat => "Step {0} of {1}";
+
+    /// <summary>
+    /// What the compact layout of a <see cref="BitStepper{TItem}"/> shows in place of the position once every step is
+    /// done (its CurrentIndex is past the last step).
+    /// </summary>
+    public virtual string StepsCompleted => "All steps completed";
+
+    /// <summary>
+    /// What the compact layout of a <see cref="BitStepper{TItem}"/> shows in place of the position before any step is
+    /// started (its CurrentIndex is negative).
+    /// </summary>
+    public virtual string StepsNotStarted => "Not started";
+
+    /// <summary>
+    /// What a screen reader is told in the compact layout of a <see cref="BitStepper{TItem}"/> about the steps in error
+    /// other than the current one, which only its bar draws. {0} is their numbers, counted from 1 and separated by commas.
+    /// </summary>
+    public virtual string StepErrorsFormat => "Steps in error: {0}";
 
 
 
@@ -417,24 +452,41 @@ public class BitStrings
     /// </summary>
     public virtual string PanelSizeFormat => "Resize, size {0} of {1}";
 
-
-
-    // ===== BitCodeBlock =====
+    // ===== BitCodeBlock, BitCopyButton (Bit.BlazorUI.Extras) =====
 
     /// <summary>
-    /// The name of the copy button of a code block: the fallback of <see cref="BitCodeBlock.CopyText"/>.
+    /// The name of a copy button: the fallback of <see cref="BitCodeBlock.CopyText"/>, and of the Text of the
+    /// BitCopyButton of the Extras package, where a button given no text of its own is an icon button.
     /// </summary>
     public virtual string Copy => "Copy";
 
     /// <summary>
-    /// The name of the copy button of a code block while what it copied is on the clipboard, which is also what a screen
-    /// reader is told after the copy: the fallback of <see cref="BitCodeBlock.CopiedText"/>.
+    /// What a copy button says, and announces to screen readers, once what it copied is on the clipboard: the fallback of
+    /// <see cref="BitCodeBlock.CopiedText"/>, and of the CopiedText of the BitCopyButton of the Extras package.
     /// </summary>
     public virtual string Copied => "Copied";
+
+    // ===== BitCodeBlock =====
 
     /// <summary>
     /// The name of the scrolling box of a <see cref="BitCodeBlock"/> that has no <see cref="BitCodeBlock.Title"/> and no
     /// <see cref="BitCodeBlock.Language"/> to be named by.
     /// </summary>
     public virtual string Code => "Code";
+
+    // ===== BitScrollToTop =====
+
+    /// <summary>
+    /// The name of a <see cref="BitScrollToTop"/> that has no text to name it by: the fallback of its
+    /// <see cref="BitComponentBase.AriaLabel"/>.
+    /// </summary>
+    public virtual string ScrollToTop => "Scroll to top";
+
+    // ===== BitEmbed =====
+
+    /// <summary>
+    /// The name of the click-to-load placeholder of an embed, <c>{0}</c> being the title of the embed: the fallback of
+    /// <see cref="BitEmbed.PlaceholderAriaLabel"/>.
+    /// </summary>
+    public virtual string LoadFormat => "Load {0}";
 }

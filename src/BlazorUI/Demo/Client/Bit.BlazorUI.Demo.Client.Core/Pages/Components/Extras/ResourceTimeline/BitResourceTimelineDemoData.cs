@@ -114,7 +114,7 @@ public static class BitResourceTimelineDemoData
                             ResourceId = gate.Id,
                             StartTime = start,
                             EndTime = end,
-                            TextAbove = labeled ? flightNumber : null,
+                            Texts = new() { TopCenter = labeled ? flightNumber : null },
                         });
                     }
 

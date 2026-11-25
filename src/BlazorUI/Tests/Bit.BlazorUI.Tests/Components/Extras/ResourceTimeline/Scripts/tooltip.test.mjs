@@ -370,7 +370,7 @@ function makeHoverEngine(bars, overrides = {}) {
 test('a +N tooltip counts the hidden bars and lists them', () => {
     const engine = makeZonedEngine('UTC');
     const bars = [
-        hidden('h1', 9, 10, { textAbove: 'SRV01' }),
+        hidden('h1', 9, 10, { texts: { topCenter: { text: 'SRV01' } } }),
         hidden('h2', 11, 12, { tooltip: 'Batch job\nsecond line' }),
         hidden('h3', 13, 14)
     ];
@@ -396,7 +396,7 @@ test('a single hidden bar is described in the singular', () => {
 test('a long +N list is cut off with a count of the rest', () => {
     const engine = makeZonedEngine('UTC');
     const bars = [];
-    for (let i = 0; i < 30; i++) bars.push(hidden('h' + i, 1, 2, { textAbove: 'B' + i }));
+    for (let i = 0; i < 30; i++) bars.push(hidden('h' + i, 1, 2, { texts: { topCenter: { text: 'B' + i } } }));
 
     const lines = engine._buildOverflowTooltip(bars).split('\n');
 
@@ -406,7 +406,7 @@ test('a long +N list is cut off with a count of the rest', () => {
 });
 
 test('hovering a +N marker describes it instead of the bars behind it', () => {
-    const bars = [hidden('h1', 9, 10, { textAbove: 'SRV01' }), hidden('h2', 11, 12)];
+    const bars = [hidden('h1', 9, 10, { texts: { topCenter: { text: 'SRV01' } } }), hidden('h2', 11, 12)];
     const engine = makeHoverEngine(bars);
     let barAtCalls = 0;
     engine._barAt = () => { barAtCalls += 1; return null; };

@@ -1,4 +1,8 @@
-﻿@import "../../../Styles/functions.scss";
+﻿@use "sass:list";
+@use "sass:map";
+
+@import "../../../Styles/functions.scss";
+@import "../../../Styles/media-queries.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every text and
 // one set on the Style of an instance - or of any element around a group of them - re-skins those and the texts
@@ -33,52 +37,40 @@
     }
 }
 
-.bit-txt-h1 {
-    margin: $tg-h1-margin;
-    font-size: $tg-h1-font-size;
-    font-weight: $tg-h1-font-weight;
-    line-height: $tg-h1-line-height;
-    letter-spacing: $tg-h1-letter-spacing;
-}
+// The typography variants, each with the theme tokens its look is drawn from. The rules of the variants below and their
+// per-breakpoint twins further down are both written from this one map, so what a variant looks like is said once.
+// The button and the overline also carry a display and a case of their own. The inherit variant takes its family and
+// its case from the element around it as well - without the case a run of text inside an uppercased block would lose
+// that block's - but not the display token the theme declares beside them: a display taken from the parent turns the
+// text into a flex or a grid container wherever its parent is one, and what the box of a run of text is belongs to
+// the layout around it rather than to a step of the typography ramp.
+$bit-txt-variants: (
+    h1: (margin: $tg-h1-margin, font-size: $tg-h1-font-size, font-weight: $tg-h1-font-weight, line-height: $tg-h1-line-height, letter-spacing: $tg-h1-letter-spacing),
+    h2: (margin: $tg-h2-margin, font-size: $tg-h2-font-size, font-weight: $tg-h2-font-weight, line-height: $tg-h2-line-height, letter-spacing: $tg-h2-letter-spacing),
+    h3: (margin: $tg-h3-margin, font-size: $tg-h3-font-size, font-weight: $tg-h3-font-weight, line-height: $tg-h3-line-height, letter-spacing: $tg-h3-letter-spacing),
+    h4: (margin: $tg-h4-margin, font-size: $tg-h4-font-size, font-weight: $tg-h4-font-weight, line-height: $tg-h4-line-height, letter-spacing: $tg-h4-letter-spacing),
+    h5: (margin: $tg-h5-margin, font-size: $tg-h5-font-size, font-weight: $tg-h5-font-weight, line-height: $tg-h5-line-height, letter-spacing: $tg-h5-letter-spacing),
+    h6: (margin: $tg-h6-margin, font-size: $tg-h6-font-size, font-weight: $tg-h6-font-weight, line-height: $tg-h6-line-height, letter-spacing: $tg-h6-letter-spacing),
+    subtitle1: (margin: $tg-subtitle1-margin, font-size: $tg-subtitle1-font-size, font-weight: $tg-subtitle1-font-weight, line-height: $tg-subtitle1-line-height, letter-spacing: $tg-subtitle1-letter-spacing),
+    subtitle2: (margin: $tg-subtitle2-margin, font-size: $tg-subtitle2-font-size, font-weight: $tg-subtitle2-font-weight, line-height: $tg-subtitle2-line-height, letter-spacing: $tg-subtitle2-letter-spacing),
+    body1: (margin: $tg-body1-margin, font-size: $tg-body1-font-size, font-weight: $tg-body1-font-weight, line-height: $tg-body1-line-height, letter-spacing: $tg-body1-letter-spacing),
+    body2: (margin: $tg-body2-margin, font-size: $tg-body2-font-size, font-weight: $tg-body2-font-weight, line-height: $tg-body2-line-height, letter-spacing: $tg-body2-letter-spacing),
+    button: (margin: $tg-button-margin, display: $tg-button-display, font-size: $tg-button-font-size, font-weight: $tg-button-font-weight, line-height: $tg-button-line-height, letter-spacing: $tg-button-letter-spacing, text-transform: $tg-button-text-transform),
+    caption1: (margin: $tg-caption1-margin, font-size: $tg-caption1-font-size, font-weight: $tg-caption1-font-weight, line-height: $tg-caption1-line-height, letter-spacing: $tg-caption1-letter-spacing),
+    caption2: (margin: $tg-caption2-margin, font-size: $tg-caption2-font-size, font-weight: $tg-caption2-font-weight, line-height: $tg-caption2-line-height, letter-spacing: $tg-caption2-letter-spacing),
+    overline: (margin: $tg-overline-margin, display: $tg-overline-display, font-size: $tg-overline-font-size, font-weight: $tg-overline-font-weight, line-height: $tg-overline-line-height, letter-spacing: $tg-overline-letter-spacing, text-transform: $tg-overline-text-transform),
+    inherit: (margin: $tg-inherit-margin, font-size: $tg-inherit-font-size, font-family: $tg-inherit-font-family, font-weight: $tg-inherit-font-weight, line-height: $tg-inherit-line-height, letter-spacing: $tg-inherit-letter-spacing, text-transform: $tg-inherit-text-transform),
+);
 
-.bit-txt-h2 {
-    margin: $tg-h2-margin;
-    font-size: $tg-h2-font-size;
-    font-weight: $tg-h2-font-weight;
-    line-height: $tg-h2-line-height;
-    letter-spacing: $tg-h2-letter-spacing;
-}
+// The variants drawn in the heading family. Every other one but the inherit variant is drawn in the text family.
+$bit-txt-headings: h1, h2, h3, h4, h5, h6;
 
-.bit-txt-h3 {
-    margin: $tg-h3-margin;
-    font-size: $tg-h3-font-size;
-    font-weight: $tg-h3-font-weight;
-    line-height: $tg-h3-line-height;
-    letter-spacing: $tg-h3-letter-spacing;
-}
-
-.bit-txt-h4 {
-    margin: $tg-h4-margin;
-    font-size: $tg-h4-font-size;
-    font-weight: $tg-h4-font-weight;
-    line-height: $tg-h4-line-height;
-    letter-spacing: $tg-h4-letter-spacing;
-}
-
-.bit-txt-h5 {
-    margin: $tg-h5-margin;
-    font-size: $tg-h5-font-size;
-    line-height: $tg-h5-line-height;
-    font-weight: $tg-h5-font-weight;
-    letter-spacing: $tg-h5-letter-spacing;
-}
-
-.bit-txt-h6 {
-    margin: $tg-h6-margin;
-    font-size: $tg-h6-font-size;
-    font-weight: $tg-h6-font-weight;
-    line-height: $tg-h6-line-height;
-    letter-spacing: $tg-h6-letter-spacing;
+@each $name, $declarations in $bit-txt-variants {
+    .bit-txt-#{$name} {
+        @each $property, $value in $declarations {
+            #{$property}: $value;
+        }
+    }
 }
 
 // The heading variants can be set in a family of their own - a display face over a text face is the commonest pairing
@@ -93,87 +85,92 @@
     font-family: var(--bit-Text-heading-font-family, var(--bit-Text-font-family, #{$tg-font-family}));
 }
 
-.bit-txt-subtitle1 {
-    margin: $tg-subtitle1-margin;
-    font-size: $tg-subtitle1-font-size;
-    font-weight: $tg-subtitle1-font-weight;
-    line-height: $tg-subtitle1-line-height;
-    letter-spacing: $tg-subtitle1-letter-spacing;
+
+// The per-breakpoint variants, TypographySm to TypographyXxl, at the breakpoints of BitGrid and BitStack and with
+// their "from this width up" meaning: each breakpoint is a min-width query of its own, written in order, so a variant
+// asked for at md keeps applying at lg, xl and xxl until a wider one replaces it. TypographyXs applies from no width
+// at all, so it needs no query: the component draws it through the plain variant class above. Only the look changes
+// with the width - the tag is the one Typography decides.
+//
+// A variant here declares everything its plain class does, and the family too - a heading switched to a body variant
+// at some width has to leave the heading family behind - so nothing of a narrower look shows through. The display and
+// the case are the two only some variants declare (the button, the overline, the inherit one); a variant without one
+// of them resets it only where a narrower variant of the same text declared it, and leaves it alone everywhere else.
+// The reset is a `revert`, which goes back to the browser's default for the element: a rule of the page's own that set
+// the same property on the element is dropped with the narrower variant's value, unless it outweighs the one class of
+// the reset (`.toolbar > span` does, `nav span` does not), in which case it wins at every width anyway.
+//
+// These come right after the plain variants and before the classes of every parameter that refines a look (Weight,
+// Transform, Monospace, Gutter, Block, LineClamp, VisuallyHidden): a media query adds no weight, so with one class
+// each the order of the file decides, and a refinement wins over the variant at every width.
+$bit-txt-breakpoints: (sm: $mq-sm-min, md: $mq-md-min, lg: $mq-lg-min, xl: $mq-xl-min, xxl: $mq-xxl-min);
+
+// The classes of the narrower tiers - the plain variants and every breakpoint written so far - that declare a display
+// or a case, grown as the breakpoints are written.
+$bit-txt-narrower: (display: (), text-transform: ());
+
+@each $name, $declarations in $bit-txt-variants {
+    @each $property in map.keys($bit-txt-narrower) {
+        @if map.has-key($declarations, $property) {
+            $bit-txt-narrower: map.set($bit-txt-narrower, $property, list.append(map.get($bit-txt-narrower, $property), ".bit-txt-#{$name}", $separator: comma));
+        }
+    }
 }
 
-.bit-txt-subtitle2 {
-    margin: $tg-subtitle2-margin;
-    font-size: $tg-subtitle2-font-size;
-    font-weight: $tg-subtitle2-font-weight;
-    line-height: $tg-subtitle2-line-height;
-    letter-spacing: $tg-subtitle2-letter-spacing;
-}
+@each $bp, $min-width in $bit-txt-breakpoints {
+    $headings: ();
+    $texts: ();
+    $without: (display: (), text-transform: ());
 
-.bit-txt-body1 {
-    margin: $tg-body1-margin;
-    font-size: $tg-body1-font-size;
-    font-weight: $tg-body1-font-weight;
-    line-height: $tg-body1-line-height;
-    letter-spacing: $tg-body1-letter-spacing;
-}
+    @each $name, $declarations in $bit-txt-variants {
+        $class: ".bit-txt-#{$bp}-#{$name}";
 
-.bit-txt-body2 {
-    margin: $tg-body2-margin;
-    font-size: $tg-body2-font-size;
-    font-weight: $tg-body2-font-weight;
-    line-height: $tg-body2-line-height;
-    letter-spacing: $tg-body2-letter-spacing;
-}
+        @if list.index($bit-txt-headings, $name) {
+            $headings: list.append($headings, $class, $separator: comma);
+        }
+        @else if $name != inherit {
+            $texts: list.append($texts, $class, $separator: comma);
+        }
 
-.bit-txt-button {
-    margin: $tg-button-margin;
-    display: $tg-button-display;
-    font-size: $tg-button-font-size;
-    font-weight: $tg-button-font-weight;
-    line-height: $tg-button-line-height;
-    letter-spacing: $tg-button-letter-spacing;
-    text-transform: $tg-button-text-transform;
-}
+        @each $property in map.keys($without) {
+            @if not map.has-key($declarations, $property) {
+                $without: map.set($without, $property, list.append(map.get($without, $property), $class, $separator: comma));
+            }
+        }
+    }
 
-.bit-txt-caption1 {
-    margin: $tg-caption1-margin;
-    font-size: $tg-caption1-font-size;
-    font-weight: $tg-caption1-font-weight;
-    line-height: $tg-caption1-line-height;
-    letter-spacing: $tg-caption1-letter-spacing;
-}
+    @media (min-width: $min-width) {
+        #{$headings} {
+            font-family: var(--bit-Text-heading-font-family, var(--bit-Text-font-family, #{$tg-font-family}));
+        }
 
-.bit-txt-caption2 {
-    margin: $tg-caption2-margin;
-    font-size: $tg-caption2-font-size;
-    font-weight: $tg-caption2-font-weight;
-    line-height: $tg-caption2-line-height;
-    letter-spacing: $tg-caption2-letter-spacing;
-}
+        #{$texts} {
+            font-family: var(--bit-Text-font-family, #{$tg-font-family});
+        }
 
-.bit-txt-overline {
-    margin: $tg-overline-margin;
-    display: $tg-overline-display;
-    font-size: $tg-overline-font-size;
-    font-weight: $tg-overline-font-weight;
-    line-height: $tg-overline-line-height;
-    letter-spacing: $tg-overline-letter-spacing;
-    text-transform: $tg-overline-text-transform;
-}
+        @each $name, $declarations in $bit-txt-variants {
+            .bit-txt-#{$bp}-#{$name} {
+                @each $property, $value in $declarations {
+                    #{$property}: $value;
+                }
+            }
+        }
 
-// The inherit variant takes its declarations from the element around it, so the text-transform the theme declares
-// for it belongs here as well - without it a run of text inside an uppercased block would lose that block's case.
-// The display token the theme declares beside it is deliberately not read: a display taken from the parent turns
-// the text into a flex or a grid container wherever its parent is one, and what the box of a run of text is
-// belongs to the layout around it rather than to a step of the typography ramp.
-.bit-txt-inherit {
-    margin: $tg-inherit-margin;
-    font-size: $tg-inherit-font-size;
-    font-family: $tg-inherit-font-family;
-    font-weight: $tg-inherit-font-weight;
-    line-height: $tg-inherit-line-height;
-    letter-spacing: $tg-inherit-letter-spacing;
-    text-transform: $tg-inherit-text-transform;
+        // The :where() weighs nothing, so the rule weighs the one class of the variant, as every rule above does.
+        @each $property, $classes in $without {
+            :is(#{$classes}):where(#{map.get($bit-txt-narrower, $property)}) {
+                #{$property}: revert;
+            }
+        }
+    }
+
+    @each $name, $declarations in $bit-txt-variants {
+        @each $property in map.keys($bit-txt-narrower) {
+            @if map.has-key($declarations, $property) {
+                $bit-txt-narrower: map.set($bit-txt-narrower, $property, list.append(map.get($bit-txt-narrower, $property), ".bit-txt-#{$bp}-#{$name}", $separator: comma));
+            }
+        }
+    }
 }
 
 

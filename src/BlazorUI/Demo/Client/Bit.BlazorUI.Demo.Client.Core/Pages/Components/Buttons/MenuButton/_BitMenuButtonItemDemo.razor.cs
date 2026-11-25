@@ -205,6 +205,33 @@ public partial class _BitMenuButtonItemDemo
         new() { Text = "Delete", Key = "delete", IconName = BitIconName.Delete }
     ];
 
+    private static List<BitMenuButtonItem> navigationItems =
+    [
+        new()
+        {
+            Text = "MenuButton", Key = "menubutton", IconName = BitIconName.ContextMenu,
+            Description = "A button that opens a menu of actions or links",
+            Href = "/components/menubutton", Match = BitNavMatch.Exact
+        },
+        new()
+        {
+            Text = "DropMenu", Key = "dropmenu", IconName = BitIconName.Dropdown,
+            Description = "A button that opens any content",
+            Href = "/components/dropmenu", Match = BitNavMatch.Exact
+        },
+        new()
+        {
+            Text = "Navs", Key = "navs", IconName = BitIconName.Nav2DMapView,
+            Description = "The ways around an app",
+            ChildItems =
+            [
+                new() { Text = "Nav", Key = "nav", Description = "A tree of links", Href = "/components/nav", Match = BitNavMatch.Exact },
+                new() { Text = "NavBar", Key = "navbar", Description = "A bar of links", Href = "/components/navbar", Match = BitNavMatch.Exact },
+                new() { Text = "Breadcrumb", Key = "breadcrumb", Description = "The path to the current page", Href = "/components/breadcrumb", Match = BitNavMatch.Exact }
+            ]
+        }
+    ];
+
     private static List<BitMenuButtonItem> rtlItemsIcon =
     [
         new() { Text = "گزینه الف", Key = "A", IconName = BitIconName.Emoji },

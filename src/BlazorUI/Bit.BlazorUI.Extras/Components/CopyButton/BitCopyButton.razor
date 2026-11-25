@@ -1,0 +1,48 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@{
+    var copied = _copied;
+    var showText = Text.HasValue();
+    var copiedText = CopiedText ?? BitStrings.Current.Copied;
+    var text = copied ? copiedText : (showText ? Text : BitStrings.Current.Copy);
+    var customIcon = copied ? BitIconInfo.From(CopiedIcon, CopiedIconName) : BitIconInfo.From(Icon, IconName);
+    var disabled = Disabled || Value is null;
+}
+
+<span @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+      id="@_Id"
+      style="@StyleBuilder.Value"
+      class="@ClassBuilder.Value"
+      dir="@Dir?.ToString().ToLower()">
+    @* With no Text the button is an icon button, named by its text all the same: IconOnly keeps the text as
+       screen-reader-only content, and the tooltip says it to the eye. The glyph and the text turn into the copied ones
+       once the value is on the clipboard and back after CopiedDuration, since a copy leaves nothing else on the screen
+       to show for itself. The Copy glyph is not in the font of the core package, so it is drawn from the subset this
+       package ships (ButtonClasses); the check mark (Accept) is one of the core font's. The TabIndex the base takes
+       goes to the button, the one focusable element; the root span stays out of the tab order. *@
+    <BitButton Icon="@customIcon"
+               IconName="@(customIcon is not null ? null : copied ? "Accept" : "Copy")"
+               IconOnly="@(showText is false)"
+               Title="@(showText ? null : copied ? copiedText : (AriaLabel ?? text))"
+               AriaLabel="@AriaLabel"
+               Color="@Color"
+               Size="@Size"
+               Variant="@Variant"
+               Disabled="@disabled"
+               TabIndex="@TabIndex"
+               OnClick="HandleOnClick"
+               Classes="@(copied || customIcon is not null ? Classes?.Button : ButtonClasses)"
+               Styles="@Styles?.Button">
+        @text
+    </BitButton>
+
+    @* A changed glyph is invisible to a screen reader, so the copy is announced as well. The region is on the page from
+       the first render with nothing in it: text landing in a live region that is already there is what screen readers
+       reliably announce. The text is keyed by the copy, so a second copy while the first is still confirmed replaces
+       the node rather than leaving the same text in place, which would announce nothing. *@
+    <span role="status"
+          aria-live="polite"
+          style="@Styles?.LiveRegion"
+          class="bit-cpb-liv @Classes?.LiveRegion">@if (copied) {<span @key="_copyCount">@copiedText</span>}</span>
+</span>

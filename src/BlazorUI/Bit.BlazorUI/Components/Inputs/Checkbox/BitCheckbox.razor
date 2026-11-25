@@ -125,6 +125,19 @@
            aria-posinset="@ariaPositionInSet"
            aria-describedby="@(describedBy.HasValue() ? describedBy : null)" />
 
+    @if (IsCard)
+    {
+        @* The hit area of a card: a label of the input laid over the whole card, under everything in it, so a click
+           anywhere on the card that nothing in it answers itself - the padding, the description and the error line
+           included - is handed to the input the way a click on the label is. It lies under the visible label rather
+           than over it, which keeps the Title and the press of the label to the label. It carries no text, so it adds
+           nothing to the name of the input, and it is hidden from assistive technologies, which already reach the
+           input itself. It follows the input and precedes the label, so its focus ring - drawn around the card
+           instead of around the box - and the dip of the box while it is pressed are styled through sibling
+           selectors. *@
+        <label for="@_inputId" aria-hidden="true" class="bit-chb-hit"></label>
+    }
+
     <label title="@Title"
            for="@_inputId"
            style="@Styles?.Container"

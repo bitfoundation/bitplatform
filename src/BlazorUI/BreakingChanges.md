@@ -18,6 +18,104 @@ only in this file.
 
 ## 11.0.0
 
+### `BitResourceTimeline`'s bar texts are one `Texts` with eight positions, and its `Texts` is `Strings` ([#15441](https://github.com/bitfoundation/bitplatform/issues/15441))
+
+`BitResourceTimelineAllocation` labelled a bar through four strings, one per side. They are now the properties of one
+`Texts` (a `BitResourceTimelineBarTexts`), which adds a text at the start and the end edge above and below the bar
+(`TopStart`, `TopEnd`, `BottomStart`, `BottomEnd`). Each position is a `BitResourceTimelineBarText` with its own
+`Text`, `Color`, `Font`, `OffsetX` and `OffsetY`, and a string converts to one implicitly:
+
+| Before | After |
+|---|---|
+| `TextAbove = "LH441"` | `Texts = new() { TopCenter = "LH441" }` |
+| `TextBelow = "Gate 5"` | `Texts = new() { BottomCenter = "Gate 5" }` |
+| `TextStart = "08:00"` | `Texts = new() { Start = "08:00" }` |
+| `TextEnd = "16:00"` | `Texts = new() { End = "16:00" }` |
+| `bar.TextAbove` (read) | `bar.Texts?.TopCenter?.Text` |
+
+The four texts are drawn where they were. The label a bar's default tooltip and accessible name read is the first text
+of `TopCenter`, `TopStart`, `TopEnd`, `Start`, `End`, `BottomCenter`, `BottomStart` and `BottomEnd`, which is the
+order the old four were read in.
+
+So the bar texts and the words of the timeline itself are not both called texts, the component's `Texts` parameter
+(and its counterpart on `BitResourceTimelineParams`) is `Strings`, and its type `BitResourceTimelineTexts` is
+`BitResourceTimelineStrings`, with the same members:
+
+| Before | After |
+|---|---|
+| `<BitResourceTimeline Texts="texts" />` | `<BitResourceTimeline Strings="strings" />` |
+| `new BitResourceTimelineTexts { Loading = "..." }` | `new BitResourceTimelineStrings { Loading = "..." }` |
+
+The analyzer reports a `Texts` left on the component and the four removed allocation properties (`BITBC001`), and the
+old type (`BITBC002`). With it turned off, a `Texts` left in markup builds and is rendered as an HTML attribute, so the
+timeline speaks English again.
+
+### The words a component writes for itself are `Strings` everywhere ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The object holding every word a component writes for itself - the one that localizes it - is called `Strings`, as it is
+on `BitDataGrid` and `BitResourceTimeline`. The components that called it `Texts` are renamed to match: the parameter
+(and its counterpart on the component's `Bit*Params`) is `Strings`, and its type is `Bit*Strings`, with the same
+members. The Markdown pipeline follows: `BitMarkdownPipelineBuilder.Texts`, `BitMarkdownPipeline.Texts` and
+`BitMarkdownRenderer.Texts` are `Strings`, `UseTexts()` is `UseStrings()`, and `BitMarkdownTexts` is
+`BitMarkdownStrings`.
+
+| Before | After |
+|---|---|
+| `<BitChart Texts="texts" />`, `new BitChartTexts { ... }` | `<BitChart Strings="strings" />`, `new BitChartStrings { ... }` |
+| `<BitColorPicker Texts="texts" />`, `new BitColorPickerTexts { ... }` | `<BitColorPicker Strings="strings" />`, `new BitColorPickerStrings { ... }` |
+| `<BitFullCalendar Texts="texts" />`, `new BitFullCalendarTexts { ... }` | `<BitFullCalendar Strings="strings" />`, `new BitFullCalendarStrings { ... }` |
+| `<BitImageViewer Texts="texts" />`, `new BitImageViewerTexts { ... }` | `<BitImageViewer Strings="strings" />`, `new BitImageViewerStrings { ... }` |
+| `<BitMarkdownEditor Texts="texts" />`, `new BitMarkdownEditorTexts { ... }` | `<BitMarkdownEditor Strings="strings" />`, `new BitMarkdownEditorStrings { ... }` |
+| `<BitPdfViewer Texts="texts" />`, `new BitPdfViewerTexts { ... }` | `<BitPdfViewer Strings="strings" />`, `new BitPdfViewerStrings { ... }` |
+| `new BitChartParams { Texts = ... }` (and the other `Bit*Params`) | `new BitChartParams { Strings = ... }` |
+| `builder.UseTexts(new BitMarkdownTexts { ... })` | `builder.UseStrings(new BitMarkdownStrings { ... })` |
+| `builder.Texts.AlertNote = "..."`, `pipeline.Texts`, `renderer.Texts` | `builder.Strings.AlertNote = "..."`, `pipeline.Strings`, `renderer.Strings` |
+| `new BitMarkdownRenderer(renderers, texts)` | `new BitMarkdownRenderer(renderers, strings)` (only the parameter's name changed) |
+
+The analyzer reports a `Texts` left on any of these components, their `Bit*Params` and the Markdown pipeline types, and a
+`UseTexts()` call (`BITBC001`), and the old types (`BITBC002`). With it turned off, a `Texts` left in markup builds and
+is rendered as an HTML attribute, so the component speaks English again.
+
+### `BitCard` draws on its root's `::after` ([#15380](https://github.com/bitfoundation/bitplatform/issues/15380))
+
+The accent bar of the new `Accent` parameter and `--bit-Card-accent-color` variable is the border of a layer over the
+card, the root's `::after` pseudo-element. Since the variable can draw a bar on any card, that layer is there on every
+card, with or without an accent: `content: ""`, `position: absolute`, `inset: 0`, a negative `margin` the width of the
+card's rule, `box-sizing: border-box`, `border-radius: inherit` and `pointer-events: none`.
+
+**An app that decorates the `::after` of a card's root** (through `Class`, `Classes.Root` or a `.bit-crd::after` rule
+of its own) now has those declarations merged into its pseudo-element, so a badge placed with `top` / `right` is
+stretched over the whole card. Draw the decoration on an element of its own inside the card instead, or set each of
+those properties back in the app's rule:
+
+```css
+.my-card::after {
+    content: "NEW";
+    position: absolute;
+    inset: 4px 4px auto auto;
+    margin: 0;
+}
+```
+
+### `BitMenuButton` reads a `Description` and a `Match` off custom items ([#15375](https://github.com/bitfoundation/bitplatform/issues/15375))
+
+`BitMenuButtonNameSelectors` has two new members, `Description` and `Match`. Like the other name selectors, they read
+the property of the same name off a custom item class when no selector is given:
+
+- **A `Description` property** is rendered as a second line under the item's text and announced as its description
+  (`aria-describedby`). The item's accessible name then becomes its text and secondary text alone
+  (`aria-label`), unless it has an `AriaLabel`.
+- **A `Match` property** of type `BitNavMatch?` marks the item whose `Href` matches the current URL with
+  `aria-current="page"` and the `Current` class-style part. A property named `Match` of any other type is
+  ignored.
+
+**An app whose custom item class has a `Description` property used for something else** turns the new reading off
+with a selector that returns null:
+
+```csharp
+NameSelectors = new() { Description = { Selector = _ => null } };
+```
+
 ### `BitFullCalendarState` is read-only, but for its filters ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 `BitFullCalendar.State` is what the calendar is showing, for an app to read. The 56 members that changed it are no
@@ -918,7 +1016,7 @@ file components only when the value moves rather than on every status change. Re
 
 #### Known consumers in this repo that break
 
-The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI edit boundary and was
+The Boilerplate template (`src/Templates/Boilerplate` then, now `src/Boilerplate` in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric)) is outside the BlazorUI edit boundary and was
 **not** updated:
 
 | File | Line | Use |
@@ -926,7 +1024,7 @@ The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI e
 | `Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor` | 69 | `@bind-Color="category.Color"` -> `@bind-Value="category.Color"` (the `ValidationMessage` beside it then updates as the user picks) |
 | `Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.razor` | 235 | `OnChange="HandleOnAttachmentChange"` -> `OnFilesChange="HandleOnAttachmentChange"` |
 
-(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`.)
+(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`, now `src/Boilerplate/Bit.Boilerplate/src/Client/` in bitfoundation/bitfabric.)
 
 ### A modal container of an app's own reads its modals through `ModalReferences` ([#13558](https://github.com/bitfoundation/bitplatform/issues/13558))
 
@@ -1494,7 +1592,7 @@ counterpart (as nullable), unless noted.
 
 #### Known consumers in this repo that break
 
-The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI edit boundary and was
+The Boilerplate template (`src/Templates/Boilerplate` then, now `src/Boilerplate` in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric)) is outside the BlazorUI edit boundary and was
 **not** updated. These lines will fail to compile against this branch:
 
 | File | Line | Use |
@@ -1508,4 +1606,4 @@ The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI e
 | `Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor` | 67 | `BitDataGridColumnAlign.Center` -> `BitTextAlign.Center` |
 | `Boilerplate.Client.Core/Components/Pages/Tenants/ManageAllTenantsPage.razor` | 49 | `BitDataGridColumnAlign.Center` -> `BitTextAlign.Center` |
 
-(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`.)
+(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`, now `src/Boilerplate/Bit.Boilerplate/src/Client/` in bitfoundation/bitfabric.)

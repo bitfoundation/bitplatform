@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcMonthView
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [Parameter] public RenderFragment<BitFullCalendarEvent>? EventTemplate { get; set; }
     [Parameter] public List<BitFullCalendarEvent> MultiDayEvents { get; set; } = [];
     [Parameter] public List<BitFullCalendarEvent> SingleDayEvents { get; set; } = [];

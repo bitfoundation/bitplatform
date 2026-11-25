@@ -7,7 +7,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// End-to-end tests of BitMarkdownViewer on <c>/e2e/markdown-viewer</c>: the CommonMark core and every flavor of the
 /// pipelines (GitHub tables, strikethrough, task lists, autolinks, footnotes, alerts; emoji, emphasis extras,
 /// SmartyPants, soft breaks, front matter, containers, definition lists, abbreviations, figures, math, auto ids and
-/// permalinks, link options, base URL and URL rewriters, localized texts), the untrusted-input guards (image policy,
+/// permalinks, link options, base URL and URL rewriters, localized strings), the untrusted-input guards (image policy,
 /// URL sanitizing, raw HTML as text, bidi stripping, length and nesting caps), the templates, the interactive task
 /// lists, the accessibility attributes, the BitParams cascade, the public CSS variables, RTL and Auto direction, the
 /// base parameters, prerendering, runtime re-parses and unmounting.
@@ -800,7 +800,7 @@ public class BitMarkdownViewerE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Localization_UseTexts_ReplacesEveryWordTheRenderersWrite()
+    public async Task Localization_UseStrings_ReplacesEveryWordTheRenderersWrite()
     {
         await OpenAsync(Route);
 

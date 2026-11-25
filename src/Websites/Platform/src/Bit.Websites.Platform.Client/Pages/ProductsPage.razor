@@ -4,14 +4,14 @@
 
 <PageOutlet Url="products"
             Title="Products"
-            Description="Every bit platform product in one place: the Boilerplate project template, BlazorUI components, focused Blazor libraries and the tools to build, optimize and ship your apps." />
+            Description="Every bit platform product in one place: BlazorUI components, focused Blazor libraries, the tools to build and optimize your apps, and bit Fabric, which builds whole apps on them." />
 
 <div class="page-container">
     <section class="page-section intro-section">
         <div class="page-section-content">
             <BitText Typography="BitTypography.H1" Gutter Class="page-title">Our products</BitText>
             <BitText Typography="BitTypography.H5" Element="p" Class="page-subtitle">
-                Everything you need to build, polish and ship your apps - free, open source and MIT licensed.
+                The libraries and tools to build, polish and ship your apps - free, open source and MIT licensed.
             </BitText>
         </div>
     </section>
@@ -61,6 +61,29 @@
                         <BitText Typography="BitTypography.Inherit" Element="span" Class="tooling-title" Color="BitColor.PrimaryForeground">@tooling.Title</BitText>
                         <BitText Typography="BitTypography.Inherit" Element="span" Class="tooling-desc" Color="BitColor.SecondaryForeground">@tooling.Description</BitText>
                         <span class="tooling-link">Learn more <span class="tooling-link-arrow"></span></span>
+                    </BitLink>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <div class="section-title-line reversed"></div>
+                <BitText Typography="BitTypography.H2" Class="section-title">bit Fabric</BitText>
+                <div class="section-title-line"></div>
+            </div>
+            <BitText Typography="BitTypography.Subtitle1" Element="p" Class="section-subtitle">
+                Whole apps built on these libraries with AI, from the bit Boilerplate project template and bit CLI.
+            </BitText>
+            <div class="tooling-list">
+                @foreach (var product in ProductCatalog.Fabric)
+                {
+                    <BitLink Class="tooling-card" Href="@product.Url" Target="_blank" NoColor NoUnderline>
+                        <BitText Typography="BitTypography.Inherit" Element="span" Class="tooling-title" Color="BitColor.PrimaryForeground">@product.Title</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="span" Class="tooling-desc" Color="BitColor.SecondaryForeground">@product.Description</BitText>
+                        <span class="tooling-link">Visit @(product.Url.Replace("https://", "")) <span class="tooling-link-arrow"></span></span>
                     </BitLink>
                 }
             </div>

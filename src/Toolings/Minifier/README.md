@@ -138,10 +138,11 @@ anywhere. `-p:BitMinifyMap=<path>` reads a map kept somewhere else - the one arc
 stack trace came from.
 
 Whoever reads the trace usually has neither the project nor the publish: a map kept with a release and a text
-file are enough, and the decoder is a command of the bit CLI, run without installing anything:
+file are enough, and the decoder is a command of bit CLI (it lives in
+[bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric)), run without installing anything:
 
 ```
-dnx Bit.Cli --version 11.0.0-pre-23 -- decode bit-minifier.map trace.txt
+dnx Bit.Cli --prerelease -- decode bit-minifier.map trace.txt
 ```
 
 Leaving the trace out reads it from standard input there too, and run inside the project, `bit decode` finds the

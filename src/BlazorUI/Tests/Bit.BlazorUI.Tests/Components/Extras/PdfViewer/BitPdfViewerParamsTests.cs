@@ -109,7 +109,7 @@ public class BitPdfViewerParamsTests : BunitTestContext
             Height = "20rem",
             Width = "30rem",
             ToolbarItems = BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom,
-            Texts = new() { ToolbarAriaLabel = "PDF-Werkzeugleiste", DocumentAriaLabel = "Dokument" },
+            Strings = new() { ToolbarAriaLabel = "PDF-Werkzeugleiste", DocumentAriaLabel = "Dokument" },
             ToolbarEndTemplate = viewer => builder => builder.AddMarkupContent(0, "<button class=\"custom-end\">Share</button>"),
         });
 
@@ -164,7 +164,7 @@ public class BitPdfViewerParamsTests : BunitTestContext
         {
             ShowToolbar = false,
             Height = "20rem",
-            Texts = new() { DocumentAriaLabel = "Cascaded" },
+            Strings = new() { DocumentAriaLabel = "Cascaded" },
         }, builder =>
         {
             builder.AddAttribute(1, nameof(BitPdfViewer.ShowToolbar), true);

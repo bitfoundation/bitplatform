@@ -39,7 +39,7 @@
     var directionSign = State.IsRtl ? -1 : 1;
     var blockStyle = $"{colorStyleVar}{widthOverride}transform:translateX({(translateXPx * directionSign).ToString("F2", inv)}px);";
     var canResize = PixelsPerMinute > 0 && CanResize;
-    var ariaLabel = BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel);
+    var ariaLabel = BitFullCalendarHelpers.BuildEventAriaLabel(Event, State.Use24HourFormat, State.Culture, Strings.AllDayLabel);
     var templated = EventTemplate is not null;
 }
 
@@ -55,7 +55,7 @@
      aria-label="@(templated ? null : ariaLabel)"
      aria-labelledby="@(templated ? _BitFcEventTemplateHost.LabelledBy(_instanceId) : null)"
      draggable="@(CanMove ? "true" : "false")"
-     title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Texts.AllDayLabel)"
+     title="@BitFullCalendarHelpers.BuildEventTooltip(Event, State.Use24HourFormat, State.Culture, Strings.AllDayLabel)"
      @ondragstart="OnDragStart"
      @ondragend="OnDragEnd"
      @onclick="OnClick"
@@ -88,7 +88,7 @@
         <div class="bit-bfc-timeline-event-time">
             @if (Event.IsAllDay)
             {
-                @Texts.AllDayLabel
+                @Strings.AllDayLabel
             }
             else
             {
@@ -110,7 +110,7 @@
 
     @if (_isResizing)
     {
-        <div class="bit-bfc-resize-preview" role="status" aria-label="@Texts.ResizePreviewAriaLabel">
+        <div class="bit-bfc-resize-preview" role="status" aria-label="@Strings.ResizePreviewAriaLabel">
             <svg class="bit-bfc-resize-preview-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <span class="bit-bfc-resize-preview-time">@FormatPreview(displayStart, displayEnd)</span>
         </div>

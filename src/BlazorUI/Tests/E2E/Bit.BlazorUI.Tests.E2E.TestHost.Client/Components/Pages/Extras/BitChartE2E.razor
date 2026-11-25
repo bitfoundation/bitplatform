@@ -66,7 +66,7 @@
     </div>
     <span id="key-clicks">@_keyClicks</span>
     <span id="key-last">@(_lastKeyClick ?? "none")</span>
-    <div class="box"><BitChart Id="cht-texts" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" Texts="_texts" AriaLabel="Custom chart name" NavigationHint="Custom hint." /></div>
+    <div class="box"><BitChart Id="cht-strings" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" Strings="_strings" AriaLabel="Custom chart name" NavigationHint="Custom hint." /></div>
     <div class="box"><BitChart Id="cht-titled" Type="BitChartType.Line" Data="_lineData" Options="Titled()" /></div>
 </E2ESection>
 
@@ -361,7 +361,7 @@
         Datasets = { new BitChartDataset { Label = "Config", Data = [3, 6] } }
     }, new BitChartOptions { Animation = new() { Animate = false } });
 
-    private readonly BitChartTexts _texts = new()
+    private readonly BitChartStrings _strings = new()
     {
         RoleDescription = "graph",
         LegendAriaLabel = "Series of the graph",

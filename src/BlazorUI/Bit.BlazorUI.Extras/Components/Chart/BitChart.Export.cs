@@ -121,24 +121,24 @@ public partial class BitChart
     /// <summary>
     /// Renders the chart's data as CSV. Value datasets become one row per series with a column per
     /// label; point datasets (scatter/bubble) become one row per point. The headers and the names of
-    /// unlabeled datasets come from <see cref="Texts"/>, the X and Y headers from the axis titles when
+    /// unlabeled datasets come from <see cref="Strings"/>, the X and Y headers from the axis titles when
     /// the axes show one - the same as the screen-reader table.
     /// </summary>
     public string ToCsv()
     {
         var data = _config.Data;
         var culture = Culture;
-        var texts = ActiveTexts;
+        var strings = ActiveStrings;
         var sb = new StringBuilder();
 
         if (HasPointData)
         {
             // The radius column is there only for bubble data, as it is in the table.
             bool radius = HasRadiusData;
-            sb.Append(CsvText(texts.Series)).Append(',')
-              .Append(CsvText(PointHeader(x: true, texts.X))).Append(',')
-              .Append(CsvText(PointHeader(x: false, texts.Y)));
-            if (radius) sb.Append(',').Append(CsvText(texts.Radius));
+            sb.Append(CsvText(strings.Series)).Append(',')
+              .Append(CsvText(PointHeader(x: true, strings.X))).Append(',')
+              .Append(CsvText(PointHeader(x: false, strings.Y)));
+            if (radius) sb.Append(',').Append(CsvText(strings.Radius));
             sb.AppendLine();
             for (int di = 0; di < data.Datasets.Count; di++)
             {
@@ -156,7 +156,7 @@ public partial class BitChart
             return sb.ToString();
         }
 
-        sb.Append(CsvText(texts.Series));
+        sb.Append(CsvText(strings.Series));
         foreach (var label in data.Labels) sb.Append(',').Append(CsvText(label));
         sb.AppendLine();
 

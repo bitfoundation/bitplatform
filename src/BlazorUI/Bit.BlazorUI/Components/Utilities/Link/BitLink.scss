@@ -9,6 +9,7 @@
 //   --bit-Link-active-color           text color while pressed                    (default: $clr-pri-active)
 //   --bit-Link-visited-color          text color of a link already visited        (default: the rest color)
 //   --bit-Link-disabled-color         text color when disabled                    (default: $clr-pri-dis-text)
+//   --bit-Link-disabled-icon-opacity  fading of the IconUrl picture when disabled (default: $opa-dis)
 //   --bit-Link-current-color          text color of the current link (aria-current,
 //                                     or a Match on the URL) at rest              (default: the rest color)
 //   --bit-Link-focus-color            color of the keyboard focus ring            (default: $clr-pri-focus)
@@ -176,6 +177,21 @@ $lnk-private-properties: clr, clr-hover, clr-active, clr-focus, clr-dis, fs,
     line-height: 1;
     font-size: 1em;
     vertical-align: -0.125em;
+}
+
+// The picture of an IconUrl takes the glyph's place at the glyph's size: a square of the size of the text beside
+// it, lowered the same way, with the picture fitted inside it whatever its own proportions.
+.bit-lnk-icu {
+    width: 1em;
+    height: 1em;
+    object-fit: contain;
+    vertical-align: -0.125em;
+}
+
+// A glyph dims with the text because it is drawn in the disabled color; a picture keeps its own colors, so it is
+// faded instead, for the icon to show the disabled state the way the glyph it stands in for does.
+.bit-lnk.bit-dis > .bit-lnk-icu {
+    opacity: var(--bit-Link-disabled-icon-opacity, #{$opa-dis});
 }
 
 .bit-lnk-sic {

@@ -170,7 +170,9 @@ public sealed class NewComponentTests : DemoTest
     public async Task A_press_in_the_color_area_moves_the_thumb_there()
     {
         var page = await OpenDemoAsync("/color-picker");
-        var areaBox = (await Sample(page, "Area, hue, alpha, swatch and field").Locator(".color-area").BoundingBoxAsync())!;
+        var area = Sample(page, "Area, hue, alpha, swatch and field").Locator(".color-area");
+        await area.ScrollIntoViewIfNeededAsync();
+        var areaBox = (await area.BoundingBoxAsync())!;
         await page.Mouse.ClickAsync(areaBox.X + areaBox.Width * 0.25f, areaBox.Y + areaBox.Height * 0.75f);
         var thumb = Sample(page, "Area, hue, alpha, swatch and field").Locator(".color-area [role=slider]");
         await Expect(thumb).ToHaveAttributeAsync("aria-valuetext", new Regex("Saturation 2[45]%, Brightness 2[45]%"));

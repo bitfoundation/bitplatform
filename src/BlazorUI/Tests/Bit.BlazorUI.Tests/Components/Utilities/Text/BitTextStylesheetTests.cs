@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -64,7 +65,7 @@ public class BitTextStylesheetTests
         DataRow("color: var(--bit-Text-color", ".bit-txt-#{$role} {"),
         DataRow("color: var(--bit-Text-color", "\n.bit-txt-rfg {"),
         DataRow("color: var(--bit-Text-color", "\n.bit-txt-grd {"),
-        DataRow("font-family: var(--bit-Text-font-family", "\n.bit-txt-inherit {"),
+        DataRow("font-family: var(--bit-Text-font-family", "\n@each $name, $declarations in $bit-txt-variants {"),
         DataRow("font-family: var(--bit-Text-font-family", "\n.bit-txt-mno {"),
         DataRow("font-family: var(--bit-Text-heading-font-family", "\n.bit-txt-mno {"),
         DataRow("font-family: var(--bit-Text-font-family", "\n.bit-txt-cod {"),
@@ -145,6 +146,109 @@ public class BitTextStylesheetTests
         StringAssert.Contains(roles, "color: role-text($role, $tokens);");
         Assert.IsFalse(roles.Contains("role($tokens, main)", StringComparison.Ordinal), "A Color paints the text in the role's fill color.");
     }
+
+    // The per-breakpoint variants share no weight with anything: one class each, in queries that add none, so the order
+    // of the file is what has them win over the plain variants and lose to the classes of every parameter that refines
+    // a look - a Weight, a Transform or a Monospace has to win at every width, as Gutter, Block, LineClamp and
+    // VisuallyHidden do over the margin and the display.
+    [TestMethod,
+        DataRow("\n.bit-txt-fwl {"),
+        DataRow("\n.bit-txt-trn {"),
+        DataRow("\n.bit-txt-mno {"),
+        DataRow("\n.bit-txt-gutter {"),
+        DataRow("\n.bit-txt-blk {"),
+        DataRow("\n.bit-txt-clp {"),
+        DataRow("\n.bit-txt-vhd:where(")]
+    public void BitTextShouldDeclareTheBreakpointVariantsBetweenThePlainVariantsAndTheRefinements(string refinement)
+    {
+        var stylesheet = ReadStylesheet();
+
+        var plain = stylesheet.IndexOf("\n@each $name, $declarations in $bit-txt-variants {", StringComparison.Ordinal);
+        var breakpoints = stylesheet.IndexOf("\n@each $bp, $min-width in $bit-txt-breakpoints {", StringComparison.Ordinal);
+        var refining = stylesheet.IndexOf(refinement, StringComparison.Ordinal);
+
+        Assert.IsTrue(plain >= 0 && breakpoints > plain, "The breakpoint variants are declared before the plain ones and lose to them.");
+        Assert.IsTrue(refining > breakpoints, $"\"{refinement.Trim()}\" is declared before the breakpoint variants and loses to them.");
+    }
+
+    // Read off the compiled bundle, since the rules are generated: every variant at every breakpoint above the extra
+    // small one, inside a min-width query of the width BitGrid and BitStack use, the queries in ascending order so a
+    // wider breakpoint wins over a narrower one. The extra small variant is drawn through the plain variant class.
+    [TestMethod]
+    public void BitTextShouldDrawEveryVariantFromEveryBreakpointUp()
+    {
+        var css = ReadBundle();
+        var previous = -1;
+
+        foreach (var (breakpoint, width) in Breakpoints)
+        {
+            var start = css.IndexOf($"@media(min-width: {width}px){{.bit-txt-{breakpoint}-", StringComparison.Ordinal);
+
+            Assert.IsTrue(start > previous, $"The {breakpoint} query is missing or comes before a narrower one.");
+            previous = start;
+
+            var block = SourceFiles.GetScssBlock(css, $"@media(min-width: {width}px){{.bit-txt-{breakpoint}-");
+
+            foreach (var name in Enum.GetNames<BitTypography>().Select(n => n.ToLowerInvariant()))
+            {
+                StringAssert.Contains(block, $".bit-txt-{breakpoint}-{name}{{margin:var(--bit-tpg-{name}-margin);", $"{name} has no rule at {breakpoint}.");
+
+                var rule = block[block.IndexOf($".bit-txt-{breakpoint}-{name}{{margin:", StringComparison.Ordinal)..];
+                rule = rule[..rule.IndexOf('}')];
+
+                foreach (var property in new[] { "font-size", "font-weight", "line-height", "letter-spacing" })
+                {
+                    StringAssert.Contains(rule, $"{property}:var(--bit-tpg-{name}-{property})", $"{name} at {breakpoint} does not read its {property}.");
+                }
+            }
+
+            // A heading is drawn in the heading family and every other variant but the inherit one in the text family,
+            // whatever family the variant below it was drawn in.
+            StringAssert.Contains(block, $".bit-txt-{breakpoint}-h6{{", $"h6 has no rule at {breakpoint}.");
+            StringAssert.Matches(block, new Regex($@"\.bit-txt-{breakpoint}-h1,[^{{]*\.bit-txt-{breakpoint}-h6\{{font-family:var\(--bit-Text-heading-font-family,"));
+            StringAssert.Matches(block, new Regex($@"\.bit-txt-{breakpoint}-subtitle1,[^{{]*\.bit-txt-{breakpoint}-overline\{{font-family:var\(--bit-Text-font-family,"));
+        }
+
+        Assert.IsFalse(css.Contains("bit-txt-xs-", StringComparison.Ordinal), "The extra small variant has rules of its own.");
+    }
+
+    // The display and the case are the two declarations only some variants make (the button, the overline, and the
+    // case of the inherit one). A variant without one takes it back to the element's own only where a narrower tier of
+    // the same text declared it, so a value the page gives the element is not taken away from every responsive text.
+    [TestMethod]
+    public void BitTextShouldTakeBackADisplayOrACaseOnlyWhereANarrowerVariantDeclaredIt()
+    {
+        var css = ReadBundle();
+        var narrower = new Dictionary<string, List<string>>
+        {
+            ["display"] = [".bit-txt-button", ".bit-txt-overline"],
+            ["text-transform"] = [".bit-txt-button", ".bit-txt-overline", ".bit-txt-inherit"],
+        };
+
+        foreach (var (breakpoint, width) in Breakpoints)
+        {
+            var block = SourceFiles.GetScssBlock(css, $"@media(min-width: {width}px){{.bit-txt-{breakpoint}-");
+
+            foreach (var (property, classes) in narrower)
+            {
+                var reset = Regex.Match(block, $@":is\(([^)]*)\):where\(([^)]*)\)\{{{property}:revert\}}");
+
+                Assert.IsTrue(reset.Success, $"No {property} reset at {breakpoint}.");
+
+                var targets = reset.Groups[1].Value.Split(',');
+                CollectionAssert.Contains(targets, $".bit-txt-{breakpoint}-h1");
+                CollectionAssert.DoesNotContain(targets, $".bit-txt-{breakpoint}-button");
+                CollectionAssert.DoesNotContain(targets, $".bit-txt-{breakpoint}-overline");
+                CollectionAssert.AreEqual(classes, reset.Groups[2].Value.Split(','), $"The {property} reset at {breakpoint} does not name the narrower tiers.");
+
+                classes.AddRange(classes.Where(c => c.Count(ch => ch == '-') == 2).Select(c => c.Replace("bit-txt-", $"bit-txt-{breakpoint}-")).ToList());
+            }
+        }
+    }
+
+    private static readonly (string Name, int Width)[] Breakpoints = [("sm", 600), ("md", 960), ("lg", 1280), ("xl", 1920), ("xxl", 2560)];
+
+    private static string ReadBundle() => SourceFiles.Read("Bit.BlazorUI", "wwwroot", "styles", "bit.blazorui.css");
 
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Text", "BitText.scss");
 }

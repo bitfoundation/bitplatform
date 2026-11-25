@@ -1,0 +1,20 @@
+﻿{
+  "solution": {
+    "path": "Bit.BlazorUI.slnx",
+    "projects": [
+      "Demo\\Bit.BlazorUI.Demo.Server\\Bit.BlazorUI.Demo.Server.csproj",
+      "Demo\\Bit.BlazorUI.Demo.Shared\\Bit.BlazorUI.Demo.Shared.csproj",
+      "Demo\\Client\\Bit.BlazorUI.Demo.Client.Core\\Bit.BlazorUI.Demo.Client.Core.csproj",
+      "Demo\\Client\\Bit.BlazorUI.Demo.Client.Web.Shared\\Bit.BlazorUI.Demo.Client.Web.Shared.csproj",
+      "Demo\\Client\\Bit.BlazorUI.Demo.Client.Web\\Bit.BlazorUI.Demo.Client.Web.csproj",
+      "Tests\\Bit.BlazorUI.Tests.Trimming\\Bit.BlazorUI.Tests.Trimming.csproj",
+      "Tests\\E2E\\Bit.BlazorUI.Tests.E2E.TestHost\\Bit.BlazorUI.Tests.E2E.TestHost.csproj",
+      "Tests\\E2E\\Bit.BlazorUI.Tests.E2E.TestHost.Client\\Bit.BlazorUI.Tests.E2E.TestHost.Client.csproj",
+      "Tests\\E2E\\Bit.BlazorUI.Tests.E2E\\Bit.BlazorUI.Tests.E2E.csproj",
+      "Tests\\Performance\\Bit.BlazorUI.Tests.PdfPerformance\\Bit.BlazorUI.Tests.PdfPerformance.csproj",
+      "Tests\\Performance\\Bit.BlazorUI.Tests.Performance.TestHost\\Bit.BlazorUI.Tests.Performance.TestHost.csproj",
+      "Tests\\Performance\\Bit.BlazorUI.Tests.Performance.TestHost.Client\\Bit.BlazorUI.Tests.Performance.TestHost.Client.csproj",
+      "Tests\\Performance\\Bit.BlazorUI.Tests.Performance\\Bit.BlazorUI.Tests.Performance.csproj"
+    ]
+  }
+}

@@ -84,18 +84,21 @@
             <DemoExample Title="Bar appearance" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" CodeFiles="@example3CodeFiles" Id="example3">
                 <div>
                     Each allocation can look its own way. <b>Color</b> fills the bar and <b>Height</b> sets its thickness
-                    (4px unless it is given); <b>TextAbove</b>, <b>TextBelow</b>, <b>TextStart</b> and <b>TextEnd</b> label
-                    it on every side; <b>StartBar</b> and <b>EndBar</b> draw edge bars before and after it, here a delay;
+                    (4px unless it is given); <b>Texts</b> label it on every side - <b>TopStart</b>, <b>TopCenter</b> and
+                    <b>TopEnd</b> above it, <b>BottomStart</b>, <b>BottomCenter</b> and <b>BottomEnd</b> below it,
+                    <b>Start</b> and <b>End</b> beside it - each in its own <b>Color</b> and <b>Font</b> and moved by its
+                    own <b>OffsetX</b> and <b>OffsetY</b> when it is given them (a plain string is a text in the default
+                    look); <b>StartBar</b> and <b>EndBar</b> draw edge bars before and after it, here a delay;
                     and <b>Tooltip</b> replaces the default hover text. <b>Icons</b> anchor images - URLs or data URIs - at
                     the <b>Position</b> Start, End, Above, Below or Center of the bar, beside it or, with <b>Inside</b>,
                     within it, in a box of <b>Size</b> pixels. Labels and icons are left out of bars too narrow for them.
                 </div>
                 <br />
                 <div>
-                    A label above or below a bar is centered on it, which a long bar can have far out of view.
-                    <b>StickyBarLabels</b> has what is centered on a bar - TextAbove, TextBelow and the Above, Below and
-                    Center icons - follow the part of the bar in view, never leaving the bar: scroll along the two-day
-                    maintenance of Gate A5.
+                    A label above or below a bar sits at its center or one of its edges, which a long bar can have far
+                    out of view. <b>StickyBarLabels</b> has what is centered on a bar - TopCenter, BottomCenter and the
+                    Above, Below and Center icons - follow the part of the bar in view, and holds the texts at its edges in
+                    from the edge of the timeline, never leaving the bar: scroll along the two-day maintenance of Gate A5.
                 </div>
                 <br />
                 <BitToggle @bind-Value="StickyBarLabels" Label="StickyBarLabels" Inline />
@@ -217,7 +220,7 @@
                                          OnDoubleClick="args => doubleClickText = DescribePointer(args)"
                                          OnContextMenu="args => contextMenuText = DescribePointer(args)" />
                 </div>
-                <div class="readout">Selected: @(selectedBars.Length == 0 ? "nothing" : string.Join(", ", selectedBars.Select(b => b.TextAbove)))</div>
+                <div class="readout">Selected: @(selectedBars.Length == 0 ? "nothing" : string.Join(", ", selectedBars.Select(b => b.Texts?.TopCenter?.Text)))</div>
                 <div class="readout">Click: @clickText</div>
                 <div class="readout">Double-click: @doubleClickText</div>
                 <div class="readout">Right-click: @contextMenuText</div>
@@ -414,7 +417,7 @@
                         </ResourceTemplate>
                         <TooltipTemplate Context="flight">
                             <div class="flight-tip">
-                                <b>@flight.TextAbove</b>
+                                <b>@flight.Texts?.TopCenter?.Text</b>
                                 <span>Gate @flight.ResourceId</span>
                                 <span>@flight.StartTime.UtcDateTime.ToString("ddd HH:mm") - @flight.EndTime.UtcDateTime.ToString("HH:mm") UTC</span>
                             </div>
@@ -515,21 +518,21 @@
                 <div class="readout">Clicks: @disabledClicks</div>
             </DemoExample>
 
-            <DemoExample Title="Texts" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" CodeFiles="@example17CodeFiles" Id="example17">
+            <DemoExample Title="Strings" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" CodeFiles="@example17CodeFiles" Id="example17">
                 <div>
-                    <b>Texts</b> holds every word of the timeline: its accessible name and role description, the loading
+                    <b>Strings</b> holds every word of the timeline: its accessible name and role description, the loading
                     text, the labels of the group buttons and of the column divider, the formats of its tooltips and of its
                     +N markers, and everything it announces to screen readers. They default to English; an instance with
                     the ones to override localizes them, and the <b>Locale</b> of the Options formats the dates to match.
-                    The <b>AriaLabel</b> parameter, when set, wins over Texts.AriaLabel.
+                    The <b>AriaLabel</b> parameter, when set, wins over Strings.AriaLabel.
                 </div>
                 <br />
                 <div class="toolbar">
-                    <BitButton Variant="BitVariant.Outline" OnClick="() => textsConfig = BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Gates(5), labeled: true)">Neu laden</BitButton>
+                    <BitButton Variant="BitVariant.Outline" OnClick="() => stringsConfig = BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Gates(5), labeled: true)">Neu laden</BitButton>
                 </div>
                 <br />
                 <div class="timeline">
-                    <BitResourceTimeline Config="textsConfig" Options="textsOptions" Texts="germanTexts" LoadingMinDurationMs="800" />
+                    <BitResourceTimeline Config="stringsConfig" Options="stringsOptions" Strings="germanStrings" LoadingMinDurationMs="800" />
                 </div>
             </DemoExample>
 

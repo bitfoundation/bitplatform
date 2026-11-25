@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: bit Boilerplate and bit CLI
+    url: https://github.com/bitfoundation/bitfabric/issues
+    about: bit Boilerplate (the project template) and bit CLI live in bitfoundation/bitfabric. Open their issues there.

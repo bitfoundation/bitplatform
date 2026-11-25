@@ -285,7 +285,30 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Responsive typography" RazorCode="@example13RazorCode" Id="example13">
+        <div class="example-desc">
+            <b>TypographyXs</b> to <b>TypographyXxl</b> change the look from their breakpoint up - the breakpoints and
+            the mobile-first meaning of BitGrid's <b>ColumnsSm</b> and BitStack's <b>HorizontalSm</b> - so a wider one
+            replaces a narrower one and <b>Typography</b> is the look below them all. They only change the look:
+            <b>Typography</b> (or <b>Element</b>) still decides the tag at every width, so the page outline never moves.
+            Resize the window to see them change.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitText Typography="BitTypography.H5"
+                     TypographySm="BitTypography.H4"
+                     TypographyMd="BitTypography.H3"
+                     TypographyLg="BitTypography.H2"
+                     TypographyXl="BitTypography.H1">
+                An h5 that grows into an h1 look on wide screens
+            </BitText>
+            <BitText Typography="BitTypography.Body2" TypographyMd="BitTypography.Body1">Body2 on small screens, Body1 from 960px up</BitText>
+            <BitText Typography="BitTypography.Overline" TypographyLg="BitTypography.Subtitle2">An overline that becomes a subtitle from 1280px up</BitText>
+            <BitText Element="h2" Typography="BitTypography.H6" TypographyLg="BitTypography.H3">Always an h2 - only the look changes</BitText>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
         <div class="example-desc">
             <b>Color</b> applies one of the library's color roles. Do not let color alone carry a meaning, and check the
             contrast of the background and border roles, which are meant for text on other surfaces.
@@ -314,7 +337,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
         <div class="example-desc">
             <b>Style</b> and <b>Class</b> are merged with what the component builds, as are a <code>class</code> and a
             <code>style</code> splatted through <code>@@attributes</code>. The <code>--bit-Text-*</code> CSS variables
@@ -340,7 +363,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
         <div class="example-desc">
             <b>Dir</b> sets the text direction; the logical <b>Align</b> values follow it.
         </div>

@@ -84,6 +84,80 @@ public class BitTextTests : BunitTestContext
 
     }
 
+    // Each wider breakpoint is a class the stylesheet applies from that width up, named after the breakpoint and the
+    // variant; the tag stays the one Typography decides, whichever variant a breakpoint draws the text as.
+    [TestMethod]
+    public void BitTextShouldRenderAClassPerBreakpointTypography()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Typography, BitTypography.H3);
+            parameters.Add(p => p.TypographySm, BitTypography.Body1);
+            parameters.Add(p => p.TypographyMd, BitTypography.H2);
+            parameters.Add(p => p.TypographyLg, BitTypography.H1);
+            parameters.Add(p => p.TypographyXl, BitTypography.Overline);
+            parameters.Add(p => p.TypographyXxl, BitTypography.Inherit);
+        });
+
+        component.MarkupMatches(@"<h3 class=""bit-txt bit-txt-h3 bit-txt-sm-body1 bit-txt-md-h2 bit-txt-lg-h1 bit-txt-xl-overline bit-txt-xxl-inherit"" id:ignore></h3>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRenderOnlyTheBreakpointsThatWereAskedFor()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.TypographyMd, BitTypography.H4);
+        });
+
+        // No Typography: the default variant and its tag, with the md look on top of it.
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-md-h4"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.TypographyMd, (BitTypography?)null);
+            parameters.Add(p => p.TypographyLg, BitTypography.H2);
+        });
+
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1 bit-txt-lg-h2"" id:ignore></div>");
+    }
+
+    // The extra small breakpoint starts at no width at all, so its variant is the plain variant class and needs no
+    // media query; the tag is still Typography's.
+    [TestMethod]
+    public void BitTextShouldDrawTheExtraSmallTypographyThroughThePlainVariantClass()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Typography, BitTypography.H1);
+            parameters.Add(p => p.TypographyXs, BitTypography.H4);
+            parameters.Add(p => p.TypographyLg, BitTypography.H1);
+        });
+
+        component.MarkupMatches(@"<h1 class=""bit-txt bit-txt-h4 bit-txt-lg-h1"" id:ignore></h1>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldKeepTheElementAndHeadingSemanticsOfTypographyAtEveryBreakpoint()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Typography, BitTypography.Body1);
+            parameters.Add(p => p.TypographyXs, BitTypography.H6);
+            parameters.Add(p => p.TypographySm, BitTypography.H1);
+        });
+
+        var root = component.Find(".bit-txt");
+
+        Assert.AreEqual("P", root.TagName);
+        Assert.IsNull(root.GetAttribute("role"));
+        Assert.IsNull(root.GetAttribute("aria-level"));
+
+        component.Render(parameters => parameters.Add(p => p.Element, "h2"));
+
+        Assert.AreEqual("H2", component.Find(".bit-txt").TagName);
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)

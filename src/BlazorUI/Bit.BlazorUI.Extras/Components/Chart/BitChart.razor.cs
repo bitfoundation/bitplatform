@@ -109,18 +109,18 @@ public partial class BitChart : BitComponentBase
     [Parameter] public BitChartOptions? Options { get; set; }
 
     /// <summary>
+    /// The strings the chart writes for assistive technologies and into its CSV export: the default accessible name,
+    /// the legend's name, the keyboard announcements, the screen-reader table's headers and captions, and the name
+    /// of an unlabeled dataset. Defaults to English; assign a <see cref="BitChartStrings"/> with the properties you
+    /// want to override to localize them.
+    /// </summary>
+    [Parameter] public BitChartStrings? Strings { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the chart.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public BitChartClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// The texts the chart writes for assistive technologies and into its CSV export: the default accessible name,
-    /// the legend's name, the keyboard announcements, the screen-reader table's headers and captions, and the name
-    /// of an unlabeled dataset. Defaults to English; assign a <see cref="BitChartTexts"/> with the properties you
-    /// want to override to localize them.
-    /// </summary>
-    [Parameter] public BitChartTexts? Texts { get; set; }
 
     /// <summary>Optional custom tooltip template. When set it replaces the default tooltip body.</summary>
     [Parameter] public RenderFragment<BitChartTooltipContext>? TooltipTemplate { get; set; }
@@ -605,7 +605,7 @@ public partial class BitChart : BitComponentBase
         else
             _vh = responsive && _measuredHeight is { } mh && mh > 0 ? mh : basis / aspect;
 
-        _scene = new BitChartRenderer(_config, _state, _vw, _vh, _instanceId, ActiveTexts).Render();
+        _scene = new BitChartRenderer(_config, _state, _vw, _vh, _instanceId, ActiveStrings).Render();
         _notes = _scene.PluginContext is { } pctx
             ? _config.Options.Plugins.Custom.SelectMany(p => p.Describe(pctx)).Where(n => n.HasValue()).ToList()
             : [];
@@ -1149,11 +1149,11 @@ public partial class BitChart : BitComponentBase
 
         var series = _scene.Elements.Where(x => x.DatasetIndex == el.DatasetIndex).ToList();
         int at = series.IndexOf(el);
-        parts.Add(BitChartTexts.Format(Culture, ActiveTexts.PositionFormat, at < 0 ? 1 : at + 1, series.Count));
+        parts.Add(BitChartStrings.Format(Culture, ActiveStrings.PositionFormat, at < 0 ? 1 : at + 1, series.Count));
 
         var datasets = _scene.Elements.Select(x => x.DatasetIndex).Distinct().OrderBy(i => i).ToList();
         if (datasets.Count > 1)
-            parts.Add(BitChartTexts.Format(Culture, ActiveTexts.SeriesPositionFormat, datasets.IndexOf(el.DatasetIndex) + 1, datasets.Count));
+            parts.Add(BitChartStrings.Format(Culture, ActiveStrings.SeriesPositionFormat, datasets.IndexOf(el.DatasetIndex) + 1, datasets.Count));
 
         return string.Join(", ", parts);
     }
@@ -1188,7 +1188,7 @@ public partial class BitChart : BitComponentBase
     private string NotesId => $"{_instanceId}-notes";
 
     /// <summary>The hidden sentence naming what the plugins drew: annotations, labeled trend lines, a center text.</summary>
-    private string? NotesText => _notes.Count == 0 ? null : BitChartTexts.Format(Culture, ActiveTexts.NotesFormat, string.Join("; ", _notes));
+    private string? NotesText => _notes.Count == 0 ? null : BitChartStrings.Format(Culture, ActiveStrings.NotesFormat, string.Join("; ", _notes));
 
     /// <summary>True when the keyboard hint is worth rendering: there is data to walk and text to say it with.</summary>
     private bool ShowNavigationHint => !string.IsNullOrWhiteSpace(NavigationHint) && IsNavigable;
@@ -1225,8 +1225,8 @@ public partial class BitChart : BitComponentBase
     /// <summary>Whether the plot is a tab stop the arrow keys can walk: it has data and it takes input.</summary>
     private bool IsNavigable => _scene.Elements.Count > 0 && Disabled is false && Loading is false;
 
-    /// <summary>The texts in use: the ones given, or the English defaults.</summary>
-    private BitChartTexts ActiveTexts => Texts ?? BitChartTexts.Default;
+    /// <summary>The strings in use: the ones given, or the English defaults.</summary>
+    private BitChartStrings ActiveStrings => Strings ?? BitChartStrings.Default;
 
     /// <summary>Whether the empty state is shown: there is nothing to draw and nothing is still on its way.</summary>
     private bool ShowEmpty => _scene.IsEmpty && Loading is false;
@@ -1508,7 +1508,7 @@ public partial class BitChart : BitComponentBase
         {
             if (!string.IsNullOrEmpty(AriaLabel)) return AriaLabel;
             if (_config.Options.Plugins.Title is { Display: true, Text.Length: > 0 } t) return t.Text;
-            return BitChartTexts.Format(Culture, ActiveTexts.DefaultAriaLabelFormat, ActiveTexts.TypeName(_config.Type), _config.Data.Datasets.Count);
+            return BitChartStrings.Format(Culture, ActiveStrings.DefaultAriaLabelFormat, ActiveStrings.TypeName(_config.Type), _config.Data.Datasets.Count);
         }
     }
 
@@ -1518,7 +1518,7 @@ public partial class BitChart : BitComponentBase
     private bool HasRadiusData => _config.Data.Datasets.Any(d => d.Points?.Any(p => p.R is not null) is true);
 
     /// <summary>The name of a dataset: its label, or the localized "Dataset N" the legend shows for it.</summary>
-    private string DatasetName(BitChartDataset ds, int index) => ds.Label ?? ActiveTexts.DatasetLabel(index, Culture);
+    private string DatasetName(BitChartDataset ds, int index) => ds.Label ?? ActiveStrings.DatasetLabel(index, Culture);
 
     /// <summary>
     /// The header of a point column: the title of the axis every point dataset is plotted on, which says what the
@@ -1561,9 +1561,9 @@ public partial class BitChart : BitComponentBase
         {
             var caption = ChartAriaLabel;
             if (TableTruncated)
-                caption += " " + BitChartTexts.Format(Culture, ActiveTexts.RowsTruncatedFormat, MaxTableRows.ToString("N0", Culture), TableRowCount.ToString("N0", Culture));
+                caption += " " + BitChartStrings.Format(Culture, ActiveStrings.RowsTruncatedFormat, MaxTableRows.ToString("N0", Culture), TableRowCount.ToString("N0", Culture));
             if (TableColumnsTruncated)
-                caption += " " + BitChartTexts.Format(Culture, ActiveTexts.ColumnsTruncatedFormat, MaxTableColumns.ToString("N0", Culture), TableColumnCount.ToString("N0", Culture));
+                caption += " " + BitChartStrings.Format(Culture, ActiveStrings.ColumnsTruncatedFormat, MaxTableColumns.ToString("N0", Culture), TableColumnCount.ToString("N0", Culture));
             return caption;
         }
     }

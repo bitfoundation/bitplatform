@@ -148,6 +148,80 @@ public class BitResourceTimelineWireFormatTests
     }
 
     [TestMethod]
+    public void BitResourceTimelineBarTextsShouldSerializeEveryPositionWithTheExpectedNames()
+    {
+        var bar = Bar();
+        bar.Texts = new()
+        {
+            TopStart = "ts",
+            TopCenter = "tc",
+            TopEnd = "te",
+            Start = "s",
+            End = "e",
+            BottomStart = "bs",
+            BottomCenter = "bc",
+            BottomEnd = "be",
+        };
+
+        var texts = Serialize(bar).GetProperty("texts");
+
+        Assert.AreEqual("ts", texts.GetProperty("topStart").GetProperty("text").GetString());
+        Assert.AreEqual("tc", texts.GetProperty("topCenter").GetProperty("text").GetString());
+        Assert.AreEqual("te", texts.GetProperty("topEnd").GetProperty("text").GetString());
+        Assert.AreEqual("s", texts.GetProperty("start").GetProperty("text").GetString());
+        Assert.AreEqual("e", texts.GetProperty("end").GetProperty("text").GetString());
+        Assert.AreEqual("bs", texts.GetProperty("bottomStart").GetProperty("text").GetString());
+        Assert.AreEqual("bc", texts.GetProperty("bottomCenter").GetProperty("text").GetString());
+        Assert.AreEqual("be", texts.GetProperty("bottomEnd").GetProperty("text").GetString());
+    }
+
+    [TestMethod]
+    public void BitResourceTimelineBarTextShouldSerializeItsStyleAndOffsets()
+    {
+        var root = Serialize(new BitResourceTimelineBarText { Text = "LH441", Color = "tomato", Font = "italic 12px serif", OffsetX = -2.5, OffsetY = 3 });
+
+        Assert.AreEqual("LH441", root.GetProperty("text").GetString());
+        Assert.AreEqual("tomato", root.GetProperty("color").GetString());
+        Assert.AreEqual("italic 12px serif", root.GetProperty("font").GetString());
+        Assert.AreEqual(-2.5, root.GetProperty("offsetX").GetDouble());
+        Assert.AreEqual(3, root.GetProperty("offsetY").GetDouble());
+    }
+
+    [TestMethod]
+    public void BitResourceTimelineBarTextsShouldOmitTheirUnsetPositionsAndStyles()
+    {
+        var bar = Bar();
+        bar.Texts = new() { TopCenter = "AB123" };
+
+        var texts = Serialize(bar).GetProperty("texts");
+
+        // The engine draws nothing at a position that is absent and falls back to the default color and font for a text
+        // without its own, so an unset value must be absent rather than a null object, a 0 or "".
+        CollectionAssert.AreEqual(new[] { "topCenter" }, texts.EnumerateObject().Select(p => p.Name).ToArray());
+        CollectionAssert.AreEqual(new[] { "text" }, texts.GetProperty("topCenter").EnumerateObject().Select(p => p.Name).ToArray());
+    }
+
+    [TestMethod]
+    public void BitResourceTimelineAllocationShouldOmitItsTextsWhenNull()
+    {
+        Assert.IsFalse(Serialize(Bar()).TryGetProperty("texts", out _));
+    }
+
+    [TestMethod]
+    public void BitResourceTimelineBarTextShouldConvertFromAStringAndNullFromNull()
+    {
+        BitResourceTimelineBarText? text = "AB123";
+        BitResourceTimelineBarText? none = (string?)null;
+
+        Assert.AreEqual("AB123", text!.Text);
+        Assert.IsNull(text.Color);
+        Assert.IsNull(text.Font);
+        Assert.IsNull(text.OffsetX);
+        Assert.IsNull(text.OffsetY);
+        Assert.IsNull(none);
+    }
+
+    [TestMethod]
     public void BitResourceTimelineAllocationShouldSerializeItsTooltipWhenSet()
     {
         var bar = Bar();
@@ -707,6 +781,8 @@ public class BitResourceTimelineWireFormatTests
         DataRow(typeof(BitResourceTimelineEdgeBar), "ResourceTimelineEdgeBar"),
         DataRow(typeof(BitResourceTimelineBarIcon), "ResourceTimelineBarIcon"),
         DataRow(typeof(BitResourceTimelineBarSection), "ResourceTimelineBarSection"),
+        DataRow(typeof(BitResourceTimelineBarTexts), "ResourceTimelineBarTexts"),
+        DataRow(typeof(BitResourceTimelineBarText), "ResourceTimelineBarText"),
         DataRow(typeof(BitResourceTimelineResource), "ResourceTimelineResource")]
     public void BitResourceTimelineDataShouldCrossTheInteropInTheShapeTheEngineDeclares(Type model, string engineInterface)
     {
@@ -725,8 +801,8 @@ public class BitResourceTimelineWireFormatTests
 
         Assert.IsEmpty(unknown, "Options the engine does not know: " + string.Join(", ", unknown));
 
-        // Besides the options, the facade hands the engine the texts and the disabled state, both declared by its config.
-        Assert.IsTrue(config.Contains("texts") && config.Contains("disabled"));
+        // Besides the options, the facade hands the engine the strings and the disabled state, both declared by its config.
+        Assert.IsTrue(config.Contains("strings") && config.Contains("disabled"));
     }
 
     [TestMethod]

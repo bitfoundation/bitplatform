@@ -28,10 +28,31 @@
 //   --bit-Checkbox-description-font-size     the description and the error message        (default: $tg-fs-xs)
 //   --bit-Checkbox-description-gap           room above the description and the error line(default: spacing(0.25))
 //   --bit-Checkbox-min-height                smallest height and width of the click target(default: the box, never below spacing(3))
+//                                            The card the Outline and Fill variants draw around the whole checkbox:
+//   --bit-Checkbox-card-background           the card at rest                             (default: per variant)
+//   --bit-Checkbox-card-hover-background     a hovered card                               (default: per variant)
+//   --bit-Checkbox-card-checked-background   the checked card                             (default: per variant, a tint of the checked fill)
+//   --bit-Checkbox-card-border-color         border of the card at rest                   (default: per variant)
+//   --bit-Checkbox-card-hover-border-color   border of a hovered card                     (default: the checked hover fill)
+//   --bit-Checkbox-card-checked-border-color border of the checked card                   (default: the checked fill)
+//   --bit-Checkbox-card-border-width         border stroke of the card                    (default: $shp-border-width)
+//   --bit-Checkbox-card-padding              padding inside the card                      (default: spacing(1.5))
+//   --bit-Checkbox-card-radius               corner radius of the card and its focus ring (default: $shp-radius-surface)
+//                                            The card surfaces have a twin per variant, read ahead of the shared one,
+//                                            so a theme can set one look apart from the other:
+//   --bit-Checkbox-fill-card-background             card at rest, Fill variant          (default: --bit-Checkbox-card-background)
+//   --bit-Checkbox-fill-card-hover-background       hovered card, Fill variant          (default: --bit-Checkbox-card-hover-background)
+//   --bit-Checkbox-fill-card-checked-background     checked card, Fill variant          (default: --bit-Checkbox-card-checked-background)
+//   --bit-Checkbox-fill-card-border-color           card border at rest, Fill variant   (default: --bit-Checkbox-card-border-color)
+//   --bit-Checkbox-outline-card-background          card at rest, Outline variant       (default: --bit-Checkbox-card-background)
+//   --bit-Checkbox-outline-card-hover-background    hovered card, Outline variant       (default: --bit-Checkbox-card-hover-background)
+//   --bit-Checkbox-outline-card-checked-background  checked card, Outline variant       (default: --bit-Checkbox-card-checked-background)
+//   --bit-Checkbox-outline-card-border-color        card border at rest, Outline variant(default: --bit-Checkbox-card-border-color)
 //
 // A parameter written on the checkbox wins over the variable that restyles what it sets: an explicit Color over
-// every color above that it paints - the checked fill, stroke and glyph, the mixed-state mark, the focus ring
-// and the disabled colors - and an explicit Size over the box size and the two font sizes. The variables
+// every color above that it paints - the checked fill, stroke and glyph, the mixed-state mark, the focus ring,
+// the disabled colors and the checked card's border and tint - and an explicit Size over the box size, the two
+// font sizes and the card padding. The card surface and border at rest are the Variant's, not the Color's. The variables
 // restyle the default, not a choice - which is why Color and Size publish nothing while they are left unset: a
 // class that always carried the default would be indistinguishable from one that was asked for. What a Color
 // leaves alone - the unchecked fill and stroke, the label and description colors - stays the variables'. A
@@ -40,7 +61,7 @@
 // alone override.
 
 $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, clr-dis, clr-dis-text, clr-focus,
-                         box-size, lbl-fontsize, des-fontsize;
+                         box-size, lbl-fontsize, des-fontsize, card-padding;
 
 .bit-chb {
     cursor: pointer;
@@ -82,6 +103,12 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
     --bit-chb-box-clr-bg: var(--bit-Checkbox-background, transparent);
     --bit-chb-box-clr-brd: var(--bit-Checkbox-border-color, #{$clr-brd-pri});
     --bit-chb-ico-clr: var(--bit-chb-clr-txt-sec, #{$clr-fg-sec});
+    // The accent the card variants tint a checked card with when nothing else does: the checked fill of the box. It
+    // is the fill of every variant, so it is no variant's to read and is resolved here, on the card the root is.
+    --bit-chb-acc: var(--bit-chb-clr, var(--bit-Checkbox-checked-background, #{$clr-pri}));
+    // What the hover of a card moves, started out unset so a card nested in another one never inherits its hover.
+    --bit-chb-crd-sbg: initial;
+    --bit-chb-crd-sbrd: initial;
 
     &.bit-inv {
         --bit-chb-box-clr-brd: #{$clr-err};
@@ -435,7 +462,8 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 // the same transition as the colors, so it eases back - and under reduced motion, where the motion tokens
 // collapse, it stops easing and becomes what a hover color change already is: a state the box is in for
 // as long as the pointer is held, arrived at and left instantly.
-.bit-chb:not(.bit-dis):not(.bit-chb-rdl):not(.bit-chb-ldg) .bit-chb-lbl:active .bit-chb-box {
+.bit-chb:not(.bit-dis):not(.bit-chb-rdl):not(.bit-chb-ldg) .bit-chb-lbl:active .bit-chb-box,
+.bit-chb:not(.bit-dis):not(.bit-chb-rdl):not(.bit-chb-ldg) .bit-chb-hit:active ~ .bit-chb-lbl .bit-chb-box {
     scale: 0.9;
 }
 
@@ -680,18 +708,171 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
     --bit-chb-box-size: #{$siz-sel-sm};
     --bit-chb-lbl-fontsize: #{$tg-fs-xs};
     --bit-chb-des-fontsize: #{$tg-fs-2xs};
+    --bit-chb-card-padding: #{spacing(1)};
 }
 
 .bit-chb-md {
     --bit-chb-box-size: #{$siz-sel-md};
     --bit-chb-lbl-fontsize: #{$tg-fs-sm};
     --bit-chb-des-fontsize: #{$tg-fs-xs};
+    --bit-chb-card-padding: #{spacing(1.5)};
 }
 
 .bit-chb-lg {
     --bit-chb-box-size: #{$siz-sel-lg};
     --bit-chb-lbl-fontsize: #{$tg-fs-md};
     --bit-chb-des-fontsize: #{$tg-fs-sm};
+    --bit-chb-card-padding: #{spacing(2)};
+}
+
+// ---- Card variants ----
+// Outline and Fill turn the whole checkbox into a selectable card, the way BitChoiceGroup's Variant turns each of its
+// items into one. The surface is drawn on the root, around the box, the label, the error line and the description.
+// The input takes a click from a label of its own, so the card renders one more label of it (.bit-chb-hit) laid over
+// the whole card, border included, and under everything in it: every part of the card that does not answer the
+// pointer itself - the padding, the gaps, the description and the error line - is then the click target, and the
+// same label carries the focus ring, so the ring outlines the card instead of the box inside it. The hit area is put
+// under the content with a negative z-index, and the root isolates a stacking context for it, so it still lies above
+// the surface of the card. Lying under the content rather than over it, it never covers the visible label, which
+// keeps its own title, its own press and the click it hands the input - and nothing in the card has to be positioned
+// or stacked to be reached.
+// Text - the default - draws no surface at all and is the bare box and label the checkbox has always been.
+.bit-chb-otl,
+.bit-chb-fil {
+    isolation: isolate;
+    box-sizing: border-box;
+    padding: var(--bit-chb-card-padding, var(--bit-Checkbox-card-padding, #{spacing(1.5)}));
+    border-radius: var(--bit-Checkbox-card-radius, #{$shp-radius-surface});
+    background-color: var(--bit-chb-crd-sbg, var(--bit-chb-crd-bg));
+    border: var(--bit-Checkbox-card-border-width, #{$shp-border-width}) $shp-border-style var(--bit-chb-crd-sbrd, var(--bit-chb-crd-brd));
+    transition: border-color $mot-duration $mot-easing, background-color $mot-duration $mot-easing;
+
+    .bit-chb-inp:focus-visible ~ .bit-chb-hit {
+        @include focus-ring-own(var(--bit-chb-clr-focus, var(--bit-Checkbox-focus-color)));
+    }
+
+    &.bit-inv .bit-chb-inp:focus-visible ~ .bit-chb-hit {
+        @include focus-ring($clr-err-focus);
+    }
+
+    &.bit-dis .bit-chb-inp:focus-visible ~ .bit-chb-hit {
+        @include focus-ring(var(--bit-chb-clr-dis, var(--bit-Checkbox-disabled-color, #{$clr-pri-dis})));
+    }
+}
+
+// The hit area of a card. It is rendered for a card alone, and takes the cursor of the root, which the states no click
+// can change turn back to the default.
+.bit-chb-hit {
+    z-index: -1;
+    cursor: inherit;
+    user-select: none;
+    position: absolute;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    inset: calc(-1 * var(--bit-Checkbox-card-border-width, #{$shp-border-width}));
+    border-radius: var(--bit-Checkbox-card-radius, #{$shp-radius-surface});
+}
+
+// The lines under the box let the pointer through to the hit area under them, so a click on their text toggles the
+// checkbox the way a click on the label does. Whatever in them answers the pointer on its own - a link in a
+// DescriptionTemplate, a button in an ErrorMessageTemplate, the label of another checkbox, an element given a role or
+// a tabindex - takes it back and keeps working. Nothing is positioned or stacked for that, so the layout of what an
+// app puts there stays the app's own. Written at no weight, so a page's own pointer-events still win; a disabled
+// checkbox takes no pointer events at all, and nothing inside it is handed them back.
+:where(.bit-chb-otl, .bit-chb-fil) :where(.bit-chb-des, .bit-chb-erm) {
+    pointer-events: none;
+}
+
+:where(.bit-chb-otl:not(.bit-dis), .bit-chb-fil:not(.bit-dis)) :where(.bit-chb-des, .bit-chb-erm) :where(a, button, input, select, textarea, summary, label, audio, video, iframe, [contenteditable], [role], [tabindex]) {
+    pointer-events: auto;
+}
+
+// The ring outlines the card, so neither the box nor a custom face inside it draws one of its own - in any state,
+// which the root class carried along lets this outweigh. Only the card's own input, label and box are reached, through
+// child combinators, so a Text checkbox nested in the card keeps its ring.
+.bit-chb.bit-chb-otl,
+.bit-chb.bit-chb-fil {
+    > .bit-chb-inp:focus-visible ~ .bit-chb-lbl,
+    > .bit-chb-inp:focus-visible ~ .bit-chb-lbl > .bit-chb-box {
+        outline: none;
+        box-shadow: none;
+    }
+}
+
+// The checked card swaps its border for the accent and tints its surface. An explicit Color comes first for the
+// border, then the public variable, then the checked fill of the box. The tint of an explicit Color is a value of its
+// own, which is left unset - and so falls through to the public checked background, then to the tint of the checked
+// fill - while the Color is: a color-mix() over an unset property is invalid, and an invalid custom property reads as
+// unset. The border reads the variable the hover moves first, so a hovered checked card answers the pointer; its
+// surface keeps the tint that says it is checked, which the hover leaves alone. A checkbox carrying the mixed state
+// too - a one-way bound Indeterminate the component refuses to move while the click still moves Value - renders a
+// mixed box, so its card stays the card of a box that is not checked, the way the box itself does. That exclusion is
+// written in :where(), so it adds no weight and the invalid and the disabled card below still win over this border.
+.bit-chb-otl.bit-chb-ckd:where(:not(.bit-chb-ind)),
+.bit-chb-fil.bit-chb-ckd:where(:not(.bit-chb-ind)) {
+    border-color: var(--bit-chb-crd-sbrd, var(--bit-chb-clr, var(--bit-Checkbox-card-checked-border-color, var(--bit-Checkbox-checked-background, #{$clr-pri}))));
+    background-color: var(--bit-chb-crd-sbg, var(--bit-chb-crd-tint, var(--bit-chb-crd-bg-checked)));
+}
+
+// One color carries the invalid state on the card, the error color the box takes too; the hover leaves an invalid
+// card alone, so nothing has to be read ahead of it.
+.bit-chb-otl.bit-inv,
+.bit-chb-fil.bit-inv {
+    border-color: $clr-err;
+}
+
+// Declared after the checked and the invalid card, so a disabled card says it is disabled whatever else it is. A
+// disabled checkbox takes no pointer events, so it never hovers.
+.bit-chb-otl.bit-dis,
+.bit-chb-fil.bit-dis {
+    border-color: var(--bit-chb-clr-dis, var(--bit-Checkbox-disabled-color, #{$clr-pri-dis}));
+}
+
+// A checked card that is invalid or disabled tints its surface with the fill its box takes in that state - the error
+// color, the disabled color - rather than with the accent, so the surface and the box say the same thing. Neither
+// state hovers, so nothing has to be read ahead of it.
+.bit-chb-otl.bit-chb-ckd:not(.bit-chb-ind):is(.bit-inv, .bit-dis),
+.bit-chb-fil.bit-chb-ckd:not(.bit-chb-ind):is(.bit-inv, .bit-dis) {
+    background-color: var(--bit-chb-crd-box-tint);
+}
+
+// The hover of a card leaves out the states the hover of the box leaves out: a read-only or busy card must not
+// promise a change no click can make, and an invalid one keeps the error border that is the point of the state. Only
+// a card that does not read as checked takes the hover surface: a checked one keeps the tint that says it is checked
+// and answers the pointer with its border.
+@media (hover: hover) {
+    :is(.bit-chb-otl, .bit-chb-fil):hover:not(.bit-chb-rdl):not(.bit-chb-ldg):not(.bit-inv) {
+        --bit-chb-crd-sbrd: var(--bit-chb-clr-hover, var(--bit-Checkbox-card-hover-border-color, var(--bit-Checkbox-checked-hover-background, #{$clr-pri-hover})));
+
+        &:is(:not(.bit-chb-ckd), .bit-chb-ind) {
+            --bit-chb-crd-sbg: var(--bit-chb-crd-bg-hover);
+        }
+    }
+}
+
+// Outline states the card with a border on a transparent surface; the checked one swaps that border for the accent
+// and tints the surface just enough to read as chosen without competing with Fill. Each variant resolves its surface
+// and border here, reading its own tier of the card variables (--bit-Checkbox-outline-card-*, -fill-card-*) ahead of
+// the shared one, so a theme can give outline and filled cards different colors from :root while a shared variable
+// still re-skins both at once. They are resolved on the root, which is the card that paints them.
+.bit-chb-otl {
+    --bit-chb-crd-bg: var(--bit-Checkbox-outline-card-background, var(--bit-Checkbox-card-background, transparent));
+    --bit-chb-crd-brd: var(--bit-Checkbox-outline-card-border-color, var(--bit-Checkbox-card-border-color, #{$clr-brd-sec}));
+    --bit-chb-crd-bg-hover: var(--bit-Checkbox-outline-card-hover-background, var(--bit-Checkbox-card-hover-background, #{$clr-bg-sec-hover}));
+    --bit-chb-crd-tint: #{translucent(var(--bit-chb-clr), 8%)};
+    --bit-chb-crd-box-tint: #{translucent(var(--bit-chb-box-clr-bg), 8%)};
+    --bit-chb-crd-bg-checked: var(--bit-Checkbox-outline-card-checked-background, var(--bit-Checkbox-card-checked-background, #{translucent(var(--bit-chb-acc), 8%)}));
+}
+
+// Fill states the card with a surface instead of a border; the checked one is the accent at an alpha low enough to
+// keep the label above the 4.5:1 contrast of WCAG 1.4.3 in both schemes.
+.bit-chb-fil {
+    --bit-chb-crd-bg: var(--bit-Checkbox-fill-card-background, var(--bit-Checkbox-card-background, #{$clr-bg-sec}));
+    --bit-chb-crd-brd: var(--bit-Checkbox-fill-card-border-color, var(--bit-Checkbox-card-border-color, transparent));
+    --bit-chb-crd-bg-hover: var(--bit-Checkbox-fill-card-hover-background, var(--bit-Checkbox-card-hover-background, #{$clr-bg-ter}));
+    --bit-chb-crd-tint: #{translucent(var(--bit-chb-clr), 14%)};
+    --bit-chb-crd-box-tint: #{translucent(var(--bit-chb-box-clr-bg), 14%)};
+    --bit-chb-crd-bg-checked: var(--bit-Checkbox-fill-card-checked-background, var(--bit-Checkbox-card-checked-background, #{translucent(var(--bit-chb-acc), 14%)}));
 }
 
 
@@ -701,6 +882,22 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 @media (forced-colors: active) {
     .bit-chb-box {
         border-color: ButtonText;
+    }
+
+    // A card states its selection with a background the mode strips, so its border carries it instead.
+    .bit-chb-otl,
+    .bit-chb-fil {
+        border-color: ButtonBorder;
+    }
+
+    .bit-chb-otl.bit-chb-ckd:where(:not(.bit-chb-ind)),
+    .bit-chb-fil.bit-chb-ckd:where(:not(.bit-chb-ind)) {
+        border-color: Highlight;
+    }
+
+    .bit-chb-otl.bit-dis,
+    .bit-chb-fil.bit-dis {
+        border-color: GrayText;
     }
 
     // A glyph on a box that is not filled - the check an empty box previews under the pointer, a custom
