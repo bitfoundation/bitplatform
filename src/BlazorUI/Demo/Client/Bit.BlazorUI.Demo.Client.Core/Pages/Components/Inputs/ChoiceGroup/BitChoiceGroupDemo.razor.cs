@@ -199,7 +199,7 @@ public partial class BitChoiceGroupDemo
             Name = "MinItemWidth",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Lays the items out in a grid of equal columns no narrower than this width (any CSS length; a bare number is read as pixels), fitting as many columns on a row as the width allows - the repeat(auto-fill, minmax(MinItemWidth, 1fr)) layout. A width larger than the group is capped at the width of the group. The group takes the full width of its container while it is set, and every column keeps the same width, a last row that is not full included. Wins over Columns when both are set. A value that is not a positive length (zero, negative, or one the browser cannot read) is ignored, so Columns still applies."
+            Description = "Lays the items out in a grid of equal columns no narrower than this width (any CSS length; a bare number is read as pixels), fitting as many columns on a row as the width allows - the repeat(auto-fill, minmax(MinItemWidth, 1fr)) layout. A width larger than the group is capped at the width of the group. The group takes the full width of its container while it is set, and every column keeps the same width, a last row that is not full included. Wins over Columns when both are set. A number with or without a unit is checked: a zero or negative width, an unknown unit or a malformed number (such as 14 rem) is ignored as if it were not set, so Columns still applies. A CSS function (calc(), clamp(), var(), ...) is passed through as written, unchecked, so it still wins over Columns even when it does not resolve to a positive length the browser can read."
         },
         new()
         {
