@@ -25,6 +25,12 @@
     <BitText Id="txt-el-padded" Element=" section " Typography="BitTypography.Body2">Trimmed</BitText>
 </E2ESection>
 
+<E2ESection Id="breakpoints" Title="Typography per breakpoint">
+    <BitText Id="txt-bp-grow" Typography="BitTypography.H6" TypographyMd="BitTypography.H3" TypographyXl="BitTypography.H1">Grows with the window</BitText>
+    <BitText Id="txt-bp-overline" Typography="BitTypography.Overline" TypographyMd="BitTypography.Body1">An overline up to md</BitText>
+    <BitText Id="txt-bp-xs" Typography="BitTypography.H2" TypographyXs="BitTypography.Body2">Body2 at every width</BitText>
+</E2ESection>
+
 <E2ESection Id="weight" Title="Weight and emphasis">
     @foreach (var weight in _weights)
     {
