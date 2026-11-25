@@ -37,7 +37,9 @@ public static class IServiceCollectionExtensions
         // Server project) and the AccentColorSwitcher chrome instances all resolve the same values.
         // StoredCss + LocalStorage explicitly: the BitAccentColorConfig defaults persist nothing and
         // skip first paint. No cookie: the host page is cached by the CDN and served to everyone, so
-        // the server must never paint one visitor's accent (see App.razor).
+        // the server must never paint one visitor's accent (see App.razor). The same call registers
+        // the command palette's registry, open state and history (per circuit, or per WebAssembly app),
+        // which the CommandPalette demo page registers its commands with.
         services.AddBitBlazorUIExtrasServices(trySingleton: AppRenderMode.IsBlazorHybrid, accentColor: options =>
         {
             options.FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss;

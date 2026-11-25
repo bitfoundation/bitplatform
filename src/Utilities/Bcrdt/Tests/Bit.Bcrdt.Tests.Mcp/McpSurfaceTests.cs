@@ -138,7 +138,7 @@ public partial class McpSurfaceTests
     {
         // A client connected to several bit libraries' MCP servers, as bitplatform.dev's chatbot is,
         // gets all their tools in one list, where a name is the only address a tool has. "Bcrdt" in
-        // every name is what keeps these from colliding with SearchBalette, GetBitBlazorUIComponent
+        // every name is what keeps these from colliding with SearchBink, GetBitBlazorUIComponent
         // and the rest.
         foreach (var tool in _tools) Assert.Contains("Bcrdt", tool.Name, $"'{tool.Name}' would be ambiguous next to the other libraries' tools.");
     }

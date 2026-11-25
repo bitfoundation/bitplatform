@@ -21,7 +21,7 @@ namespace Bit.Utilities.Demo;
 /// as code in one of them uses without declaring.
 /// </para>
 /// <para>
-/// One source for the Bdnd, Blow, Balette and Bheadless demos: each client project compiles this file and
+/// One source for the Bdnd, Blow and Bheadless demos: each client project compiles this file and
 /// SyntaxHighlighter.CssJson.cs from src/Utilities/Shared/Demo (a linked Compile item), the way the MCP servers share
 /// Shared/Mcp, and renders the result through a CodeBlock.razor of its own. It names no library of its own: the
 /// components it looks up are found through the references of the assembly it is compiled into. Each demo's CI

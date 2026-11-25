@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- The code viewer's lexer (CodeBlock.razor colours every snippet with it), which the Bdnd, Blow, Balette and
+        <!-- The code viewer's lexer (CodeBlock.razor colours every snippet with it), which the Bdnd, Blow and
              Bheadless demos share. -->
         <Compile Include="..\..\..\..\Shared\Demo\*.cs" LinkBase="Shared" />
     </ItemGroup>

@@ -18,6 +18,19 @@ only in this file.
 
 ## 11.0.0
 
+### `AddBitBlazorUIExtrasServices` takes a `commandPalette` argument ([#15465](https://github.com/bitfoundation/bitplatform/issues/15465))
+
+`AddBitBlazorUIExtrasServices` registers the services of `BitCommandPalette` (its registry, open state and history) along
+with the rest of the Extras package, and takes the palette's app-wide `BitCommandPaletteOptions` through a new optional
+last parameter:
+
+```csharp
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options => options.GroupOrder.AddRange(["Navigation", "Actions"]));
+```
+
+The source of an existing call compiles as it is, but the method's signature changed: a library compiled against the
+previous `Bit.BlazorUI.Extras` that calls it fails with a `MissingMethodException` until it is recompiled.
+
 ### `BitResourceTimeline`'s bar texts are one `Texts` with eight positions, and its `Texts` is `Strings` ([#15441](https://github.com/bitfoundation/bitplatform/issues/15441))
 
 `BitResourceTimelineAllocation` labelled a bar through four strings, one per side. They are now the properties of one

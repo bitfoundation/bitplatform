@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Bit.BlazorUI.Demo.Client.Core.Models;
 
@@ -196,11 +197,12 @@ public static class BlazorUIMarkdown
 
         // The note nearly every Extras component carries says to install the package, which the
         // block below says with the package name, the registration call and the tags. Two sentences
-        // about the same thing, one of them vague, is the redundancy this server exists to avoid.
-        if (string.IsNullOrWhiteSpace(component.Notes) is false &&
-            component.Notes.Contains("install the", StringComparison.OrdinalIgnoreCase) is false)
+        // about the same thing, one of them vague, is the redundancy this server exists to avoid - so
+        // that sentence is left out, and whatever else the notes say is kept.
+        var notes = WithoutInstallNote(component.Notes);
+        if (string.IsNullOrWhiteSpace(notes) is false)
         {
-            builder.AppendLine($"**Note:** {component.Notes}").AppendLine();
+            builder.AppendLine($"**Note:** {notes}").AppendLine();
         }
 
         AppendPackage(builder, component);
@@ -1034,4 +1036,19 @@ public static class BlazorUIMarkdown
 
     public static string Truncate(string text)
         => text.Length <= MaxLength ? text : $"{text[..MaxLength]}\n\n[Cut off at {MaxLength:N0} characters.]";
+
+    // "To use this component, you need to install the Bit.BlazorUI.Extras nuget package, as described in the Optional steps
+    // of the Getting started page." - the sentence an Extras page opens its notes with, in whatever whitespace the markup gave it.
+    private static readonly Regex _installNote = new(@"To use this component, you need to install the .*?Getting started\s+page\.\s*",
+                                                     RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    /// <summary>The notes of a component without the sentence saying to install its package, which the package block says.</summary>
+    private static string? WithoutInstallNote(string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(notes)) return null;
+
+        var rest = _installNote.Replace(notes, string.Empty).Trim();
+
+        return rest.Length == 0 ? null : rest;
+    }
 }

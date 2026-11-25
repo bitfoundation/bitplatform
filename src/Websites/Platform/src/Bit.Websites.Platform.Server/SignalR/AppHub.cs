@@ -24,7 +24,7 @@ public partial class AppHub : Hub
     /// </summary>
     private static readonly string[] librariesWithMcpServers =
     [
-        "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "Balette", "BbScanner", "Bdnd", "BlazeDb",
+        "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "BbScanner", "Bdnd", "BlazeDb",
         "Blow", "Borm", "Bcrdt", "Bonboarding", "Bortable", "Blex", "Bsqlite", "Belemetry", "Bheadless"
     ];
 

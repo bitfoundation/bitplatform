@@ -27,7 +27,6 @@ public static class ProductCatalog
         new("Bmage", "Blazor-native image processing", Urls.Bmage, External: true),
         new("Bsqlite", "SQLite and EF Core in the browser", Urls.Bsqlite, External: true),
         new("Bink", "Blazor-native drawing and ink", Urls.Bink, External: true),
-        new("Balette", "Blazor-native command palette", Urls.Balette, External: true),
         new("BbScanner", "Blazor-native barcode scanner", Urls.BbScanner, External: true),
         new("Bdnd", "Declarative drag and drop for Blazor", Urls.Bdnd, External: true),
         new("BlazeDb", "Memory-first database for Blazor", Urls.BlazeDb, External: true),
