@@ -324,6 +324,15 @@ public partial class BitToggleDemo
             DefaultValue = "null",
             Description = "The native tooltip of the toggle, rendered on its root so a hover anywhere on it - the label included - brings the tooltip up.",
         },
+        new()
+        {
+            Name = "Variant",
+            Type = "BitVariant?",
+            DefaultValue = "null",
+            Description = "The visual style of the toggle: Text (the default) renders the bare switch and label, Outline and Fill render the whole toggle - label, switch, state text, error message and description - as a selectable card that is clickable across its full area.",
+            Href = "#variant-enum",
+            LinkType = LinkType.Link,
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -497,7 +506,8 @@ public partial class BitToggleDemo
     [
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitPlacement(),
-        DemoSharedEnums.BitSize()
+        DemoSharedEnums.BitSize(),
+        DemoSharedEnums.BitVariant(description: "Determines how the toggle is drawn: as a bare switch and label or as a selectable card.")
     ];
 
 
@@ -755,6 +765,108 @@ public partial class BitToggleDemo
             Name = "--bit-Toggle-transition-duration",
             DefaultValue = "$mot-duration-short",
             Description = "How long the knob takes to cross the track, and every color with it. Reduced motion collapses it - the default and a value set here alike - unless ForceAnimation is set.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-card-background",
+            DefaultValue = "Per variant: transparent for Outline, $clr-bg-sec for Fill",
+            Description = "Background of the card the Outline and Fill variants draw, at rest. Shared by the variants: --bit-Toggle-fill-card-background and --bit-Toggle-outline-card-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-card-hover-background",
+            DefaultValue = "Per variant: $clr-bg-sec-hover for Outline, $clr-bg-ter for Fill",
+            Description = "Background of a hovered card (pointer devices only). Shared by the variants: --bit-Toggle-fill-card-hover-background and --bit-Toggle-outline-card-hover-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-card-checked-background",
+            DefaultValue = "Per variant, a tint of --bit-Toggle-checked-background",
+            Description = "Background of the card of a toggle that is on. The Color parameter wins over it. Shared by the variants: --bit-Toggle-fill-card-checked-background and --bit-Toggle-outline-card-checked-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-card-border-color",
+            DefaultValue = "Per variant: $clr-brd-sec for Outline, transparent for Fill",
+            Description = "Border of the card at rest. Shared by the variants: --bit-Toggle-fill-card-border-color and --bit-Toggle-outline-card-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-card-hover-border-color",
+            DefaultValue = "--bit-Toggle-checked-hover-background",
+            Description = "Border of a hovered card (pointer devices only). The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-card-checked-border-color",
+            DefaultValue = "--bit-Toggle-checked-background",
+            Description = "Border of the card of a toggle that is on. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-card-border-width",
+            DefaultValue = "$shp-border-width",
+            Description = "Border stroke of the card.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-card-padding",
+            DefaultValue = "spacing(1.5)",
+            Description = "Padding inside the card. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-card-radius",
+            DefaultValue = "$shp-radius-surface",
+            Description = "Corner radius of the card and of the focus ring that outlines it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-fill-card-background",
+            DefaultValue = "--bit-Toggle-card-background",
+            Description = "Background of the card at rest of a Fill toggle alone, read ahead of --bit-Toggle-card-background so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-fill-card-hover-background",
+            DefaultValue = "--bit-Toggle-card-hover-background",
+            Description = "Background of a hovered card of a Fill toggle alone, read ahead of --bit-Toggle-card-hover-background so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-fill-card-checked-background",
+            DefaultValue = "--bit-Toggle-card-checked-background",
+            Description = "Background of the card of a Fill toggle that is on alone, read ahead of --bit-Toggle-card-checked-background so a theme can set this variant apart from the other. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-fill-card-border-color",
+            DefaultValue = "--bit-Toggle-card-border-color",
+            Description = "Border of the card at rest of a Fill toggle alone, read ahead of --bit-Toggle-card-border-color so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-outline-card-background",
+            DefaultValue = "--bit-Toggle-card-background",
+            Description = "Background of the card at rest of an Outline toggle alone, read ahead of --bit-Toggle-card-background so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-outline-card-hover-background",
+            DefaultValue = "--bit-Toggle-card-hover-background",
+            Description = "Background of a hovered card of an Outline toggle alone, read ahead of --bit-Toggle-card-hover-background so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-outline-card-checked-background",
+            DefaultValue = "--bit-Toggle-card-checked-background",
+            Description = "Background of the card of an Outline toggle that is on alone, read ahead of --bit-Toggle-card-checked-background so a theme can set this variant apart from the other. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Toggle-outline-card-border-color",
+            DefaultValue = "--bit-Toggle-card-border-color",
+            Description = "Border of the card at rest of an Outline toggle alone, read ahead of --bit-Toggle-card-border-color so a theme can set this variant apart from the other. The Color parameter leaves it alone.",
         },
     ];
 

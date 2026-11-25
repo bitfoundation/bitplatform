@@ -109,6 +109,20 @@
             }
         </button>
 
+        @if (IsCard)
+        {
+            @* The hit area of a card: a label of the switch laid over the whole card, under everything in it, so a click
+               anywhere on the card that nothing in it answers itself - the description and the error line included - is
+               handed to the switch the way a click on the label is. It carries no text, so it adds nothing to the name
+               the switch takes from aria-labelledby, and it is hidden from assistive technologies, which already reach
+               the switch itself. Its empty title keeps the Title of the row it sits in from popping up wherever the
+               hit area lies - over the description, the error line and the links inside them - so the tooltip answers
+               the label, the switch and the state text alone, as it does on the bare toggle. It follows the switch, so
+               its focus ring - drawn around the card instead of around the track - is styled through a sibling
+               selector. *@
+            <label for="@_buttonId" title="" aria-hidden="true" class="bit-tgl-hit"></label>
+        }
+
         @if (_stateText.HasValue())
         {
             <label id="@_stateTextId" style="@Styles?.Text" class="bit-tgl-stx @Classes?.Text" for="@_buttonId">

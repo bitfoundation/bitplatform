@@ -207,6 +207,12 @@ public partial class BitToggleParams : BitComponentBaseParams, IBitComponentPara
     /// </summary>
     public string? Title { get; set; }
 
+    /// <summary>
+    /// The visual style of the toggle. The default is <see cref="BitVariant.Text"/>, the bare switch and label;
+    /// <see cref="BitVariant.Outline"/> and <see cref="BitVariant.Fill"/> render it as a selectable card.
+    /// </summary>
+    public BitVariant? Variant { get; set; }
+
 
 
     /// <summary>
@@ -386,6 +392,11 @@ public partial class BitToggleParams : BitComponentBaseParams, IBitComponentPara
         if (Title.HasValue())
         {
             bitToggle.TakeFromCascade(nameof(Title), Title, static t => t.Title, static (t, v) => t.Title = v);
+        }
+
+        if (Variant.HasValue)
+        {
+            bitToggle.TakeFromCascade(nameof(Variant), Variant.Value, static t => t.Variant, static (t, v) => t.Variant = v);
         }
     }
 }

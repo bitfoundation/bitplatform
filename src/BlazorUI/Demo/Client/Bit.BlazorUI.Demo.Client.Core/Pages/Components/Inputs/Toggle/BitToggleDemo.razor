@@ -81,7 +81,7 @@
             there in both states, so flipping it never resizes it under the pointer - and the knob stays hidden
             from screen readers, which take the state from the switch. While the toggle is
             <BitLink Href="#example6">loading</BitLink> the spinner takes the knob back from both. The
-            <BitLink Href="#example15">External Icons</BitLink> section shows the <b>BitIconInfo</b>
+            <BitLink Href="#example16">External Icons</BitLink> section shows the <b>BitIconInfo</b>
             counterparts of the two icon parameters.
         </div>
         <br />
@@ -545,7 +545,42 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14">
+    <DemoExample Title="Variant" RazorCode="@example14RazorCode" Id="example14">
+        <div>
+            <b>Variant</b> draws the whole BitToggle as a selectable card instead of a bare switch and label.
+            <b>Text</b> is the default and is what every example above renders; <b>Outline</b> gives the card a border,
+            <b>Fill</b> a surface, and both tint the card of a toggle that is on and border it in the current Color.
+            A click anywhere on the card - the description included - flips the switch, and the focus ring outlines
+            the card instead of the track. It stacks with the rest: <b>Inline</b>, <b>FullWidth</b> and a
+            <b>LabelPlacement</b> of Start make the settings row, with the switch at the far edge of the card.
+        </div>
+        <br />
+        <div class="card-panel">
+            <BitToggle Variant="BitVariant.Outline" Inline FullWidth LabelPlacement="BitPlacement.Start" DefaultValue="true"
+                       Label="An AI assistant for your users"
+                       Description="Answers their questions from your app's data." />
+            <BitToggle Variant="BitVariant.Outline" Inline FullWidth LabelPlacement="BitPlacement.Start"
+                       Label="Push notifications"
+                       Description="On phones, computers and browsers." />
+            <BitToggle Variant="BitVariant.Outline" Inline FullWidth LabelPlacement="BitPlacement.Start" Disabled
+                       Label="Offline sync"
+                       Description="Not available on the free plan." />
+        </div>
+        <br /><br />
+        <div class="card-panel">
+            <BitToggle Variant="BitVariant.Fill" Inline FullWidth LabelPlacement="BitPlacement.Start" DefaultValue="true"
+                       Label="Daily summary"
+                       Description="One email every morning." />
+            <BitToggle Variant="BitVariant.Fill" Inline FullWidth LabelPlacement="BitPlacement.Start"
+                       Label="Weekly report"
+                       Description="Every Monday, with the numbers of the week before." />
+            <BitToggle Variant="BitVariant.Fill" Inline FullWidth LabelPlacement="BitPlacement.Start" Color="BitColor.Success" DefaultValue="true"
+                       Label="Security alerts"
+                       Description="Sign-ins from a new device." />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
         <div>
             <b>Color</b> picks the theme color the track fills with once the BitToggle is on, with <b>Primary</b> as
             the default; the off track stays neutral whichever color is picked, so it keeps reading as "off". The
@@ -594,7 +629,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
         <div>
             The knob icons are not limited to the built-in icon font: <b>OnIcon</b> and <b>OffIcon</b> take a
             <b>BitIconInfo</b> - or a raw CSS class string - that can point at any icon library whose stylesheet is
@@ -623,7 +658,7 @@
                    OnIcon="@BitIconInfo.Bi("bell-fill")" OffIcon="@BitIconInfo.Bi("bell-slash")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Size</b> scales the track, the knob, the label and the state text together: <b>Small</b> for dense
             lists and table rows, <b>Medium</b> (the default) for forms, and <b>Large</b> where the BitToggle is a
@@ -656,7 +691,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style &amp; Class" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Style &amp; Class" RazorCode="@example18RazorCode" Id="example18">
         <div>
             The BitToggle can be restyled from the outside at three levels of reach. <b>Style</b> and <b>Class</b>
             apply to the root element, while <b>Styles</b> and <b>Classes</b> reach every part of it by name - the
@@ -718,7 +753,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>
             Set <b>Dir</b> to <b>BitDir.Rtl</b> to render the BitToggle right-to-left. The knob then travels the other
             way - resting on the right when off and sliding to the left when on - and every side-aware layout follows
