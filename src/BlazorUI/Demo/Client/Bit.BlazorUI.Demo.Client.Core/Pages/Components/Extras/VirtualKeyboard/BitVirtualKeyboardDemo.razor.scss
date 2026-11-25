@@ -1,0 +1,15 @@
+﻿.example-content {
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.narrow {
+    max-width: 22rem;
+}
+
+.purpose-buttons {
+    gap: 0.25rem;
+    display: flex;
+    flex-wrap: wrap;
+}

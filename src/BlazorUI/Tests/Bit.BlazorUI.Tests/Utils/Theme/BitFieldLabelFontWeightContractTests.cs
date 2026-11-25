@@ -74,6 +74,7 @@ public sealed class BitFieldLabelFontWeightContractTests
         ".bit-pgn-lbl", // the page text of a pagination
         ".bit-str-lbl", // the text and description of a step of a stepper
         ".bit-tag-lbl", // the text of a tag
+        ".bit-vkb-lbl", // the keycap of a virtual keyboard's key
         ".bit-dtg-chooser-label", // a checkbox row of a data grid's column chooser
         ".bit-pdv-page-label", // the page number of a pdf viewer
         ".bit-pdv-thumb-label", // the number under a pdf viewer's thumbnail

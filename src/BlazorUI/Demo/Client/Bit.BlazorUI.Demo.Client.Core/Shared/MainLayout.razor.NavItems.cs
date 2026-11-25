@@ -203,6 +203,7 @@ public partial class MainLayout
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "ShinyText, Skeleton, Loading, AI" },
                 new() { Text = "TimeZonePicker", Url = "/components/timezonepicker", Description = "TimeZoneSelector, TimeZoneSelect, TzPicker", Data = "Time zone, Timezone, UTC offset, GMT offset, IANA, Olson, Windows time zone, TimeZoneInfo, Daylight saving time, DST, Detect time zone" },
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
+                new() { Text = "VirtualKeyboard", Url = "/components/virtualkeyboard", Description = "OnScreenKeyboard, TouchKeyboard, SoftKeyboard", Data = "Keyboard, On-screen keyboard, Touch keyboard, Soft keyboard, Kiosk, POS, Numpad, PIN pad, Dial pad, Persian keyboard, Arabic keyboard", AdditionalUrls = ["/components/virtual-keyboard"] },
             ]
         },
         // The components of the Bit.BlazorUI.AI package, under /components/ai/ like the Legacy ones under theirs, then
