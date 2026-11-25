@@ -379,8 +379,10 @@ public class ComponentCatalogTests : McpTestBase
     /// </summary>
     [TestMethod]
     [DataRow("BitActionButton", "BitActionButtonParams")]
+    [DataRow("BitScrollToTop", "BitScrollToTopParams")]
     [DataRow("BitText", "BitTextParams")]
     [DataRow("BitStack", "BitStackParams")]
+    [DataRow("BitContainer", "BitContainerParams")]
     [DataRow("BitChoiceGroup", "BitChoiceGroupParams")]
     [DataRow("BitListBox", "BitListBoxParams")]
     [DataRow("BitCircularTimePicker", "BitCircularTimePickerParams")]
@@ -438,6 +440,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitPopConfirm", "BitPopConfirmParams")]
     [DataRow("BitAvatarGroup", "BitAvatarGroupParams")]
     [DataRow("BitImageViewer", "BitImageViewerParams")]
+    [DataRow("BitCopyButton", "BitCopyButtonParams")]
     [DataRow("BitResourceTimeline", "BitResourceTimelineParams")]
     [DataRow("BitToggle", "BitToggleParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]

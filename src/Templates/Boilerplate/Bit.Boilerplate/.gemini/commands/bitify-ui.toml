@@ -1,9 +1,0 @@
-description = "Replace raw HTML and hand-written CSS in a Blazor page with the app's own and Bit.BlazorUI components."
-
-prompt = """
-Follow these instructions exactly:
-
-@{.github/agents/bitify-ui.agent.md}
-
-Page to modernize: {{args}}
-"""

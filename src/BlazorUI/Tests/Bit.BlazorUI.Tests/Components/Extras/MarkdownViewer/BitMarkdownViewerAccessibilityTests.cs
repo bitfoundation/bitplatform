@@ -379,12 +379,12 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
     [TestMethod]
     public void BitMarkdownViewerShouldNoticeANewTabTheLinkOptionsChose()
     {
-        var texts = new BitMarkdownTexts { NewTab = "(neuer Tab)" };
+        var strings = new BitMarkdownStrings { NewTab = "(neuer Tab)" };
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, "[docs](https://example.com) and [home](/home)");
             parameters.Add(p => p.Pipeline, new BitMarkdownPipelineBuilder()
-                                                .UseTexts(texts)
+                                                .UseStrings(strings)
                                                 .UseLinkOptions(externalTarget: BitMarkdownLinkTarget.Self, internalTarget: BitMarkdownLinkTarget.Blank)
                                                 .Build());
         });
@@ -401,7 +401,7 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
             parameters.Add(p => p.Markdown, "[docs](https://example.com)");
-            parameters.Add(p => p.Pipeline, new BitMarkdownPipelineBuilder().UseTexts(new BitMarkdownTexts { NewTab = "" }).Build());
+            parameters.Add(p => p.Pipeline, new BitMarkdownPipelineBuilder().UseStrings(new BitMarkdownStrings { NewTab = "" }).Build());
         });
 
         Assert.AreEqual(0, component.FindAll(".bit-mdv-new-tab").Count);

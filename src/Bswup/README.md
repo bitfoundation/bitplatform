@@ -16,7 +16,6 @@ app.UseStaticFiles(new StaticFileOptions
     {
         if (env.IsDevelopment() is false)
         {
-            // https://bitplatform.dev/templates/cache-mechanism
             ctx.Context.Response.GetTypedHeaders().CacheControl = new()
             {
                 MaxAge = TimeSpan.FromDays(7),

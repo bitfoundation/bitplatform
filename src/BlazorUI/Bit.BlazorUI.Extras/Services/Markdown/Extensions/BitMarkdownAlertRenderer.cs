@@ -25,7 +25,7 @@ public sealed class BitMarkdownAlertRenderer : BitMarkdownNodeRenderer
         if (r.AutoDirection)
             b.AddAttribute(6, "dir", "auto");
         b.AddMarkupContent(4, GetIcon(alert.Kind));
-        b.AddContent(5, r.Texts.GetAlertTitle(alert.Kind));
+        b.AddContent(5, r.Strings.GetAlertTitle(alert.Kind));
         b.CloseElement();
         r.WriteNodes(b, alert.Children);
         b.CloseElement();

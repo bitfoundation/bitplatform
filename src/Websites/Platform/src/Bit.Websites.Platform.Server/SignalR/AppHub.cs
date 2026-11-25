@@ -4,7 +4,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Channels;
 using Bit.Websites.Platform.Client.Services.Contracts;
 using Bit.Websites.Platform.Server.Services;
-using Bit.Websites.Platform.Server.Services.Mcp;
 using Bit.Websites.Platform.Shared.Dtos.AiChat;
 using Bit.Websites.Platform.Shared.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -19,12 +18,22 @@ public partial class AppHub : Hub
 {
     private const int maxToolsCount = 128;
 
+    /// <summary>
+    /// The bit libraries whose documentation site serves an MCP server of its own, at
+    /// https://{name in lowercase}.bitplatform.dev/mcp. The chatbot answers from their tools.
+    /// </summary>
+    private static readonly string[] librariesWithMcpServers =
+    [
+        "Bmotion", "Bswup", "Brouter", "Bmage", "Bink", "Balette", "BbScanner", "Bdnd", "BlazeDb",
+        "Blow", "Borm", "Bcrdt", "Bonboarding", "Bortable", "Blex", "Bsqlite", "Belemetry", "Bheadless"
+    ];
+
     [AutoInject] private IServiceProvider serviceProvider = default!;
     [AutoInject] private IConfiguration configuration = default!;
 
     [AutoInject] private ILoggerFactory loggerFactory = default!;
-    [AutoInject] private IWebHostEnvironment webHostEnvironment = default!;
-    [AutoInject] private McpVersions mcpVersions = default!;
+    [AutoInject] private ILogger<AppHub> logger = default!;
+    [AutoInject] private IHttpClientFactory httpClientFactory = default!;
 
 
     public async IAsyncEnumerable<string> Chatbot(
@@ -40,27 +49,11 @@ public partial class AppHub : Hub
         Channel<string> channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
         var chatClient = serviceProvider.CreateAsyncScope().ServiceProvider.GetRequiredService<IChatClient>();
 
-        // Hint: There are much more effective ways to implement this in the bit Boilerplate project template's AutoRag feature.
-        // It supports both SQL Server 2025 and PostgreSQL with pgvector extension.
-
-        // In Development the chatbot talks to this very server's /mcp endpoint (the host the SignalR client
-        // already connected to), so uncommitted changes to the proxy take part in its answers; the deployed
-        // proxy only serves what is already released.
-        var httpRequest = Context.GetHttpContext()!.Request;
-        // Named rather than left to the endpoint's default, so the release this chatbot answers from is in
-        // the log next to its answers. Empty on a host that prepares no version, which leaves that default.
-        var version = mcpVersions.Latest is { } latest ? $"&v={latest.Name}" : "";
-        Uri mcpEndpoint = webHostEnvironment.IsDevelopment()
-            ? new($"{httpRequest.Scheme}://{httpRequest.Host}/mcp?libraries=all{version}")
-            : new($"https://bitplatform.dev/mcp?libraries=all{version}");
-
-        await using var bitplatformMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
-        {
-            Name = "bitplatform",
-            Endpoint = mcpEndpoint,
-            TransportMode = HttpTransportMode.StreamableHttp
-        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (every library of BitLibraries.All), the bitplatform source code tools and the general AskGitHubRepository tool
-        var bitplatformMcpTools = (await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken))
+        // Every library's own MCP server, connected to in parallel. One that is down or slow only takes its own
+        // tools out of this chat.
+        await using var libraryMcpServers = await ConnectToLibraryMcpServers(cancellationToken);
+        var libraryTools = (await Task.WhenAll(libraryMcpServers.Clients.Select(client => ListTools(client, cancellationToken))))
+            .SelectMany(tools => tools)
             .OrderBy(tool => GetChatbotPriority(tool.Name))
             .ToArray();
 
@@ -107,29 +100,18 @@ public partial class AppHub : Hub
                             await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
                                 .SendContactUsMessage(emailAddress, conversationHistory, messageSpecificCancellationToken);
 
-                        }, name: "AskForSupport", description: "Saves the user's email address and the conversation history for future support. Parameters: emailAddress (string), conversationHistory (string)"),
-                        AIFunctionFactory.Create(async (string emailAddress, string conversationHistory) =>
-                        {
-                            if (messageSpecificCancellationToken.IsCancellationRequested)
-                                return;
-
-                            await using var scope = serviceProvider.CreateAsyncScope();
-
-                            await scope.ServiceProvider.GetRequiredService<TelegramBotService>()
-                                .SendBuyPackageMessage("Default", emailAddress, conversationHistory, messageSpecificCancellationToken);
-
-                        }, name: "AskForSales", description: "Saves the user's email address and the conversation history for future susales. Parameters: emailAddress (string), conversationHistory (string)")
+                        }, name: "AskForSupport", description: "Saves the user's email address and the conversation history for future support. Parameters: emailAddress (string), conversationHistory (string)")
                     ];
 
                     ChatOptions chatOptions = new()
                     {
-                        Tools = [.. bitplatformMcpTools.Take(maxToolsCount - chatbotTools.Length), .. chatbotTools]
+                        Tools = [.. libraryTools.Take(maxToolsCount - chatbotTools.Length), .. chatbotTools]
                     };
 
                     configuration.GetRequiredSection("AppSettings:ChatOptions").Bind(chatOptions);
 
                     var supportSystemPrompt = $"""
-                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about every product the bit platform team ships - bit {string.Join(", ", BitLibraries.All.Select(library => library.Name))}, the bit Boilerplate project template and the rest - and you route support and sales requests to a human.
+                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about the open-source libraries the bit platform team ships - bit BlazorUI, bit Butil, bit {string.Join(", bit ", librariesWithMcpServers)} and the build tools (Minifier, BlazorES2019, Code Analyzers and Source Generators) - and you route support requests to a human.
 
                         **RELEVANCE:**
                         - A query is relevant only if it concerns bitplatform's products, their features, setup or usage, support topics, or product recommendations tied to bitplatform. .NET, Blazor, MAUI and ASP.NET Core topics are relevant only while they serve a bitplatform answer.
@@ -138,37 +120,23 @@ public partial class AppHub : Hub
                         - Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: "For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us."
 
                         **ANSWERING TECHNICAL QUESTIONS:**
-                        - Never answer from memory. First work out which product the question is about, then call the tools that belong to that product - their names carry the product's name - and answer from what they return.
+                        - Never answer from memory. First work out which library the question is about, then call the tools that belong to that library - their names carry the library's name - and answer from what they return.
                         - Start with the broadest tool that fits (overview, list or search), then drill into the ones covering APIs, options, guides and examples. Reach for the tools that inspect, analyze or review whenever the user shares their own code or configuration.
-                        - When a question spans several products, consult the tools of each of them before answering.
-                        - When no tool is dedicated to the topic, or a product's own tools come back empty, fall back to the FindBitPlatformSymbols, SearchBitPlatformCode and GetBitPlatformSymbolSource tools, which read the source code of the `bitfoundation/bitplatform` repository.
-                        - Use the AskGitHubRepository tool only for the third-party libraries its description names. For now, do not return links returned by that tool.
-                        - Use the Microsoft documentation tools only for .NET/Blazor/ASP.NET Core/MAUI behavior that bitplatform builds upon, never as a replacement for the bit tools.
+                        - When a question spans several libraries, consult the tools of each of them before answering.
+                        - You have no tools for bit BlazorUI and bit Butil. Point the user to their documentation at https://blazorui.bitplatform.dev and https://butil.bitplatform.dev instead of answering from memory.
+                        - Each library you have tools for also has its MCP server at https://<name in lowercase>.bitplatform.dev/mcp, such as https://bmotion.bitplatform.dev/mcp, which the user's own coding agent can use.
+                        - bit Boilerplate, the project template, and bit CLI are part of bit Fabric (https://bitfabric.co), which builds whole apps on these libraries. For questions about them, point the user to https://bitfabric.co.
                         - If the tools do not cover the question, say so honestly instead of guessing.
-
-                        **CHOOSING THE OPTIONS OF A NEW bit Boilerplate PROJECT:**
-                        - People picking the options of a new bit Boilerplate project, on https://bitplatform.dev/templates/create-project or with `bit new`, ask about the database, file storage, Redis, the AI chatbot, the offline database, push notifications, reCAPTCHA, ads, Sentry, Application Insights, CI/CD, multitenancy, the Admin and Sales modules, the theme and the apps to set up. Many of them are not .NET developers.
-                        - Answer from the template's own source and its .docs folder (src/Templates/Boilerplate), read with the source code tools.
-                        - Explain the trade-off in plain words: what the option adds to the generated project, what it costs (download size, start time, a service to run or pay for), whether it can be changed later, and the matching `bit new` option, such as `--database PostgreSQL` or `--offlineDb`.
-                        - Be clear that the template sets up infrastructure and the sample features an option names. It never builds the user's own business features.
 
                         **RESPONSE FORMAT:**
                         - Always format your responses using Markdown: headers (##, ###) to organize longer answers, bullet or numbered lists, **bold** for important points, and [Link Text](URL) for URLs.
                         - Use code blocks with the appropriate language tag for code examples: ```csharp or ```razor or ```html or ```css etc.
 
-                        Please follow these guidelines based on the user's intent:
-
-                        ## 1. For Complaints or Issues:
-                           - If a user complains about something, reports a problem, mentions bugs, issues, errors, or expresses dissatisfaction
-                           - Ask the user to provide their email address, explaining that it is needed for the support follow-up
-                           - Once you have their email, call the AskForSupport tool with their email and the conversation history
-                           - Be empathetic and assure them that their issue will be addressed
-
-                        ## 2. For Sales and Purchasing:
-                           - If a user wants to buy something, purchase a license, upgrade their plan, or inquires about pricing/commercial offerings
-                           - Ask the user to provide their email address, explaining that it is needed so the sales team can contact them
-                           - Once you have their email, call the AskForSales tool with their email and the conversation history
-                           - Be helpful and professional about their business needs
+                        **COMPLAINTS OR ISSUES:**
+                        - If a user complains about something, reports a problem, mentions bugs, issues, errors, or expresses dissatisfaction
+                        - Ask the user to provide their email address, explaining that it is needed for the support follow-up
+                        - Once you have their email, call the AskForSupport tool with their email and the conversation history
+                        - Be empathetic and assure them that their issue will be addressed
 
                         **HANDLING FRUSTRATION OR CONFUSION:**
                         - If a user seems frustrated or confused, use calming language and offer to clarify: "I'm sorry if this is confusing. I'm here to help-would you like me to explain it again?"
@@ -177,7 +145,7 @@ public partial class AppHub : Hub
                         - If you cannot resolve the user's issue (either through the documentation or available tools), respond with: "I'm sorry I couldn't resolve your issue / fully satisfy your request. I understand how frustrating this must be for you. Please provide your email address so a human operator can follow up with you soon."
                         - After receiving the email, confirm: "Thank you for providing your email. A human operator will follow up with you soon." Then ask: "Do you have any other issues you'd like me to assist with?"
 
-                        **Remember:** Your goal is to give accurate, tool-backed answers about every bitplatform product, and to route users to the appropriate human channel when the answer is not yours to give.
+                        **Remember:** Your goal is to give accurate, tool-backed answers about the bitplatform libraries, and to route users to the appropriate human channel when the answer is not yours to give.
                         """;
 
                     await foreach (var response in chatClient.GetStreamingResponseAsync([
@@ -217,13 +185,72 @@ public partial class AppHub : Hub
         }
     }
 
+    private async Task<LibraryMcpServers> ConnectToLibraryMcpServers(CancellationToken cancellationToken)
+    {
+        // One HttpClient from the factory for every server: the transports don't own it, so they hold nothing of their
+        // own to dispose, and the factory pools its handler across chats.
+        var httpClient = httpClientFactory.CreateClient("LibraryMcpServers");
+
+        var connections = librariesWithMcpServers.Select(async library =>
+        {
+            try
+            {
+                return await McpClient.CreateAsync(new HttpClientTransport(new()
+                {
+                    Name = $"bit{library}",
+                    Endpoint = new($"https://{library.ToLowerInvariant()}.bitplatform.dev/mcp"),
+                    TransportMode = HttpTransportMode.StreamableHttp
+                }, httpClient, loggerFactory, ownsHttpClient: false), new() { InitializationTimeout = TimeSpan.FromSeconds(10) }, loggerFactory, cancellationToken);
+            }
+            catch (Exception exp) when (cancellationToken.IsCancellationRequested is false)
+            {
+                logger.LogWarning(exp, "The chatbot could not connect to the MCP server of {Library}.", library);
+                return null;
+            }
+        }).ToArray();
+
+        try
+        {
+            return new([.. (await Task.WhenAll(connections)).OfType<McpClient>()]);
+        }
+        catch
+        {
+            // The chat ended while connecting: close the sessions that did open, as nothing else holds them.
+            foreach (var connection in connections.Where(connection => connection.IsCompletedSuccessfully))
+            {
+                if (connection.Result is { } client)
+                {
+                    await client.DisposeAsync();
+                }
+            }
+
+            throw;
+        }
+    }
+
+    private async Task<IList<McpClientTool>> ListTools(McpClient client, CancellationToken cancellationToken)
+    {
+        // A server that connected but never answers only takes its own tools out of the chat.
+        using var listingTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        listingTimeout.CancelAfter(TimeSpan.FromSeconds(10));
+
+        try
+        {
+            return await client.ListToolsAsync(cancellationToken: listingTimeout.Token);
+        }
+        catch (Exception exp) when (cancellationToken.IsCancellationRequested is false)
+        {
+            logger.LogWarning(exp, "The chatbot could not list the tools of {Server}.", client.ServerInfo?.Name);
+            return [];
+        }
+    }
+
     private static int GetChatbotPriority(string toolName) => toolName switch
     {
-        McpFeedbackTool.ToolName => 0,
         _ when Regex.IsMatch(toolName, "^(Inspect|Simulate|Analyze|Run|Review|Check|Plan|Compare|Generate)") => 4,
-        _ when Regex.IsMatch(toolName, "^Search|Overview$|BitPlatform|BlazorUI") => 0,
+        _ when Regex.IsMatch(toolName, "^Search|Overview$") => 0,
         _ when Regex.IsMatch(toolName, "Guide|Docs?Page$|Document$|Api") => 1,
-        _ when Regex.IsMatch(toolName, "SourceFile$|Recipes?$|^AskGitHubRepository$|^microsoft_docs_") => 2,
+        _ when Regex.IsMatch(toolName, "SourceFile$|Recipes?$") => 2,
         _ => 3
     };
 
@@ -233,9 +260,18 @@ public partial class AppHub : Hub
         var serverExceptionHandler = scope.ServiceProvider.GetRequiredService<IExceptionHandler>();
         serverExceptionHandler.Handle(exp);
     }
+
+    /// <summary>The connections one chat holds to the libraries' MCP servers, closed together when it ends.</summary>
+    private sealed class LibraryMcpServers(McpClient[] clients) : IAsyncDisposable
+    {
+        public McpClient[] Clients => clients;
+
+        public async ValueTask DisposeAsync()
+        {
+            foreach (var client in clients)
+            {
+                await client.DisposeAsync();
+            }
+        }
+    }
 }
-
-
-
-
-

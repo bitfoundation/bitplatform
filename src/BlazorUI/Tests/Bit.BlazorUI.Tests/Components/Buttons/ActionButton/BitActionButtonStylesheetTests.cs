@@ -77,6 +77,37 @@ public partial class BitActionButtonStylesheetTests
         }
     }
 
+    [TestMethod]
+    public void BitActionButtonShouldDrawAnIconTemplateAsItsIcon()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The box shares the icon's rule: the icon color every state retargets (which an svg reaches through
+        // currentColor) and the icon size as its font size, an explicit Size still ahead of the variable.
+        var box = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-acb-ict {");
+
+        StringAssert.Contains(box, "color: var(--bit-acb-ico);");
+        StringAssert.Contains(box, "font-size: var(--bit-acb-ico-size, var(--bit-ActionButton-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(box, "flex-shrink: 0;");
+
+        // An svg given no size gets the icon's square, wherever it sits in the template, from rules that weigh nothing so
+        // an app's own rules win; a side given without a viewBox to derive the other from gets the icon size for that one.
+        var unsized = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-acb-ict svg:not([width]):not([height]):not(svg svg)) {");
+
+        StringAssert.Contains(unsized, "width: 1em;");
+        StringAssert.Contains(unsized, "height: 1em;");
+
+        var widthOnly = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-acb-ict svg[width]:not([height]):not([viewBox]):not(svg svg)) {");
+
+        StringAssert.Contains(widthOnly, "height: 1em;");
+        Assert.DoesNotContain("width:", widthOnly, "The width the svg was given is kept.");
+
+        var heightOnly = SourceFiles.GetScssDeclarations(stylesheet, "\n:where(.bit-acb-ict svg[height]:not([width]):not([viewBox]):not(svg svg)) {");
+
+        StringAssert.Contains(heightOnly, "width: 1em;");
+        Assert.DoesNotContain("height:", heightOnly, "The height the svg was given is kept.");
+    }
+
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "ActionButton", "BitActionButton.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-ActionButton-[a-z-]+)\s", RegexOptions.Multiline)]

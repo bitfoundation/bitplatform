@@ -98,10 +98,61 @@ public static class BlazorUIMarkdown
                    .AppendLine();
         }
 
-        builder.Append(header).Append(body);
+        builder.Append(header);
+
+        AppendFitted(builder, component, sections);
 
         return Truncate(builder.ToString());
     }
+
+    /// <summary>
+    /// Appends the sections of a whole reference, leaving out whole sections when they would run past
+    /// <see cref="MaxLength"/> rather than letting the cap cut the answer mid-table.
+    /// <para>
+    /// A cut at the cap loses the end of the answer, and the end is the worked examples - the part an
+    /// agent copies from. So the sections are left out from the one before the examples backwards (the
+    /// own types and the library types, the parts least read in full), never the first table nor the
+    /// examples, and the ones left out are named where they would have been, with the call that returns
+    /// each. The notice is counted in the cap it keeps the answer under, as the examples tool's is.
+    /// </para>
+    /// </summary>
+    private static void AppendFitted(StringBuilder builder, BlazorUIComponent component, List<ComponentSection> sections)
+    {
+        var kept = new List<ComponentSection>(sections);
+        var left = new List<string>();
+
+        string Notice() => left.Count == 0
+            ? string.Empty
+            : $"Left out to stay within one answer, each returned by `GetBitBlazorUIComponent(name: \"{component.Name}\", section: \"...\")`: {string.Join(", ", left.Select(name => $"`{name}`"))}.{Environment.NewLine}{Environment.NewLine}";
+
+        int Length() => builder.Length + kept.Sum(s => s.Text.Length) + Notice().Length;
+
+        for (var i = kept.Count - 1; i > 0 && Length() > MaxLength; i--)
+        {
+            if (kept[i].Name == WorkedExamples) continue;
+
+            left.Insert(0, kept[i].Name);
+            kept.RemoveAt(i);
+        }
+
+        var noticed = false;
+
+        foreach (var section in kept)
+        {
+            if (section.Name == WorkedExamples && noticed is false)
+            {
+                builder.Append(Notice());
+                noticed = true;
+            }
+
+            builder.Append(section.Text);
+        }
+
+        if (noticed is false) builder.Append(Notice());
+    }
+
+    /// <summary>The section a whole reference always keeps, since it is the part an agent copies from.</summary>
+    private const string WorkedExamples = "Worked examples";
 
     /// <summary>
     /// One part of a component's reference: its name as a caller passes it in <c>section</c>, and its text
@@ -234,7 +285,7 @@ public static class BlazorUIMarkdown
         }
 
         Add("Library types used here", builder => AppendReferencedTypes(builder, component));
-        Add("Worked examples", builder => AppendExamples(builder, component));
+        Add(WorkedExamples, builder => AppendExamples(builder, component));
 
         return sections;
     }

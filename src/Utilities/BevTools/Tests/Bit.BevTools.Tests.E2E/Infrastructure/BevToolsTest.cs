@@ -11,6 +11,7 @@ public abstract class BevToolsTest
 {
     private readonly List<IBrowserContext> _contexts = [];
     private readonly List<List<string>> _problems = [];
+    private readonly List<Func<string, bool>> _expected = [];
     private PlaywrightSession.Session? _session;
 
     public TestContext TestContext { get; set; } = default!;
@@ -40,7 +41,7 @@ public abstract class BevToolsTest
             // that failed already keeps its own message.
             if (TestContext.CurrentTestOutcome == UnitTestOutcome.Passed)
             {
-                string[] found = [.. _problems.SelectMany(p => { lock (p) return p.ToArray(); })];
+                string[] found = [.. _problems.SelectMany(p => { lock (p) return p.ToArray(); }).Where(p => !_expected.Any(expected => expected(p)))];
                 Assert.IsEmpty(found, "the page reported:" + Environment.NewLine + string.Join(Environment.NewLine, found));
             }
         }
@@ -53,6 +54,7 @@ public abstract class BevToolsTest
             }
             _contexts.Clear();
             _problems.Clear();
+            _expected.Clear();
         }
     }
 
@@ -82,6 +84,16 @@ public abstract class BevToolsTest
         var page = await context.NewPageAsync();
         _problems.Add(TrackProblems(page, origin));
         return page;
+    }
+
+    /// <summary>
+    /// A problem the test provokes on purpose - a download it makes fail - which does not fail it, until the returned
+    /// scope is disposed: what matches it after that fails the test again. Anything else the page reports always does.
+    /// </summary>
+    protected IDisposable ExpectProblems(Func<string, bool> expected)
+    {
+        _expected.Add(expected);
+        return new ExpectedProblems(this, expected);
     }
 
     protected Task<IResponse?> GotoAsync(IPage page, string path) =>
@@ -114,5 +126,18 @@ public abstract class BevToolsTest
         };
 
         return problems;
+    }
+
+    /// <summary>Ends an expectation: what it accepted so far is let go, and what matches it from now on is a problem.</summary>
+    private sealed class ExpectedProblems(BevToolsTest test, Func<string, bool> expected) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (!test._expected.Remove(expected)) return;
+            foreach (var problems in test._problems)
+            {
+                lock (problems) problems.RemoveAll(p => expected(p));
+            }
+        }
     }
 }

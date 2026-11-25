@@ -408,12 +408,12 @@ public class BitChartE2ETests : E2ETestBase
         await Expect(svg).ToHaveAccessibleNameAsync("Bar chart with 2 data series.");
         await Expect(svg).ToHaveAccessibleDescriptionAsync(new Regex("Quarterly sales and costs\\..*arrow keys"));
 
-        var texts = Page.Locator("#cht-texts svg.bit-cht-svg");
-        await Expect(texts).ToHaveAccessibleNameAsync("Custom chart name");
-        await Expect(texts).ToHaveAttributeAsync("aria-roledescription", "graph");
-        await Expect(texts).ToHaveAccessibleDescriptionAsync("Custom hint.");
-        await Expect(Page.Locator("#cht-texts .bit-cht-lgd")).ToHaveAttributeAsync("aria-label", "Series of the graph");
-        await Expect(Page.Locator("#cht-texts table thead th").First).ToHaveTextAsync("Reihe");
+        var strings = Page.Locator("#cht-strings svg.bit-cht-svg");
+        await Expect(strings).ToHaveAccessibleNameAsync("Custom chart name");
+        await Expect(strings).ToHaveAttributeAsync("aria-roledescription", "graph");
+        await Expect(strings).ToHaveAccessibleDescriptionAsync("Custom hint.");
+        await Expect(Page.Locator("#cht-strings .bit-cht-lgd")).ToHaveAttributeAsync("aria-label", "Series of the graph");
+        await Expect(Page.Locator("#cht-strings table thead th").First).ToHaveTextAsync("Reihe");
 
         // A shown title names the chart.
         await Expect(Page.Locator("#cht-titled svg.bit-cht-svg")).ToHaveAccessibleNameAsync("Quarterly figures");

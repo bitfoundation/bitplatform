@@ -181,7 +181,61 @@ public partial class BitTextDemo
             Name = "Typography",
             Type = "BitTypography?",
             DefaultValue = "null",
-            Description = "The typography variant: the size, weight, line height and tracking, and the tag rendered unless Element is set. Only the six heading variants render a heading tag. Defaults to Subtitle1.",
+            Description = "The typography variant: the size, weight, line height and tracking, and the tag rendered unless Element is set. Only the six heading variants render a heading tag. Defaults to Subtitle1. It is the look at every width no per-breakpoint variant (TypographyXs to TypographyXxl) replaces, and always decides the tag.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyLg",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the large breakpoint (from 1280px) upwards. It keeps applying to every wider breakpoint until another one replaces it, and only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyMd",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the medium breakpoint (from 960px) upwards. It keeps applying to every wider breakpoint until another one replaces it, and only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographySm",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the small breakpoint (from 600px) upwards. It keeps applying to every wider breakpoint until another one replaces it, and only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyXl",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the extra large breakpoint (from 1920px) upwards. It keeps applying to every wider breakpoint until another one replaces it, and only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyXs",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the extra small breakpoint (from 0px) upwards, so the look at every width no wider breakpoint replaces. It only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyXxl",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the extra extra large breakpoint (from 2560px) upwards. It only changes the look: the tag stays the one Typography decides.",
             LinkType = LinkType.Link,
             Href = "#typography-enum"
         },

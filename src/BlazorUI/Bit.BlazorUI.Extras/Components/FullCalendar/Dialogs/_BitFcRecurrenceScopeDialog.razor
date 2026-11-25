@@ -13,23 +13,23 @@
         <div class="bit-bfc-dialog-body" role="radiogroup" aria-labelledby="@_titleId">
             <label class="bit-bfc-field-inline bit-bfc-scope-option">
                 <input type="radio" name="@_groupName" checked="@(_scope is Scope.This)" @onchange="() => _scope = Scope.This" />
-                <span>@Texts.ThisOccurrenceOption</span>
+                <span>@Strings.ThisOccurrenceOption</span>
             </label>
             @if (OnConfirmFollowing.HasDelegate)
             {
                 <label class="bit-bfc-field-inline bit-bfc-scope-option">
                     <input type="radio" name="@_groupName" checked="@(_scope is Scope.Following)" @onchange="() => _scope = Scope.Following" />
-                    <span>@Texts.ThisAndFollowingOption</span>
+                    <span>@Strings.ThisAndFollowingOption</span>
                 </label>
             }
             <label class="bit-bfc-field-inline bit-bfc-scope-option">
                 <input type="radio" name="@_groupName" checked="@(_scope is Scope.All)" @onchange="() => _scope = Scope.All" />
-                <span>@Texts.AllOccurrencesOption</span>
+                <span>@Strings.AllOccurrencesOption</span>
             </label>
         </div>
         <div class="bit-bfc-dialog-footer">
-            <button type="button" class="bit-bfc-btn" @onclick="OnCancel">@Texts.CancelButton</button>
-            <button type="button" class="bit-bfc-btn bit-bfc-btn-primary" @onclick="Confirm">@Texts.OkButton</button>
+            <button type="button" class="bit-bfc-btn" @onclick="OnCancel">@Strings.CancelButton</button>
+            <button type="button" class="bit-bfc-btn bit-bfc-btn-primary" @onclick="Confirm">@Strings.OkButton</button>
         </div>
     </div>
 </div>

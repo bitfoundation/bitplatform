@@ -27,6 +27,16 @@ public sealed class AccessibilityTests : BonboardingTest
         await page.EvaluateAsync(
             "() => Promise.all(document.getAnimations().filter(a => a.effect?.getComputedTiming().iterations !== Infinity).map(a => a.finished.catch(() => null)))");
 
+        // Once a step has been shown on the page, Firefox crashes the page when the ariaLabelledByElements getter is
+        // read on an element with aria-labelledby (on /guidance: the tour list's and the checklist's sections and the
+        // tour list's Start buttons), whatever ids it names: a browser crash, not a violation. axe reads that property
+        // before the attribute, so it is hidden here and axe resolves the same ids from aria-labelledby instead.
+        if (E2EEnvironment.Browser == "firefox")
+        {
+            await page.EvaluateAsync(
+                "() => Object.defineProperty(Element.prototype, 'ariaLabelledByElements', { get() { return null; }, configurable: true })");
+        }
+
         AxeResult result = await page.RunAxe(WcagAA);
         if (result.Violations.Length == 0) return;
 

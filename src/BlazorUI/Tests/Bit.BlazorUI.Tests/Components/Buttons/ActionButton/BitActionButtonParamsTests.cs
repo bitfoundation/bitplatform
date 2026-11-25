@@ -25,6 +25,7 @@ public class BitActionButtonParamsTests : BunitTestContext
         nameof(BitActionButton.CascadingParameters),
         nameof(BitActionButton.Body),
         nameof(BitActionButton.ChildContent),
+        nameof(BitActionButton.IconTemplate),
         nameof(BitActionButton.LoadingTemplate),
         nameof(BitActionButton.OnClick),
         nameof(BitActionButton.LoadingChanged),

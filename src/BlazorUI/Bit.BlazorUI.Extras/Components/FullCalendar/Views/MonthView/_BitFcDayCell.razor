@@ -55,7 +55,7 @@ else
                 data-bit-bfc-roving="@isRovingDay"
                 tabindex="@(isRovingDay ? (TabStop ? "0" : "-1") : null)"
                 aria-current="@(isToday ? "date" : null)"
-                aria-label="@($"{string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, Cell.Date.ToString("D", State.Culture))}{(isRovingDay ? backgroundLabel : null)}")"
+                aria-label="@($"{string.Format(State.Culture, Strings.NavLinkDayAriaLabelFormat, Cell.Date.ToString("D", State.Culture))}{(isRovingDay ? backgroundLabel : null)}")"
                 @onclick="GoToDayView"
                 @onkeydown="args => isRovingDay ? OnCellKeyDown.InvokeAsync((Cell.Date, args)) : Task.CompletedTask"
                 @onclick:stopPropagation="true">@Cell.Day</button>
@@ -87,12 +87,12 @@ else
                 id="@AddButtonId"
                 data-bit-bfc-roving tabindex="@(TabStop ? "0" : "-1")"
                 aria-current="@(isToday ? "date" : null)"
-                aria-label="@($"{Texts.AddEventHoverHint}, {Cell.Date.ToString("D", State.Culture)}{backgroundLabel}")"
+                aria-label="@($"{Strings.AddEventHoverHint}, {Cell.Date.ToString("D", State.Culture)}{backgroundLabel}")"
                 @onclick="() => OnCellClick()"
                 @onkeydown="args => OnCellKeyDown.InvokeAsync((Cell.Date, args))"
                 @onclick:stopPropagation="true">
             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            @Texts.AddEventHoverHint
+            @Strings.AddEventHoverHint
         </button>
     }
 
@@ -125,9 +125,9 @@ else
     @if (moreCount > 0)
     {
         <button type="button" class="bit-bfc-month-more"
-                aria-label="@($"{string.Format(State.Culture, Texts.MoreEventsFormat, moreCount)}, {Cell.Date.ToString("D", State.Culture)}")"
+                aria-label="@($"{string.Format(State.Culture, Strings.MoreEventsFormat, moreCount)}, {Cell.Date.ToString("D", State.Culture)}")"
                 @onclick="() => _showEventList = true" @onclick:stopPropagation="true">
-            @string.Format(State.Culture, Texts.MoreEventsFormat, moreCount)
+            @string.Format(State.Culture, Strings.MoreEventsFormat, moreCount)
         </button>
     }
 </div>

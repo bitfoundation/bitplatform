@@ -433,18 +433,16 @@ builder.Services.AddBitBlazorUILegacyServices(); // Bit.BlazorUI.Legacy</CodeBox
                 <BitText Element="p">Then create an app from it:</BitText>
                 <CodeBox>dotnet new bit-empty -n MyBitBlazorApp</CodeBox>
 
-                <BitText Element="h3" Typography="BitTypography.Subtitle1">bit Boilerplate</BitText>
                 <BitText Element="p">
-                    The same wiring plus what a real product needs on day one - identity, an API, a
-                    database, localization, and the Android, iOS, macOS and Windows heads of one codebase.
-                    The bit CLI creates it and installs whatever this machine is missing to run it:
+                    The template is not a dependency: what it produces
+                    is your source, with no runtime tie back to it.
                 </BitText>
-                <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-23
-bit new MyBitProject</CodeBox>
 
+                <BitText Element="h3" Typography="BitTypography.Subtitle1">bit Fabric</BitText>
                 <BitText Element="p">
-                    Both are templates rather than dependencies: what they produce
-                    is your source, with no runtime tie back to them.
+                    For what a real product needs on day one - identity, an API, a database, localization,
+                    and the Android, iOS, macOS and Windows heads of one codebase - <BitLink Href="https://bitfabric.co" Target="_blank">bit Fabric</BitLink>
+                    starts you from a full-featured project built on these components.
                 </BitText>
             </DocSection>
 

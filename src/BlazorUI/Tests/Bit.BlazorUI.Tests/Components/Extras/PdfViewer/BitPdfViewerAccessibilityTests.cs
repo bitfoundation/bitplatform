@@ -124,7 +124,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         {
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
             parameters.Add(p => p.DefaultSidebar, BitPdfSidebar.Thumbnails);
-            parameters.Add(p => p.Texts, new BitPdfViewerTexts { ThumbnailAriaLabelFormat = "Seite {0}" });
+            parameters.Add(p => p.Strings, new BitPdfViewerStrings { ThumbnailAriaLabelFormat = "Seite {0}" });
         });
 
         component.WaitForAssertion(() => Assert.AreEqual(2, component.FindAll("[data-thumb]").Count));
@@ -290,7 +290,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.RichDocument()));
-            parameters.Add(p => p.Texts, new BitPdfViewerTexts { PageAriaLabelFormat = "Seite {0}" });
+            parameters.Add(p => p.Strings, new BitPdfViewerStrings { PageAriaLabelFormat = "Seite {0}" });
         });
 
         component.WaitForPages(3);
@@ -309,7 +309,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithInternalLink()));
-            parameters.Add(p => p.Texts, new BitPdfViewerTexts { LinkAriaLabelFormat = "Zu Seite {0}" });
+            parameters.Add(p => p.Strings, new BitPdfViewerStrings { LinkAriaLabelFormat = "Zu Seite {0}" });
         });
 
         component.WaitForPages(2);

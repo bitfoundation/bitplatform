@@ -259,6 +259,65 @@ public class BitStepperApisTests : BunitTestContext
     }
 
     [TestMethod]
+    public void CompactBitStepperShouldShowTheCurrentOptionAndKeepTheMarkersInAHiddenHolder()
+    {
+        var com = RenderComponent<BitStepperOptionsTest>(parameters =>
+        {
+            parameters.Add(p => p.CurrentIndex, 1);
+            parameters.Add(p => p.Compact, true);
+        });
+
+        Assert.AreEqual("Step 2 of 2", com.Find(".bit-str-pos").TextContent);
+        Assert.AreEqual("Last", com.Find(".bit-str-ctx").TextContent);
+        Assert.AreEqual(2, com.FindAll(".bit-str-seg").Count);
+        Assert.AreEqual(0, com.FindAll("ol").Count);
+
+        // With no list to hold them, the markers stand in a hidden element of the group, ahead of the compact part; the
+        // order of the steps is read from there.
+        var holder = com.Find("div.bit-str > div:first-child");
+
+        Assert.IsTrue(holder.HasAttribute("hidden"));
+        Assert.AreEqual("true", holder.GetAttribute("aria-hidden"));
+        Assert.AreEqual(2, holder.QuerySelectorAll("[data-bit-str-opt]").Length);
+        Assert.AreEqual(holder.Id, Context.JSInterop.Invocations[ChildrenAttributes][^1].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void ResponsiveCompactBitStepperShouldDrawTheStepsOfItsOptionsOnce()
+    {
+        var com = RenderComponent<BitStepperOptionsTest>(parameters =>
+        {
+            parameters.Add(p => p.CurrentIndex, 1);
+            parameters.Add(p => p.Compact, true);
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        CollectionAssert.AreEqual(new[] { "First", "Last" }, Texts(com));
+        Assert.AreEqual(2, com.FindAll("ol.bit-str-lst > li.bit-str-stp").Count);
+        Assert.AreEqual(2, com.FindAll("[data-bit-str-opt]").Count);
+        Assert.AreEqual("Last", com.Find(".bit-str-ctx").TextContent);
+    }
+
+    [TestMethod]
+    public void CompactBitStepperShouldReadTheTextOfACustomStep()
+    {
+        var com = RenderComponent<BitStepper<Phase>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Phases());
+            parameters.Add(p => p.NameSelectors, ByName);
+            parameters.Add(p => p.CurrentIndex, 1);
+            parameters.Add(p => p.Compact, true);
+        });
+
+        Assert.AreEqual("Step 2 of 3", com.Find(".bit-str-pos").TextContent);
+        Assert.AreEqual("Build", com.Find(".bit-str-ctx").TextContent);
+
+        // The current step failed, which the compact part says too.
+        Assert.IsTrue(com.Find(".bit-str-ctx").ClassList.Contains("bit-str-cte"));
+        Assert.IsTrue(com.FindAll(".bit-str-seg")[1].ClassList.Contains("bit-str-sge"));
+    }
+
+    [TestMethod]
     public void BitStepperWithOptionsShouldIgnoreItems()
     {
         // Options are the steps once there are any: Items given beside them, or changed later, are not read at all.

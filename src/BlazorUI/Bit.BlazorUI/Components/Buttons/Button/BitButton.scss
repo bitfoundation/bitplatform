@@ -55,7 +55,10 @@
 //   --bit-Button-focus-color               focus ring color                               (default: $clr-pri-focus)
 //   --bit-Button-radius                    corner radius of the box and its focus ring    (default: $shp-radius-button)
 //   --bit-Button-border-width              thickness of the border on every variant       (default: $shp-border-width)
-//   --bit-Button-shadow                    elevation of the box in every state            (default: none; a floating button has --bit-Button-float-shadow of its own)
+//   --bit-Button-shadow                    elevation of the box                           (default: none; a floating button has --bit-Button-float-shadow of its own)
+//   --bit-Button-hover-shadow              elevation of the box under the pointer         (default: the resting shadow, the floating one for a floating button)
+//   --bit-Button-hover-lift                how far the box rises under the pointer, as a
+//                                          length (2px lifts it by 2px, below 0 is none)  (default: none)
 //   --bit-Button-padding                   padding of the box                             (default: $siz-ctrl-pad-y-md $siz-ctrl-pad-x-md)
 //   --bit-Button-min-width                 smallest width of a labeled button             (default: $siz-ctrl-min-width, 0 when FullWidth or NoWrap sizes the button by its container)
 //   --bit-Button-min-height                smallest height of the box, and the smallest
@@ -68,7 +71,8 @@
 //   --bit-Button-font-weight               weight of both lines of text                   (default: $tg-font-weight)
 //   --bit-Button-text-transform            casing of both lines of text                   (default: $tg-ctrl-text-transform)
 //   --bit-Button-letter-spacing            tracking of both lines of text                 (default: $tg-ctrl-letter-spacing)
-//   --bit-Button-icon-size                 icon size, for a glyph and an IconUrl alike    (default: $siz-icon-md)
+//   --bit-Button-icon-size                 icon size, for a glyph, an IconUrl and an
+//                                          IconTemplate alike                             (default: $siz-icon-md)
 //   --bit-Button-spinner-size              diameter of the loading spinner                (default: $siz-icon-md, as the icon)
 //   --bit-Button-spinner-color             the spinner's moving arc                       (default: the button's own foreground)
 //   --bit-Button-spinner-track-color       the ring the arc travels on                    (default: the foreground at 25%)
@@ -79,10 +83,10 @@
 // A parameter written on the button wins over the variable that restyles what it sets: an explicit Color over
 // every color above that it paints, the disabled and focus colors included (the variables keep what a Color
 // leaves alone - the transparent background of the Outline and Text variants, the transparent border of Text),
-// an explicit Size over the padding, the min-height, the gap and the font, icon and spinner sizes, and Rounded
-// over the radius. The variables restyle the default, not a choice - which is why Color and Size publish
-// nothing while they are left unset: a class that always carried the default would be indistinguishable from
-// one that was asked for. FixedColor, FullWidth and NoWrap only move a default (the foreground a state falls
+// an explicit Size over the padding, the min-height, the gap and the font, icon and spinner sizes, Rounded
+// over the radius, and a Gradient over the background and border colors of the Fill variant it paints. The
+// variables restyle the default, not a choice - which is why Color and Size publish nothing while they are left
+// unset: a class that always carried the default would be indistinguishable from one that was asked for. FixedColor, FullWidth and NoWrap only move a default (the foreground a state falls
 // back to, the min-width), so the variables keep the last word there - as they do over the default a component of
 // the library gives the buttons it renders (see .bit-btn-dft-*), which is read after them.
 
@@ -90,9 +94,13 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
                          dft-clr-txt, dft-clr-hover, dft-clr-active, dft-clr-focus, dft-clr-dis, dft-clr-dis-text, lbl-fontsize,
                          prt-fontsize, sct-fontsize, icn-size, spn-size, min-height, icn-margintop, gap, pad-ntx,
                          padding, radius,
-                         // The colors the hover and press states move (see the variants below), unset at rest so a
-                         // button nested in another one never inherits the outer one's state.
-                         sfg, sbg, sbr;
+                         // The gradient the Gradient parameter writes onto the style of the root; an inline
+                         // declaration wins over this.
+                         grd,
+                         // The colors, the wash over a gradient, the shadow and the offset the hover and press states
+                         // move (see the variants and .bit-btn-grd below), unset at rest so a button nested in another
+                         // one never inherits the outer one's state.
+                         sfg, sbg, sbr, sov, shd, trn;
 
 .bit-btn {
     // The containing block of the visually hidden .bit-btn-srl inside it, which is absolutely positioned: held
@@ -123,8 +131,15 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
     letter-spacing: var(--bit-Button-letter-spacing, #{$tg-ctrl-letter-spacing});
     text-transform: var(--bit-Button-text-transform, #{$tg-ctrl-text-transform});
     // Flat by default, the way every variant here is drawn. It is left out of the transition below on purpose:
-    // the focus ring is a box-shadow too, and an indicator that fades in is an indicator that arrives late.
-    box-shadow: var(--bit-Button-shadow, none);
+    // the focus ring is a box-shadow too, and an indicator that fades in is an indicator that arrives late - so the
+    // hover shadow (see the pointer states below) is a step rather than a fade as well.
+    box-shadow: var(--bit-btn-shd, var(--bit-Button-shadow, none));
+    // Where the pointer states move the box to. The individual property rather than a transform, so it composes with
+    // the transform a centred floating button is positioned by and with one the app gives the button; and rather than
+    // a relative offset (the way a BitCard lifts), since a floating button is placed by its insets, which an offset of
+    // its own would take over. Left at none while nothing lifts it: any other value makes the button a stacking context
+    // and the containing block of everything fixed inside it.
+    translate: var(--bit-btn-trn, none);
     // Every value an explicit Size, Color or Rounded publishes is read first, then the public variable, then the
     // medium primary button with the button corner that an unset one stands for.
     gap: var(--bit-btn-gap, var(--bit-Button-gap, #{spacing(1)}));
@@ -139,8 +154,10 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
     // in a toolbar, and what keeps an icon-only one above the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8) -
     // a Small icon-only button is a 12px glyph in 4px of padding without it.
     min-height: var(--bit-btn-min-height, var(--bit-Button-min-height, #{$siz-ctrl-md}));
-    // The variants below repaint all three on hover/active, so they animate together from here.
-    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+    // The variants below repaint all three on hover/active, so they animate together from here, along with the move
+    // - timed by the motion tokens like the rest, so reduced motion turns it into a step rather than a glide.
+    transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing,
+                translate $mot-duration-short $mot-easing;
 
     &:focus-visible {
         @include focus-ring-own(var(--bit-btn-clr-focus, var(--bit-Button-focus-color, var(--bit-btn-dft-clr-focus))));
@@ -168,7 +185,8 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
     align-items: flex-start;
 
     .bit-btn-icn,
-    .bit-btn-icnu {
+    .bit-btn-icnu,
+    .bit-btn-ict {
         margin-top: var(--bit-btn-icn-margintop, #{spacing(0.25)});
     }
 }
@@ -204,6 +222,37 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
     object-fit: contain;
     width: var(--bit-btn-icn-size, var(--bit-Button-icon-size, #{$siz-icon-md}));
     height: var(--bit-btn-icn-size, var(--bit-Button-icon-size, #{$siz-icon-md}));
+}
+
+// The box an IconTemplate is drawn in. Its font size is the icon size, so markup sized in em - an inline svg of
+// 1em, a glyph of another icon font - comes out exactly as big as the icon it stands in for, while markup with a
+// size of its own keeps it; and it inherits the button's foreground, which an svg reaches through currentColor.
+.bit-btn-ict {
+    line-height: 1;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--bit-btn-icn-size, var(--bit-Button-icon-size, #{$siz-icon-md}));
+}
+
+// An inline svg given no size of its own would be drawn at the 300x150 a browser defaults it to, so it takes the icon's
+// square instead - anywhere in the template, inside the wrapper an icon component renders around it included (an svg
+// nested in another svg is left to fill its parent). A side given as an attribute is kept: the other follows it through
+// the viewBox when there is one, and is the icon size when there is none, where the browser would make it 150px.
+// The selectors are inside :where(), which weighs nothing, so any rule of the app's that sizes the svg wins - a class of
+// its own, and just as well a plain svg rule of a reset, which sizes these the way it sizes every other svg of the page.
+:where(.bit-btn-ict svg:not([width]):not([height]):not(svg svg)) {
+    width: 1em;
+    height: 1em;
+}
+
+:where(.bit-btn-ict svg[width]:not([height]):not([viewBox]):not(svg svg)) {
+    height: 1em;
+}
+
+:where(.bit-btn-ict svg[height]:not([width]):not([viewBox]):not(svg svg)) {
+    width: 1em;
 }
 
 .bit-btn-eni {
@@ -313,17 +362,18 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
 
 // A floating button sits over content rather than in it, so it is lifted off the surface the way every
 // other floating surface in the library is. The focus ring is a box-shadow too and replaces this one
-// while the button is focused, which is the right way round: the indicator has to win.
+// while the button is focused, which is the right way round: the indicator has to win. The hover shadow the
+// pointer states move to (see below) is read ahead of it, as it is ahead of the resting shadow of the root.
 .bit-btn-fab {
     position: absolute;
     z-index: $zindex-base;
-    box-shadow: var(--bit-Button-float-shadow, #{$box-shadow-card});
+    box-shadow: var(--bit-btn-shd, var(--bit-Button-float-shadow, #{$box-shadow-card}));
 }
 
 .bit-btn-ffx {
     position: fixed;
     z-index: $zindex-base;
-    box-shadow: var(--bit-Button-float-shadow, #{$box-shadow-card});
+    box-shadow: var(--bit-btn-shd, var(--bit-Button-float-shadow, #{$box-shadow-card}));
 }
 
 // A floating button that can be moved says so with the cursor; the script swaps it for a grabbing one
@@ -337,6 +387,65 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
 // same full radius rounds it into a circle - which is what a floating action button is.
 .bit-btn-rnd {
     --bit-btn-radius: #{$shp-radius-full};
+}
+
+
+// How far the button rises under the pointer, as a length, the way --bit-Card-hover-lift lifts a card. The none it
+// falls back to is no length, which leaves every declaration reading it invalid and so at its initial value - no
+// translate, no band (below); a value below zero lifts nothing, since a button sinking under the pointer would leave
+// it no room to stay hovered in.
+$btn-lift: max(0px, var(--bit-Button-hover-lift, none));
+
+// The lift. Under the pointer the box casts --bit-Button-hover-shadow and rises by --bit-Button-hover-lift,
+// whatever its variant - a glow under a call to action, a step towards the pointer - and both stay where they rest
+// until a variable asks for them, so a button that sets neither does not move at all. Only where hovering is a thing
+// the input device does at all, and never for the two states that answer no pointer (see the variants below).
+//
+// Neither is the variants' own: the elevation and the place of the box mean the same on every variant, as the resting
+// --bit-Button-shadow they fall back to does, so they are read here rather than per variant and have no variant twins.
+// The states move the variables the root paints from (--bit-btn-shd / -trn, reset on .bit-btn), never the shadow or the
+// translate themselves, so a button the app shapes through Class keeps that under the pointer too. A floating button
+// falls back to its own floating shadow, which a hover shadow left unset must not take away from it.
+//
+// The focus ring is a box-shadow too, and replaces whichever of these shadows the box casts while it is focused - the
+// indicator has to win, and a shadow drawn under it would only blur its edge.
+@media (hover: hover) {
+    .bit-btn:not(.bit-dis, .bit-btn-lnc):hover {
+        --bit-btn-shd: var(--bit-Button-hover-shadow, var(--bit-Button-shadow, none));
+        --bit-btn-trn: 0 calc(-1 * #{$btn-lift});
+    }
+
+    // The room the lift leaves under the button stays the button's. The pointer is tested against the box where it is
+    // drawn, so a pointer resting just above the bottom edge would be left behind by the lift, end the hover and bring
+    // the button back down under itself, over and over. The band runs from the bottom of the lifted button to where it
+    // rested, across its border on every side, so it covers nothing the button did not; it is the root's own, so a
+    // press there is a press of the button. With no lift set its height is invalid, which leaves it at none.
+    .bit-btn:not(.bit-dis, .bit-btn-lnc):hover::before {
+        content: "";
+        position: absolute;
+        inset-inline: 0;
+        top: 100%;
+        box-sizing: content-box;
+        height: #{$btn-lift};
+        // The border lies outside the padding box the band is placed against, so the band reaches across it.
+        margin-inline: calc(-1 * var(--bit-Button-border-width, #{$shp-border-width}));
+        padding-block-end: var(--bit-Button-border-width, #{$shp-border-width});
+    }
+
+    .bit-btn-fab:not(.bit-dis, .bit-btn-lnc):hover,
+    .bit-btn-ffx:not(.bit-dis, .bit-btn-lnc):hover {
+        --bit-btn-shd: var(--bit-Button-hover-shadow, var(--bit-Button-float-shadow, #{$box-shadow-card}));
+    }
+}
+
+// The press settles the shadow back to the resting one, which is what reads as pressing the button rather than as
+// lifting it further. The rule follows the hover ones at the same weight, so it wins while both match.
+//
+// That is its shadow alone: a lifted button keeps its place under the press. One that dropped back would leave a
+// pointer pressed near its top edge outside it, and the release would land on whatever is above the button, which is
+// no click.
+.bit-btn:not(.bit-dis, .bit-btn-lnc):active {
+    --bit-btn-shd: initial;
 }
 
 
@@ -448,6 +557,39 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
         &:focus-visible {
             @include focus-ring(var(--bit-btn-clr-dis-text, var(--bit-Button-text-disabled-color, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text})))));
         }
+    }
+}
+
+// A Gradient fills the box with an image rather than a color. The class is rendered on the Fill variant alone - the
+// only one with a fill to paint it into - so it qualifies no variant here, and the gradient itself is the one thing
+// the component writes inline (--bit-btn-grd). The image is laid over the background color, which stays the fallback
+// wherever the gradient is transparent, and is drawn from the border box under a transparent border, so the fill
+// reaches the edge rather than being ringed by the border color of the flat fill it replaces.
+//
+// The hover and press states move the background color, which the image hides, so here they wash the gradient with
+// the button's own foreground instead: a layer of one color over it, painted from a variable the states move
+// (--bit-btn-sov, reset on .bit-btn), the way every other state of the button is. The foreground is the on-color the
+// label is drawn in, so the wash follows a Color, FixedColor and the hover color variables without a token of its own,
+// and reads the same over both ends of the gradient.
+.bit-btn-grd {
+    border-color: transparent;
+    background-origin: border-box;
+    background-image: linear-gradient(var(--bit-btn-sov, transparent), var(--bit-btn-sov, transparent)), var(--bit-btn-grd, none);
+
+    @media (hover: hover) {
+        &:not(.bit-dis, .bit-btn-lnc):hover {
+            --bit-btn-sov: color-mix(in srgb, currentcolor 10%, transparent);
+        }
+    }
+
+    &:not(.bit-dis, .bit-btn-lnc):active {
+        --bit-btn-sov: color-mix(in srgb, currentcolor 20%, transparent);
+    }
+
+    // A disabled button wears the disabled fill of its variant (and its border, which outranks the transparent one
+    // above): a gradient is no disabled color, and it would hide the one that is.
+    &.bit-dis {
+        background-image: none;
     }
 }
 
@@ -705,6 +847,13 @@ $btn-private-properties: clr, clr-fg, clr-txt, clr-hover, clr-active, clr-focus,
         color: ButtonText;
         border-color: ButtonText;
         background-color: ButtonFace;
+    }
+
+    // Nor does a Gradient survive it: the palette keeps no gradient to show through, and the wash laid over it under
+    // the pointer would be the foreground over ButtonFace. The button is the native one above, its state the Highlight
+    // border below.
+    .bit-btn-grd {
+        background-image: none;
     }
 
     // A background role is the page's own color, Canvas here, which an Outline or Text button would read its label

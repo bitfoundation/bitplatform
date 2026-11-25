@@ -8,5 +8,9 @@ internal interface IBevToolsAttachment : IDisposable
     /// <summary>Why the session is or is not enabled.</summary>
     string Reason { get; }
 
-    void Open();
+    /// <summary>
+    /// Opens the panel, on <paramref name="panelId"/> with <paramref name="query"/> in its filter when one is given.
+    /// Returns why it did not, a panel this session does not have, or null once it is open.
+    /// </summary>
+    string? Open(string? panelId, string? query);
 }

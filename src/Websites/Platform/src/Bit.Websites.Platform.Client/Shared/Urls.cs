@@ -16,8 +16,6 @@ public static class Urls
 
     public const string YouTube = "https://www.youtube.com/@bitplatform";
 
-    public const string Templates = "/templates";
-
     public const string Bswup = "https://bswup.bitplatform.dev/";
     public const string Butil = "https://butil.bitplatform.dev/";
     public const string Brouter = "https://brouter.bitplatform.dev/";
@@ -38,7 +36,6 @@ public static class Urls
     public const string Belemetry = "https://belemetry.bitplatform.dev/";
     public const string Bheadless = "https://bheadless.bitplatform.dev/";
 
-    public const string Cli = "/toolings/cli";
     public const string Minifier = "/toolings/minifier";
     public const string BlazorES2019 = "/toolings/blazor-es2019";
     public const string CodeAnalyzers = "/toolings/code-analyzers";
@@ -54,27 +51,15 @@ public static class Urls
     public const string BlazorUiPlayground = "https://codespaces.new/bitfoundation/bit-blazorui-playground/tree/develop";
     public const string BlazorUiBenchmarks = "https://github.com/bitfoundation/blazor-benchmarks";
 
-    public const string AdminPanelPwa = "https://adminpanel.bitplatform.dev/dashboard";
-    public const string AdminPanelGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template";
-    public const string AdminPanelAppleStore = "https://apps.apple.com/app/bit-adminpanel/id6450611349";
-    public const string AdminPanelWindows = "https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe";
-    public const string AdminPanelPlayground = "https://codespaces.new/bitfoundation/bit-templates-playground/tree/develop";
-
-    public const string SalesPwa = "https://sales.bitplatform.dev/";
-    public const string SalesWindows = "https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe";
-
-    public const string TodoTemplatePwa = "https://todo.bitplatform.dev/todo";
-    public const string TodoOfflineWebApp = "https://todo-offline.bitplatform.cc/offline-todo";
-    public const string TodoTemplateGooglePlay = "https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template";
-    public const string TodoTemplateAppleStore = "https://apps.apple.com/app/bit-todotemplate/id6450611072";
-    public const string TodoTemplateWindows = "https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe";
-
     public const string BlazorUI = "https://blazorui.bitplatform.dev/";
+
+    // bit Fabric builds whole apps on these libraries; bit Boilerplate and bit CLI are part of it.
+    public const string BitFabric = "https://bitfabric.co";
+    public const string BitFabricCli = "https://bitfabric.co/cli";
 
     public const string Ask = "/ask";
     public const string Demos = "/demos";
     public const string Products = "/products";
-    public const string Pricing = "/pricing";
     public const string AboutUs = "/about-us";
     public const string ContactUs = "/contact-us";
     public const string NotFound = "/not-found";

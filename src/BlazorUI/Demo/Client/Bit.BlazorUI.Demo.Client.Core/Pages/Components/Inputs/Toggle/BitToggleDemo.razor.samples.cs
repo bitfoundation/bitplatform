@@ -375,6 +375,43 @@ private readonly BitToggleParams[] toggleParams =
 ];";
 
     private readonly string example14RazorCode = @"
+<style>
+    .card-panel {
+        gap: 0.5rem;
+        width: 24rem;
+        display: flex;
+        max-width: 100%;
+        flex-direction: column;
+    }
+</style>
+
+
+<div class=""card-panel"">
+    <BitToggle Variant=""BitVariant.Outline"" Inline FullWidth LabelPlacement=""BitPlacement.Start"" DefaultValue=""true""
+               Label=""An AI assistant for your users""
+               Description=""Answers their questions from your app's data."" />
+    <BitToggle Variant=""BitVariant.Outline"" Inline FullWidth LabelPlacement=""BitPlacement.Start""
+               Label=""Push notifications""
+               Description=""On phones, computers and browsers."" />
+    <BitToggle Variant=""BitVariant.Outline"" Inline FullWidth LabelPlacement=""BitPlacement.Start"" Disabled
+               Label=""Offline sync""
+               Description=""Not available on the free plan."" />
+</div>
+
+
+<div class=""card-panel"">
+    <BitToggle Variant=""BitVariant.Fill"" Inline FullWidth LabelPlacement=""BitPlacement.Start"" DefaultValue=""true""
+               Label=""Daily summary""
+               Description=""One email every morning."" />
+    <BitToggle Variant=""BitVariant.Fill"" Inline FullWidth LabelPlacement=""BitPlacement.Start""
+               Label=""Weekly report""
+               Description=""Every Monday, with the numbers of the week before."" />
+    <BitToggle Variant=""BitVariant.Fill"" Inline FullWidth LabelPlacement=""BitPlacement.Start"" Color=""BitColor.Success"" DefaultValue=""true""
+               Label=""Security alerts""
+               Description=""Sign-ins from a new device."" />
+</div>";
+
+    private readonly string example15RazorCode = @"
 <BitToggle Color=""BitColor.Primary"" Label=""Primary"" Value />
 <BitToggle Color=""BitColor.Secondary"" Label=""Secondary"" Value />
 <BitToggle Color=""BitColor.Tertiary"" Label=""Tertiary"" Value />
@@ -403,7 +440,7 @@ private readonly BitToggleParams[] toggleParams =
 <BitToggle Color=""BitColor.Warning"" Label=""Warning"" />
 <BitToggle Color=""BitColor.Error"" Label=""Error"" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitToggle Label=""Check / Xmark (string)"" OnIcon=""@(""fa-solid fa-check"")"" OffIcon=""@(""fa-solid fa-xmark"")"" />
@@ -421,7 +458,7 @@ private readonly BitToggleParams[] toggleParams =
 <BitToggle Label=""Bell (BitIconInfo.Bi)"" Color=""BitColor.Success""
            OnIcon=""@BitIconInfo.Bi(""bell-fill"")"" OffIcon=""@BitIconInfo.Bi(""bell-slash"")"" />";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitToggle Size=""BitSize.Small"" Label=""Off"" />
 <BitToggle Size=""BitSize.Small"" Label=""On"" Value />
 <BitToggle Size=""BitSize.Small"" Label=""With icons"" Value OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" />
@@ -434,7 +471,7 @@ private readonly BitToggleParams[] toggleParams =
 <BitToggle Size=""BitSize.Large"" Label=""On"" Value />
 <BitToggle Size=""BitSize.Large"" Label=""With icons"" Value OnIconName=""@BitIconName.Accept"" OffIconName=""@BitIconName.Cancel"" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -521,7 +558,7 @@ private readonly BitToggleParams[] toggleParams =
     <BitToggle Label=""Airplane mode"" />
 </div>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitToggle Label=""این یک تاگل است"" Dir=""BitDir.Rtl"" OnText=""روشن"" OffText=""خاموش"" />
 
 <BitToggle Label=""این یک تاگل خطی است"" Dir=""BitDir.Rtl"" Inline />
