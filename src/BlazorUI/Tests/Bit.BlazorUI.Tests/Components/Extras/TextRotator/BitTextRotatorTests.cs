@@ -393,11 +393,11 @@ public class BitTextRotatorTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-trt").ClassList.Contains("bit-trt-blk"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Element, "div"));
+        component.Render(parameters => parameters.Add(p => p.Element, "div"));
 
         Assert.IsTrue(component.Find(".bit-trt").ClassList.Contains("bit-trt-blk"));
 
-        component.SetParametersAndRender(parameters => parameters.Add(p => p.Element, "span"));
+        component.Render(parameters => parameters.Add(p => p.Element, "span"));
 
         Assert.IsFalse(component.Find(".bit-trt").ClassList.Contains("bit-trt-blk"));
     }
