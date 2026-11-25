@@ -91,8 +91,10 @@ $bit-txt-headings: h1, h2, h3, h4, h5, h6;
 // A variant here declares everything its plain class does, and the family too - a heading switched to a body variant
 // at some width has to leave the heading family behind - so nothing of a narrower look shows through. The display and
 // the case are the two only some variants declare (the button, the overline, the inherit one); a variant without one
-// of them takes it back to the element's own only where a narrower variant of the same text declared it, and leaves a
-// value the page gives the element alone everywhere else.
+// of them resets it only where a narrower variant of the same text declared it, and leaves it alone everywhere else.
+// The reset is a `revert`, which goes back to the browser's default for the element: a rule of the page's own that set
+// the same property on the element is dropped with the narrower variant's value, unless it outweighs the one class of
+// the reset (`.toolbar > span` does, `nav span` does not), in which case it wins at every width anyway.
 //
 // These come right after the plain variants and before the classes of every parameter that refines a look (Weight,
 // Transform, Monospace, Gutter, Block, LineClamp, VisuallyHidden): a media query adds no weight, so with one class

@@ -162,6 +162,23 @@ public class BitTextParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTextShouldNotApplyTheCascadedBreakpointTypographiesOverItsOwnTypography()
+    {
+        var component = RenderWithParams(new BitTextParams
+        {
+            TypographyXs = BitTypography.Body2,
+            TypographyMd = BitTypography.Body1,
+            TypographyXxl = BitTypography.Caption1,
+        }, builder => builder.AddAttribute(1, nameof(BitText.Typography), (BitTypography?)BitTypography.H1));
+
+        var root = component.Find(".bit-txt");
+
+        // The text picked its own look, so no cascaded breakpoint variant replaces it at any width.
+        Assert.AreEqual("H1", root.TagName);
+        CollectionAssert.AreEquivalent(new[] { "bit-txt", "bit-txt-h1" }, root.ClassList.ToArray());
+    }
+
+    [TestMethod]
     public void BitTextShouldApplyTheCascadedInlineStyles()
     {
         var component = RenderWithParams(new BitTextParams

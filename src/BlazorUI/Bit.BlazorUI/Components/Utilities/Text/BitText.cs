@@ -413,7 +413,8 @@ public partial class BitText : BitComponentBase
     /// <see cref="TypographyXxl"/> each draw the text as another variant from their own breakpoint upwards, so a
     /// heading can grow with the window without a media query of the page's own. Those only change the looks - the
     /// tag is always the one decided here, since the outline of a document must not change with the width of the
-    /// window it is read in.
+    /// window it is read in. A text that sets this itself takes none of them from a <see cref="BitParams"/> around it:
+    /// a cascaded per-breakpoint variant would otherwise replace the look it asked for.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitTypography? Typography { get; set; }
@@ -425,7 +426,7 @@ public partial class BitText : BitComponentBase
     /// The variant keeps applying to every wider breakpoint until another one replaces it. It only changes how the
     /// text is drawn: the tag stays the one <see cref="Typography"/> decides.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
     public BitTypography? TypographyLg { get; set; }
 
     /// <summary>
@@ -435,7 +436,7 @@ public partial class BitText : BitComponentBase
     /// The variant keeps applying to every wider breakpoint until another one replaces it. It only changes how the
     /// text is drawn: the tag stays the one <see cref="Typography"/> decides.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
     public BitTypography? TypographyMd { get; set; }
 
     /// <summary>
@@ -445,7 +446,7 @@ public partial class BitText : BitComponentBase
     /// The variant keeps applying to every wider breakpoint until another one replaces it. It only changes how the
     /// text is drawn: the tag stays the one <see cref="Typography"/> decides.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
     public BitTypography? TypographySm { get; set; }
 
     /// <summary>
@@ -455,7 +456,7 @@ public partial class BitText : BitComponentBase
     /// The variant keeps applying to every wider breakpoint until another one replaces it. It only changes how the
     /// text is drawn: the tag stays the one <see cref="Typography"/> decides.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
     public BitTypography? TypographyXl { get; set; }
 
     /// <summary>
@@ -467,7 +468,7 @@ public partial class BitText : BitComponentBase
     /// <see cref="Typography"/> decides, which makes it the same as writing that look as <see cref="Typography"/> and
     /// that tag as <see cref="Element"/>.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
     public BitTypography? TypographyXs { get; set; }
 
     /// <summary>
@@ -476,7 +477,7 @@ public partial class BitText : BitComponentBase
     /// <remarks>
     /// It only changes how the text is drawn: the tag stays the one <see cref="Typography"/> decides.
     /// </remarks>
-    [Parameter, ResetClassBuilder]
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
     public BitTypography? TypographyXxl { get; set; }
 
     /// <summary>
