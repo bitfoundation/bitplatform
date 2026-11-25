@@ -663,6 +663,35 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
 ];";
 
     private readonly string example22RazorCode = @"
+<BitChoiceGroup Label=""Two columns"" DefaultValue=""@(""A"")"" Columns=""2"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
+    <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
+    <BitChoiceGroupOption Text=""Option C"" Value=""@(""C"")"" />
+    <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""Three columns of Outline cards, full width""
+                Variant=""BitVariant.Outline""
+                DefaultValue=""@(""Daily"")""
+                Columns=""3""
+                FullWidth
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Daily"" Value=""@(""Daily"")"" Description=""Backs up every night at 2 AM."" />
+    <BitChoiceGroupOption Text=""Weekly"" Value=""@(""Weekly"")"" Description=""Backs up every Sunday at 2 AM."" />
+    <BitChoiceGroupOption Text=""Monthly"" Value=""@(""Monthly"")"" Description=""Backs up on the first day of each month."" />
+</BitChoiceGroup>
+
+<BitChoiceGroup Label=""As many columns of at least 14rem as fit""
+                Variant=""BitVariant.Outline""
+                DefaultValue=""@(""Daily"")""
+                MinItemWidth=""14rem""
+                TItem=""BitChoiceGroupOption<string>"" TValue=""string"">
+    <BitChoiceGroupOption Text=""Daily"" Value=""@(""Daily"")"" Description=""Backs up every night at 2 AM."" />
+    <BitChoiceGroupOption Text=""Weekly"" Value=""@(""Weekly"")"" Description=""Backs up every Sunday at 2 AM."" />
+    <BitChoiceGroupOption Text=""Monthly"" Value=""@(""Monthly"")"" Description=""Backs up on the first day of each month."" />
+</BitChoiceGroup>";
+
+    private readonly string example23RazorCode = @"
 <BitChoiceGroup Color=""BitColor.Primary"" Label=""Primary"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -905,7 +934,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
     <BitChoiceGroupOption Text=""Option D"" Value=""@(""D"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -927,7 +956,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" Icon=""@BitIconInfo.Bi(""calendar-month"")"" />
 </BitChoiceGroup>";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <BitChoiceGroup Size=""BitSize.Small"" Label=""Small"" DefaultValue=""@(""B"")"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" Horizontal>
     <BitChoiceGroupOption Text=""Option A"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""Option B"" Value=""@(""B"")"" />
@@ -1009,7 +1038,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
     <BitChoiceGroupOption Text=""Month"" Value=""@(""Month"")"" IconName=""@BitIconName.Calendar"" IsDisabled />
 </BitChoiceGroup>";
 
-    private readonly string example25RazorCode = @"
+    private readonly string example26RazorCode = @"
 <style>
     .custom-class {
         color: dodgerblue;
@@ -1141,7 +1170,7 @@ private readonly BitChoiceGroupParams[] choiceGroupParams =
     </BitChoiceGroup>
 </div>";
 
-    private readonly string example26RazorCode = @"
+    private readonly string example27RazorCode = @"
 <BitChoiceGroup Label=""ساده"" TItem=""BitChoiceGroupOption<string>"" TValue=""string"" DefaultValue=""@(""A"")"" Dir=""BitDir.Rtl"">
     <BitChoiceGroupOption Text=""گزینه آ"" Value=""@(""A"")"" />
     <BitChoiceGroupOption Text=""گزینه ب"" Value=""@(""B"")"" />

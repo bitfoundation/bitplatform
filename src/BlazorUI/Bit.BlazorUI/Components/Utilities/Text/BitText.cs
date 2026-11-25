@@ -16,7 +16,9 @@ namespace Bit.BlazorUI;
 /// the text is drawn and, on its own, which tag it is drawn in; <see cref="Element"/> overrides that tag, so a run of
 /// text can be an "h2" that reads like an "h4", or a "span" that reads like a heading, without a page having to choose
 /// between the outline a screen reader navigates and the size a design asks for. <see cref="AriaLevel"/> is the third
-/// of those axes, for the places where neither the tag nor the look is free to move.
+/// of those axes, for the places where neither the tag nor the look is free to move. The look can also change with the
+/// width of the window - <see cref="TypographyXs"/> to <see cref="TypographyXxl"/> each take over from their own
+/// breakpoint upwards - while the tag stays the one <see cref="Typography"/> decides at every width.
 /// <br />
 /// Everything else the component offers is a property of a run of text rather than of a step of the ramp, so each one
 /// is a parameter of its own that composes with any variant: the weight, the case, the emphasis of the
@@ -133,6 +135,25 @@ public partial class BitText : BitComponentBase
     /// where <see cref="Element"/> names it.
     /// </remarks>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Renders the text as inline code: a "code" element in the theme's monospaced family, on a chip of its own.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// This is the fragment of code inside a sentence - a command, a file name, an identifier - and it is the one
+    /// parameter that is a meaning as well as a look, since a chip of code with no "code" under it says nothing of the
+    /// kind to a screen reader. So it renders a "code" element unless <see cref="Element"/> names another one (a "kbd",
+    /// a "samp"), and with no <see cref="Typography"/> of its own it takes the type of the text around it
+    /// (<see cref="BitTypography.Inherit"/>) at a smaller size, since a monospaced face set at the size of the
+    /// proportional one beside it looks the larger of the two.
+    /// <br />
+    /// <see cref="Monospace"/> is the look without the chip, for a whole block of identifiers or figures. A block of
+    /// code of several lines belongs in a <see cref="BitCodeBlock"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Code { get; set; }
 
     /// <summary>
     /// The general color of the text.
@@ -406,9 +427,77 @@ public partial class BitText : BitComponentBase
     /// colors, the wrapping and the rest of the parameters of the component. It renders a "p", a block of its own; a
     /// run of text inside a sentence, a heading or a label sets <see cref="Element"/> to "span", the one tag the HTML
     /// parser lets sit inside a paragraph.
+    /// <br />
+    /// This is also the variant of every width that no per-breakpoint variant replaces: <see cref="TypographyXs"/> to
+    /// <see cref="TypographyXxl"/> each draw the text as another variant from their own breakpoint upwards, so a
+    /// heading can grow with the window without a media query of the page's own. Those only change the looks - the
+    /// tag is always the one decided here, since the outline of a document must not change with the width of the
+    /// window it is read in. A text that sets this itself takes none of them from a <see cref="BitParams"/> around it:
+    /// a cascaded per-breakpoint variant would otherwise replace the look it asked for.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitTypography? Typography { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The variant keeps applying to every wider breakpoint until another one replaces it. It only changes how the
+    /// text is drawn: the tag stays the one <see cref="Typography"/> decides.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
+    public BitTypography? TypographyLg { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The variant keeps applying to every wider breakpoint until another one replaces it. It only changes how the
+    /// text is drawn: the tag stays the one <see cref="Typography"/> decides.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
+    public BitTypography? TypographyMd { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The variant keeps applying to every wider breakpoint until another one replaces it. It only changes how the
+    /// text is drawn: the tag stays the one <see cref="Typography"/> decides.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
+    public BitTypography? TypographySm { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The variant keeps applying to every wider breakpoint until another one replaces it. It only changes how the
+    /// text is drawn: the tag stays the one <see cref="Typography"/> decides.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
+    public BitTypography? TypographyXl { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// The variant keeps applying to every wider breakpoint until another one replaces it. Starting at no width at
+    /// all, it replaces the looks of <see cref="Typography"/> everywhere while leaving the tag the one
+    /// <see cref="Typography"/> decides, which makes it the same as writing that look as <see cref="Typography"/> and
+    /// that tag as <see cref="Element"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
+    public BitTypography? TypographyXs { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    /// <remarks>
+    /// It only changes how the text is drawn: the tag stays the one <see cref="Typography"/> decides.
+    /// </remarks>
+    [Parameter, ResetClassBuilder, Outranks(nameof(Typography))]
+    public BitTypography? TypographyXxl { get; set; }
 
     /// <summary>
     /// Underlines the text.
@@ -469,11 +558,24 @@ public partial class BitText : BitComponentBase
 
 
 
+    // The variant drawn when none is set: a run of inline code takes the type of the text around it, any other text the
+    // default variant.
+    private BitTypography EffectiveTypography => Typography ?? (Code ? BitTypography.Inherit : BitTypography.Subtitle1);
+
+
+
     protected override string RootElementClass => "bit-txt";
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => $"bit-txt-{(Typography ?? BitTypography.Subtitle1).ToString().ToLower(CultureInfo.InvariantCulture)}")
+        // The extra small variant applies from no width at all, so it is drawn through the plain variant class and needs
+        // no media query of its own; every wider one is a class the stylesheet only applies from its breakpoint up.
+        ClassBuilder.Register(() => $"bit-txt-{GetVariantName(TypographyXs ?? EffectiveTypography)}")
+                    .Register(() => GetBreakpointClass("sm", TypographySm))
+                    .Register(() => GetBreakpointClass("md", TypographyMd))
+                    .Register(() => GetBreakpointClass("lg", TypographyLg))
+                    .Register(() => GetBreakpointClass("xl", TypographyXl))
+                    .Register(() => GetBreakpointClass("xxl", TypographyXxl))
                     .Register(() => NoWrap ? "bit-txt-nowrap" : string.Empty)
                     .Register(() => Gutter ? "bit-txt-gutter" : string.Empty);
 
@@ -537,6 +639,7 @@ public partial class BitText : BitComponentBase
                     .Register(() => Strikethrough ? "bit-txt-stk" : string.Empty)
                     .Register(() => Numeric ? "bit-txt-num" : string.Empty)
                     .Register(() => Monospace ? "bit-txt-mno" : string.Empty)
+                    .Register(() => Code ? "bit-txt-cod" : string.Empty)
                     .Register(() => Hyphenate ? "bit-txt-hyp" : string.Empty)
                     .Register(() => BreakWord ? "bit-txt-brw" : string.Empty)
                     .Register(() => PreserveWhitespace ? "bit-txt-pws" : string.Empty)
@@ -590,7 +693,8 @@ public partial class BitText : BitComponentBase
         var element = Element?.Trim();
         if (element.HasNoValue() || IsValidElement(element!) is false)
         {
-            element = GetVariantElement(Typography ?? BitTypography.Subtitle1);
+            // Inline code is a "code" element whatever the variant it is drawn in, since that is what says it is code.
+            element = Code ? "code" : GetVariantElement(EffectiveTypography);
         }
 
         var isHeading = _headingElements.Contains(element!);
@@ -643,6 +747,13 @@ public partial class BitText : BitComponentBase
     private static string GetVariantElement(BitTypography typography)
     {
         return _VariantMapping.TryGetValue(typography, out var element) ? element : "div";
+    }
+
+    private static string GetVariantName(BitTypography typography) => typography.ToString().ToLower(CultureInfo.InvariantCulture);
+
+    private static string GetBreakpointClass(string breakpoint, BitTypography? typography)
+    {
+        return typography.HasValue ? $"bit-txt-{breakpoint}-{GetVariantName(typography.Value)}" : string.Empty;
     }
 
 

@@ -113,6 +113,10 @@ $acb-private-properties: clr-ico, clr-fg, clr-hover, clr-active, clr-focus, clr-
 }
 
 .bit-acb-inn {
+    // The containing block of the visually hidden .bit-acb-icn inside it, which is absolutely positioned: held
+    // here, its pixel stays inside the button instead of adding to the scrollable overflow of a positioned
+    // ancestor outside it.
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: var(--bit-ActionButton-gap, #{spacing(1)});
@@ -120,12 +124,41 @@ $acb-private-properties: clr-ico, clr-fg, clr-hover, clr-active, clr-focus, clr-
 
 // The hover/active/disabled states retarget --bit-acb-ico on the button, which changes the
 // computed color here, so the transition has to sit on the icon to animate along with the label.
-.bit-acb-ico {
+// The box an IconTemplate is drawn in is painted and sized the same way: its font size is the icon size, so markup
+// sized in em - an inline svg of 1em, a glyph of another icon font - comes out exactly as big as the icon it stands
+// in for, while markup with a size of its own keeps it; and an svg reaches the icon color through currentColor.
+.bit-acb-ico,
+.bit-acb-ict {
     line-height: 1;
     flex-shrink: 0;
     color: var(--bit-acb-ico);
     font-size: var(--bit-acb-ico-size, var(--bit-ActionButton-icon-size, #{$siz-icon-md}));
     transition: color $mot-duration-short $mot-easing;
+}
+
+.bit-acb-ict {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// An inline svg given no size of its own would be drawn at the 300x150 a browser defaults it to, so it takes the icon's
+// square instead - anywhere in the template, inside the wrapper an icon component renders around it included (an svg
+// nested in another svg is left to fill its parent). A side given as an attribute is kept: the other follows it through
+// the viewBox when there is one, and is the icon size when there is none, where the browser would make it 150px.
+// The selectors are inside :where(), which weighs nothing, so any rule of the app's that sizes the svg wins - a class of
+// its own, and just as well a plain svg rule of a reset, which sizes these the way it sizes every other svg of the page.
+:where(.bit-acb-ict svg:not([width]):not([height]):not(svg svg)) {
+    width: 1em;
+    height: 1em;
+}
+
+:where(.bit-acb-ict svg[width]:not([height]):not([viewBox]):not(svg svg)) {
+    height: 1em;
+}
+
+:where(.bit-acb-ict svg[height]:not([width]):not([viewBox]):not(svg svg)) {
+    width: 1em;
 }
 
 .bit-acb-icu {
@@ -148,11 +181,13 @@ $acb-private-properties: clr-ico, clr-fg, clr-hover, clr-active, clr-focus, clr-
     flex-grow: 1;
 }
 
-// The two pieces of text the button carries for a screen reader and for nobody else: the live region that
-// announces the loading label, and the description it is pointed at through aria-describedby. Both are taken
-// out of the flow rather than hidden, since display:none is also hidden from the readers they are written for.
+// The pieces the button carries for a screen reader and for nobody else: the live region that announces the
+// loading label, the description it is pointed at through aria-describedby, and an IconTemplate that names the
+// button kept while the spinner holds its slot. All are taken out of the flow rather than hidden, since
+// display:none is also hidden from the readers they are written for.
 .bit-acb-sts,
-.bit-acb-dsc {
+.bit-acb-dsc,
+.bit-acb-icn {
     @include visually-hidden;
 }
 

@@ -101,11 +101,13 @@ public class BelemetryComponentsTests
         module.SetupVoid("start", _ => true).SetVoidResult();
         // The attach options are a JsonDocument the bridge disposes once the call is made, so read them in the matcher.
         string? attachOptions = null;
-        module.SetupVoid("attachDotNet", invocation =>
+        module.Setup<int>("attachDotNet", invocation =>
         {
             attachOptions = ((JsonElement)invocation.Arguments[1]!).GetRawText();
             return true;
-        }).SetVoidResult();
+        }).SetResult(1);
+        // The bridge takes its callbacks off the page as the context disposes it.
+        module.SetupVoid("detachDotNet", invocation => Equals(invocation.Arguments.Single(), 1)).SetVoidResult();
         using var contextJson = JsonDocument.Parse("""{"consent":3,"decided":true,"sessionId":"s-1","pseudoId":null,"userId":null}""");
         module.Setup<JsonElement>("getContext").SetResult(contextJson.RootElement.Clone());
         var ready = 0;
@@ -146,11 +148,11 @@ public class BelemetryComponentsTests
         context.JSInterop.Mode = JSRuntimeMode.Loose;
         var module = context.JSInterop.SetupModule(ModulePath);
         string? attachOptions = null;
-        module.SetupVoid("attachDotNet", invocation =>
+        module.Setup<int>("attachDotNet", invocation =>
         {
             attachOptions = ((JsonElement)invocation.Arguments[1]!).GetRawText();
             return true;
-        }).SetVoidResult();
+        }).SetResult(1);
 
         context.Render<BelemetryInitializer>();
 

@@ -6,22 +6,22 @@
     export class ResourceTimeline {
         private static _instances = new Map<string, ResourceTimelineInstance>();
 
-        public static setup(id: string, viewport: HTMLElement, dotnetObj: DotNetObject, options: any, texts: any, disabled: boolean) {
+        public static setup(id: string, viewport: HTMLElement, dotnetObj: DotNetObject, options: any, strings: any, disabled: boolean) {
             ResourceTimeline.dispose(id);
 
             if (!viewport) return null;
 
-            const instance = new ResourceTimelineInstance(viewport, dotnetObj, options, texts, disabled);
+            const instance = new ResourceTimelineInstance(viewport, dotnetObj, options, strings, disabled);
             ResourceTimeline._instances.set(id, instance);
 
             return instance.engine.getLayout();
         }
 
-        public static setOptions(id: string, options: any, texts: any, disabled: boolean) {
+        public static setOptions(id: string, options: any, strings: any, disabled: boolean) {
             const instance = ResourceTimeline._instances.get(id);
             if (!instance) return null;
 
-            instance.setOptions(options, texts, disabled);
+            instance.setOptions(options, strings, disabled);
 
             return instance.engine.getLayout();
         }
@@ -247,9 +247,9 @@
     // computes them, so a variable that resolves to none is recognized by its value coming back as one of them.
     const UNRESOLVED_COLORS = ['rgb(1, 2, 3)', 'rgb(3, 2, 1)'];
 
-    // The texts of the component that only its markup uses (BitResourceTimelineTexts), left out of the ones handed to
-    // the engine, which warns about a text it does not know.
-    const MARKUP_TEXTS = ['ariaLabel', 'roleDescription', 'loading', 'expandGroupFormat', 'collapseGroupFormat'];
+    // The strings of the component that only its markup uses (BitResourceTimelineStrings), left out of the ones handed
+    // to the engine, which warns about a string it does not know.
+    const MARKUP_STRINGS = ['ariaLabel', 'roleDescription', 'loading', 'expandGroupFormat', 'collapseGroupFormat'];
 
     // The attributes of the root and its ancestors a theme is switched through: a class or an inline style carrying
     // variables, the bit-theme scope (and the bit-theme-overlay of an inline theme), the theme-scoping data-*theme /
@@ -271,7 +271,7 @@
         private _onThemeChange: () => void;
         private _onStyleLoad: (e: Event) => void;
 
-        constructor(viewport: HTMLElement, dotnetObj: DotNetObject, options: any, texts: any, disabled: boolean) {
+        constructor(viewport: HTMLElement, dotnetObj: DotNetObject, options: any, strings: any, disabled: boolean) {
             this._root = viewport.parentElement || viewport;
 
             const registry: ResourceTimelineRendererRegistry = {
@@ -280,7 +280,7 @@
                 html: ResourceTimelineHtmlRenderer
             };
 
-            this.engine = new ResourceTimelineEngine(viewport, dotnetObj, ResourceTimelineInstance.engineOptions(options, texts, disabled), registry);
+            this.engine = new ResourceTimelineEngine(viewport, dotnetObj, ResourceTimelineInstance.engineOptions(options, strings, disabled), registry);
 
             this._onThemeChange = () => this.scheduleThemeCheck();
             this._onStyleLoad = (e: Event) => {
@@ -293,8 +293,8 @@
             this.watchTheme();
         }
 
-        public setOptions(options: any, texts: any, disabled: boolean) {
-            this.engine.setOptions(ResourceTimelineInstance.engineOptions(options, texts, disabled));
+        public setOptions(options: any, strings: any, disabled: boolean) {
+            this.engine.setOptions(ResourceTimelineInstance.engineOptions(options, strings, disabled));
 
             // A root taken out of the page and put back in a later task was not seen arriving (see watchTheme): the
             // ancestors it has now are watched from here on.
@@ -333,19 +333,19 @@
             this.engine.dispose();
         }
 
-        // The options as the engine takes them: the Options of the component, its texts (less the ones its markup uses)
-        // and its disabled state, in one object.
-        private static engineOptions(options: any, texts: any, disabled: boolean) {
+        // The options as the engine takes them: the Options of the component, its strings (less the ones its markup
+        // uses) and its disabled state, in one object.
+        private static engineOptions(options: any, strings: any, disabled: boolean) {
             const result: any = { ...(options || {}) };
 
-            if (texts) {
-                const engineTexts: any = {};
-                for (const key of Object.keys(texts)) {
-                    if (MARKUP_TEXTS.indexOf(key) < 0) {
-                        engineTexts[key] = texts[key];
+            if (strings) {
+                const engineStrings: any = {};
+                for (const key of Object.keys(strings)) {
+                    if (MARKUP_STRINGS.indexOf(key) < 0) {
+                        engineStrings[key] = strings[key];
                     }
                 }
-                result.texts = engineTexts;
+                result.strings = engineStrings;
             }
 
             result.disabled = !!disabled;

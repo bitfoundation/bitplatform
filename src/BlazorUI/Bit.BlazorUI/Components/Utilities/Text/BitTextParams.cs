@@ -51,6 +51,11 @@ public partial class BitTextParams : BitComponentBaseParams, IBitComponentParams
     public bool? BreakWord { get; set; }
 
     /// <summary>
+    /// Renders the text as inline code: a "code" element in the theme's monospaced family, on a chip of its own.
+    /// </summary>
+    public bool? Code { get; set; }
+
+    /// <summary>
     /// The general color of the text.
     /// </summary>
     public BitColor? Color { get; set; }
@@ -146,6 +151,36 @@ public partial class BitTextParams : BitComponentBaseParams, IBitComponentParams
     public BitTypography? Typography { get; set; }
 
     /// <summary>
+    /// The typography of the text from the extra small breakpoint (from 0px) upwards.
+    /// </summary>
+    public BitTypography? TypographyXs { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the small breakpoint (from 600px) upwards.
+    /// </summary>
+    public BitTypography? TypographySm { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the medium breakpoint (from 960px) upwards.
+    /// </summary>
+    public BitTypography? TypographyMd { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the large breakpoint (from 1280px) upwards.
+    /// </summary>
+    public BitTypography? TypographyLg { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the extra large breakpoint (from 1920px) upwards.
+    /// </summary>
+    public BitTypography? TypographyXl { get; set; }
+
+    /// <summary>
+    /// The typography of the text from the extra extra large breakpoint (from 2560px) upwards.
+    /// </summary>
+    public BitTypography? TypographyXxl { get; set; }
+
+    /// <summary>
     /// Underlines the text.
     /// </summary>
     public bool? Underline { get; set; }
@@ -202,6 +237,11 @@ public partial class BitTextParams : BitComponentBaseParams, IBitComponentParams
         if (BreakWord.HasValue)
         {
             bitText.TakeFromCascade(nameof(BreakWord), BreakWord.Value, static t => t.BreakWord, static (t, v) => t.BreakWord = v);
+        }
+
+        if (Code.HasValue)
+        {
+            bitText.TakeFromCascade(nameof(Code), Code.Value, static t => t.Code, static (t, v) => t.Code = v);
         }
 
         if (Color.HasValue)
@@ -297,6 +337,36 @@ public partial class BitTextParams : BitComponentBaseParams, IBitComponentParams
         if (Typography.HasValue)
         {
             bitText.TakeFromCascade(nameof(Typography), Typography.Value, static t => t.Typography, static (t, v) => t.Typography = v);
+        }
+
+        if (TypographyXs.HasValue)
+        {
+            bitText.TakeFromCascade(nameof(TypographyXs), TypographyXs.Value, static t => t.TypographyXs, static (t, v) => t.TypographyXs = v);
+        }
+
+        if (TypographySm.HasValue)
+        {
+            bitText.TakeFromCascade(nameof(TypographySm), TypographySm.Value, static t => t.TypographySm, static (t, v) => t.TypographySm = v);
+        }
+
+        if (TypographyMd.HasValue)
+        {
+            bitText.TakeFromCascade(nameof(TypographyMd), TypographyMd.Value, static t => t.TypographyMd, static (t, v) => t.TypographyMd = v);
+        }
+
+        if (TypographyLg.HasValue)
+        {
+            bitText.TakeFromCascade(nameof(TypographyLg), TypographyLg.Value, static t => t.TypographyLg, static (t, v) => t.TypographyLg = v);
+        }
+
+        if (TypographyXl.HasValue)
+        {
+            bitText.TakeFromCascade(nameof(TypographyXl), TypographyXl.Value, static t => t.TypographyXl, static (t, v) => t.TypographyXl = v);
+        }
+
+        if (TypographyXxl.HasValue)
+        {
+            bitText.TakeFromCascade(nameof(TypographyXxl), TypographyXxl.Value, static t => t.TypographyXxl, static (t, v) => t.TypographyXxl = v);
         }
 
         if (Underline.HasValue)

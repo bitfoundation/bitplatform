@@ -25,7 +25,7 @@ public sealed class BitMarkdownTaskCheckboxNode : BitMarkdownNode
     /// <summary>
     /// The text of the item the box opens, which the viewer reads off the finished tree and an
     /// interactive box is named after - so a screen reader announces "Write the tests, checkbox"
-    /// rather than a number. <c>null</c> (or empty) falls back to <see cref="BitMarkdownTexts.Task"/>.
+    /// rather than a number. <c>null</c> (or empty) falls back to <see cref="BitMarkdownStrings.Task"/>.
     /// </summary>
     public string? Label { get; set; }
 

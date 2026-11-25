@@ -32,6 +32,15 @@
     border: 1px solid $bit-color-border-secondary;
 }
 
+// A column of cards, which FullWidth stretches into.
+.card-panel {
+    gap: 0.5rem;
+    width: 24rem;
+    display: flex;
+    max-width: 100%;
+    flex-direction: column;
+}
+
 .clickable-box {
     padding: 1rem;
     cursor: pointer;

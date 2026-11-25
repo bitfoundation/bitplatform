@@ -75,8 +75,10 @@
         y: number;
         align: 'left' | 'center' | 'right';
         baseline: 'top' | 'middle' | 'bottom';
-        /** A section's text carries its own color; the other labels are colors.barLabel. */
+        /** A section's text, or a bar text given one, carries its own color; the other labels are colors.barLabel. */
         color?: string | null;
+        /** A bar text given one carries its own CSS font; the other labels are barLabelFont. */
+        font?: string | null;
     }
 
     /** An icon image of a bar, its box already fitted to the image's aspect ratio. */
@@ -570,10 +572,11 @@
         private _drawBars(scene: ResourceTimelineScene): void {
             const ctx = this.ctx;
             const c = scene.config;
-            // Assigning ctx.font re-parses the font string, so it is set once for
-            // the whole pass rather than per labelled bar. fillStyle cannot be
-            // hoisted the same way - each bar's fill overwrites it.
-            let fontSet = false;
+            // Assigning ctx.font re-parses the font string, so it is set only when
+            // a label needs another one than the last, not per labelled bar (most
+            // labels are in barLabelFont). fillStyle cannot be hoisted the same
+            // way - each bar's fill overwrites it.
+            let font: string | null = null;
 
             for (const bar of scene.bars) {
                 if (bar.edges) {
@@ -629,12 +632,13 @@
                 }
 
                 if (bar.labels) {
-                    if (!fontSet) {
-                        ctx.font = c.barLabelFont;
-                        fontSet = true;
-                    }
                     for (const label of bar.labels) {
-                        // Section text carries its own color; other labels do not.
+                        const labelFont = label.font || c.barLabelFont;
+                        if (labelFont !== font) {
+                            ctx.font = labelFont;
+                            font = labelFont;
+                        }
+                        // Section text and styled bar texts carry their own color.
                         ctx.fillStyle = label.color || c.colors.barLabel;
                         ctx.textAlign = label.align;
                         ctx.textBaseline = label.baseline;

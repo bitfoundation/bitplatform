@@ -175,7 +175,7 @@ public class BitFullCalendarSettings
     /// <summary>
     /// Allows two events on the same resource to occupy the same time range. When <c>false</c>, a
     /// drag, resize, or dialog save that would create an overlap is refused and the calendar shows
-    /// the <see cref="BitFullCalendarTexts.EventOverlapMessage"/> notice instead.
+    /// the <see cref="BitFullCalendarStrings.EventOverlapMessage"/> notice instead.
     /// </summary>
     public bool AllowEventOverlap { get; set; } = true;
 

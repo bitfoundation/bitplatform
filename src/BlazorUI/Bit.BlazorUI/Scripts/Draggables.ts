@@ -116,6 +116,9 @@
             // transform with the anchor's edges: left in place, it would carry the element half its size away from
             // where the pointer or the key put it - on the very first move - and past the edge the move is clamped to.
             // The fixed element's rect already includes the shift; offsetLeft/offsetTop do not.
+            // The rect also includes the element's translate property, which move() leaves in place since it is not
+            // part of the position (BitButton's hover lift moves the element by it while the pointer is over it), so
+            // it is taken back out: written into top/left, it would add the lift to the position on every move.
             function moveBy(deltaX: number, deltaY: number) {
                 const parent = element.offsetParent as HTMLElement | null;
 
@@ -125,8 +128,9 @@
                     move(element.offsetLeft + shift.x + deltaX, element.offsetTop + shift.y + deltaY, parent.clientWidth, parent.clientHeight);
                 } else {
                     const rect = element.getBoundingClientRect();
+                    const lift = ownTranslate();
 
-                    move(rect.left + deltaX, rect.top + deltaY, document.documentElement.clientWidth, document.documentElement.clientHeight);
+                    move(rect.left - lift.x + deltaX, rect.top - lift.y + deltaY, document.documentElement.clientWidth, document.documentElement.clientHeight);
                 }
             }
 
@@ -152,6 +156,27 @@
                 const matrix = new DOMMatrixReadOnly(transform);
 
                 return { x: matrix.m41, y: matrix.m42 };
+            }
+
+            // The element's computed translate property, in pixels - mid-transition too, since the computed value is
+            // the one drawn. Its two lengths are pixels or a percentage of the element's own box; a value that is
+            // neither (a calc() mixing the two) counts as no shift.
+            function ownTranslate() {
+                const value = getComputedStyle(element).getPropertyValue('translate');
+
+                if (!value || value === 'none') return { x: 0, y: 0 };
+
+                const [x, y] = value.trim().split(/\s+/);
+
+                return { x: toPixels(x, element.offsetWidth), y: toPixels(y, element.offsetHeight) };
+            }
+
+            function toPixels(length: string | undefined, size: number) {
+                if (!length || !/^-?[\d.]+(e[+-]?\d+)?(px|%)$/i.test(length)) return 0;
+
+                const value = parseFloat(length);
+
+                return length.endsWith('%') ? value * size / 100 : value;
             }
 
             // A box smaller than the element it holds has a negative maximum, which would otherwise clamp to

@@ -7,7 +7,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// What belongs here is what the timelines of an application agree on: their options (dimensions, fonts, colors, time
-/// zone, zoom limits, editing), their texts, how they stream their data and show its loading, and how they are styled.
+/// zone, zoom limits, editing), their strings, how they stream their data and show its loading, and how they are styled.
 /// The data, the windowed provider, the templates of one timeline's rows, tooltips and corner, and the events and
 /// callbacks are left out on purpose: they are what makes one timeline the one it is.
 /// </remarks>
@@ -62,14 +62,14 @@ public partial class BitResourceTimelineParams : BitComponentBaseParams, IBitCom
     public BitResourceTimelineOptions? Options { get; set; }
 
     /// <summary>
+    /// The strings of the timeline.
+    /// </summary>
+    public BitResourceTimelineStrings? Strings { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the resource timeline.
     /// </summary>
     public BitResourceTimelineClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// The texts of the timeline.
-    /// </summary>
-    public BitResourceTimelineTexts? Texts { get; set; }
 
 
 
@@ -115,14 +115,14 @@ public partial class BitResourceTimelineParams : BitComponentBaseParams, IBitCom
             bitResourceTimeline.TakeFromCascade(nameof(Options), Options, static t => t.Options, static (t, v) => t.Options = v);
         }
 
+        if (Strings is not null)
+        {
+            bitResourceTimeline.TakeFromCascade(nameof(Strings), Strings, static t => t.Strings, static (t, v) => t.Strings = v);
+        }
+
         if (Styles is not null)
         {
             bitResourceTimeline.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
-        }
-
-        if (Texts is not null)
-        {
-            bitResourceTimeline.TakeFromCascade(nameof(Texts), Texts, static t => t.Texts, static (t, v) => t.Texts = v);
         }
     }
 }

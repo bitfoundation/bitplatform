@@ -25,6 +25,7 @@ public partial class MainLayout
                 new() { Text = "Button", Url = "/components/button", AdditionalUrls = ["/components/compoundbutton", "/components/compound-button", "/components/iconbutton", "/components/icon-button"], Description = "CompoundButton, IconButton, LoadingButton", Data = "FAB, Floating Action Button, Submit" },
                 new() { Text = "ButtonGroup", Url = "/components/button-group", Description = "SegmentedControl, SegmentedButton, ToggleGroup" },
                 new() { Text = "MenuButton", Url = "/components/menubutton", AdditionalUrls = ["/components/menu-button"], Description = "DropdownButton, SplitButton, Menu" },
+                new() { Text = "ScrollToTop", Url = "/components/scrolltotop", AdditionalUrls = ["/components/scroll-to-top"], Description = "BackToTop, GoToTop", Data = "Scroll to top, Back to top, Go to top, Return to top, Top of page, Floating button" },
                 new() { Text = "ToggleButton", Url = "/components/togglebutton", AdditionalUrls = ["/components/toggle-button"] }
             ]
         },
@@ -69,6 +70,7 @@ public partial class MainLayout
             Text = "Layouts",
             ChildItems =
             [
+                new() { Text = "Container", Url = "/components/container", Data = "Max width, Centered column, Content width, Page width, Gutter, Wrapper, Section" },
                 new() { Text = "Footer", Url = "/components/footer" },
                 new() { Text = "Grid", Url = "/components/grid" },
                 new() { Text = "Header", Url = "/components/header", Description = "AppBar, TopBar" },
@@ -150,7 +152,9 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "CascadingValueProvider", Url = "/components/cascadingvalueprovider" },
+                new() { Text = "CodeBlock", Url = "/components/codeblock", AdditionalUrls = ["/components/code-block"], Description = "CodeSnippet, Snippet", Data = "Code, Pre, Copy to clipboard, Copy button, Terminal, Shell, Command, Console, Monospace" },
                 new() { Text = "Element", Url = "/components/element", Description = "DynamicElement, Slot", Data = "Tag, HtmlTag, Polymorphic, CustomElement, WebComponent, Wrapper" },
+                new() { Text = "Embed", Url = "/components/embed", Description = "Iframe, VideoEmbed, ResponsiveEmbed", Data = "YouTube, Vimeo, Video, Map, iframe, Aspect ratio, Responsive video, Click to load, Facade, Lazy" },
                 new() { Text = "FocusOnInvalidSubmit", Url = "/components/focusoninvalidsubmit", Description = "FocusFirstInvalid, ScrollToFirstError", Data = "EditForm, Validation, Submit, aria-invalid, Focus, Invalid field, Error" },
                 new() { Text = "Icon", Url = "/components/icon", Description = "Glyph, Symbol" },
                 new() { Text = "Image", Url = "/components/image", Description = "Img, Picture", Data = "Photo, Figure, Thumbnail, Lazy, Srcset, AspectRatio, Placeholder, Fallback" },
@@ -164,7 +168,7 @@ public partial class MainLayout
                 new() { Text = "Separator", Url = "/components/separator", Description = "Divider" },
                 new() { Text = "Sticky", Url = "/components/sticky", Description = "Affix", Data = "Pin, Pinned, Sticky header, Frozen header, Frozen column, position sticky, Stuck, Scroll padding" },
                 new() { Text = "SwipeTrap", Url = "/components/swipetrap", Description = "Gesture, Swipeable", Data = "Swipe, Drag, Pan, Flick, Touch, Pointer, SwipeArea, Hammer" },
-                new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase" },
+                new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase, Inline code" },
             ],
         },
         new()
@@ -177,6 +181,7 @@ public partial class MainLayout
                 new() { Text = "AvatarGroup", Url = "/components/avatargroup", Description = "Facepile, PersonaGroup, AvatarStack", Data = "Avatars, Team members, People, Collaborators, Participants, Overflow, +N, Presence", AdditionalUrls = ["/components/avatar-group"] },
                 new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
                 new() { Text = "ContextMenu", Url = "/components/contextmenu", Description = "RightClickMenu, PopupMenu, ShortcutMenu", Data = "Context menu, Right click, Right-click menu, Shift+F10, Menu key, Popup menu, Actions menu", AdditionalUrls = ["/components/context-menu"] },
+                new() { Text = "CopyButton", Url = "/components/copybutton", Description = "ClipboardButton, CopyToClipboardButton", Data = "Copy, Clipboard, Copy to clipboard, Copied, Code snippet, Share link, Install command", AdditionalUrls = ["/components/copy-button"] },
                 new() { Text = "CountryPicker", Url = "/components/countrypicker", Description = "CountrySelector, CountrySelect", Data = "Country, Nationality, Country of residence, Billing country, Flag, ISO code" },
                 new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"], Description = "DataTable, TreeGrid, TreeList" },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
@@ -199,6 +204,7 @@ public partial class MainLayout
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "ShinyText, Skeleton, Loading, AI" },
                 new() { Text = "TimeZonePicker", Url = "/components/timezonepicker", Description = "TimeZoneSelector, TimeZoneSelect, TzPicker", Data = "Time zone, Timezone, UTC offset, GMT offset, IANA, Olson, Windows time zone, TimeZoneInfo, Daylight saving time, DST, Detect time zone" },
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
+                new() { Text = "VirtualKeyboard", Url = "/components/virtualkeyboard", Description = "OnScreenKeyboard, TouchKeyboard, SoftKeyboard", Data = "Keyboard, On-screen keyboard, Touch keyboard, Soft keyboard, Kiosk, POS, Numpad, PIN pad, Dial pad, Persian keyboard, Arabic keyboard", AdditionalUrls = ["/components/virtual-keyboard"] },
             ]
         },
         // The components of the Bit.BlazorUI.AI package, under /components/ai/ like the Legacy ones under theirs, then

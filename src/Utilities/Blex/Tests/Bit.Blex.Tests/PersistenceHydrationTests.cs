@@ -4,6 +4,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Blex;
+using Microsoft.Extensions.Time.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Blex.Tests;
@@ -22,10 +23,13 @@ public class PersistenceHydrationTests
         /// <summary>When set, reads wait on it -- storage that is slow to answer.</summary>
         public TaskCompletionSource? ReadGate { get; set; }
 
+        /// <summary>When set, a read waiting on <see cref="ReadGate"/> gives up once its token is cancelled, as JS interop does.</summary>
+        public bool ReadHonorsCancellation { get; set; }
+
         public async ValueTask<string?> GetAsync(string key, CancellationToken cancellationToken = default)
         {
             if (ReadGate is { } gate)
-                await gate.Task;
+                await (ReadHonorsCancellation ? gate.Task.WaitAsync(cancellationToken) : gate.Task);
 
             return Data.TryGetValue(key, out var v) ? v : null;
         }
@@ -223,7 +227,7 @@ public class PersistenceHydrationTests
         storage.ReadGate = read;
         var start = persistor.StartAsync();
 
-        // Disposal waits for the read under way, and for whatever save it releases.
+        // A read that does not give up when cancelled: disposal waits for it, and for whatever save it releases.
         var disposing = persistor.DisposeAsync().AsTask();
         Assert.IsFalse(disposing.IsCompleted, "Disposal returned while storage was still being read.");
 
@@ -237,6 +241,70 @@ public class PersistenceHydrationTests
         Assert.IsFalse(announced);
         Assert.IsFalse(persistor.HasHydrated);
         Assert.IsEmpty(storage.Data, "A disposed persistor saved a change.");
+    }
+
+    [TestMethod]
+    public async Task APersistorDisposedWhileAReadNeverAnswers_StopsWaitingForIt()
+    {
+        var (manager, _) = Setup();
+        var clock = new FakeTimeProvider();
+        manager.TimeProvider = clock;
+        var storage = new InMemoryStorage { ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously) };
+        var persistor = new BlexStatePersistor(manager, storage);
+        _ = persistor.StartAsync();
+
+        var disposing = persistor.DisposeAsync().AsTask();
+        clock.Advance(TimeSpan.FromSeconds(4));
+        Assert.IsFalse(disposing.IsCompleted, "Disposal gave up on a read before it had a chance to answer.");
+
+        clock.Advance(TimeSpan.FromSeconds(1));
+        await disposing.WaitAsync(TimeSpan.FromSeconds(10));
+    }
+
+    [TestMethod]
+    public async Task APersistorDisposedWhileAReadNeverAnswers_AbandonsTheReadAtOnce()
+    {
+        var (manager, store) = Setup();
+        var errors = new List<BlexError>();
+        manager.OnError = errors.Add;
+
+        // A clock that never moves: only abandoning the read can end disposal, not the five-second limit.
+        manager.TimeProvider = new FakeTimeProvider();
+        var storage = new InMemoryStorage
+        {
+            ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            ReadHonorsCancellation = true,
+        };
+        storage.Data["blex:settings"] = """{"Theme":"stored"}""";
+        var persistor = new BlexStatePersistor(manager, storage);
+        var announced = false;
+        persistor.Hydrated += () => announced = true;
+
+        var start = persistor.StartAsync();
+        await persistor.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(10));
+        await start.WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.IsEmpty(errors, "An abandoned read was reported as an error.");
+        Assert.IsFalse(announced);
+        Assert.AreNotEqual("stored", store.Theme);
+    }
+
+    [TestMethod]
+    public async Task ACallersOwnCancellation_StillPropagatesFromStartAsync()
+    {
+        var (manager, _) = Setup();
+        var storage = new InMemoryStorage
+        {
+            ReadGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously),
+            ReadHonorsCancellation = true,
+        };
+        var persistor = new BlexStatePersistor(manager, storage);
+        using var cancellation = new CancellationTokenSource();
+
+        var start = persistor.StartAsync(cancellation.Token);
+        cancellation.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() => start.WaitAsync(TimeSpan.FromSeconds(10)));
     }
 
     [TestMethod]

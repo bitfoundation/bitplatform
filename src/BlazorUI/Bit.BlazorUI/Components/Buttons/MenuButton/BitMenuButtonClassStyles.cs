@@ -43,6 +43,12 @@ public class BitMenuButtonClassStyles
     public string? CalloutContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the item that points at the current page (see <see cref="BitMenuButtonItem.Match"/>),
+    /// and for the row of the submenu that holds it.
+    /// </summary>
+    public string? Current { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the chevron down button of the BitMenuButton.
     /// </summary>
     public string? ChevronDownButton { get; set; }
@@ -91,6 +97,11 @@ public class BitMenuButtonClassStyles
     /// Custom CSS classes/styles for the check mark icon of each checkable item of the BitMenuButton.
     /// </summary>
     public string? ItemCheckIcon { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the description of each item of the BitMenuButton.
+    /// </summary>
+    public string? ItemDescription { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for each group header item of the BitMenuButton.

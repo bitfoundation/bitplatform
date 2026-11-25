@@ -25,7 +25,7 @@ public sealed partial class BitChartRenderer
     private readonly Dictionary<string, BitChartScaleOptions> _scales = new();
 
     public BitChartRenderer(BitChartConfig config, BitChartRenderState state, double width, double height, string? uid = null,
-        BitChartTexts? texts = null)
+        BitChartStrings? strings = null)
     {
         _config = config;
         _data = config.Data;
@@ -34,10 +34,10 @@ public sealed partial class BitChartRenderer
         _w = width;
         _h = height;
         _uid = uid ?? "bc";
-        _texts = texts ?? BitChartTexts.Default;
+        _strings = strings ?? BitChartStrings.Default;
     }
 
-    private readonly BitChartTexts _texts;
+    private readonly BitChartStrings _strings;
 
     public BitChartScene Render()
     {
@@ -349,7 +349,7 @@ public sealed partial class BitChartRenderer
                 var ds = _data.Datasets[i];
                 legend.Items.Add(new BitChartLegendItemModel
                 {
-                    Text = ds.Label ?? _texts.DatasetLabel(i, _options.Culture),
+                    Text = ds.Label ?? _strings.DatasetLabel(i, _options.Culture),
                     Color = ResolveBackground(ds, i, 0, false),
                     // Outlined the way the dataset's own elements are: a bar with no border color takes its fill.
                     StrokeColor = ResolveBorder(ds, i, 0, false, fallbackToBackground: EffectiveType(ds) == BitChartType.Bar),

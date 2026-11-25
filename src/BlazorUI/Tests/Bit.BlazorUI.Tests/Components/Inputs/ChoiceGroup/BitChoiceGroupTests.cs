@@ -321,6 +321,193 @@ public class BitChoiceGroupTests : BunitTestContext
     }
 
     [TestMethod,
+      DataRow(3, "3"),
+      DataRow(1, "1"),
+      DataRow(0, "1"),
+      DataRow(-2, "1")
+    ]
+    public void BitChoiceGroupShouldLayItsItemsOutInColumns(int columns, string expected)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Columns, columns);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        // The grid class turns the grid on, and a count below 1 is read as a single column.
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-grd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-mnw"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains($"--bit-chg-cols:{expected}"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-chg-mnw"));
+    }
+
+    [TestMethod,
+      DataRow("240px", "240px"),
+      DataRow("15rem", "15rem"),
+      DataRow(" 30% ", "30%"),
+      DataRow("240", "240px"),
+      DataRow("12.5", "12.5px"),
+      DataRow("+240", "240px"),
+      DataRow("240.", "240px"),
+      DataRow(".5rem", "0.5rem"),
+      DataRow("calc(10rem + 4px)", "calc(10rem + 4px)")
+    ]
+    public void BitChoiceGroupShouldLayItsItemsOutInColumnsOfAMinimumWidth(string minItemWidth, string expected)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.MinItemWidth, minItemWidth);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        // A bare number is read as pixels, as BitGrid reads its MinItemWidth.
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-grd"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-mnw"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains($"--bit-chg-mnw:{expected}"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-chg-cols"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldPublishBothGridValuesAndLetTheStylesheetPickMinItemWidth()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Columns, 3);
+            parameters.Add(p => p.MinItemWidth, "10rem");
+            parameters.Add(p => p.Horizontal, true);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        // The class of the fluid tracks is what makes MinItemWidth win in the stylesheet; Horizontal keeps its class
+        // (its default gap), while the grid replaces its row and is announced with no orientation.
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-grd"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-mnw"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-hor"));
+        Assert.IsFalse(root.HasAttribute("aria-orientation"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-chg-cols:3"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-chg-mnw:10rem"));
+    }
+
+    [TestMethod,
+      DataRow("-200"),
+      DataRow("-1rem"),
+      DataRow("0"),
+      DataRow("0px"),
+      DataRow("14 rem"),
+      DataRow("1e3"),
+      DataRow("10foo"),
+      DataRow("rem"),
+      DataRow("   ")
+    ]
+    public void BitChoiceGroupShouldIgnoreAMinItemWidthThatIsNoPositiveLength(string minItemWidth)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Columns, 3);
+            parameters.Add(p => p.MinItemWidth, minItemWidth);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        // A width the browser could not read would throw the whole track list away, Columns' with it, and a width of
+        // none would crush the columns, so it is ignored and the counted columns stay.
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-grd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-mnw"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-chg-cols:3"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-chg-mnw"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotBeAGridForAMinItemWidthAloneThatIsNoPositiveLength()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.MinItemWidth, "-200");
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-grd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-mnw"));
+        Assert.AreEqual("vertical", root.GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod,
+      DataRow(true),
+      DataRow(false)
+    ]
+    public void BitChoiceGroupShouldRenderNoOrientationInAGrid(bool horizontal)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Columns, 2);
+            parameters.Add(p => p.Horizontal, horizontal);
+        });
+
+        // The arrow keys follow the order of the items, not the rows and columns of the grid, so neither orientation
+        // is announced; it is back once the grid is dropped.
+        Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-orientation"));
+
+        component.Render(parameters => parameters.Add(p => p.Columns, (int?)null));
+
+        Assert.AreEqual(horizontal ? "horizontal" : "vertical", component.Find(".bit-chg").GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldDropTheGridOnceItsParametersAreCleared()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Columns, 2);
+            parameters.Add(p => p.MinItemWidth, "10rem");
+        });
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Columns, (int?)null);
+            parameters.Add(p => p.MinItemWidth, (string?)null);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-grd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-mnw"));
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-chg-cols"));
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("--bit-chg-mnw"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldKeepItsItemsOneRadioGroupInTheirOrderInAGrid()
+    {
+        var items = GetChoiceGroupItems();
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Columns, 2);
+        });
+
+        // The grid only places the items: they stay native radios of one name in the order they were given, which is
+        // what the browser's arrow key navigation between them follows.
+        var inputs = component.FindAll(".bit-chg-cnt > .bit-chg-icn > input.bit-chg-inp");
+
+        Assert.AreEqual(items.Count(), inputs.Count);
+        Assert.IsTrue(inputs.All(i => i.GetAttribute("type") == "radio"));
+        Assert.AreEqual(1, inputs.Select(i => i.GetAttribute("name")).Distinct().Count());
+        CollectionAssert.AreEqual(items.Select(i => i.Value).ToArray(), inputs.Select(i => i.GetAttribute("value")).ToArray());
+    }
+
+    [TestMethod,
       DataRow(true),
       DataRow(false)
     ]

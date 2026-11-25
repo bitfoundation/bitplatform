@@ -7,8 +7,9 @@ using System.Text.RegularExpressions;
 namespace Bit.BevTools;
 
 /// <summary>
-/// Decides what is sensitive: member, header, query and key names (case-insensitive substring match plus
-/// <see cref="BevToolsSensitiveAttribute"/>), and values whose shape is a credential whatever they are called.
+/// Decides what is sensitive: member, header, query and key names (<see cref="BevToolsOptions.SensitiveNamePatterns"/>,
+/// matched as <see cref="MatchesPattern"/> says, plus <see cref="BevToolsSensitiveAttribute"/>), and values whose shape is
+/// a credential whatever they are called.
 /// </summary>
 public sealed partial class BevToolsRedactor
 {
@@ -37,13 +38,71 @@ public sealed partial class BevToolsRedactor
 
         foreach (var pattern in _patterns)
         {
-            if (name.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+            if (MatchesPattern(name, pattern))
             {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// The patterns that hide inside ordinary words, which match only where they start or end a word of the name:
+    /// anywhere, "otp" would redact <c>NotPublished</c>, <c>HotPath</c> and <c>Footprint</c>, and "ssn" every component's
+    /// <c>ClassName</c>. Every other pattern - "pwd" and "cvv" among them, and whatever an app adds - matches anywhere,
+    /// so <c>newpwdconfirm</c> stays redacted: a name missed shows a secret, a name caught only hides a value.
+    /// </summary>
+    internal static readonly string[] WordPatterns = ["otp", "ssn"];
+
+    /// <summary>
+    /// Whether <paramref name="name"/> matches a sensitive name <paramref name="pattern"/>, case-insensitively: anywhere
+    /// in it (<c>accesstoken</c> as well as <c>AccessToken</c>), except for one of <see cref="WordPatterns"/>, which
+    /// matches only where the match starts or ends a word - at either end of the name, next to a character that is
+    /// neither a letter nor a digit, or where a lower case letter or a digit meets an upper case one (<c>UserOtp</c>,
+    /// <c>OTPCode</c>, <c>otp_code</c>). An empty pattern matches nothing. The browser hub matches storage keys and URL
+    /// parameters by the same rule (<c>bit-bevtools.ts</c>, <c>matchesSensitivePattern</c>).
+    /// </summary>
+    internal static bool MatchesPattern(string name, string pattern)
+    {
+        if (pattern.Length == 0)
+        {
+            return false;
+        }
+
+        if (!WordPatterns.Contains(pattern, StringComparer.OrdinalIgnoreCase))
+        {
+            return name.Contains(pattern, StringComparison.OrdinalIgnoreCase);
+        }
+
+        for (var at = name.IndexOf(pattern, StringComparison.OrdinalIgnoreCase); at >= 0; at = name.IndexOf(pattern, at + 1, StringComparison.OrdinalIgnoreCase))
+        {
+            if (IsWordBoundary(name, at) || IsWordBoundary(name, at + pattern.Length))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Whether a word of <paramref name="name"/> starts or ends between <c>name[at - 1]</c> and <c>name[at]</c>.</summary>
+    private static bool IsWordBoundary(string name, int at)
+    {
+        if (at <= 0 || at >= name.Length)
+        {
+            return true;
+        }
+
+        char before = name[at - 1], after = name[at];
+        if (!char.IsLetterOrDigit(before) || !char.IsLetterOrDigit(after))
+        {
+            return true;
+        }
+
+        // A hump (userOtp), or the end of an upper case run before the next word (OTPCode: between P and C).
+        return (char.IsUpper(after) && !char.IsUpper(before))
+            || (char.IsUpper(before) && char.IsUpper(after) && at + 1 < name.Length && char.IsLower(name[at + 1]));
     }
 
     public bool IsSensitive(MemberInfo member)
@@ -178,7 +237,7 @@ public sealed partial class BevToolsRedactor
     }
 
     // The key/value form: "Password=x;" in a connection string, "api_key: x" in config text, "access_token":"x" in JSON.
-    private const string SecretKeyNames = @"password|passwd|pwd|secret|client[_-]?secret|api[_-]?key|access[_-]?key|account[_-]?key|shared[_-]?access[_-]?(?:key|signature)|access[_-]?token|id[_-]?token|refresh[_-]?token|authorization|credential|private[_-]?key";
+    private const string SecretKeyNames = @"password|passwd|pwd|t?otp|secret|client[_-]?secret|api[_-]?key|access[_-]?key|account[_-]?key|shared[_-]?access[_-]?(?:key|signature)|access[_-]?token|id[_-]?token|refresh[_-]?token|authorization|credential|private[_-]?key";
 
     private const string ProviderTokenFormats =
         @"\bAKIA[0-9A-Z]{16}\b"                       // AWS access key id

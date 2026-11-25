@@ -14,7 +14,7 @@ public partial class _BitFcAddEditEventDialog : IAsyncDisposable
 
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [CascadingParameter] internal BitFullCalendarColorScheme ColorScheme { get; set; } = default!;
     [CascadingParameter] internal BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
 
@@ -385,17 +385,17 @@ public partial class _BitFcAddEditEventDialog : IAsyncDisposable
 
     private string GetIntervalUnit(BitFullCalendarRecurrenceFrequency frequency) => frequency switch
     {
-        BitFullCalendarRecurrenceFrequency.Weekly => Texts.RepeatWeeksUnit,
-        BitFullCalendarRecurrenceFrequency.Monthly => Texts.RepeatMonthsUnit,
-        BitFullCalendarRecurrenceFrequency.Yearly => Texts.RepeatYearsUnit,
-        _ => Texts.RepeatDaysUnit
+        BitFullCalendarRecurrenceFrequency.Weekly => Strings.RepeatWeeksUnit,
+        BitFullCalendarRecurrenceFrequency.Monthly => Strings.RepeatMonthsUnit,
+        BitFullCalendarRecurrenceFrequency.Yearly => Strings.RepeatYearsUnit,
+        _ => Strings.RepeatDaysUnit
     };
 
     /// <summary>The option that keeps a monthly or yearly series on the start date's own day.</summary>
     private string GetDayOfPeriodLabel(BitFullCalendarRecurrenceFrequency frequency)
         => frequency is BitFullCalendarRecurrenceFrequency.Yearly
             ? _startDate.ToString("M", State.Culture)
-            : string.Format(State.Culture, Texts.RepeatOnDayOfMonthFormat, _startDate.Day);
+            : string.Format(State.Culture, Strings.RepeatOnDayOfMonthFormat, _startDate.Day);
 
     /// <summary>The rule the form describes, or <c>null</c> when the event does not repeat.</summary>
     private BitFullCalendarRecurrence? BuildRecurrence()
@@ -492,7 +492,7 @@ public partial class _BitFcAddEditEventDialog : IAsyncDisposable
 
         if (string.IsNullOrWhiteSpace(_newFirstName) && string.IsNullOrWhiteSpace(_newLastName))
         {
-            _errors["attendee"] = Texts.ValidationAttendeeNameRequired;
+            _errors["attendee"] = Strings.ValidationAttendeeNameRequired;
             _pendingFocusId = _firstNameInputId;
             return;
         }
@@ -571,21 +571,21 @@ public partial class _BitFcAddEditEventDialog : IAsyncDisposable
 
         _errors.Clear();
         if (string.IsNullOrWhiteSpace(_title))
-            _errors["title"] = Texts.ValidationTitleRequired;
+            _errors["title"] = Strings.ValidationTitleRequired;
         // A description is optional unless the consumer asked for it (Settings.RequireEventDescription).
         if (State.RequireEventDescription && string.IsNullOrWhiteSpace(_description))
-            _errors["description"] = Texts.ValidationDescriptionRequired;
+            _errors["description"] = Strings.ValidationDescriptionRequired;
         if (_endDate <= _startDate)
-            _errors["endDate"] = Texts.ValidationEndAfterStart;
+            _errors["endDate"] = Strings.ValidationEndAfterStart;
 
         if (_isOccurrenceEdit is false && _frequency is not null)
         {
             if (_interval < 1)
-                _errors["interval"] = Texts.ValidationRepeatAtLeastOne;
+                _errors["interval"] = Strings.ValidationRepeatAtLeastOne;
             if (_repeatEnd is RepeatEnd.AfterCount && _count < 1)
-                _errors["count"] = Texts.ValidationRepeatAtLeastOne;
+                _errors["count"] = Strings.ValidationRepeatAtLeastOne;
             if (_repeatEnd is RepeatEnd.OnDate && _until.Date < _startDate.Date)
-                _errors["until"] = Texts.ValidationUntilBeforeStart;
+                _errors["until"] = Strings.ValidationUntilBeforeStart;
         }
 
         var resourceId = string.IsNullOrWhiteSpace(_resource) ? null : _resource;
@@ -607,16 +607,16 @@ public partial class _BitFcAddEditEventDialog : IAsyncDisposable
             switch (refusal)
             {
                 case BitFullCalendarChangeRefusal.OutOfRange:
-                    _errors["endDate"] = Texts.OutOfRangeMessage;
+                    _errors["endDate"] = Strings.OutOfRangeMessage;
                     break;
                 case BitFullCalendarChangeRefusal.OutsideBusinessHours:
-                    _errors["overlap"] = Texts.OutsideBusinessHoursMessage;
+                    _errors["overlap"] = Strings.OutsideBusinessHoursMessage;
                     break;
                 case BitFullCalendarChangeRefusal.Overlap:
-                    _errors["overlap"] = Texts.EventOverlapMessage;
+                    _errors["overlap"] = Strings.EventOverlapMessage;
                     break;
                 case BitFullCalendarChangeRefusal.Blocked:
-                    _errors["overlap"] = Texts.BlockedMessage;
+                    _errors["overlap"] = Strings.BlockedMessage;
                     break;
             }
         }

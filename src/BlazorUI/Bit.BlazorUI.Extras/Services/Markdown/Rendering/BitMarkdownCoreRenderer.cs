@@ -53,7 +53,7 @@ public sealed class BitMarkdownCoreRenderer : BitMarkdownNodeRenderer
                 // element needs a name, and a name needs a role - the one a table's scroll area has.
                 b.AddAttribute(36, "tabindex", "0");
                 b.AddAttribute(41, "role", "region");
-                b.AddAttribute(42, "aria-label", r.Texts.CodeBlock);
+                b.AddAttribute(42, "aria-label", r.Strings.CodeBlock);
                 b.OpenElement(4, "code");
                 if (language is not null)
                     b.AddAttribute(5, "class", language);

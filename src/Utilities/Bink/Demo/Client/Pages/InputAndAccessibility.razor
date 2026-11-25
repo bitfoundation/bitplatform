@@ -168,7 +168,7 @@
         disabled chord reaches neither the tool nor the canvas, and its default comes back (Ctrl+D, say, bookmarks the
         page again).
     </p>
-    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> DisabledShortcuts=<span class="s">"@@(new[] { "Delete", "R", "Ctrl+Shift+]" })"</span> /&gt;
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">BinkCanvas</span> DisabledShortcuts=<span class="s">"@@(new[] { "Delete", "R", "Ctrl+Shift+]" })"</span> /&gt;
 
 BinkShortcut.Normalize(<span class="s">"Cmd + Shift + Z"</span>);   <span class="c">// "Ctrl+Shift+Z": how a chord is read</span></pre>
     <p class="bb-card-desc">
@@ -204,7 +204,7 @@ BinkShortcut.Normalize(<span class="s">"Cmd + Shift + Z"</span>);   <span class=
             </tbody>
         </table>
     </div>
-    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> EnableTouchGestures=<span class="s">"true"</span> RejectTouchWhilePen=<span class="s">"true"</span>
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">BinkCanvas</span> EnableTouchGestures=<span class="s">"true"</span> RejectTouchWhilePen=<span class="s">"true"</span>
             WheelMode=<span class="s">"BinkWheelMode.PanAndZoom"</span> MinZoom=<span class="s">"0.5f"</span> MaxZoom=<span class="s">"4f"</span> /&gt;</pre>
     <p class="bb-card-desc">
         <code>PanAndZoom</code> is the convention of design tools, <code>Zoom</code> that of maps, and the default leaves the
@@ -225,7 +225,7 @@ BinkShortcut.Normalize(<span class="s">"Cmd + Shift + Z"</span>);   <span class=
         strokes an erase removed - through a polite live region, at most once per frame. The panel above shows those
         descriptions.
     </p>
-    <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> AriaLabel=<span class="s">"Signature for the tenancy agreement"</span> /&gt;
+    <pre class="bb-code" tabindex="0">&lt;<span class="k">BinkCanvas</span> AriaLabel=<span class="s">"Signature for the tenancy agreement"</span> /&gt;
 
 _document.AddElement(<span class="k">new</span> BinkLineShape(a, b) { EndArrow = <span class="k">true</span>, Description = <span class="s">"Arrow from Inbox to In progress"</span> });
 _canvas.Announce(<span class="s">"Signature captured."</span>);</pre>

@@ -52,6 +52,8 @@ public static partial class DemoSharedEnums
 
     public static ComponentSubEnum BitImageLoading(string? description = null) => Table<Library.BitImageLoading>("image-loading-enum", description);
 
+    public static ComponentSubEnum BitImageReferrerPolicy(string? description = null) => Table<Library.BitImageReferrerPolicy>("image-referrer-policy-enum", description);
+
     public static ComponentSubEnum BitInputMode(string? description = null) => Table<Library.BitInputMode>("input-mode-enum", description);
 
     public static ComponentSubEnum BitInputType(string? description = null) => Table<Library.BitInputType>("input-type-enum", description);

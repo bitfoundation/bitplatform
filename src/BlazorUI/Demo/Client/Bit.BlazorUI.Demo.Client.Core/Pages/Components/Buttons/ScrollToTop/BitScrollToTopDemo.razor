@@ -1,0 +1,133 @@
+﻿@page "/components/scrolltotop"
+@page "/components/scroll-to-top"
+
+<PageOutlet Url="components/scrolltotop"
+            Title="ScrollToTop"
+            Description="BitScrollToTop is the button that takes the reader back to the top of a long page or pane, in the flow of the page or floating in a corner and revealed once the reader has scrolled away from the top. It works on a prerendered page before Blazor is interactive." />
+
+<DemoPage Name="ScrollToTop"
+          SecondaryNames="@(["BackToTop", "GoToTop"])"
+          Description="BitScrollToTop is the button that takes the reader back to the top of a long page or pane: in the flow of the page, as the &quot;back to top&quot; of a footer, or floating in a corner of the screen and revealed once the reader has scrolled far enough away from the top. It scrolls the page, or the pane it sits in or names, smoothly unless the reader has asked for less motion, and moves the keyboard focus to the top along with the view."
+          Parameters="componentParameters"
+          SubEnums="componentSubEnums"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubUrl="Buttons/ScrollToTop/BitScrollToTop.razor"
+          GitHubDemoUrl="Buttons/ScrollToTop/BitScrollToTopDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            It works before the app is interactive: the scroll, the reveal and the focus are done by a script of the library
+            that is loaded as the app starts and acts on the markup of the button, so a prerendered page scrolls back up
+            before its WebAssembly runtime or its circuit has started, with no inline handler and no handler in .NET. It is a
+            button rather than an href="#top" link, so the address, the history and the base href of the app are left alone.
+            Once it has scrolled, it moves the focus onto the scrolling area, so the next Tab goes on from the top of the page.
+            A button with a RevealOffset is hidden from the first render on, until the script finds the page scrolled past
+            the offset.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                With nothing set, the button sits in the flow of the page and shows an arrow pointing up, named "Scroll to
+                top" (the ScrollToTop of BitStrings). Text gives it words of its own, which also name it.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitScrollToTop />
+                <BitScrollToTop Text="Back to top" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Icon" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                IconName puts an icon of the built-in Fluent UI icons in the button. A button with a text shows no icon
+                unless one is given; one without a text shows the arrow when none is.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitScrollToTop IconName="@BitIconName.DoubleChevronUp" AriaLabel="Back to top" />
+                <BitScrollToTop Text="Back to top" IconName="@BitIconName.Up" />
+                <BitScrollToTop Text="Top of the page" IconName="@BitIconName.ChevronUpMed" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Float & RevealOffset" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                Float pins the button to a corner of the viewport (FloatPosition, the bottom end by default) at a distance of
+                FloatOffset, and RevealOffset keeps it hidden until the page is scrolled that many pixels from its top. The
+                button of this example floats over this page: scroll down past 600 pixels to see it.
+            </div>
+            <br />
+            <BitScrollToTop Float RevealOffset="600" FloatOffset="1.5rem" />
+        </DemoExample>
+
+        <DemoExample Title="ScrollTarget" RazorCode="@example4RazorCode" Id="example4">
+            <div>
+                FloatAbsolute pins the button to its nearest positioned ancestor instead of the viewport, and ScrollTarget names
+                the box it scrolls, with a CSS selector, when the button does not sit inside it. Scroll the box down to see it.
+            </div>
+            <br />
+            <div class="pane">
+                <div id="scroll-to-top-pane" class="pane-content">
+                    @for (var i = 1; i <= 30; i++)
+                    {
+                        <div>Line @i of a pane long enough to scroll.</div>
+                    }
+                </div>
+                <BitScrollToTop FloatAbsolute RevealOffset="100" ScrollTarget="#scroll-to-top-pane" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Smooth" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                The scroll is smooth by default, and an instant jump under a reduced-motion preference unless ForceAnimation
+                is set. Smooth="false" always jumps.
+            </div>
+            <br />
+            <div class="pane">
+                <div id="scroll-to-top-jump" class="pane-content">
+                    @for (var i = 1; i <= 30; i++)
+                    {
+                        <div>Line @i of a pane long enough to scroll.</div>
+                    }
+                </div>
+                <BitScrollToTop FloatAbsolute Smooth="false" ScrollTarget="#scroll-to-top-jump" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example6RazorCode" Id="example6">
+            <div>Use icons from external libraries like FontAwesome and Bootstrap Icons with the <b>Icon</b> parameter.</div>
+            <div>See the <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> section in the parameters table for usage.</div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+            <div class="example-content">
+                <BitScrollToTop Icon="@BitIconInfo.Fa("solid arrow-up")" />
+                <BitScrollToTop Icon="@BitIconInfo.Bi("arrow-up-circle")" Text="Back to top" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                Classes and Styles reach the button, its icon and its text, and the --bit-ScrollToTop-* variables restyle the
+                defaults.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitScrollToTop Text="Back to top"
+                                Style="--bit-ScrollToTop-background: var(--bit-clr-bg-sec); --bit-ScrollToTop-color: var(--bit-clr-fg-pri); --bit-ScrollToTop-border-color: var(--bit-clr-brd-pri); --bit-ScrollToTop-hover-background: var(--bit-clr-bg-sec-hover);" />
+                <BitScrollToTop Style="--bit-ScrollToTop-radius: 0.25rem; --bit-ScrollToTop-size: 2rem;" />
+                <BitScrollToTop Text="Back to top" Classes="@(new() { Root = "custom-root", Icon = "custom-icon" })" IconName="@BitIconName.Up" />
+                <BitScrollToTop Text="Back to top" Styles="@(new() { Text = "font-style: italic;" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" Id="example8">
+            <div>Use BitScrollToTop in right-to-left (RTL).</div>
+            <br />
+            <div dir="rtl" class="example-content">
+                <BitScrollToTop Dir="BitDir.Rtl" Text="بازگشت به بالا" IconName="@BitIconName.Up" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

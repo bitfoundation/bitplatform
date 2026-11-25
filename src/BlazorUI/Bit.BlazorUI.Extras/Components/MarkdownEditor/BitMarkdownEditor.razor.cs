@@ -72,7 +72,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     /// <remarks>
     /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
     /// <br />
-    /// The intended use is to allow shared configuration or settings (the texts of a localized app, its toolbar and
+    /// The intended use is to allow shared configuration or settings (the strings of a localized app, its toolbar and
     /// its image upload handler, above all) to be applied to multiple editors through the <see cref="BitParams"/> component.
     /// </remarks>
     [CascadingParameter(Name = BitMarkdownEditorParams.ParamName)]
@@ -332,6 +332,13 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     public bool StickyToolbar { get; set; }
 
     /// <summary>
+    /// The localized strings of the editor UI (status bar, help panel, aria labels).
+    /// Defaults to English; override individual properties on a <see cref="BitMarkdownEditorStrings"/>
+    /// instance to localize them.
+    /// </summary>
+    [Parameter] public BitMarkdownEditorStrings? Strings { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the editor.
     /// </summary>
     [Parameter, ResetStyleBuilder]
@@ -359,13 +366,6 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     /// How many body rows the toolbar's table command inserts, beside its header row. Defaults to 1.
     /// </summary>
     [Parameter] public int TableRows { get; set; } = 1;
-
-    /// <summary>
-    /// The localized strings of the editor UI (status bar, help panel, aria labels).
-    /// Defaults to English; override individual properties on a <see cref="BitMarkdownEditorTexts"/>
-    /// instance to localize them.
-    /// </summary>
-    [Parameter] public BitMarkdownEditorTexts? Texts { get; set; }
 
     /// <summary>
     /// A custom toolbar layout. Defaults to <see cref="BitMarkdownEditorToolbar.Default"/> when null.
@@ -971,11 +971,11 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         BulletStyle = BulletStyle
     };
 
-    private static readonly BitMarkdownEditorTexts _defaultTexts = new();
+    private static readonly BitMarkdownEditorStrings _defaultStrings = new();
 
     private IReadOnlyList<BitMarkdownEditorToolbarItem> ActiveToolbar => Toolbar ?? BitMarkdownEditorToolbar.Default;
 
-    private BitMarkdownEditorTexts ActiveTexts => Texts ?? _defaultTexts;
+    private BitMarkdownEditorStrings ActiveStrings => Strings ?? _defaultStrings;
 
     private BitMarkdownEditorConfig BuildConfig() => new()
     {
@@ -992,7 +992,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         AutoHeight = AutoHeight,
         MaxImageSize = MaxImageSize is > 0 ? MaxImageSize.Value : 0,
         ImageAccept = string.IsNullOrWhiteSpace(AcceptedImageTypes) ? null : AcceptedImageTypes,
-        UploadingText = ActiveTexts.UploadingText,
+        UploadingText = ActiveStrings.UploadingText,
         // Nothing on screen reacts to the caret unless a command button can light up or the
         // status bar prints the position, so the (per-caret-move) round trip is not worth
         // making otherwise.
@@ -1151,12 +1151,12 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     private bool IsAtLimit => MaxLength is > 0 && LimitedCount >= MaxLength.Value;
 
     private string CharCountText => MaxLength is > 0
-        ? string.Format(ActiveTexts.CharsWithMaxFormat, LimitedCount, MaxLength.Value)
-        : string.Format(ActiveTexts.CharsFormat, CharCount);
+        ? string.Format(ActiveStrings.CharsWithMaxFormat, LimitedCount, MaxLength.Value)
+        : string.Format(ActiveStrings.CharsFormat, CharCount);
 
-    private string CursorPositionText => string.Format(ActiveTexts.CursorPositionFormat, _caretLine, _caretColumn);
+    private string CursorPositionText => string.Format(ActiveStrings.CursorPositionFormat, _caretLine, _caretColumn);
 
-    private string SelectedText => string.Format(ActiveTexts.SelectedFormat, _selectedLength);
+    private string SelectedText => string.Format(ActiveStrings.SelectedFormat, _selectedLength);
 
     private string TextAreaId => $"{_Id}-txt";
 
@@ -1188,7 +1188,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     // A visible label already names the field through its for/id pair, and an aria-label on
     // top of it would win over the label and hide it from the accessibility tree.
     private string? TextAreaAriaLabel => AriaLabel ??
-        (Label is null && LabelTemplate is null ? ActiveTexts.EditorAriaLabel : null);
+        (Label is null && LabelTemplate is null ? ActiveStrings.EditorAriaLabel : null);
 
     private int ReadingMinutes
     {
@@ -1205,8 +1205,8 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     private string FindStatusText => _findResult is not { } result
         ? string.Empty
         : result.HasMatches
-            ? string.Format(ActiveTexts.MatchesFormat, result.Index, result.Count)
-            : ActiveTexts.NoMatchesText;
+            ? string.Format(ActiveStrings.MatchesFormat, result.Index, result.Count)
+            : ActiveStrings.NoMatchesText;
 
     private bool IsToolbarItemDisabled(BitMarkdownEditorToolbarItem item)
     {
@@ -1281,7 +1281,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
 
     // An item with no title of its own is named by its text.
     private string GetToolbarItemLabel(BitMarkdownEditorToolbarItem item) =>
-        ActiveTexts.GetToolbarTitle(item.Name, string.IsNullOrEmpty(item.Title) ? item.Text ?? string.Empty : item.Title);
+        ActiveStrings.GetToolbarTitle(item.Name, string.IsNullOrEmpty(item.Title) ? item.Text ?? string.Empty : item.Title);
 
     private string GetToolbarItemTitle(BitMarkdownEditorToolbarItem item)
     {
@@ -1307,7 +1307,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
 
             // A shortcut the editor does not capture has no business being documented as one,
             // and Ctrl+Enter is only captured while something is listening for the submit.
-            if (OnSubmit.HasDelegate) yield return (ActiveTexts.ShortcutSubmit, "Ctrl/Cmd + Enter");
+            if (OnSubmit.HasDelegate) yield return (ActiveStrings.ShortcutSubmit, "Ctrl/Cmd + Enter");
 
             // The app's own: every custom item's bound shortcut, and a command item's on keys of its own choosing.
             HashSet<string> listed = [];
@@ -1329,30 +1329,30 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
 
     private IEnumerable<(string Label, string Keys)> _helpShortcuts =>
     [
-        (ActiveTexts.ShortcutBold, "Ctrl/Cmd + B"),
-        (ActiveTexts.ShortcutItalic, "Ctrl/Cmd + I"),
-        (ActiveTexts.ShortcutStrikethrough, "Ctrl/Cmd + Shift + S"),
-        (ActiveTexts.ShortcutInlineCode, "Ctrl/Cmd + E"),
-        (ActiveTexts.ShortcutCodeBlock, "Ctrl/Cmd + Alt + C"),
-        (ActiveTexts.ShortcutLink, "Ctrl/Cmd + K"),
-        (ActiveTexts.ShortcutHeadings, "Ctrl/Cmd + Alt + 1 … 6"),
-        (ActiveTexts.ShortcutQuote, "Ctrl/Cmd + Shift + ."),
-        (ActiveTexts.ShortcutOrderedList, "Ctrl/Cmd + Shift + 7"),
-        (ActiveTexts.ShortcutUnorderedList, "Ctrl/Cmd + Shift + 8"),
-        (ActiveTexts.ShortcutTaskList, "Ctrl/Cmd + Shift + 9"),
-        (ActiveTexts.ShortcutUndo, "Ctrl/Cmd + Z"),
-        (ActiveTexts.ShortcutRedo, "Ctrl/Cmd + Y (or Shift + Z)"),
-        (ActiveTexts.ShortcutIndentOutdent, "Tab / Shift + Tab"),
-        (ActiveTexts.ShortcutTableCells, "Tab / Shift + Tab"),
-        (ActiveTexts.ShortcutContinueList, "Enter"),
-        (ActiveTexts.ShortcutMoveLine, "Alt + ↑ / ↓"),
-        (ActiveTexts.ShortcutDuplicateLine, "Ctrl/Cmd + D"),
-        (ActiveTexts.ShortcutDeleteLine, "Ctrl/Cmd + Shift + D"),
-        (ActiveTexts.ShortcutFind, "Ctrl/Cmd + F"),
-        (ActiveTexts.ShortcutTogglePreview, "F9"),
-        (ActiveTexts.ShortcutFullScreen, "F11"),
-        (ActiveTexts.ShortcutHelp, "Ctrl/Cmd + /"),
-        (ActiveTexts.ShortcutEscapeTab, "Esc, then Tab")
+        (ActiveStrings.ShortcutBold, "Ctrl/Cmd + B"),
+        (ActiveStrings.ShortcutItalic, "Ctrl/Cmd + I"),
+        (ActiveStrings.ShortcutStrikethrough, "Ctrl/Cmd + Shift + S"),
+        (ActiveStrings.ShortcutInlineCode, "Ctrl/Cmd + E"),
+        (ActiveStrings.ShortcutCodeBlock, "Ctrl/Cmd + Alt + C"),
+        (ActiveStrings.ShortcutLink, "Ctrl/Cmd + K"),
+        (ActiveStrings.ShortcutHeadings, "Ctrl/Cmd + Alt + 1 … 6"),
+        (ActiveStrings.ShortcutQuote, "Ctrl/Cmd + Shift + ."),
+        (ActiveStrings.ShortcutOrderedList, "Ctrl/Cmd + Shift + 7"),
+        (ActiveStrings.ShortcutUnorderedList, "Ctrl/Cmd + Shift + 8"),
+        (ActiveStrings.ShortcutTaskList, "Ctrl/Cmd + Shift + 9"),
+        (ActiveStrings.ShortcutUndo, "Ctrl/Cmd + Z"),
+        (ActiveStrings.ShortcutRedo, "Ctrl/Cmd + Y (or Shift + Z)"),
+        (ActiveStrings.ShortcutIndentOutdent, "Tab / Shift + Tab"),
+        (ActiveStrings.ShortcutTableCells, "Tab / Shift + Tab"),
+        (ActiveStrings.ShortcutContinueList, "Enter"),
+        (ActiveStrings.ShortcutMoveLine, "Alt + ↑ / ↓"),
+        (ActiveStrings.ShortcutDuplicateLine, "Ctrl/Cmd + D"),
+        (ActiveStrings.ShortcutDeleteLine, "Ctrl/Cmd + Shift + D"),
+        (ActiveStrings.ShortcutFind, "Ctrl/Cmd + F"),
+        (ActiveStrings.ShortcutTogglePreview, "F9"),
+        (ActiveStrings.ShortcutFullScreen, "F11"),
+        (ActiveStrings.ShortcutHelp, "Ctrl/Cmd + /"),
+        (ActiveStrings.ShortcutEscapeTab, "Esc, then Tab")
     ];
 
     private async Task OnToolbarItemClick(BitMarkdownEditorToolbarItem item)
@@ -1567,7 +1567,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         if (await AssignMode(next) is false) return;
 
         // Which panes are on screen is only ever shown, so a screen reader is told what the cycle landed on.
-        _announcement = string.Format(ActiveTexts.ModeAnnouncementFormat, ActiveTexts.GetModeLabel(Mode));
+        _announcement = string.Format(ActiveStrings.ModeAnnouncementFormat, ActiveStrings.GetModeLabel(Mode));
     }
 
     // A full-screen editor covers the viewport, so a page that goes on scrolling behind it

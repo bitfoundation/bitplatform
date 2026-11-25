@@ -372,6 +372,50 @@ function createRuntime() {
         if (el && !isDisabledInteractive(el)) el.setAttribute('data-active', '');
     }
 
+    // ─── option hover ────────────────────────────────────────────────────────────
+    // The pointer highlights a list option ([data-bit-bh-hover]) through a 'bitbhhover' event the runtime sends it (see
+    // BitBhEventHandlers in C#), not through the pointer events themselves: .NET hears of an option once, as the pointer
+    // reaches it while another is highlighted, not with every move over it. Options the keyboard scrolls under a resting
+    // pointer get pointer events too - Chromium a pointerover, WebKit a pointermove at the same coordinates - and those
+    // leave the highlight where the keys put it; a wheel's scroll is the pointer's own, and its options take it.
+
+    let hoverX = NaN;
+    let hoverY = NaN;
+    /** The option last told, while it has not taken the highlight: told once, not with every move. */
+    let hoverSent: Element | null = null;
+    /** A wheel scrolled since the pointer last moved. */
+    let hoverWheeled = false;
+
+    function hoverOption(target: EventTarget | null) {
+        const el = target instanceof Element ? target.closest('[data-bit-bh-hover]') : null;
+        if (!el || el.hasAttribute('data-disabled') || el.hasAttribute('data-highlighted')) {
+            hoverSent = null;
+            return;
+        }
+        if (el === hoverSent) return;
+        hoverSent = el;
+        el.dispatchEvent(new CustomEvent('bitbhhover', { bubbles: true }));
+    }
+
+    function onHoverPointerMove(e: PointerEvent) {
+        if (e.pointerType === 'touch') return;
+        const moved = e.clientX !== hoverX || e.clientY !== hoverY;
+        hoverX = e.clientX;
+        hoverY = e.clientY;
+        if (moved) hoverWheeled = false;
+        if (moved || hoverWheeled) hoverOption(e.target);
+    }
+
+    function onHoverPointerOver(e: PointerEvent) {
+        if (e.pointerType !== 'touch' && hoverWheeled) hoverOption(e.target);
+    }
+
+    function onHoverKeyDown() {
+        // The keys move the highlight: the option under the pointer may take it back on the next move.
+        hoverSent = null;
+        hoverWheeled = false;
+    }
+
     function clearActive() {
         for (const el of Array.from(document.querySelectorAll('[data-bit-bh-interactive][data-active]'))) el.removeAttribute('data-active');
     }
@@ -438,6 +482,12 @@ function createRuntime() {
         document.addEventListener('pointerup', clearActive, true);
         document.addEventListener('pointercancel', clearActive, true);
         document.addEventListener('dragend', clearActive, true);
+
+        document.addEventListener('pointermove', onHoverPointerMove, { capture: true, passive: true });
+        document.addEventListener('pointerover', onHoverPointerOver, { capture: true, passive: true });
+        document.addEventListener('wheel', () => { hoverWheeled = true; }, { capture: true, passive: true });
+        document.addEventListener('keydown', onHoverKeyDown, true);
+
         document.addEventListener('focusin', onFocusInInteractive, true);
         document.addEventListener('focusout', onFocusOutInteractive, true);
 
@@ -4560,9 +4610,23 @@ function createRuntime() {
         let rest = 0;
         let position = 0;
         let movement = 0;
+        // Where the panel was (d, px towards the edge) and when (t): the time the input happened (its event's timeStamp),
+        // not the time a handler got to it: on a busy page the events of a flick wait their turn, and timed as they
+        // are handled a release can look long after the last move.
         const samples: { t: number; d: number }[] = [];
 
         const size = () => Math.max(1, vertical ? panel.offsetHeight : panel.offsetWidth);
+
+        /** Px towards the edge where a pointer at x, y puts the panel. */
+        const positionAt = (x: number, y: number) => {
+            const along = sign * (vertical ? y - startY : x - startX);
+            const snap = state.snap;
+            if (!snap) return Math.max(0, along);
+            // Between the largest snap point and closed (the smallest one when a swipe may not close it).
+            const most = snap.offsets[snap.order[snap.order.length - 1]];
+            const least = snap.offsets[snap.order[0]];
+            return Math.min(dismissible ? Math.max(least, snap.size) : least, Math.max(most, rest + along));
+        };
 
         const write = () => {
             const snap = state.snap;
@@ -4611,22 +4675,18 @@ function createRuntime() {
                 rest = snap ? snap.offsets[snap.active] || 0 : 0;
                 try { panel.setPointerCapture(pointerId); } catch { /* ignore */ }
                 for (const el of drawerSurfaces(state)) el.setAttribute('data-swiping', '');
+                // The press is where the movement starts: a flick may be over in a single move.
+                samples.push({ t: e.timeStamp, d: rest });
             }
             ev.preventDefault();
             window.getSelection?.()?.removeAllRanges();
-            if (snap) {
-                // Between the largest snap point and closed (the smallest one when a swipe may not close it).
-                const most = snap.offsets[snap.order[snap.order.length - 1]];
-                const least = snap.offsets[snap.order[0]];
-                position = Math.min(dismissible ? Math.max(least, snap.size) : least, Math.max(most, rest + along));
-                movement = position - rest;
-            } else {
-                movement = Math.max(0, along);
-                position = movement;
-            }
-            const now = performance.now();
-            samples.push({ t: now, d: position });
-            while (samples.length > 2 && now - samples[0].t > 100) samples.shift();
+            position = positionAt(ev.clientX, ev.clientY);
+            movement = position - rest;
+            // Every input the browser folded into this event: on a busy page one event may carry a whole flick.
+            const inputs = ev.getCoalescedEvents?.() ?? [];
+            for (const input of inputs.length ? inputs : [ev]) samples.push({ t: input.timeStamp, d: positionAt(input.clientX, input.clientY) });
+            // Kept: the last 100ms and the newest sample before them, where the movement within them started.
+            while (samples.length > 1 && ev.timeStamp - samples[1].t > 100) samples.shift();
             write();
         };
 
@@ -4640,12 +4700,25 @@ function createRuntime() {
             document.addEventListener('click', swallow, { capture: true, once: true });
             setTimeout(() => document.removeEventListener('click', swallow, true), 0);
 
-            // The speed over the last 100ms before the release: a drag held still before it is let go is no flick.
-            const now = performance.now();
-            while (samples.length && now - samples[0].t > 100) samples.shift();
-            const first = samples[0];
+            // The speed of the movement in the last 100ms before the release, timed by the samples in them; with a single
+            // move in them (the release some time after it, still a flick), from the newest sample before them, where
+            // that move started. A drag held still that long before it is let go is no flick.
+            let velocity = 0;
             const last = samples[samples.length - 1];
-            const velocity = first && last && last.t > first.t ? (last.d - first.d) / (last.t - first.t) : 0;
+            if (last && ev.timeStamp - last.t <= 100) {
+                let i = samples.length - 1;
+                while (i > 0 && ev.timeStamp - samples[i - 1].t <= 100) i--;
+                if (last.t > samples[i].t) {
+                    // Two moves or more: the older samples (the press among them, however long ago) play no part.
+                    velocity = (last.d - samples[i].d) / (last.t - samples[i].t);
+                } else {
+                    const first = samples[Math.max(0, i - 1)];
+                    // That sample may be from long before, the pointer resting since (no moves come then): the movement
+                    // into the window started at most 100ms before its first sample, so a pause ahead of a flick slows it no more.
+                    const from = Math.max(first.t, samples[i].t - 100);
+                    if (last.t > from) velocity = (last.d - first.d) / (last.t - from);
+                }
+            }
             const threshold = state.options.threshold ?? 0.25;
             if (state.snap) {
                 const target = cancelled ? state.snap.active : snapTarget(state, position, movement, velocity, threshold);

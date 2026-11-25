@@ -1,9 +1,0 @@
-description = "Bring a newer template or .NET version, or an optional feature on or off, into this project, keeping the team's work."
-
-prompt = """
-Follow these instructions exactly:
-
-@{.github/agents/template-diff.agent.md}
-
-What to bring in, and notes: {{args}}
-"""

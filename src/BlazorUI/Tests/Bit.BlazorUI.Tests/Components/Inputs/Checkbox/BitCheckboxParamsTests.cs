@@ -102,6 +102,7 @@ public class BitCheckboxParamsTests : BunitTestContext
             Reversed = true,
             NoWrap = true,
             LabelPlacement = BitPlacement.Top,
+            Variant = BitVariant.Outline,
         });
 
         var checkbox = component.Find(".bit-chb");
@@ -112,6 +113,7 @@ public class BitCheckboxParamsTests : BunitTestContext
         Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-rvs"));
         Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-nwr"));
         Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-ltp"));
+        Assert.IsTrue(checkbox.ClassList.Contains("bit-chb-otl"));
         Assert.AreEqual("Cascaded Label", component.Find(".bit-chb-txt").TextContent.Trim());
         Assert.AreEqual("Cascaded Title", component.Find(".bit-chb-lbl").GetAttribute("title"));
         Assert.IsTrue(component.Find(".bit-chb-ico").ClassList.Contains("bit-icon--Add"));
@@ -185,6 +187,7 @@ public class BitCheckboxParamsTests : BunitTestContext
             Title = "Test Title",
             UncheckedIcon = BitIconInfo.Fa("regular square"),
             UncheckedIconName = "Cancel",
+            Variant = BitVariant.Fill,
             AriaLabel = "Test Aria Label",
             Disabled = true,
             TabIndex = "5"
@@ -228,6 +231,7 @@ public class BitCheckboxParamsTests : BunitTestContext
         Assert.AreEqual("Test Title", instance.Title);
         Assert.AreEqual(@params.UncheckedIcon, instance.UncheckedIcon);
         Assert.AreEqual("Cancel", instance.UncheckedIconName);
+        Assert.AreEqual(BitVariant.Fill, instance.Variant);
         Assert.AreEqual("Test Aria Label", instance.AriaLabel);
         Assert.IsTrue(instance.Disabled);
         Assert.AreEqual("5", instance.TabIndex);

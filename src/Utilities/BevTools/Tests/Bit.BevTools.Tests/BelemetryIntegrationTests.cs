@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 namespace Bit.BevTools.Tests;
 
@@ -55,7 +56,11 @@ public class BelemetryIntegrationTests : BunitContext
             o.Persistence.Enabled = false;
             o.Diagnostics.Enabled = true;
         });
-        Services.AddBitBevToolsBelemetry(o => o.Enabled = true);
+        Services.AddBitBevToolsBelemetry(o =>
+        {
+            o.Enabled = true;
+            o.AddPanel<AcmePanel>("app-panel", "App panel");
+        });
         this.UseRenderer("Server");
         JSInterop.Mode = JSRuntimeMode.Loose;
     }
@@ -67,6 +72,38 @@ public class BelemetryIntegrationTests : BunitContext
         // The logger factory starts Belemetry's pipeline, as a host's does.
         Services.GetRequiredService<ILoggerFactory>();
         return Render<SupportParent>();
+    }
+
+    [TestMethod]
+    public void Added_through_the_loader_it_registers_with_a_BevTools_registered_at_startup()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBevToolsLoaderServices(o => o
+            .ConfigureBevTools(static options => ((BevToolsOptions)options).AddBelemetry())
+            .RegisterAtStartup = true);
+
+        Assert.IsTrue(services.Any(d => d.ServiceType == typeof(IBelemetryComponentContextProvider) && d.ImplementationType == typeof(BevToolsBelemetryComponentContext)));
+        Assert.IsTrue(services.Any(d => d.ServiceType == typeof(IBelemetryDiagnosticComponentFilter) && d.ImplementationType == typeof(BevToolsBelemetryComponentFilter)));
+        using var provider = services.BuildServiceProvider();
+        Assert.Contains(p => p.Id == BevToolsBelemetryExtension.PanelId, provider.GetRequiredService<BevToolsRegistry>().Panels);
+    }
+
+    [TestMethod]
+    public void Added_through_the_loader_a_session_attached_on_demand_has_the_support_panel()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<IJSRuntime>(new FakeJSRuntime());
+        services.AddBitBevToolsLoaderServices(o => o
+            .ConfigureBevTools(static options => ((BevToolsOptions)options).AddBelemetry())
+            .RegisterAtStartup = false);
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var session = BitBevTools.Attach(scope.ServiceProvider, o => o.Enabled = true);
+
+        Assert.Contains(p => p.Id == BevToolsBelemetryExtension.PanelId, session.Registry.Panels);
+        Assert.IsEmpty(session.Registry.ExtensionErrors);
+        session.Dispose();
     }
 
     [TestMethod]
@@ -147,6 +184,24 @@ public class BelemetryIntegrationTests : BunitContext
         Assert.IsTrue(filter.IsExcluded(typeof(BevToolsPanel).FullName!));
         Assert.IsFalse(filter.IsExcluded(typeof(SupportChild).FullName!), "Exact namespace: an application under Bit.BevTools.* is the application.");
         Assert.IsFalse(Services.GetRequiredService<IBelemetryDiagnostics>().GetEvents().Any(e => e.ComponentType is { } type && filter.IsExcluded(type)));
+    }
+
+    /// <summary>
+    /// A panel the application added from its own namespace is BevTools' UI too: its clicks stay off Belemetry's
+    /// timeline although the exact-namespace rule alone does not cover it.
+    /// </summary>
+    [TestMethod]
+    public async Task A_panel_the_application_added_stays_off_Belemetrys_timeline()
+    {
+        Services.GetRequiredService<ILoggerFactory>();
+        var cut = Render<BevToolsPanel>();
+        cut.Find(".bev-badge").Click();
+        cut.FindAll(".bev-tab").First(t => t.TextContent.Contains("App panel", StringComparison.Ordinal)).Click();
+        cut.Find("button.acme-refresh").Click();
+
+        var filter = Services.GetServices<IBelemetryDiagnosticComponentFilter>().Single();
+        Assert.IsTrue(await cut.InvokeAsync(() => filter.IsExcluded(typeof(AcmePanel).FullName!)));
+        Assert.DoesNotContain(e => e.ComponentType is { } type && type.Contains(nameof(AcmePanel), StringComparison.Ordinal), Services.GetRequiredService<IBelemetryDiagnostics>().GetEvents());
     }
 }
 

@@ -16,7 +16,7 @@
         so you and your assistant only write what's specific to your app.
     </BitText>
     <CodeBox>dotnet add package Bit.SourceGenerators</CodeBox>
-    Every bit Boilerplate project has it already.
+    Every bit Fabric project has it already.
     <br />
     <br />
 
@@ -35,7 +35,7 @@
     <section class="section-card">
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>API clients, written for you</BitText>
-            In a bit Boilerplate project, an API is declared once, as an interface the server and the client share:
+            In a bit Fabric project, an API is declared once, as an interface the server and the client share:
             <CodeBox HideCopyButton>[Route("api/[controller]/[action]/")]
 public interface IProductController : IAppController
 {
@@ -55,8 +55,7 @@ var product = await productController.Get(id, CurrentCancellationToken);</CodeBo
                 <li>While a page prerenders, the response the server already fetched is handed to the browser, so the page doesn't ask twice.</li>
                 <li>A route template that isn't valid fails the build with <code>BITGEN003</code>, rather than a request at runtime.</li>
             </ul>
-            It builds on the types a bit Boilerplate project defines, so it comes with bit Boilerplate.
-            Its <BitLink Href="/templates/wiki#api-odata">wiki</BitLink> covers the rest.
+            It builds on the types a bit Fabric project defines, so it comes with <BitLink Href="@Urls.BitFabric" Target="_blank">bit Fabric</BitLink>.
         </div>
     </section>
 

@@ -1223,6 +1223,143 @@ public class BitButtonTests : BunitTestContext
         StringAssert.Contains(com.Find(".bit-btn").GetAttribute("style"), $"--bit-Button-float-offset:{expected}");
     }
 
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitVariant.Fill)]
+    public void BitButtonGradientShouldFillAFillButton(BitVariant? variant)
+    {
+        const string gradient = "linear-gradient(96deg, #524add 10%, #0d71bf 90%)";
+
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Variant, variant);
+            parameters.Add(p => p.Gradient, gradient);
+        });
+
+        var root = com.Find(".bit-btn");
+
+        // The class carries the layering, the border and the states, and the gradient itself is published as a private
+        // variable rather than as an inline background-image, which would outrank the disabled and forced-colors rules.
+        Assert.IsTrue(root.ClassList.Contains("bit-btn-grd"));
+        Assert.AreEqual($"--bit-btn-grd:{gradient}", root.GetAttribute("style"));
+    }
+
+    [TestMethod,
+        DataRow(BitVariant.Outline),
+        DataRow(BitVariant.Text)]
+    public void BitButtonGradientShouldBeIgnoredByAVariantWithoutAFill(BitVariant variant)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Variant, variant);
+            parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-btn-grd"));
+        Assert.IsFalse(root.HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitButtonGradientShouldFollowTheVariantAndTheValue()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
+        });
+
+        com.Render(parameters => parameters.Add(p => p.Variant, BitVariant.Outline));
+
+        Assert.IsFalse(com.Find(".bit-btn").ClassList.Contains("bit-btn-grd"));
+        Assert.IsFalse(com.Find(".bit-btn").HasAttribute("style"));
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Variant, BitVariant.Fill);
+            parameters.Add(p => p.Gradient, "radial-gradient(gold, orange)");
+        });
+
+        Assert.IsTrue(com.Find(".bit-btn").ClassList.Contains("bit-btn-grd"));
+        Assert.AreEqual("--bit-btn-grd:radial-gradient(gold, orange)", com.Find(".bit-btn").GetAttribute("style"));
+
+        com.Render(parameters => parameters.Add(p => p.Gradient, (string?)null));
+
+        Assert.IsFalse(com.Find(".bit-btn").ClassList.Contains("bit-btn-grd"));
+        Assert.IsFalse(com.Find(".bit-btn").HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitButtonGradientShouldStayOnADisabledButtonForTheStylesheetToTakeAway()
+    {
+        // The disabled fill is the stylesheet's to paint (.bit-btn-grd.bit-dis), so the markup keeps saying what was asked
+        // for and a button enabled again gets its gradient back without a render of its own.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.Gradient, "linear-gradient(red, blue)");
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(root.ClassList.Contains("bit-btn-grd"));
+    }
+
+    [TestMethod,
+        DataRow("linear-gradient(red,blue);position:fixed;inset:0;z-index:9999"),
+        DataRow("linear-gradient(red, blue)}.x{color:red"),
+        DataRow("linear-gradient(red, blue));color:red"),
+        DataRow("linear-gradient(red, blue"),
+        DataRow("linear-gradient(red, blue) /* ( */;color:red"),
+        DataRow("url(\"a\nb\");color:red"),
+        DataRow("url('a.png)"),
+        DataRow("url(a\");color:red;--x:\")"),
+        DataRow("url(a');color:red;--x:')"),
+        DataRow("url(a();color:red;--x:)"),
+        DataRow("URL(a();color:red;--x:)"),
+        DataRow("\\75 rl(a();color:red;--x:)"),
+        DataRow("u\\rl(a();color:red;--x:)"),
+        DataRow("url(a b;color:red;--x:)"),
+        DataRow("url(a\\\n;color:red;--x:)"),
+        DataRow("url(a.png")]
+    public void BitButtonGradientShouldIgnoreAValueThatIsNotOneCssValue(string gradient)
+    {
+        // The gradient is written into the style attribute of the root, where a semicolon or a brace at its top level would
+        // add declarations of the value's own to the button.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, gradient);
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-btn-grd"));
+        Assert.IsFalse(root.HasAttribute("style"));
+    }
+
+    [TestMethod,
+        DataRow("linear-gradient(96deg, #524add 10%, #0d71bf 90%), radial-gradient(circle at 0 0, gold, transparent)"),
+        DataRow("url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'/>\"), linear-gradient(red, blue)"),
+        DataRow("url(data:image/png;base64,iVBORw0KGgo=)"),
+        DataRow("linear-gradient(\"a;b\", red)"),
+        DataRow("URL( \"a;b.png\" ), linear-gradient(red, blue)"),
+        DataRow("url( data:image/png;base64,iVBORw0KGgo= ), linear-gradient(red, blue)"),
+        DataRow("url(a\\)b.png), linear-gradient(red, blue)"),
+        DataRow("my-url(a(b), \"c\")")]
+    public void BitButtonGradientShouldKeepASemicolonInsideABracketOrAString(string gradient)
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Gradient, gradient);
+        });
+
+        var root = com.Find(".bit-btn");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-btn-grd"));
+        Assert.AreEqual($"--bit-btn-grd:{gradient}", root.GetAttribute("style"));
+    }
+
     [TestMethod]
     public void BitButtonShouldNotAddNoOpenerWhenNoReferrerIsAlreadyAskedFor()
     {
@@ -1326,6 +1463,150 @@ public class BitButtonTests : BunitTestContext
         Assert.AreEqual("img", image.TagName, ignoreCase: true);
         Assert.AreEqual("/images/bit-logo.svg", image.GetAttribute("src"));
         Assert.IsTrue(image.ClassList.Contains("custom-icon"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconTemplateShouldRenderInTheIconSlotHiddenFromAssistiveTechnologies()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.Classes, new BitButtonClassStyles { Icon = "custom-icon" });
+            parameters.Add(p => p.Styles, new BitButtonClassStyles { Icon = "color: red;" });
+            parameters.AddChildContent("Label");
+        });
+
+        var slot = com.Find(".bit-btn-ict");
+
+        Assert.AreEqual("span", slot.TagName, ignoreCase: true);
+        Assert.AreEqual("true", slot.GetAttribute("aria-hidden"));
+        Assert.IsTrue(slot.ClassList.Contains("custom-icon"));
+        Assert.AreEqual("color: red;", slot.GetAttribute("style"));
+        Assert.HasCount(1, slot.QuerySelectorAll(".custom-svg"));
+
+        // It takes the place the icon has: ahead of the text, which IconPlacement moves it after through the root.
+        Assert.IsTrue(com.Find(".bit-btn").FirstElementChild!.ClassList.Contains("bit-btn-ict"));
+        Assert.AreEqual("Label", com.Find(".bit-btn-prt").TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow(null, null, false),
+        DataRow("AriaLabel", "Close", true),
+        DataRow("aria-label", "Close", true),
+        DataRow("aria-labelledby", "close-label", true),
+        DataRow("SecondaryText", "Close", true)]
+    public void BitButtonIconTemplateShouldBeHiddenOnlyWhileSomethingElseNamesTheButton(string? name, string? value, bool hidden)
+    {
+        // With nothing else to name it, the template is all a screen reader has, so an svg naming itself names the button.
+        var attributes = new Dictionary<string, object>
+        {
+            [nameof(BitButton.IconTemplate)] = (RenderFragment)(b => b.AddMarkupContent(0, "<svg role=\"img\" aria-label=\"Close\"></svg>"))
+        };
+
+        if (name is not null)
+        {
+            attributes[name] = value!;
+        }
+
+        var slot = RenderSplatted(attributes).Find(".bit-btn-ict");
+
+        Assert.AreEqual(hidden ? "true" : null, slot.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod,
+        DataRow(null, false),
+        DataRow("   ", false),
+        DataRow("Menu", true)]
+    public void BitButtonIconTemplateShouldBeHiddenOnlyWhileTheTextRendersSomething(string? text, bool hidden)
+    {
+        // A ChildContent written around an @if that is false is set and renders nothing, so it names nothing either:
+        // the template is then what names the button and stays exposed.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg role=\"img\" aria-label=\"Menu\"></svg>");
+            parameters.AddChildContent(b =>
+            {
+                if (text is not null)
+                {
+                    b.AddContent(0, text);
+                }
+            });
+        });
+
+        Assert.AreEqual(hidden ? "true" : null, com.Find(".bit-btn-ict").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconTemplateShouldBeHiddenWhenIconOnlyKeepsTheTextAsTheName()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.AddChildContent("Menu");
+        });
+
+        Assert.AreEqual("true", com.Find(".bit-btn-ict").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconTemplateShouldTakePrecedenceOverIconIconNameAndIconUrl()
+    {
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.Icon, BitIconInfo.Fa("solid house"));
+            parameters.Add(p => p.IconName, "Emoji");
+            parameters.Add(p => p.IconUrl, "/images/bit-logo.svg");
+            parameters.AddChildContent("Label");
+        });
+
+        Assert.HasCount(1, com.FindAll(".bit-btn-ict .custom-svg"));
+        Assert.IsEmpty(com.FindAll(".bit-btn-icn"));
+        Assert.IsEmpty(com.FindAll(".bit-btn-icnu"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconTemplateShouldKeepTheShapeOfAnIconButton()
+    {
+        // With no text at all the button is squared off as an icon one, the shape an svg put in its content loses.
+        var alone = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.Add(p => p.AriaLabel, "Menu");
+        });
+
+        Assert.IsTrue(alone.Find(".bit-btn").ClassList.Contains("bit-btn-ntx"));
+        Assert.IsEmpty(alone.FindAll(".bit-btn-tcn"));
+        Assert.HasCount(1, alone.FindAll(".bit-btn-ict .custom-svg"));
+
+        // IconOnly drops the text out of the box and keeps it as the name, beside the template.
+        var iconOnly = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.IconOnly, true);
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.AddChildContent("Menu");
+        });
+
+        Assert.IsTrue(iconOnly.Find(".bit-btn").ClassList.Contains("bit-btn-ntx"));
+        Assert.IsEmpty(iconOnly.FindAll(".bit-btn-tcn"));
+        Assert.AreEqual("Menu", iconOnly.Find(".bit-btn-srl").TextContent.Trim());
+        Assert.HasCount(1, iconOnly.FindAll(".bit-btn-ict .custom-svg"));
+    }
+
+    [TestMethod]
+    public void BitButtonIconTemplateShouldStayUnderTheSpinnerWhileLoading()
+    {
+        // The content is kept in the flow under the spinner so the box holds its size, the template with it.
+        var com = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.Loading, true);
+            parameters.Add(p => p.IconTemplate, "<svg class=\"custom-svg\"></svg>");
+            parameters.AddChildContent("Save");
+        });
+
+        Assert.HasCount(1, com.FindAll(".bit-btn-hcn .bit-btn-ict .custom-svg"));
+        Assert.HasCount(1, com.FindAll(".bit-btn-spn"));
     }
 
     [TestMethod]

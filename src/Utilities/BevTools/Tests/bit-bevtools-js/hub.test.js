@@ -892,6 +892,49 @@ describe('redaction in the hub', () => {
         hub.detach();
     });
 
+    it('matches a short sensitive name only where it starts or ends a word, as BevToolsRedactor does', async () => {
+        installPage();
+        const hub = await loadHub();
+        hub.attach(runtime(1), { sensitivePatterns: ['otp', 'ssn', 'token'] });
+
+        expect(hub.redactUrl('confirm?otp=482913&userOtp=1&OTPCode=2&otp_code=3&NotPublished=x&HotPath=y&ClassName=z&accesstoken=t'))
+            .toBe('confirm?otp=«redacted»&userOtp=«redacted»&OTPCode=«redacted»&otp_code=«redacted»&NotPublished=x&HotPath=y&ClassName=z&accesstoken=«redacted»');
+        for (const [name, expected] of [['otp', true], ['UserOtp', true], ['dbpwd', false], ['Footprint', false], ['hotplug', false], ['HOTPATH', false], ['IsOTPValid', true]]) {
+            expect(hub.matchesSensitivePattern(name, 'otp'), name).toBe(expected);
+        }
+        // Positions are the name's own: lower cased, "İ" becomes two code units and would shift the boundary checks.
+        expect(hub.matchesSensitivePattern('İotpx', 'otp')).toBe(false);
+        hub.detach();
+    });
+
+    it('matches every other sensitive name anywhere and ignores empty patterns, as BevToolsRedactor does', async () => {
+        installPage();
+        const hub = await loadHub();
+        hub.attach(runtime(1), { sensitivePatterns: ['pwd', '', '  ', 'token'] });
+
+        expect(hub.redactUrl('x?newpwdconfirm=1&name=2')).toBe('x?newpwdconfirm=«redacted»&name=2');
+        for (const name of ['dbpwd', 'userpwdhash', 'newpwdconfirm']) {
+            expect(hub.matchesSensitivePattern(name, 'pwd'), name).toBe(true);
+        }
+        expect(hub.matchesSensitivePattern('anything', '')).toBe(false);
+        window.localStorage = { length: 1, key: () => 'theme', getItem: () => 'dark' };
+        expect(hub.getStorage('local', ['', ' '], true)[0].redacted).toBe(false);
+        hub.detach();
+    });
+
+    it('finds a one-time password by shape without a regular expression lookbehind, which Safari before 16.4 cannot parse', async () => {
+        expect(fs.readFileSync(BUNDLE, 'utf8')).not.toMatch(/\(\?<[!=]/);
+        installPage();
+        const hub = await loadHub();
+        hub.attach(runtime(1), { sensitivePatterns: [] });
+
+        for (const [value, expected] of [['otp=482913', true], ['{"totp": "1"}', true], ['user_otp: 1', true], ['hotpot=1', false]]) {
+            window.localStorage = { length: 1, key: () => 'k', getItem: () => value };
+            expect(hub.getStorage('local', [], true)[0].redacted, value).toBe(expected);
+        }
+        hub.detach();
+    });
+
     it('leaves dotted text with "ey" inside a word alone', async () => {
         installPage();
         const hub = await loadHub();
@@ -910,5 +953,50 @@ describe('redaction in the hub', () => {
         const [entry] = hub.getStorage('local', [], false);
 
         expect(entry).toMatchObject({ key: 'theme', size: 4, preview: '«hidden»', redacted: true });
+    });
+});
+
+describe('prefetching the stylesheet', () => {
+    class FakeSheet {
+        replaceSync(text) { this.text = text; }
+    }
+
+    afterEach(() => {
+        delete globalThis.CSSStyleSheet;
+        delete globalThis.fetch;
+    });
+
+    it('adopts it, outside the head that enhanced navigation replaces, and fetches it once', async () => {
+        installPage();
+        const fetched = [];
+        globalThis.fetch = async url => { fetched.push(url); return { ok: true, status: 200, text: async () => '.bev-root{color:red}' }; };
+        globalThis.CSSStyleSheet = FakeSheet;
+        document.adoptedStyleSheets = [];
+        const hub = await loadHub();
+
+        expect(await hub.prefetchStylesheet('_content/Bit.BevTools/bit-bevtools.css')).toBe(true);
+        expect(await hub.prefetchStylesheet('_content/Bit.BevTools/bit-bevtools.css')).toBe(true);
+
+        expect(fetched).toEqual(['https://app.example/_content/Bit.BevTools/bit-bevtools.css']);
+        expect(document.adoptedStyleSheets.map(s => s.text)).toEqual(['.bev-root{color:red}']);
+    });
+
+    it('says so where the browser cannot adopt a stylesheet, so the panel keeps its own link', async () => {
+        installPage();
+        globalThis.fetch = async () => { throw new Error('not fetched'); };
+        const hub = await loadHub();
+
+        expect(await hub.prefetchStylesheet('_content/Bit.BevTools/bit-bevtools.css')).toBe(false);
+    });
+
+    it('fails when the stylesheet cannot be fetched', async () => {
+        installPage();
+        globalThis.fetch = async () => ({ ok: false, status: 404, text: async () => '' });
+        globalThis.CSSStyleSheet = FakeSheet;
+        document.adoptedStyleSheets = [];
+        const hub = await loadHub();
+
+        await expect(hub.prefetchStylesheet('_content/Bit.BevTools/bit-bevtools.css')).rejects.toThrow('404');
+        expect(document.adoptedStyleSheets).toEqual([]);
     });
 });

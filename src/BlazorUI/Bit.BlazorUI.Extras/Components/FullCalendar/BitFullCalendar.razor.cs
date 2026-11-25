@@ -310,16 +310,16 @@ public partial class BitFullCalendar : BitComponentBase
     [Parameter] public BitFullCalendarSettings Settings { get; set; } = new();
 
     /// <summary>
+    /// Localized strings for calendar UI labels, buttons, dialogs, filters, and accessibility text.
+    /// Defaults to English; override individual properties on a <see cref="BitFullCalendarStrings"/>
+    /// instance to localize the component without replacing built-in dialogs.
+    /// </summary>
+    [Parameter] public BitFullCalendarStrings Strings { get; set; } = new();
+
+    /// <summary>
     /// Custom CSS styles for different parts of the calendar.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitFullCalendarClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// Localized strings for calendar UI labels, buttons, dialogs, filters, and accessibility text.
-    /// Defaults to English; override individual properties on a <see cref="BitFullCalendarTexts"/>
-    /// instance to localize the component without replacing built-in dialogs.
-    /// </summary>
-    [Parameter] public BitFullCalendarTexts Texts { get; set; } = new();
 
     /// <summary>
     /// Optional template for customizing event rendering in the resource timeline view.
@@ -425,7 +425,7 @@ public partial class BitFullCalendar : BitComponentBase
     private BitCascadingValueList BuildCascadingValues() => new()
     {
         { State },
-        { Texts },
+        { Strings },
         { _changeNotifier },
         { _colorScheme },
         { Settings },
@@ -469,10 +469,10 @@ public partial class BitFullCalendar : BitComponentBase
         // culture, the date bounds and the settings the state is initialized from.
         CascadingParameters?.UpdateParameters(this);
 
-        // Settings/Texts have default instances but can be set to null when bound externally.
-        // Normalize before any downstream use (ApplySettings, cascaded Texts) to avoid NREs.
+        // Settings/Strings have default instances but can be set to null when bound externally.
+        // Normalize before any downstream use (ApplySettings, cascaded Strings) to avoid NREs.
         Settings ??= new();
-        Texts ??= new();
+        Strings ??= new();
 
         State.SetTimeProvider(TimeProvider);
         State.Initialize(Events ?? [], ResolveCulture());
@@ -500,11 +500,11 @@ public partial class BitFullCalendar : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        // A null Settings/Texts can arrive from external binding, overriding the default instances;
+        // A null Settings/Strings can arrive from external binding, overriding the default instances;
 
-        // restore valid defaults before ApplySettings and the cascaded Texts are consumed downstream.
+        // restore valid defaults before ApplySettings and the cascaded Strings are consumed downstream.
         Settings ??= new();
-        Texts ??= new();
+        Strings ??= new();
 
         // Mark the parameter-application window. The state changes made below (events, resources,
         // views, view, mode, date) are held in one update of the state, announced once when it ends,
@@ -1024,10 +1024,10 @@ public partial class BitFullCalendar : BitComponentBase
     {
         var message = showNotice is false ? null : refusal switch
         {
-            BitFullCalendarChangeRefusal.Overlap => Texts.EventOverlapMessage,
-            BitFullCalendarChangeRefusal.OutOfRange => Texts.OutOfRangeMessage,
-            BitFullCalendarChangeRefusal.OutsideBusinessHours => Texts.OutsideBusinessHoursMessage,
-            BitFullCalendarChangeRefusal.Blocked => Texts.BlockedMessage,
+            BitFullCalendarChangeRefusal.Overlap => Strings.EventOverlapMessage,
+            BitFullCalendarChangeRefusal.OutOfRange => Strings.OutOfRangeMessage,
+            BitFullCalendarChangeRefusal.OutsideBusinessHours => Strings.OutsideBusinessHoursMessage,
+            BitFullCalendarChangeRefusal.Blocked => Strings.BlockedMessage,
             _ => null
         };
 
