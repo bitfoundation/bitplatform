@@ -215,15 +215,16 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
 // the width equally, so the group reads as a set of evenly distributed options rather than a left aligned
 // row trailed by empty space. "min-width: fit-content" keeps an item from being squeezed below its own
 // content, so a long item pushes the row to wrap instead of collapsing every item into a narrow column. A grid sizes
-// its columns itself, and an item held at its content width there would overflow its column, so it is left out - at
-// no cost in weight, which keeps an app's class on the item container where it stood against this rule.
+// its columns itself, and an item held at its content width there would overflow its column, so it is left out - its
+// own items and those of a grid group nested in an item template alike, which the descendant selector reaches too -
+// at no cost in weight, which keeps an app's class on the item container where it stood against this rule.
 .bit-chg-flw {
     .bit-chg-cnt {
         width: 100%;
     }
 
     &.bit-chg-hor:where(:not(.bit-chg-grd)) {
-        .bit-chg-icn {
+        .bit-chg-icn:where(:not(.bit-chg-grd > .bit-chg-cnt > .bit-chg-icn)) {
             flex: 1 1 0;
             min-width: fit-content;
         }
@@ -296,6 +297,12 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
     width: fit-content;
     display: inline-flex;
     padding-inline-start: 0;
+}
+
+// In a grid the tile fills its column as every other item does, so the tiles of one choice are the same size. The
+// grid qualifier adds no weight, so the tile still weighs the one class it always did against an app's class.
+:where(.bit-chg-grd > .bit-chg-cnt) > .bit-chg-ihi {
+    width: auto;
 }
 
 // The tile paints a surface of its own only in Text, the variant with no card around it: the card variants make it

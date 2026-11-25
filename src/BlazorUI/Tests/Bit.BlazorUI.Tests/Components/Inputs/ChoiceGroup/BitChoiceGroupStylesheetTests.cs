@@ -130,8 +130,16 @@ public class BitChoiceGroupStylesheetTests
                       "The fluid tracks of MinItemWidth are declared before the counted ones of Columns and lose to them.");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-chg.bit-chg-mnw {"), "width: 100%;");
 
-        // The FullWidth row keeps an item at its content width, which a grid column must not inherit.
+        // The FullWidth row keeps an item at its content width, which a grid column must not inherit - neither its own
+        // nor one of a grid group nested in an item template, which the descendant selector reaches too.
         StringAssert.Contains(stylesheet, "&.bit-chg-hor:where(:not(.bit-chg-grd)) {");
+        StringAssert.Contains(stylesheet, ".bit-chg-icn:where(:not(.bit-chg-grd > .bit-chg-cnt > .bit-chg-icn)) {");
+
+        // The icon and image tile of the Text variant fills its column as the other items do, at no extra weight.
+        var tile = SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-chg-grd > .bit-chg-cnt) > .bit-chg-ihi {");
+        StringAssert.Contains(tile, "width: auto;");
+        Assert.IsTrue(stylesheet.IndexOf("\n:where(.bit-chg-grd > .bit-chg-cnt) > .bit-chg-ihi {", StringComparison.Ordinal) > stylesheet.IndexOf("\n.bit-chg-ihi {", StringComparison.Ordinal),
+                      "The grid's tile width is declared before the tile's own and loses to it.");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "ChoiceGroup", "BitChoiceGroup.scss");

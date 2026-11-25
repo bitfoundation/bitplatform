@@ -348,7 +348,11 @@ public class BitChoiceGroupTests : BunitTestContext
       DataRow("15rem", "15rem"),
       DataRow(" 30% ", "30%"),
       DataRow("240", "240px"),
-      DataRow("12.5", "12.5px")
+      DataRow("12.5", "12.5px"),
+      DataRow("+240", "240px"),
+      DataRow("240.", "240px"),
+      DataRow(".5rem", "0.5rem"),
+      DataRow("calc(10rem + 4px)", "calc(10rem + 4px)")
     ]
     public void BitChoiceGroupShouldLayItsItemsOutInColumnsOfAMinimumWidth(string minItemWidth, string expected)
     {
@@ -380,14 +384,82 @@ public class BitChoiceGroupTests : BunitTestContext
 
         var root = component.Find(".bit-chg");
 
-        // The class of the fluid tracks is what makes MinItemWidth win in the stylesheet; Horizontal still names the
-        // orientation the arrow keys are announced with, while the grid replaces its row.
+        // The class of the fluid tracks is what makes MinItemWidth win in the stylesheet; Horizontal keeps its class
+        // (its default gap), while the grid replaces its row and is announced with no orientation.
         Assert.IsTrue(root.ClassList.Contains("bit-chg-grd"));
         Assert.IsTrue(root.ClassList.Contains("bit-chg-mnw"));
         Assert.IsTrue(root.ClassList.Contains("bit-chg-hor"));
-        Assert.AreEqual("horizontal", root.GetAttribute("aria-orientation"));
+        Assert.IsFalse(root.HasAttribute("aria-orientation"));
         Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-chg-cols:3"));
         Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-chg-mnw:10rem"));
+    }
+
+    [TestMethod,
+      DataRow("-200"),
+      DataRow("-1rem"),
+      DataRow("0"),
+      DataRow("0px"),
+      DataRow("14 rem"),
+      DataRow("1e3"),
+      DataRow("10foo"),
+      DataRow("rem"),
+      DataRow("   ")
+    ]
+    public void BitChoiceGroupShouldIgnoreAMinItemWidthThatIsNoPositiveLength(string minItemWidth)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Columns, 3);
+            parameters.Add(p => p.MinItemWidth, minItemWidth);
+        });
+
+        var root = component.Find(".bit-chg");
+
+        // A width the browser could not read would throw the whole track list away, Columns' with it, and a width of
+        // none would crush the columns, so it is ignored and the counted columns stay.
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-grd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-mnw"));
+        Assert.IsTrue(root.GetAttribute("style")!.Contains("--bit-chg-cols:3"));
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("--bit-chg-mnw"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotBeAGridForAMinItemWidthAloneThatIsNoPositiveLength()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.MinItemWidth, "-200");
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-grd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-mnw"));
+        Assert.AreEqual("vertical", root.GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod,
+      DataRow(true),
+      DataRow(false)
+    ]
+    public void BitChoiceGroupShouldRenderNoOrientationInAGrid(bool horizontal)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Columns, 2);
+            parameters.Add(p => p.Horizontal, horizontal);
+        });
+
+        // The arrow keys follow the order of the items, not the rows and columns of the grid, so neither orientation
+        // is announced; it is back once the grid is dropped.
+        Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-orientation"));
+
+        component.Render(parameters => parameters.Add(p => p.Columns, (int?)null));
+
+        Assert.AreEqual(horizontal ? "horizontal" : "vertical", component.Find(".bit-chg").GetAttribute("aria-orientation"));
     }
 
     [TestMethod]

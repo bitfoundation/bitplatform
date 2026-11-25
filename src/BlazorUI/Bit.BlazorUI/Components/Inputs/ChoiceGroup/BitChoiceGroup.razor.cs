@@ -11,6 +11,20 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     // Why the options of this TItem never reach the ChoiceGroup (see BitItemValueType), worked out once per closed type.
     private static readonly string? _optionValueTypeMismatch = BitItemValueType.GetOptionMismatch(nameof(BitChoiceGroup<TItem, TValue>), typeof(TItem), typeof(TValue), typeof(BitChoiceGroupOption<>));
 
+    // The units of a CSS length, which is all a MinItemWidth written as a number and a unit is checked against: a value
+    // the browser cannot read would throw the whole track list of the grid away, Columns' tracks included.
+    private static readonly HashSet<string> _cssLengthUnits = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "px", "cm", "mm", "q", "in", "pc", "pt",
+        "em", "rem", "ex", "rex", "ch", "rch", "cap", "rcap", "ic", "ric", "lh", "rlh",
+        "vw", "vh", "vi", "vb", "vmin", "vmax",
+        "svw", "svh", "svi", "svb", "svmin", "svmax",
+        "lvw", "lvh", "lvi", "lvb", "lvmin", "lvmax",
+        "dvw", "dvh", "dvi", "dvb", "dvmin", "dvmax",
+        "cqw", "cqh", "cqi", "cqb", "cqmin", "cqmax",
+        "%"
+    };
+
     private List<TItem> _items = [];
     private string _name = default!;
     private bool _autoFocusDone;
@@ -100,8 +114,10 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <see cref="MinItemWidth"/> wins over this parameter when both are set, as it does on <see cref="BitGrid"/>.
     /// <br />
     /// The grid replaces the column or the row <see cref="Horizontal"/> lays the items out in; Horizontal still decides
-    /// the <c>aria-orientation</c> of the group and its default gap, and <see cref="Gap"/> spaces the rows and the
-    /// columns alike. The items keep the order they are given in, and so does the arrow key navigation between them.
+    /// the default gap, and <see cref="Gap"/> spaces the rows and the columns alike. The items keep the order they are
+    /// given in, and so does the arrow key navigation between them: every arrow key moves to the next or the previous
+    /// item in that order, not along the rows and columns. A grid is neither a row nor a column, so the group renders
+    /// no <c>aria-orientation</c> while it lays its items out in one.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public int? Columns { get; set; }
@@ -281,6 +297,11 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <br />
     /// It wins over <see cref="Columns"/> when both are set, as it does on <see cref="BitGrid"/>, and replaces the
     /// layout of <see cref="Horizontal"/> the way Columns does.
+    /// <br />
+    /// A value that is not a positive length - a zero or negative width, or one the browser could not read, such as
+    /// <c>14 rem</c> or an unknown unit - is ignored, as if it were not set, so <see cref="Columns"/> still lays the
+    /// items out when it is set. A CSS function (<c>calc()</c>, <c>clamp()</c>, <c>var()</c>, ...) is passed through
+    /// as written.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public string? MinItemWidth { get; set; }
@@ -584,9 +605,9 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
         // The grid class is what turns the grid on, so it is only handed out alongside a column count or a width to
         // read; the second class picks the fluid tracks of MinItemWidth over the counted ones of Columns.
-        ClassBuilder.Register(() => Columns.HasValue || MinItemWidth.HasValue() ? "bit-chg-grd" : string.Empty);
+        ClassBuilder.Register(() => IsGrid ? "bit-chg-grd" : string.Empty);
 
-        ClassBuilder.Register(() => MinItemWidth.HasValue() ? "bit-chg-mnw" : string.Empty);
+        ClassBuilder.Register(() => GetMinItemWidth(MinItemWidth) is not null ? "bit-chg-mnw" : string.Empty);
 
         ClassBuilder.Register(() => LabelPlacement switch
         {
@@ -618,7 +639,7 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
         StyleBuilder.Register(() => Columns.HasValue ? FormattableString.Invariant($"--bit-chg-cols:{Math.Max(1, Columns.Value)}") : string.Empty);
 
-        StyleBuilder.Register(() => MinItemWidth.HasValue() ? $"--bit-chg-mnw:{GetMinItemWidth(MinItemWidth!)}" : string.Empty);
+        StyleBuilder.Register(() => GetMinItemWidth(MinItemWidth) is { } minItemWidth ? $"--bit-chg-mnw:{minItemWidth}" : string.Empty);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
@@ -648,17 +669,39 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    // A bare number is no CSS length, and one inside the minmax() of the grid tracks would throw the whole track list
-    // away, so it is read as pixels - what it was meant as, and what BitGrid reads its MinItemWidth as too. The number
-    // is written out again rather than echoed, which turns the forms CSS does not accept (a trailing decimal point)
-    // into the one it does.
-    private static string GetMinItemWidth(string value)
+    // Columns, or a MinItemWidth that can be read, lay the items out in a grid; a MinItemWidth that cannot is no grid.
+    internal bool IsGrid => Columns.HasValue || GetMinItemWidth(MinItemWidth) is not null;
+
+    // The MinItemWidth written into the grid tracks, or null when there is none to write. A value the browser cannot
+    // read inside the minmax() of the tracks would throw the whole track list away - Columns' tracks with it, leaving
+    // a single column of items sized to their content - so only a positive length gets through: a bare number is read
+    // as pixels (what it was meant as, and what BitGrid reads its MinItemWidth as too), a number with a unit is checked
+    // against the units of a CSS length, and a sign is read as BitGrid reads it. A zero or negative width is none: its
+    // auto-fill would make the columns a pixel wide. The number is written out again rather than echoed, which turns
+    // the forms CSS does not accept (a leading plus, a trailing decimal point) into the one it does. A CSS function is
+    // left to the browser, as there is nothing to read here.
+    private static string? GetMinItemWidth(string? value)
     {
-        var length = value.Trim();
+        if (value.HasValue() is false) return null;
 
-        if (double.TryParse(length, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var number) is false) return length;
+        var length = value!.Trim();
 
-        return FormattableString.Invariant($"{number}px");
+        if (length.IndexOf('(') > 0 && length.EndsWith(')')) return length;
+
+        var unitStart = length.Length;
+        while (unitStart > 0 && length[unitStart - 1] is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or '%')
+        {
+            unitStart--;
+        }
+
+        var unit = length[unitStart..];
+        if (unit.Length > 0 && _cssLengthUnits.Contains(unit) is false) return null;
+
+        if (double.TryParse(length[..unitStart], NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var number) is false) return null;
+
+        if (number <= 0 || double.IsFinite(number) is false) return null;
+
+        return FormattableString.Invariant($"{number}{(unit.Length > 0 ? unit : "px")}");
     }
 
     // The internal label element is only rendered (and therefore only worth referencing) when there is a
