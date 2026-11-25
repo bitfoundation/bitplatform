@@ -304,14 +304,16 @@ public class BitTextRotatorTests : BunitTestContext
         Assert.AreEqual(0, CurrentIndex(component));
         Assert.AreEqual(0, component.FindAll(".bit-trt-prv").Count);
         StringAssert.Contains(component.FindAll(".bit-trt-itm")[0].GetAttribute("style"), "color:red");
-        Assert.IsFalse(GetTimer(component.Instance)?.Enabled ?? false);
     }
 
+    // A page's ForceAnimation switch (a bit-fam put on an ancestor) changes what the preference reads as, and nothing
+    // tells the rotator so but its next turn.
     [TestMethod]
-    public void BitTextRotatorShouldNotRotateBeforeTheMotionPreferenceIsRead()
+    public async Task BitTextRotatorShouldFollowAChangeOfTheMotionPreference()
     {
-        // An answer that never comes.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true);
+        var reducedMotion = true;
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => reducedMotion).SetResult(true);
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => reducedMotion is false).SetResult(false);
 
         var component = RenderComponent<BitTextRotator>(parameters =>
         {
@@ -319,9 +321,48 @@ public class BitTextRotatorTests : BunitTestContext
             parameters.Add(p => p.Items, _items);
         });
 
-        component.Render(parameters => parameters.Add(p => p.Interval, 60d));
+        // Nothing renders while the motion is reduced, so a few intervals are waited for rather than a render.
+        await Task.Delay(300);
 
-        Assert.IsNull(GetTimer(component.Instance));
+        Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.Utils.prefersReducedMotion"].Count > 1);
+        Assert.AreEqual(0, CurrentIndex(component));
+
+        // Animation forced back on: the rotation starts.
+        reducedMotion = false;
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, CurrentIndex(component)), _timeout);
+
+        // And off again: back on the first item, at rest, where the stylesheet shows it.
+        reducedMotion = true;
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(0, CurrentIndex(component));
+            Assert.IsFalse(component.FindAll(".bit-trt-itm")[0].ClassList.Contains("bit-trt-ent"));
+            Assert.AreEqual(0, component.FindAll(".bit-trt-prv").Count);
+        }, _timeout);
+    }
+
+    [TestMethod]
+    public async Task BitTextRotatorShouldNotTurnTwiceWhileThePreferenceIsBeingRead()
+    {
+        // An answer that is held back for several ticks.
+        var answer = Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true);
+
+        var component = RenderComponent<BitTextRotator>(parameters =>
+        {
+            parameters.Add(p => p.Interval, 50d);
+            parameters.Add(p => p.Items, _items);
+        });
+
+        await Task.Delay(300);
+
+        Assert.AreEqual(1, answer.Invocations.Count);
+        Assert.AreEqual(0, CurrentIndex(component));
+
+        answer.SetResult(false);
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, CurrentIndex(component)), _timeout);
     }
 
     [TestMethod,
@@ -340,6 +381,25 @@ public class BitTextRotatorTests : BunitTestContext
         });
 
         Assert.AreEqual(block, component.Find(".bit-trt").ClassList.Contains("bit-trt-blk"));
+    }
+
+    [TestMethod]
+    public void BitTextRotatorShouldFollowAChangeOfElementWithItsBlockClass()
+    {
+        var component = RenderComponent<BitTextRotator>(parameters =>
+        {
+            parameters.Add(p => p.Items, _items);
+        });
+
+        Assert.IsFalse(component.Find(".bit-trt").ClassList.Contains("bit-trt-blk"));
+
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.Element, "div"));
+
+        Assert.IsTrue(component.Find(".bit-trt").ClassList.Contains("bit-trt-blk"));
+
+        component.SetParametersAndRender(parameters => parameters.Add(p => p.Element, "span"));
+
+        Assert.IsFalse(component.Find(".bit-trt").ClassList.Contains("bit-trt-blk"));
     }
 
     [TestMethod]

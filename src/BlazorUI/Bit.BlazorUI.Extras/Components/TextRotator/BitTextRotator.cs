@@ -14,9 +14,10 @@ namespace Bit.BlazorUI;
 /// "--bit-TextRotator-*" custom properties.
 /// <br />
 /// Under a reduced motion preference only the first item is shown and nothing moves, unless the rotator, or an
-/// ancestor of it, opts out through <see cref="BitComponentBase.ForceAnimation"/>: the rotation does not start, so the
-/// item shown is the current one and carries the CurrentItem class and style. The preference, and the opt-out, are
-/// read once the component is interactive.
+/// ancestor of it, opts out through <see cref="BitComponentBase.ForceAnimation"/>: the rotation holds on the first
+/// item, so the item shown is the current one and carries the CurrentItem class and style. The preference and the
+/// opt-out are read at every turn, so a change of either - a ForceAnimation switched on or off around the rotator - is
+/// followed within an <see cref="Interval"/>.
 /// <br />
 /// The rotation is not announced: the items that are seen are hidden from assistive technologies, which are given all
 /// the items at once instead, as one stable text - so a screen reader reads every word the rotator stands for, and
@@ -42,10 +43,9 @@ public partial class BitTextRotator : BitComponentBase
     // is shown at rest rather than played in - on the first render and on the one that takes over a prerendered page.
     private int _previous = -1;
     private System.Timers.Timer? _timer;
-    // Whether the reader asked for less motion, read off the root once it is rendered interactively; until it is read
-    // nothing rotates, so a rotator under the preference never moves on before it is known.
-    private bool _reducedMotion;
-    private bool _reducedMotionRead;
+    // A turn waiting for the motion preference to be read; a tick that comes before it is answered is skipped, so a
+    // slow answer never moves the rotator on twice.
+    private bool _turning;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
 
@@ -84,7 +84,8 @@ public partial class BitTextRotator : BitComponentBase
     /// "_", "." and ":" that join them. A void element (such as "img" or "br") is defined to hold no content, so no
     /// item is rendered into one.
     /// </remarks>
-    [Parameter] public string? Element { get; set; }
+    [Parameter, ResetClassBuilder]
+    public string? Element { get; set; }
 
     /// <summary>
     /// The time each item is shown for before the next one comes in, in ms.
@@ -164,28 +165,17 @@ public partial class BitTextRotator : BitComponentBase
         UpdateTimer();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
-        await base.OnAfterRenderAsync(firstRender);
+        base.OnAfterRender(firstRender);
 
         // The rotation starts here rather than with the parameters: there is no render after the first one while
         // prerendering or rendering statically, so a timer started before it would tick on the server against a
         // rotator that is not on screen.
-        if (firstRender is false) return;
-
-        // Under reduced motion the stylesheet holds the first item still, so the rotation does not start at all:
-        // the classes and styles of the current item stay on the item that is seen, and no render goes out every
-        // Interval to change nothing on screen.
-        try
+        if (firstRender)
         {
-            _reducedMotion = await _js.BitUtilsPrefersReducedMotion(RootElement);
+            UpdateTimer();
         }
-        catch (JSDisconnectedException) { return; } // the circuit went away; there is nothing left to rotate
-        catch (JSException) { } // the preference could not be read, so the rotator rotates as it would without it
-
-        _reducedMotionRead = true;
-
-        UpdateTimer();
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -257,6 +247,19 @@ public partial class BitTextRotator : BitComponentBase
 
 
 
+    private async Task<bool> ReadReducedMotion()
+    {
+        try
+        {
+            return await _js.BitUtilsPrefersReducedMotion(RootElement);
+        }
+        catch (JSException)
+        {
+            // The preference could not be read, so the rotator rotates as it would without it.
+            return false;
+        }
+    }
+
     private string ResolveElement()
     {
         var element = Element?.Trim();
@@ -275,16 +278,15 @@ public partial class BitTextRotator : BitComponentBase
         return index == _previous ? "bit-trt-itm bit-trt-prv" : "bit-trt-itm";
     }
 
-    private bool ShouldRotate() => Paused is false && Disabled is false && _reducedMotion is false && _items.Length > 1;
+    private bool ShouldRotate() => Paused is false && Disabled is false && _items.Length > 1;
 
     private void UpdateTimer()
     {
         // A timer created once the disposal has started would be left ticking for the rest of the process.
         if (IsDisposing || IsDisposed) return;
 
-        // Before the first render there is nothing on screen to rotate, and until the motion preference is read
-        // nothing is known to be allowed to move (see OnAfterRenderAsync).
-        if (_reducedMotionRead is false) return;
+        // Before the first render there is nothing on screen to rotate (see OnAfterRender).
+        if (IsRendered is false) return;
 
         if (ShouldRotate() is false)
         {
@@ -320,17 +322,46 @@ public partial class BitTextRotator : BitComponentBase
 
         try
         {
-            await InvokeAsync(() =>
+            await InvokeAsync(async () =>
             {
+                if (IsDisposed || _turning || ShouldRotate() is false) return;
+
+                // Under reduced motion the stylesheet holds the first item still, and the rotation holds on it too, so
+                // the classes and styles of the current item stay on the item that is seen. It is asked at every turn
+                // rather than once, since a ForceAnimation around the rotator (a page's switch) or the preference
+                // itself can change at any time, and nothing else tells the rotator so.
+                bool reducedMotion;
+                _turning = true;
+                try
+                {
+                    reducedMotion = await ReadReducedMotion();
+                }
+                finally
+                {
+                    _turning = false;
+                }
+
                 if (IsDisposed || ShouldRotate() is false) return;
 
-                _previous = _current;
-                _current = (_current + 1) % _items.Length;
+                if (reducedMotion)
+                {
+                    // Back on the first item, at rest, where the stylesheet shows it.
+                    if (_current == 0 && _previous < 0) return;
+
+                    _current = 0;
+                    _previous = -1;
+                }
+                else
+                {
+                    _previous = _current;
+                    _current = (_current + 1) % _items.Length;
+                }
 
                 StateHasChanged();
             });
         }
         catch (ObjectDisposedException) { } // the renderer went away between the tick and the dispatch
+        catch (JSDisconnectedException) { } // the circuit went away while the preference was being read
         catch (Exception ex)
         {
             // An exception that escapes an async void handler takes the whole process down, so anything else is
