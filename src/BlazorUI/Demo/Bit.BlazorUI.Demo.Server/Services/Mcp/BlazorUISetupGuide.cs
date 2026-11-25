@@ -192,6 +192,15 @@ public static class BlazorUISetupGuide
                 builder.AppendLine("```csharp").AppendLine($"services.{package.Registration}; // also registers the core services").AppendLine("```").AppendLine();
             }
 
+            if (package == BlazorUIAssemblies.Extras)
+            {
+                // The one Extras component with services of its own: without them it still runs, on default options,
+                // and logs a warning saying so.
+                builder.AppendLine("`BitCommandPalette` keeps its registry, open state and history in services of its own - register")
+                       .AppendLine("them too where the app uses it (in the same place, so every container has them):").AppendLine();
+                builder.AppendLine("```csharp").AppendLine("services.AddBitCommandPaletteServices(options => { /* optional BitCommandPaletteOptions */ });").AppendLine("```").AppendLine();
+            }
+
             builder.AppendLine("```html").AppendLine(package.StylesheetTag);
             if (package.Script is not null) builder.AppendLine(package.ScriptTag);
             builder.AppendLine("```").AppendLine();

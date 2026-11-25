@@ -52,6 +52,11 @@ public partial class BitCommandPalette : BitComponentBase
 
     private bool _isOpen;
     private bool _pendingOpen;
+    // The Open parameter as the parent last passed it. The palette acts on a change of it, never on its value alone: a
+    // parent rendering again while the palette opens or closes itself - from its shortcut, a trigger, the service -
+    // passes the value it held before OpenChanged reached it, which must neither close what just opened nor reopen
+    // what the user just dismissed.
+    private bool? _openParameter;
     private bool _selectOnOpen;
     private bool _pendingFocus;
     private bool _pendingScroll;
@@ -435,6 +440,14 @@ public partial class BitCommandPalette : BitComponentBase
 
         // A trigger shows and announces the shortcut and the strings of the palette it opens, not the options.
         Service.SetModalPalette(this, EffectiveToggleShortcut, S);
+
+        var openChanged = _openParameter != Open;
+        _openParameter = Open;
+
+        if (openChanged is false)
+        {
+            return;
+        }
 
         if (Open && !_isOpen)
         {
