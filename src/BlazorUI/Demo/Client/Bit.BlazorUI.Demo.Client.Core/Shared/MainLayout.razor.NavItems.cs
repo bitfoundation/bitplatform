@@ -153,6 +153,7 @@ public partial class MainLayout
             [
                 new() { Text = "CascadingValueProvider", Url = "/components/cascadingvalueprovider" },
                 new() { Text = "Element", Url = "/components/element", Description = "DynamicElement, Slot", Data = "Tag, HtmlTag, Polymorphic, CustomElement, WebComponent, Wrapper" },
+                new() { Text = "Embed", Url = "/components/embed", Description = "Iframe, VideoEmbed, ResponsiveEmbed", Data = "YouTube, Vimeo, Video, Map, iframe, Aspect ratio, Responsive video, Click to load, Facade, Lazy" },
                 new() { Text = "FocusOnInvalidSubmit", Url = "/components/focusoninvalidsubmit", Description = "FocusFirstInvalid, ScrollToFirstError", Data = "EditForm, Validation, Submit, aria-invalid, Focus, Invalid field, Error" },
                 new() { Text = "Icon", Url = "/components/icon", Description = "Glyph, Symbol" },
                 new() { Text = "Image", Url = "/components/image", Description = "Img, Picture", Data = "Photo, Figure, Thumbnail, Lazy, Srcset, AspectRatio, Placeholder, Fallback" },
@@ -202,6 +203,7 @@ public partial class MainLayout
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "ShinyText, Skeleton, Loading, AI" },
                 new() { Text = "TimeZonePicker", Url = "/components/timezonepicker", Description = "TimeZoneSelector, TimeZoneSelect, TzPicker", Data = "Time zone, Timezone, UTC offset, GMT offset, IANA, Olson, Windows time zone, TimeZoneInfo, Daylight saving time, DST, Detect time zone" },
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
+                new() { Text = "VirtualKeyboard", Url = "/components/virtualkeyboard", Description = "OnScreenKeyboard, TouchKeyboard, SoftKeyboard", Data = "Keyboard, On-screen keyboard, Touch keyboard, Soft keyboard, Kiosk, POS, Numpad, PIN pad, Dial pad, Persian keyboard, Arabic keyboard", AdditionalUrls = ["/components/virtual-keyboard"] },
             ]
         },
         // The components of the Bit.BlazorUI.AI package, under /components/ai/ like the Legacy ones under theirs, then

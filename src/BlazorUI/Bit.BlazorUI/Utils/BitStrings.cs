@@ -473,4 +473,12 @@ public class BitStrings
     /// <see cref="BitComponentBase.AriaLabel"/>.
     /// </summary>
     public virtual string ScrollToTop => "Scroll to top";
+
+    // ===== BitEmbed =====
+
+    /// <summary>
+    /// The name of the click-to-load placeholder of an embed, <c>{0}</c> being the title of the embed: the fallback of
+    /// <see cref="BitEmbed.PlaceholderAriaLabel"/>.
+    /// </summary>
+    public virtual string LoadFormat => "Load {0}";
 }
