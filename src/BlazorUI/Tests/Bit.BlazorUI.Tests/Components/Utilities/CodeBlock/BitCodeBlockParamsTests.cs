@@ -24,6 +24,7 @@ public class BitCodeBlockParamsTests : BunitTestContext
         nameof(BitCodeBlock.Code),
         nameof(BitCodeBlock.Language),
         nameof(BitCodeBlock.OnCopy),
+        nameof(BitCodeBlock.OnCopyFailed),
         nameof(BitCodeBlock.Title),
     ];
 

@@ -2,6 +2,7 @@
 using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.CodeBlock;
@@ -82,6 +83,23 @@ public class BitCodeBlockTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCodeBlockShouldPassOverAnEmptyTitleOrLanguageWhenNamingItsScrollingBox()
+    {
+        var com = Render(p =>
+        {
+            p.Add(c => c.Code, "x");
+            p.Add(c => c.Title, "");
+            p.Add(c => c.Language, "json");
+        });
+
+        Assert.AreEqual("json", com.Find(".bit-cdb-bdy").GetAttribute("aria-label"));
+
+        com.Render(p => p.Add(c => c.Language, " "));
+
+        Assert.AreEqual("Code", com.Find(".bit-cdb-bdy").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitCodeBlockShouldShowTheTitleAndTheLanguageInAHeaderWithTheCopyButton()
     {
         var com = Render(p =>
@@ -152,7 +170,7 @@ public class BitCodeBlockTests : BunitTestContext
     [TestMethod]
     public void BitCodeBlockShouldCopyTheCodeAndConfirmIt()
     {
-        var invocation = Context.JSInterop.Setup<bool>(CopyIdentifier, _ => true);
+        var invocation = Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true);
         invocation.SetResult(true);
         var copies = 0;
 
@@ -189,7 +207,7 @@ public class BitCodeBlockTests : BunitTestContext
     [TestMethod]
     public void BitCodeBlockShouldHandTheScriptNoTextToCopyItsRenderedContent()
     {
-        var invocation = Context.JSInterop.Setup<bool>(CopyIdentifier, _ => true);
+        var invocation = Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true);
         invocation.SetResult(true);
 
         var com = Render(p => p.AddChildContent("dotnet run"));
@@ -203,7 +221,7 @@ public class BitCodeBlockTests : BunitTestContext
     [TestMethod]
     public void BitCodeBlockShouldConfirmNothingWhenTheCopyFails()
     {
-        Context.JSInterop.Setup<bool>(CopyIdentifier, _ => true).SetResult(false);
+        Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true).SetResult(false);
         var copies = 0;
 
         var com = Render(p =>
@@ -222,7 +240,7 @@ public class BitCodeBlockTests : BunitTestContext
     [TestMethod]
     public void BitCodeBlockShouldConfirmNothingWhenTheScriptThrows()
     {
-        Context.JSInterop.Setup<bool>(CopyIdentifier, _ => true).SetException(new InvalidOperationException("denied"));
+        Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true).SetException(new InvalidOperationException("denied"));
 
         var com = Render(p => p.Add(c => c.Code, "x"));
 
@@ -234,7 +252,7 @@ public class BitCodeBlockTests : BunitTestContext
     [TestMethod]
     public void BitCodeBlockShouldSayTheWordsItIsGiven()
     {
-        Context.JSInterop.Setup<bool>(CopyIdentifier, _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true).SetResult(true);
 
         var com = Render(p =>
         {
@@ -255,7 +273,7 @@ public class BitCodeBlockTests : BunitTestContext
     public void BitCodeBlockShouldSayTheTranslatedWordsOfTheStrings()
     {
         BitStrings.Current = new GermanStrings();
-        Context.JSInterop.Setup<bool>(CopyIdentifier, _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true).SetResult(true);
 
         var com = Render(p => p.Add(c => c.Code, "x"));
 
@@ -270,13 +288,13 @@ public class BitCodeBlockTests : BunitTestContext
     [TestMethod]
     public void BitCodeBlockShouldCopyOnAClickOfTheCodeOnlyWhenAskedTo()
     {
-        var invocation = Context.JSInterop.Setup<bool>(CopyIdentifier, _ => true);
+        var invocation = Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true);
         invocation.SetResult(true);
 
         var com = Render(p => p.Add(c => c.Code, "x"));
 
-        // Without CopyOnClick a click on the code copies nothing.
-        com.Find(".bit-cdb-bdy").Click();
+        // Without CopyOnClick the code has no click handler at all, so a click on it costs no round trip.
+        Assert.ThrowsExactly<MissingEventHandlerException>(() => com.Find(".bit-cdb-bdy").Click());
         Assert.AreEqual(0, invocation.Invocations.Count);
         Assert.IsNull(com.Find(".bit-cdb-bdy").GetAttribute("title"));
         Assert.IsFalse(com.Find(".bit-cdb").ClassList.Contains("bit-cdb-coc"));
@@ -294,9 +312,51 @@ public class BitCodeBlockTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCodeBlockShouldNotCopyOnTheLaterClicksOfADoubleOrATripleClick()
+    {
+        var invocation = Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true);
+        invocation.SetResult(true);
+
+        var com = Render(p =>
+        {
+            p.Add(c => c.Code, "x");
+            p.Add(c => c.CopyOnClick, true);
+        });
+
+        com.Find(".bit-cdb-bdy").Click(new MouseEventArgs { Detail = 2 });
+        com.Find(".bit-cdb-bdy").Click(new MouseEventArgs { Detail = 3 });
+
+        Assert.AreEqual(0, invocation.Invocations.Count);
+    }
+
+    [TestMethod]
+    public void BitCodeBlockShouldLeaveItsStateAloneWhenAClickOfTheCodeCopiesNothing()
+    {
+        var invocation = Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true);
+        var copies = 0;
+        var failures = 0;
+
+        var com = Render(p =>
+        {
+            p.Add(c => c.Code, "x");
+            p.Add(c => c.CopyOnClick, true);
+            p.Add(c => c.OnCopy, () => copies++);
+            p.Add(c => c.OnCopyFailed, () => failures++);
+        });
+
+        // A click that ended a selection: the script answers that no copy was asked for.
+        invocation.SetResult(null);
+        com.Find(".bit-cdb-bdy").Click();
+
+        Assert.AreEqual(0, copies);
+        Assert.AreEqual(0, failures);
+        Assert.AreEqual("Copy", com.Find(".bit-cdb-cpb").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void ADisabledBitCodeBlockShouldCopyNothing()
     {
-        var invocation = Context.JSInterop.Setup<bool>(CopyIdentifier, _ => true);
+        var invocation = Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true);
         invocation.SetResult(true);
 
         var com = Render(p =>
@@ -326,6 +386,76 @@ public class BitCodeBlockTests : BunitTestContext
         var button = com.Find(".bit-cdb-cpb");
         Assert.IsTrue(button.HasAttribute("disabled"));
         Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+
+        // An empty Code is no code either.
+        com.Render(p => p.Add(c => c.Code, ""));
+
+        Assert.IsTrue(com.Find(".bit-cdb-cpb").HasAttribute("disabled"));
+    }
+
+    [TestMethod]
+    public void BitCodeBlockWithAnEmptyCodeShouldCopyTheTextOfItsContent()
+    {
+        var invocation = Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true);
+        invocation.SetResult(true);
+
+        var com = Render(p =>
+        {
+            p.Add(c => c.Code, "");
+            p.AddChildContent("dotnet run");
+        });
+
+        com.Find(".bit-cdb-cpb").Click();
+
+        Assert.IsNull(invocation.Invocations.Single().Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitCodeBlockShouldTakeOffAConfirmationWhenALaterCopyFails()
+    {
+        var invocation = Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true);
+        invocation.SetResult(true);
+        var failures = 0;
+
+        var com = Render(p =>
+        {
+            p.Add(c => c.Code, "x");
+            p.Add(c => c.OnCopyFailed, () => failures++);
+        });
+
+        com.Find(".bit-cdb-cpb").Click();
+        com.WaitForAssertion(() => Assert.AreEqual("Copied", com.Find(".bit-cdb-liv").TextContent));
+
+        Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true).SetResult(false);
+        com.Find(".bit-cdb-cpb").Click();
+
+        // The failed copy takes the earlier confirmation down rather than leaving it up for good.
+        com.WaitForAssertion(() => Assert.AreEqual("Copy", com.Find(".bit-cdb-cpb").GetAttribute("aria-label")));
+        Assert.AreEqual(string.Empty, com.Find(".bit-cdb-liv").TextContent);
+        Assert.AreEqual(1, failures);
+    }
+
+    [TestMethod]
+    public void BitCodeBlockShouldTakeOffAConfirmationWhenItsCodeChangesOrItIsDisabled()
+    {
+        Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true).SetResult(true);
+
+        var com = Render(p => p.Add(c => c.Code, "snippet A"));
+
+        com.Find(".bit-cdb-cpb").Click();
+        com.WaitForAssertion(() => Assert.AreEqual("Copied", com.Find(".bit-cdb-liv").TextContent));
+
+        com.Render(p => p.Add(c => c.Code, "snippet B"));
+
+        Assert.AreEqual("Copy", com.Find(".bit-cdb-cpb").GetAttribute("aria-label"));
+        Assert.AreEqual(string.Empty, com.Find(".bit-cdb-liv").TextContent);
+
+        com.Find(".bit-cdb-cpb").Click();
+        com.WaitForAssertion(() => Assert.AreEqual("Copied", com.Find(".bit-cdb-liv").TextContent));
+
+        com.Render(p => p.Add(c => c.Disabled, true));
+
+        Assert.AreEqual(string.Empty, com.Find(".bit-cdb-liv").TextContent);
     }
 
     [TestMethod]

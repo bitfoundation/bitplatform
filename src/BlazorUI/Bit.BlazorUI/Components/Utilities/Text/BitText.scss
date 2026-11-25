@@ -85,6 +85,15 @@ $bit-txt-headings: h1, h2, h3, h4, h5, h6;
     font-family: var(--bit-Text-heading-font-family, var(--bit-Text-font-family, #{$tg-font-family}));
 }
 
+// With no variant of its own a code fragment takes the size of the text around it, and a monospaced face set at the
+// size of the proportional one beside it looks the larger of the two - so it is set a little smaller, in em, which keeps
+// it in proportion inside a heading as much as inside a caption. The :where() weighs nothing, so the rule weighs the one
+// class of a variant and sits right after the plain ones: a per-breakpoint variant further down (TypographyMd="H3")
+// wins over it from its width up, and each breakpoint that asks for Inherit again sets the smaller size again.
+.bit-txt-cod:where(.bit-txt-inherit) {
+    font-size: var(--bit-Text-code-font-size, 0.875em);
+}
+
 
 // The per-breakpoint variants, TypographySm to TypographyXxl, at the breakpoints of BitGrid and BitStack and with
 // their "from this width up" meaning: each breakpoint is a min-width query of its own, written in order, so a variant
@@ -154,6 +163,10 @@ $bit-txt-narrower: (display: (), text-transform: ());
                     #{$property}: $value;
                 }
             }
+        }
+
+        .bit-txt-cod:where(.bit-txt-#{$bp}-inherit) {
+            font-size: var(--bit-Text-code-font-size, 0.875em);
         }
 
         // The :where() weighs nothing, so the rule weighs the one class of the variant, as every rule above does.
@@ -323,13 +336,6 @@ $bit-txt-narrower: (display: (), text-transform: ());
     font-family: var(--bit-Text-monospace-font-family, #{$tg-font-family-mono});
     box-decoration-break: clone;
     -webkit-box-decoration-break: clone; // Safari still needs the prefixed property.
-}
-
-// With no variant of its own a code fragment takes the size of the text around it, and a monospaced face set at the
-// size of the proportional one beside it looks the larger of the two - so it is set a little smaller, in em, which keeps
-// it in proportion inside a heading as much as inside a caption.
-.bit-txt-inherit.bit-txt-cod {
-    font-size: var(--bit-Text-code-font-size, 0.875em);
 }
 
 // A forced-colors palette paints the chip over with the canvas, so an outline in the text color draws it instead.

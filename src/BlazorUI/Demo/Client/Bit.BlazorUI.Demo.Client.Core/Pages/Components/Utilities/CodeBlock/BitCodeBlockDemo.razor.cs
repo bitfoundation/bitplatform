@@ -39,7 +39,7 @@ public partial class BitCodeBlockDemo
             Name = "CopyOnClick",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Copies the code when the code itself is clicked, as well as through the copy button. A click that ends a selection of a part of the code copies nothing. It is a shortcut for the pointer only, so the copy button is best kept shown beside it.",
+            Description = "Copies the code when the code itself is clicked, as well as through the copy button. A click that ends a selection of a part of the code copies nothing, and neither does a double or a triple click selecting a word or a line. It is a shortcut for the pointer only, so the copy button is best kept shown beside it.",
         },
         new()
         {
@@ -68,6 +68,13 @@ public partial class BitCodeBlockDemo
             Type = "EventCallback",
             DefaultValue = "",
             Description = "The callback raised after the code has been put on the clipboard.",
+        },
+        new()
+        {
+            Name = "OnCopyFailed",
+            Type = "EventCallback",
+            DefaultValue = "",
+            Description = "The callback raised when the browser refuses to put the code on the clipboard - a copy that comes too late after the press of the user, as one made after a round trip to the server can in Safari.",
         },
         new()
         {

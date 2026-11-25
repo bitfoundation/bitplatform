@@ -1,13 +1,27 @@
 ﻿namespace BitBlazorUI {
     export class CodeBlock {
+        private static readonly MULTI_CLICK_WAIT = 300;
+
         // Puts the code on the clipboard and answers whether it got there, so the code block only confirms a copy that
         // happened. The text is the Code the component was given, or else the text the browser renders of its content.
         // A click on the code that ends a selection of a part of it is the reader picking out a line, not asking for a
-        // copy of the whole, so it copies nothing.
-        public static async copy(code: HTMLElement | null, text: string | null, fromClick: boolean): Promise<boolean> {
-            if (fromClick && code && CodeBlock.hasSelectionIn(code)) return false;
+        // copy of the whole, so it copies nothing - and neither does the first click of a double or a triple click,
+        // which is told apart by waiting out the time a double click takes: by then the click after it has selected a
+        // word. The wait is short enough to stay inside the activation of the click, which the clipboard asks for.
+        // Answers null when no copy was attempted.
+        public static async copy(code: HTMLElement | null, text: string | null, fromClick: boolean): Promise<boolean | null> {
+            if (fromClick && code) {
+                if (CodeBlock.hasSelectionIn(code)) return null;
+
+                await new Promise(resolve => setTimeout(resolve, CodeBlock.MULTI_CLICK_WAIT));
+
+                if (CodeBlock.hasSelectionIn(code)) return null;
+            }
 
             text ??= code?.textContent ?? '';
+
+            // A content that renders no text has nothing to put on the clipboard: a copy of it would only empty it.
+            if (!text) return null;
 
             // The async Clipboard API is unavailable outside a secure context and in a few older browsers, so a hidden
             // textarea and the deprecated copy command stand in for it there - and wherever the API refuses (a

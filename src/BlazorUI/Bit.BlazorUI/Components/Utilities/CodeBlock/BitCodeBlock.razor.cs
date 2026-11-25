@@ -20,9 +20,17 @@ public partial class BitCodeBlock : BitComponentBase
     private static readonly TimeSpan _confirmationDuration = TimeSpan.FromSeconds(2);
 
     private bool _copied;
+    // The Code the confirmation showing is about, so a block handed another one takes it off.
+    private string? _copiedCode;
+    // Bumped by every confirmation put up or taken off, so a timer left running by an earlier copy stands down.
     private int _copyToken;
+    // Bumped by every copy confirmed, which keys the text of the live region (see the markup).
+    private int _copyCount;
     private ElementReference _codeElement;
     private readonly RenderFragment _renderCode;
+    // Made once, so the diff keeps being handed the same callback. Left out of the markup (a default callback renders no
+    // handler) unless CopyOnClick asks for it.
+    private readonly EventCallback<MouseEventArgs> _handleBodyClick;
 
     // The code with every line ending a "\n" (see NormalizeLineEndings), and the Code it was made from.
     private string _code = string.Empty;
@@ -34,6 +42,7 @@ public partial class BitCodeBlock : BitComponentBase
     {
         // Held in a field rather than created per render, so the diff keeps being handed the same delegate.
         _renderCode = BuildCode;
+        _handleBodyClick = EventCallback.Factory.Create<MouseEventArgs>(this, HandleBodyClick);
     }
 
 
@@ -91,8 +100,8 @@ public partial class BitCodeBlock : BitComponentBase
     /// The default value is <strong>false</strong>.
     /// </summary>
     /// <remarks>
-    /// A click that ends a selection of a part of the code copies nothing, so the reader can still pick out a line of
-    /// it. This is a shortcut for the pointer only: the copy button is what a keyboard and a screen reader reach, so it
+    /// A click that ends a selection of a part of the code copies nothing, and neither does a double or a triple click
+    /// selecting a word or a line, so the reader can still pick out a part of it. This is a shortcut for the pointer only: the copy button is what a keyboard and a screen reader reach, so it
     /// is best kept shown beside it.
     /// </remarks>
     [Parameter, ResetClassBuilder] public bool CopyOnClick { get; set; }
@@ -120,6 +129,16 @@ public partial class BitCodeBlock : BitComponentBase
     /// The callback raised after the code has been put on the clipboard.
     /// </summary>
     [Parameter] public EventCallback OnCopy { get; set; }
+
+    /// <summary>
+    /// The callback raised when the browser refuses to put the code on the clipboard.
+    /// </summary>
+    /// <remarks>
+    /// A browser writes to the clipboard only shortly after a press of the user, and some (Safari) only while the press
+    /// is still being handled - which a copy made after a round trip to the server (Blazor Server) may come too late for.
+    /// The button then keeps saying what it offers to do; this callback lets the page say more than that.
+    /// </remarks>
+    [Parameter] public EventCallback OnCopyFailed { get; set; }
 
     /// <summary>
     /// Shows the button that copies the code.
@@ -157,7 +176,9 @@ public partial class BitCodeBlock : BitComponentBase
     private string CopiedLabel => CopiedText ?? BitStrings.Current.Copied;
 
     // A code block given neither code nor content has nothing to put on the clipboard.
-    private bool HasNothingToCopy => Code is null && ChildContent is null;
+    // A code block given neither code nor content has nothing to put on the clipboard, and an empty Code is no code: a
+    // copy of it would only empty the clipboard of the user.
+    private bool HasNothingToCopy => string.IsNullOrEmpty(Code) && ChildContent is null;
 
 
 
@@ -184,6 +205,13 @@ public partial class BitCodeBlock : BitComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         NormalizeLineEndings();
+
+        // The confirmation is about the code that was copied: a block handed another code (a reused block of a list of
+        // snippets), or made unavailable, no longer has a copy to show for itself.
+        if (_copied && (Disabled || HasNothingToCopy || string.Equals(Code, _copiedCode, StringComparison.Ordinal) is false))
+        {
+            ClearCopied();
+        }
 
         base.OnParametersSet();
     }
@@ -242,9 +270,13 @@ public partial class BitCodeBlock : BitComponentBase
         await Copy(fromClick: false);
     }
 
-    private async Task HandleBodyClick()
+    private async Task HandleBodyClick(MouseEventArgs e)
     {
         if (CopyOnClick is false) return;
+
+        // The second and third click of a double or a triple click are the reader selecting a word or a line. The first
+        // one is told apart by the script, which waits out a double click before it copies.
+        if (e.Detail > 1) return;
 
         await Copy(fromClick: true);
     }
@@ -254,26 +286,66 @@ public partial class BitCodeBlock : BitComponentBase
         // A press that reaches the button while it is unavailable - a screen reader's click, a script - copies nothing.
         if (Disabled || HasNothingToCopy || IsDisposed) return;
 
+        var code = Code;
+
+        bool? copied;
+
+        try
+        {
+            // An empty Code beside a content is no code, so the copy takes the text the content renders.
+            copied = await _js.BitCodeBlockCopy(_codeElement, string.IsNullOrEmpty(code) ? null : code, fromClick);
+        }
+        catch (JSDisconnectedException)
+        {
+            return; // the circuit is gone, and nobody is left to tell
+        }
+        catch (Exception)
+        {
+            copied = false;
+        }
+
+        // A click on the code that made a selection asked for no copy, so whatever shows stays as it is.
+        if (IsDisposed || copied is null) return;
+
+        if (copied is false)
+        {
+            // A clipboard that is not there to be written to leaves the button saying what it still offers to do, which
+            // is the truth - a confirmation of an earlier copy still showing would claim this one worked, so it goes.
+            if (_copied)
+            {
+                ClearCopied();
+
+                StateHasChanged();
+            }
+
+            await OnCopyFailed.InvokeAsync();
+
+            return;
+        }
+
+        // The parameters may have moved on while the browser was writing: a block handed another code, or made
+        // unavailable, in the meantime has no copy of its current code to confirm - the copy made is still reported.
+        if (Disabled || string.Equals(Code, code, StringComparison.Ordinal) is false)
+        {
+            if (_copied)
+            {
+                ClearCopied();
+
+                StateHasChanged();
+            }
+
+            await OnCopy.InvokeAsync();
+
+            return;
+        }
+
         // Each copy owns the confirmation it puts up, so the one before it running out does not take down the one that
         // has only just gone up.
         var token = ++_copyToken;
 
-        bool copied;
-
-        try
-        {
-            copied = await _js.BitCodeBlockCopy(_codeElement, Code, fromClick);
-        }
-        catch (Exception)
-        {
-            // A clipboard that is not there to be written to - a browser that denies it, a circuit that is already going -
-            // leaves the button saying what it still offers to do, which is the truth.
-            return;
-        }
-
-        if (copied is false || IsDisposed || _copyToken != token) return;
-
         _copied = true;
+        _copiedCode = code;
+        _copyCount++;
 
         StateHasChanged();
 
@@ -284,7 +356,15 @@ public partial class BitCodeBlock : BitComponentBase
         if (IsDisposed || _copyToken != token) return;
 
         _copied = false;
+        _copiedCode = null;
 
         StateHasChanged();
+    }
+
+    private void ClearCopied()
+    {
+        _copied = false;
+        _copiedCode = null;
+        _copyToken++;
     }
 }

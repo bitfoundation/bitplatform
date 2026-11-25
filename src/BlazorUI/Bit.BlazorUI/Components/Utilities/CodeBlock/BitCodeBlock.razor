@@ -2,7 +2,8 @@
 @inherits BitComponentBase
 
 @{
-    var copyLabel = _copied ? CopiedLabel : (CopyText ?? BitStrings.Current.Copy);
+    var copied = _copied;
+    var copyLabel = copied ? CopiedLabel : (CopyText ?? BitStrings.Current.Copy);
     var hasTitle = Title.HasValue();
     var hasLanguage = Language.HasValue();
     var hasHeader = Terminal || hasTitle || hasLanguage;
@@ -52,11 +53,13 @@
 
     @* A line longer than the block, or a block taller than its MaxHeight, scrolls, and a scrolling box holds nothing that
        takes the focus - so it takes the focus itself, which is what lets a keyboard scroll it in every engine. A tab stop is
-       announced by its name, so it is a group named for the code it holds. *@
-    <div @onclick="HandleBodyClick"
+       announced by its name, so it is a group named for the code it holds - by the title or the language the header shows,
+       so an empty one is passed over as the header passes it over. The click handler is there only for CopyOnClick: a
+       click on the code of any other block is the reader's own, with nothing for the component to do about it. *@
+    <div @onclick="@(CopyOnClick ? _handleBodyClick : default)"
          role="group"
          tabindex="0"
-         aria-label="@(AriaLabel ?? Title ?? Language ?? BitStrings.Current.Code)"
+         aria-label="@(AriaLabel ?? (hasTitle ? Title : hasLanguage ? Language : BitStrings.Current.Code))"
          title="@(CopyOnClick && copyDisabled is false ? copyLabel : null)"
          style="@Styles?.Body"
          class="bit-cdb-bdy @Classes?.Body">
@@ -65,11 +68,12 @@
 
     @* A changed icon is invisible to a screen reader, so the confirmation is announced as well. The region is on the page
        from the first render with nothing in it: text landing in a live region that is already there is what screen
-       readers reliably announce. *@
+       readers reliably announce. The text is keyed by the copy, so a second copy while the first is still confirmed
+       replaces the node rather than leaving the same text in place, which would announce nothing. *@
     <span role="status"
           aria-live="polite"
           style="@Styles?.LiveRegion"
-          class="bit-cdb-liv @Classes?.LiveRegion">@(_copied ? CopiedLabel : null)</span>
+          class="bit-cdb-liv @Classes?.LiveRegion">@if (copied) {<span @key="_copyCount">@CopiedLabel</span>}</span>
 </div>
 
 @code {
