@@ -122,6 +122,9 @@ public partial class BitEmbed : BitComponentBase
     /// <remarks>
     /// It is rendered inside a button that fills the frame, so it should hold no interactive content of its own. The
     /// button is named by <see cref="PlaceholderAriaLabel"/>, and once activated, the iframe takes its place and its focus.
+    /// <br />
+    /// What the template itself shows is loaded as it renders: a thumbnail served by another site is requested from it
+    /// before the activation, so one kept on the app's own server is what keeps that site out of the page entirely.
     /// </remarks>
     [Parameter] public RenderFragment? PlaceholderTemplate { get; set; }
 
@@ -233,9 +236,11 @@ public partial class BitEmbed : BitComponentBase
         _activated = false;
     }
 
-    private void HandleOnPlaceholderClick()
+    private void HandleOnPlaceholderClick(string? src)
     {
-        if (Disabled || _src is null) return;
+        // A click made on the placeholder of an address the embed has since been handed a new one for agreed to load
+        // that one, not the new one, which waits for its own click.
+        if (Disabled || src is null || src != _src) return;
 
         _activated = true;
         _focusFrame = true;

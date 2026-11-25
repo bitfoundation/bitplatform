@@ -6,7 +6,7 @@
 
 <DemoPage Name="Embed"
           SecondaryNames="@(["Iframe", "VideoEmbed", "ResponsiveEmbed"])"
-          Description="BitEmbed frames embedded content - a YouTube video, a map, a page of another site - in an iframe kept at an aspect ratio that scales with its container, so it shrinks on a phone instead of keeping the fixed size an iframe has of its own. It is lazy by default, and a PlaceholderTemplate turns it into a click-to-load facade that requests nothing until the user asks for it."
+          Description="BitEmbed frames embedded content - a YouTube video, a map, a page of another site - in an iframe kept at an aspect ratio that scales with its container, so it shrinks on a phone instead of keeping the fixed size an iframe has of its own. It is lazy by default, and a PlaceholderTemplate turns it into a click-to-load facade that loads no iframe until the user asks for it - what the placeholder shows itself, such as a remote thumbnail, still loads before that."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
           SubEnums="componentSubEnums"
@@ -76,9 +76,11 @@
 
         <DemoExample Title="Click to load" RazorCode="@example4RazorCode" Id="example4">
             <div>
-                With a PlaceholderTemplate the iframe is not rendered - and nothing is requested from the site serving the
-                content - until the user clicks the placeholder or activates it with the keyboard; then the iframe takes its
-                place and its focus. The placeholder is a button named "Load" followed by the Title, or by PlaceholderAriaLabel.
+                With a PlaceholderTemplate the iframe is not rendered - and none of the embedded page is requested - until
+                the user clicks the placeholder or activates it with the keyboard; then the iframe takes its place and its
+                focus. What the placeholder shows loads as it renders, so the remote thumbnail below is requested up front;
+                keep it on your own server to send nothing to another site before the click. The placeholder is a button
+                named "Load" followed by the Title, or by PlaceholderAriaLabel.
             </div>
             <br />
             <div>

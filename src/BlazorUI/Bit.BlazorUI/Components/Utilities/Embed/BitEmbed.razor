@@ -12,11 +12,17 @@
      dir="@Dir?.ToString().ToLowerInvariant()">
     @if (_ShowsPlaceholder)
     {
+        var src = _src;
+
         @*  The click-to-load facade: nothing of the embedded page is requested until the user asks for it. A native
             button, so the keyboard and a screen reader reach it like any other, named by what it does - the template
-            is mostly a picture, which says nothing to either. *@
-        <button @onclick="HandleOnPlaceholderClick"
+            is mostly a picture, which says nothing to either.
+            Keyed by the address it loads and handed that address, so a click still in flight when a new one arrives
+            reaches the button it was made on, and agrees to the address that button showed rather than the new one. *@
+        <button @key="src"
+                @onclick="() => HandleOnPlaceholderClick(src)"
                 type="button"
+                tabindex="@TabIndex"
                 style="@Styles?.Placeholder"
                 class="bit-emb-plh @Classes?.Placeholder"
                 disabled="@Disabled"
@@ -34,6 +40,7 @@
                 style="@Styles?.Frame"
                 class="bit-emb-frm @Classes?.Frame"
                 src="@_src"
+                tabindex="@TabIndex"
                 title="@Title"
                 loading="@(Loading is BitImageLoading.Eager ? "eager" : "lazy")"
                 allow="@Allow"

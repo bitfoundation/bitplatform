@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Embed;
@@ -244,6 +247,55 @@ public class BitEmbedTests : BunitTestContext
 
         Assert.AreEqual(0, com.FindAll(".bit-emb-plh").Count);
         Assert.AreEqual(1, com.FindAll("iframe").Count);
+    }
+
+    [TestMethod]
+    public void BitEmbedShouldIgnoreAClickMadeOnThePlaceholderOfAnEarlierAddress()
+    {
+        var com = Render(p => p.Add(x => x.PlaceholderTemplate, Thumbnail));
+
+        var staleHandlerId = ulong.Parse(com.Find(".bit-emb-plh").GetAttribute("blazor:onclick")!, CultureInfo.InvariantCulture);
+
+        // A new address arrives while the click made on the placeholder of the first one is still in flight.
+        com.Render(p => p.Add(x => x.Src, "https://player.example.com/video/1"));
+
+        // The placeholder of the new address is a new button, so the handler of the old one is not redirected to it,
+        // and a click it still delivers agreed to the old address alone.
+        Assert.AreNotEqual(staleHandlerId, ulong.Parse(com.Find(".bit-emb-plh").GetAttribute("blazor:onclick")!, CultureInfo.InvariantCulture));
+
+        Context.Renderer.DispatchEventAsync(staleHandlerId, new EventFieldInfo(), new MouseEventArgs(), ignoreUnknownEventHandlers: true).GetAwaiter().GetResult();
+
+        Assert.AreEqual(0, com.FindAll("iframe").Count);
+        Assert.AreEqual(1, com.FindAll(".bit-emb-plh").Count);
+
+        com.Find(".bit-emb-plh").Click();
+
+        Assert.AreEqual("https://player.example.com/video/1", com.Find(".bit-emb-frm").GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitEmbedShouldRenderItsTabIndexOnThePlaceholderAndTheIframe()
+    {
+        var com = Render(p =>
+        {
+            p.Add(x => x.PlaceholderTemplate, Thumbnail);
+            p.Add(x => x.TabIndex, "-1");
+        });
+
+        Assert.AreEqual("-1", com.Find(".bit-emb-plh").GetAttribute("tabindex"));
+
+        com.Find(".bit-emb-plh").Click();
+
+        Assert.AreEqual("-1", com.Find(".bit-emb-frm").GetAttribute("tabindex"));
+
+        // Unset, the browser's own tab order applies to both.
+        com.Render(p => p.Add(x => x.TabIndex, (string?)null));
+
+        Assert.IsFalse(com.Find(".bit-emb-frm").HasAttribute("tabindex"));
+
+        com.Render(p => p.Add(x => x.Src, "https://player.example.com/video/1"));
+
+        Assert.IsFalse(com.Find(".bit-emb-plh").HasAttribute("tabindex"));
     }
 
     [TestMethod]
