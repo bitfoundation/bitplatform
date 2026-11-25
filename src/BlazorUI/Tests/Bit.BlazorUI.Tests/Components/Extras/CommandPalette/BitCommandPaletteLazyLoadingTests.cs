@@ -13,7 +13,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.CommandPalette;
 
 /// <summary>
 /// Where the components take their services from. An app that lazy loads Bit.BlazorUI.Extras on WebAssembly cannot call
-/// AddBitCommandPaletteServices, so the components create their own and GetBitCommandPaletteService hands out the same registry; an app
+/// AddBitBlazorUIExtrasServices, so the components create their own and GetBitCommandPaletteService hands out the same registry; an app
 /// that did register keeps exactly what it registered.
 /// </summary>
 [TestClass]
@@ -30,7 +30,7 @@ public sealed class BitCommandPaletteLazyLoadingTests : BunitTestContext
     [TestMethod]
     public async Task An_app_that_registered_the_command_palette_keeps_its_own_services()
     {
-        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new NoJSRuntime()).AddBitCommandPaletteServices().BuildServiceProvider();
+        await using var app = new ServiceCollection().AddSingleton<IJSRuntime>(new NoJSRuntime()).AddBitBlazorUIExtrasServices().BuildServiceProvider();
 
         var runtime = BitCommandPaletteRuntime.Of(app);
 
@@ -99,7 +99,7 @@ public sealed class BitCommandPaletteLazyLoadingTests : BunitTestContext
         secondCircuit.GetBitCommandPaletteService();
 
         var warning = logs.Messages(LogLevel.Warning).Single();
-        StringAssert.Contains(warning, "AddBitCommandPaletteServices");
+        StringAssert.Contains(warning, "AddBitBlazorUIExtrasServices");
     }
 
     [TestMethod]
@@ -109,7 +109,7 @@ public sealed class BitCommandPaletteLazyLoadingTests : BunitTestContext
 
         var error = Assert.ThrowsExactly<InvalidOperationException>(() => services.GetBitCommandPaletteService());
 
-        StringAssert.Contains(error.Message, "AddBitCommandPaletteServices");
+        StringAssert.Contains(error.Message, "AddBitBlazorUIExtrasServices");
     }
 
     [TestMethod]

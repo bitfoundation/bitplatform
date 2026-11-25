@@ -194,11 +194,10 @@ public static class BlazorUISetupGuide
 
             if (package == BlazorUIAssemblies.Extras)
             {
-                // The one Extras component with services of its own: without them it still runs, on default options,
-                // and logs a warning saying so.
-                builder.AppendLine("`BitCommandPalette` keeps its registry, open state and history in services of its own - register")
-                       .AppendLine("them too where the app uses it (in the same place, so every container has them):").AppendLine();
-                builder.AppendLine("```csharp").AppendLine("services.AddBitCommandPaletteServices(options => { /* optional BitCommandPaletteOptions */ });").AppendLine("```").AppendLine();
+                // The one Extras component with app-wide options of its own: they go through the same call.
+                builder.AppendLine("The same call registers `BitCommandPalette`'s registry, open state and history; its app-wide")
+                       .AppendLine("options are an optional argument of it (in the same place, so every container has them):").AppendLine();
+                builder.AppendLine("```csharp").AppendLine("services.AddBitBlazorUIExtrasServices(commandPalette: options => { /* optional BitCommandPaletteOptions */ });").AppendLine("```").AppendLine();
             }
 
             builder.AppendLine("```html").AppendLine(package.StylesheetTag);

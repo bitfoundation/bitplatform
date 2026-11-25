@@ -6,7 +6,7 @@
 /// </summary>
 public partial class BitCommandPaletteTrigger : BitComponentBase
 {
-    // Resolved rather than injected, so the trigger also works when the app never called AddBitCommandPaletteServices.
+    // Resolved rather than injected, so the trigger also works when the app never called AddBitBlazorUIExtrasServices.
     // Null until first used: the disposal leaves alone what was never resolved.
     private BitCommandPaletteRuntime? _runtime;
 

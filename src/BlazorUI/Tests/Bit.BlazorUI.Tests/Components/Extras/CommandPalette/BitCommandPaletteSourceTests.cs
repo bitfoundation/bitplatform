@@ -12,7 +12,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.CommandPalette;
 public class BitCommandPaletteSourceTests
 {
     private static BitCommandPaletteSourceContext NewContext()
-        => new(null, null, new ServiceCollection().AddBitCommandPaletteServices().BuildServiceProvider());
+        => new(null, null, new ServiceCollection().AddBitBlazorUIExtrasServices().BuildServiceProvider());
 
     [TestMethod]
     public async Task Static_source_finds_items_past_its_result_limit()

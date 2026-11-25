@@ -28,7 +28,7 @@ public sealed class BitCommandPaletteGuardReviewIITests : BunitTestContext
     [TestInitialize]
     public void Initialize()
     {
-        Services.AddBitCommandPaletteServices(o => { o.DebounceMs = 0; o.RecordCommandIdsInTraces = false; });
+        Services.AddBitBlazorUIExtrasServices(commandPalette: o => { o.DebounceMs = 0; o.RecordCommandIdsInTraces = false; });
         Services.AddBitCommandPaletteInMemoryHistoryStore();
         Services.AddSingleton(_registered);
         Services.AddBitCommandPaletteCommandGuard<CountingGuard>();

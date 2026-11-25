@@ -28,7 +28,7 @@ public class BitCommandPaletteReliabilityTests : BunitTestContext
     public void Initialize()
     {
         _log = LogSink.AddTo(Services);
-        Services.AddBitCommandPaletteServices();
+        Services.AddBitBlazorUIExtrasServices();
         Services.AddBitCommandPaletteInMemoryHistoryStore();
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -370,7 +370,7 @@ public class BitCommandPaletteCorruptHistoryTests : BunitTestContext
     [TestMethod]
     public async Task A_history_with_entries_it_cannot_use_does_not_break_the_palette()
     {
-        Services.AddBitCommandPaletteServices();
+        Services.AddBitBlazorUIExtrasServices();
         Services.AddBitCommandPaletteHistoryStore<CorruptHistoryStore>();
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         var service = Services.GetRequiredService<IBitCommandPaletteService>();

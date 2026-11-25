@@ -26,7 +26,7 @@ public class BitCommandPaletteReviewFixTests : BunitTestContext
     public void Initialize()
     {
         _log = LogSink.AddTo(Services);
-        Services.AddBitCommandPaletteServices(o => o.DebounceMs = 0);
+        Services.AddBitBlazorUIExtrasServices(commandPalette: o => o.DebounceMs = 0);
         Services.AddBitCommandPaletteInMemoryHistoryStore();
         Services.AddBitCommandPaletteSource<DirectorySource>();
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

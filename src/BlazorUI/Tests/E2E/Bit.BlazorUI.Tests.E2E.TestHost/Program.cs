@@ -31,7 +31,6 @@ builder.Services.AddScoped<Microsoft.AspNetCore.Components.Server.Circuits.Circu
 // on - and the HttpClient BitFileUpload uploads with, registered the way an app registers them.
 builder.Services.AddBitBlazorUIServices();
 builder.Services.AddBitBlazorUIExtrasServices();
-builder.Services.AddBitCommandPaletteServices();
 // The AI package over the scripted transport the AI pages answer with, set up as the browser side sets it up
 // (Bit.BlazorUI.Tests.E2E.TestHost.Client/AI/E2EAiSetup.cs), so an AI page runs alike in either render mode.
 builder.Services.AddBitBlazorUIAIServices(E2EAiSetup.Configure);

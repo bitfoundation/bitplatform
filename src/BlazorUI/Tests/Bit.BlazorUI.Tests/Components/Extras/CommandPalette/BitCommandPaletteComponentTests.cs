@@ -19,7 +19,7 @@ public class BitCommandPaletteComponentTests : BunitTestContext
     [TestInitialize]
     public void Initialize()
     {
-        Services.AddBitCommandPaletteServices();
+        Services.AddBitBlazorUIExtrasServices();
         Services.AddBitCommandPaletteHistoryStore<BitCommandPaletteInMemoryHistoryStore>();
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 

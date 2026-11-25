@@ -30,7 +30,7 @@
         <BitText>
             BitCommandPalette is the Ctrl+K (Cmd+K on a Mac) box that fuzzy-searches every page, action and setting of an app
             and runs the one picked - accessible, keyboard-first, with every decision made in C#. Its registry, open state and
-            history are services of their own, registered with <code>AddBitCommandPaletteServices()</code> in Program.cs (in both
+            history are services of their own, registered by <code>AddBitBlazorUIExtrasServices()</code> in Program.cs (in both
             projects of a Blazor Web App). The sections below go from the basics - a palette in markup, the setup, the hosting
             models, the modal palette and its trigger - to the full API.
         </BitText>
@@ -94,11 +94,11 @@
                 BitCommandPalette ships in Bit.BlazorUI.Extras. Set that package up as the Getting started page of this site describes: install it, call <b>AddBitBlazorUIExtrasServices()</b>, and link the <b>bit.blazorui.extras.css</b> stylesheet and the <b>bit.blazorui.extras.js</b> script in the host page. The palette's styles and its small browser layer are inside those two files, so nothing else is linked for it. Then four steps wire it up.
                 <br />
                 <br />
-                <b>1. Register its services</b> with <b>builder.Services.AddBitCommandPaletteServices()</b>, optionally configuring <b>BitCommandPaletteOptions</b> (more toggle shortcuts, the order of the groups, startup commands, modes and sources). The options are a singleton. The registry, the open state and the history are scoped: one per circuit on Blazor Server, one per application on WebAssembly.
+                <b>1. Configure it</b>, if the defaults do not suit, through the <b>commandPalette</b> argument of <b>builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =&gt; ...)</b>, which sets <b>BitCommandPaletteOptions</b> (more toggle shortcuts, the order of the groups, startup commands, modes and sources). That call already registers the palette's services, so there is nothing else to register. The options are a singleton. The registry, the open state and the history are scoped: one per circuit on Blazor Server, one per application on WebAssembly.
                 <ul>
                     <li>In a Blazor Web App, call it in both the server and the client project, through one extension method that both Program.cs files share.</li>
                     <li>Both are needed because every page is prerendered on the server before it runs in the browser, so whatever a component injects, such as IBitCommandPaletteService, must resolve in both containers.</li>
-                    <li>A palette running in a project that did not register the services uses the default options and ignores yours, and it logs a warning that says so.</li>
+                    <li>A palette running in a project that did not call AddBitBlazorUIExtrasServices uses the default options and ignores yours, and it logs a warning that says so.</li>
                     <li>A WebAssembly app that lazy loads Bit.BlazorUI.Extras skips this step, as the Hosting models section explains.</li>
                 </ul>
                 <b>2. Place one palette</b>, a <b>&lt;BitCommandPalette /&gt;</b>, where it is rendered interactively on every page - usually the main layout - and a <b>BitCommandPaletteTrigger</b> wherever a visible entry point helps. The palette renders a closed <b>&lt;dialog&gt;</b> until it is opened, so it costs nothing while it is not in use. It needs an interactive render mode, because a statically rendered palette never attaches its keyboard handling. Place one modal palette per scope: every instance answers the same service, so two of them would open together.
@@ -153,9 +153,9 @@
                     <li>While prerendering, the palette renders a closed dialog; once it is interactive and its browser layer listens for keys, it marks the dialog with data-ready="true", which is what an end-to-end test waits for before pressing Ctrl+K on a prerendered page.</li>
                     <li><b>Blazor Hybrid</b>: the palette works unchanged in a MAUI, WPF or Windows Forms BlazorWebView, set up as on WebAssembly, and its history goes to the web view's localStorage.</li>
                 </ul>
-                <b>Lazy loading on WebAssembly.</b> The palette, its trigger and BitCommandPaletteCommands also work without AddBitCommandPaletteServices: when the services are not registered, they create every service they need themselves, once per browser connection, and <b>IServiceProvider.GetBitCommandPaletteService()</b> hands the app's own code the same IBitCommandPaletteService. So a WebAssembly app can download Bit.BlazorUI.Extras only when someone opens a part of the app that has a palette: mark Bit.BlazorUI.Extras.wasm as lazy loaded in the project that runs in the browser, load it in the router's OnNavigateAsync before the first page that uses it renders, and let those pages, or a layout only they use, hold the palette and register commands through GetBitCommandPaletteService() instead of injecting IBitCommandPaletteService.
+                <b>Lazy loading on WebAssembly.</b> The palette, its trigger and BitCommandPaletteCommands also work without AddBitBlazorUIExtrasServices: when the services are not registered, they create every service they need themselves, once per browser connection, and <b>IServiceProvider.GetBitCommandPaletteService()</b> hands the app's own code the same IBitCommandPaletteService. So a WebAssembly app can download Bit.BlazorUI.Extras only when someone opens a part of the app that has a palette: mark Bit.BlazorUI.Extras.wasm as lazy loaded in the project that runs in the browser, load it in the router's OnNavigateAsync before the first page that uses it renders, and let those pages, or a layout only they use, hold the palette and register commands through GetBitCommandPaletteService() instead of injecting IBitCommandPaletteService.
                 <ul>
-                    <li>Leave AddBitCommandPaletteServices out of that project's Program.cs, and AddBitBlazorUIExtrasServices too, since it lives in the same assembly; register the core services with AddBitBlazorUIServices() instead. Calling them would reference the Extras types before the assembly is there.</li>
+                    <li>Leave AddBitBlazorUIExtrasServices out of that project's Program.cs and register the core services with AddBitBlazorUIServices() instead. Calling it would reference the Extras types before the assembly is there; the palette then runs on the default options.</li>
                     <li>For the same reason, only what renders after the assembly has loaded may use its types: the pages it is loaded for and a layout only they use, not App.razor, a layout every page shares or Program.cs. The other Extras components are then available on those pages only.</li>
                     <li>No type in an assembly the router reads when the app starts, the app's own assembly first of all, may derive from or implement one of the palette's types: no IBitCommandPaletteSource class, no IBitCommandPaletteHistoryStore and no component that inherits BitCommandPalette. On WebAssembly a type whose base type or interface lives in an assembly that is not loaded yet fails to load, and keeps failing after the assembly has loaded, for the rest of the session. Put such a class in a library that is lazy loaded together with Bit.BlazorUI.Extras.</li>
                     <li>The stylesheet and the script are plain link and script tags, served whether the assembly has loaded or not.</li>
@@ -199,7 +199,7 @@
                 goes back from a nested page ("Choose a greeting" is one; Backspace on an empty query goes back too), and only then
                 closes the palette. Closing gives the focus back to whatever had it - the trigger or the button that opened it. A click
                 on the backdrop around the dialog closes it as well; an app that does not want that sets
-                <b>options.CloseOnBackdropClick = false</b> in <b>AddBitCommandPaletteServices</b>. When a command runs the palette closes,
+                <b>options.CloseOnBackdropClick = false</b> in the <b>commandPalette</b> argument of <b>AddBitBlazorUIExtrasServices</b>. When a command runs the palette closes,
                 unless the command answers with a next step (a page, a prompt, a toast that stays).
                 <br />
                 <br />
@@ -432,7 +432,7 @@
                 <br />
                 While searching, results are ordered by rank (equal ranks by title), and the groups by their best match.
                 <code>GroupWhenSearching = false</code> drops the headings while a query is typed and lists the results as one ranked list
-                instead. It is an app-wide option (<code>AddBitCommandPaletteServices(options =&gt; options.GroupWhenSearching = false)</code>)
+                instead. It is an app-wide option (<code>AddBitBlazorUIExtrasServices(commandPalette: options =&gt; options.GroupWhenSearching = false)</code>)
                 that the palette's <code>GroupWhenSearching</code> parameter overrides for one palette. <code>GroupOrder</code> is only an
                 option, set once for the app.
                 <br />
@@ -558,7 +558,7 @@
                 <code>IBitCommandPaletteService</code> while it is rendered and disposes the registration when it is - leave the page and its
                 commands are gone from the palette, shortcuts included (kbar calls this <code>useRegisterActions</code>). Handed a new
                 collection instance, it swaps the registration, so assigning a new list after a state change is enough to show the new
-                commands; the same instance changed in place is not noticed. It works even where <code>AddBitCommandPaletteServices</code>
+                commands; the same instance changed in place is not noticed. It works even where <code>AddBitBlazorUIExtrasServices</code>
                 was never called. <code>paletteService.Register(...)</code> does the same from code and hands back the
                 <code>IDisposable</code> to dispose.
                 <br />
@@ -740,7 +740,7 @@
         <DemoExample Title="The service" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <code>IBitCommandPaletteService</code> is the palette's programmatic surface, registered (scoped) by
-                <code>AddBitCommandPaletteServices</code> and injected wherever it is needed. Its members:
+                <code>AddBitBlazorUIExtrasServices</code> and injected wherever it is needed. Its members:
                 <ul>
                     <li><code>Register(params BitCommandPaletteCommand[])</code> / <code>Register(IEnumerable&lt;BitCommandPaletteCommand&gt;)</code> -
                         add commands, their static children included; dispose the returned <code>IDisposable</code> to remove them.</li>
@@ -1394,7 +1394,7 @@
                 </ul>
                 With several terms, each one picks its own best field and their scores add up. Only the title's and the subtitle's matched
                 characters are highlighted. To let descriptions count for more, for example:
-                <code>builder.Services.AddBitCommandPaletteServices(options =&gt; options.Weights.Description = 0.6)</code>.
+                <code>builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =&gt; options.Weights.Description = 0.6)</code>.
                 <br />
                 Every command below holds "color" in a different field. Type <code>color</code> (or <code>col</code>, <code>clr</code>) into
                 the palette: it lists them in the order of the weights. The table shows, for what you typed taken as one fuzzy term, the field
@@ -1516,7 +1516,7 @@
                 characters to highlight (<code>BitCommandPaletteFieldMatch.None</code> for no match, <code>Empty</code> for an empty query). The
                 palette calls it once per fuzzy term per field, so multi-term queries, the operators (which fold diacritics and Arabic-script
                 letters with any matcher but a literal one), field weights, ranking and the typo retry all keep working with a matcher of your
-                own. Set it for the whole app with <code>options.Matcher</code> in <code>AddBitCommandPaletteServices</code>; the ready-made ones
+                own. Set it for the whole app with <code>options.Matcher</code> in the <code>commandPalette</code> argument of <code>AddBitBlazorUIExtrasServices</code>; the ready-made ones
                 are:
                 <ul>
                     <li><code>BitCommandPaletteFuzzyMatcher.Default</code> - the default; <code>new BitCommandPaletteFuzzyMatcher { IgnoreCase = true }</code> drops smart case, <code>{ Normalize = false }</code> matches literally.</li>
@@ -1582,7 +1582,7 @@
                     <li><code>Sources</code> - the async sources asked in this mode, instead of the default mode's (see "Async sources").</li>
                     <li><code>ShowHint</code> (default true) - whether the mode is listed as a hint.</li>
                 </ul>
-                Register modes for the whole app in <code>options.Modes</code> of <code>AddBitCommandPaletteServices</code>, or at runtime with
+                Register modes for the whole app in <code>options.Modes</code> in the <code>commandPalette</code> argument of <code>AddBitBlazorUIExtrasServices</code>, or at runtime with
                 <code>IBitCommandPaletteService.RegisterMode(mode)</code>, which returns an <code>IDisposable</code> that removes the mode again:
                 this page registers its modes when it opens and disposes them when you leave. <code>IBitCommandPaletteService.Modes</code> lists
                 what is registered - the table below. On the empty query of the default mode the palette lists every mode with
@@ -2213,7 +2213,7 @@
         <DemoExample Title="Options" RazorCode="@example44RazorCode" CsharpCode="@example44CsharpCode" Id="example44">
             <div>
                 <b>BitCommandPaletteOptions</b> is the app-wide configuration, set once in <code>Program.cs</code> through
-                <code>builder.Services.AddBitCommandPaletteServices(options =&gt; ...)</code> - in both the server and the client project
+                <code>builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =&gt; ...)</code> - in both the server and the client project
                 of a Blazor Web App. The options are a singleton shared by every palette and every user of the app; the registry, the
                 open state and the history are scoped (per circuit on Blazor Server, per tab on WebAssembly). Numbers that must be
                 positive, or not negative, throw an <code>ArgumentOutOfRangeException</code> when set otherwise, so a bad value fails at
@@ -2676,7 +2676,7 @@
                 announcement of a page (<code>PageAnnouncement</code>) - is a property of <b>BitCommandPaletteStrings</b>. To translate them:
                 <ul>
                     <li>For one palette, set its <b>Strings</b> parameter, as the palette below does.</li>
-                    <li>For every palette, set <code>options.Strings</code> in <code>AddBitCommandPaletteServices</code>. The
+                    <li>For every palette, set <code>options.Strings</code> in the <code>commandPalette</code> argument of <code>AddBitBlazorUIExtrasServices</code>. The
                         <code>BitCommandPaletteShortcutHint</code>s and <code>BitCommandPaletteTrigger</code>s outside a palette read these
                         too; a <code>BitCommandPaletteShortcutHint</code> also takes a <code>Strings</code> parameter of its own.</li>
                     <li>For an app serving several languages, subclass it: every property is <code>virtual</code>, so a subclass can read
@@ -3113,7 +3113,7 @@
                 Most problems come from the setup; the palette also logs a warning or an entry for most of what it refuses to do, so the app's log is the first place to look.
                 <ul>
                     <li>When Ctrl+K does nothing, the palette is not interactive because it is in a statically rendered layout; also check that bit.blazorui.extras.js is linked and that no other script calls preventDefault on the key first.</li>
-                    <li>When options from Program.cs (a toggle shortcut, the group order, commands added through options.Commands) stop working once the page turns interactive, the services are registered in only one project of a Blazor Web App and the palette in the other runs on the default options; it logs a warning saying the services are not registered. Call AddBitCommandPaletteServices in both projects, through one shared method.</li>
+                    <li>When options from Program.cs (a toggle shortcut, the group order, commands added through options.Commands) stop working once the page turns interactive, the services are registered in only one project of a Blazor Web App and the palette in the other runs on the default options; it logs a warning saying the services are not registered. Call AddBitBlazorUIExtrasServices in both projects, through one shared method.</li>
                     <li>When the palette opens unstyled, the bit.blazorui.extras.css link is missing from the host page.</li>
                     <li>When a toggle shows its old state, remember that commands are immutable: register a new command with the same id, call Update on the service, or give BitCommandPaletteCommands a new list.</li>
                     <li>When recents forget a command whose title changed, its id was derived from the title; set an explicit Id.</li>

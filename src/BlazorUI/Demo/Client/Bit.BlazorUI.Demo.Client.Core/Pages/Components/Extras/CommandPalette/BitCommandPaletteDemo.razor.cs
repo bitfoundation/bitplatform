@@ -361,7 +361,7 @@ public partial class BitCommandPaletteDemo : IDisposable
         {
             Id = "options",
             Title = "BitCommandPaletteOptions",
-            Description = "The app-wide configuration, set through AddBitCommandPaletteServices(options => ...). The palette's own parameters, and a BitCommandPaletteParams cascaded through a BitParams, override what they share with it.",
+            Description = "The app-wide configuration, set through AddBitBlazorUIExtrasServices(commandPalette: options => ...). The palette's own parameters, and a BitCommandPaletteParams cascaded through a BitParams, override what they share with it.",
             Parameters =
             [
                 new() { Name = "ToggleShortcut", Type = "BitCommandPaletteKeyboardShortcut?", DefaultValue = "BitCommandPaletteKeyboardShortcut.Parse(\"Mod+K\")", Description = "Shortcut that toggles the palette. Default Mod+K (⌘K on macOS, Ctrl+K elsewhere)." },

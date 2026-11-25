@@ -117,7 +117,7 @@ public class BitCommandPaletteRemainingGapsTests : BunitTestContext
     [TestInitialize]
     public void Initialize()
     {
-        Services.AddBitCommandPaletteServices(o => o.DebounceMs = 0);
+        Services.AddBitBlazorUIExtrasServices(commandPalette: o => o.DebounceMs = 0);
         Services.AddBitCommandPaletteInMemoryHistoryStore();
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         Context.JSInterop.SetupModule(BitCommandPaletteTestJs.Setup, _ => true).Setup<bool>("isMac").SetResult(false);

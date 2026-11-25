@@ -129,7 +129,7 @@ public partial class BitCommandPalette : BitComponentBase
     [CascadingParameter(Name = BitCommandPaletteParams.ParamName)]
     public BitCommandPaletteParams? CascadingParameters { get; set; }
 
-    // Resolved rather than injected, so the palette also works when the app never called AddBitCommandPaletteServices. Null
+    // Resolved rather than injected, so the palette also works when the app never called AddBitBlazorUIExtrasServices. Null
     // until first used: DisposeAsync leaves alone what was never resolved.
     private BitCommandPaletteRuntime? _runtime;
     private BitCommandPaletteRuntime Runtime => _runtime ??= BitCommandPaletteRuntime.Of(Services);

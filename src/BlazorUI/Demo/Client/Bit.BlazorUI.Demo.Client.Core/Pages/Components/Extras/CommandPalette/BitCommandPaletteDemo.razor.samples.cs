@@ -72,8 +72,7 @@ public partial class BitCommandPaletteDemo
 }";
     private readonly string example2CsharpCode = @"
 // File: Program.cs - in a Blazor Web App, in both the server and the client project (one shared method)
-builder.Services.AddBitBlazorUIExtrasServices();
-builder.Services.AddBitCommandPaletteServices(options =>
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 {
     // Ctrl+K / Cmd+K is the default; this adds VS Code's Ctrl+Shift+P as well.
     options.AdditionalToggleShortcuts.Add(""Mod+Shift+P"");
@@ -142,7 +141,7 @@ await Palette.ExecuteAsync(""navigation.settings"");           // run a command,
 }";
     private readonly string example3CsharpCode = @"
 // File: Program.cs of the browser project, when it lazy loads Bit.BlazorUI.Extras
-builder.Services.AddBitBlazorUIServices(); // not AddBitBlazorUIExtrasServices / AddBitCommandPaletteServices
+builder.Services.AddBitBlazorUIServices(); // not AddBitBlazorUIExtrasServices
 
 // The one ""services are not registered"" warning is expected here; this silences it without naming the palette's types.
 builder.Logging.AddFilter(""Bit.BlazorUI.BitCommandPaletteServiceCollectionExtensions"", LogLevel.None);
@@ -425,7 +424,7 @@ public void Dispose()
                    Commands=""bOrderingCommands"" />";
     private readonly string example8CsharpCode = @"
 // Program.cs: the app-wide order of the groups, and how a search is listed.
-builder.Services.AddBitCommandPaletteServices(options =>
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 {
     // First on the empty query, in this order; the other groups follow.
     options.GroupOrder.AddRange([""Edit"", ""View"", ""Help""]);
@@ -1834,7 +1833,7 @@ public void Dispose()
 // ---- Keeping the history elsewhere, registered at startup (not used by this demo page) ----
 
 // Program.cs
-builder.Services.AddBitCommandPaletteServices(options =>
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 {
     options.MaxRecents = 8;
     options.HistoryStorageKey = ""my-app.palette-history"";
@@ -2291,8 +2290,8 @@ private static string DFormat(double value) => value.ToString(""0.##"", CultureI
 </table>";
     private readonly string example30CsharpCode = @"
 // For the whole app, in Program.cs:
-// builder.Services.AddBitCommandPaletteServices(options => options.Matcher = BitCommandPaletteSubstringMatcher.Default);
-// builder.Services.AddBitCommandPaletteServices(options => options.Matcher = new DPrefixMatcher());
+// builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options => options.Matcher = BitCommandPaletteSubstringMatcher.Default);
+// builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options => options.Matcher = new DPrefixMatcher());
 
 // A matcher of your own: a field matches when it starts with the term.
 private sealed class DPrefixMatcher : IBitCommandPaletteMatcher
@@ -2375,7 +2374,7 @@ private static string DFormat(double value) => value.ToString(""0.##"", CultureI
 </table>";
     private readonly string example31CsharpCode = @"
 // In Program.cs, for the whole app:
-// builder.Services.AddBitCommandPaletteServices(options =>
+// builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 // {
 //     options.Modes.Add(new BitCommandPaletteCommandMode { Prefix = "">"", Name = ""Commands"", Tags = [""command""] });
 //     options.ShowModeHints = false; // no ""Modes"" group on the empty query
@@ -2480,7 +2479,7 @@ public void Dispose()
 </table>";
     private readonly string example32CsharpCode = @"
 // In Program.cs, for the whole app:
-// builder.Services.AddBitCommandPaletteServices(options =>
+// builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 // {
 //     options.Sources.Add(new DocsSource());   // asked in the default mode
 //     options.DebounceMs = 150;                // quiet time after the last keystroke before a source is asked
@@ -2826,7 +2825,7 @@ private void DSetAssignStatus(string status)
 }";
     private readonly string example35CsharpCode = @"
 // In Program.cs, for long lists:
-// builder.Services.AddBitCommandPaletteServices(options =>
+// builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 // {
 //     options.MaxResults = 1000;   // rows kept per query
 //     options.Virtualize = true;   // render only the visible ones
@@ -3028,7 +3027,7 @@ private void EKeyRan(string what)
 <BitTextField Label=""Typing is not a shortcut"" Placeholder=""Type g then n here…"" />";
     private readonly string example37CsharpCode = @"
 // Program.cs - on by default: a plain key pressed in a text field is typing. Off, G then N fires there too.
-builder.Services.AddBitCommandPaletteServices(options => options.SuppressShortcutsInEditableElements = true);
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options => options.SuppressShortcutsInEditableElements = true);
 
 // The page
 [Inject] private IBitCommandPaletteService paletteService { get; set; } = default!;
@@ -3092,7 +3091,7 @@ paletteService.Register(
 </BitText>";
     private readonly string example39CsharpCode = @"
 // Program.cs
-builder.Services.AddBitCommandPaletteServices(options =>
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 {
     options.SequenceTimeoutMs = 1500;   // how long G waits for the next key; must be positive
     options.ShowSequenceHint = false;   // no built-in status: the app shows it, as below
@@ -3237,7 +3236,7 @@ public void Dispose() => paletteService.PlatformDetected -= ERefresh;";
 <BitCommandPalette ToggleShortcut=""Mod+P"" />";
     private readonly string example43CsharpCode = @"
 // Program.cs
-builder.Services.AddBitCommandPaletteServices(options =>
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 {
     options.ToggleShortcut = ""Mod+K"";                      // the default; null for none
     options.AdditionalToggleShortcuts.Add(""Mod+Shift+P"");  // more keys for the same
@@ -3269,7 +3268,7 @@ private IEnumerable<BitCommandPaletteKeyboardShortcut> EToggleShortcuts
 </BitText>";
     private readonly string example44CsharpCode = @"
 // Program.cs
-builder.Services.AddBitCommandPaletteServices(options =>
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 {
     options.ToggleShortcut = ""Mod+K"";
     options.SequenceTimeoutMs = 1500;     // must be positive: 0 throws ArgumentOutOfRangeException
@@ -3363,7 +3362,7 @@ private static readonly BitCommandPaletteCommand[] eCascadeCommands =
 <BitText>Last run: <b>@(eSecurityLast ?? ""nothing yet"")</b></BitText>";
     private readonly string example46CsharpCode = @"
 // Program.cs
-builder.Services.AddBitCommandPaletteServices(options =>
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 {
     options.AllowedUrlSchemes.Add(""vscode"");      // let commands open vscode:// links
     options.AllowedUrlSchemes.Remove(""tel"");
@@ -3402,7 +3401,7 @@ private static readonly BitCommandPaletteCommand[] eSecurityCommands =
 <pre>@(eStoredHistory ?? ""Not read yet."")</pre>";
     private readonly string example47CsharpCode = @"
 // Program.cs
-builder.Services.AddBitCommandPaletteServices(options =>
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 {
     options.HistoryStorageKey = ""my-app.palette-history"";  // the default store's localStorage key
     options.MaxRecents = 8;                                // recents on the empty query
@@ -3904,7 +3903,7 @@ private List<BitCommandPaletteCommand> FBuildL10nCommands()
 
 // ---------- Every palette: Program.cs ----------
 
-builder.Services.AddBitCommandPaletteServices(options =>
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options =>
 {
     options.Strings = new BitCommandPaletteStrings
     {
@@ -4261,7 +4260,7 @@ builder.Services.AddBitBelemetryServices(options =>
 });
 
 // File: Program.cs - keep command ids out of traces and logs when they embed personal data
-builder.Services.AddBitCommandPaletteServices(options => options.RecordCommandIdsInTraces = false);";
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options => options.RecordCommandIdsInTraces = false);";
 
     private readonly string example63RazorCode = @"
 ";
@@ -4272,8 +4271,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddClientServices(this IServiceCollection services)
     {
-        services.AddBitBlazorUIExtrasServices();
-        services.AddBitCommandPaletteServices(options => options.GroupOrder.AddRange([""Navigation"", ""Actions""]));
+        services.AddBitBlazorUIExtrasServices(commandPalette: options => options.GroupOrder.AddRange([""Navigation"", ""Actions""]));
         return services;
     }
 }

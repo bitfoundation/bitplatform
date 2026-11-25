@@ -45,7 +45,7 @@ public static class BlazorUIAssemblies
     public static BlazorUIPackage Extras { get; } = new(
         "Bit.BlazorUI.Extras", typeof(BitDataGrid<>).Assembly,
         "AddBitBlazorUIExtrasServices()", "bit.blazorui.extras.css", "bit.blazorui.extras.js", Required: false,
-        "The heavier components - chart, data grid, map, PDF viewer, the editors, the command palette, the pro modal and panel - and the Fluent 2, Material and Cupertino theme presets. BitCommandPalette also takes AddBitCommandPaletteServices() (its registry, open state and history; in both projects of a Blazor Web App).");
+        "The heavier components - chart, data grid, map, PDF viewer, the editors, the command palette, the pro modal and panel - and the Fluent 2, Material and Cupertino theme presets. AddBitBlazorUIExtrasServices() also registers BitCommandPalette's registry, open state and history, and takes its app-wide options (commandPalette: options => ...); in both projects of a Blazor Web App.");
 
     public static BlazorUIPackage AI { get; } = new(
         "Bit.BlazorUI.AI", typeof(BitAiChat).Assembly,

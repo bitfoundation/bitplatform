@@ -3,7 +3,7 @@
 @inject IServiceProvider Services
 
 @code {
-    // Resolved rather than injected, so the commands also register when the app never called AddBitCommandPaletteServices.
+    // Resolved rather than injected, so the commands also register when the app never called AddBitBlazorUIExtrasServices.
     private IBitCommandPaletteService Palette => field ??= Services.GetBitCommandPaletteService();
 
     private IDisposable? _registration;

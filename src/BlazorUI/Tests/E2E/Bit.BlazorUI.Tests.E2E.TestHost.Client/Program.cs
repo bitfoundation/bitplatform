@@ -8,7 +8,6 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddBitBlazorUIServices();
 builder.Services.AddBitBlazorUIExtrasServices();
-builder.Services.AddBitCommandPaletteServices();
 // The AI package over the scripted transport of AI/E2EAiTransport.cs (how a page picks a reply is written there).
 builder.Services.AddBitBlazorUIAIServices(E2EAiSetup.Configure);
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

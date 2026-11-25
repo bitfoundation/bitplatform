@@ -6,7 +6,7 @@ using Microsoft.JSInterop;
 namespace Bit.BlazorUI;
 
 /// <summary>
-/// The services a palette and its trigger work with: the ones <see cref="BitCommandPaletteServiceCollectionExtensions.AddBitCommandPaletteServices"/> registered,
+/// The services a palette and its trigger work with: the ones <see cref="IBlazorUIExtrasServiceCollectionExtensions.AddBitBlazorUIExtrasServices"/> registered,
 /// otherwise ones BitCommandPalette creates itself, once per browser connection.
 /// </summary>
 /// <remarks>
@@ -58,7 +58,7 @@ internal sealed class BitCommandPaletteRuntime
         }
 
         var js = services.GetService<IJSRuntime>() ?? throw new InvalidOperationException(
-            "The command palette's services are not registered: call builder.Services.AddBitCommandPaletteServices() in Program.cs. " +
+            "The command palette's services are not registered: call builder.Services.AddBitBlazorUIExtrasServices() in Program.cs. " +
             "Without them BitCommandPalette creates its own for each browser connection, which needs the IJSRuntime of a Blazor app, and this container has none.");
 
         return _own.TryGetValue(js, out var own) ? own : Create(services, js);

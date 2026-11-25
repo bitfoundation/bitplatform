@@ -1,6 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
-/// <summary>Global configuration, registered via <c>services.AddBitCommandPaletteServices(o =&gt; ...)</c>.</summary>
+/// <summary>Global configuration, registered via <c>services.AddBitBlazorUIExtrasServices(commandPalette: o =&gt; ...)</c>.</summary>
 public sealed class BitCommandPaletteOptions
 {
     /// <summary>Shortcut that toggles the palette. Default <c>Mod+K</c> (⌘K on macOS, Ctrl+K elsewhere).</summary>

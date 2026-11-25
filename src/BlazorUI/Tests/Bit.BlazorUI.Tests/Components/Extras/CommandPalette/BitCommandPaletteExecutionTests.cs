@@ -29,7 +29,7 @@ public class BitCommandPaletteExecutionTests : BunitTestContext
     public void Initialize()
     {
         _log = LogSink.AddTo(Services);
-        Services.AddBitCommandPaletteServices(o => o.DebounceMs = 0);
+        Services.AddBitBlazorUIExtrasServices(commandPalette: o => o.DebounceMs = 0);
         Services.AddBitCommandPaletteInMemoryHistoryStore();
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
         _jsHandle = Context.JSInterop.SetupModule(BitCommandPaletteTestJs.Setup, _ => true);
