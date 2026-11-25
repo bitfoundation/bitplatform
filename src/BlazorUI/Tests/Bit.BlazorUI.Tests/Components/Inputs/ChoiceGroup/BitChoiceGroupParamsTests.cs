@@ -179,6 +179,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
             AriaLabelledBy = "labelled-by-id",
             AutoReorderOptions = true,
             Color = BitColor.Warning,
+            Columns = 3,
             Description = "Cascaded description",
             ErrorMessage = "Cascaded error",
             ErrorMessageAriaLabel = "Cascaded error label",
@@ -189,6 +190,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
             Invalid = true,
             Label = "Cascaded label",
             LabelPlacement = BitPlacement.Start,
+            MinItemWidth = "12rem",
             NoCircle = true,
             ShowValidationMessage = true,
             Size = BitSize.Small,
@@ -210,6 +212,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         Assert.AreEqual("labelled-by-id", instance.AriaLabelledBy);
         Assert.IsTrue(instance.AutoReorderOptions);
         Assert.AreEqual(BitColor.Warning, instance.Color);
+        Assert.AreEqual(3, instance.Columns);
         Assert.AreEqual("Cascaded description", instance.Description);
         Assert.AreEqual("Cascaded error", instance.ErrorMessage);
         Assert.AreEqual("Cascaded error label", instance.ErrorMessageAriaLabel);
@@ -220,6 +223,7 @@ public class BitChoiceGroupParamsTests : BunitTestContext
         Assert.IsTrue(instance.Invalid);
         Assert.AreEqual("Cascaded label", instance.Label);
         Assert.AreEqual(BitPlacement.Start, instance.LabelPlacement);
+        Assert.AreEqual("12rem", instance.MinItemWidth);
         Assert.IsTrue(instance.NoCircle);
         Assert.IsTrue(instance.ShowValidationMessage);
         Assert.AreEqual(BitSize.Small, instance.Size);

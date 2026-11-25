@@ -39,7 +39,7 @@
             checked state, <b>UncheckedIconName</b> puts an always-visible icon in the otherwise empty unchecked box -
             which by default only previews the check mark on hover - and <b>IndeterminateIconName</b> replaces the
             filled square of the indeterminate state. For icons from external libraries, the
-            <BitLink Href="#example16">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
+            <BitLink Href="#example17">External Icons</BitLink> section shows the <b>BitIconInfo</b> counterparts of
             these parameters. The glyph is hidden from screen readers - the checkbox already announces its own
             state - unless <b>CheckIconAriaLabel</b> names it, which is worth doing only where a custom icon
             says something the label does not.
@@ -503,7 +503,42 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Variant" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>Variant</b> draws the whole checkbox as a selectable card instead of a bare box and label. <b>Text</b> is
+            the default and is what every example above renders; <b>Outline</b> gives the card a border, <b>Fill</b> a
+            surface, and both tint the checked one and border it in the current Color. The label is stretched over the
+            card, so its whole area - the description included - is the click target, and the focus ring outlines the
+            card instead of the box. It stacks with the rest: <b>FullWidth</b> for a card that fills its column,
+            <b>Reversed</b> to move the box to the far edge, and a <b>Description</b> for a two line card.
+        </div>
+        <br />
+        <div class="card-panel">
+            <BitCheckbox Variant="BitVariant.Outline" FullWidth DefaultValue="true"
+                         Label="An AI assistant for your users"
+                         Description="Answers their questions from your app's data." />
+            <BitCheckbox Variant="BitVariant.Outline" FullWidth
+                         Label="Push notifications"
+                         Description="On phones, computers and browsers." />
+            <BitCheckbox Variant="BitVariant.Outline" FullWidth Disabled
+                         Label="Offline sync"
+                         Description="Not available on the free plan." />
+        </div>
+        <br /><br />
+        <div class="card-panel">
+            <BitCheckbox Variant="BitVariant.Fill" FullWidth Reversed DefaultValue="true"
+                         Label="Daily summary"
+                         Description="One email every morning." />
+            <BitCheckbox Variant="BitVariant.Fill" FullWidth Reversed
+                         Label="Weekly report"
+                         Description="Every Monday, with the numbers of the week before." />
+            <BitCheckbox Variant="BitVariant.Fill" FullWidth Reversed Color="BitColor.Success" DefaultValue="true"
+                         Label="Security alerts"
+                         Description="Sign-ins from a new device." />
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Color</b> picks the theme color the checked box and the indeterminate square fill with, with
             <b>Primary</b> as the default. The semantic colors - <b>Success</b>, <b>Warning</b>, <b>Error</b> and
@@ -725,7 +760,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
         <div>
             The per-state icons are not limited to the built-in icon font: <b>CheckIcon</b>, <b>UncheckedIcon</b> and
             <b>IndeterminateIcon</b> take a <b>BitIconInfo</b> - or a raw CSS class string - that can point at any
@@ -759,7 +794,7 @@
         <BitCheckbox Label="Square (UncheckedIcon)" UncheckedIcon="@BitIconInfo.Bi("app")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div>
             <b>Size</b> scales the box, its icon and the label together: <b>Small</b> for dense lists and table rows,
             <b>Medium</b> (the default) for forms, and <b>Large</b> where the BitCheckbox is a primary control or
@@ -793,7 +828,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>Style</b> and <b>Class</b> land on the root element, which inline styles and a single class cover well.
             For anything deeper, <b>Styles</b> and <b>Classes</b> reach the individual parts - box, icon, label,
@@ -856,7 +891,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>
             Setting <b>Dir</b> to <b>BitDir.Rtl</b> mirrors the whole layout for right-to-left languages: the box
             moves to the right of the label and the spacing follows, so the BitCheckbox reads naturally inside an

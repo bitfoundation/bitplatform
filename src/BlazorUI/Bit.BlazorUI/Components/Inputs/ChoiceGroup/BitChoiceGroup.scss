@@ -11,7 +11,8 @@
 //   --bit-ChoiceGroup-invalid-color              radio ring, dot and card border while invalid,
 //                                                and the error message                         (default: $clr-err)
 //   --bit-ChoiceGroup-padding                    padding of the group                          (default: spacing(1))
-//   --bit-ChoiceGroup-gap                        space between the items                       (default: spacing(1), spacing(2) when
+//   --bit-ChoiceGroup-gap                        space between the items, the rows and the
+//                                                columns of a grid alike                       (default: spacing(1), spacing(2) when
 //                                                                                              Horizontal)
 //   --bit-ChoiceGroup-font-size                  text size of the items                        (default: $tg-fs-sm)
 //   --bit-ChoiceGroup-label-color                color of the group label                      (default: inherited)
@@ -70,7 +71,7 @@
 // is read, as before.
 
 $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focus, gap, ico-size, fontsize,
-                         circle-size, dot-size, desc-fontsize, inline-ico-size, card-padding;
+                         circle-size, dot-size, desc-fontsize, inline-ico-size, card-padding, cols, mnw;
 
 .bit-chg {
     display: flex;
@@ -188,17 +189,42 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
     --bit-chg-cnt-gap: var(--bit-chg-gap, var(--bit-ChoiceGroup-gap, #{spacing(2)}));
 }
 
+// Columns and MinItemWidth lay the items out in a grid instead of the column or the row above: equal tracks filled row
+// by row in the order of the items - the order the arrow keys follow too - spaced by the same gap. A counted track is
+// minmax(0, 1fr) rather than a bare 1fr, so a long item wraps inside its column instead of widening it past the others.
+// The child combinator keeps the grid off a choice group nested in an item template, whose own values the root resets.
+.bit-chg-grd > .bit-chg-cnt {
+    display: grid;
+    grid-template-columns: repeat(var(--bit-chg-cols, 1), minmax(0, 1fr));
+}
+
+// The fluid tracks of MinItemWidth win over the counted ones: as many columns as fit at that width, every one of them
+// equal, a last row that is not full included. min() caps the width at the group's, so a narrow container gets one
+// column rather than a row that overflows it. auto-fill needs a width to count the columns in - a group hugging its
+// content would get a single one - so the group fills its container while it is set, the way FullWidth makes it.
+.bit-chg.bit-chg-mnw {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.bit-chg-mnw > .bit-chg-cnt {
+    grid-template-columns: repeat(auto-fill, minmax(min(var(--bit-chg-mnw), 100%), 1fr));
+}
+
 // Fills the container instead of hugging the widest item. In the horizontal layout the items also share
 // the width equally, so the group reads as a set of evenly distributed options rather than a left aligned
 // row trailed by empty space. "min-width: fit-content" keeps an item from being squeezed below its own
-// content, so a long item pushes the row to wrap instead of collapsing every item into a narrow column.
+// content, so a long item pushes the row to wrap instead of collapsing every item into a narrow column. A grid sizes
+// its columns itself, and an item held at its content width there would overflow its column, so it is left out - its
+// own items and those of a grid group nested in an item template alike, which the descendant selector reaches too -
+// at no cost in weight, which keeps an app's class on the item container where it stood against this rule.
 .bit-chg-flw {
     .bit-chg-cnt {
         width: 100%;
     }
 
-    &.bit-chg-hor {
-        .bit-chg-icn {
+    &.bit-chg-hor:where(:not(.bit-chg-grd)) {
+        .bit-chg-icn:where(:not(.bit-chg-grd > .bit-chg-cnt > .bit-chg-icn)) {
             flex: 1 1 0;
             min-width: fit-content;
         }
@@ -271,6 +297,12 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
     width: fit-content;
     display: inline-flex;
     padding-inline-start: 0;
+}
+
+// In a grid the tile fills its column as every other item does, so the tiles of one choice are the same size. The
+// grid qualifier adds no weight, so the tile still weighs the one class it always did against an app's class.
+:where(.bit-chg-grd > .bit-chg-cnt) > .bit-chg-ihi {
+    width: auto;
 }
 
 // The tile paints a surface of its own only in Text, the variant with no card around it: the card variants make it
