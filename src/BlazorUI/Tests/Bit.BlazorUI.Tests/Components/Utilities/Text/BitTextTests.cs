@@ -686,6 +686,48 @@ public class BitTextTests : BunitTestContext
         Assert.IsTrue(classList.Contains("bit-txt-num"));
     }
 
+    // Inline code is a meaning as well as a look: a code element on a chip, in the type of the text around it.
+    [TestMethod]
+    public void BitTextShouldRenderInlineCodeAsACodeElementInTheInheritVariant()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Code, true);
+            parameters.AddChildContent("dotnet build");
+        });
+
+        component.MarkupMatches(@"<code class=""bit-txt bit-txt-inherit bit-txt-cod"" id:ignore>dotnet build</code>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldLetTheElementAndTheTypographyOfInlineCodeBeChosen()
+    {
+        var component = RenderComponent<BitText>(parameters =>
+        {
+            parameters.Add(p => p.Code, true);
+            parameters.Add(p => p.Element, "kbd");
+            parameters.Add(p => p.Typography, BitTypography.Caption1);
+        });
+
+        component.MarkupMatches(@"<kbd class=""bit-txt bit-txt-caption1 bit-txt-cod"" id:ignore></kbd>");
+    }
+
+    [TestMethod]
+    public void BitTextShouldRespectCodeChangingAfterRender()
+    {
+        var component = RenderComponent<BitText>();
+
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
+
+        component.Render(parameters => parameters.Add(p => p.Code, true));
+
+        component.MarkupMatches(@"<code class=""bit-txt bit-txt-inherit bit-txt-cod"" id:ignore></code>");
+
+        component.Render(parameters => parameters.Add(p => p.Code, false));
+
+        component.MarkupMatches(@"<div class=""bit-txt bit-txt-subtitle1"" id:ignore></div>");
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false)

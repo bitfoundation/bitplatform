@@ -452,19 +452,27 @@ public class BitStrings
     /// </summary>
     public virtual string PanelSizeFormat => "Resize, size {0} of {1}";
 
-    // ===== BitCopyButton (Bit.BlazorUI.Extras) =====
+    // ===== BitCodeBlock, BitCopyButton (Bit.BlazorUI.Extras) =====
 
     /// <summary>
-    /// The name of a copy button given no text of its own, which makes it an icon button: the fallback of the Text of the
-    /// BitCopyButton of the Extras package.
+    /// The name of a copy button: the fallback of <see cref="BitCodeBlock.CopyText"/>, and of the Text of the
+    /// BitCopyButton of the Extras package, where a button given no text of its own is an icon button.
     /// </summary>
     public virtual string Copy => "Copy";
 
     /// <summary>
-    /// What a copy button says, and announces to screen readers, once its value is on the clipboard: the fallback of the
-    /// CopiedText of the BitCopyButton of the Extras package.
+    /// What a copy button says, and announces to screen readers, once what it copied is on the clipboard: the fallback of
+    /// <see cref="BitCodeBlock.CopiedText"/>, and of the CopiedText of the BitCopyButton of the Extras package.
     /// </summary>
     public virtual string Copied => "Copied";
+
+    // ===== BitCodeBlock =====
+
+    /// <summary>
+    /// The name of the scrolling box of a <see cref="BitCodeBlock"/> that has no <see cref="BitCodeBlock.Title"/> and no
+    /// <see cref="BitCodeBlock.Language"/> to be named by.
+    /// </summary>
+    public virtual string Code => "Code";
 
     // ===== BitScrollToTop =====
 

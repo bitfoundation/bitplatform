@@ -1,0 +1,107 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+
+@{
+    var copied = _copied;
+    var copyLabel = copied ? CopiedLabel : (CopyText ?? BitStrings.Current.Copy);
+    var hasTitle = Title.HasValue();
+    var hasLanguage = Language.HasValue();
+    var hasHeader = Terminal || hasTitle || hasLanguage;
+    var copyDisabled = Disabled || HasNothingToCopy;
+}
+
+<div @ref="RootElement"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()">
+    @if (hasHeader)
+    {
+        <div style="@Styles?.Header" class="bit-cdb-hdr @Classes?.Header">
+            @if (Terminal)
+            {
+                @* The three dots of a window's title bar, which are what make the block read as a terminal at a glance. They
+                   only decorate it, so a screen reader is not told about them. *@
+                <span style="@Styles?.Dots" class="bit-cdb-dts @Classes?.Dots" aria-hidden="true">
+                    <span class="bit-cdb-dot"></span>
+                    <span class="bit-cdb-dot"></span>
+                    <span class="bit-cdb-dot"></span>
+                </span>
+            }
+
+            @if (hasTitle)
+            {
+                <span style="@Styles?.Title" class="bit-cdb-ttl @Classes?.Title">@Title</span>
+            }
+
+            @if (hasLanguage)
+            {
+                <span style="@Styles?.Language" class="bit-cdb-lng @Classes?.Language">@Language</span>
+            }
+
+            @if (ShowCopyButton)
+            {
+                @RenderCopyButton(copyLabel, copyDisabled)
+            }
+        </div>
+    }
+    else if (ShowCopyButton)
+    {
+        @RenderCopyButton(copyLabel, copyDisabled)
+    }
+
+    @* A line longer than the block, or a block taller than its MaxHeight, scrolls, and a scrolling box holds nothing that
+       takes the focus - so it takes the focus itself, which is what lets a keyboard scroll it in every engine. A tab stop is
+       announced by its name, so it is a group named for the code it holds - by the title or the language the header shows,
+       so an empty one is passed over as the header passes it over. The click handler is there only for CopyOnClick: a
+       click on the code of any other block is the reader's own, with nothing for the component to do about it. A TabIndex
+       given to the component is the body's, since the body is its one tab stop. *@
+    <div @onclick="@(CopyOnClick ? _handleBodyClick : default)"
+         role="group"
+         tabindex="@(TabIndex ?? "0")"
+         aria-label="@(AriaLabel ?? (hasTitle ? Title : hasLanguage ? Language : BitStrings.Current.Code))"
+         title="@(CopyOnClick && copyDisabled is false ? copyLabel : null)"
+         style="@Styles?.Body"
+         class="bit-cdb-bdy @Classes?.Body">
+        <pre style="@Styles?.Pre" class="bit-cdb-pre @Classes?.Pre"><code @ref="_codeElement" style="@Styles?.Code" class="bit-cdb-cod @Classes?.Code">@(ChildContent ?? _renderCode)</code></pre>
+    </div>
+
+    @* A changed icon is invisible to a screen reader, so the confirmation is announced as well. The region is on the page
+       from the first render with nothing in it: text landing in a live region that is already there is what screen
+       readers reliably announce. The text is keyed by the copy, so a second copy while the first is still confirmed
+       replaces the node rather than leaving the same text in place, which would announce nothing. *@
+    <span role="status"
+          aria-live="polite"
+          style="@Styles?.LiveRegion"
+          class="bit-cdb-liv @Classes?.LiveRegion">@if (copied) {<span @key="_copyCount">@CopiedLabel</span>}</span>
+</div>
+
+@code {
+    // The copy button is drawn by the code block itself rather than being a BitButton: a core component never renders
+    // another one, so an app's restyle of its buttons does not reach into its code blocks. The glyphs are drawn inline,
+    // since the copy glyph is not one of the icon font the core package ships.
+    private RenderFragment RenderCopyButton(string label, bool disabled) =>
+        @<button type="button"
+                 title="@label"
+                 aria-label="@label"
+                 disabled="@disabled"
+                 aria-disabled="@(disabled ? "true" : null)"
+                 @onclick="HandleCopyButtonClick"
+                 style="@Styles?.CopyButton"
+                 class="bit-cdb-cpb @Classes?.CopyButton">
+            @if (_copied)
+            {
+                <svg class="bit-cdb-cpi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <path d="M5 12.5 10 17.5 19.5 7" />
+                </svg>
+            }
+            else
+            {
+                <svg class="bit-cdb-cpi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                    <rect x="8.75" y="8.75" width="11.5" height="11.5" rx="2" />
+                    <path d="M15.25 8.75V5.75a2 2 0 0 0-2-2h-7.5a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h3" />
+                </svg>
+            }
+        </button>;
+}

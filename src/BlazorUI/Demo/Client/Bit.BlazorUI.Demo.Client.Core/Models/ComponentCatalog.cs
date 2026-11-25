@@ -330,6 +330,7 @@ public static class ComponentCatalog
 
         // Utilities
         ["CascadingValueProvider"] = BitIconName.Share,
+        ["CodeBlock"] = BitIconName.FileCode,
         ["Element"] = BitIconName.WebComponents,
         ["Embed"] = BitIconName.Embed,
         ["FocusOnInvalidSubmit"] = BitIconName.Focus,
@@ -525,6 +526,7 @@ public static class ComponentCatalog
 
         // Utilities
         ["CascadingValueProvider"] = "Cascades several values to child components without nesting providers.",
+        ["CodeBlock"] = "Shows a block of code with a button that copies it, an optional header naming it, and a terminal look for shell commands.",
         ["Element"] = "Renders any HTML tag with the library's own styling parameters.",
         ["Embed"] = "Frames a video, a map or another site in an iframe at an aspect ratio that scales with its container, with an optional click-to-load placeholder.",
         ["FocusOnInvalidSubmit"] = "Moves the focus to the first invalid field of an EditForm when its submit fails.",

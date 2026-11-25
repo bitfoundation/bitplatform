@@ -79,6 +79,7 @@ public class BitTextParamsTests : BunitTestContext
         {
             Block = true,
             BreakWord = true,
+            Code = true,
             ForceBreak = true,
             Gutter = true,
             Hyphenate = true,
@@ -97,7 +98,7 @@ public class BitTextParamsTests : BunitTestContext
 
         foreach (var expected in new[]
         {
-            "bit-txt-blk", "bit-txt-brw", "bit-txt-fbr", "bit-txt-gutter", "bit-txt-hyp", "bit-txt-itl", "bit-txt-mno",
+            "bit-txt-blk", "bit-txt-brw", "bit-txt-cod", "bit-txt-fbr", "bit-txt-gutter", "bit-txt-hyp", "bit-txt-itl", "bit-txt-mno",
             "bit-txt-nsl", "bit-txt-nowrap", "bit-txt-num", "bit-txt-pws", "bit-txt-stk", "bit-txt-und", "bit-txt-vhd",
         })
         {

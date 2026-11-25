@@ -152,6 +152,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "CascadingValueProvider", Url = "/components/cascadingvalueprovider" },
+                new() { Text = "CodeBlock", Url = "/components/codeblock", AdditionalUrls = ["/components/code-block"], Description = "CodeSnippet, Snippet", Data = "Code, Pre, Copy to clipboard, Copy button, Terminal, Shell, Command, Console, Monospace" },
                 new() { Text = "Element", Url = "/components/element", Description = "DynamicElement, Slot", Data = "Tag, HtmlTag, Polymorphic, CustomElement, WebComponent, Wrapper" },
                 new() { Text = "Embed", Url = "/components/embed", Description = "Iframe, VideoEmbed, ResponsiveEmbed", Data = "YouTube, Vimeo, Video, Map, iframe, Aspect ratio, Responsive video, Click to load, Facade, Lazy" },
                 new() { Text = "FocusOnInvalidSubmit", Url = "/components/focusoninvalidsubmit", Description = "FocusFirstInvalid, ScrollToFirstError", Data = "EditForm, Validation, Submit, aria-invalid, Focus, Invalid field, Error" },
@@ -167,7 +168,7 @@ public partial class MainLayout
                 new() { Text = "Separator", Url = "/components/separator", Description = "Divider" },
                 new() { Text = "Sticky", Url = "/components/sticky", Description = "Affix", Data = "Pin, Pinned, Sticky header, Frozen header, Frozen column, position sticky, Stuck, Scroll padding" },
                 new() { Text = "SwipeTrap", Url = "/components/swipetrap", Description = "Gesture, Swipeable", Data = "Swipe, Drag, Pan, Flick, Touch, Pointer, SwipeArea, Hammer" },
-                new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase" },
+                new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase, Inline code" },
             ],
         },
         new()

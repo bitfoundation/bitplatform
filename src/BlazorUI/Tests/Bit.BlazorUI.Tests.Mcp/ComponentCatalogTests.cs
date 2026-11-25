@@ -446,6 +446,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitToggle", "BitToggleParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
     [DataRow("BitLongPress", "BitLongPressParams")]
+    [DataRow("BitCodeBlock", "BitCodeBlockParams")]
     [DataRow("BitFlag", "BitFlagParams")]
     [DataRow("BitMessageBox", "BitMessageBoxParams")]
     [DataRow("BitRichTextEditor", "BitRichTextEditorParams")]

@@ -137,6 +137,25 @@ public partial class BitText : BitComponentBase
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
+    /// Renders the text as inline code: a "code" element in the theme's monospaced family, on a chip of its own.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// This is the fragment of code inside a sentence - a command, a file name, an identifier - and it is the one
+    /// parameter that is a meaning as well as a look, since a chip of code with no "code" under it says nothing of the
+    /// kind to a screen reader. So it renders a "code" element unless <see cref="Element"/> names another one (a "kbd",
+    /// a "samp"), and with no <see cref="Typography"/> of its own it takes the type of the text around it
+    /// (<see cref="BitTypography.Inherit"/>) at a smaller size, since a monospaced face set at the size of the
+    /// proportional one beside it looks the larger of the two.
+    /// <br />
+    /// <see cref="Monospace"/> is the look without the chip, for a whole block of identifiers or figures. A block of
+    /// code of several lines belongs in a <see cref="BitCodeBlock"/>.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Code { get; set; }
+
+    /// <summary>
     /// The general color of the text.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -539,13 +558,19 @@ public partial class BitText : BitComponentBase
 
 
 
+    // The variant drawn when none is set: a run of inline code takes the type of the text around it, any other text the
+    // default variant.
+    private BitTypography EffectiveTypography => Typography ?? (Code ? BitTypography.Inherit : BitTypography.Subtitle1);
+
+
+
     protected override string RootElementClass => "bit-txt";
 
     protected override void RegisterCssClasses()
     {
         // The extra small variant applies from no width at all, so it is drawn through the plain variant class and needs
         // no media query of its own; every wider one is a class the stylesheet only applies from its breakpoint up.
-        ClassBuilder.Register(() => $"bit-txt-{GetVariantName(TypographyXs ?? Typography ?? BitTypography.Subtitle1)}")
+        ClassBuilder.Register(() => $"bit-txt-{GetVariantName(TypographyXs ?? EffectiveTypography)}")
                     .Register(() => GetBreakpointClass("sm", TypographySm))
                     .Register(() => GetBreakpointClass("md", TypographyMd))
                     .Register(() => GetBreakpointClass("lg", TypographyLg))
@@ -614,6 +639,7 @@ public partial class BitText : BitComponentBase
                     .Register(() => Strikethrough ? "bit-txt-stk" : string.Empty)
                     .Register(() => Numeric ? "bit-txt-num" : string.Empty)
                     .Register(() => Monospace ? "bit-txt-mno" : string.Empty)
+                    .Register(() => Code ? "bit-txt-cod" : string.Empty)
                     .Register(() => Hyphenate ? "bit-txt-hyp" : string.Empty)
                     .Register(() => BreakWord ? "bit-txt-brw" : string.Empty)
                     .Register(() => PreserveWhitespace ? "bit-txt-pws" : string.Empty)
@@ -667,7 +693,8 @@ public partial class BitText : BitComponentBase
         var element = Element?.Trim();
         if (element.HasNoValue() || IsValidElement(element!) is false)
         {
-            element = GetVariantElement(Typography ?? BitTypography.Subtitle1);
+            // Inline code is a "code" element whatever the variant it is drawn in, since that is what says it is code.
+            element = Code ? "code" : GetVariantElement(EffectiveTypography);
         }
 
         var isHeading = _headingElements.Contains(element!);
