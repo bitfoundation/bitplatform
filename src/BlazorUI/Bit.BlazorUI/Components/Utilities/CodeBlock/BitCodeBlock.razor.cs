@@ -323,9 +323,10 @@ public partial class BitCodeBlock : BitComponentBase
             return;
         }
 
-        // The parameters may have moved on while the browser was writing: a block handed another code, or made
-        // unavailable, in the meantime has no copy of its current code to confirm - the copy made is still reported.
-        if (Disabled || string.Equals(Code, code, StringComparison.Ordinal) is false)
+        // The parameters may have moved on while the browser was writing: a block handed another code, made
+        // unavailable, or left with nothing to copy in the meantime has no copy of its current code to confirm - the
+        // copy made is still reported.
+        if (Disabled || HasNothingToCopy || string.Equals(Code, code, StringComparison.Ordinal) is false)
         {
             if (_copied)
             {

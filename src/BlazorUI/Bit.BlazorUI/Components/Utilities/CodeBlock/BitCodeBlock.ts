@@ -18,7 +18,9 @@
                 if (CodeBlock.hasSelectionIn(code)) return null;
             }
 
-            text ??= code?.textContent ?? '';
+            // The rendered text rather than the text nodes alone: a line break the content draws with an element (a <br>,
+            // a block per line of a highlighter) is a break of the text copied, as it is of a selection copied by hand.
+            text ??= code?.innerText ?? '';
 
             // A content that renders no text has nothing to put on the clipboard: a copy of it would only empty it.
             if (!text) return null;

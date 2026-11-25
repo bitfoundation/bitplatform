@@ -55,10 +55,11 @@
        takes the focus - so it takes the focus itself, which is what lets a keyboard scroll it in every engine. A tab stop is
        announced by its name, so it is a group named for the code it holds - by the title or the language the header shows,
        so an empty one is passed over as the header passes it over. The click handler is there only for CopyOnClick: a
-       click on the code of any other block is the reader's own, with nothing for the component to do about it. *@
+       click on the code of any other block is the reader's own, with nothing for the component to do about it. A TabIndex
+       given to the component is the body's, since the body is its one tab stop. *@
     <div @onclick="@(CopyOnClick ? _handleBodyClick : default)"
          role="group"
-         tabindex="0"
+         tabindex="@(TabIndex ?? "0")"
          aria-label="@(AriaLabel ?? (hasTitle ? Title : hasLanguage ? Language : BitStrings.Current.Code))"
          title="@(CopyOnClick && copyDisabled is false ? copyLabel : null)"
          style="@Styles?.Body"

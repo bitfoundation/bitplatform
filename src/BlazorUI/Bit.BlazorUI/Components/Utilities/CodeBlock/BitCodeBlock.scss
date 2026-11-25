@@ -230,8 +230,10 @@ $cdb-private-properties: mxh;
         max-height: none;
     }
 
+    // A token with no break opportunity in it (a long URL, a hash) breaks anywhere rather than running off the page.
     .bit-cdb-pre {
         white-space: pre-wrap;
+        overflow-wrap: anywhere;
     }
 
     .bit-cdb-cpb {

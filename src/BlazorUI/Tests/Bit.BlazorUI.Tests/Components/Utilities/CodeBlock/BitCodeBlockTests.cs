@@ -83,6 +83,22 @@ public class BitCodeBlockTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCodeBlockShouldGiveItsTabIndexToItsScrollingBox()
+    {
+        var com = Render(p =>
+        {
+            p.Add(c => c.Code, "x");
+            p.Add(c => c.TabIndex, "-1");
+        });
+
+        Assert.AreEqual("-1", com.Find(".bit-cdb-bdy").GetAttribute("tabindex"));
+
+        com.Render(p => p.Add(c => c.TabIndex, "3"));
+
+        Assert.AreEqual("3", com.Find(".bit-cdb-bdy").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
     public void BitCodeBlockShouldPassOverAnEmptyTitleOrLanguageWhenNamingItsScrollingBox()
     {
         var com = Render(p =>
@@ -456,6 +472,30 @@ public class BitCodeBlockTests : BunitTestContext
         com.Render(p => p.Add(c => c.Disabled, true));
 
         Assert.AreEqual(string.Empty, com.Find(".bit-cdb-liv").TextContent);
+    }
+
+    [TestMethod]
+    public void BitCodeBlockShouldConfirmNothingWhenItsContentIsGoneByTheTimeTheCopyIsDone()
+    {
+        var invocation = Context.JSInterop.Setup<bool?>(CopyIdentifier, _ => true);
+        var copies = 0;
+
+        var com = Render(p =>
+        {
+            p.Add(c => c.OnCopy, () => copies++);
+            p.AddChildContent("dotnet run");
+        });
+
+        com.Find(".bit-cdb-cpb").Click();
+
+        com.Render(p => p.Add(c => c.ChildContent, (RenderFragment?)null));
+
+        invocation.SetResult(true);
+
+        // The copy made is still reported, but a block with nothing left to copy confirms none.
+        com.WaitForAssertion(() => Assert.AreEqual(1, copies));
+        Assert.AreEqual(string.Empty, com.Find(".bit-cdb-liv").TextContent);
+        Assert.AreEqual("Copy", com.Find(".bit-cdb-cpb").GetAttribute("aria-label"));
     }
 
     [TestMethod]
