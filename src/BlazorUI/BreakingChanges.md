@@ -18,6 +18,24 @@ only in this file.
 
 ## 11.0.0
 
+### `BitRichTextEditor` keeps its own undo history ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+Undo and redo no longer go to the browser's native stack, which cannot follow the changes the editor makes to its
+content itself. The editor keeps its own history, and `UndoAsync`, `RedoAsync`, Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z, the
+toolbar's buttons and the browser's own undo (its Edit menu, a gesture) all go to it. Nothing is renamed. What an app
+can notice:
+
+- **Typing is undone a word at a time.** A step ends at a space or punctuation, after a pause of over 600 ms, and where
+  typing turns to deleting. Each command, paste, input rule or IME composition is a step of its own. An input rule
+  (`**bold**`, `# `) is undone back to the text as it was typed.
+- **The toolbar's Undo and Redo are disabled while there is nothing to undo or redo** (`disabled` and
+  `aria-disabled="true"`, like every disabled control). A test that clicks Undo on an editor nobody has edited finds
+  it disabled. `CanUndo` and `CanRedo` say the same in C#.
+- **A value set from .NET before the first edit is where the history starts**, so it cannot be undone into an empty
+  editor. A value set after an edit is a step that can be undone, whether or not the editor has the focus. Before,
+  only a value set while the editor had the focus could be undone.
+- **The history keeps 200 steps**, and drops the oldest past 25 million characters of content in all.
+
 ### `AddBitBlazorUIExtrasServices` takes a `commandPalette` argument ([#15465](https://github.com/bitfoundation/bitplatform/issues/15465))
 
 `AddBitBlazorUIExtrasServices` registers the services of `BitCommandPalette` (its registry, open state and history) along

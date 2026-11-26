@@ -22,6 +22,9 @@ public partial class BitRichTextEditor : BitComponentBase
     private ElementReference _editorRef = default!;
     private BitRichTextEditorContentFacts _facts;
     private BitRichTextEditorSelectionState _state = new();
+    // What the editor's own undo history holds, as the bridge last reported it (see _OnHistoryChanged).
+    private bool _canUndo;
+    private bool _canRedo;
     private DotNetObjectReference<BitRichTextEditor>? _dotnetObj = null;
 
     /// <summary>Transient inline error message shown in the editor chrome.</summary>
@@ -293,6 +296,19 @@ public partial class BitRichTextEditor : BitComponentBase
     public BitRichTextEditorSelectionState SelectionState => _state;
 
     /// <summary>
+    /// Whether there is an edit to undo: a command, a paste, a value set after the first edit, or text typed since the
+    /// last step. The editor keeps its own history rather than the browser's, so this is what <see cref="UndoAsync"/>,
+    /// Ctrl+Z and the toolbar's Undo button go by. <c>false</c> until the editor is set up in the browser.
+    /// </summary>
+    public bool CanUndo => _canUndo;
+
+    /// <summary>
+    /// Whether there is an undone edit to redo; any new edit clears it. <c>false</c> until the editor is set up in the
+    /// browser.
+    /// </summary>
+    public bool CanRedo => _canRedo;
+
+    /// <summary>
     /// Runs a raw editing command against the editor.
     /// </summary>
     public Task ExecuteCommandAsync(string command, string? value = null) => ExecAsync(command, value);
@@ -341,10 +357,13 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>Clears the editor content.</summary>
     public Task ClearAsync() => SetHtmlAsync(null);
 
-    /// <summary>Undoes the last edit.</summary>
+    /// <summary>
+    /// Undoes the last edit - a command, a paste, a word typed, or a value set after the first edit - from the editor's
+    /// own history (see <see cref="CanUndo"/>).
+    /// </summary>
     public Task UndoAsync() => ExecAsync("undo");
 
-    /// <summary>Redoes the last undone edit.</summary>
+    /// <summary>Redoes the last undone edit (see <see cref="CanRedo"/>).</summary>
     public Task RedoAsync() => ExecAsync("redo");
 
     /// <summary>Selects the whole editor content.</summary>
@@ -366,6 +385,10 @@ public partial class BitRichTextEditor : BitComponentBase
     private bool ControlsDisabled => EffectiveReadOnly || _inSourceView;
 
     private bool UnlinkDisabled => ControlsDisabled || _state.InLink is false;
+
+    private bool UndoDisabled => ControlsDisabled || _canUndo is false;
+
+    private bool RedoDisabled => ControlsDisabled || _canRedo is false;
 
     // The source toggle is the one control still live in the source view, which is how a read-only editor leaves it.
     private bool SourceToggleDisabled => Disabled || (EffectiveReadOnly && _inSourceView is false);
@@ -511,6 +534,21 @@ public partial class BitRichTextEditor : BitComponentBase
         if (IsDisposing) return;
 
         Announce(isChecked ? Loc("task-checked", "Task checked") : Loc("task-unchecked", "Task unchecked"));
+    }
+
+    /// <summary>
+    /// Reported by the bridge when the undo history gains or loses something to undo or redo, which enables and disables
+    /// the toolbar's Undo and Redo buttons.
+    /// </summary>
+    [JSInvokable("OnHistoryChanged")]
+    public void _OnHistoryChanged(bool canUndo, bool canRedo)
+    {
+        if (IsDisposing) return;
+        if (_canUndo == canUndo && _canRedo == canRedo) return;
+
+        _canUndo = canUndo;
+        _canRedo = canRedo;
+        StateHasChanged();
     }
 
     [JSInvokable("OnFocused")]
