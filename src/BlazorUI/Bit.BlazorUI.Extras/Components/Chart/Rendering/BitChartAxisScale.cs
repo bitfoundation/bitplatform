@@ -206,13 +206,33 @@ public sealed class BitChartAxisScale
         if (end < start) return;
         int visible = end - start + 1;
         int maxLabels = FitTickLimit(Options.Ticks.MaxTicksLimit ?? visible);
-        int skip = Options.Ticks.AutoSkip && visible > maxLabels ? (int)Math.Ceiling((double)visible / maxLabels) : 1;
-        for (int i = start; i <= end; i++)
+        if (Options.Ticks.AutoSkip is false || visible <= maxLabels)
         {
-            if ((i - start) % skip != 0 && i != end) continue;
-            double px = PixelForIndex(i, Options.Offset);
-            Ticks.Add(new BitChartAxisTick(i, _categories[i], px));
+            for (int i = start; i <= end; i++)
+                AddCategoryTick(i);
+            return;
         }
+
+        // Labels need at least `skip` categories between them. Every skip-th label is kept from the first one, so the
+        // labels fall on a regular cadence and stay where they are while the end of the range moves (a zoom from the
+        // left edge, say). The last label is kept too, and when it would land closer than `skip` to the stride label
+        // before it - whenever the span is not a multiple of skip - that stride label gives way rather than being drawn
+        // over. A limit of one label keeps the first label only: there is no room for the last one `skip` away from it.
+        int skip = (int)Math.Ceiling((double)visible / Math.Max(1, maxLabels));
+        int lastStride = start + (end - start) / skip * skip;
+        for (int i = start; i <= lastStride; i += skip)
+        {
+            if (i != start && i != end && end - i < skip) continue;
+            AddCategoryTick(i);
+        }
+        if (lastStride != end && end - start >= skip)
+            AddCategoryTick(end);
+    }
+
+    private void AddCategoryTick(int index)
+    {
+        string label = Options.Ticks.Callback is { } cb ? cb(index, LabelIndex()) : _categories![index];
+        Ticks.Add(new BitChartAxisTick(index, label, PixelForIndex(index, Options.Offset)));
     }
 
     private void BuildLinearTicks()
@@ -295,11 +315,23 @@ public sealed class BitChartAxisScale
     public string FormatValue(double value, int decimals)
     {
         if (Options.Ticks.Callback is { } cb)
-            return cb(value, Ticks.Count);
+            return cb(value, LabelIndex());
         if (Options.Ticks.Precision is { } p) decimals = p;
         string format = Options.Ticks.Format ?? "N" + Math.Max(0, decimals);
         string s = value.ToString(format, Culture);
         return $"{Options.Ticks.Prefix}{s}{Options.Ticks.Suffix}";
+    }
+
+    /// <summary>
+    /// The index a tick callback is given for the next tick: its position among the labelled ticks built so far,
+    /// leaving out the minor ticks of a logarithmic axis, which carry no label and never reach the callback.
+    /// </summary>
+    private int LabelIndex()
+    {
+        int index = 0;
+        foreach (var t in Ticks)
+            if (!t.Minor) index++;
+        return index;
     }
 
     private static int DecimalsFor(double step)
