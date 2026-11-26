@@ -532,9 +532,10 @@ function findAssetForUrl(url: string) {
 // navigations through to the network, so the app looks fine online and only fails in the
 // field, offline. Surface the misconfiguration loudly at startup instead. The common cause is
 // a Blazor Web app whose manifest has no 'index.html' entry at all (pair `self.defaultUrl =
-// '/'` with `self.externalAssets = [{ url: '/' }]`). Irrelevant under forcePrerender, where
-// navigations are deliberately left to the server.
-if (MANIFEST_VALID && !self.forcePrerender && !DEFAULT_ASSET) {
+// '/'` with `self.externalAssets = [{ url: '/' }]`). It matters just as much under
+// forcePrerender: navigations go to the server first, but the cached default document is what
+// answers them when the server cannot, so without it the app still does not open offline.
+if (MANIFEST_VALID && !DEFAULT_ASSET) {
     console.warn(`BitBswup SW: defaultUrl ('${DEFAULT_URL}') matches no asset - navigations will NOT be served from cache and the app will not work offline. Point self.defaultUrl at an entry that exists in service-worker-assets.js / externalAssets (e.g. self.defaultUrl = '/' together with self.externalAssets = [{ url: '/' }]).`);
 }
 
@@ -611,7 +612,6 @@ function handleFetch(e: BswupExtendableEvent) {
 
     const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url));
     const isAppNavigation = (req.mode === 'navigate') && !isServerRendered;
-    const shouldServeDefaultDoc = isAppNavigation && !self.forcePrerender;
 
     // Only materialized when fetch diagnostics are on: this runs on EVERY request the worker
     // sees, and allocating a Date + ISO string per fetch is pure waste when nothing logs it.
@@ -627,7 +627,9 @@ function handleFetch(e: BswupExtendableEvent) {
     // externalAssets entry that happens to match a route URL would otherwise hijack that
     // route away from the shell - caching its HTML under the route URL as a bogus "pattern
     // generation" and answering it with a network error offline instead of the app shell.
-    const asset = shouldServeDefaultDoc
+    // The same holds under forcePrerender, where such a match would also serve the route
+    // cache-first instead of letting the server prerender it.
+    const asset = isAppNavigation
         ? (findConcreteAssetForUrl(req.url) || DEFAULT_ASSET)
         : findAssetForUrl(req.url);
 
@@ -635,7 +637,7 @@ function handleFetch(e: BswupExtendableEvent) {
     // as the page sent it. Taken over (rather than left to the browser, as before) only so the
     // cached default document can answer when the server cannot - see serveServerDocument.
     // Without a default asset there is nothing to fall back to, so the browser keeps the request.
-    if (self.forcePrerender && isAppNavigation && DEFAULT_ASSET && (!asset || asset.isDefault)) {
+    if (self.forcePrerender && isAppNavigation && asset && asset.isDefault) {
         diagFetch('+++ handleFetch - forcePrerender navigation, network first:', start, req.url, e, req);
         e.respondWith(serveServerDocument(e, req, start));
         return;
@@ -703,8 +705,13 @@ async function cleanRedirect(response: Response) {
 // cached default document is served instead, so an installed app still opens. Any other answer,
 // errors included (a 404 or a 500 is the app's own page), goes to the page untouched. The cached
 // copy is requested like any default document: with noPrerenderQuery when the app sets one,
-// prerendered under the AlwaysPrerender preset, which sets none. Never rejects (it is handed to
-// respondWith).
+// prerendered under the AlwaysPrerender preset, which sets none - so there the offline fallback is
+// the prerendered home page (home content, and per-request state such as antiforgery tokens, until
+// Blazor re-renders); set noPrerenderQuery, and have the host honor it, for a clean shell.
+// There is no timeout: only a failed connection or a gateway status triggers the fallback, so a
+// connection that hangs (lie-fi, a captive portal) waits just as the browser itself would - racing
+// a timer would also swap a slow but healthy prerender for the shell. Never rejects (it is handed
+// to respondWith).
 async function serveServerDocument(e: any, req: Request, start: string) {
     const response = await tryFetch(req);
 
@@ -738,6 +745,8 @@ async function serveServerDocument(e: any, req: Request, start: string) {
 // Statuses that mean the server behind a gateway could not answer, as opposed to an answer of the
 // app's own: 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout, and Cloudflare's
 // 520-527 (origin errors, unreachable, timeouts, TLS failures) and 530 (origin DNS error).
+// A 503 the app sends itself (ASP.NET Core's rate limiter by default, app_offline.htm) cannot be
+// told apart from a gateway's and is treated the same - have the rate limiter reject with 429.
 function isServerUnavailableStatus(status: number) {
     return status === 502 || status === 503 || status === 504
         || (status >= 520 && status <= 527) || status === 530;
@@ -747,23 +756,19 @@ function isServerUnavailableStatus(status: number) {
 // lazily cache it the way serveAsset does for NoPrerender - in passive mode, where the install
 // precaches nothing, the fallback above would have nothing to serve. After a navigation the server
 // answered, fetch it once in the background (its own versioned URL, never the route's) when the
-// cache does not hold it yet. One fill at a time per worker; defaultDocumentCached skips the
-// cache lookup once the copy is known to be there.
+// cache does not hold it yet. One fill at a time per worker. The cache is checked after every
+// answered navigation (never latched), so a copy lost to a cache clear or eviction is refilled.
 let defaultDocumentFill: Promise<void> | undefined;
-let defaultDocumentCached = false;
 
 function fillDefaultDocument(e: any) {
-    if (defaultDocumentCached || defaultDocumentFill || !DEFAULT_ASSET) return;
+    if (defaultDocumentFill || !DEFAULT_ASSET) return;
 
     defaultDocumentFill = (async () => {
         const cache = await tryCacheOpen();
         if (!cache) return;
 
         const cacheUrl = createCacheUrl(DEFAULT_ASSET);
-        if (await tryCacheMatch(cache, cacheUrl)) {
-            defaultDocumentCached = true;
-            return;
-        }
+        if (await tryCacheMatch(cache, cacheUrl)) return;
 
         let request: Request;
         try { request = createNewAssetRequest(DEFAULT_ASSET); } catch (err) {

@@ -708,6 +708,46 @@ describe('forcePrerender navigations fall back to the cached default document', 
         expect(sw.fetchLog.slice(before).filter(isShellFetch)).toHaveLength(0);
     });
 
+    // A copy lost while the worker stays alive (cache clear, storage eviction) is fetched again.
+    it('refills the default document after it disappears from the cache', async () => {
+        const sw = bootPrerendered({ fetchHandler: answering(200) });
+        await sw.fetchEvent({ url: `${ORIGIN}/counter`, mode: 'navigate' });
+        expect(await (await openAssetCache(sw)).match(SHELL_KEY)).toBeTruthy();
+
+        await (await openAssetCache(sw)).delete(SHELL_KEY);
+        const before = sw.fetchLog.length;
+        await sw.fetchEvent({ url: `${ORIGIN}/other`, mode: 'navigate' });
+        expect(sw.fetchLog.slice(before).filter(isShellFetch)).toHaveLength(1);
+        const cached = await (await openAssetCache(sw)).match(SHELL_KEY);
+        expect(cached && cached.body).toBe('the app shell');
+    });
+
+    // A broad RegExp externalAssets entry must not hijack a route away from the server: the
+    // route still goes network first, and falls back to the default document, never cache-first.
+    it('does not let a pattern asset capture a route navigation', async () => {
+        let online = true;
+        const sw = bootPrerendered({
+            fetchHandler: async url => {
+                if (!online) throw new TypeError('Failed to fetch');
+                return isShellFetch(url)
+                    ? new FakeResponse('the app shell', { status: 200 })
+                    : new FakeResponse(`server ${new URL(url).pathname}`, { status: 200 });
+            },
+            configure: c => { c.self.externalAssets = c.array([{ url: '/' }, { url: c.regex('/content/.*') }]); },
+        });
+        await cacheShell(sw);
+
+        const first = await sw.fetchEvent({ url: `${ORIGIN}/content/page`, mode: 'navigate' });
+        expect(first.response.body).toBe('server /content/page');
+        const second = await sw.fetchEvent({ url: `${ORIGIN}/content/page`, mode: 'navigate' });
+        expect(second.response.body).toBe('server /content/page');
+        expect(sw.fetchLog.filter(u => u === `${ORIGIN}/content/page`)).toHaveLength(2);
+
+        online = false;
+        const offline = await sw.fetchEvent({ url: `${ORIGIN}/content/page`, mode: 'navigate' });
+        expect(offline.response.body).toBe('the app shell');
+    });
+
     // The background fill is best-effort: nothing it does may turn the server's answer into a
     // failed navigation (the promise handed to respondWith must never reject).
     it('serves the server answer even when the event refuses waitUntil', async () => {

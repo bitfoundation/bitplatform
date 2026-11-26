@@ -158,6 +158,17 @@
     service worker forwards these navigations itself, the server receives them with
     <code>Sec-Fetch-Mode: navigate</code> but <code>Sec-Fetch-Dest: empty</code> instead of <code>document</code>.
 </p>
+<p>
+    Some limits of this fallback: a <code>503</code> the app sends itself (ASP.NET Core's rate limiter rejects
+    with <code>503</code> by default, and so does <code>app_offline.htm</code>) cannot be told apart from a
+    gateway's, so it is answered with the cached default document too - have the rate limiter reject with
+    <code>429</code> instead. There is no timeout, so a connection that hangs rather than fails (a stalled mobile
+    network, a captive portal) keeps waiting just as it would without a service worker. And the
+    <code>AlwaysPrerender</code> preset sets no <a href="service-worker#noprerenderquery"><code>noPrerenderQuery</code></a>,
+    so the cached copy is the prerendered home page: offline, every deep link shows home content (with its stale
+    per-request state, such as antiforgery tokens) until Blazor re-renders it. Set <code>noPrerenderQuery</code>
+    and have the host honor it to cache a clean shell instead.
+</p>
 
 <h2>Install behavior &amp; resiliency</h2>
 
