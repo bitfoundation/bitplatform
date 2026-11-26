@@ -32,7 +32,11 @@ public sealed class BitChartTickOptions
     /// to what the axis length can show without the labels colliding.
     /// </summary>
     public bool AutoSkip { get; set; } = true;
-    /// <summary>Optional formatting callback applied to each numeric/category tick value.</summary>
+    /// <summary>
+    /// Optional callback returning the label of each tick: (value, index) => text, where index is the tick's position
+    /// among the ticks drawn. On a numeric axis the value is the tick's value; on a category axis it is the category's
+    /// index into the chart's labels. An empty string draws no label for that tick.
+    /// </summary>
     public Func<double, int, string>? Callback { get; set; }
     /// <summary>Standard or custom .NET numeric format string used for numeric tick labels (e.g. "N0", "P1", "C").</summary>
     public string? Format { get; set; }

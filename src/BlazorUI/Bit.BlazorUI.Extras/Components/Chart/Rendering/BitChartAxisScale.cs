@@ -206,13 +206,34 @@ public sealed class BitChartAxisScale
         if (end < start) return;
         int visible = end - start + 1;
         int maxLabels = FitTickLimit(Options.Ticks.MaxTicksLimit ?? visible);
-        int skip = Options.Ticks.AutoSkip && visible > maxLabels ? (int)Math.Ceiling((double)visible / maxLabels) : 1;
-        for (int i = start; i <= end; i++)
+        if (Options.Ticks.AutoSkip is false || visible <= maxLabels)
         {
-            if ((i - start) % skip != 0 && i != end) continue;
-            double px = PixelForIndex(i, Options.Offset);
-            Ticks.Add(new BitChartAxisTick(i, _categories[i], px));
+            for (int i = start; i <= end; i++)
+                AddCategoryTick(i);
+            return;
         }
+
+        // Labels need at least `skip` categories between them. Keeping every skip-th label from the first one and then
+        // the last one too would put the last label closer than that to the one before it whenever the span is not a
+        // multiple of skip, drawing one over the other. So the kept labels are spread evenly from the first to the last:
+        // as many as fit `skip` apart, each gap the span divided among them and rounded, which is never less than skip.
+        int skip = (int)Math.Ceiling((double)visible / Math.Max(1, maxLabels));
+        int span = end - start;
+        int count = span / skip + 1;
+        if (count < 2)
+        {
+            AddCategoryTick(start);
+            return;
+        }
+        double step = (double)span / (count - 1);
+        for (int k = 0; k < count; k++)
+            AddCategoryTick(start + (int)Math.Round(k * step, MidpointRounding.AwayFromZero));
+    }
+
+    private void AddCategoryTick(int index)
+    {
+        string label = Options.Ticks.Callback is { } cb ? cb(index, Ticks.Count) : _categories![index];
+        Ticks.Add(new BitChartAxisTick(index, label, PixelForIndex(index, Options.Offset)));
     }
 
     private void BuildLinearTicks()

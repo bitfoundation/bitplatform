@@ -255,6 +255,61 @@ public class BitChartAxisScaleTests
         Assert.IsTrue(scale.Ticks.Count <= 6, $"got {scale.Ticks.Count}");
     }
 
+    [TestMethod]
+    [DataRow(30, 8, 900)]
+    [DataRow(60, 6, 900)]
+    [DataRow(40, 5, 800)]
+    [DataRow(31, 7, 900)]
+    [DataRow(100, 11, 600)]
+    public void ACategoryScaleShouldKeepTheFirstAndLastLabelsWithoutCrowdingEither(int n, int limit, double width)
+    {
+        var options = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category };
+        options.Ticks.MaxTicksLimit = limit;
+        var categories = Enumerable.Range(0, n).Select(i => $"C{i}").ToList();
+        var scale = new BitChartAxisScale(options, horizontal: true, categories);
+        scale.SetDataRange(0, n - 1);
+        scale.SetPixelRange(0, width);
+
+        var indexes = scale.Ticks.Select(t => (int)t.Value).ToList();
+        string got = string.Join(",", indexes);
+        Assert.IsTrue(indexes.Count <= limit, $"more labels than the limit: {got}");
+        Assert.AreEqual(0, indexes[0], got);
+        Assert.AreEqual(n - 1, indexes[^1], got);
+
+        var gaps = indexes.Zip(indexes.Skip(1), (a, b) => b - a).ToList();
+        Assert.IsTrue(gaps.Max() - gaps.Min() <= 1, $"the labels must be spread evenly: {got}");
+        Assert.IsTrue(gaps[^1] >= gaps.Min(), $"the last label must not crowd the one before it: {got}");
+    }
+
+    [TestMethod]
+    public void ACategoryScaleShouldKeepEveryLabelWithoutAutoSkip()
+    {
+        var options = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category };
+        options.Ticks.AutoSkip = false;
+        options.Ticks.MaxTicksLimit = 5;
+        var categories = Enumerable.Range(0, 30).Select(i => $"C{i}").ToList();
+        var scale = new BitChartAxisScale(options, horizontal: true, categories);
+        scale.SetDataRange(0, 29);
+        scale.SetPixelRange(0, 900);
+
+        Assert.AreEqual(30, scale.Ticks.Count);
+    }
+
+    [TestMethod]
+    public void TickCallbackShouldReplaceACategoryLabel()
+    {
+        var options = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category };
+        options.Ticks.AutoSkip = false;
+        var categories = Enumerable.Range(0, 10).Select(i => $"C{i}").ToList();
+        options.Ticks.Callback = (v, i) => (9 - (int)v) % 3 == 0 ? $"{categories[(int)v]}#{i}" : "";
+        var scale = new BitChartAxisScale(options, horizontal: true, categories);
+        scale.SetDataRange(0, 9);
+        scale.SetPixelRange(0, 900);
+
+        CollectionAssert.AreEqual(new[] { "C0#0", "", "", "C3#3", "", "", "C6#6", "", "", "C9#9" },
+            scale.Ticks.Select(t => t.Label).ToArray());
+    }
+
     // ---- zoom ----
 
     [TestMethod]
