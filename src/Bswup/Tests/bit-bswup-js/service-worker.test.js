@@ -516,8 +516,14 @@ describe('defaultUrl misconfiguration warning', () => {
         })).toHaveLength(0);
     });
 
-    it('stays silent under forcePrerender (the server owns navigations)', () => {
-        expect(warnsFrom({ config: { forcePrerender: true }, assets: [{ url: 'app.js', hash: 'h1' }] })).toHaveLength(0);
+    // forcePrerender navigations fall back to the cached default document when the server cannot
+    // answer, so a missing default asset loses offline support there too.
+    it('warns under forcePrerender as well', () => {
+        expect(warnsFrom({ config: { forcePrerender: true }, assets: [{ url: 'app.js', hash: 'h1' }] })).toHaveLength(1);
+    });
+
+    it('warns under the AlwaysPrerender preset without a default asset', () => {
+        expect(warnsFrom({ config: { mode: 'AlwaysPrerender' }, assets: [{ url: 'app.js', hash: 'h1' }] })).toHaveLength(1);
     });
 
     // Asset routing folds case under caseInsensitiveUrl; the default-document pairing used to
@@ -1459,6 +1465,15 @@ describe('noPrerenderQuery', () => {
         const sw = boot({ config: { mode: 'NoPrerender' } });
         const request = sw.fn('createNewAssetRequest')({ reqUrl: `${ORIGIN}/`, hash: 'h1', isDefault: true });
         expect(request.url).toContain('no-prerender=true');
+    });
+
+    // AlwaysPrerender never asks the server for a non-prerendered document, the fallback copy
+    // of the default document included.
+    it('is not preset for AlwaysPrerender', () => {
+        const sw = boot({ config: { mode: 'AlwaysPrerender' } });
+        expect(sw.self.noPrerenderQuery).toBe('');
+        const request = sw.fn('createNewAssetRequest')({ reqUrl: `${ORIGIN}/`, isDefault: true });
+        expect(request.url).not.toContain('prerender');
     });
 });
 
