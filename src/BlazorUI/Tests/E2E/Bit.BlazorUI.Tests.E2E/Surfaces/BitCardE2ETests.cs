@@ -891,7 +891,8 @@ public class BitCardE2ETests : E2ETestBase
             Assert.AreEqual(fillBg, await StyleAsync(unset, "background-color"), $"{suffix}: an unset Variant is not Fill.");
             await Expect(outline).ToHaveCSSAsync("border-top-width", "1px");
             await Expect(outline).ToHaveCSSAsync("box-shadow", "none");
-            await Expect(text).ToHaveCSSAsync("background-image", new Regex("^linear-gradient"));
+            // The tint is the bottom layer, under the accent bar's (none on a card without an Accent).
+            await Expect(text).ToHaveCSSAsync("background-image", new Regex(@"^none, linear-gradient\("));
             await Expect(text).ToHaveCSSAsync("box-shadow", "none");
 
             if (semanticFills.Count < 8) semanticFills.Add(fillBg);

@@ -1018,8 +1018,10 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await Expect(textArea).ToHaveAttributeAsync("readonly", "");
         Assert.IsNull(await textArea.GetAttributeAsync("disabled"));
 
+        // The caret is put at the end directly: from Chromium 159 on (Playwright 1.65), Control+End leaves a read-only
+        // textarea's caret at the start, and the selection with it, so the Control+A below selected nothing.
         await textArea.FocusAsync();
-        await Page.Keyboard.PressAsync("Control+End");
+        await textArea.EvaluateAsync("t => t.setSelectionRange(t.value.length, t.value.length)");
         await Page.Keyboard.TypeAsync("typed");
         await Page.Keyboard.PressAsync("Control+b");
         await Expect(textArea).ToHaveValueAsync("# Read-only\n\nselect me");

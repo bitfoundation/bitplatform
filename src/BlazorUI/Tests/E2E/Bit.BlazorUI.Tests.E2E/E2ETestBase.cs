@@ -491,6 +491,15 @@ public abstract class E2ETestBase
     }
 
     /// <summary>
+    /// A regular expression matching the computed value of a box-alignment property (<c>justify-content</c>,
+    /// <c>align-items</c>, <c>align-self</c>, <c>align-content</c>), for ToHaveCSSAsync and StringAssert.Matches: the
+    /// <c>flex-start</c> and <c>flex-end</c> in it also match the <c>flow-start</c> and <c>flow-end</c> that Chromium
+    /// serializes them as from version 159 on (Playwright 1.65), where Firefox and WebKit still read them back as written.
+    /// Either is the same alignment; the value a stylesheet or an inline style sets is still <c>flex-start</c>.
+    /// </summary>
+    protected static Regex Alignment(string value) => new($"^{Regex.Escape(value).Replace("flex-start", "(?:flex|flow)-start").Replace("flex-end", "(?:flex|flow)-end")}$");
+
+    /// <summary>
     /// A regular expression matching one class among the classes of an element, for ToHaveClassAsync.
     /// </summary>
     protected static Regex HasClass(string className) => new($@"(^|\s){Regex.Escape(className)}(\s|$)");
