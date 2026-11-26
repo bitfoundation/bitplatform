@@ -708,6 +708,19 @@ describe('forcePrerender navigations fall back to the cached default document', 
         expect(sw.fetchLog.slice(before).filter(isShellFetch)).toHaveLength(0);
     });
 
+    // The page that installed the worker is not controlled by it, so the first install caches
+    // the default document itself - the app opens offline without a second online navigation.
+    it('caches the default document during a passive first install', async () => {
+        const sw = bootPrerendered({ fetchHandler: answering(200) });
+        await sw.fire('install');
+
+        const shellFetches = sw.fetchLog.filter(isShellFetch);
+        expect(shellFetches).toHaveLength(1);
+        expect(new URL(shellFetches[0]).pathname).toBe('/');
+        const cached = await (await openAssetCache(sw)).match(SHELL_KEY);
+        expect(cached && cached.body).toBe('the app shell');
+    });
+
     // A copy lost while the worker stays alive (cache clear, storage eviction) is fetched again.
     it('refills the default document after it disappears from the cache', async () => {
         const sw = bootPrerendered({ fetchHandler: answering(200) });

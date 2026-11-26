@@ -753,8 +753,8 @@ function isServerUnavailableStatus(status: number) {
 }
 
 // Under forcePrerender the default document is never requested by a navigation, so nothing would
-// lazily cache it the way serveAsset does for NoPrerender - in passive mode, where the install
-// precaches nothing, the fallback above would have nothing to serve. After a navigation the server
+// lazily cache it the way serveAsset does for NoPrerender. A passive first install caches it (see
+// createAssetsCache), but a copy lost later would never come back. After a navigation the server
 // answered, fetch it once in the background (its own versioned URL, never the route's) when the
 // cache does not hold it yet. One fill at a time per worker. The cache is checked after every
 // answered navigation (never latched), so a copy lost to a cache clear or eviction is refilled.
@@ -763,7 +763,17 @@ let defaultDocumentFill: Promise<void> | undefined;
 function fillDefaultDocument(e: any) {
     if (defaultDocumentFill || !DEFAULT_ASSET) return;
 
-    defaultDocumentFill = (async () => {
+    defaultDocumentFill = cacheDefaultDocument(e).then(() => {
+        defaultDocumentFill = undefined;
+    });
+
+    e.waitUntil(defaultDocumentFill);
+}
+
+// Fetches the default document into the cache unless it is already there. Never rejects. The
+// write is handed to e.waitUntil (see lazyFill).
+async function cacheDefaultDocument(e: any) {
+    try {
         const cache = await tryCacheOpen();
         if (!cache) return;
 
@@ -772,22 +782,18 @@ function fillDefaultDocument(e: any) {
 
         let request: Request;
         try { request = createNewAssetRequest(DEFAULT_ASSET); } catch (err) {
-            diagFetch('*** fillDefaultDocument - createNewAssetRequest threw:', err);
+            diagFetch('*** cacheDefaultDocument - createNewAssetRequest threw:', err);
             return;
         }
 
         const response = await tryFetch(request);
         if (!response) return;
 
-        diagFetch('+++ fillDefaultDocument - caching the default document:', cacheUrl);
+        diagFetch('+++ cacheDefaultDocument - caching the default document:', cacheUrl);
         lazyFill(e, cache, cacheUrl, response, DEFAULT_ASSET, request);
-    })().catch((err: any) => {
-        diagFetch('*** fillDefaultDocument failed:', err);
-    }).then(() => {
-        defaultDocumentFill = undefined;
-    });
-
-    e.waitUntil(defaultDocumentFill);
+    } catch (err) {
+        diagFetch('*** cacheDefaultDocument failed:', err);
+    }
 }
 
 async function serveAssetCore(e: any, req: Request, asset: any, start: string) {
@@ -1309,6 +1315,16 @@ async function createAssetsCache(ignoreProgressReport = false) {
     // pass returned above - so there is always a page listening for the 'bypass' reply.
     if (passiveFirstTime) {
         sendMessage({ type: 'bypass', data: { firstTime: true } });
+
+        // forcePrerender: no navigation ever requests the default document, and the one that
+        // installed this worker is not controlled by it, so cache it now - the offline fallback
+        // of serveServerDocument must not wait for a later controlled navigation.
+        if (self.forcePrerender && DEFAULT_ASSET) {
+            const writes: Promise<any>[] = [];
+            await cacheDefaultDocument({ waitUntil: (p: Promise<any>) => writes.push(p) });
+            await Promise.all(writes);
+        }
+
         diagGroupEnd();
         return;
     }
