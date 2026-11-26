@@ -544,7 +544,8 @@ diagGroupEnd();
 // Bswup cache, fall back to the SPA default document, or leave it alone. High-level flow:
 //   1. Block prohibited URLs (403) and IGNORE non-GET / server-handled requests.
 //   2. For navigations, serve the default document unless the URL is server-rendered or
-//      forcePrerender is on (then the server owns the HTML).
+//      forcePrerender is on. Under forcePrerender the server owns the HTML: the navigation goes
+//      to the network, and the cached default document only answers when the server cannot.
 //   3. Resolve the request to an asset by testing each asset's (RegExp) url against it.
 //   4. Serve the asset from cache. On a cache miss the response is fetched from the network and
 //      lazily written back to the cache in every mode: passive mode and pattern assets (e.g.
@@ -609,7 +610,8 @@ function handleFetch(e: BswupExtendableEvent) {
     }
 
     const isServerRendered = SERVER_RENDERED_URLS.some(pattern => pattern.test(req.url));
-    const shouldServeDefaultDoc = (req.mode === 'navigate') && !isServerRendered && !self.forcePrerender;
+    const isAppNavigation = (req.mode === 'navigate') && !isServerRendered;
+    const shouldServeDefaultDoc = isAppNavigation && !self.forcePrerender;
 
     // Only materialized when fetch diagnostics are on: this runs on EVERY request the worker
     // sees, and allocating a Date + ISO string per fetch is pure waste when nothing logs it.
@@ -628,6 +630,16 @@ function handleFetch(e: BswupExtendableEvent) {
     const asset = shouldServeDefaultDoc
         ? (findConcreteAssetForUrl(req.url) || DEFAULT_ASSET)
         : findAssetForUrl(req.url);
+
+    // forcePrerender: the server renders every navigation, so the navigation goes to the network
+    // as the page sent it. Taken over (rather than left to the browser, as before) only so the
+    // cached default document can answer when the server cannot - see serveServerDocument.
+    // Without a default asset there is nothing to fall back to, so the browser keeps the request.
+    if (self.forcePrerender && isAppNavigation && DEFAULT_ASSET && (!asset || asset.isDefault)) {
+        diagFetch('+++ handleFetch - forcePrerender navigation, network first:', start, req.url, e, req);
+        e.respondWith(serveServerDocument(e, req, start));
+        return;
+    }
 
     if (!asset) {
         diagFetch('+++ handleFetch ended - ignored - asset not found:', start, req.url, e, req);
@@ -683,6 +695,94 @@ async function cleanRedirect(response: Response) {
         diagFetch('*** cleanRedirect failed - returning the response unchanged:', err);
         return response;
     }
+}
+
+// A navigation under forcePrerender: network first, with the page's own request, so the server
+// prerenders it exactly as before. When the server cannot answer - the connection fails, or a
+// proxy / gateway in front of it answers 502, 503, 504 (or Cloudflare's 520-527 and 530) - the
+// cached default document is served instead, so an installed app still opens. Any other answer,
+// errors included (a 404 or a 500 is the app's own page), goes to the page untouched. The cached
+// copy is requested like any default document: with noPrerenderQuery when the app sets one,
+// prerendered under the AlwaysPrerender preset, which sets none. Never rejects (it is handed to
+// respondWith).
+async function serveServerDocument(e: any, req: Request, start: string) {
+    const response = await tryFetch(req);
+
+    if (response && !isServerUnavailableStatus((response as any).status)) {
+        // Best-effort background work must never turn the server's answer into a failure.
+        if (response.ok) {
+            try { fillDefaultDocument(e); } catch (err) {
+                diagFetch('*** serveServerDocument - fillDefaultDocument threw:', err);
+            }
+        }
+        diagFetch('+++ serveServerDocument ended - the server answered:', start, req.url, (response as any).status);
+        return response;
+    }
+
+    const cache = await tryCacheOpen();
+    const cached = cache ? await tryCacheMatch(cache, createCacheUrl(DEFAULT_ASSET)) : undefined;
+    // lastResort also finds a copy left under a previous hash of the default document.
+    const fallback = cached || (cache ? await lastResort(cache, req, DEFAULT_ASSET) : undefined);
+
+    if (fallback && (fallback as any).type !== 'error') {
+        diagFetch('*** serveServerDocument ended - the server did not answer, serving the cached default document:', start, req.url, response && (response as any).status);
+        // The cached copy can carry the redirected flag (see serveAsset), which a navigation refuses.
+        return await cleanRedirect(fallback);
+    }
+
+    diagFetch('*** serveServerDocument ended - the server did not answer and no default document is cached:', start, req.url);
+    // The gateway's own error page beats a bare network error.
+    return response || Response.error();
+}
+
+// Statuses that mean the server behind a gateway could not answer, as opposed to an answer of the
+// app's own: 502 Bad Gateway, 503 Service Unavailable, 504 Gateway Timeout, and Cloudflare's
+// 520-527 (origin errors, unreachable, timeouts, TLS failures) and 530 (origin DNS error).
+function isServerUnavailableStatus(status: number) {
+    return status === 502 || status === 503 || status === 504
+        || (status >= 520 && status <= 527) || status === 530;
+}
+
+// Under forcePrerender the default document is never requested by a navigation, so nothing would
+// lazily cache it the way serveAsset does for NoPrerender - in passive mode, where the install
+// precaches nothing, the fallback above would have nothing to serve. After a navigation the server
+// answered, fetch it once in the background (its own versioned URL, never the route's) when the
+// cache does not hold it yet. One fill at a time per worker; defaultDocumentCached skips the
+// cache lookup once the copy is known to be there.
+let defaultDocumentFill: Promise<void> | undefined;
+let defaultDocumentCached = false;
+
+function fillDefaultDocument(e: any) {
+    if (defaultDocumentCached || defaultDocumentFill || !DEFAULT_ASSET) return;
+
+    defaultDocumentFill = (async () => {
+        const cache = await tryCacheOpen();
+        if (!cache) return;
+
+        const cacheUrl = createCacheUrl(DEFAULT_ASSET);
+        if (await tryCacheMatch(cache, cacheUrl)) {
+            defaultDocumentCached = true;
+            return;
+        }
+
+        let request: Request;
+        try { request = createNewAssetRequest(DEFAULT_ASSET); } catch (err) {
+            diagFetch('*** fillDefaultDocument - createNewAssetRequest threw:', err);
+            return;
+        }
+
+        const response = await tryFetch(request);
+        if (!response) return;
+
+        diagFetch('+++ fillDefaultDocument - caching the default document:', cacheUrl);
+        lazyFill(e, cache, cacheUrl, response, DEFAULT_ASSET, request);
+    })().catch((err: any) => {
+        diagFetch('*** fillDefaultDocument failed:', err);
+    }).then(() => {
+        defaultDocumentFill = undefined;
+    });
+
+    e.waitUntil(defaultDocumentFill);
 }
 
 async function serveAssetCore(e: any, req: Request, asset: any, start: string) {

@@ -1460,6 +1460,15 @@ describe('noPrerenderQuery', () => {
         const request = sw.fn('createNewAssetRequest')({ reqUrl: `${ORIGIN}/`, hash: 'h1', isDefault: true });
         expect(request.url).toContain('no-prerender=true');
     });
+
+    // AlwaysPrerender never asks the server for a non-prerendered document, the fallback copy
+    // of the default document included.
+    it('is not preset for AlwaysPrerender', () => {
+        const sw = boot({ config: { mode: 'AlwaysPrerender' } });
+        expect(sw.self.noPrerenderQuery).toBe('');
+        const request = sw.fn('createNewAssetRequest')({ reqUrl: `${ORIGIN}/`, isDefault: true });
+        expect(request.url).not.toContain('prerender');
+    });
 });
 
 describe('sendMessage resilience', () => {

@@ -51,9 +51,15 @@ describe('requests Bswup does not manage', () => {
         expect(handled).toBe(false);
     });
 
-    it('ignores the default document under forcePrerender', async () => {
+    it('ignores a non-navigation request for the default document under forcePrerender', async () => {
         const sw = boot({ config: { forcePrerender: true, defaultUrl: 'index.html' }, assets: [{ url: 'index.html' }] });
-        const { handled } = await sw.fetchEvent({ url: `${ORIGIN}/index.html`, mode: 'navigate' });
+        const { handled } = await sw.fetchEvent({ url: `${ORIGIN}/index.html` });
+        expect(handled).toBe(false);
+    });
+
+    it('leaves forcePrerender navigations to the browser when there is no default document to fall back to', async () => {
+        const sw = boot({ config: { forcePrerender: true, defaultUrl: '/' }, assets: [{ url: 'app.js', hash: 'h1' }] });
+        const { handled } = await sw.fetchEvent({ url: `${ORIGIN}/counter`, mode: 'navigate' });
         expect(handled).toBe(false);
     });
 
@@ -581,6 +587,158 @@ describe('offline navigation (SPA default document)', () => {
         const cache = await openAssetCache(sw);
         const cached = await cache.match(`${ORIGIN}/index.html.idx`);
         expect(cached && cached.body).toBe('the real shell');
+    });
+});
+
+// Under forcePrerender (mode 'AlwaysPrerender') the server renders every navigation, but an
+// installed app must still open when the server cannot answer - the connection fails, or the
+// proxy in front of it answers 502/503/504 or one of Cloudflare's 52x/530 - from the cached
+// default document, exactly as NoPrerender opens it (issue #15479).
+describe('forcePrerender navigations fall back to the cached default document', () => {
+    const SHELL_KEY = `${ORIGIN}/`;
+
+    function bootPrerendered({ fetchHandler, configure } = {}) {
+        return boot({
+            config: { mode: 'AlwaysPrerender' },
+            assets: [{ url: 'app.js', hash: 'h1' }],
+            fetchHandler,
+            configure: c => {
+                c.self.externalAssets = c.array([{ url: '/' }]);
+                if (configure) configure(c);
+            },
+        });
+    }
+
+    async function cacheShell(sw) {
+        await (await openAssetCache(sw)).put(SHELL_KEY, new FakeResponse('the app shell', { status: 200 }));
+    }
+
+    // The default document's own versioned request (the background fill) - navigations carry no ?v=.
+    const isShellFetch = url => new URL(url).searchParams.has('v');
+
+    const answering = status => async url => isShellFetch(url)
+        ? new FakeResponse('the app shell', { status: 200 })
+        : new FakeResponse(`server ${status}`, { status });
+
+    it('serves what the server rendered when it answers', async () => {
+        const sw = bootPrerendered({ fetchHandler: answering(200) });
+        await cacheShell(sw);
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/counter`, mode: 'navigate' });
+        expect(handled).toBe(true);
+        expect(response.body).toBe('server 200');
+        expect(sw.fetchLog).toContain(`${ORIGIN}/counter`);
+    });
+
+    it('serves the cached default document when the connection fails', async () => {
+        const sw = bootPrerendered({ fetchHandler: NETWORK_DOWN });
+        await cacheShell(sw);
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/counter/42`, mode: 'navigate' });
+        expect(handled).toBe(true);
+        expect(response.body).toBe('the app shell');
+    });
+
+    for (const status of [502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527, 530]) {
+        it(`serves the cached default document when a gateway answers ${status}`, async () => {
+            const sw = bootPrerendered({ fetchHandler: answering(status) });
+            await cacheShell(sw);
+            const { response } = await sw.fetchEvent({ url: `${ORIGIN}/`, mode: 'navigate' });
+            expect(response.body).toBe('the app shell');
+        });
+    }
+
+    // A 404 or a 500 is the app's own answer - it must reach the page as the server sent it.
+    for (const status of [404, 500, 501]) {
+        it(`passes the server's own ${status} through`, async () => {
+            const sw = bootPrerendered({ fetchHandler: answering(status) });
+            await cacheShell(sw);
+            const { response } = await sw.fetchEvent({ url: `${ORIGIN}/missing`, mode: 'navigate' });
+            expect(response.status).toBe(status);
+            expect(response.body).toBe(`server ${status}`);
+        });
+    }
+
+    it('serves the gateway error when nothing is cached', async () => {
+        const sw = bootPrerendered({ fetchHandler: answering(502) });
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/`, mode: 'navigate' });
+        expect(response.status).toBe(502);
+    });
+
+    it('answers a network error when the server is unreachable and nothing is cached', async () => {
+        const sw = bootPrerendered({ fetchHandler: NETWORK_DOWN });
+        const { handled, response } = await sw.fetchEvent({ url: `${ORIGIN}/`, mode: 'navigate' });
+        expect(handled).toBe(true);
+        expect(response.type).toBe('error');
+    });
+
+    it('falls back to a copy cached under a previous hash of the default document', async () => {
+        const sw = boot({
+            config: { forcePrerender: true, defaultUrl: 'index.html' },
+            assets: [{ url: 'index.html', hash: 'sha256-new' }],
+            fetchHandler: NETWORK_DOWN,
+        });
+        await (await openAssetCache(sw)).put(`${ORIGIN}/index.html.sha256-old`, new FakeResponse('the old shell', { status: 200 }));
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/counter`, mode: 'navigate' });
+        expect(response.body).toBe('the old shell');
+    });
+
+    it('rebuilds a redirected cached default document for the navigation', async () => {
+        const sw = bootPrerendered({ fetchHandler: NETWORK_DOWN });
+        await (await openAssetCache(sw)).put(SHELL_KEY, new FakeResponse('the app shell', { status: 200, redirected: true }));
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/counter`, mode: 'navigate' });
+        expect(response.redirected).toBe(false);
+        expect(decodeBody(response)).toBe('the app shell');
+    });
+
+    // A passive install precaches nothing, and no navigation ever requests the default document
+    // under forcePrerender - so a navigation the server answered caches it in the background.
+    it('caches the default document after a navigation the server answered', async () => {
+        const sw = bootPrerendered({ fetchHandler: answering(200) });
+        await sw.fetchEvent({ url: `${ORIGIN}/counter`, mode: 'navigate' });
+
+        const shellFetch = sw.fetchLog.find(isShellFetch);
+        expect(shellFetch).toBeDefined();
+        expect(new URL(shellFetch).pathname).toBe('/'); // the default document's URL, never the route's
+        const cached = await (await openAssetCache(sw)).match(SHELL_KEY);
+        expect(cached && cached.body).toBe('the app shell');
+
+        // Once cached, later navigations do not download it again.
+        const before = sw.fetchLog.length;
+        await sw.fetchEvent({ url: `${ORIGIN}/other`, mode: 'navigate' });
+        await sw.fetchEvent({ url: `${ORIGIN}/third`, mode: 'navigate' });
+        expect(sw.fetchLog.slice(before).filter(isShellFetch)).toHaveLength(0);
+    });
+
+    // The background fill is best-effort: nothing it does may turn the server's answer into a
+    // failed navigation (the promise handed to respondWith must never reject).
+    it('serves the server answer even when the event refuses waitUntil', async () => {
+        const sw = bootPrerendered({ fetchHandler: answering(200) });
+        let responded;
+        sw.handlers.fetch({
+            request: { url: `${ORIGIN}/counter`, method: 'GET', mode: 'navigate' },
+            respondWith: p => { responded = p; },
+            waitUntil: () => { throw new Error('InvalidStateError'); },
+        });
+        const response = await responded;
+        expect(response.body).toBe('server 200');
+    });
+
+    it('does not cache anything after a navigation the server could not answer', async () => {
+        const sw = bootPrerendered({ fetchHandler: answering(502) });
+        await sw.fetchEvent({ url: `${ORIGIN}/counter`, mode: 'navigate' });
+        expect(sw.fetchLog.some(isShellFetch)).toBe(false);
+    });
+
+    it('leaves serverRenderedUrls navigations to the browser', async () => {
+        const sw = bootPrerendered({ configure: c => { c.self.serverRenderedUrls = c.array([c.regex('/account/')]); } });
+        const { handled } = await sw.fetchEvent({ url: `${ORIGIN}/account/login`, mode: 'navigate' });
+        expect(handled).toBe(false);
+    });
+
+    it('still serves a managed asset opened directly in a tab from the cache', async () => {
+        const sw = bootPrerendered({ fetchHandler: NETWORK_DOWN });
+        await (await openAssetCache(sw)).put(`${ORIGIN}/app.js.h1`, new FakeResponse('the script', { status: 200 }));
+        const { response } = await sw.fetchEvent({ url: `${ORIGIN}/app.js`, mode: 'navigate' });
+        expect(response.body).toBe('the script');
     });
 });
 
