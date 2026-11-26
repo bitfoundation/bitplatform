@@ -63,7 +63,7 @@
         <PackageReference Include="bunit" Version="2.15.2" />
         <PackageReference Include="MSTest" Version="4.5.3" />
         <!-- FakeTimeProvider, the clock the command palette's history and frecency tests run on. -->
-        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="11.0.0" />
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="11.0.1" />
     </ItemGroup>
 
     <!-- The AI packages' transports end to end: the SSE and WebSocket endpoints and the hub of Bit.BlazorUI.AI.Server hosted
