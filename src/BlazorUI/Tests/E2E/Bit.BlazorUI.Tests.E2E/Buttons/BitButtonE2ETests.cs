@@ -58,7 +58,7 @@ public class BitButtonE2ETests : E2ETestBase
         await Expect(compound).ToHaveClassAsync(HasClass("bit-btn-hsc"));
         await Expect(compound.Locator(".bit-btn-prt")).ToHaveTextAsync("Primary text");
         await Expect(compound.Locator(".bit-btn-sct")).ToHaveTextAsync("this is the secondary text");
-        await Expect(compound).ToHaveCSSAsync("align-items", "flex-start");
+        await Expect(compound).ToHaveCSSAsync("align-items", Alignment("flex-start"));
 
         var primarySize = await compound.Locator(".bit-btn-prt").PxAsync("font-size");
         var secondarySize = await compound.Locator(".bit-btn-sct").PxAsync("font-size");

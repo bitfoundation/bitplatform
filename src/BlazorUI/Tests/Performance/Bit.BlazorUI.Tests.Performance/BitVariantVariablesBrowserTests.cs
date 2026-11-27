@@ -78,6 +78,7 @@ public partial class BitVariantVariablesBrowserTests : PerformanceTestBase
     public async Task AVariantVariableReachesItsOwnVariantAlone()
     {
         await Open();
+        await ScrollTheHeaders();
         var twins = await ReadTwins();
         var failures = new List<string>();
         var checkedCount = 0;
@@ -376,6 +377,14 @@ public partial class BitVariantVariablesBrowserTests : PerformanceTestBase
         await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
         await Page.WaitForFunctionAsync("() => document.querySelectorAll('[data-cmp=SnackBar] .bit-snb-itm').length === 3", null, new() { Timeout = DefaultTimeout });
         await Page.AddStyleTagAsync(new() { Content = NoTransitions });
+    }
+
+    // The scrolled tier of BitHeader only reaches a header in its scrolled state, which the page's sticky headers take
+    // once their boxes are scrolled off the top and their script has reported it.
+    private async Task ScrollTheHeaders()
+    {
+        await Page.EvaluateAsync("() => document.querySelectorAll('#variants [data-header-scroller]').forEach(box => box.scrollTop = box.scrollHeight)");
+        await Page.WaitForFunctionAsync($"() => document.querySelectorAll('#variants [data-header-scroller] .bit-hdr-scr').length === {Variants.Length}", null, new() { Timeout = DefaultTimeout });
     }
 
     // Every twin of the components on the page, read off the stylesheet the page loads: a variable of a variant whose

@@ -36,6 +36,25 @@ can notice:
   only a value set while the editor had the focus could be undone.
 - **The history keeps 200 steps**, and drops the oldest past 25 million characters of content in all.
 
+### `BitChart`'s tick `Callback` labels a category axis too ([#15489](https://github.com/bitfoundation/bitplatform/issues/15489))
+
+`BitChartTickOptions.Callback` was ignored on a category axis, which always drew the chart's labels. It is now called
+there as on every other axis, as Chart.js calls it: the value it is handed is the category's index into the chart's
+labels, and the string it returns is the label drawn (an empty one draws none). A callback written for a value axis and
+set on a category scale as well - often through options shared by both - now formats the indexes instead of drawing the
+names:
+
+| Before | After |
+|---|---|
+| `Callback = (v, _) => v.ToString("C")` on a category axis drew `Jan`, `Feb`, ... | it draws `$0.00`, `$1.00`, ...: leave `Callback` unset there, or return `labels[(int)v]` |
+
+The index the callback is handed (its second argument) also no longer counts the unlabelled minor ticks of a
+logarithmic axis: the decades are `0, 1, 2, ...` rather than `0, 9, 18, ...`.
+
+A category axis that skips labels to fit keeps every n-th label from the first one and the last one, dropping the
+stride label before the last when the two would crowd; with `MaxTicksLimit = 1` it draws the first label alone, where
+it drew the first and the last.
+
 ### `AddBitBlazorUIExtrasServices` takes a `commandPalette` argument ([#15465](https://github.com/bitfoundation/bitplatform/issues/15465))
 
 `AddBitBlazorUIExtrasServices` registers the services of `BitCommandPalette` (its registry, open state and history) along
