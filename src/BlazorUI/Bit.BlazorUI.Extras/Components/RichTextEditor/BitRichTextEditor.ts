@@ -1712,6 +1712,7 @@
         private static engineRun(editor: any, command: string, args: any): boolean {
             editor.focus();
             RichTextEditor.restoreSelection(editor);
+            // The commands still run natively (colors, fonts, links, insertion) write tags rather than styles.
             try { document.execCommand('styleWithCSS', false, 'false'); } catch { /* ignore */ }
 
             switch (command) {
@@ -1777,21 +1778,18 @@
                 case 'justifyCenter':
                 case 'justifyRight':
                 case 'justifyFull': {
-                    // Blink and WebKit align a block with a text-align style whatever styleWithCSS says, while
-                    // Gecko with it off writes the presentational align attribute instead (<p align="center">),
-                    // so the same button would store other markup in Firefox. Styled with CSS for the alignment
-                    // alone, every engine writes the style, and every other command still writes its tags.
-                    try { document.execCommand('styleWithCSS', false, 'true'); } catch { /* ignore */ }
-                    try {
-                        return RichTextEditor.execNative(editor, command);
-                    } finally {
-                        try { document.execCommand('styleWithCSS', false, 'false'); } catch { /* ignore */ }
-                    }
+                    const value = RichTextEditor.JUSTIFY[command];
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.align(editor, range, value));
                 }
                 default:
                     return RichTextEditor.execNative(editor, command, args?.value ?? null);
             }
         }
+
+        // The text-align value each justify command writes.
+        private static readonly JUSTIFY: Record<string, string> = {
+            justifyLeft: 'left', justifyCenter: 'center', justifyRight: 'right', justifyFull: 'justify',
+        };
 
         private static execNative(editor: any, command: string, value?: any): boolean {
             if (command === 'insertHTML') return RichTextEditor.insertHtmlExact(editor, value);
@@ -3427,11 +3425,11 @@
         }
 
         private static currentState(editor: any): any {
-            const q = (c: string) => { try { return document.queryCommandState(c); } catch { return false; } };
             const v = (c: string) => { try { return (document.queryCommandValue(c) || '').toString(); } catch { return ''; } };
             const selected = RichTextEditor.editorRange(editor);
             const block = selected ? BitRichTextEditorBlocks.blockState(editor, selected) : '';
             const list = selected ? BitRichTextEditorBlocks.listState(editor, selected) : '';
+            const align = selected ? BitRichTextEditorBlocks.alignState(editor, selected) : '';
 
             const link = RichTextEditor.linkAtSelection(editor);
             const rect = editor._quickToolbar ? RichTextEditor.selectionRect(editor) : null;
@@ -3446,10 +3444,11 @@
                 // A checklist is a list of its own kind on the toolbar, not a bulleted one.
                 orderedList: list === 'ol',
                 unorderedList: list === 'ul',
-                justifyLeft: q('justifyLeft'),
-                justifyCenter: q('justifyCenter'),
-                justifyRight: q('justifyRight'),
-                justifyFull: q('justifyFull'),
+                // The alignment as the line is laid out, so a left-to-right line with no style of its own is left aligned.
+                justifyLeft: align === 'left',
+                justifyCenter: align === 'center',
+                justifyRight: align === 'right',
+                justifyFull: align === 'justify',
                 block: block,
                 subscript: RichTextEditor.markState(editor, 'subscript'),
                 superscript: RichTextEditor.markState(editor, 'superscript'),

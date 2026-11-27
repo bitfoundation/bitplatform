@@ -18,7 +18,22 @@ only in this file.
 
 ## 11.0.0
 
-### `BitRichTextEditor` writes its lists and indentation itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitRichTextEditor` writes its alignment itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+Align left, Align center, Align right and Justify no longer run the browser's `document.execCommand`. The editor sets
+the alignment on the touched blocks itself, so each button leaves the same markup in every browser. Nothing is
+renamed. What an app can notice:
+
+- **The alignment is always a `text-align` style** on the block (`<p style="text-align: center">`), a list item or a
+  table cell holding the text. Markup with the presentational `align` attribute (`<p align="center">`) still shows
+  aligned, and gets the style in place of the attribute once it is aligned again.
+- **A block aligned the way its direction lays it out already carries no style**: Align left takes the style off a
+  left-to-right block, and Align right off a right-to-left one. The other side is written out (`text-align: left` in a
+  right-to-left block).
+- **The toolbar reads the alignment as the block is laid out**, so a block with no style of its own shows Align left in
+  a left-to-right editor and Align right in a right-to-left one.
+
+### `BitRichTextEditor` writes its lists and indentation itself ([#15498](https://github.com/bitfoundation/bitplatform/issues/15498))
 
 Bulleted and numbered lists, Increase indent and Decrease indent no longer run the browser's `document.execCommand`.
 The editor edits the markup itself, so each command leaves the same markup in every browser. Nothing is renamed. What
@@ -37,7 +52,7 @@ an app can notice:
 - **The toolbar reads the list from the markup**: in a checklist only the checklist button is pressed, not the bullet
   list button (`UnorderedList` is `false` in `BitRichTextEditorSelectionState` there).
 
-### `BitRichTextEditor` writes its block formats itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitRichTextEditor` writes its block formats itself ([#15496](https://github.com/bitfoundation/bitplatform/issues/15496))
 
 Paragraph, headings, code block and quote no longer run the browser's `document.execCommand('formatBlock')`. The editor
 edits the markup itself, so each format leaves the same markup in every browser. Nothing is renamed. What an app can
@@ -55,7 +70,7 @@ notice:
 - **The format list reads the markup**: a paragraph in a quote shows as Quote (`Block` is `blockquote` in
   `BitRichTextEditorSelectionState`).
 
-### `BitRichTextEditor` writes its inline marks itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitRichTextEditor` writes its inline marks itself ([#15494](https://github.com/bitfoundation/bitplatform/issues/15494))
 
 Bold, italic, underline, strikethrough, subscript, superscript, inline code and clear formatting no longer run the
 browser's `document.execCommand`. The editor edits the markup itself, so each command leaves the same markup in every
