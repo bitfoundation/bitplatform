@@ -44,12 +44,8 @@
             tag = (tag || 'p').replace(/[<>\s]/g, '').toLowerCase();
             if (!BitRichTextEditorBlocks.FORMATS.includes(tag)) return null;
 
-            const start = BitRichTextEditorBlocks.hold(range.startContainer, range.startOffset);
-            const end = BitRichTextEditorBlocks.hold(range.endContainer, range.endOffset);
-            const moved = new Map<Node, Node>();
-
             // A surface emptied down to nothing (Gecko leaves no block behind) gets the block to format.
-            if (!Array.from(root.childNodes).some(n => n.nodeType === 1 || /\S/.test(n.nodeValue || ''))) {
+            if (BitRichTextEditorBlocks.isBare(root)) {
                 const block = document.createElement(tag === 'blockquote' ? 'p' : tag);
                 block.appendChild(document.createElement('br'));
                 root.replaceChildren(block);
@@ -59,25 +55,13 @@
                 return caret;
             }
 
-            // Text a quote or the surface holds directly is a paragraph first: quoting and unquoting move blocks.
-            let lines = BitRichTextEditorBlocks.linesIn(root, range);
-            if (lines.length === 0) return null;
-            const leaves = lines.map(line => {
-                if ('leaf' in line) return line.leaf;
-                const parent = line.run[0].parentNode!;
-                if (parent !== root && parent.nodeName !== 'BLOCKQUOTE') return null;
-                const p = document.createElement('p');
-                line.run[0].parentNode!.insertBefore(p, line.run[0]);
-                p.append(...line.run);
-                return p;
-            });
-            lines = lines.map((line, i) => leaves[i] ? { leaf: leaves[i]! } : line);
-
-            const quoted = (line: BitRichTextEditorLine) => !!BitRichTextEditorBlocks.quoteOf(root, BitRichTextEditorBlocks.lineNode(line));
-            if (tag === 'blockquote') {
-                if (lines.every(quoted)) BitRichTextEditorBlocks.unquote(root, lines);
-                else BitRichTextEditorBlocks.quote(root, lines.map(BitRichTextEditorBlocks.lineNode));
-            } else {
+            return BitRichTextEditorBlocks.edit(root, range, (lines, moved) => {
+                const quoted = (line: BitRichTextEditorLine) => !!BitRichTextEditorBlocks.quoteOf(root, BitRichTextEditorBlocks.lineNode(line));
+                if (tag === 'blockquote') {
+                    if (lines.every(quoted)) BitRichTextEditorBlocks.unquote(root, lines);
+                    else BitRichTextEditorBlocks.quote(root, lines.map(BitRichTextEditorBlocks.lineNode));
+                    return;
+                }
                 // Normal text is no quote either: the toolbar's quote button turns a quote off by asking for it.
                 if (tag === 'p') BitRichTextEditorBlocks.unquote(root, lines.filter(quoted));
                 for (const line of lines) {
@@ -91,7 +75,121 @@
                         el.append(...line.run);
                     }
                 }
-            }
+            });
+        }
+
+        // The list the position is in, as the toolbar shows it: "ol", "ul", "tasks" (a checklist), or empty.
+        public static listState(root: Node, range: Range): string {
+            const li = BitRichTextEditorBlocks.itemOf(root, BitRichTextEditorBlocks.nodeAt(range.startContainer, range.startOffset));
+            if (!li) return '';
+            const list = li.parentElement!;
+            if (list.nodeName === 'OL') return 'ol';
+            return list.classList.contains('bit-rte-tasks') ? 'tasks' : 'ul';
+        }
+
+        // Turns the lines the range touches into the items of one list of the kind (ol or ul), or back into
+        // paragraphs where they all are items of that kind already. Items of a list of the other kind switch that list.
+        public static toggleList(root: HTMLElement, range: Range, kind: 'ol' | 'ul'): Range | null {
+            if (BitRichTextEditorBlocks.isBare(root)) root.replaceChildren(BitRichTextEditorBlocks.emptyParagraph());
+            return BitRichTextEditorBlocks.edit(root, range, (lines, moved) => {
+                const items = lines.map(line => BitRichTextEditorBlocks.itemOf(root, BitRichTextEditorBlocks.lineNode(line)));
+                const isKind = (li: HTMLElement | null) => !!li && li.parentNode!.nodeName === kind.toUpperCase()
+                    && !(kind === 'ul' && (li.parentNode as HTMLElement).classList.contains('bit-rte-tasks'));
+
+                if (items.every(isKind)) {
+                    for (const li of BitRichTextEditorBlocks.outermost(items)) BitRichTextEditorBlocks.unlist(root, li, moved);
+                    return;
+                }
+
+                // The lists of the other kind switch, all of each.
+                const lists = new Set<HTMLElement>();
+                items.forEach(li => { if (li && !isKind(li)) lists.add(li.parentNode as HTMLElement); });
+                lists.forEach(list => moved.set(list, BitRichTextEditorBlocks.retagList(list, kind)));
+
+                // The rest become items, the ones side by side in one list, which joins a list of the kind it touches.
+                let current: HTMLElement | null = null;
+                const made: HTMLElement[] = [];
+                lines.forEach((line, i) => {
+                    if (items[i]) return;
+                    const first = 'leaf' in line ? line.leaf : line.run[0];
+                    if (!current || BitRichTextEditorBlocks.nextOf(current) !== first || !('leaf' in line)) {
+                        current = document.createElement(kind);
+                        first.parentNode!.insertBefore(current, first);
+                        made.push(current);
+                    }
+                    const li = document.createElement('li');
+                    current.appendChild(li);
+                    if (!('leaf' in line)) li.append(...line.run);
+                    else if (/^(P|DIV)$/.test(line.leaf.nodeName)) {
+                        BitRichTextEditorBlocks.copyKept(line.leaf, li);
+                        li.append(...Array.from(line.leaf.childNodes));
+                        line.leaf.remove();
+                        moved.set(line.leaf, li);
+                    } else {
+                        li.appendChild(line.leaf);
+                    }
+                });
+                made.forEach(list => BitRichTextEditorBlocks.joinNeighbours(list));
+            });
+        }
+
+        // Nests each item the range touches under the item before it (an item with none before it stays), and gives
+        // any other line one more step of indentation.
+        public static indent(root: HTMLElement, range: Range): Range | null {
+            return BitRichTextEditorBlocks.edit(root, range, lines => {
+                const items = lines.map(line => BitRichTextEditorBlocks.itemOf(root, BitRichTextEditorBlocks.lineNode(line)));
+                for (const li of BitRichTextEditorBlocks.outermost(items)) {
+                    const previous = li.previousElementSibling;
+                    if (!previous || previous.nodeName !== 'LI') continue;
+                    const list = li.parentNode as HTMLElement;
+                    let sub = previous.lastElementChild as HTMLElement | null;
+                    if (!sub || sub.nodeName !== list.nodeName) {
+                        sub = list.cloneNode(false) as HTMLElement;
+                        previous.appendChild(sub);
+                    }
+                    sub.appendChild(li);
+                }
+                lines.forEach((line, i) => {
+                    if (!items[i] && 'leaf' in line) BitRichTextEditorBlocks.step(line.leaf, 1);
+                });
+            });
+        }
+
+        // Brings each item the range touches out one level (out of the list at the top level), and takes a step of
+        // indentation off any other line.
+        public static outdent(root: HTMLElement, range: Range): Range | null {
+            return BitRichTextEditorBlocks.edit(root, range, (lines, moved) => {
+                const items = lines.map(line => BitRichTextEditorBlocks.itemOf(root, BitRichTextEditorBlocks.lineNode(line)));
+                for (const li of BitRichTextEditorBlocks.outermost(items)) {
+                    if (BitRichTextEditorBlocks.isNested(root, li)) BitRichTextEditorBlocks.lift(li);
+                    else BitRichTextEditorBlocks.unlist(root, li, moved);
+                }
+                lines.forEach((line, i) => {
+                    if (!items[i] && 'leaf' in line) BitRichTextEditorBlocks.step(line.leaf, -1);
+                });
+            });
+        }
+
+        // Runs an edit of the lines the range touches and returns the range over the same content afterwards. Text a
+        // quote or the surface holds directly is made a paragraph first: the edits move blocks.
+        private static edit(root: HTMLElement, range: Range, change: (lines: BitRichTextEditorLine[], moved: Map<Node, Node>) => void): Range | null {
+            const start = BitRichTextEditorBlocks.hold(range.startContainer, range.startOffset);
+            const end = BitRichTextEditorBlocks.hold(range.endContainer, range.endOffset);
+            const moved = new Map<Node, Node>();
+
+            let lines = BitRichTextEditorBlocks.linesIn(root, range);
+            if (lines.length === 0) return null;
+            lines = lines.map(line => {
+                if ('leaf' in line) return line;
+                const parent = line.run[0].parentNode!;
+                if (parent !== root && parent.nodeName !== 'BLOCKQUOTE') return line;
+                const p = document.createElement('p');
+                parent.insertBefore(p, line.run[0]);
+                p.append(...line.run);
+                return { leaf: p };
+            });
+
+            change(lines, moved);
 
             const from = BitRichTextEditorBlocks.place(start, moved);
             const to = BitRichTextEditorBlocks.place(end, moved);
@@ -105,6 +203,152 @@
                 next.collapse(true);
             }
             return next;
+        }
+
+        private static isBare(root: Node): boolean {
+            return !Array.from(root.childNodes).some(n => n.nodeType === 1 || /\S/.test(n.nodeValue || ''));
+        }
+
+        private static emptyParagraph(): HTMLElement {
+            const p = document.createElement('p');
+            p.appendChild(document.createElement('br'));
+            return p;
+        }
+
+        // ---- lists ----
+
+        private static itemOf(root: Node, node: Node): HTMLElement | null {
+            for (let n: Node | null = node; n && n !== root; n = n.parentNode) {
+                if (n.nodeName === 'LI' && n.parentNode && /^(UL|OL)$/.test(n.parentNode.nodeName)) return n as HTMLElement;
+            }
+            return null;
+        }
+
+        // The distinct items, in order, less the ones inside another of them (which move along with it).
+        private static outermost(items: (HTMLElement | null)[]): HTMLElement[] {
+            const set = Array.from(new Set(items.filter((li): li is HTMLElement => !!li)));
+            return set.filter(li => !set.some(other => other !== li && other.contains(li)));
+        }
+
+        private static isNested(root: Node, li: HTMLElement): boolean {
+            const holder = li.parentNode!.parentNode;
+            return !!holder && holder !== root && holder.nodeName === 'LI';
+        }
+
+        // Moves a nested item out to the level of the item it was nested under, right after it; the items after it in
+        // its list stay after it, nested under it now.
+        private static lift(li: HTMLElement) {
+            const list = li.parentNode as HTMLElement;
+            const holder = list.parentNode as HTMLElement;
+            if (li.nextElementSibling) {
+                let rest = li.lastElementChild as HTMLElement | null;
+                if (!rest || rest.nodeName !== list.nodeName) {
+                    rest = list.cloneNode(false) as HTMLElement;
+                    li.appendChild(rest);
+                }
+                while (li.nextSibling) rest.appendChild(li.nextSibling);
+            }
+            holder.after(li);
+            if (!BitRichTextEditorBlocks.hasContent(list)) list.remove();
+        }
+
+        // Takes an item out of its lists altogether: lifted to the top level, then the list is split around it and
+        // its text becomes a paragraph (its blocks and nested lists stay as they are).
+        private static unlist(root: Node, li: HTMLElement, moved: Map<Node, Node>) {
+            while (BitRichTextEditorBlocks.isNested(root, li)) BitRichTextEditorBlocks.lift(li);
+            const list = li.parentNode as HTMLElement;
+            if (li.nextElementSibling) {
+                const tail = list.cloneNode(false) as HTMLElement;
+                while (li.nextSibling) tail.appendChild(li.nextSibling);
+                list.after(tail);
+            }
+            const out: Node[] = [];
+            let run: Node[] = [];
+            const flush = () => {
+                if (run.length === 0) return;
+                const p = document.createElement('p');
+                BitRichTextEditorBlocks.copyKept(li, p);
+                p.append(...run);
+                out.push(p);
+                run = [];
+            };
+            for (const n of Array.from(li.childNodes)) {
+                if (n.nodeType === 1 && BitRichTextEditorBlocks.BLOCK.test(n.nodeName)) {
+                    flush();
+                    out.push(n);
+                } else if (n.nodeType === 1 || /\S/.test(n.nodeValue || '') || run.length > 0) {
+                    run.push(n);
+                }
+            }
+            flush();
+            if (out.length === 0) out.push(BitRichTextEditorBlocks.emptyParagraph());
+            list.after(...out);
+            moved.set(li, out[0]);
+            li.remove();
+            if (!BitRichTextEditorBlocks.hasContent(list)) list.remove();
+        }
+
+        // A list given the other kind: a checklist turned into a numbered or a plain list is no checklist any more.
+        private static retagList(list: HTMLElement, kind: string): HTMLElement {
+            const next = document.createElement(kind);
+            for (const attr of Array.from(list.attributes)) next.setAttribute(attr.name, attr.value);
+            next.classList.remove('bit-rte-tasks');
+            if (next.classList.length === 0) next.removeAttribute('class');
+            Array.from(list.children).forEach(li => li.removeAttribute('data-checked'));
+            next.append(...Array.from(list.childNodes));
+            list.replaceWith(next);
+            return next;
+        }
+
+        // Joins a list with a list of the same kind right before or after it.
+        private static joinNeighbours(list: HTMLElement) {
+            const same = (other: Node | null): other is HTMLElement => !!other && other.nodeType === 1
+                && other.nodeName === list.nodeName && (other as HTMLElement).className === list.className;
+            const before = BitRichTextEditorBlocks.previousOf(list);
+            if (same(before)) {
+                before.append(...Array.from(list.childNodes));
+                list.remove();
+                list = before;
+            }
+            const after = BitRichTextEditorBlocks.nextOf(list);
+            if (same(after)) {
+                list.append(...Array.from(after.childNodes));
+                after.remove();
+            }
+        }
+
+        private static nextOf(node: Node): Node | null {
+            let n = node.nextSibling;
+            while (n && n.nodeType === 3 && !/\S/.test(n.nodeValue || '')) n = n.nextSibling;
+            return n;
+        }
+
+        private static previousOf(node: Node): Node | null {
+            let n = node.previousSibling;
+            while (n && n.nodeType === 3 && !/\S/.test(n.nodeValue || '')) n = n.previousSibling;
+            return n;
+        }
+
+        private static copyKept(from: Element, to: Element) {
+            for (const name of BitRichTextEditorBlocks.KEPT) {
+                const value = from.getAttribute(name);
+                if (value !== null) to.setAttribute(name, value);
+            }
+        }
+
+        // ---- indentation ----
+
+        // One step of indentation is 40px of margin on the block's starting side; a step taken off the last one
+        // leaves no margin at all.
+        public static readonly INDENT_STEP = 40;
+
+        private static step(block: HTMLElement, by: number) {
+            const side = getComputedStyle(block).direction === 'rtl' ? 'margin-right' : 'margin-left';
+            const current = parseFloat(block.style.getPropertyValue(side)) || 0;
+            const next = Math.max(0, current + by * BitRichTextEditorBlocks.INDENT_STEP);
+            if (next > 0) block.style.setProperty(side, next + 'px');
+            else block.style.removeProperty(side);
+            if (block.style.length === 0) block.removeAttribute('style');
         }
 
         // ---- lines ----
@@ -197,10 +441,7 @@
         private static retag(leaf: HTMLElement, tag: string): HTMLElement {
             if (leaf.nodeName.toLowerCase() === tag) return leaf;
             const el = document.createElement(tag);
-            for (const name of BitRichTextEditorBlocks.KEPT) {
-                const value = leaf.getAttribute(name);
-                if (value !== null) el.setAttribute(name, value);
-            }
+            BitRichTextEditorBlocks.copyKept(leaf, el);
             if (leaf.nodeName === 'PRE') {
                 const only = Array.from(leaf.childNodes).filter(n => n.nodeType === 1 || (n.nodeValue || '') !== '');
                 if (only.length === 1 && only[0].nodeName === 'CODE') (only[0] as HTMLElement).replaceWith(...Array.from(only[0].childNodes));
