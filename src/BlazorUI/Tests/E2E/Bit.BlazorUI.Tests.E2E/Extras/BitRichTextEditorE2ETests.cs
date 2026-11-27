@@ -82,10 +82,11 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         "(e, html) => BitBlazorUI.RichTextEditor.setHtml(e, html)", html);
 
     // Waits for the surface to hold exactly this markup, less the marker comments Blazor rendered into it, and fails
-    // with what it holds instead.
+    // with what it holds instead. A style the editor wrote ends in the semicolon the browser serializes it with, which
+    // the stored value does not have, so that is left out too.
     private async Task ExpectMarkupAsync(string id, string html)
     {
-        const string read = "e => { const c = e.cloneNode(true); const w = document.createTreeWalker(c, NodeFilter.SHOW_COMMENT); const all = []; let n; while ((n = w.nextNode())) all.push(n); all.forEach(x => x.remove()); return c.innerHTML; }";
+        const string read = "e => { const c = e.cloneNode(true); const w = document.createTreeWalker(c, NodeFilter.SHOW_COMMENT); const all = []; let n; while ((n = w.nextNode())) all.push(n); all.forEach(x => x.remove()); c.querySelectorAll('[style]').forEach(x => x.setAttribute('style', x.getAttribute('style').replace(/;\\s*$/, ''))); return c.innerHTML; }";
         try
         {
             await Surface(id).EvaluateAsync($"async (e, html) => {{ const read = {read}; for (let i = 0; i < 100; i++) {{ if (read(e) === html) return; await new Promise(r => setTimeout(r, 50)); }} throw new Error('timeout'); }}", html);
@@ -607,6 +608,36 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(block).ToHaveCSSAsync("text-align", align == "left" ? new Regex("^(left|start)$") : new Regex($"^{align}$"));
         await Expect(Btn("rte-ext", label)).ToHaveAttributeAsync("aria-pressed", "true");
         if (align != "left") await Expect(Page.Locator("#ext-value")).ToContainTextAsync($"text-align: {align}");
+    }
+
+    // The alignment is the editor's own text-align style rather than the engines' execCommand (Gecko wrote an align
+    // attribute), so each button leaves exactly this markup in Chromium, Firefox and WebKit alike. A block that is laid
+    // out that way already, by its direction, carries no style.
+    [TestMethod]
+    [DataRow("Align center", "<p>alpha</p><p>beta</p>", "alpha", "beta", "<p style=\"text-align: center\">alpha</p><p style=\"text-align: center\">beta</p>")]
+    [DataRow("Align left", "<p style=\"text-align: center\">alpha</p>", "alpha", "alpha", "<p>alpha</p>")]
+    [DataRow("Align left", "<p dir=\"rtl\">alpha</p>", "alpha", "alpha", "<p dir=\"rtl\" style=\"text-align: left\">alpha</p>")]
+    [DataRow("Align right", "<p dir=\"rtl\" style=\"text-align: center\">alpha</p>", "alpha", "alpha", "<p dir=\"rtl\">alpha</p>")]
+    [DataRow("Justify", "<p align=\"center\">alpha</p>", "alpha", "alpha", "<p style=\"text-align: justify\">alpha</p>")]
+    [DataRow("Align right", "<p style=\"margin-left: 40px\">alpha</p>", "alpha", "alpha", "<p style=\"margin-left: 40px; text-align: right\">alpha</p>")]
+    [DataRow("Align center", "<ul><li>alpha</li><li>beta</li></ul>", "beta", "beta", "<ul><li>alpha</li><li style=\"text-align: center\">beta</li></ul>")]
+    [DataRow("Align right", "<h2>alpha</h2>", "alpha", "alpha", "<h2 style=\"text-align: right\">alpha</h2>")]
+    public async Task Alignment_EachButton_WritesTheSameMarkupInEveryEngine(string control, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        await Btn("rte-ext", control).ClickAsync();
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        await Expect(Btn("rte-ext", control)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+        // An alignment is one step.
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", start);
     }
 
     [TestMethod]

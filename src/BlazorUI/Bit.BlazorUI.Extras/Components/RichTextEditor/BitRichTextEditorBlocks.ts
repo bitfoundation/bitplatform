@@ -8,7 +8,8 @@
     //
     // A line is a leaf block (p, h1-h6, pre, div, address) or, where a container holds its text directly (a list item,
     // a table cell), the run of inline content it holds. A format retags the leaf blocks the range touches; a quote
-    // wraps them, and is taken off again by applying it once more or by turning them back into paragraphs.
+    // wraps them, and is taken off again by applying it once more or by turning them back into paragraphs. Lists,
+    // indentation and alignment work on the same lines.
 
     type BitRichTextEditorLine = { leaf: HTMLElement } | { run: Node[] };
 
@@ -349,6 +350,53 @@
             if (next > 0) block.style.setProperty(side, next + 'px');
             else block.style.removeProperty(side);
             if (block.style.length === 0) block.removeAttribute('style');
+        }
+
+        // ---- alignment ----
+
+        // The alignments the justify commands write, as text-align values.
+        public static readonly ALIGNMENTS = ['left', 'center', 'right', 'justify'];
+
+        // The alignment of the line at a position, as it is laid out: "left", "center", "right" or "justify" (a start or
+        // end alignment resolved through the line's direction). Empty outside any line.
+        public static alignState(root: HTMLElement, range: Range): string {
+            const line = BitRichTextEditorBlocks.lineOf(root, BitRichTextEditorBlocks.nodeAt(range.startContainer, range.startOffset));
+            const holder = line ? BitRichTextEditorBlocks.alignedOf(root, line) : root;
+            return BitRichTextEditorBlocks.resolvedAlign(holder);
+        }
+
+        // Aligns every line the range touches: a text-align style on its block, or none where the block is laid out
+        // that way without one (a left alignment in a left-to-right block). A presentational align attribute goes.
+        public static align(root: HTMLElement, range: Range, value: string): Range | null {
+            if (!BitRichTextEditorBlocks.ALIGNMENTS.includes(value)) return null;
+            if (BitRichTextEditorBlocks.isBare(root)) root.replaceChildren(BitRichTextEditorBlocks.emptyParagraph());
+            return BitRichTextEditorBlocks.edit(root, range, lines => {
+                for (const line of lines) {
+                    const block = BitRichTextEditorBlocks.alignedOf(root, line);
+                    if (block === root) continue;
+                    block.removeAttribute('align');
+                    block.style.removeProperty('text-align');
+                    if (BitRichTextEditorBlocks.resolvedAlign(block) !== value) block.style.setProperty('text-align', value);
+                    if (block.style.length === 0) block.removeAttribute('style');
+                }
+            });
+        }
+
+        // The element a line's alignment is written on: its leaf block, or the block holding its run.
+        private static alignedOf(root: HTMLElement, line: BitRichTextEditorLine): HTMLElement {
+            return 'leaf' in line ? line.leaf : (line.run[0].parentNode as HTMLElement) || root;
+        }
+
+        private static resolvedAlign(el: Element): string {
+            const style = getComputedStyle(el);
+            const rtl = style.direction === 'rtl';
+            const value = style.textAlign.replace(/^-(webkit|moz)-/, '');
+            switch (value) {
+                case 'start': return rtl ? 'right' : 'left';
+                case 'end': return rtl ? 'left' : 'right';
+                case 'left': case 'center': case 'right': case 'justify': return value;
+                default: return rtl ? 'right' : 'left';
+            }
         }
 
         // ---- lines ----
