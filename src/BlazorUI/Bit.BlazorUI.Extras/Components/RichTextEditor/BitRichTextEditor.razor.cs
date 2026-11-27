@@ -309,16 +309,22 @@ public partial class BitRichTextEditor : BitComponentBase
     public bool CanRedo => _canRedo;
 
     /// <summary>
-    /// Runs one of the editor's commands by name, the ones its toolbar uses: <c>bold</c>, <c>italic</c>,
-    /// <c>underline</c>, <c>strikeThrough</c>, <c>subscript</c>, <c>superscript</c>, <c>inlineCode</c>,
-    /// <c>removeFormat</c>, <c>formatBlock</c> (with a tag as the value), the lists, <c>indent</c>, <c>outdent</c>,
-    /// the four <c>justify</c> commands, <c>foreColor</c>, <c>backColor</c>, <c>fontName</c>, <c>fontSize</c>,
-    /// <c>createLink</c>, <c>unlink</c>, <c>insertHorizontalRule</c>, <c>undo</c> and <c>redo</c>. Content goes in
+    /// Runs one of the editor's commands, the ones its toolbar and shortcuts use, with the value the command takes (a
+    /// tag for <see cref="BitRichTextEditorCommand.FormatBlock"/>, a color, a font, a size or an address). Content goes in
     /// through <see cref="InsertHtmlAsync"/> and <see cref="InsertTextAsync"/>, which sanitize it and hold it to
-    /// <see cref="MaxLength"/>. A name the editor does not have changes nothing and raises <see cref="OnError"/> with the
-    /// <c>command-failed</c> code.
+    /// <see cref="MaxLength"/>.
     /// </summary>
-    public Task ExecuteCommandAsync(string command, string? value = null) => ExecAsync(command, value);
+    public Task ExecuteCommandAsync(BitRichTextEditorCommand command, string? value = null)
+        => Enum.IsDefined(command) ? RunCommandAsync(command, value) : RefuseCommandAsync(command.ToString());
+
+    /// <summary>
+    /// Runs one of the editor's commands by name: the name of a <see cref="BitRichTextEditorCommand"/> member with its
+    /// first letter in lower case (<c>bold</c>, <c>strikeThrough</c>, <c>formatBlock</c>, <c>insertOrderedList</c>,
+    /// <c>justifyCenter</c>, <c>foreColor</c>, <c>createLink</c>, <c>undo</c>, ...). A name the editor does not have
+    /// changes nothing and raises <see cref="OnError"/> with the <c>command-failed</c> code.
+    /// </summary>
+    public Task ExecuteCommandAsync(string command, string? value = null)
+        => CommandNames.TryGetValue(command ?? string.Empty, out var typed) ? RunCommandAsync(typed, value) : RefuseCommandAsync(command ?? string.Empty);
 
     /// <summary>
     /// Inserts plain text at the current caret position, honoring <see cref="MaxLength"/>.
@@ -582,6 +588,51 @@ public partial class BitRichTextEditor : BitComponentBase
 
 
     // ---- commands ----
+
+    // The name each command has in the script, which the string overload of ExecuteCommandAsync takes: the member's name
+    // with its first letter in lower case.
+    private static readonly Dictionary<string, BitRichTextEditorCommand> CommandNames =
+        Enum.GetValues<BitRichTextEditorCommand>().ToDictionary(ScriptName, StringComparer.Ordinal);
+
+    private static string ScriptName(BitRichTextEditorCommand command)
+    {
+        var name = command.ToString();
+        return char.ToLowerInvariant(name[0]) + name[1..];
+    }
+
+    // The commands that take a value go the way the toolbar's own controls do, through the checks that come with them:
+    // the policy's tags for a color or a font, and its schemes for a link.
+    private async Task RunCommandAsync(BitRichTextEditorCommand command, string? value)
+    {
+        if (ControlsDisabled) return;
+        switch (command)
+        {
+            case BitRichTextEditorCommand.FormatBlock:
+                await ExecBlockAsync(string.IsNullOrWhiteSpace(value) ? "p" : value);
+                break;
+            case BitRichTextEditorCommand.ForeColor:
+            case BitRichTextEditorCommand.BackColor:
+                if (string.IsNullOrWhiteSpace(value)) return;
+                await _js.BitRichTextEditorApplyColor(_editorRef, command == BitRichTextEditorCommand.BackColor ? "back" : "fore", value);
+                break;
+            case BitRichTextEditorCommand.FontName:
+            case BitRichTextEditorCommand.FontSize:
+                if (string.IsNullOrWhiteSpace(value)) return;
+                await _js.BitRichTextEditorApplyFont(_editorRef, command == BitRichTextEditorCommand.FontSize ? "size" : "family", value);
+                break;
+            case BitRichTextEditorCommand.CreateLink:
+                if (string.IsNullOrWhiteSpace(value)) return;
+                await _js.BitRichTextEditorCreateLink(_editorRef, value, false, null);
+                break;
+            default:
+                await ExecAsync(ScriptName(command), value);
+                break;
+        }
+    }
+
+    private Task RefuseCommandAsync(string command)
+        => RaiseErrorAsync(new BitRichTextEditorError("command-failed",
+            string.Format(Loc("command-failed", "Command '{0}' failed."), command)));
 
     private async Task ExecAsync(string command, string? value = null)
     {

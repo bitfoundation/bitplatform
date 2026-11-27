@@ -18,7 +18,23 @@ only in this file.
 
 ## 11.0.0
 
-### `BitRichTextEditor` inserts content itself, and refuses a command name it does not know ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitRichTextEditor`'s commands are typed: `BitRichTextEditorCommand` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+`ExecuteCommandAsync` has an overload taking a `BitRichTextEditorCommand`, the commands the toolbar and the shortcuts
+use (`ExecuteCommandAsync(BitRichTextEditorCommand.FormatBlock, "h2")`). The string overload stays, and takes a
+member's name with its first letter in lower case (`"bold"`, `"formatBlock"`). Nothing is renamed or removed. What an
+app can notice in the string overload:
+
+- **It takes the names of the enum, and no other.** The script's insertion names (`"insertHtml"`, `"insertText"`,
+  `"insertImage"`, `"insertTable"`, `"insertMedia"`) are refused through `OnError` with `command-failed`, like any
+  other name the editor does not have: content goes in through `InsertHtmlAsync` and `InsertTextAsync`, which sanitize
+  it and hold it to `MaxLength`.
+- **A command with a value goes through the toolbar control's checks.** `"createLink"` refuses an address the policy
+  does not allow, and `"foreColor"`, `"backColor"`, `"fontName"` and `"fontSize"` refuse to style what the policy would
+  strip (a `span` or its `style`), each through `OnError` as the toolbar does. `"formatBlock"` with no value makes a
+  paragraph.
+
+### `BitRichTextEditor` inserts content itself, and refuses a command name it does not know ([#15504](https://github.com/bitfoundation/bitplatform/issues/15504))
 
 Paste, drop, `InsertHtmlAsync`, `InsertTextAsync`, images, tables, media, the horizontal rule, a link inserted at a
 caret, the emoji picker and the input rules no longer run the browser's `document.execCommand`. The editor edits the
