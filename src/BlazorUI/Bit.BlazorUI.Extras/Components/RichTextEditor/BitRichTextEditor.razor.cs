@@ -309,7 +309,14 @@ public partial class BitRichTextEditor : BitComponentBase
     public bool CanRedo => _canRedo;
 
     /// <summary>
-    /// Runs a raw editing command against the editor.
+    /// Runs one of the editor's commands by name, the ones its toolbar uses: <c>bold</c>, <c>italic</c>,
+    /// <c>underline</c>, <c>strikeThrough</c>, <c>subscript</c>, <c>superscript</c>, <c>inlineCode</c>,
+    /// <c>removeFormat</c>, <c>formatBlock</c> (with a tag as the value), the lists, <c>indent</c>, <c>outdent</c>,
+    /// the four <c>justify</c> commands, <c>foreColor</c>, <c>backColor</c>, <c>fontName</c>, <c>fontSize</c>,
+    /// <c>createLink</c>, <c>unlink</c>, <c>insertHorizontalRule</c>, <c>undo</c> and <c>redo</c>. Content goes in
+    /// through <see cref="InsertHtmlAsync"/> and <see cref="InsertTextAsync"/>, which sanitize it and hold it to
+    /// <see cref="MaxLength"/>. A name the editor does not have changes nothing and raises <see cref="OnError"/> with the
+    /// <c>command-failed</c> code.
     /// </summary>
     public Task ExecuteCommandAsync(string command, string? value = null) => ExecAsync(command, value);
 

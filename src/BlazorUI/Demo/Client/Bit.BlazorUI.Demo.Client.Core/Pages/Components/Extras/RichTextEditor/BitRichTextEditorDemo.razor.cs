@@ -356,7 +356,7 @@ public partial class BitRichTextEditorDemo
         {
             Name = "ExecuteCommandAsync",
             Type = "Task",
-            Description = "Runs a raw editing command against the editor."
+            Description = "Runs one of the editor's commands by name, the ones its toolbar uses (bold, formatBlock with a tag as the value, insertOrderedList, justifyCenter, foreColor, createLink, undo, ...); content goes in through InsertHtmlAsync and InsertTextAsync. A name the editor does not have changes nothing and raises OnError with the command-failed code."
         },
         new()
         {
