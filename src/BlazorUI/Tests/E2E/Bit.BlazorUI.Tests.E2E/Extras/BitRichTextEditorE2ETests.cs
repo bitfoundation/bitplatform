@@ -640,6 +640,114 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await ExpectMarkupAsync("rte-ext", start);
     }
 
+    // The colors and fonts are the editor's own spans rather than the engines' execCommand (which wrote <font> in some
+    // engines and split the spans differently in each), so each control leaves exactly this markup in Chromium, Firefox
+    // and WebKit alike. The colors are picked from the palette's swatches (Red, Green, Blue): Playwright's WebKit never
+    // reports a value filled into a native color input.
+    [TestMethod]
+    [DataRow("Text color", "Red", "<p>alpha beta</p>", "beta", "beta", "<p>alpha <span style=\"color: rgb(255, 0, 0)\">beta</span></p>")]
+    [DataRow("Text color", "Red", "<p><b>alpha</b> beta</p>", "alpha", "beta", "<p><span style=\"color: rgb(255, 0, 0)\"><b>alpha</b> beta</span></p>")]
+    [DataRow("Text color", "Blue", "<p><span style=\"color: rgb(255, 0, 0)\">alpha beta gamma</span></p>", "beta", "beta", "<p><span style=\"color: rgb(255, 0, 0)\">alpha </span><span style=\"color: rgb(0, 0, 255)\">beta</span><span style=\"color: rgb(255, 0, 0)\"> gamma</span></p>")]
+    [DataRow("Highlight color", "Green", "<p><span style=\"color: rgb(255, 0, 0)\">alpha</span></p>", "alpha", "alpha", "<p><span style=\"color: rgb(255, 0, 0); background-color: rgb(0, 170, 0)\">alpha</span></p>")]
+    [DataRow("Remove text color", "", "<p><span style=\"color: rgb(255, 0, 0)\">alpha beta gamma</span></p>", "beta", "beta", "<p><span style=\"color: rgb(255, 0, 0)\">alpha </span>beta<span style=\"color: rgb(255, 0, 0)\"> gamma</span></p>")]
+    [DataRow("Remove highlight", "", "<p style=\"background-color: rgb(0, 170, 0)\">alpha</p>", "alpha", "alpha", "<p>alpha</p>")]
+    [DataRow("Font family", "Georgia", "<p>alpha</p><p>beta</p>", "alpha", "beta", "<p><span style=\"font-family: Georgia\">alpha</span></p><p><span style=\"font-family: Georgia\">beta</span></p>")]
+    [DataRow("Font size", "20px", "<p><a href=\"https://bitplatform.dev\">alpha</a></p>", "alpha", "alpha", "<p><a href=\"https://bitplatform.dev\"><span style=\"font-size: 20px\">alpha</span></a></p>")]
+    public async Task Styles_EachControl_WritesTheSameMarkupInEveryEngine(string control, string value, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-colors", start);
+        await ExpectMarkupAsync("rte-colors", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-colors", from, to));
+        await StyleAsync(control, value);
+
+        await ExpectMarkupAsync("rte-colors", expected);
+        await Expect(Page.Locator("#color-value")).ToHaveTextAsync(expected);
+
+        // A color or a font is one step.
+        await Surface("rte-colors").FocusAsync();
+        await Page.Keyboard.PressAsync("Control+z");
+        await ExpectMarkupAsync("rte-colors", start);
+    }
+
+    // A color or a font picked at a caret is for the text typed there next, as it was with the engines' commands.
+    [TestMethod]
+    public async Task Styles_PickedAtACaret_StyleWhatIsTypedNext()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-colors", "<p>alpha</p>");
+        await SelectTextAsync("rte-colors", "alpha");
+        await Page.Keyboard.PressAsync("End");
+        // Nothing in the markup changes until something is typed, so each pick is waited for where the editor keeps it
+        // (the command has put the focus back in the text by then).
+        const string pending = "async (e, p) => { for (let i = 0; i < 100; i++) { const s = e._pendingMarks && e._pendingMarks.styles; if (s && p in s) return true; await new Promise(r => setTimeout(r, 50)); } return false; }";
+        await StyleAsync("Text color", "Red");
+        Assert.IsTrue(await Surface("rte-colors").EvaluateAsync<bool>(pending, "color"));
+        await StyleAsync("Font size", "20px");
+        Assert.IsTrue(await Surface("rte-colors").EvaluateAsync<bool>(pending, "font-size"));
+        await Page.Keyboard.TypeAsync("xy");
+        await ExpectMarkupAsync("rte-colors", "<p>alpha<span style=\"color: rgb(255, 0, 0); font-size: 20px\">xy</span></p>");
+    }
+
+    // Picks a color, a font or a removal on the palette editor's toolbar.
+    private async Task StyleAsync(string control, string value)
+    {
+        switch (control)
+        {
+            case "Text color":
+            case "Highlight color":
+                await Btn("rte-colors", control).ClickAsync();
+                await Page.Locator("#rte-colors .bit-rte-swatches button").Nth(Array.IndexOf(new[] { "Red", "Green", "Blue" }, value)).ClickAsync();
+                break;
+            case "Font family":
+            case "Font size":
+                await Page.Locator($"#rte-colors select[aria-label='{control}']").SelectOptionAsync(value);
+                break;
+            default:
+                await Btn("rte-colors", control).ClickAsync();
+                break;
+        }
+    }
+
+    // A link is the editor's own anchor rather than the engines' execCommand, which made several anchors across a
+    // selection of several elements; and removing a link takes every link the selection touches, whole.
+    [TestMethod]
+    [DataRow("Link", "<p>alpha beta</p>", "alpha", "beta", "<p><a href=\"https://bitplatform.dev\">alpha beta</a></p>")]
+    [DataRow("Link", "<p><b>alpha</b> beta</p>", "alpha", "beta", "<p><a href=\"https://bitplatform.dev\"><b>alpha</b> beta</a></p>")]
+    [DataRow("Link", "<p>alpha</p><p>beta</p>", "alpha", "beta", "<p><a href=\"https://bitplatform.dev\">alpha</a></p><p><a href=\"https://bitplatform.dev\">beta</a></p>")]
+    [DataRow("Link", "<p>one <a href=\"https://example.com\">two</a> three</p>", "one", "three", "<p><a href=\"https://bitplatform.dev\">one two three</a></p>")]
+    [DataRow("Unlink", "<p><a href=\"https://example.com\">alpha beta</a></p>", "beta", "beta", "<p>alpha beta</p>")]
+    [DataRow("Unlink", "<p><a href=\"https://example.com\">alpha</a> and <a href=\"https://example.com\">beta</a></p>", "alpha", "beta", "<p>alpha and beta</p>")]
+    public async Task Links_EachCommand_WritesTheSameMarkupInEveryEngine(string command, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        if (command == "Link")
+        {
+            await Page.Keyboard.PressAsync("Control+k");
+            var url = Page.Locator("#rte-ext .bit-rte-bar[role='group'][aria-label='Insert or edit link'] input[type='url']");
+            await Expect(url).ToBeFocusedAsync();
+            await url.FillAsync("https://bitplatform.dev");
+            await url.PressAsync("Enter");
+        }
+        else
+        {
+            await Page.Keyboard.PressAsync("Control+Shift+KeyK");
+        }
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+        // A link is one step.
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", start);
+    }
+
     [TestMethod]
     public async Task Direction_SetsTheDirectionOfTheBlock()
     {

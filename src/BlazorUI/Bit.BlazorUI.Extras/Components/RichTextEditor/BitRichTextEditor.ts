@@ -627,8 +627,8 @@
             a.setAttribute('rel', 'noopener noreferrer');
         }
 
-        // execCommand('createLink') can produce several anchors across a multi-node selection, so
-        // every anchor the selection touches gets the new-tab treatment.
+        // A selection over several blocks is linked with one anchor per block, so every anchor the
+        // selection touches gets the new-tab treatment.
         private static markSelectedLinksNewTab(editor: any) {
             const sel = document.getSelection();
             if (!sel || sel.rangeCount === 0) return;
@@ -699,7 +699,7 @@
 
         public static applyColor(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
-            // Color commands emit <span style="..."> (after normalizeFontTags rewrites <font>).
+            // The color commands write <span style="...">.
             // If the active policy would strip <span> or the style attribute, snapshot() drops the
             // formatting on the next sanitize roundtrip, so the live editor and persisted Value
             // would diverge. Gate on the allowlist and block with a client error instead.
@@ -708,7 +708,6 @@
                 return;
             }
             RichTextEditor.dispatch(editor, kind === 'back' ? 'backColor' : 'foreColor', { value });
-            RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
         }
 
@@ -723,95 +722,19 @@
             if (!editor || editor._readOnly) return;
             RichTextEditor.restoreSelection(editor);
 
-            const sel = document.getSelection();
-            if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+            const range = RichTextEditor.editorRange(editor);
+            if (!range || range.collapsed) {
                 RichTextEditor.reportClientError(editor, 'no-selection', 'clear-color-no-selection', 'Select the text to clear the color from.');
                 return;
             }
-            const range = sel.getRangeAt(0);
-            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return;
-
-            const property = kind === 'back' ? 'background-color' : 'color';
-            const painted = (n: Node) => n.nodeType === 1
-                && (!!(n as HTMLElement).style.getPropertyValue(property)
-                    || (kind === 'back' && !!(n as HTMLElement).style.getPropertyValue('background')));
-            // The outermost painted element around a node, stopping at the first block: splitting a
-            // span only divides its paint, where splitting a paragraph would break it in two.
-            const paintedAround = (node: Node): HTMLElement | null => {
-                let found: HTMLElement | null = null;
-                for (let n = node.parentNode; n && n !== editor; n = n.parentNode) {
-                    if (n.nodeType !== 1 || getComputedStyle(n as Element).display !== 'inline') break;
-                    if (painted(n)) found = n as HTMLElement;
-                }
-                return found;
-            };
-            // Moves everything in `top` from the marker on into a shallow copy placed right after it.
-            const splitAt = (top: HTMLElement, marker: Node): HTMLElement => {
-                const tail = document.createRange();
-                tail.setStartBefore(marker);
-                tail.setEnd(top, top.childNodes.length);
-                const copy = top.cloneNode(false) as HTMLElement;
-                copy.appendChild(tail.extractContents());
-                top.after(copy);
-                return copy;
-            };
-
-            // Comments mark the edges: they travel with the content through the splits and add no
-            // text. The end goes in first so inserting it cannot move the start.
-            const startMarker = document.createComment('');
-            const endMarker = document.createComment('');
-            const head = range.cloneRange();
-            head.collapse(true);
-            const tail = range.cloneRange();
-            tail.collapse(false);
-            tail.insertNode(endMarker);
-            head.insertNode(startMarker);
-
-            const endTop = paintedAround(endMarker);
-            const endCopy = endTop ? splitAt(endTop, endMarker) : null;
-            const startTop = paintedAround(startMarker);
-            const startCopy = startTop ? splitAt(startTop, startMarker) : null;
-
-            const region = document.createRange();
-            if (startCopy) region.setStartBefore(startCopy); else region.setStartAfter(startMarker);
-            if (endCopy) region.setEndBefore(endCopy); else region.setEndBefore(endMarker);
-
-            const whole = (el: Element) => {
-                const r = document.createRange();
-                r.selectNode(el);
-                return region.compareBoundaryPoints(Range.START_TO_START, r) <= 0
-                    && region.compareBoundaryPoints(Range.END_TO_END, r) >= 0;
-            };
-            const common = region.commonAncestorContainer;
-            const scope = (common.nodeType === 1 ? common : common.parentNode) as Element;
-            (Array.from(scope.querySelectorAll('[style]')) as HTMLElement[]).filter(whole).forEach(el => {
-                el.style.removeProperty(property);
-                // The shorthand carries the same paint, so a background-color removal has to take
-                // it with it or the color comes straight back.
-                if (kind === 'back') el.style.removeProperty('background');
-                if (el.getAttribute('style')) return;
-                el.removeAttribute('style');
-                // A span that carried nothing but the paint is no longer worth keeping.
-                if (el.tagName === 'SPAN' && el.attributes.length === 0) el.replaceWith(...Array.from(el.childNodes));
-            });
-
-            startMarker.remove();
-            endMarker.remove();
-            // The pieces left on either side of the selection when it reached a painted element's edge.
-            [startTop, endCopy].forEach(piece => {
-                if (piece && piece.isConnected && !(piece.textContent || '').length
-                    && !piece.querySelector('img,br,iframe,video,audio')) piece.remove();
-            });
-
-            sel.removeAllRanges();
-            sel.addRange(region);
-            editor._range = region.cloneRange();
+            const next = BitRichTextEditorMarks.applyStyle(editor, range, kind === 'back' ? 'background-color' : 'color', null);
+            if (next) RichTextEditor.selectRange(editor, next);
             RichTextEditor.afterChange(editor);
         }
 
         public static applyFont(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
-            // Font commands emit <span style="..."> (after normalizeFontTags rewrites <font>).
+            // The font commands write <span style="...">.
             // Gate on the same allowlist as applyColor so formatting the sanitized snapshot would
             // strip is never applied only to be dropped from the persisted Value.
             if (!RichTextEditor.isTagAllowed(editor, 'span') || !RichTextEditor.isAttrAllowed(editor, 'span', 'style')) {
@@ -819,26 +742,7 @@
                 return;
             }
             RichTextEditor.dispatch(editor, kind === 'size' ? 'fontSize' : 'fontName', { value });
-            RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
-        }
-
-        // execCommand emits <font> elements (color/face) which the sanitizer allowlist drops
-        // because <font> is not a permitted tag - taking the formatting with them on the next
-        // sanitize roundtrip (paste, setHtml, source view). Rewrite them into allowed
-        // <span style="..."> wrappers so the font formatting survives.
-        private static normalizeFontTags(editor: any) {
-            if (!editor) return;
-            editor.querySelectorAll('font').forEach((f: HTMLElement) => {
-                const span = document.createElement('span');
-                if (f.style.cssText) span.style.cssText = f.style.cssText;
-                const color = f.getAttribute('color');
-                const face = f.getAttribute('face');
-                if (color) span.style.color = color;
-                if (face) span.style.fontFamily = face;
-                while (f.firstChild) span.appendChild(f.firstChild);
-                f.replaceWith(span);
-            });
         }
 
         public static insertMedia(editor: any, html: string): boolean {
@@ -1712,7 +1616,7 @@
         private static engineRun(editor: any, command: string, args: any): boolean {
             editor.focus();
             RichTextEditor.restoreSelection(editor);
-            // The commands still run natively (colors, fonts, links, insertion) write tags rather than styles.
+            // The insertion commands, which still run natively, write tags rather than styles.
             try { document.execCommand('styleWithCSS', false, 'false'); } catch { /* ignore */ }
 
             switch (command) {
@@ -1729,14 +1633,10 @@
                 case 'outdent':
                     return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.outdent(editor, range));
                 case 'foreColor':
-                    return RichTextEditor.execNative(editor, 'foreColor', args?.value);
                 case 'backColor':
-                    return RichTextEditor.execNative(editor, 'hiliteColor', args?.value) ||
-                        RichTextEditor.execNative(editor, 'backColor', args?.value);
                 case 'fontName':
-                    return RichTextEditor.execNative(editor, 'fontName', args?.value);
                 case 'fontSize':
-                    return RichTextEditor.applyFontSize(editor, args?.value);
+                    return RichTextEditor.applyStyle(editor, RichTextEditor.STYLE_COMMANDS[command], args?.value);
                 case 'insertImage':
                     return RichTextEditor.insertNodeHtml(editor, args?.html);
                 case 'insertHtml':
@@ -1757,19 +1657,10 @@
                     return RichTextEditor.clearMarks(editor);
                 case 'createLink':
                     return RichTextEditor.createLinkImpl(editor, args?.value);
-                case 'unlink': {
-                    // The engines only unlink what is selected, so a caret resting in a link (what
-                    // the link button reports as "in a link") selects that whole link first.
-                    const sel = document.getSelection();
-                    const link = sel && sel.isCollapsed ? RichTextEditor.linkAtSelection(editor) : null;
-                    if (sel && link) {
-                        const range = document.createRange();
-                        range.selectNodeContents(link);
-                        sel.removeAllRanges();
-                        sel.addRange(range);
-                    }
-                    return RichTextEditor.execNative(editor, 'unlink');
-                }
+                case 'unlink':
+                    // Every link the selection touches goes whole, and the one a caret rests in (what the link button
+                    // reports as "in a link").
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorMarks.unlink(editor, range));
                 case 'insertTable':
                     return RichTextEditor.insertNodeHtml(editor, args?.html);
                 case 'insertMedia':
@@ -1785,6 +1676,11 @@
                     return RichTextEditor.execNative(editor, command, args?.value ?? null);
             }
         }
+
+        // The style each color and font command writes.
+        private static readonly STYLE_COMMANDS: Record<string, string> = {
+            foreColor: 'color', backColor: 'background-color', fontName: 'font-family', fontSize: 'font-size',
+        };
 
         // The text-align value each justify command writes.
         private static readonly JUSTIFY: Record<string, string> = {
@@ -1946,18 +1842,6 @@
             sel.removeAllRanges();
             sel.addRange(after);
             editor._range = after.cloneRange();
-            return true;
-        }
-
-        // Normalize execCommand fontSize (1-7) onto a real size by rewriting the produced
-        // <font size> into an inline style when a css length is supplied.
-        private static applyFontSize(editor: any, value: string): boolean {
-            if (!value) return false;
-            RichTextEditor.execNative(editor, 'fontSize', '7');
-            editor.querySelectorAll('font[size="7"]').forEach((f: HTMLElement) => {
-                f.removeAttribute('size');
-                f.style.fontSize = value;
-            });
             return true;
         }
 
@@ -3425,7 +3309,6 @@
         }
 
         private static currentState(editor: any): any {
-            const v = (c: string) => { try { return (document.queryCommandValue(c) || '').toString(); } catch { return ''; } };
             const selected = RichTextEditor.editorRange(editor);
             const block = selected ? BitRichTextEditorBlocks.blockState(editor, selected) : '';
             const list = selected ? BitRichTextEditorBlocks.listState(editor, selected) : '';
@@ -3452,13 +3335,12 @@
                 block: block,
                 subscript: RichTextEditor.markState(editor, 'subscript'),
                 superscript: RichTextEditor.markState(editor, 'superscript'),
-                foreColor: RichTextEditor.toHexColor(v('foreColor')),
-                backColor: RichTextEditor.toHexColor(v('backColor')),
-                fontName: (v('fontName') || '').replace(/^['"]|['"]$/g, '') || null,
-                // queryCommandValue('fontSize') reports the legacy 1-7 scale, which never matches
-                // the CSS lengths the font-size selector offers. Read the resolved size instead so
-                // the selector reflects what is actually applied.
-                fontSize: RichTextEditor.computedFontSize(editor),
+                // The colors and fonts as they are laid out where the selection starts, or as set at a caret for what
+                // is typed there next.
+                foreColor: RichTextEditor.toHexColor(RichTextEditor.styleState(editor, selected, 'color')),
+                backColor: RichTextEditor.toHexColor(RichTextEditor.styleState(editor, selected, 'background-color')),
+                fontName: RichTextEditor.styleState(editor, selected, 'font-family').replace(/^['"]|['"]$/g, '') || null,
+                fontSize: RichTextEditor.styleState(editor, selected, 'font-size') || null,
                 direction: RichTextEditor.directionAtSelection(editor),
                 inLink: !!link,
                 linkHref: link ? link.getAttribute('href') : null,
@@ -3564,7 +3446,7 @@
             RichTextEditor.afterChange(editor);
         }
 
-        // Normalizes a queryCommandValue color ("rgb(1, 2, 3)", "#abc", a color keyword) into the
+        // Normalizes a computed color ("rgb(1, 2, 3)", "#abc", a color keyword) into the
         // "#rrggbb" form an <input type="color"> can display. Returns null when the value is
         // missing or cannot be resolved, which the toolbar reads as "no single active color".
         private static toHexColor(value: string): string | null {
@@ -3586,16 +3468,15 @@
             return null;
         }
 
-        // The resolved font-size at the selection, as a CSS length, or null when the selection is
-        // outside this editor.
-        private static computedFontSize(editor: any): string | null {
-            const sel = document.getSelection();
-            if (!sel || sel.rangeCount === 0) return null;
-            let node: any = sel.anchorNode;
-            if (node && node.nodeType === 3) node = node.parentNode;
-            if (!node || !editor.contains(node)) return null;
-            const size = getComputedStyle(node as Element).fontSize;
-            return size || null;
+        // A color or font where the selection is: set at a caret for the text typed there next, else as laid out.
+        private static styleState(editor: any, range: Range | null, property: string): string {
+            if (!range) return '';
+            const pending = editor._pendingMarks;
+            if (range.collapsed && pending && pending.styles && property in pending.styles
+                && BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) === pending.at) {
+                return pending.styles[property];
+            }
+            return BitRichTextEditorMarks.styleAt(editor, range, property);
         }
 
         private static computeFacts(editor: any): any {
@@ -3771,7 +3652,7 @@
         private static setPendingMark(editor: any, range: Range, mark: BitRichTextEditorMark, on: boolean) {
             const at = BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset);
             let pending = editor._pendingMarks;
-            if (!pending || pending.at !== at) pending = editor._pendingMarks = { at, marks: {} };
+            if (!pending || pending.at !== at) pending = editor._pendingMarks = { at, marks: {}, styles: {} };
             const set = (name: BitRichTextEditorMark, value: boolean) => {
                 if (BitRichTextEditorMarks.isActive(editor, range, name) === value) delete pending.marks[name];
                 else pending.marks[name] = value;
@@ -3779,7 +3660,27 @@
             const other = BitRichTextEditorMarks.EXCLUDES[mark] as BitRichTextEditorMark | undefined;
             if (on && other && RichTextEditor.markActive(editor, range, other)) set(other, false);
             set(mark, on);
-            if (Object.keys(pending.marks).length === 0) editor._pendingMarks = null;
+            if (Object.keys(pending.marks).length === 0 && Object.keys(pending.styles).length === 0) editor._pendingMarks = null;
+        }
+
+        // Paints the selection with a color or font, or at a caret sets it for the text typed there next, which is what
+        // the browser's commands did. A value that is no value of the style is refused.
+        private static applyStyle(editor: any, property: string, value: string): boolean {
+            const written = BitRichTextEditorMarks.styleValue(property, String(value ?? ''));
+            if (!written) return false;
+            const range = RichTextEditor.editorRange(editor);
+            if (!range) return false;
+            if (range.collapsed) {
+                const at = BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset);
+                let pending = editor._pendingMarks;
+                if (!pending || pending.at !== at) pending = editor._pendingMarks = { at, marks: {}, styles: {} };
+                pending.styles[property] = written;
+                return true;
+            }
+            const next = BitRichTextEditorMarks.applyStyle(editor, range, property, written);
+            if (!next) return false;
+            RichTextEditor.selectRange(editor, next);
+            return true;
         }
 
         // A character typed where marks are pending is written by the editor, inside the marks turned on and outside
@@ -3798,7 +3699,7 @@
             e.preventDefault();
             editor._leaveMark = null;
             // A lone trailing space collapses away unless it is non-breaking, which is also what the engines write.
-            const caret = BitRichTextEditorMarks.insertText(editor, range, e.data === ' ' ? ' ' : e.data, pending.marks);
+            const caret = BitRichTextEditorMarks.insertText(editor, range, e.data === ' ' ? ' ' : e.data, pending.marks, pending.styles);
             if (!caret) return true;
             RichTextEditor.selectRange(editor, caret);
             editor.dispatchEvent(new InputEvent('input', { inputType: 'insertText', data: e.data, bubbles: true }));
@@ -3830,6 +3731,9 @@
             for (const mark of Object.keys(compose.marks)) {
                 if (!written || !BitRichTextEditorMarks.isMark(mark)) continue;
                 written = BitRichTextEditorMarks.apply(editor, written, mark, compose.marks[mark]) || written;
+            }
+            for (const property of Object.keys(compose.styles || {})) {
+                written = BitRichTextEditorMarks.applyStyle(editor, written!, property, compose.styles[property]) || written;
             }
             const caret = written!.cloneRange();
             caret.collapse(false);
@@ -3875,7 +3779,7 @@
                 return RichTextEditor.execNative(editor, 'insertHTML',
                     `<a href="${RichTextEditor.escapeAttr(url)}">${RichTextEditor.escapeHtml(url)}</a>`);
             }
-            return RichTextEditor.execNative(editor, 'createLink', url);
+            return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorMarks.link(editor, range, url));
         }
 
         // Saves the caret just past a menu's trigger character as the range the menu's command restores
