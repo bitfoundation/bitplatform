@@ -1715,11 +1715,8 @@
             try { document.execCommand('styleWithCSS', false, 'false'); } catch { /* ignore */ }
 
             switch (command) {
-                case 'formatBlock': {
-                    let v = args?.value ?? 'p';
-                    if (v && v[0] !== '<') v = '<' + v + '>';
-                    return RichTextEditor.execNative(editor, 'formatBlock', v);
-                }
+                case 'formatBlock':
+                    return RichTextEditor.applyBlockFormat(editor, args?.value ?? 'p');
                 case 'foreColor':
                     return RichTextEditor.execNative(editor, 'foreColor', args?.value);
                 case 'backColor':
@@ -1966,8 +1963,10 @@
             // given the paragraph any other engine would have typed it into.
             if (!RichTextEditor.currentBlock(editor)) {
                 const anchor = document.getSelection()?.anchorNode;
-                if (anchor && anchor.nodeType === 3 && anchor.parentNode === editor) {
-                    RichTextEditor.execNative(editor, 'formatBlock', '<p>');
+                const range = RichTextEditor.editorRange(editor);
+                if (range && anchor && anchor.nodeType === 3 && anchor.parentNode === editor) {
+                    const next = BitRichTextEditorBlocks.formatBlock(editor, range, 'p');
+                    if (next) RichTextEditor.selectRange(editor, next);
                 }
             }
             const block = RichTextEditor.currentBlock(editor);
@@ -3420,8 +3419,8 @@
         private static currentState(editor: any): any {
             const q = (c: string) => { try { return document.queryCommandState(c); } catch { return false; } };
             const v = (c: string) => { try { return (document.queryCommandValue(c) || '').toString(); } catch { return ''; } };
-            let block = '';
-            try { block = (document.queryCommandValue('formatBlock') || '').toString().toLowerCase(); } catch { /* ignore */ }
+            const selected = RichTextEditor.editorRange(editor);
+            const block = selected ? BitRichTextEditorBlocks.blockState(editor, selected) : '';
 
             const link = RichTextEditor.linkAtSelection(editor);
             const rect = editor._quickToolbar ? RichTextEditor.selectionRect(editor) : null;
@@ -3685,6 +3684,19 @@
                 sel.addRange(range);
             }
             editor._range = range.cloneRange();
+        }
+
+        // Gives the lines the selection touches a block format (p, h1-h6, pre), or quotes them (blockquote, which takes
+        // the quote off again where they are all quoted already). A format the policy would strip is never applied.
+        private static applyBlockFormat(editor: any, value: string): boolean {
+            const tag = String(value || 'p').replace(/[<>\s]/g, '').toLowerCase();
+            if (!BitRichTextEditorBlocks.FORMATS.includes(tag) || !RichTextEditor.isTagAllowed(editor, tag)) return false;
+            const range = RichTextEditor.editorRange(editor);
+            if (!range) return false;
+            const next = BitRichTextEditorBlocks.formatBlock(editor, range, tag);
+            if (!next) return false;
+            RichTextEditor.selectRange(editor, next);
+            return true;
         }
 
         // Whether a mark is on where the selection is: off the markup, or at a caret, as set there for what is typed next.

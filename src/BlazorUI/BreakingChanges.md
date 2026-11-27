@@ -18,6 +18,24 @@ only in this file.
 
 ## 11.0.0
 
+### `BitRichTextEditor` writes its block formats itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+Paragraph, headings, code block and quote no longer run the browser's `document.execCommand('formatBlock')`. The editor
+edits the markup itself, so each format leaves the same markup in every browser. Nothing is renamed. What an app can
+notice:
+
+- **A quote wraps the paragraphs it quotes**: `<blockquote><p>text</p></blockquote>`. Chromium and WebKit used to turn
+  the paragraph itself into a `<blockquote>` holding the text. A quote saved that way still reads and toggles as a
+  quote.
+- **Normal text takes lines out of a quote**, splitting the quote around them, and so does the toolbar's quote button
+  pressed in one. A heading or a code block chosen in a quote stays in it.
+- **A block keeps its `style`, `dir` and `lang`** when it is given another format, so an aligned or right-to-left
+  paragraph stays that way as a heading.
+- **A code block given another format keeps its lines** as line breaks (`<p>one<br>two</p>`), rather than running them
+  together.
+- **The format list reads the markup**: a paragraph in a quote shows as Quote (`Block` is `blockquote` in
+  `BitRichTextEditorSelectionState`).
+
 ### `BitRichTextEditor` writes its inline marks itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 Bold, italic, underline, strikethrough, subscript, superscript, inline code and clear formatting no longer run the
