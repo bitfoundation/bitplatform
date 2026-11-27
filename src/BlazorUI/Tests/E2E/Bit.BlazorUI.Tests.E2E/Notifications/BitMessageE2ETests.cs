@@ -298,13 +298,13 @@ public class BitMessageE2ETests : E2ETestBase
         foreach (var (name, css) in expected)
         {
             await Expect(Root($"al-{name}")).ToHaveAttributeAsync("style", new Regex($"--bit-msg-justifycontent:{css}"));
-            Assert.AreEqual(css, await ComputedStyleAsync($"#al-{name} .bit-msg-con", "justify-content"), name);
+            StringAssert.Matches(await ComputedStyleAsync($"#al-{name} .bit-msg-con", "justify-content"), Alignment(css), name);
 
             var across = name switch { "Baseline" => "baseline", "Stretch" => "stretch", _ => "start" };
             Assert.AreEqual(across, await ComputedStyleAsync($"#al-{name} .bit-msg-con", "align-items"), name);
         }
 
-        Assert.AreEqual("flex-start", await ComputedStyleAsync("#al-default .bit-msg-con", "justify-content"));
+        StringAssert.Matches(await ComputedStyleAsync("#al-default .bit-msg-con", "justify-content"), Alignment("flex-start"));
         Assert.AreEqual("start", await ComputedStyleAsync("#al-default .bit-msg-con", "align-items"));
 
         // Next to an icon taller than the text, Baseline brings the text down to the line the glyph stands on, and Stretch

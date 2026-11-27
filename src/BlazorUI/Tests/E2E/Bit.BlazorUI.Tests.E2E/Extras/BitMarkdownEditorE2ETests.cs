@@ -1018,8 +1018,21 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await Expect(textArea).ToHaveAttributeAsync("readonly", "");
         Assert.IsNull(await textArea.GetAttributeAsync("disabled"));
 
+        // From Chromium 159 on (Playwright 1.65), Control+End moves no caret in a read-only textarea, focused or clicked
+        // into, and while no caret is placed in it the Control+A below selects the whole page instead of its text. A plain
+        // <textarea readonly> does the same, so it is the engine's and not the editor's: there the caret is placed by
+        // script, and the other engines still move it with the key.
         await textArea.FocusAsync();
-        await Page.Keyboard.PressAsync("Control+End");
+        if (IsChromium)
+        {
+            await textArea.EvaluateAsync("t => t.setSelectionRange(t.value.length, t.value.length)");
+        }
+        else
+        {
+            await Page.Keyboard.PressAsync("Control+End");
+            var caret = await SelectionAsync("mde-readonly");
+            Assert.AreEqual("# Read-only\n\nselect me".Length, caret[0], "Control+End moves the caret of a read-only editor");
+        }
         await Page.Keyboard.TypeAsync("typed");
         await Page.Keyboard.PressAsync("Control+b");
         await Expect(textArea).ToHaveValueAsync("# Read-only\n\nselect me");

@@ -75,7 +75,7 @@ public class BitStackE2ETests : E2ETestBase
 
         await SelectAsync("#sel-ha", value, "#al-state", $"ha={value};");
 
-        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("justify-content", justify);
+        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("justify-content", Alignment(justify));
         var host = await BoxAsync("#al-host");
         AssertClose(firstX, (await BoxAsync("#al-1")).X - host.X, $"{value}: first item x");
         if (value == "SpaceBetween") AssertClose(host.Right, (await BoxAsync("#al-3")).Right, "SpaceBetween: last item at the end");
@@ -96,7 +96,7 @@ public class BitStackE2ETests : E2ETestBase
 
         await SelectAsync("#sel-va", value, "#al-state", $"va={value};");
 
-        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("align-items", alignItems);
+        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("align-items", Alignment(alignItems));
         var host = await BoxAsync("#al-host");
         var first = await BoxAsync("#al-1");
         AssertClose(firstY, first.Y - host.Y, $"{value}: first item y");
@@ -121,7 +121,7 @@ public class BitStackE2ETests : E2ETestBase
         await SelectAsync("#sel-ha", value, "#al-state", $"ha={value};");
 
         await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("flex-direction", "column");
-        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("align-items", alignItems);
+        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("align-items", Alignment(alignItems));
         var host = await BoxAsync("#al-host");
         var first = await BoxAsync("#al-1");
         AssertClose(firstX, first.X - host.X, $"{value}: first item x");
@@ -145,7 +145,7 @@ public class BitStackE2ETests : E2ETestBase
         await Expect(Page.Locator("#al-state")).ToContainTextAsync("h=False");
         await SelectAsync("#sel-va", value, "#al-state", $"va={value};");
 
-        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("justify-content", justify);
+        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("justify-content", Alignment(justify));
         var host = await BoxAsync("#al-host");
         AssertClose(firstY, (await BoxAsync("#al-1")).Y - host.Y, $"{value}: first item y");
         if (value == "SpaceBetween") AssertClose(host.Bottom, (await BoxAsync("#al-3")).Bottom, "SpaceBetween: last at the bottom");
@@ -168,7 +168,7 @@ public class BitStackE2ETests : E2ETestBase
 
         // A named axis wins over the shorthand on that axis only.
         await SelectAsync("#sel-ha", "End", "#al-state", "ha=End;");
-        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("justify-content", "flex-end");
+        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("justify-content", Alignment("flex-end"));
         await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("align-items", "center");
 
         // A named value that means nothing on its axis falls back to the shorthand.
@@ -179,7 +179,7 @@ public class BitStackE2ETests : E2ETestBase
         await SelectAsync("#sel-ha", "", "#al-state", "ha=;");
         await SelectAsync("#sel-al", "SpaceBetween", "#al-state", "al=SpaceBetween;");
         await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("justify-content", "space-between");
-        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("align-items", "flex-start");
+        await Expect(Page.Locator("#al-stack")).ToHaveCSSAsync("align-items", Alignment("flex-start"));
     }
 
     [TestMethod]
@@ -243,7 +243,7 @@ public class BitStackE2ETests : E2ETestBase
 
         await SelectAsync("#sel-ac", value, "#wrap-state", $"ac={value};");
 
-        await Expect(Page.Locator("#wrap-stack")).ToHaveCSSAsync("align-content", alignContent);
+        await Expect(Page.Locator("#wrap-stack")).ToHaveCSSAsync("align-content", Alignment(alignContent));
         var host = await BoxAsync("#wrap-host");
         AssertClose(firstRowY, (await BoxAsync("#wr-1")).Y - host.Y, $"{value}: first row y");
 
@@ -401,7 +401,7 @@ public class BitStackE2ETests : E2ETestBase
         // A column below md: Center centers it along the column, SpaceBetween means nothing across it.
         await Page.SetViewportSizeAsync(700, 900);
         await Expect(Page.Locator("#rsp-align")).ToHaveCSSAsync("justify-content", "center");
-        await Expect(Page.Locator("#rsp-align")).ToHaveCSSAsync("align-items", "flex-start");
+        await Expect(Page.Locator("#rsp-align")).ToHaveCSSAsync("align-items", Alignment("flex-start"));
         host = await BoxAsync("#rsp-align");
         AssertClose(55, (await BoxAsync("#ra-1")).Y - host.Y, "column: centered along it");
         AssertClose(host.X, (await BoxAsync("#ra-1")).X, "column: at the start across it");
@@ -467,7 +467,7 @@ public class BitStackE2ETests : E2ETestBase
         await Page.SetViewportSizeAsync(1000, 900);
         await Expect(Page.Locator("#nest-rsp")).ToHaveCSSAsync("flex-direction", "row");
         await Expect(Page.Locator("#nest-rsp-inner")).ToHaveCSSAsync("flex-direction", "column");
-        await Expect(Page.Locator("#nest-rsp-inner")).ToHaveCSSAsync("align-items", "flex-start");
+        await Expect(Page.Locator("#nest-rsp-inner")).ToHaveCSSAsync("align-items", Alignment("flex-start"));
     }
 
     [TestMethod]
@@ -604,13 +604,13 @@ public class BitStackE2ETests : E2ETestBase
 
         var host = await BoxAsync("#fi-self-host");
 
-        await Expect(Page.Locator("#fi-self-start")).ToHaveCSSAsync("align-self", "flex-start");
+        await Expect(Page.Locator("#fi-self-start")).ToHaveCSSAsync("align-self", Alignment("flex-start"));
         AssertClose(host.Y, (await BoxAsync("#fi-self-start")).Y, "Self Start at the top");
 
         var centered = await BoxAsync("#fi-self-none");
         AssertClose(host.Y + (host.H - centered.H) / 2, centered.Y, "the parent's center");
 
-        await Expect(Page.Locator("#fi-self-end")).ToHaveCSSAsync("align-self", "flex-end");
+        await Expect(Page.Locator("#fi-self-end")).ToHaveCSSAsync("align-self", Alignment("flex-end"));
         AssertClose(host.Bottom, (await BoxAsync("#fi-self-end")).Bottom, "Self End at the bottom");
 
         await Expect(Page.Locator("#fi-self-stretch")).ToHaveCSSAsync("align-self", "stretch");
