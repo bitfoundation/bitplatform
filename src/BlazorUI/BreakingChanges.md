@@ -18,6 +18,24 @@ only in this file.
 
 ## 11.0.0
 
+### `BitRichTextEditor` writes its inline marks itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+Bold, italic, underline, strikethrough, subscript, superscript, inline code and clear formatting no longer run the
+browser's `document.execCommand`. The editor edits the markup itself, so each command leaves the same markup in every
+browser. The tags it writes are the ones it wrote before (`<b>`, `<i>`, `<u>`, `<strike>`, `<sub>`, `<sup>`, `<code>`),
+and nothing is renamed. What an app can notice:
+
+- **A mark is read from the markup, in every spelling.** `<strong>` counts as bold, `<em>` as italic, and `<s>` and
+  `<del>` as strikethrough, for the toolbar's state and for toggling. Text that is only styled bold or italic (a
+  heading, a `font-weight` style) no longer reports `Bold` or `Italic` in `BitRichTextEditorSelectionState`, and the
+  toolbar's button is not shown pressed there.
+- **Subscript and superscript exclude each other.** Applying one to text that has the other replaces it.
+- **Clear formatting keeps links and mentions.** It unwraps the inline formatting elements (marks, `<font>`, a `<span>`
+  with nothing but a style) and leaves `<a>`, a `<span>` with other attributes, and code blocks.
+- **A mark turned on or off at a caret applies to the text typed there next**, as before, and is dropped once the caret
+  moves. Inline code now toggles like the other marks. Before, its button removed the whole inline code element the
+  selection started in, and did nothing at a caret outside one.
+
 ### `BitRichTextEditor` keeps its own undo history ([#15490](https://github.com/bitfoundation/bitplatform/issues/15490))
 
 Undo and redo no longer go to the browser's native stack, which cannot follow the changes the editor makes to its

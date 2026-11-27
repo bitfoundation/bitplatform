@@ -151,6 +151,13 @@
                 // toolbar action could mutate content beyond the editor.
                 if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
                     editor._range = range.cloneRange();
+                    // The marks set at a caret are for the text typed there: once the caret moves, they are gone, as
+                    // they have always been with the browser's own commands.
+                    const pending = editor._pendingMarks;
+                    if (pending && (!range.collapsed
+                        || BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) !== pending.at)) {
+                        editor._pendingMarks = null;
+                    }
                     RichTextEditor.reportState(editor);
                 }
             };
@@ -196,8 +203,11 @@
             editor._onInputMd = (e: InputEvent) => RichTextEditor.onInputMarkdown(editor, e);
             editor.addEventListener('input', editor._onInputMd);
 
-            // A composition (an IME, a dead key, dictation) is one step, closed where it ends.
-            editor._onCompositionEnd = () => RichTextEditor.historyCommit(editor);
+            // A composition (an IME, a dead key, dictation) is one step, closed where it ends. The marks set at the caret
+            // it starts at are put on what it wrote once it is done, since a composition's text cannot be placed by hand.
+            editor._onCompositionStart = () => RichTextEditor.startComposition(editor);
+            editor.addEventListener('compositionstart', editor._onCompositionStart);
+            editor._onCompositionEnd = () => RichTextEditor.endComposition(editor);
             editor.addEventListener('compositionend', editor._onCompositionEnd);
 
             // A full-screen editor covers the page, so Tab cycles inside it instead of moving the focus onto
@@ -276,6 +286,7 @@
             editor.removeEventListener('drop', editor._onDrop);
             editor.removeEventListener('keydown', editor._onKeyDown);
             editor.removeEventListener('beforeinput', editor._onBeforeInput);
+            editor.removeEventListener('compositionstart', editor._onCompositionStart);
             editor.removeEventListener('compositionend', editor._onCompositionEnd);
             document.removeEventListener('selectionchange', editor._onSelection);
             document.removeEventListener('fullscreenchange', editor._onFullScreenChange);
@@ -290,6 +301,8 @@
             editor._history = null;
             editor._historyReported = null;
             editor._leaveMark = null;
+            editor._pendingMarks = null;
+            editor._composeMarks = null;
             editor._activeImage = null;
             // Transient view/input state, cleared so a re-initialized element never starts out
             // believing it is in the CSS full-screen fallback or owes someone a plain-text paste.
@@ -395,6 +408,7 @@
                 // What was typed before the value arrived stays a step of its own.
                 RichTextEditor.historyCommit(editor);
                 RichTextEditor.removeResizeHandle(editor);
+                editor._pendingMarks = null;
                 editor.innerHTML = next;
             }
             RichTextEditor.updateEmpty(editor);
@@ -1723,8 +1737,16 @@
                     return RichTextEditor.insertHorizontalRule(editor);
                 case 'insertTaskList':
                     return RichTextEditor.toggleTaskList(editor, false);
+                case 'bold':
+                case 'italic':
+                case 'underline':
+                case 'strikeThrough':
+                case 'subscript':
+                case 'superscript':
                 case 'inlineCode':
-                    return RichTextEditor.toggleInlineCode(editor);
+                    return RichTextEditor.toggleMark(editor, command);
+                case 'removeFormat':
+                    return RichTextEditor.clearMarks(editor);
                 case 'createLink':
                     return RichTextEditor.createLinkImpl(editor, args?.value);
                 case 'unlink': {
@@ -3130,6 +3152,15 @@
                 if (RichTextEditor.historyMove(editor, e.inputType === 'historyUndo')) RichTextEditor.afterChange(editor);
                 return;
             }
+            // A mark asked for by the browser itself (its own shortcut where the editor does not own it, a context menu,
+            // an assistive tool) is the editor's command, so it writes the same markup the toolbar does.
+            const format = RichTextEditor.FORMAT_INPUTS[e.inputType];
+            if (format) {
+                e.preventDefault();
+                RichTextEditor.dispatch(editor, format, {});
+                RichTextEditor.afterChange(editor);
+                return;
+            }
             const max = editor._maxLength;
             const isInsert = e.inputType && e.inputType.startsWith('insert');
             if (max != null && isInsert && e.inputType !== 'insertFromPaste') {
@@ -3146,8 +3177,14 @@
                 }
             }
             RichTextEditor.historyBeforeInput(editor, e);
+            if (RichTextEditor.typePendingMarks(editor, e)) return;
             RichTextEditor.typeOutsideMark(editor, e);
         }
+
+        private static readonly FORMAT_INPUTS: { [inputType: string]: string } = {
+            formatBold: 'bold', formatItalic: 'italic', formatUnderline: 'underline', formatStrikeThrough: 'strikeThrough',
+            formatSubscript: 'subscript', formatSuperscript: 'superscript', formatRemove: 'removeFormat',
+        };
 
         // ====================================================================
         // Undo history (BitRichTextEditorHistory holds the steps; this half reads and writes the DOM)
@@ -3254,6 +3291,7 @@
 
             RichTextEditor.removeResizeHandle(editor);
             editor._leaveMark = null;
+            editor._pendingMarks = null;
             // A step holds the markup as it was when recorded; the policy in force may have changed since, so what goes
             // back into the live surface is sanitized against it like every other inbound markup, and replaceCurrent
             // below moves the history to the sanitized result.
@@ -3388,14 +3426,13 @@
             const link = RichTextEditor.linkAtSelection(editor);
             const rect = editor._quickToolbar ? RichTextEditor.selectionRect(editor) : null;
             const image = RichTextEditor.selectedImage(editor);
-            const codeEl = RichTextEditor.ancestorTag(editor, 'CODE');
-            const inlineCode = codeEl && !(codeEl.parentElement && codeEl.parentElement.tagName === 'PRE');
             const listItem = RichTextEditor.listItemAtSelection(editor);
             return {
-                bold: q('bold'),
-                italic: q('italic'),
-                underline: q('underline'),
-                strikeThrough: q('strikeThrough'),
+                // The marks are the editor's own, read off the markup (in every spelling) and the marks set at the caret.
+                bold: RichTextEditor.markState(editor, 'bold'),
+                italic: RichTextEditor.markState(editor, 'italic'),
+                underline: RichTextEditor.markState(editor, 'underline'),
+                strikeThrough: RichTextEditor.markState(editor, 'strikeThrough'),
                 orderedList: q('insertOrderedList'),
                 unorderedList: q('insertUnorderedList'),
                 justifyLeft: q('justifyLeft'),
@@ -3403,8 +3440,8 @@
                 justifyRight: q('justifyRight'),
                 justifyFull: q('justifyFull'),
                 block: block,
-                subscript: q('subscript'),
-                superscript: q('superscript'),
+                subscript: RichTextEditor.markState(editor, 'subscript'),
+                superscript: RichTextEditor.markState(editor, 'superscript'),
                 foreColor: RichTextEditor.toHexColor(v('foreColor')),
                 backColor: RichTextEditor.toHexColor(v('backColor')),
                 fontName: (v('fontName') || '').replace(/^['"]|['"]$/g, '') || null,
@@ -3418,7 +3455,7 @@
                 // Reported so the link panel can open showing what the link already does; without
                 // it, editing a new-tab link and pressing Apply would quietly drop its target.
                 linkNewTab: !!link && (link.getAttribute('target') || '').toLowerCase() === '_blank',
-                inlineCode: !!inlineCode,
+                inlineCode: RichTextEditor.markState(editor, 'inlineCode'),
                 taskList: !!(listItem && listItem.parentElement && listItem.parentElement.classList.contains('bit-rte-tasks')),
                 inTable: !!RichTextEditor.cellAtSelection(editor),
                 hasSelection: !!rect,
@@ -3628,40 +3665,152 @@
             return RichTextEditor.execNative(editor, 'insertHTML', html);
         }
 
-        // Toggles <code> around the selection. execCommand has no inline-code command, so the
-        // wrap/unwrap is done over the range directly; the surrounding markup is preserved because
-        // the existing nodes are moved into (or out of) the <code> element rather than reserialized.
-        private static toggleInlineCode(editor: any): boolean {
-            if (!RichTextEditor.isTagAllowed(editor, 'code')) return false;
-            const sel = document.getSelection();
-            if (!sel || sel.rangeCount === 0) return false;
+        // ====================================================================
+        // Inline marks (BitRichTextEditorMarks edits the markup; this half owns the selection and the marks pending at
+        // a caret)
+        // ====================================================================
 
-            const existing = RichTextEditor.ancestorTag(editor, 'CODE');
-            if (existing) {
-                // Only unwrap an inline <code>; a <code> inside a <pre> is the code block itself.
-                if (existing.parentElement && existing.parentElement.tagName === 'PRE') return false;
-                const parent = existing.parentNode;
-                existing.replaceWith(...Array.from(existing.childNodes));
-                parent && (parent as Element).normalize?.();
+        // The selection inside this editor, or null.
+        private static editorRange(editor: any): Range | null {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return null;
+            const range = sel.getRangeAt(0);
+            return editor.contains(range.startContainer) && editor.contains(range.endContainer) ? range : null;
+        }
+
+        private static selectRange(editor: any, range: Range) {
+            const sel = document.getSelection();
+            if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+            editor._range = range.cloneRange();
+        }
+
+        // Whether a mark is on where the selection is: off the markup, or at a caret, as set there for what is typed next.
+        private static markActive(editor: any, range: Range, mark: BitRichTextEditorMark): boolean {
+            const pending = editor._pendingMarks;
+            if (range.collapsed && pending && mark in pending.marks
+                && BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) === pending.at) {
+                return pending.marks[mark];
+            }
+            return BitRichTextEditorMarks.isActive(editor, range, mark);
+        }
+
+        private static markState(editor: any, mark: BitRichTextEditorMark): boolean {
+            const range = RichTextEditor.editorRange(editor);
+            return !!range && RichTextEditor.markActive(editor, range, mark);
+        }
+
+        // Turns a mark on over the selection, or off where all of it has it. At a caret it is set for the text typed
+        // there next, which is what the browser's commands did. A mark the policy would strip is never added.
+        private static toggleMark(editor: any, command: string): boolean {
+            if (!BitRichTextEditorMarks.isMark(command)) return false;
+            const range = RichTextEditor.editorRange(editor);
+            if (!range) return false;
+            if (command === 'inlineCode' && BitRichTextEditorMarks.inCodeBlock(editor, range.startContainer)) return false;
+            const on = !RichTextEditor.markActive(editor, range, command);
+            if (on && !RichTextEditor.isTagAllowed(editor, BitRichTextEditorMarks.WRITES[command])) return false;
+
+            if (range.collapsed) {
+                RichTextEditor.setPendingMark(editor, range, command, on);
                 return true;
             }
+            const next = BitRichTextEditorMarks.apply(editor, range, command, on);
+            if (!next) return false;
+            RichTextEditor.selectRange(editor, next);
+            return true;
+        }
 
-            const range = sel.getRangeAt(0);
-            if (range.collapsed) return false;
-            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return false;
-            const code = document.createElement('code');
-            try {
-                code.appendChild(range.extractContents());
-                range.insertNode(code);
-            } catch {
+        // Clears the formatting of the selection; at a caret, turns off every mark for the text typed there next.
+        private static clearMarks(editor: any): boolean {
+            const range = RichTextEditor.editorRange(editor);
+            if (!range) return false;
+            if (range.collapsed) {
+                for (const mark of Object.keys(BitRichTextEditorMarks.WRITES) as BitRichTextEditorMark[]) {
+                    if (RichTextEditor.markActive(editor, range, mark)) RichTextEditor.setPendingMark(editor, range, mark, false);
+                }
+                return true;
+            }
+            const next = BitRichTextEditorMarks.removeFormat(editor, range);
+            if (!next) return false;
+            RichTextEditor.selectRange(editor, next);
+            return true;
+        }
+
+        // Sets a mark for the text typed next at the caret. A mark set back to what the markup there already says is
+        // no longer pending; turning one of sub- and superscript on turns the other off.
+        private static setPendingMark(editor: any, range: Range, mark: BitRichTextEditorMark, on: boolean) {
+            const at = BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset);
+            let pending = editor._pendingMarks;
+            if (!pending || pending.at !== at) pending = editor._pendingMarks = { at, marks: {} };
+            const set = (name: BitRichTextEditorMark, value: boolean) => {
+                if (BitRichTextEditorMarks.isActive(editor, range, name) === value) delete pending.marks[name];
+                else pending.marks[name] = value;
+            };
+            const other = BitRichTextEditorMarks.EXCLUDES[mark] as BitRichTextEditorMark | undefined;
+            if (on && other && RichTextEditor.markActive(editor, range, other)) set(other, false);
+            set(mark, on);
+            if (Object.keys(pending.marks).length === 0) editor._pendingMarks = null;
+        }
+
+        // A character typed where marks are pending is written by the editor, inside the marks turned on and outside
+        // the ones turned off; what is typed after it goes on in the same text, which the engine takes over.
+        private static typePendingMarks(editor: any, e: InputEvent): boolean {
+            const pending = editor._pendingMarks;
+            if (!pending) return false;
+            if ((e.inputType !== 'insertText' && e.inputType !== 'insertReplacementText') || !e.data) return false;
+            editor._pendingMarks = null;
+            const range = RichTextEditor.editorRange(editor);
+            if (!range || !range.collapsed
+                || BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) !== pending.at) {
                 return false;
             }
-            const after = document.createRange();
-            after.selectNodeContents(code);
-            sel.removeAllRanges();
-            sel.addRange(after);
-            editor._range = after.cloneRange();
+
+            e.preventDefault();
+            editor._leaveMark = null;
+            // A lone trailing space collapses away unless it is non-breaking, which is also what the engines write.
+            const caret = BitRichTextEditorMarks.insertText(editor, range, e.data === ' ' ? ' ' : e.data, pending.marks);
+            if (!caret) return true;
+            RichTextEditor.selectRange(editor, caret);
+            editor.dispatchEvent(new InputEvent('input', { inputType: 'insertText', data: e.data, bubbles: true }));
             return true;
+        }
+
+        private static startComposition(editor: any) {
+            const pending = editor._pendingMarks;
+            const range = RichTextEditor.editorRange(editor);
+            editor._composeMarks = pending && range && range.collapsed
+                && BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) === pending.at
+                ? pending
+                : null;
+        }
+
+        private static endComposition(editor: any) {
+            const compose = editor._composeMarks;
+            editor._composeMarks = null;
+            editor._pendingMarks = null;
+            const range = compose ? RichTextEditor.editorRange(editor) : null;
+            let written = range && range.collapsed
+                ? BitRichTextEditorMarks.rangeAt(editor, compose.at, BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset))
+                : null;
+            if (!written) {
+                RichTextEditor.historyCommit(editor);
+                return;
+            }
+
+            for (const mark of Object.keys(compose.marks)) {
+                if (!written || !BitRichTextEditorMarks.isMark(mark)) continue;
+                written = BitRichTextEditorMarks.apply(editor, written, mark, compose.marks[mark]) || written;
+            }
+            const caret = written!.cloneRange();
+            caret.collapse(false);
+            RichTextEditor.selectRange(editor, caret);
+            // The composition and its marks are one step, and the content is reported like any other edit.
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (history) history.capture(RichTextEditor.historyState(editor));
+            RichTextEditor.historyCommit(editor);
+            RichTextEditor.afterChange(editor);
         }
 
         // Whether the selection sits in code - a code block or an inline code span - where every
