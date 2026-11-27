@@ -1964,6 +1964,39 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitRichTextEditorShouldFollowItsHistoryInCanUndoCanRedoAndTheButtons()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+        var undo = () => ButtonByLabel(component, "Undo");
+        var redo = () => ButtonByLabel(component, "Redo");
+
+        // Nothing to undo until the bridge says so, and both buttons say it the way every disabled control does.
+        Assert.IsFalse(component.Instance.CanUndo);
+        Assert.IsFalse(component.Instance.CanRedo);
+        Assert.IsTrue(undo().HasAttribute("disabled"));
+        Assert.AreEqual("true", undo().GetAttribute("aria-disabled"));
+        Assert.IsTrue(redo().HasAttribute("disabled"));
+
+        await component.InvokeAsync(() => component.Instance._OnHistoryChanged(true, false));
+        Assert.IsTrue(component.Instance.CanUndo);
+        Assert.IsFalse(component.Instance.CanRedo);
+        Assert.IsFalse(undo().HasAttribute("disabled"));
+        Assert.IsNull(undo().GetAttribute("aria-disabled"));
+        Assert.IsTrue(redo().HasAttribute("disabled"));
+
+        await component.InvokeAsync(() => component.Instance._OnHistoryChanged(false, true));
+        Assert.IsTrue(undo().HasAttribute("disabled"));
+        Assert.IsFalse(redo().HasAttribute("disabled"));
+
+        // A read-only editor offers neither, whatever the history holds.
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+        Assert.IsTrue(component.Instance.CanRedo);
+        Assert.IsTrue(redo().HasAttribute("disabled"));
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorShouldSetAndClearHtmlThroughTheApi()
     {
         SetupJsInterop();

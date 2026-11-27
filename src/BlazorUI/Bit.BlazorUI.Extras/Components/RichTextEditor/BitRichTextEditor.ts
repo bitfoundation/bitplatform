@@ -117,7 +117,8 @@
             };
             editor._notify = notify;
 
-            editor._onInput = () => {
+            editor._onInput = (e: InputEvent) => {
+                RichTextEditor.historyAfterInput(editor, e);
                 RichTextEditor.updateEmpty(editor);
                 // Text typed before a selected image moves it out from under its resize handle.
                 if (editor._resizeReposition) editor._resizeReposition();
@@ -128,6 +129,9 @@
 
             editor._onBlur = () => {
                 if (timer) { clearTimeout(timer); timer = null; }
+                // Leaving the surface ends the typing run: what was typed is a step of its own before a panel or
+                // another control acts on the content.
+                RichTextEditor.historyCommit(editor);
                 notify();
                 RichTextEditor.tellDotNet(editor, 'OnBlurred');
             };
@@ -192,6 +196,10 @@
             editor._onInputMd = (e: InputEvent) => RichTextEditor.onInputMarkdown(editor, e);
             editor.addEventListener('input', editor._onInputMd);
 
+            // A composition (an IME, a dead key, dictation) is one step, closed where it ends.
+            editor._onCompositionEnd = () => RichTextEditor.historyCommit(editor);
+            editor.addEventListener('compositionend', editor._onCompositionEnd);
+
             // A full-screen editor covers the page, so Tab cycles inside it instead of moving the focus onto
             // controls that are hidden underneath. Bubbling, so the surface's own Tab handling (indenting a list,
             // walking the cells of a table) has already claimed the keystroke when it applies.
@@ -209,6 +217,12 @@
             RichTextEditor.enableTableResize(editor);
             RichTextEditor.enableTaskToggle(editor);
             RichTextEditor.updateEmpty(editor);
+
+            // The editor's own undo history: the native one cannot follow the commands that change the DOM
+            // themselves. Whatever the surface starts with is where it begins; the first value set from .NET
+            // before any edit replaces that starting point rather than becoming a step (see setHtml).
+            editor._history = new BitRichTextEditorHistory(RichTextEditor.historyState(editor));
+            RichTextEditor.reportHistory(editor);
         }
 
         // Enter in a field of a panel (a link's or an image's address, the find box) is the panel's to answer - apply, step
@@ -262,6 +276,7 @@
             editor.removeEventListener('drop', editor._onDrop);
             editor.removeEventListener('keydown', editor._onKeyDown);
             editor.removeEventListener('beforeinput', editor._onBeforeInput);
+            editor.removeEventListener('compositionend', editor._onCompositionEnd);
             document.removeEventListener('selectionchange', editor._onSelection);
             document.removeEventListener('fullscreenchange', editor._onFullScreenChange);
             if (editor._fullScreenRoot) {
@@ -272,6 +287,8 @@
             RichTextEditor.removeResizeHandle(editor);
             editor._dotNetRef = null;
             editor._range = null;
+            editor._history = null;
+            editor._historyReported = null;
             editor._leaveMark = null;
             editor._activeImage = null;
             // Transient view/input state, cleared so a re-initialized element never starts out
@@ -359,8 +376,8 @@
             return !editor.querySelector('img,table,hr,audio,video,iframe');
         }
 
-        // Undo-safe set: when the surface is focused and already has content, route the
-        // replacement through the engine (insertHTML) so the native undo stack survives.
+        // Undo-safe set: once the surface has been edited, the replacement is a step of the editor's own history, so a
+        // value set while the user works can be undone like an edit; before that, it is where the history starts.
         public static setHtml(editor: any, html: string) {
             if (!editor) return;
             // Always sanitize inbound HTML against the active policy (or the secure default
@@ -375,22 +392,18 @@
             if (unchanged && editor._factsReported) return;
 
             if (unchanged === false) {
-                const focused = document.activeElement === editor;
-                const hasContent = editor.innerHTML.trim().length > 0;
-                if (focused && hasContent) {
-                    const sel = document.getSelection();
-                    const range = document.createRange();
-                    range.selectNodeContents(editor);
-                    sel!.removeAllRanges();
-                    sel!.addRange(range);
-                    if (!RichTextEditor.execNative(editor, 'insertHTML', next)) {
-                        editor.innerHTML = next;
-                    }
-                } else {
-                    editor.innerHTML = next;
-                }
+                // What was typed before the value arrived stays a step of its own.
+                RichTextEditor.historyCommit(editor);
+                RichTextEditor.removeResizeHandle(editor);
+                editor.innerHTML = next;
             }
             RichTextEditor.updateEmpty(editor);
+            if (unchanged === false && editor._history) {
+                const history = editor._history as BitRichTextEditorHistory;
+                const state = RichTextEditor.historyState(editor);
+                if (history.touched) history.record(state); else history.reset(state);
+                RichTextEditor.reportHistory(editor);
+            }
             // The content changed programmatically (e.g. a bound Value assignment), not via a user
             // edit: refresh the cached content facts so count-dependent state stays accurate, but
             // do not route this through the user-change callback (OnContentChanged) or emit an edit.
@@ -1663,6 +1676,13 @@
             // Single choke point for every mutating operation: a read-only (or disabled) editor
             // never runs a command, whichever path asked for it.
             if (editor._readOnly) return false;
+            // Undo and redo are the editor's own history, never the browser's: its stack does not know the changes
+            // the commands make to the DOM themselves.
+            if (command === 'undo' || command === 'redo') return RichTextEditor.historyMove(editor, command === 'undo');
+            // The input events a native command raises as it runs are part of the command, which afterChange records
+            // as one step; they are not typing to group.
+            const outer = editor._inCommand === true;
+            editor._inCommand = true;
             try {
                 return RichTextEditor.engineRun(editor, command, args || {});
             } catch (err: any) {
@@ -1670,6 +1690,8 @@
                     RichTextEditor.tellDotNet(editor, 'OnCommandError', String(command), String(err?.message ?? err));
                 }
                 return false;
+            } finally {
+                editor._inCommand = outer;
             }
         }
 
@@ -2154,7 +2176,15 @@
             sel.addRange(range);
             editor._range = range.cloneRange();
 
-            if (RichTextEditor.execNative(editor, command, value)) return true;
+            // What was typed up to the rule is a step of its own, so one undo takes the rewrite back and leaves the
+            // literal text ("**bold**", a straight quote) the way it was typed.
+            RichTextEditor.historyCommit(editor);
+            const outer = editor._inCommand === true;
+            editor._inCommand = true;
+            let replaced = false;
+            try { replaced = RichTextEditor.execNative(editor, command, value); }
+            finally { editor._inCommand = outer; }
+            if (replaced) return true;
 
             if (caret) {
                 sel.removeAllRanges();
@@ -2779,6 +2809,8 @@
             let accepted = 0;
             let inserted = 0;
             const maxBytes = editor._maxImageBytes > 0 ? editor._maxImageBytes : RichTextEditor.MAX_IMAGE_BYTES;
+            // What was typed before the drop stays a step of its own, whatever is typed while the images are read.
+            RichTextEditor.historyCommit(editor);
             for (const file of files) {
                 if (accepted >= 20) {
                     RichTextEditor.reportClientError(editor, 'too-many-files', 'too-many-images', 'Only {0} images can be inserted per drop.', '20');
@@ -2817,6 +2849,8 @@
                 }
             }
             if (editor._notify) editor._notify();
+            // The images of one paste or drop are one step.
+            if (inserted > 0) RichTextEditor.historyRecord(editor);
             if (inserted > 0) RichTextEditor.tellDotNet(editor, 'OnImagesInserted', inserted);
         }
 
@@ -2891,6 +2925,7 @@
                     if (!RichTextEditor.linkAtSelection(editor)) {
                         RichTextEditor.dispatch(editor, 'createLink', { value: href });
                         if (editor._notify) editor._notify();
+                        RichTextEditor.historyRecord(editor);
                         return;
                     }
                 } else {
@@ -2916,7 +2951,10 @@
                 }
             }
             RichTextEditor.dispatch(editor, 'insertHtml', { html: toInsert });
+            // The paste or drop is a step of its own: the input events its command raised were part of the command
+            // (dispatch's _inCommand keeps them out of the typing run), so nothing else records it.
             if (editor._notify) editor._notify();
+            RichTextEditor.historyRecord(editor);
         }
 
         private static onDrop(editor: any, e: DragEvent) {
@@ -3085,6 +3123,13 @@
             // A read-only surface is not contenteditable, but an assistive tool or an extension can
             // still raise beforeinput against it; refuse the edit rather than relying on that.
             if (editor._readOnly) { e.preventDefault(); return; }
+            // The browser's own undo (its Edit menu, a gesture, an assistive tool) reaches the editor's history; the
+            // native stack is never used, since it does not know the changes the commands make to the DOM themselves.
+            if (e.inputType === 'historyUndo' || e.inputType === 'historyRedo') {
+                e.preventDefault();
+                if (RichTextEditor.historyMove(editor, e.inputType === 'historyUndo')) RichTextEditor.afterChange(editor);
+                return;
+            }
             const max = editor._maxLength;
             const isInsert = e.inputType && e.inputType.startsWith('insert');
             if (max != null && isInsert && e.inputType !== 'insertFromPaste') {
@@ -3100,7 +3145,202 @@
                     return;
                 }
             }
+            RichTextEditor.historyBeforeInput(editor, e);
             RichTextEditor.typeOutsideMark(editor, e);
+        }
+
+        // ====================================================================
+        // Undo history (BitRichTextEditorHistory holds the steps; this half reads and writes the DOM)
+        // ====================================================================
+
+        // The state a step holds: the markup the editor would report (cleanHtml's tidying: find highlights left out,
+        // loose inline content in paragraphs, adjacent text merged the way the markup parses back) and the selection as
+        // paths of child indexes into THAT markup, so they still resolve once it is put back. The selection is carried
+        // through the same tidying on a clone rather than read off the live surface, whose nodes the tidying moves,
+        // merges and drops - paths read there would land the caret elsewhere after an undo.
+        private static historyState(editor: any): BitRichTextEditorHistoryState {
+            const clone = editor.cloneNode(true) as HTMLElement;
+            const sel = document.getSelection();
+            const live = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+            // A boundary is held by a node the tidying moves but never rebuilds: a text node with its offset, or the
+            // child an element boundary sits before (after, at the end of the element).
+            const hold = (container: Node, offset: number): any => {
+                const steps = RichTextEditor.pathOf(editor, container);
+                if (!steps) return null;
+                const node = RichTextEditor.nodeAtPath(clone, steps);
+                if (!node) return null;
+                if (node.nodeType === 3) return { node, offset };
+                const child = node.childNodes[offset];
+                if (child) return { node: child, before: true };
+                return node.lastChild ? { node: node.lastChild, before: false } : { node, offset: 0 };
+            };
+            const inside = !!live && editor.contains(live.startContainer) && editor.contains(live.endContainer);
+            const start = inside ? hold(live!.startContainer, live!.startOffset) : null;
+            const end = inside ? hold(live!.endContainer, live!.endOffset) : null;
+
+            clone.querySelectorAll('mark.bit-rte-find').forEach((m: Element) => {
+                m.replaceWith(...Array.from(m.childNodes));
+            });
+            RichTextEditor.normalizeBlocks(clone, false);
+
+            const place = (held: any): [Node, number] | null => {
+                if (!held || !clone.contains(held.node)) return null;
+                if (held.before === undefined) return [held.node, held.offset];
+                const parent = held.node.parentNode;
+                if (!parent) return null;
+                return [parent, Array.prototype.indexOf.call(parent.childNodes, held.node) + (held.before ? 0 : 1)];
+            };
+            const from = place(start);
+            const to = place(end);
+            let range: Range | null = null;
+            if (from && to) {
+                try {
+                    range = document.createRange();
+                    range.setStart(from[0], from[1]);
+                    range.setEnd(to[0], to[1]);
+                } catch {
+                    range = null;
+                }
+            }
+            // A live range follows normalize() as it merges and drops text nodes.
+            clone.normalize();
+            return { html: clone.innerHTML, selection: range ? RichTextEditor.selectionPaths(clone, range) : null };
+        }
+
+        // Records the state the surface now shows as a step of its own: a command, a paste, a drop, an image insert.
+        // What was typed before it stays a step of its own (record commits it first).
+        private static historyRecord(editor: any) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history) return;
+            history.record(RichTextEditor.historyState(editor));
+            RichTextEditor.reportHistory(editor);
+        }
+
+        private static historyBeforeInput(editor: any, e: InputEvent) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history || editor._inCommand) return;
+            if (history.beforeInput(BitRichTextEditorHistory.kindOf(e.inputType), Date.now())) {
+                history.commit();
+                RichTextEditor.reportHistory(editor);
+            }
+        }
+
+        private static historyAfterInput(editor: any, e: InputEvent) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history || editor._inCommand) return;
+            history.capture(RichTextEditor.historyState(editor));
+            if (history.afterInput(BitRichTextEditorHistory.kindOf(e?.inputType), e?.data ?? null)) history.commit();
+            RichTextEditor.reportHistory(editor);
+        }
+
+        // Ends the typing run in progress, making it a step of its own.
+        private static historyCommit(editor: any) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history) return;
+            if (history.commit()) RichTextEditor.reportHistory(editor);
+        }
+
+        // Undoes or redoes one step: puts its markup and selection back and reports the content like an edit.
+        private static historyMove(editor: any, back: boolean): boolean {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history || editor._readOnly) return false;
+            // A pending typing run is the newest step, so what was just typed is the first thing undone.
+            history.capture(RichTextEditor.historyState(editor));
+            const state = back ? history.undo() : history.redo();
+            if (!state) {
+                RichTextEditor.reportHistory(editor);
+                return false;
+            }
+
+            RichTextEditor.removeResizeHandle(editor);
+            editor._leaveMark = null;
+            // A step holds the markup as it was when recorded; the policy in force may have changed since, so what goes
+            // back into the live surface is sanitized against it like every other inbound markup, and replaceCurrent
+            // below moves the history to the sanitized result.
+            editor.innerHTML = RichTextEditor.sanitize(editor, state.html);
+            RichTextEditor.applySelectionPaths(editor, state.selection);
+            // The surface is tidied the way afterChange tidies it, and the history moved to what that leaves, so the
+            // afterChange that reports the content records nothing and the redo steps stay.
+            RichTextEditor.stripEngineStyles(editor);
+            RichTextEditor.updateEmpty(editor);
+            history.replaceCurrent(RichTextEditor.historyState(editor));
+            RichTextEditor.reportHistory(editor);
+            return true;
+        }
+
+        private static reportHistory(editor: any) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history || !editor._dotNetRef) return;
+            const canUndo = history.canUndo;
+            const canRedo = history.canRedo;
+            const last = editor._historyReported;
+            if (last && last.canUndo === canUndo && last.canRedo === canRedo) return;
+            editor._historyReported = { canUndo, canRedo };
+            RichTextEditor.tellDotNet(editor, 'OnHistoryChanged', canUndo, canRedo);
+        }
+
+        // A range inside root, as the paths of child indexes from root that applySelectionPaths puts back.
+        private static selectionPaths(root: Node, range: Range): any {
+            const start = RichTextEditor.pathOf(root, range.startContainer);
+            const end = RichTextEditor.pathOf(root, range.endContainer);
+            if (!start || !end) return null;
+            return { start, startOffset: range.startOffset, end, endOffset: range.endOffset };
+        }
+
+        private static pathOf(root: Node, node: Node): number[] | null {
+            const steps: number[] = [];
+            for (let n: Node | null = node; n !== root; n = n.parentNode) {
+                if (!n || !n.parentNode) return null;
+                steps.unshift(Array.prototype.indexOf.call(n.parentNode.childNodes, n));
+            }
+            return steps;
+        }
+
+        private static nodeAtPath(root: Node, steps: number[]): Node | null {
+            let node: Node = root;
+            for (const index of steps) {
+                const child = node.childNodes[index];
+                if (!child) return null;
+                node = child;
+            }
+            return node;
+        }
+
+        // Puts a selection taken by selectionPaths back, as far as the markup it was taken on still has the nodes it
+        // names: a path that runs out stops at the deepest node it reaches, and an offset is held inside that node.
+        private static applySelectionPaths(editor: any, paths: any) {
+            const resolve = (steps: number[], offset: number): [Node, number] => {
+                let node: Node = editor;
+                for (const index of steps) {
+                    const child = node.childNodes[Math.min(index, node.childNodes.length - 1)];
+                    if (!child) break;
+                    node = child;
+                }
+                const max = node.nodeType === 3 ? (node.nodeValue || '').length : node.childNodes.length;
+                return [node, Math.max(0, Math.min(offset, max))];
+            };
+            const sel = document.getSelection();
+            if (!sel) return;
+            const range = document.createRange();
+            try {
+                if (paths) {
+                    const [startNode, startOffset] = resolve(paths.start, paths.startOffset);
+                    const [endNode, endOffset] = resolve(paths.end, paths.endOffset);
+                    range.setStart(startNode, startOffset);
+                    range.setEnd(endNode, endOffset);
+                } else {
+                    range.selectNodeContents(editor);
+                    range.collapse(false);
+                }
+            } catch {
+                range.selectNodeContents(editor);
+                range.collapse(false);
+            }
+            if (document.activeElement === editor) {
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+            editor._range = range.cloneRange();
         }
 
         // ====================================================================
@@ -3109,6 +3349,9 @@
         private static afterChange(editor: any) {
             RichTextEditor.stripEngineStyles(editor);
             RichTextEditor.updateEmpty(editor);
+            // A command, a paste or an input rule is one step: what was typed before it is committed first, then the
+            // result. After an undo or a redo the state is the one just shown, so nothing is recorded.
+            RichTextEditor.historyRecord(editor);
             if (!editor._dotNetRef) return;
             RichTextEditor.tellDotNet(editor, 'OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
             RichTextEditor.reportState(editor);

@@ -330,6 +330,18 @@ public partial class BitRichTextEditorDemo
     [
         new()
         {
+            Name = "CanRedo",
+            Type = "bool",
+            Description = "Whether there is an undone edit to redo; any new edit clears it."
+        },
+        new()
+        {
+            Name = "CanUndo",
+            Type = "bool",
+            Description = "Whether there is an edit to undo, text typed since the last step included. The editor keeps its own history, which UndoAsync, Ctrl+Z and the toolbar's Undo button go by."
+        },
+        new()
+        {
             Name = "CharacterCount",
             Type = "int",
             Description = "The plain-text character count of the current content, as the count footer and MaxLength count it."
@@ -418,7 +430,7 @@ public partial class BitRichTextEditorDemo
         {
             Name = "UndoAsync",
             Type = "Task",
-            Description = "Undoes the last edit."
+            Description = "Undoes the last edit: a command, a paste, a word typed or a value set after the first edit."
         },
         new()
         {

@@ -1152,10 +1152,14 @@ public class BitRichTextEditorE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        var buttons = Page.Locator("#rte-basic .bit-rte-tlb").Locator("button, select");
-        var stops = await buttons.EvaluateAllAsync<string[]>("els => els.map(e => String(e.getAttribute('tabindex')))");
+        var controls = Page.Locator("#rte-basic .bit-rte-tlb").Locator("button, select");
+        var stops = await controls.EvaluateAllAsync<string[]>("els => els.map(e => String(e.getAttribute('tabindex')))");
         Assert.AreEqual(1, stops.Count(t => t != "-1"), "the toolbar is not one tab stop");
-        Assert.AreNotEqual("-1", stops[0]);
+
+        // The arrows walk the enabled controls, and the stop is the first of them: Undo and Redo are disabled until
+        // there is something to undo or redo.
+        var buttons = Page.Locator("#rte-basic .bit-rte-tlb").Locator("button:not([disabled]), select:not([disabled])");
+        Assert.AreNotEqual("-1", await buttons.First.GetAttributeAsync("tabindex"));
 
         await buttons.First.FocusAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
@@ -1490,8 +1494,8 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(Surface("rte-rtl").Locator("[dir='ltr']")).ToHaveCountAsync(1);
         await Expect(Page.Locator("#rtl-value")).ToContainTextAsync("dir=\"ltr\"");
 
-        // The toolbar's arrows follow what is on screen.
-        var buttons = Page.Locator("#rte-rtl .bit-rte-tlb").Locator("button, select");
+        // The toolbar's arrows follow what is on screen, over the enabled controls (Redo is disabled here).
+        var buttons = Page.Locator("#rte-rtl .bit-rte-tlb").Locator("button:not([disabled]), select:not([disabled])");
         await buttons.First.FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
         await Expect(buttons.Nth(1)).ToBeFocusedAsync();
@@ -1576,5 +1580,96 @@ public class BitRichTextEditorE2ETests : E2ETestBase
 
         Assert.IsFalse(await IsCircuitDeadAsync());
         await AssertNoServerErrorsAsync();
+    }
+
+    [TestMethod]
+    public async Task History_TypingIsUndoneAWordAtATime_AndRedoneAgain()
+    {
+        await OpenAsync(Route);
+
+        var surface = Surface("rte-ext");
+        var undo = Btn("rte-ext", "Undo");
+        var redo = Btn("rte-ext", "Redo");
+        await Expect(undo).ToBeDisabledAsync();
+        await Expect(redo).ToBeDisabledAsync();
+
+        await CaretAtEndAsync("rte-ext");
+        await Page.Keyboard.TypeAsync(" one two");
+        await Expect(surface).ToContainTextAsync("two");
+        // Text typed and not yet closed by a space is already something to undo.
+        await Expect(undo).ToBeEnabledAsync();
+
+        await Page.Keyboard.PressAsync("Control+z");
+        await Expect(surface).Not.ToContainTextAsync("two");
+        await Expect(surface).ToContainTextAsync("one");
+        await Expect(Page.Locator("#ext-value")).Not.ToContainTextAsync("two");
+        await Expect(redo).ToBeEnabledAsync();
+
+        await Page.Keyboard.PressAsync("Control+z");
+        await Expect(surface).Not.ToContainTextAsync("one");
+
+        await redo.ClickAsync();
+        await Expect(surface).ToContainTextAsync("one");
+        await Page.Keyboard.PressAsync("Control+y");
+        await Expect(surface).ToContainTextAsync("two");
+        await Expect(redo).ToBeDisabledAsync();
+    }
+
+    [TestMethod]
+    public async Task History_ANewEditAfterAnUndo_ClearsTheRedoSteps()
+    {
+        await OpenAsync(Route);
+
+        await CaretAtEndAsync("rte-ext");
+        await Btn("rte-ext", "Horizontal rule").ClickAsync();
+        await Expect(Surface("rte-ext").Locator("hr")).ToHaveCountAsync(1);
+
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await Expect(Surface("rte-ext").Locator("hr")).ToHaveCountAsync(0);
+        await Expect(Btn("rte-ext", "Redo")).ToBeEnabledAsync();
+
+        await CaretAtEndAsync("rte-ext");
+        await Page.Keyboard.TypeAsync("x");
+        await Expect(Btn("rte-ext", "Redo")).ToBeDisabledAsync();
+    }
+
+    [TestMethod]
+    public async Task History_AnInputRuleIsUndoneBackToTheTextAsTyped()
+    {
+        await OpenAsync(Route);
+
+        var surface = Surface("rte-typing");
+        await surface.ClickAsync();
+        await Page.Keyboard.TypeAsync("**bold**");
+        await Expect(surface.Locator("strong")).ToHaveTextAsync("bold");
+
+        await Page.Keyboard.PressAsync("Control+z");
+        await Expect(surface.Locator("strong")).ToHaveCountAsync(0);
+        await Expect(surface).ToContainTextAsync("**bold**");
+
+        await Page.Keyboard.PressAsync("Control+y");
+        await Expect(surface.Locator("strong")).ToHaveTextAsync("bold");
+    }
+
+    [TestMethod]
+    public async Task History_TheBrowsersOwnUndoAndRedoReachTheEditorsHistory()
+    {
+        await OpenAsync(Route);
+
+        var surface = Surface("rte-ext");
+        await CaretAtEndAsync("rte-ext");
+        await Btn("rte-ext", "Horizontal rule").ClickAsync();
+        await Expect(surface.Locator("hr")).ToHaveCountAsync(1);
+
+        // What the browser's Edit menu, a gesture or an assistive tool raises: the editor takes it, the native stack never
+        // runs.
+        const string Raise = "(e, type) => e.dispatchEvent(new InputEvent('beforeinput', { inputType: type, cancelable: true, bubbles: true }))";
+        await surface.EvaluateAsync(Raise, "historyUndo");
+        await Expect(surface.Locator("hr")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#ext-value")).Not.ToContainTextAsync("<hr>");
+
+        await surface.EvaluateAsync(Raise, "historyRedo");
+        await Expect(surface.Locator("hr")).ToHaveCountAsync(1);
+        await Expect(Page.Locator("#ext-value")).ToContainTextAsync("<hr>");
     }
 }
