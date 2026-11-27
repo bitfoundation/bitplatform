@@ -18,7 +18,26 @@ only in this file.
 
 ## 11.0.0
 
-### `BitRichTextEditor` writes its alignment itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitRichTextEditor` writes its links, colors and fonts itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+Insert link, Remove link, the text and highlight colors, the font family and the font size no longer run the browser's
+`document.execCommand`. The editor edits the markup itself, so each one leaves the same markup in every browser. Nothing
+is renamed. What an app can notice:
+
+- **A link is one anchor per block** around what is selected, with the formatting inside it
+  (`<a href="..."><b>alpha</b> beta</a>`), where the browsers could write one anchor per formatted piece. A link the
+  selection reaches into is replaced there by the new one, and keeps its address on the text outside the selection.
+- **Remove link removes every link the selection touches, whole**, not only the selected part of it.
+- **A color or a font is a `<span style="...">`** around the outermost elements the selection holds all of
+  (`<span style="color: rgb(255, 0, 0)"><b>alpha</b> beta</span>`), and inside a link rather than around it. A new
+  value replaces the old one on the selected text, and the span is split around it. No browser writes `<font>` any more,
+  and the font size is written as the CSS length the toolbar offers, never through the 1-7 scale. A value that is not
+  a valid color or size for CSS changes nothing.
+- **A color or a font picked at a caret** styles the text typed there next, the same way in every browser.
+- **The toolbar reads the colors and fonts as they are laid out** where the selection starts. The highlight is the
+  nearest background painted inside the editor.
+
+### `BitRichTextEditor` writes its alignment itself ([#15500](https://github.com/bitfoundation/bitplatform/issues/15500))
 
 Align left, Align center, Align right and Justify no longer run the browser's `document.execCommand`. The editor sets
 the alignment on the touched blocks itself, so each button leaves the same markup in every browser. Nothing is

@@ -7,7 +7,9 @@
     // keeps no state: the editor script owns the selection, the history and the marks pending at a caret.
     //
     // A mark is read in every spelling it has (b and strong are both bold), and written in the one the toolbar has
-    // always written (b, i, u, strike, sub, sup, code), so content saved by an earlier version keeps its markup.
+    // always written (b, i, u, strike, sub, sup, code), so content saved by an earlier version keeps its markup. The
+    // colors and fonts are styles split and joined the same way, each on a span (<span style="color: red">), and a
+    // link is one anchor per block around what it links.
 
     export type BitRichTextEditorMark =
         'bold' | 'italic' | 'underline' | 'strikeThrough' | 'subscript' | 'superscript' | 'inlineCode';
@@ -116,8 +118,9 @@
 
         // Types text at a collapsed range with marks switched on (true) or off (false) for it - the marks a toolbar
         // button or a shortcut set at the caret before anything was typed. The text goes into a node of its own,
-        // wrapped in the marks turned on and taken out of the ones turned off. Returns the caret after it.
-        public static insertText(root: Node, range: Range, text: string, marks: { [mark: string]: boolean }): Range | null {
+        // wrapped in the marks turned on and taken out of the ones turned off, and in a span of the styles set there.
+        // Returns the caret after it.
+        public static insertText(root: Node, range: Range, text: string, marks: { [mark: string]: boolean }, styles?: { [property: string]: string }): Range | null {
             if (!range.collapsed || !text || !root.contains(range.startContainer)) return null;
             const node = document.createTextNode(text);
             const container = range.startContainer;
@@ -136,6 +139,7 @@
                 if (marks[name]) BitRichTextEditorMarks.markText(root, node, name);
                 else BitRichTextEditorMarks.unmarkText(root, node, name);
             }
+            if (styles && Object.keys(styles).length > 0) BitRichTextEditorMarks.wrapStyled(node, styles);
 
             const caret = document.createRange();
             caret.setStart(node, node.length);
@@ -170,6 +174,215 @@
                     return range;
                 }
                 seen = next;
+            }
+            return null;
+        }
+
+        // ---- styles ----
+
+        // The styles the color and font commands write, each on a span of its own: color, background-color,
+        // font-family and font-size.
+        public static readonly STYLES = ['color', 'background-color', 'font-family', 'font-size'];
+
+        // The value as the browser writes it into a style (a color comes back as rgb()), or '' when it is not a valid
+        // value of the property.
+        public static styleValue(property: string, value: string): string {
+            if (!BitRichTextEditorMarks.STYLES.includes(property) || !value) return '';
+            const probe = document.createElement('span');
+            probe.style.setProperty(property, value);
+            return probe.style.getPropertyValue(property);
+        }
+
+        // Paints every text of the range with the style (value), or takes the style off every one (null). The style
+        // comes off what painted the texts before - an inline element the range covers part of is split around them,
+        // and any element the range holds all the text of loses it - and a value goes on a span around each text,
+        // the spans side by side then joined. Returns the range the selection should then cover, or null.
+        public static applyStyle(root: Node, range: Range, property: string, value: string | null): Range | null {
+            if (range.collapsed || !BitRichTextEditorMarks.STYLES.includes(property)) return null;
+            const texts = BitRichTextEditorMarks.split(root, range);
+            if (texts.length === 0) return null;
+            const inRange = new Set<Node>(texts);
+
+            const around = new Set<HTMLElement>();
+            for (const t of texts) {
+                for (let n = t.parentNode; n && n !== root; n = n.parentNode) around.add(n as HTMLElement);
+            }
+            around.forEach(el => {
+                if (!el.isConnected || !BitRichTextEditorMarks.paints(el, property)) return;
+                if (BitRichTextEditorMarks.textsOf(el).every(t => inRange.has(t))) BitRichTextEditorMarks.unpaint(el, property);
+            });
+            for (const t of texts) {
+                for (let el = BitRichTextEditorMarks.paintOf(root, t, property); el; el = BitRichTextEditorMarks.paintOf(root, t, property)) {
+                    BitRichTextEditorMarks.unpaint(BitRichTextEditorMarks.isolate(el, t), property);
+                }
+            }
+
+            // The span goes inside a link, whose own color would otherwise win over it.
+            if (value) {
+                for (const top of BitRichTextEditorMarks.outermostOf(root, texts, el => el.nodeName !== 'A')) {
+                    if (top.nodeName === 'SPAN' && Array.from((top as Element).attributes).every(a => a.name === 'style')) {
+                        (top as HTMLElement).style.setProperty(property, value);
+                    } else {
+                        BitRichTextEditorMarks.wrapStyled(top, { [property]: value });
+                    }
+                }
+            }
+
+            BitRichTextEditorMarks.tidy(root, texts);
+            return BitRichTextEditorMarks.cover(texts);
+        }
+
+        // The outermost nodes holding the units and nothing else, each once and in order: a unit, or the inline element
+        // around it whose every text and image is a unit, as far up as the elements let it go (through) and short of a
+        // block.
+        private static outermostOf(root: Node, units: Node[], through: (el: Element) => boolean): Node[] {
+            const inRange = new Set<Node>(units);
+            const covered = (el: Element) => {
+                const parts: Node[] = [...BitRichTextEditorMarks.textsOf(el), ...Array.from(el.querySelectorAll('img'))];
+                return parts.length > 0 && parts.every(p => inRange.has(p));
+            };
+            const tops: Node[] = [];
+            for (const unit of units) {
+                let top: Node = unit;
+                for (let p = top.parentNode; p && p !== root && p.nodeType === 1 && !BitRichTextEditorMarks.BLOCK.test(p.nodeName)
+                    && through(p as Element) && covered(p as Element); p = p.parentNode) {
+                    top = p;
+                }
+                if (!tops.includes(top)) tops.push(top);
+            }
+            return tops;
+        }
+
+        // The style at a position, as the toolbar shows it: the computed value on the element there. The background is
+        // the nearest one painted below root, and '' where none is.
+        public static styleAt(root: Node, range: Range, property: string): string {
+            // A selection reads its first text, which a selection starting at the very end of the text before it is not.
+            const first = range.collapsed ? null : BitRichTextEditorMarks.textsIn(root, range)[0];
+            const at = first ? first.node : BitRichTextEditorMarks.caretNode(range);
+            let el: Node | null = at && at.nodeType === 3 ? at.parentNode : at;
+            if (!el || !root.contains(el) || el.nodeType !== 1) el = root;
+            if (property !== 'background-color') return getComputedStyle(el as Element).getPropertyValue(property);
+            for (let n: Node | null = el; n && n !== root; n = n.parentNode) {
+                if (n.nodeType !== 1) continue;
+                const value = getComputedStyle(n as Element).backgroundColor;
+                if (value && value !== 'transparent' && !/^rgba\(.*,\s*0\)$/.test(value)) return value;
+            }
+            return '';
+        }
+
+        private static paints(el: Element, property: string): boolean {
+            const style = (el as HTMLElement).style;
+            return !!style && (!!style.getPropertyValue(property)
+                || (property === 'background-color' && !!style.getPropertyValue('background')));
+        }
+
+        // The nearest inline element over the node that paints it with the style.
+        private static paintOf(root: Node, node: Node, property: string): HTMLElement | null {
+            for (let n: Node | null = node.parentNode; n && n !== root; n = n.parentNode) {
+                if (n.nodeType !== 1) continue;
+                if (BitRichTextEditorMarks.BLOCK.test(n.nodeName)) return null;
+                if (BitRichTextEditorMarks.paints(n as Element, property)) return n as HTMLElement;
+            }
+            return null;
+        }
+
+        // Takes the style off the element: the background shorthand with the background color, the style attribute once
+        // it is empty, and a span that held nothing but the style.
+        private static unpaint(el: HTMLElement, property: string) {
+            el.style.removeProperty(property);
+            if (property === 'background-color') el.style.removeProperty('background');
+            if (el.style.length > 0) return;
+            el.removeAttribute('style');
+            if (el.nodeName === 'SPAN' && el.attributes.length === 0) BitRichTextEditorMarks.unwrap(el);
+        }
+
+        private static wrapStyled(node: Node, styles: { [property: string]: string }) {
+            const span = document.createElement('span');
+            for (const property of Object.keys(styles)) span.style.setProperty(property, styles[property]);
+            node.parentNode!.insertBefore(span, node);
+            span.appendChild(node);
+        }
+
+        private static textsOf(el: Node): Text[] {
+            const out: Text[] = [];
+            const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+            for (let n = walker.nextNode() as Text | null; n; n = walker.nextNode() as Text | null) {
+                if (n.length > 0) out.push(n);
+            }
+            return out;
+        }
+
+        // ---- links ----
+
+        // Links what the range holds to one address: per block, one anchor around the selected inline content, put
+        // around the outermost elements the range holds all of (<a><b>al</b>pha</a>), and taking the place of the
+        // links that were there. Returns the range the selection should then cover, or null when nothing was linked.
+        public static link(root: Node, range: Range, href: string): Range | null {
+            if (range.collapsed || !href) return null;
+            const images = (Array.from((root as Element).querySelectorAll('img')) as HTMLElement[]).filter(img => {
+                const r = document.createRange();
+                r.selectNode(img);
+                return range.compareBoundaryPoints(Range.START_TO_START, r) <= 0 && range.compareBoundaryPoints(Range.END_TO_END, r) >= 0;
+            });
+            const units: Node[] = [...BitRichTextEditorMarks.split(root, range), ...images]
+                .sort((a, b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
+            if (units.length === 0) return null;
+            for (const unit of units) {
+                for (let a = BitRichTextEditorMarks.anchorOf(root, unit); a; a = BitRichTextEditorMarks.anchorOf(root, unit)) {
+                    BitRichTextEditorMarks.unwrap(BitRichTextEditorMarks.isolate(a, unit));
+                }
+            }
+
+            const made: HTMLElement[] = [];
+            for (const top of BitRichTextEditorMarks.outermostOf(root, units, () => true)) {
+                const a = document.createElement('a');
+                a.setAttribute('href', href);
+                top.parentNode!.insertBefore(a, top);
+                a.appendChild(top);
+                made.push(a);
+            }
+            for (const a of made) {
+                while (a.isConnected) {
+                    const next = a.nextSibling;
+                    if (!next || !made.includes(next as HTMLElement)) break;
+                    a.append(...Array.from(next.childNodes));
+                    (next as HTMLElement).remove();
+                }
+            }
+
+            const texts = units.filter(u => u.nodeType === 3) as Text[];
+            if (texts.length > 0) BitRichTextEditorMarks.tidy(root, texts);
+            const next = document.createRange();
+            const first = units[0], last = units[units.length - 1];
+            if (first.nodeType === 3) next.setStart(first, 0); else next.setStartBefore(first);
+            if (last.nodeType === 3) next.setEnd(last, (last as Text).length); else next.setEndAfter(last);
+            return next;
+        }
+
+        // Unwraps every link the range touches, whole; at a caret, the link it is in. Returns the range over the same
+        // text afterwards, or null when there was no link.
+        public static unlink(root: Node, range: Range): Range | null {
+            const anchors = range.collapsed
+                ? [BitRichTextEditorMarks.anchorOf(root, BitRichTextEditorMarks.caretNode(range) || range.startContainer)].filter(a => !!a) as HTMLElement[]
+                : (Array.from((root as Element).querySelectorAll('a')) as HTMLElement[]).filter(a => range.intersectsNode(a));
+            const own = BitRichTextEditorMarks.anchorOf(root, range.startContainer);
+            if (own && !anchors.includes(own)) anchors.push(own);
+            if (anchors.length === 0) return null;
+
+            const start = BitRichTextEditorMarks.textOffset(root, range.startContainer, range.startOffset);
+            const end = BitRichTextEditorMarks.textOffset(root, range.endContainer, range.endOffset);
+            anchors.forEach(a => BitRichTextEditorMarks.unwrap(a));
+
+            const next = BitRichTextEditorMarks.rangeAt(root, start, Math.max(end, start + 1))
+                || BitRichTextEditorMarks.rangeAt(root, Math.max(0, start - 1), start);
+            if (!next) return null;
+            if (end <= start) next.collapse(BitRichTextEditorMarks.rangeAt(root, start, start + 1) !== null);
+            return next;
+        }
+
+        private static anchorOf(root: Node, node: Node): HTMLElement | null {
+            for (let n: Node | null = node.nodeType === 1 ? node : node.parentNode; n && n !== root; n = n.parentNode) {
+                if (n.nodeName === 'A') return n as HTMLElement;
             }
             return null;
         }
