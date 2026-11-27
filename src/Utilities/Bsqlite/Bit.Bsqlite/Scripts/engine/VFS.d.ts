@@ -1,4 +1,4 @@
-﻿// Types for the vendored wa-sqlite VFS base class (engine/VFS.js, wa-sqlite v1.1.2), which every storage
+﻿// Types for the vendored wa-sqlite VFS base class (engine/VFS.js, wa-sqlite v1.2.0), which every storage
 // provider's VFS ultimately extends. The module is fetched and checksummed at restore, not compiled here.
 
 export * from './sqlite-constants.js';

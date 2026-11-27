@@ -1,4 +1,4 @@
-﻿// Types for the vendored wa-sqlite FacadeVFS (engine/FacadeVFS.js, wa-sqlite v1.1.2): the base class that
+﻿// Types for the vendored wa-sqlite FacadeVFS (engine/FacadeVFS.js, wa-sqlite v1.2.0): the base class that
 // turns SQLite's C callbacks into JavaScript-friendly j* methods, which a storage provider's VFS
 // overrides. The module is fetched and checksummed at restore, not compiled here.
 

@@ -318,7 +318,7 @@
             <details>
                 <summary>Is this a SQL engine written in JavaScript?</summary>
                 <p>
-                    No. It is SQLite 3.53 compiled to WebAssembly (wa-sqlite 1.1.2), running in a dedicated worker, and
+                    No. It is SQLite 3.53 compiled to WebAssembly (wa-sqlite 1.2.0), running in a dedicated worker, and
                     the SQL comes from the stock EF Core SQLite provider. SQL batches and result sets cross the worker
                     boundary as one binary buffer each, with 64-bit integers intact.
                 </p>
