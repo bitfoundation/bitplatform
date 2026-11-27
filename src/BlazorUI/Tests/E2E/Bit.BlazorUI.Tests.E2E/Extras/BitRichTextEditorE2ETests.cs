@@ -49,6 +49,54 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         return false;
     }", text);
 
+    // Selects from the start of the first text holding `from` to the end of the first text after it holding `to`, which
+    // may be in another node: a selection across marks and blocks.
+    private Task<bool> SelectAcrossAsync(string id, string from, string to) => Page.Locator($"#{id}").EvaluateAsync<bool>(@"(root, [from, to]) => {
+        const ed = root.querySelector('.bit-rte-edt');
+        ed.focus();
+        const walker = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT);
+        const r = document.createRange();
+        let started = false, n;
+        while ((n = walker.nextNode())) {
+            if (!started) {
+                const i = n.nodeValue.indexOf(from);
+                if (i < 0) continue;
+                r.setStart(n, i);
+                started = true;
+                const j = n.nodeValue.indexOf(to, i);
+                if (j >= 0) { r.setEnd(n, j + to.length); break; }
+                continue;
+            }
+            const j = n.nodeValue.indexOf(to);
+            if (j >= 0) { r.setEnd(n, j + to.length); break; }
+        }
+        if (!started || r.collapsed) return false;
+        const s = getSelection();
+        s.removeAllRanges();
+        s.addRange(r);
+        return true;
+    }", new[] { from, to });
+
+    // Puts markup into the surface the way a value set from .NET does, before anything is edited.
+    private Task SetHtmlAsync(string id, string html) => Surface(id).EvaluateAsync(
+        "(e, html) => BitBlazorUI.RichTextEditor.setHtml(e, html)", html);
+
+    // Waits for the surface to hold exactly this markup, less the marker comments Blazor rendered into it, and fails
+    // with what it holds instead.
+    private async Task ExpectMarkupAsync(string id, string html)
+    {
+        const string read = "e => { const c = e.cloneNode(true); const w = document.createTreeWalker(c, NodeFilter.SHOW_COMMENT); const all = []; let n; while ((n = w.nextNode())) all.push(n); all.forEach(x => x.remove()); return c.innerHTML; }";
+        try
+        {
+            await Surface(id).EvaluateAsync($"async (e, html) => {{ const read = {read}; for (let i = 0; i < 100; i++) {{ if (read(e) === html) return; await new Promise(r => setTimeout(r, 50)); }} throw new Error('timeout'); }}", html);
+        }
+        catch (PlaywrightException)
+        {
+            Assert.AreEqual(html, await Surface(id).EvaluateAsync<string>(read));
+            throw;
+        }
+    }
+
     private Task SelectElementAsync(string id, string selector) => Page.Locator($"#{id}").EvaluateAsync(@"(root, selector) => {
         const ed = root.querySelector('.bit-rte-edt');
         ed.focus();
@@ -233,6 +281,94 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await button.ClickAsync();
         await Expect(Surface("rte-ext").Locator(tag)).ToHaveCountAsync(0);
         await Expect(button).ToHaveAttributeAsync("aria-pressed", "false");
+    }
+
+    // The marks are the editor's own DOM edits rather than the engines' execCommand, so each one leaves exactly this
+    // markup in Chromium, Firefox and WebKit alike.
+    [TestMethod]
+    [DataRow("Bold", "<p>alpha beta gamma</p>", "beta", "beta", "<p>alpha <b>beta</b> gamma</p>")]
+    [DataRow("Bold", "<p>alpha <i>beta</i> gamma</p>", "pha", "be", "<p>al<b>pha </b><i><b>be</b>ta</i> gamma</p>")]
+    [DataRow("Bold", "<p><b>alpha beta gamma</b></p>", "beta", "beta", "<p><b>alpha </b>beta<b> gamma</b></p>")]
+    [DataRow("Bold", "<p><strong>alpha beta</strong> gamma</p>", "beta", "beta", "<p><strong>alpha </strong>beta gamma</p>")]
+    [DataRow("Bold", "<p><b>alpha</b> beta</p>", "alpha", "beta", "<p><b>alpha beta</b></p>")]
+    [DataRow("Italic", "<p>alpha</p><p>beta</p>", "pha", "be", "<p>al<i>pha</i></p><p><i>be</i>ta</p>")]
+    [DataRow("Underline", "<p>alpha beta gamma</p>", "beta", "beta", "<p>alpha <u>beta</u> gamma</p>")]
+    [DataRow("Strikethrough", "<p><s>alpha beta</s></p>", "alpha", "alpha", "<p>alpha<s> beta</s></p>")]
+    [DataRow("Subscript", "<p>x<sup>2</sup></p>", "2", "2", "<p>x<sub>2</sub></p>")]
+    [DataRow("Superscript", "<p>alpha beta gamma</p>", "beta", "beta", "<p>alpha <sup>beta</sup> gamma</p>")]
+    [DataRow("Inline code", "<p>alpha <code>beta</code> gamma</p>", "beta", "beta", "<p>alpha beta gamma</p>")]
+    [DataRow("Clear formatting", "<p><b>al<a href=\"https://example.com/\">pha</a></b> <span style=\"color: red\">beta</span> <u><i>gamma</i></u></p>", "al", "gamma", "<p>al<a href=\"https://example.com/\">pha</a> beta gamma</p>")]
+    public async Task Marks_EachCommand_WritesTheSameMarkupInEveryEngine(string label, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        await Btn("rte-ext", label).ClickAsync();
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+        // A mark is one step.
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", start);
+    }
+
+    [TestMethod]
+    public async Task Marks_AppliedAgainOverTheSelection_ComeOffTheSameText()
+    {
+        await OpenAsync(Route);
+
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", "pha", "be"));
+        await Btn("rte-ext", "Bold").ClickAsync();
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>al<b>pha be</b>ta gamma</p>");
+        // The selection stays on what was marked, so the same button takes it off again.
+        await Expect(Btn("rte-ext", "Bold")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Btn("rte-ext", "Bold").ClickAsync();
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha beta gamma</p>");
+        await Expect(Btn("rte-ext", "Bold")).ToHaveAttributeAsync("aria-pressed", "false");
+    }
+
+    [TestMethod]
+    public async Task Marks_SetAtACaret_ApplyToTheTextTypedThere()
+    {
+        await OpenAsync(Route);
+
+        var bold = Btn("rte-ext", "Bold");
+        await CaretAtEndAsync("rte-ext");
+        await bold.ClickAsync();
+        await Expect(bold).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Btn("rte-ext", "Undo")).ToBeDisabledAsync();
+
+        await Page.Keyboard.TypeAsync("XY");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha beta gamma<b>XY</b></p>");
+
+        // Turned off at the caret, the text typed next is out of the mark again.
+        await bold.ClickAsync();
+        await Expect(bold).ToHaveAttributeAsync("aria-pressed", "false");
+        await Page.Keyboard.TypeAsync("Z");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha beta gamma<b>XY</b>Z</p>");
+
+        // A mark set at a caret is gone once the caret moves.
+        await Btn("rte-ext", "Italic").ClickAsync();
+        await Expect(Btn("rte-ext", "Italic")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Btn("rte-ext", "Italic")).ToHaveAttributeAsync("aria-pressed", "false");
+        await Page.Keyboard.TypeAsync("W");
+        await Expect(Surface("rte-ext").Locator("i")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Marks_TheBrowsersOwnFormatInput_RunsTheEditorsCommand()
+    {
+        await OpenAsync(Route);
+
+        Assert.IsTrue(await SelectTextAsync("rte-ext", "beta"));
+        await Surface("rte-ext").EvaluateAsync(
+            "e => e.dispatchEvent(new InputEvent('beforeinput', { inputType: 'formatItalic', bubbles: true, cancelable: true }))");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha <i>beta</i> gamma</p>");
+        await Expect(Btn("rte-ext", "Italic")).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
     [TestMethod]
