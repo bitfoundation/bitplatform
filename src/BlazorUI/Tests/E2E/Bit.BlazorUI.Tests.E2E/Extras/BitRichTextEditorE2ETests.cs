@@ -429,6 +429,80 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(tasks).ToHaveAttributeAsync("data-checked", "true");
     }
 
+    // The lists and their indentation are the editor's own DOM edits rather than the engines' execCommand, so each one
+    // leaves exactly this markup in Chromium, Firefox and WebKit alike.
+    [TestMethod]
+    [DataRow("Bullet list", "<p>alpha</p><p>beta</p>", "alpha", "beta", "<ul><li>alpha</li><li>beta</li></ul>")]
+    [DataRow("Numbered list", "<p dir=\"rtl\">alpha</p>", "alpha", "alpha", "<ol><li dir=\"rtl\">alpha</li></ol>")]
+    [DataRow("Bullet list", "<ul><li>alpha</li><li>beta</li><li>gamma</li></ul>", "beta", "beta", "<ul><li>alpha</li></ul><p>beta</p><ul><li>gamma</li></ul>")]
+    [DataRow("Numbered list", "<ul><li>alpha</li><li>beta</li></ul>", "alpha", "alpha", "<ol><li>alpha</li><li>beta</li></ol>")]
+    [DataRow("Numbered list", "<ul class=\"bit-rte-tasks\"><li data-checked=\"true\">alpha</li></ul>", "alpha", "alpha", "<ol><li>alpha</li></ol>")]
+    [DataRow("Bullet list", "<ul><li>alpha</li></ul><p>beta</p>", "beta", "beta", "<ul><li>alpha</li><li>beta</li></ul>")]
+    [DataRow("Bullet list", "<h2>alpha</h2>", "alpha", "alpha", "<ul><li><h2>alpha</h2></li></ul>")]
+    [DataRow("Increase indent", "<ul><li>alpha</li><li>beta</li><li>gamma</li></ul>", "beta", "gamma", "<ul><li>alpha<ul><li>beta</li><li>gamma</li></ul></li></ul>")]
+    [DataRow("Increase indent", "<ul><li>alpha</li><li>beta</li></ul>", "alpha", "alpha", "<ul><li>alpha</li><li>beta</li></ul>")]
+    [DataRow("Decrease indent", "<ul><li>alpha<ul><li>beta</li><li>gamma</li></ul></li></ul>", "beta", "beta", "<ul><li>alpha</li><li>beta<ul><li>gamma</li></ul></li></ul>")]
+    [DataRow("Decrease indent", "<ul><li>alpha</li><li>beta</li></ul>", "alpha", "alpha", "<p>alpha</p><ul><li>beta</li></ul>")]
+    public async Task Lists_EachCommand_WritesTheSameMarkupInEveryEngine(string control, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        await Btn("rte-ext", control).ClickAsync();
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        if (expected != start)
+        {
+            await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+            // A list command is one step.
+            await Btn("rte-ext", "Undo").ClickAsync();
+            await ExpectMarkupAsync("rte-ext", start);
+        }
+    }
+
+    [TestMethod]
+    public async Task Lists_TheToolbarFollowsTheListAtTheCaret()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", "<ol><li>alpha</li></ol><ul><li>beta</li></ul><ul class=\"bit-rte-tasks\"><li data-checked=\"false\">gamma</li></ul>");
+        await SelectTextAsync("rte-ext", "alpha");
+        await Expect(Btn("rte-ext", "Numbered list")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Btn("rte-ext", "Bullet list")).ToHaveAttributeAsync("aria-pressed", "false");
+        await SelectTextAsync("rte-ext", "beta");
+        await Expect(Btn("rte-ext", "Bullet list")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Btn("rte-ext", "Numbered list")).ToHaveAttributeAsync("aria-pressed", "false");
+        await SelectTextAsync("rte-ext", "gamma");
+        await Expect(Btn("rte-ext", "Task list")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Btn("rte-ext", "Bullet list")).ToHaveAttributeAsync("aria-pressed", "false");
+    }
+
+    [TestMethod]
+    public async Task Indent_OutsideAList_StepsTheMarginOnTheStartingSide()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", "<p>alpha</p><p dir=\"rtl\">beta</p>");
+        await SelectAcrossAsync("rte-ext", "alpha", "beta");
+        await Btn("rte-ext", "Increase indent").ClickAsync();
+        await Expect(Surface("rte-ext").Locator("p").First).ToHaveCSSAsync("margin-left", "40px");
+        await Expect(Surface("rte-ext").Locator("p").Last).ToHaveCSSAsync("margin-right", "40px");
+        await Expect(Page.Locator("#ext-value")).ToContainTextAsync("<p style=\"margin-left: 40px\">alpha</p>");
+
+        await SelectAcrossAsync("rte-ext", "alpha", "beta");
+        await Btn("rte-ext", "Increase indent").ClickAsync();
+        await Expect(Surface("rte-ext").Locator("p").First).ToHaveCSSAsync("margin-left", "80px");
+
+        await SelectAcrossAsync("rte-ext", "alpha", "beta");
+        await Btn("rte-ext", "Decrease indent").ClickAsync();
+        await SelectAcrossAsync("rte-ext", "alpha", "beta");
+        await Btn("rte-ext", "Decrease indent").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", "<p>alpha</p><p dir=\"rtl\">beta</p>");
+    }
+
     [TestMethod]
     public async Task Indent_NestsAListItem_AndOutdentBringsItBack()
     {

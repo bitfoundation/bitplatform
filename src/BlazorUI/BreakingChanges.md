@@ -18,6 +18,25 @@ only in this file.
 
 ## 11.0.0
 
+### `BitRichTextEditor` writes its lists and indentation itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+Bulleted and numbered lists, Increase indent and Decrease indent no longer run the browser's `document.execCommand`.
+The editor edits the markup itself, so each command leaves the same markup in every browser. Nothing is renamed. What
+an app can notice:
+
+- **A list is never put inside a paragraph.** Chromium and WebKit used to write `<p><ul>...</ul></p>`, which the editor
+  repaired on the way out. A list item holds its text directly (`<li>text</li>`), keeps the `style`, `dir` and `lang`
+  of the paragraph it was made from, and a list made next to a list of the same kind joins it.
+- **Turning a list item back into text splits the list around it**, so only the touched items leave the list. A
+  nested item comes out of every level. The other kind of list switches the whole list it is applied in, and a
+  checklist given another kind is no longer a checklist.
+- **A nested list goes inside the item before it** (`<li>one<ul><li>two</li></ul></li>`). Decrease indent brings an
+  item out one level, and out of the list at the top level.
+- **Indentation outside a list is a margin**: each step adds 40px of `margin-left` to the block (`margin-right` in a
+  right-to-left block), where the browsers used to wrap the block in a `<blockquote>` styled as an indent.
+- **The toolbar reads the list from the markup**: in a checklist only the checklist button is pressed, not the bullet
+  list button (`UnorderedList` is `false` in `BitRichTextEditorSelectionState` there).
+
 ### `BitRichTextEditor` writes its block formats itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 Paragraph, headings, code block and quote no longer run the browser's `document.execCommand('formatBlock')`. The editor

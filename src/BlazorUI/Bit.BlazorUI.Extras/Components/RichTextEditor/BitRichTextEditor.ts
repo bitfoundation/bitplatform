@@ -1717,6 +1717,16 @@
             switch (command) {
                 case 'formatBlock':
                     return RichTextEditor.applyBlockFormat(editor, args?.value ?? 'p');
+                case 'insertOrderedList':
+                case 'insertUnorderedList': {
+                    const kind = command === 'insertOrderedList' ? 'ol' : 'ul';
+                    if (!RichTextEditor.isTagAllowed(editor, kind) || !RichTextEditor.isTagAllowed(editor, 'li')) return false;
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.toggleList(editor, range, kind));
+                }
+                case 'indent':
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.indent(editor, range));
+                case 'outdent':
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.outdent(editor, range));
                 case 'foreColor':
                     return RichTextEditor.execNative(editor, 'foreColor', args?.value);
                 case 'backColor':
@@ -3421,6 +3431,7 @@
             const v = (c: string) => { try { return (document.queryCommandValue(c) || '').toString(); } catch { return ''; } };
             const selected = RichTextEditor.editorRange(editor);
             const block = selected ? BitRichTextEditorBlocks.blockState(editor, selected) : '';
+            const list = selected ? BitRichTextEditorBlocks.listState(editor, selected) : '';
 
             const link = RichTextEditor.linkAtSelection(editor);
             const rect = editor._quickToolbar ? RichTextEditor.selectionRect(editor) : null;
@@ -3432,8 +3443,9 @@
                 italic: RichTextEditor.markState(editor, 'italic'),
                 underline: RichTextEditor.markState(editor, 'underline'),
                 strikeThrough: RichTextEditor.markState(editor, 'strikeThrough'),
-                orderedList: q('insertOrderedList'),
-                unorderedList: q('insertUnorderedList'),
+                // A checklist is a list of its own kind on the toolbar, not a bulleted one.
+                orderedList: list === 'ol',
+                unorderedList: list === 'ul',
                 justifyLeft: q('justifyLeft'),
                 justifyCenter: q('justifyCenter'),
                 justifyRight: q('justifyRight'),
@@ -3691,9 +3703,14 @@
         private static applyBlockFormat(editor: any, value: string): boolean {
             const tag = String(value || 'p').replace(/[<>\s]/g, '').toLowerCase();
             if (!BitRichTextEditorBlocks.FORMATS.includes(tag) || !RichTextEditor.isTagAllowed(editor, tag)) return false;
+            return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.formatBlock(editor, range, tag));
+        }
+
+        // Runs an edit of BitRichTextEditorBlocks on the selection and selects what it returns.
+        private static applyBlocks(editor: any, change: (range: Range) => Range | null): boolean {
             const range = RichTextEditor.editorRange(editor);
             if (!range) return false;
-            const next = BitRichTextEditorBlocks.formatBlock(editor, range, tag);
+            const next = change(range);
             if (!next) return false;
             RichTextEditor.selectRange(editor, next);
             return true;
