@@ -18,7 +18,7 @@ only in this file.
 
 ## 11.0.0
 
-### `BitRichTextEditor` keeps its own undo history ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitRichTextEditor` keeps its own undo history ([#15490](https://github.com/bitfoundation/bitplatform/issues/15490))
 
 Undo and redo no longer go to the browser's native stack, which cannot follow the changes the editor makes to its
 content itself. The editor keeps its own history, and `UndoAsync`, `RedoAsync`, Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z, the

@@ -2809,6 +2809,8 @@
             let accepted = 0;
             let inserted = 0;
             const maxBytes = editor._maxImageBytes > 0 ? editor._maxImageBytes : RichTextEditor.MAX_IMAGE_BYTES;
+            // What was typed before the drop stays a step of its own, whatever is typed while the images are read.
+            RichTextEditor.historyCommit(editor);
             for (const file of files) {
                 if (accepted >= 20) {
                     RichTextEditor.reportClientError(editor, 'too-many-files', 'too-many-images', 'Only {0} images can be inserted per drop.', '20');
@@ -2847,6 +2849,8 @@
                 }
             }
             if (editor._notify) editor._notify();
+            // The images of one paste or drop are one step.
+            if (inserted > 0) RichTextEditor.historyRecord(editor);
             if (inserted > 0) RichTextEditor.tellDotNet(editor, 'OnImagesInserted', inserted);
         }
 
@@ -2921,6 +2925,7 @@
                     if (!RichTextEditor.linkAtSelection(editor)) {
                         RichTextEditor.dispatch(editor, 'createLink', { value: href });
                         if (editor._notify) editor._notify();
+                        RichTextEditor.historyRecord(editor);
                         return;
                     }
                 } else {
@@ -2946,7 +2951,10 @@
                 }
             }
             RichTextEditor.dispatch(editor, 'insertHtml', { html: toInsert });
+            // The paste or drop is a step of its own: the input events its command raised were part of the command
+            // (dispatch's _inCommand keeps them out of the typing run), so nothing else records it.
             if (editor._notify) editor._notify();
+            RichTextEditor.historyRecord(editor);
         }
 
         private static onDrop(editor: any, e: DragEvent) {
@@ -3145,10 +3153,67 @@
         // Undo history (BitRichTextEditorHistory holds the steps; this half reads and writes the DOM)
         // ====================================================================
 
-        // The state a step holds: the markup the editor would report (find highlights left out) and the selection as
-        // paths of child indexes from the surface, which still resolve once the markup is put back.
+        // The state a step holds: the markup the editor would report (cleanHtml's tidying: find highlights left out,
+        // loose inline content in paragraphs, adjacent text merged the way the markup parses back) and the selection as
+        // paths of child indexes into THAT markup, so they still resolve once it is put back. The selection is carried
+        // through the same tidying on a clone rather than read off the live surface, whose nodes the tidying moves,
+        // merges and drops - paths read there would land the caret elsewhere after an undo.
         private static historyState(editor: any): BitRichTextEditorHistoryState {
-            return { html: RichTextEditor.cleanHtml(editor), selection: RichTextEditor.selectionPaths(editor) };
+            const clone = editor.cloneNode(true) as HTMLElement;
+            const sel = document.getSelection();
+            const live = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+            // A boundary is held by a node the tidying moves but never rebuilds: a text node with its offset, or the
+            // child an element boundary sits before (after, at the end of the element).
+            const hold = (container: Node, offset: number): any => {
+                const steps = RichTextEditor.pathOf(editor, container);
+                if (!steps) return null;
+                const node = RichTextEditor.nodeAtPath(clone, steps);
+                if (!node) return null;
+                if (node.nodeType === 3) return { node, offset };
+                const child = node.childNodes[offset];
+                if (child) return { node: child, before: true };
+                return node.lastChild ? { node: node.lastChild, before: false } : { node, offset: 0 };
+            };
+            const inside = !!live && editor.contains(live.startContainer) && editor.contains(live.endContainer);
+            const start = inside ? hold(live!.startContainer, live!.startOffset) : null;
+            const end = inside ? hold(live!.endContainer, live!.endOffset) : null;
+
+            clone.querySelectorAll('mark.bit-rte-find').forEach((m: Element) => {
+                m.replaceWith(...Array.from(m.childNodes));
+            });
+            RichTextEditor.normalizeBlocks(clone, false);
+
+            const place = (held: any): [Node, number] | null => {
+                if (!held || !clone.contains(held.node)) return null;
+                if (held.before === undefined) return [held.node, held.offset];
+                const parent = held.node.parentNode;
+                if (!parent) return null;
+                return [parent, Array.prototype.indexOf.call(parent.childNodes, held.node) + (held.before ? 0 : 1)];
+            };
+            const from = place(start);
+            const to = place(end);
+            let range: Range | null = null;
+            if (from && to) {
+                try {
+                    range = document.createRange();
+                    range.setStart(from[0], from[1]);
+                    range.setEnd(to[0], to[1]);
+                } catch {
+                    range = null;
+                }
+            }
+            // A live range follows normalize() as it merges and drops text nodes.
+            clone.normalize();
+            return { html: clone.innerHTML, selection: range ? RichTextEditor.selectionPaths(clone, range) : null };
+        }
+
+        // Records the state the surface now shows as a step of its own: a command, a paste, a drop, an image insert.
+        // What was typed before it stays a step of its own (record commits it first).
+        private static historyRecord(editor: any) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history) return;
+            history.record(RichTextEditor.historyState(editor));
+            RichTextEditor.reportHistory(editor);
         }
 
         private static historyBeforeInput(editor: any, e: InputEvent) {
@@ -3189,7 +3254,10 @@
 
             RichTextEditor.removeResizeHandle(editor);
             editor._leaveMark = null;
-            editor.innerHTML = state.html;
+            // A step holds the markup as it was when recorded; the policy in force may have changed since, so what goes
+            // back into the live surface is sanitized against it like every other inbound markup, and replaceCurrent
+            // below moves the history to the sanitized result.
+            editor.innerHTML = RichTextEditor.sanitize(editor, state.html);
             RichTextEditor.applySelectionPaths(editor, state.selection);
             // The surface is tidied the way afterChange tidies it, and the history moved to what that leaves, so the
             // afterChange that reports the content records nothing and the redo steps stay.
@@ -3211,23 +3279,31 @@
             RichTextEditor.tellDotNet(editor, 'OnHistoryChanged', canUndo, canRedo);
         }
 
-        private static selectionPaths(editor: any): any {
-            const sel = document.getSelection();
-            if (!sel || sel.rangeCount === 0) return null;
-            const range = sel.getRangeAt(0);
-            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return null;
-            const path = (node: Node): number[] | null => {
-                const steps: number[] = [];
-                for (let n: Node | null = node; n && n !== editor; n = n.parentNode) {
-                    if (!n.parentNode) return null;
-                    steps.unshift(Array.prototype.indexOf.call(n.parentNode.childNodes, n));
-                }
-                return steps;
-            };
-            const start = path(range.startContainer);
-            const end = path(range.endContainer);
+        // A range inside root, as the paths of child indexes from root that applySelectionPaths puts back.
+        private static selectionPaths(root: Node, range: Range): any {
+            const start = RichTextEditor.pathOf(root, range.startContainer);
+            const end = RichTextEditor.pathOf(root, range.endContainer);
             if (!start || !end) return null;
             return { start, startOffset: range.startOffset, end, endOffset: range.endOffset };
+        }
+
+        private static pathOf(root: Node, node: Node): number[] | null {
+            const steps: number[] = [];
+            for (let n: Node | null = node; n !== root; n = n.parentNode) {
+                if (!n || !n.parentNode) return null;
+                steps.unshift(Array.prototype.indexOf.call(n.parentNode.childNodes, n));
+            }
+            return steps;
+        }
+
+        private static nodeAtPath(root: Node, steps: number[]): Node | null {
+            let node: Node = root;
+            for (const index of steps) {
+                const child = node.childNodes[index];
+                if (!child) return null;
+                node = child;
+            }
+            return node;
         }
 
         // Puts a selection taken by selectionPaths back, as far as the markup it was taken on still has the nodes it
@@ -3275,11 +3351,7 @@
             RichTextEditor.updateEmpty(editor);
             // A command, a paste or an input rule is one step: what was typed before it is committed first, then the
             // result. After an undo or a redo the state is the one just shown, so nothing is recorded.
-            const history = editor._history as BitRichTextEditorHistory | null;
-            if (history) {
-                history.record(RichTextEditor.historyState(editor));
-                RichTextEditor.reportHistory(editor);
-            }
+            RichTextEditor.historyRecord(editor);
             if (!editor._dotNetRef) return;
             RichTextEditor.tellDotNet(editor, 'OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
             RichTextEditor.reportState(editor);
