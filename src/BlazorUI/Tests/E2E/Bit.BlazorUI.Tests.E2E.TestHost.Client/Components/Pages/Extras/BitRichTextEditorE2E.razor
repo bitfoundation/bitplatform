@@ -184,8 +184,10 @@
     <button id="btn-api-redo" @onclick="() => _apiRef!.RedoAsync()">Redo</button>
     <button id="btn-api-select-all" @onclick="() => _apiRef!.SelectAllAsync()">SelectAll</button>
     <button id="btn-api-counts" @onclick="ReadCounts">Counts</button>
-    <BitRichTextEditor @ref="_apiRef" Id="rte-api" @bind-Value="_apiValue" DebounceMs="0" Height="6rem" />
+    <button id="btn-api-unknown" @onclick='() => _apiRef!.ExecuteCommandAsync("insertParagraph")'>Unknown command</button>
+    <BitRichTextEditor @ref="_apiRef" Id="rte-api" @bind-Value="_apiValue" DebounceMs="0" Height="6rem" OnError="e => _apiError = e.Code" />
     <pre id="api-result">@_apiResult</pre>
+    <span id="api-error">@_apiError</span>
     <pre id="api-value">@_apiValue</pre>
 </E2ESection>
 
@@ -295,6 +297,7 @@
     private BitRichTextEditor? _apiRef;
     private string? _apiValue = "<p>hello world</p>";
     private string? _apiResult;
+    private string? _apiError;
     private string? _rtlValue = "<p>سلام</p>";
     private bool _dialogOpen;
     private bool _mounted = true;

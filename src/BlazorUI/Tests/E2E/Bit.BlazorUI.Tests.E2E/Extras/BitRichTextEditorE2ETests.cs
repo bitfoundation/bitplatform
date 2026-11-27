@@ -748,6 +748,89 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await ExpectMarkupAsync("rte-ext", start);
     }
 
+    // Inserting is the editor's own DOM edit rather than the engines' insertHTML (which Blink restyled after the page's
+    // stylesheets and put a list inside the paragraph it went into), so each insert leaves exactly this markup in
+    // Chromium, Firefox and WebKit alike. The | in the expected markup is where the caret is left: a ! typed next lands
+    // there. (Behind a mark, the engines differ on whether typing goes on inside it, so that row has no |.)
+    [TestMethod]
+    [DataRow("<p>alpha beta</p>", "beta", "beta", "<b>x</b>", "<p>alpha <b>x</b></p>")]
+    [DataRow("<p>alpha beta</p>", "beta", "beta", "<p>one</p><p>two</p>", "<p>alpha </p><p>one</p><p>two|</p>")]
+    [DataRow("<p>alpha beta gamma</p>", "beta", "beta", "<ul><li>x</li></ul>", "<p>alpha </p><ul><li>x|</li></ul><p> gamma</p>")]
+    [DataRow("<p>alpha beta</p>", "beta", "beta", "lead<p>mid</p>trail", "<p>alpha lead</p><p>mid</p><p>trail|</p>")]
+    [DataRow("<p>alpha</p><p>beta</p>", "pha", "be", "X", "<p>alX|ta</p>")]
+    [DataRow("<h2>alpha beta</h2>", "alpha", "alpha", "<p>x</p>", "<p>x|</p><h2> beta</h2>")]
+    public async Task Insert_Markup_WritesTheSameMarkupInEveryEngine(string start, string from, string to, string html, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        await InsertHtmlAsync("rte-ext", html);
+
+        await ExpectMarkupAsync("rte-ext", expected.Replace("|", ""));
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected.Replace("|", ""));
+        if (!expected.Contains('|')) return;
+        await Page.Keyboard.TypeAsync("!");
+        await ExpectMarkupAsync("rte-ext", expected.Replace("|", "!"));
+    }
+
+    [TestMethod]
+    public async Task Insert_ARuleAtTheEndOfALine_LeavesAParagraphToTypeIn()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", "<p>alpha</p>");
+        await SelectTextAsync("rte-ext", "alpha");
+        await Page.Keyboard.PressAsync("End");
+        await Btn("rte-ext", "Horizontal rule").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", "<p>alpha</p><hr><p><br></p>");
+
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", "<p>alpha</p>");
+    }
+
+    // A paste goes through the same insertion: pasted paragraphs split the one they go into.
+    [TestMethod]
+    public async Task Paste_Paragraphs_SplitTheParagraphTheyGoInto()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", "<p>alpha beta gamma</p>");
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", "beta", "beta"));
+        await Surface("rte-ext").EvaluateAsync(@"e => {
+            const data = new DataTransfer();
+            data.setData('text/html', '<p>one</p><p>two</p>');
+            data.setData('text/plain', 'one\ntwo');
+            // Firefox ignores the clipboardData a script hands a ClipboardEvent, so the data goes on as a property.
+            const paste = new Event('paste', { bubbles: true, cancelable: true });
+            Object.defineProperty(paste, 'clipboardData', { value: data });
+            e.dispatchEvent(paste);
+        }");
+
+        await ExpectMarkupAsync("rte-ext", "<p>alpha </p><p>one</p><p>two</p><p> gamma</p>");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha </p><p>one</p><p>two</p><p> gamma</p>");
+    }
+
+    // Every command is the editor's own, so a name it does not know reaches the browser no more: it is refused, and
+    // the app hears of it through OnError.
+    [TestMethod]
+    public async Task Commands_AnUnknownName_IsRefusedThroughOnError()
+    {
+        await OpenAsync(Route);
+
+        await Surface("rte-api").ClickAsync();
+        await Page.Locator("#btn-api-unknown").ClickAsync();
+        await Expect(Page.Locator("#api-error")).ToHaveTextAsync("command-failed");
+        await ExpectMarkupAsync("rte-api", "<p>hello world</p>");
+    }
+
+    // Inserts markup at the selection through the bridge InsertHtmlAsync calls, with the selection as the editor's own.
+    private Task InsertHtmlAsync(string id, string html) => Surface(id).EvaluateAsync(@"(e, html) => {
+        e._range = getSelection().getRangeAt(0).cloneRange();
+        BitBlazorUI.RichTextEditor.insertHtml(e, html);
+    }", html);
+
     [TestMethod]
     public async Task Direction_SetsTheDirectionOfTheBlock()
     {

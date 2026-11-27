@@ -18,7 +18,28 @@ only in this file.
 
 ## 11.0.0
 
-### `BitRichTextEditor` writes its links, colors and fonts itself ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitRichTextEditor` inserts content itself, and refuses a command name it does not know ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+Paste, drop, `InsertHtmlAsync`, `InsertTextAsync`, images, tables, media, the horizontal rule, a link inserted at a
+caret, the emoji picker and the input rules no longer run the browser's `document.execCommand`. The editor edits the
+markup itself, so each insert leaves the same markup in every browser, and no command of the editor goes to the browser
+any more. What an app can notice:
+
+- **`ExecuteCommandAsync` refuses a name the editor does not have.** Such a name used to reach `execCommand`, so one the
+  editor never offered (`"selectAll"`, `"copy"`, `"insertParagraph"`, `"delete"`) did whatever the browser made of it.
+  Now it changes nothing and raises `OnError` with the `command-failed` code. The names the toolbar and the shortcuts
+  use, `"undo"` and `"redo"`, and `"formatBlock"` with a tag as the value all work as before; for selecting
+  everything, call `SelectAllAsync`.
+- **Inserted blocks split the paragraph or heading they go into**: two pasted paragraphs in the middle of a line leave
+  the text before them, the paragraphs, and the text after them as blocks side by side. Chromium and WebKit used to put a
+  pasted list inside the paragraph (`<p><ul>`), which the editor repaired on the way out; that repair is gone.
+- **Inserted markup keeps its own attributes.** Chromium used to bake what the page's stylesheets made the inserted
+  elements look like into their `style` attributes (the page's font, `display: inline`), which the editor then took back
+  out.
+- **A selection across paragraphs is replaced by one paragraph**, the two halves joined around what was inserted.
+- **A horizontal rule at the end of a line is followed by an empty paragraph** with the caret in it, in every browser.
+
+### `BitRichTextEditor` writes its links, colors and fonts itself ([#15501](https://github.com/bitfoundation/bitplatform/issues/15501))
 
 Insert link, Remove link, the text and highlight colors, the font family and the font size no longer run the browser's
 `document.execCommand`. The editor edits the markup itself, so each one leaves the same markup in every browser. Nothing
