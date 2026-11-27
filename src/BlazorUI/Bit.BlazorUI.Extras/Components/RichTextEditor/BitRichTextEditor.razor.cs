@@ -891,9 +891,11 @@ public partial class BitRichTextEditor : BitComponentBase
         // focus in the editor.
         await FocusSlashIfPendingAsync();
         await FocusMentionIfPendingAsync();
-        await FocusPanelIfPendingAsync();
+        // A grid's arrow keys are wired before the focus goes into it: a key pressed as soon as the focus shows would
+        // otherwise reach the grid before its keys do anything.
         await EnableEmojiGridIfPendingAsync();
         await EnableColorGridIfPendingAsync();
+        await FocusPanelIfPendingAsync();
         await FocusEditorIfPendingAsync();
     }
 

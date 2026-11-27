@@ -470,6 +470,53 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(Btn("rte-ext", "Code block")).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
+    // The block formats are the editor's own DOM edits rather than the engines' formatBlock, so each one leaves exactly
+    // this markup in Chromium, Firefox and WebKit alike. A format is picked from the paragraph format list, or with the
+    // toolbar button `control` names.
+    [TestMethod]
+    [DataRow("h2", "", "<p>alpha beta gamma</p>", "beta", "beta", "<h2>alpha beta gamma</h2>")]
+    [DataRow("h1", "", "<p dir=\"rtl\">alpha</p><p style=\"text-align: center\">beta</p>", "pha", "be", "<h1 dir=\"rtl\">alpha</h1><h1 style=\"text-align: center\">beta</h1>")]
+    [DataRow("pre", "", "<p>alpha <b>beta</b></p>", "alpha", "alpha", "<pre>alpha <b>beta</b></pre>")]
+    [DataRow("p", "", "<pre>one\ntwo</pre>", "one", "one", "<p>one<br>two</p>")]
+    [DataRow("blockquote", "", "<p>alpha</p><p>beta</p><p>gamma</p>", "beta", "beta", "<p>alpha</p><blockquote><p>beta</p></blockquote><p>gamma</p>")]
+    [DataRow("blockquote", "", "<p>alpha</p><p>beta</p><p>gamma</p>", "alpha", "beta", "<blockquote><p>alpha</p><p>beta</p></blockquote><p>gamma</p>")]
+    [DataRow("", "Block quote", "<blockquote><p>alpha</p><p>beta</p><p>gamma</p></blockquote>", "beta", "beta", "<blockquote><p>alpha</p></blockquote><p>beta</p><blockquote><p>gamma</p></blockquote>")]
+    [DataRow("h3", "", "<blockquote><p>alpha</p></blockquote>", "alpha", "alpha", "<blockquote><h3>alpha</h3></blockquote>")]
+    public async Task Blocks_EachFormat_WritesTheSameMarkupInEveryEngine(string format, string control, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        if (control.Length > 0) await Btn("rte-ext", control).ClickAsync();
+        else await Page.Locator("#rte-ext select[aria-label='Paragraph format']").SelectOptionAsync(format);
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+        // A format is one step.
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", start);
+    }
+
+    [TestMethod]
+    public async Task Blocks_TheFormatListFollowsTheBlockAtTheCaret_AQuotedParagraphReadingAsAQuote()
+    {
+        await OpenAsync(Route);
+
+        var select = Page.Locator("#rte-ext select[aria-label='Paragraph format']");
+        await SetHtmlAsync("rte-ext", "<h4>alpha</h4><blockquote><p>beta</p></blockquote><pre>gamma</pre>");
+        await SelectTextAsync("rte-ext", "alpha");
+        await Expect(select).ToHaveValueAsync("h4");
+        await SelectTextAsync("rte-ext", "beta");
+        await Expect(select).ToHaveValueAsync("blockquote");
+        await Expect(Btn("rte-ext", "Block quote")).ToHaveAttributeAsync("aria-pressed", "true");
+        await SelectTextAsync("rte-ext", "gamma");
+        await Expect(select).ToHaveValueAsync("pre");
+        await Expect(Btn("rte-ext", "Code block")).ToHaveAttributeAsync("aria-pressed", "true");
+    }
+
     [TestMethod]
     [DataRow("Align left", "left")]
     [DataRow("Align center", "center")]
