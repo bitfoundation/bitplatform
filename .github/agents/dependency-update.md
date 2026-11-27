@@ -40,6 +40,8 @@ Work the surfaces in this order. Each is independent; batch the network lookups.
 3. GitHub Actions (`.github/workflows/`, `.github/actions/`)
 4. devcontainers (`.devcontainer/`)
 5. Tool versions in workflows and docs (`dnx <package>@<version>`, `vpk`), `global.json` (4 files)
+6. Downloads checked against a hash: the Jsign jar the NuGet publish workflows download with `curl`, whose SHA-256 moves
+   with it, from the release
 
 bit Boilerplate and bit CLI live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric), and their
 dependencies are swept there.
