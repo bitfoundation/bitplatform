@@ -4,7 +4,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 
 /// <summary>
 /// Cultures and directions of BitFullCalendar (/e2e/full-calendar/culture): Persian (fa-IR, the Persian calendar, right to
-/// left, translated through Texts), Arabic (ar-SA, the Hijri calendar), an explicit Dir="BitDir.Rtl", the culture deciding
+/// left, translated through Strings), Arabic (ar-SA, the Hijri calendar), an explicit Dir="BitDir.Rtl", the culture deciding
 /// the direction when Dir is unset whatever the page's, and Dir="BitDir.Auto" - with the layout, the chevrons and the
 /// arrow keys following the reading direction.
 /// </summary>

@@ -1,0 +1,53 @@
+﻿@page "/e2e/command-palette-states"
+
+<PageTitle>BitCommandPalette states E2E</PageTitle>
+
+@* A palette whose Open is bound to the page and whose Disabled the page switches, with a command on a global shortcut
+   that counts its runs, a page that lists nothing and a text of its own for a search that matched nothing. *@
+<h1 id="cpl-heading">BitCommandPalette states</h1>
+
+<BitCommandPaletteCommands Commands="_commands" />
+
+<BitCommandPalette Id="cpl"
+                   @bind-Open="_open"
+                   Disabled="_disabled"
+                   NoResultsText="Nothing like that here" />
+
+<E2ESection Id="states" Title="States">
+    <label>
+        <input id="cpl-disabled" type="checkbox" checked="@_disabled" @onchange="() => _disabled = _disabled is false" />
+        Disabled
+    </label>
+    <button id="cpl-open" type="button" @onclick="() => _open = true">Open through the binding</button>
+    <p id="cpl-open-state">Open: @_open</p>
+    <p id="cpl-runs">Runs: @_runs</p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _open;
+    private bool _disabled;
+    private int _runs;
+    private List<BitCommandPaletteCommand> _commands = [];
+
+    protected override void OnInitialized()
+    {
+        _commands =
+        [
+            BitCommandPaletteCmd.New("Count a run").Id("count").Shortcut("Alt+Q")
+                .Handler(ctx =>
+                {
+                    _ = InvokeAsync(() =>
+                    {
+                        _runs++;
+                        StateHasChanged();
+                    });
+                    return Task.FromResult(BitCommandPaletteCommandResult.Close);
+                }),
+            // A page that turns out to list nothing at all.
+            BitCommandPaletteCmd.New("An empty page").Id("empty-page")
+                .Children((_, _) => Task.FromResult<IReadOnlyList<BitCommandPaletteCommand>>([])),
+        ];
+    }
+}

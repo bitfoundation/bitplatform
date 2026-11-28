@@ -6,7 +6,7 @@ namespace Bit.BlazorUI;
 /// The parameters for <see cref="BitMarkdownEditor"/> component.
 /// </summary>
 /// <remarks>
-/// What belongs here is what the editors of an application agree on: their texts (which is where a localized app
+/// What belongs here is what the editors of an application agree on: their strings (which is where a localized app
 /// sets them once), their toolbar, how they edit (the markdown spellings, the indent, the pairing and the tab
 /// behavior), what the status bar shows, how the preview renders, how images are uploaded and how they are sized
 /// and styled, with the read-only and required states every input carries (<see cref="BitInputBaseParams{TValue}"/>).
@@ -201,7 +201,7 @@ public partial class BitMarkdownEditorParams : BitInputBaseParams<string?>, IBit
     /// <summary>
     /// The localized strings of the editor UI.
     /// </summary>
-    public BitMarkdownEditorTexts? Texts { get; set; }
+    public BitMarkdownEditorStrings? Strings { get; set; }
 
     /// <summary>
     /// A custom toolbar layout.
@@ -392,9 +392,9 @@ public partial class BitMarkdownEditorParams : BitInputBaseParams<string?>, IBit
             bitMarkdownEditor.TakeFromCascade(nameof(TableRows), TableRows.Value, static m => m.TableRows, static (m, v) => m.TableRows = v);
         }
 
-        if (Texts is not null)
+        if (Strings is not null)
         {
-            bitMarkdownEditor.TakeFromCascade(nameof(Texts), Texts, static m => m.Texts, static (m, v) => m.Texts = v);
+            bitMarkdownEditor.TakeFromCascade(nameof(Strings), Strings, static m => m.Strings, static (m, v) => m.Strings = v);
         }
 
         if (Toolbar is not null)

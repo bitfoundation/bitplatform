@@ -200,7 +200,7 @@ private void HandleOnChangeEnd(BitColorChangeEventArgs args)
                 @bind-Value=""accessibilityColor"" />
 
 <BitColorPicker Dir=""BitDir.Rtl"" ShowAlphaSlider ShowInputs ShowPreview ShowInputsModeSwitch
-                Texts=""persianTexts""
+                Strings=""persianStrings""
                 Label=""رنگ برند""
                 Presets=""brandPresets""
                 @bind-Value=""localizedColor"" />";
@@ -208,7 +208,7 @@ private void HandleOnChangeEnd(BitColorChangeEventArgs args)
 private string accessibilityColor = ""#4DB3B3"";
 
 private string localizedColor = ""#4DB3B3"";
-private static readonly BitColorPickerTexts persianTexts = new()
+private static readonly BitColorPickerStrings persianStrings = new()
 {
     SaturationAreaLabel = ""اشباع و روشنایی"",
     SaturationAreaRoleDescription = ""لغزنده دو بعدی"",

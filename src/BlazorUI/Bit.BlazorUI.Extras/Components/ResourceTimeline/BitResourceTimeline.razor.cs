@@ -20,7 +20,7 @@ public partial class BitResourceTimeline : BitComponentBase
     private const string CopyKeyShortcuts = " Control+c Control+v Meta+c Meta+v";
     private const string DisabledKeyShortcuts = "PageUp PageDown";
 
-    private static readonly BitResourceTimelineTexts _defaultTexts = new();
+    private static readonly BitResourceTimelineStrings _defaultStrings = new();
 
     // The corner size the engine starts with, replaced with the layout it actually works with once it has started.
     private BitResourceTimelineLayout _layout = new(150, 60, 40);
@@ -78,7 +78,7 @@ public partial class BitResourceTimeline : BitComponentBase
 
     // What the engine was last configured with, compared the same way so a render changing none of them sends nothing.
     private BitResourceTimelineOptions? _loadedOptions;
-    private BitResourceTimelineTexts? _loadedTexts;
+    private BitResourceTimelineStrings? _loadedStrings;
     private bool _loadedDisabled;
 
     // The editing capabilities in force on the engine. Applying an Options instance merges (a value left null keeps the
@@ -293,17 +293,17 @@ public partial class BitResourceTimeline : BitComponentBase
     [Parameter] public RenderFragment<BitResourceTimelineRowContext>? ResourceTemplate { get; set; }
 
     /// <summary>
+    /// The strings of the timeline - its accessible name and description, the loading text, the labels of the group
+    /// buttons and of the column divider, and everything it announces to screen readers. All of them default to English;
+    /// an instance with the ones to override localizes the timeline.
+    /// </summary>
+    [Parameter] public BitResourceTimelineStrings? Strings { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for different parts of the resource timeline.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public BitResourceTimelineClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// The texts of the timeline - its accessible name and description, the loading text, the labels of the group
-    /// buttons and of the column divider, and everything it announces to screen readers. All of them default to English;
-    /// an instance with the ones to override localizes the timeline.
-    /// </summary>
-    [Parameter] public BitResourceTimelineTexts? Texts { get; set; }
 
     /// <summary>
     /// The template of the hover tooltip. When set, the hovered bar is rendered through this template in a positioned
@@ -579,7 +579,7 @@ public partial class BitResourceTimeline : BitComponentBase
     }
 
     /// <summary>
-    /// Applies the Options, the Texts and the disabled state again when one of them changed, and loads the Config when a
+    /// Applies the Options, the Strings and the disabled state again when one of them changed, and loads the Config when a
     /// new instance was assigned (or the loading mode changed), or empties the timeline when it was taken away. Both are
     /// compared by reference, so changing one in place does not reach the engine.
     /// </summary>
@@ -635,8 +635,8 @@ public partial class BitResourceTimeline : BitComponentBase
 
 
 
-    // The texts in force: the ones given, or the English defaults.
-    private BitResourceTimelineTexts ActiveTexts => Texts ?? _defaultTexts;
+    // The strings in force: the ones given, or the English defaults.
+    private BitResourceTimelineStrings ActiveStrings => Strings ?? _defaultStrings;
 
     private bool IsWindowed => LoadAllocationsAsync is not null;
 
@@ -657,10 +657,10 @@ public partial class BitResourceTimeline : BitComponentBase
     // Whether the engine is running and holds data, which the calls about bars and the scroll position need.
     private bool IsReady() => IsStarted() && _dataLoaded;
 
-    // Only the references are compared: an Options or Texts instance changed in place is not applied again (a new one, or
+    // Only the references are compared: an Options or Strings instance changed in place is not applied again (a new one, or
     // a ReloadAsync for the data, is).
     private bool ConfigurationChanged() => ReferenceEquals(_loadedOptions, Options) is false
-                                           || ReferenceEquals(_loadedTexts, Texts) is false
+                                           || ReferenceEquals(_loadedStrings, Strings) is false
                                            || _loadedDisabled != Disabled;
 
     // A load of this very instance in flight counts as already handled, so a render of the parent cannot replay it.
@@ -710,9 +710,9 @@ public partial class BitResourceTimeline : BitComponentBase
     {
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        TrackLoadedConfiguration(Options, Texts, Disabled);
+        TrackLoadedConfiguration(Options, Strings, Disabled);
 
-        var layout = await _js.BitResourceTimelineSetup(UniqueId, _viewportRef, _dotnetObj, Options, ActiveTexts, Disabled);
+        var layout = await _js.BitResourceTimelineSetup(UniqueId, _viewportRef, _dotnetObj, Options, ActiveStrings, Disabled);
 
         // No layout is a runtime that cannot run scripts (a prerender), where there is nothing to start.
         if (IsDisposing || layout is not { } l) return;
@@ -722,7 +722,7 @@ public partial class BitResourceTimeline : BitComponentBase
         _resourceRowsRenderKey++;
         StateHasChanged();
 
-        // The Options, Texts or Disabled the parent changed while the engine was starting: the passes of
+        // The Options, Strings or Disabled the parent changed while the engine was starting: the passes of
         // OnParametersSetAsync in that window had nothing to send them to.
         await ApplyConfigurationAsync();
 
@@ -740,19 +740,19 @@ public partial class BitResourceTimeline : BitComponentBase
         }
     }
 
-    // Sends the Options, the Texts and the disabled state when one of them changed since they were last sent.
+    // Sends the Options, the Strings and the disabled state when one of them changed since they were last sent.
     private async Task ApplyConfigurationAsync()
     {
         if (ConfigurationChanged() is false) return;
 
         var options = Options;
-        var texts = Texts;
+        var strings = Strings;
         var disabled = Disabled;
 
-        var layout = await _js.BitResourceTimelineSetOptions(UniqueId, options, texts ?? _defaultTexts, disabled);
+        var layout = await _js.BitResourceTimelineSetOptions(UniqueId, options, strings ?? _defaultStrings, disabled);
 
         // Recorded only once the engine took it: a call that failed leaves the configuration to a later pass to send again.
-        TrackLoadedConfiguration(options, texts, disabled);
+        TrackLoadedConfiguration(options, strings, disabled);
 
         if (IsDisposing) return;
 
@@ -765,10 +765,10 @@ public partial class BitResourceTimeline : BitComponentBase
     }
 
     // Records what the engine is configured with, merging the editing capabilities the way the engine merges the Options.
-    private void TrackLoadedConfiguration(BitResourceTimelineOptions? options, BitResourceTimelineTexts? texts, bool disabled)
+    private void TrackLoadedConfiguration(BitResourceTimelineOptions? options, BitResourceTimelineStrings? strings, bool disabled)
     {
         _loadedOptions = options;
-        _loadedTexts = texts;
+        _loadedStrings = strings;
         _loadedDisabled = disabled;
 
         if (options?.Editable is { } editable)
@@ -1582,6 +1582,8 @@ public partial class BitResourceTimeline : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarIcon))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineEdgeBar))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarSection))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarTexts))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarText))]
     public async Task<IReadOnlyList<BitResourceTimelineAllocation>?> _OnAllocationsCopying(string[] ids, long offsetMs, string? resourceId)
     {
         if (IsDisposing || Disabled) return null;
@@ -1635,6 +1637,8 @@ public partial class BitResourceTimeline : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarIcon))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineEdgeBar))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarSection))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarTexts))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitResourceTimelineBarText))]
     public async Task<BitResourceTimelineAllocation?> _OnAllocationCreating(string resourceId, long startTime, long endTime)
     {
         if (IsDisposing || Disabled) return null;

@@ -77,7 +77,7 @@ public partial class BitImageViewerParams : BitComponentBaseParams, IBitComponen
     /// <summary>
     /// The words of the viewer.
     /// </summary>
-    public BitImageViewerTexts? Texts { get; set; }
+    public BitImageViewerStrings? Strings { get; set; }
 
     /// <summary>
     /// Zooms with the plain wheel too.
@@ -148,9 +148,9 @@ public partial class BitImageViewerParams : BitComponentBaseParams, IBitComponen
             bitImageViewer.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (Texts is not null)
+        if (Strings is not null)
         {
-            bitImageViewer.TakeFromCascade(nameof(Texts), Texts, static c => c.Texts, static (c, v) => c.Texts = v);
+            bitImageViewer.TakeFromCascade(nameof(Strings), Strings, static c => c.Strings, static (c, v) => c.Strings = v);
         }
 
         if (WheelZoom.HasValue)

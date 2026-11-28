@@ -131,7 +131,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
     public void BitResourceTimelineShouldTakeTheCascadedValues()
     {
         var options = new BitResourceTimelineOptions { Editable = true };
-        var texts = new BitResourceTimelineTexts { RoleDescription = "Planer" };
+        var strings = new BitResourceTimelineStrings { RoleDescription = "Planer" };
 
         var component = RenderWithParams(new BitResourceTimelineParams
         {
@@ -141,7 +141,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
             Classes = new() { Root = "cascaded-root", Viewport = "cascaded-viewport" },
             Styles = new() { Root = "margin:1px", Viewport = "margin:2px" },
             Options = options,
-            Texts = texts,
+            Strings = strings,
         });
 
         WaitForLoad(component);
@@ -164,7 +164,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         // The engine starts with what the cascade set, and is not configured a second time for it.
         var setup = Calls(SetupFn).Single();
         Assert.AreSame(options, setup.Arguments[3]);
-        Assert.AreSame(texts, setup.Arguments[4]);
+        Assert.AreSame(strings, setup.Arguments[4]);
         Assert.AreEqual(true, setup.Arguments[5]);
         Assert.AreEqual(0, Calls(SetOptionsFn).Count);
     }
@@ -207,14 +207,14 @@ public class BitResourceTimelineParamsTests : BunitTestContext
     {
         var cascadedOptions = new BitResourceTimelineOptions { Editable = true };
         var ownOptions = new BitResourceTimelineOptions { BarHeight = 8 };
-        var ownTexts = new BitResourceTimelineTexts { AriaLabel = "Own" };
+        var ownStrings = new BitResourceTimelineStrings { AriaLabel = "Own" };
 
         var component = RenderWithParams(new BitResourceTimelineParams
         {
             Class = "cascaded",
             Classes = new() { Viewport = "cascaded-viewport" },
             Options = cascadedOptions,
-            Texts = new() { AriaLabel = "Cascaded" },
+            Strings = new() { AriaLabel = "Cascaded" },
             LoadBatchSize = 2,
             LoadingMinDurationMs = 5_000,
         }, builder =>
@@ -222,7 +222,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
             builder.AddAttribute(2, nameof(BitComponentBase.Class), "own");
             builder.AddAttribute(3, nameof(BitResourceTimeline.Classes), new BitResourceTimelineClassStyles { Viewport = "own-viewport" });
             builder.AddAttribute(4, nameof(BitResourceTimeline.Options), ownOptions);
-            builder.AddAttribute(5, nameof(BitResourceTimeline.Texts), ownTexts);
+            builder.AddAttribute(5, nameof(BitResourceTimeline.Strings), ownStrings);
             builder.AddAttribute(6, nameof(BitResourceTimeline.LoadBatchSize), 0);
             builder.AddAttribute(7, nameof(BitResourceTimeline.LoadingMinDurationMs), 0);
         }, FiveBars());
@@ -240,7 +240,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
 
         var setup = Calls(SetupFn).Single();
         Assert.AreSame(ownOptions, setup.Arguments[3]);
-        Assert.AreSame(ownTexts, setup.Arguments[4]);
+        Assert.AreSame(ownStrings, setup.Arguments[4]);
 
         // An explicit 0 sends everything in one call, whatever the cascade says.
         Assert.AreEqual(1, Calls(SetDataFn).Count);
@@ -257,7 +257,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         var component = RenderWithParams(new BitResourceTimelineParams
         {
             Options = options,
-            Texts = new() { AriaLabel = "Cascaded" },
+            Strings = new() { AriaLabel = "Cascaded" },
             LoadBatchSize = 2,
             Classes = new() { Viewport = "cascaded-viewport" },
         }, config: config);
@@ -275,7 +275,7 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         var timeline = component.FindComponent<BitResourceTimeline>().Instance;
 
         Assert.IsNull(timeline.Options);
-        Assert.IsNull(timeline.Texts);
+        Assert.IsNull(timeline.Strings);
         Assert.IsNull(timeline.Classes);
         Assert.AreEqual(10_000, timeline.LoadBatchSize);
 
@@ -285,9 +285,9 @@ public class BitResourceTimelineParamsTests : BunitTestContext
         // Options taken away set nothing, and the engine merges them: it stays editable, and says so.
         Assert.IsTrue(viewport.GetAttribute("aria-keyshortcuts")!.Contains("Alt+"));
 
-        // The engine is told the options and texts it was configured with are gone.
+        // The engine is told the options and strings it was configured with are gone.
         var setOptions = Calls(SetOptionsFn).Single();
         Assert.IsNull(setOptions.Arguments[1]);
-        Assert.AreEqual("Resource timeline", ((BitResourceTimelineTexts)setOptions.Arguments[2]!).AriaLabel);
+        Assert.AreEqual("Resource timeline", ((BitResourceTimelineStrings)setOptions.Arguments[2]!).AriaLabel);
     }
 }

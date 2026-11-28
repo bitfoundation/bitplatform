@@ -71,7 +71,9 @@ public partial class BitTextDemo
     </div>
 </div>
 
-<BitText Element=""code"" Typography=""BitTypography.Body2"" Monospace>var text = new BitText { Monospace = true };</BitText>";
+<BitText Element=""code"" Typography=""BitTypography.Body2"" Monospace>var text = new BitText { Monospace = true };</BitText>
+
+<BitText Typography=""BitTypography.Body1"">Run <BitText Code>dotnet build</BitText> in the folder of the project, then <BitText Code>dotnet run</BitText>.</BitText>";
 
     private readonly string example5RazorCode = @"
 <div style=""width:250px"">
@@ -188,6 +190,21 @@ private readonly BitTextParams[] textParams =
 ];";
 
     private readonly string example13RazorCode = @"
+<BitText Typography=""BitTypography.H5""
+         TypographySm=""BitTypography.H4""
+         TypographyMd=""BitTypography.H3""
+         TypographyLg=""BitTypography.H2""
+         TypographyXl=""BitTypography.H1"">
+    An h5 that grows into an h1 look on wide screens
+</BitText>
+
+<BitText Typography=""BitTypography.Body2"" TypographyMd=""BitTypography.Body1"">Body2 on small screens, Body1 from 960px up</BitText>
+
+<BitText Typography=""BitTypography.Overline"" TypographyLg=""BitTypography.Subtitle2"">An overline that becomes a subtitle from 1280px up</BitText>
+
+<BitText Element=""h2"" Typography=""BitTypography.H6"" TypographyLg=""BitTypography.H3"">Always an h2 - only the look changes</BitText>";
+
+    private readonly string example14RazorCode = @"
 <BitText Color=""BitColor.Primary"">Primary</BitText>
 <BitText Color=""BitColor.Secondary"">Secondary</BitText>
 <BitText Color=""BitColor.Tertiary"">Tertiary</BitText>
@@ -212,7 +229,7 @@ private readonly BitTextParams[] textParams =
 <BitText Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitText>
 <BitText Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitText>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -241,7 +258,7 @@ private readonly BitTextParams[] textParams =
     <BitText Color=""BitColor.Error"">An explicit Color still wins</BitText>
 </div>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitText Dir=""BitDir.Rtl"" Typography=""BitTypography.H5"">این یک عنوان راست‌چین است</BitText>
 <BitText Dir=""BitDir.Rtl"" Align=""BitTextAlign.Start"">این متن از لبه‌ی آغازین چیده شده است.</BitText>
 <BitText Dir=""BitDir.Rtl"" Align=""BitTextAlign.End"">این متن از لبه‌ی پایانی چیده شده است.</BitText>";

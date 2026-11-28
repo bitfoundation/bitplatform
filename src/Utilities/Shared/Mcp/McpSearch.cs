@@ -529,7 +529,7 @@ internal sealed class McpSearch
     /// Where the stem next starts a word of the text, or -1. Only the start of a word counts - the start of the
     /// text, a letter after a non-letter, or a capital after a lower-case letter, so "shortcut" counts in
     /// "GlobalShortcut" - because inside a word a stem is a different word: "page" is inside every "TPage", and
-    /// "let" inside every "Balette". The end of the word stays open for an <see cref="Stem.Open"/> stem, so it
+    /// "let" inside every "Palette". The end of the word stays open for an <see cref="Stem.Open"/> stem, so it
     /// still finds the longer forms of its word ("persist" in "persistence"); any other has to be the stem of the
     /// whole word.
     /// </summary>

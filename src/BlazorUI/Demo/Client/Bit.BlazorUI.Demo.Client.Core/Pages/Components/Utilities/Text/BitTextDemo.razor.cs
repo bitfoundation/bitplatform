@@ -43,6 +43,13 @@ public partial class BitTextDemo
         },
         new()
         {
+            Name = "Code",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Renders the text as inline code: a code element (unless Element names another one) in the theme's monospaced family, on a chip of its own. With no Typography it takes the type of the text around it (the Inherit variant), set a little smaller.",
+        },
+        new()
+        {
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
@@ -181,7 +188,61 @@ public partial class BitTextDemo
             Name = "Typography",
             Type = "BitTypography?",
             DefaultValue = "null",
-            Description = "The typography variant: the size, weight, line height and tracking, and the tag rendered unless Element is set. Only the six heading variants render a heading tag. Defaults to Subtitle1.",
+            Description = "The typography variant: the size, weight, line height and tracking, and the tag rendered unless Element is set. Only the six heading variants render a heading tag. Defaults to Subtitle1. It is the look at every width no per-breakpoint variant (TypographyXs to TypographyXxl) replaces, and always decides the tag.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyLg",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the large breakpoint (from 1280px) upwards. It keeps applying to every wider breakpoint until another one replaces it, and only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyMd",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the medium breakpoint (from 960px) upwards. It keeps applying to every wider breakpoint until another one replaces it, and only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographySm",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the small breakpoint (from 600px) upwards. It keeps applying to every wider breakpoint until another one replaces it, and only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyXl",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the extra large breakpoint (from 1920px) upwards. It keeps applying to every wider breakpoint until another one replaces it, and only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyXs",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the extra small breakpoint (from 0px) upwards, so the look at every width no wider breakpoint replaces. It only changes the look: the tag stays the one Typography decides.",
+            LinkType = LinkType.Link,
+            Href = "#typography-enum"
+        },
+        new()
+        {
+            Name = "TypographyXxl",
+            Type = "BitTypography?",
+            DefaultValue = "null",
+            Description = "The typography variant from the extra extra large breakpoint (from 2560px) upwards. It only changes the look: the tag stays the one Typography decides.",
             LinkType = LinkType.Link,
             Href = "#typography-enum"
         },
@@ -351,7 +412,31 @@ public partial class BitTextDemo
         {
             Name = "--bit-Text-monospace-font-family",
             DefaultValue = "--bit-tpg-font-family-mono",
-            Description = "Font family of a Monospace text.",
+            Description = "Font family of a Monospace or a Code text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-code-background",
+            DefaultValue = "8% of --bit-clr-fg-pri",
+            Description = "Background of the chip of a Code text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-code-radius",
+            DefaultValue = "--bit-shp-radius-control",
+            Description = "Corner radius of the chip of a Code text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-code-padding",
+            DefaultValue = "0.125em 0.375em",
+            Description = "Padding of the chip of a Code text.",
+        },
+        new()
+        {
+            Name = "--bit-Text-code-font-size",
+            DefaultValue = "0.875em",
+            Description = "Size of a Code text in the Inherit variant it takes when no Typography is set. Any other Typography set on the text wins over it.",
         },
         new()
         {

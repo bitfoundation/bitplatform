@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <DemoSharedEnum Include="BitAlignment;BitButtonType;BitColor;BitColorKind;BitDropDirection;BitEnterKeyHint" />
-        <DemoSharedEnum Include="BitImageLoading;BitInputMode;BitInputType;BitLineStyle" />
+        <DemoSharedEnum Include="BitImageLoading;BitImageReferrerPolicy;BitInputMode;BitInputType;BitLineStyle" />
         <DemoSharedEnum Include="BitLinkRels;BitNavAriaCurrent;BitNavItemTemplateRenderMode;BitNavMatch;BitNavMode" />
         <DemoSharedEnum Include="BitNavRenderType;BitPlacement;BitPoliteness;BitPosition;BitSelectionMode;BitShape;BitSize" />
         <DemoSharedEnum Include="BitTimeFormat;BitVariant" />

@@ -145,7 +145,7 @@ public static partial class SyntaxHighlighter
             return false;
         }
 
-        // A selector - `.palette [data-balette="item"]:hover > kbd` - or an at-rule's prelude - `@media (max-width: 600px)` -
+        // A selector - `.palette [data-kind="item"]:hover > kbd` - or an at-rule's prelude - `@media (max-width: 600px)` -
         // up to the '{' of its block, or the ';' that ends a statement at-rule.
         private void Prelude()
         {
@@ -229,7 +229,7 @@ public static partial class SyntaxHighlighter
             }
         }
 
-        // `[data-balette="item"]`, `[data-active]`, `[dir=rtl]`.
+        // `[data-kind="item"]`, `[data-active]`, `[dir=rtl]`.
         private void AttributeSelector()
         {
             Take("tok-pun", 1);

@@ -1,0 +1,14 @@
+﻿.terminal {
+    display: block;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    color: #e2e8f0;
+    background-color: #0f172a;
+}
+
+::deep {
+    .custom-class {
+        font-size: 1.5rem;
+        font-style: italic;
+    }
+}

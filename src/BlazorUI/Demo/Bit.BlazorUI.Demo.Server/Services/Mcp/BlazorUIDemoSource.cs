@@ -162,7 +162,8 @@ public static partial class BlazorUIDemoSource
             builder.Append(' ').Append(child.InnerText);
         }
 
-        var prose = Collapse(WebUtility.HtmlDecode(builder.ToString()));
+        // Read out of the .razor source, where a literal @ is written as the escape @@.
+        var prose = Collapse(WebUtility.HtmlDecode(builder.ToString()).Replace("@@", "@", StringComparison.Ordinal));
 
         // Long enough to be a sentence, and with a space in it. Everything shorter that survived
         // the walk above is a stray label rather than an explanation, and a hit on it would read as
@@ -193,7 +194,7 @@ public static partial class BlazorUIDemoSource
 
         if (template is null) return null;
 
-        var text = Collapse(WebUtility.HtmlDecode(template.InnerText));
+        var text = Collapse(WebUtility.HtmlDecode(template.InnerText).Replace("@@", "@", StringComparison.Ordinal));
 
         return text.Length == 0 ? null : text;
     }

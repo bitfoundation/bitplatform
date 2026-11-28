@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Extras.FullCalendar;
 /// <summary>
 /// Covers <see cref="_BitFcRecurrenceScopeDialog"/>, the "this event or the whole series" prompt an edit or a delete
 /// of a recurring occurrence opens, through the calendar that renders it: its markup and accessible names, its
-/// texts and parts, the modal setup, the choice it confirms and every way it backs out.
+/// strings and parts, the modal setup, the choice it confirms and every way it backs out.
 /// </summary>
 [TestClass]
 public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
@@ -151,9 +151,9 @@ public class BitFullCalendarRecurrenceScopeDialogTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFullCalendarScopeDialogShouldTakeItsWordsFromTheTexts()
+    public void BitFullCalendarScopeDialogShouldTakeItsWordsFromTheStrings()
     {
-        var component = RenderSeries(configure: p => p.Add(c => c.Texts, new BitFullCalendarTexts
+        var component = RenderSeries(configure: p => p.Add(c => c.Strings, new BitFullCalendarStrings
         {
             RecurringDeleteTitle = "Remove a repeating meeting",
             ThisOccurrenceOption = "Only this one",

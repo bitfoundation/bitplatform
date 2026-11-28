@@ -91,7 +91,7 @@ if (-not $configFile) {
 $config = [xml](Get-Content $configFile.FullName -Raw)
 $configuration = $config.DocumentElement
 
-# A variable, not a path: the template renames "Boilerplate" in what it emits, paths included.
+# A variable, not a path: a template renames its source name in what it emits, paths included.
 $env:BIT_PRERELEASE_PACKAGES = $PackagesFolder
 
 if ($env:GITHUB_ENV) {

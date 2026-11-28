@@ -1,8 +1,8 @@
 {
     "servers": {
-        "bitplatform": {
+        "microsoft-learn": {
             "type": "http",
-            "url": "https://bitplatform.dev/mcp?v=11.0.0"
+            "url": "https://learn.microsoft.com/api/mcp"
         },
         "github": {
             "type": "http",

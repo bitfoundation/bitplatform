@@ -179,7 +179,7 @@
 </E2ESection>
 
 <E2ESection Id="localization" Title="Localization">
-    <BitMarkdownEditor Id="mde-french" Texts="_frenchTexts" DefaultValue="un deux trois" ShowReadingTime />
+    <BitMarkdownEditor Id="mde-french" Strings="_frenchStrings" DefaultValue="un deux trois" ShowReadingTime />
 </E2ESection>
 
 <E2ESection Id="form" Title="Forms and accessibility">
@@ -320,7 +320,7 @@
     private bool _mounted = true;
     private bool _unmountFullScreen;
 
-    private readonly BitMarkdownEditorTexts _frenchTexts = new()
+    private readonly BitMarkdownEditorStrings _frenchStrings = new()
     {
         ToolbarAriaLabel = "Mise en forme Markdown",
         EditorAriaLabel = "Éditeur Markdown",

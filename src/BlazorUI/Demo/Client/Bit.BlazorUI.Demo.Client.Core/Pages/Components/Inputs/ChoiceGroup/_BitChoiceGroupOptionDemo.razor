@@ -687,7 +687,41 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example22RazorCode" Id="example22" PreventRenderForMcpClient>
+<DemoExample Title="Columns & MinItemWidth" RazorCode="@example22RazorCode" Id="example22">
+    <div>Lays the options out in a grid of equal columns instead of a single column or a wrapping row. <b>Columns</b> sets how many columns there are; <b>MinItemWidth</b> sets how narrow a column may get and fits as many of them on a row as the width of the group allows, so the number of columns follows the room the group is given (resize the window to watch them wrap). MinItemWidth wins when both are set, and a group with it set fills its container. The options keep their order, which the arrow keys still follow, and Gap spaces the rows and the columns alike. Both stack with the rest: FullWidth to spread the columns over the container, and the Variant cards for a grid of selectable tiles.</div>
+    <br />
+    <div class="example-content column">
+        <BitChoiceGroup Label="Two columns" DefaultValue="@("A")" Columns="2" TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="Option A" Value="@("A")" />
+            <BitChoiceGroupOption Text="Option B" Value="@("B")" />
+            <BitChoiceGroupOption Text="Option C" Value="@("C")" />
+            <BitChoiceGroupOption Text="Option D" Value="@("D")" />
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="Three columns of Outline cards, full width"
+                        Variant="BitVariant.Outline"
+                        DefaultValue="@("Daily")"
+                        Columns="3"
+                        FullWidth
+                        TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="Daily" Value="@("Daily")" Description="Backs up every night at 2 AM." />
+            <BitChoiceGroupOption Text="Weekly" Value="@("Weekly")" Description="Backs up every Sunday at 2 AM." />
+            <BitChoiceGroupOption Text="Monthly" Value="@("Monthly")" Description="Backs up on the first day of each month." />
+        </BitChoiceGroup>
+
+        <BitChoiceGroup Label="As many columns of at least 14rem as fit"
+                        Variant="BitVariant.Outline"
+                        DefaultValue="@("Daily")"
+                        MinItemWidth="14rem"
+                        TItem="BitChoiceGroupOption<string>" TValue="string">
+            <BitChoiceGroupOption Text="Daily" Value="@("Daily")" Description="Backs up every night at 2 AM." />
+            <BitChoiceGroupOption Text="Weekly" Value="@("Weekly")" Description="Backs up every Sunday at 2 AM." />
+            <BitChoiceGroupOption Text="Monthly" Value="@("Monthly")" Description="Backs up on the first day of each month." />
+        </BitChoiceGroup>
+    </div>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
         <div>Colors the radio circle and the checked state of the options using the BitColor palette, with Primary being the default.</div>
         <br />
         <div>
@@ -1009,7 +1043,7 @@
         </div>
     </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example23RazorCode" Id="example23" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
     <div>Renders icons from external libraries like Font Awesome or Bootstrap Icons using the Icon parameter, instead of the built-in icon font used by IconName.</div>
     
     <br />
@@ -1040,7 +1074,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example24RazorCode" Id="example24" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
     <div>Comes in Small, Medium (default), and Large sizes that scale the radio circle, text, icons, and option spacing together.</div>
     <br /><br />
     <div>Basic ChoiceGroup</div>
@@ -1134,7 +1168,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example25RazorCode" Id="example25" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example26RazorCode" Id="example26" PreventRenderForMcpClient>
     <div>Customizes the appearance at every level: Style and Class on the root element, per-option styles and classes, and the Styles and Classes objects that target the internal parts of the component, including the checked state of the options.</div>
     <br /><br />
     <div>Component's Style & Class:</div>
@@ -1248,7 +1282,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example26RazorCode" Id="example26" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example27RazorCode" Id="example27" PreventRenderForMcpClient>
     <div>Renders the ChoiceGroup in right-to-left mode; the layout is mirrored, and the arrow keys follow the text direction in Chromium and Firefox, where ArrowLeft moves to the next item. That mirroring is the native behavior of a radio group in those engines rather than something the component does, and WebKit does not do it: there the arrows keep the order of the markup, so ArrowRight moves to the next item and ArrowLeft to the previous one.</div>
     <br />
     <div dir="rtl" class="example-content">

@@ -87,7 +87,9 @@ cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && BSQLITE_E2E_LAZY_AOT=1 d
 
 The `demo-aot` job does the same for the demo and runs `DemoTests` alone against it: the demo marks
 `System.Private.Xml.wasm` lazy, and `Bit.Bsqlite.targets` drops that mark from an AOT build and leaves
-`BsqliteBuilder.LazyLoadsXml` unset, so its `BeforeFirstOpen` step loads nothing:
+`BsqliteBuilder.LazyLoadsXml` unset, so its `BeforeFirstOpen` step loads nothing. Its seed data also saves entities with
+`DateOnly?` properties, which an AOT build traps on without the nullable boxing `UseBitBsqlite` keeps
+(`BsqliteAotNullableValues`): the catalog then never renders, and no error is logged. To run it locally:
 
 ```bash
 dotnet publish src/Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release -o demo -p:InvariantGlobalization=true -p:RunAOTCompilation=true

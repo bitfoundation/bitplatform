@@ -16,7 +16,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 /// download and print with their cancelable events, fullscreen and presentation mode, opening a file through the
 /// picker and by drop (with the size limit), the empty, loading and error states and their templates, the password
 /// prompt (dialog, rejected password, cancel, known password, callback, no prompt), the two-way CurrentPage/Zoom/
-/// Rotation, every event, the public API, Texts, Disabled (with the page's handlers dropped), the BitParams cascade,
+/// Rotation, every event, the public API, Strings, Disabled (with the page's handlers dropped), the BitParams cascade,
 /// Style/Class/Styles/Classes and the public CSS variables, RTL and unmounting.
 /// </summary>
 [TestClass]
@@ -1125,7 +1125,7 @@ public class BitPdfViewerE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Localization_TextsReplaceTheStrings()
+    public async Task Localization_StringsReplaceTheDefaults()
     {
         await OpenLoadedAsync("pdv-localized");
 

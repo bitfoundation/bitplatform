@@ -7,8 +7,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// It carries the parameters that say nothing about the item type or about the progress of a single stepper, so one
-/// object fits every stepper under it. The steps (Items), the current step (CurrentIndex) and the callbacks stay on the
-/// stepper itself.
+/// object fits every stepper under it. The steps (Items), the current step (CurrentIndex), the callbacks and the
+/// CompactTemplate stay on the stepper itself.
 /// </remarks>
 public partial class BitStepperParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -41,6 +41,12 @@ public partial class BitStepperParams : BitComponentBaseParams, IBitComponentPar
     /// Custom CSS classes for the different parts of the stepper.
     /// </summary>
     public BitStepperClassStyles? Classes { get; set; }
+
+    /// <summary>
+    /// Shows the current step alone in place of the list of every step: its position in words, its text and a bar with a
+    /// segment per step. On a Responsive horizontal stepper, it is the layout taken below 600px in place of the vertical one.
+    /// </summary>
+    public bool? Compact { get; set; }
 
     /// <summary>
     /// The icon shown in the indicator of a completed step, using custom CSS classes for external icon libraries.
@@ -109,6 +115,11 @@ public partial class BitStepperParams : BitComponentBaseParams, IBitComponentPar
         if (Classes is not null)
         {
             bitStepper.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
+        }
+
+        if (Compact.HasValue)
+        {
+            bitStepper.TakeFromCascade(nameof(Compact), Compact.Value, static s => s.Compact, static (s, v) => s.Compact = v);
         }
 
         if (CompletedIcon is not null)

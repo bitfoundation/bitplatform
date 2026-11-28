@@ -3,30 +3,25 @@
 ## Key Technologies
 
 - **C# 14.0**
-- **ASP.NET Core 10.0**
+- **ASP.NET Core**
 - **Blazor**: Component-based web UI framework
 - **.NET MAUI Blazor Hybrid**: Cross-platform app development
-- **ASP.NET Core Identity**: Authentication and authorization
 - **Entity Framework Core**: Data access
 - **SignalR**: Real-time communication
-- **Hangfire**: Background job processing
-- **OData**: Advanced querying capabilities
 - **Bit.BlazorUI**: Primary UI component library
 - **Microsoft.Extensions.AI**: AI integration
 - **TypeScript**: Type-safe JavaScript development
 - **SCSS**: Advanced CSS preprocessing
 
 ## Project Structure
-- **Server.Api**: Controllers, Mappers, DbContext, Migrations, Components for email templates, action filters, models, SignalR, server's appsettings.json
-- **Server.Web**: App.razor and other files to server Blazor Server and pre-rendering.
-- **Server.Shared (Also knows as Aspire's ServiceDefaults)**: Common codes shared between Server.Api and Server.Web.
-- **Server.AppHost**: Aspire's appsettings and Program.cs
-- **Shared**: Dtos, Enums, custom exceptions, shared services, resx files.
-- **Tests**: UI and integration tests.
-- **Client.Core**: Components, Pages, Layout, Client services, App.ts (TypeScript), app.scss (SCSS), and appsettings.json for the client.
-- **Client.Web**: Blazor WebAssembly standalone project.
-- **Client.Maui**: .NET MAUI based Blazor Hybrid project.
-- **Client.Windows**: Windows forms based Blazor Hybrid project.
+- **src/BlazorUI**: bit BlazorUI, its demo and its tests.
+- **src/Butil, src/Bswup, src/Brouter**: bit Butil, bit Bswup and bit Brouter, each with its demo, samples and tests.
+- **src/Utilities**: the other bit libraries (Bmotion, Bmage, Bsqlite, Bink and the rest), each with its demo, samples and tests.
+- **src/Toolings**: Bit.Minifier, Bit.BlazorES2019, Bit.CodeAnalyzers and Bit.SourceGenerators.
+- **src/Templates/BlazorEmpty**: the BlazorEmpty project template.
+- **src/Websites**: the bit platform websites.
+
+bit Boilerplate and bit CLI live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric).
 
 ## Coding Conventions & Best Practices
 
@@ -46,13 +41,13 @@
 ## Rules
 
 **RULE 1:** If a task (question, code modification or review) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
-or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Bink`, `bit Balette`, `bit BbScanner`, `bit Bdnd`, `bit BlazeDb`, `bit Blow`, `bit Borm`, `bit Bcrdt`, `bit Bonboarding`, `bit Bortable`, `bit Blex`, `bit Bmage`, `bit Bsqlite`, `bit Bheadless`, `bit Brouter`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
-you **MUST** use the `bitplatform` MCP server's tools - start with the matching `Search<Library>` tool (e.g. `SearchBitBlazorUI`, `SearchBswup`, `SearchButil`, `SearchBmotion`, `SearchBink`, `SearchBalette`, `SearchBbScanner`, `SearchBdnd`, `SearchBlazeDb`, `SearchBlow`, `SearchBorm`, `SearchBcrdt`, `SearchBonboarding`, `SearchBortable`, `SearchBlex`, `SearchBmage`, `SearchBsqlite`, `SearchBheadless`, `SearchBrouter`) and follow the calls it names - to find the correct implementation and usage patterns before writing or changing any code.
+or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Bink`, `bit BbScanner`, `bit Bdnd`, `bit BlazeDb`, `bit Blow`, `bit Borm`, `bit Bcrdt`, `bit Bonboarding`, `bit Bortable`, `bit Blex`, `bit Bmage`, `bit Bsqlite`, `bit Bheadless` or `bit Brouter`, or involves UI components without explicitly specifying their UI toolkit,
+you **MUST** read that library's source code and README in this repository before writing or changing any code. A library that has an MCP server of its own at `https://<name in lowercase>.bitplatform.dev/mcp` (e.g. `https://bmotion.bitplatform.dev/mcp`) also answers through its tools - start with its `Search<Library>` tool and follow the calls it names.
 
 **End of RULE 1**
 
 **RULE 2:** If a task (question, code modification, or review) involves Microsoft technologies such as C#, F#, ASP.NET Core, Microsoft.Extensions, NuGet, Entity Framework, Blazor or the `dotnet` runtime,
-you **MUST** use the `microsoft_docs_search`, `microsoft_docs_fetch` and `microsoft_code_sample_search` tools of the `bitplatform` MCP server to search Microsoft's latest official documentation for detailed and up-to-date information before responding to specific or narrowly defined questions.
+you **MUST** use the `microsoft_docs_search`, `microsoft_docs_fetch` and `microsoft_code_sample_search` tools of the `microsoft-learn` MCP server to search Microsoft's latest official documentation for detailed and up-to-date information before responding to specific or narrowly defined questions.
 
 **End of RULE 2**
 

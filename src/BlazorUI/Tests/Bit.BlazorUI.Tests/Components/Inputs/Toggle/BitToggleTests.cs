@@ -2270,4 +2270,103 @@ public class BitToggleTests : BunitTestContext
 
         await instance.DisposeAsync();
     }
+
+    [TestMethod,
+        DataRow(BitVariant.Outline, "bit-tgl-otl"),
+        DataRow(BitVariant.Fill, "bit-tgl-fil")
+    ]
+    public void BitToggleShouldApplyTheCardVariantClassAndRenderItsHitArea(BitVariant variant, string expectedClass)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Push notifications");
+            parameters.Add(p => p.Description, "On phones, computers and browsers.");
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        var root = com.Find(".bit-tgl");
+
+        Assert.IsTrue(root.ClassList.Contains(expectedClass));
+
+        // Exactly one variant class, so a re-render never leaves the previous one behind.
+        Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-tgl-otl" or "bit-tgl-fil"));
+
+        // The hit area is a label of the switch, so a click anywhere on the card is handed to it. It carries no text
+        // and is hidden from assistive technologies, and it follows the switch in the row, which is what its focus
+        // ring is styled through.
+        var hit = com.Find(".bit-tgl-hit");
+        var button = com.Find("button");
+
+        Assert.AreEqual("LABEL", hit.TagName);
+        Assert.AreEqual(button.Id, hit.GetAttribute("for"));
+        Assert.AreEqual("true", hit.GetAttribute("aria-hidden"));
+        Assert.AreEqual(string.Empty, hit.TextContent);
+        Assert.IsTrue(hit.ParentElement!.ClassList.Contains("bit-tgl-cnt"));
+
+        // Its empty title keeps the Title of the row it sits in from popping up over the description and the error line.
+        Assert.AreEqual(string.Empty, hit.GetAttribute("title"));
+        Assert.AreEqual(button.Id, hit.PreviousElementSibling?.Id);
+
+        // The name of the switch is still the visible label alone.
+        Assert.AreEqual(com.Find(".bit-tgl-lbl").Id, button.GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitVariant.Text)
+    ]
+    public void BitToggleShouldRenderNeitherAVariantClassNorAHitAreaForTheTextLook(BitVariant? variant)
+    {
+        var bare = RenderComponent<BitToggle>(parameters => parameters.Add(p => p.Label, "Push notifications"));
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Push notifications");
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        var root = com.Find(".bit-tgl");
+
+        // Text is the bare switch and label the toggle has always been, so it renders exactly what it rendered before.
+        Assert.IsFalse(root.ClassList.Any(c => c is "bit-tgl-otl" or "bit-tgl-fil"));
+        Assert.AreEqual(bare.Find(".bit-tgl").GetAttribute("class"), root.GetAttribute("class"));
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-hit").Count);
+    }
+
+    [TestMethod]
+    public void BitToggleShouldSwapTheVariantClassAndTheHitAreaOnARerender()
+    {
+        var com = RenderComponent<BitToggle>(parameters => parameters.Add(p => p.Variant, BitVariant.Outline));
+
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-otl"));
+        Assert.AreEqual(1, com.FindAll(".bit-tgl-hit").Count);
+
+        com.Render(parameters => parameters.Add(p => p.Variant, BitVariant.Fill));
+
+        var root = com.Find(".bit-tgl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-fil"));
+        Assert.IsFalse(root.ClassList.Contains("bit-tgl-otl"));
+        Assert.AreEqual(1, com.FindAll(".bit-tgl-hit").Count);
+
+        com.Render(parameters => parameters.Add(p => p.Variant, BitVariant.Text));
+
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Any(c => c is "bit-tgl-otl" or "bit-tgl-fil"));
+        Assert.AreEqual(0, com.FindAll(".bit-tgl-hit").Count);
+    }
+
+    [TestMethod]
+    public void BitToggleCardShouldFlipThroughItsSwitch()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Push notifications");
+            parameters.Add(p => p.Variant, BitVariant.Fill);
+        });
+
+        // A click on the hit area is handed to the switch by the browser, which is the click the switch answers.
+        com.Find("button").Click();
+
+        Assert.IsTrue(com.Instance.Value);
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
+    }
 }

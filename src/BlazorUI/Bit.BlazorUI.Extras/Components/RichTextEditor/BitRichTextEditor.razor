@@ -503,9 +503,9 @@
     };
 
     private RenderFragment HistoryGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("undo", "Undo (Ctrl+Z)")" aria-label="@Loc("undo-label", "Undo")" aria-keyshortcuts="@ShortcutFor("undo")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("undo", "Undo (Ctrl+Z)")" aria-label="@Loc("undo-label", "Undo")" aria-keyshortcuts="@ShortcutFor("undo")" disabled="@UndoDisabled" aria-disabled="@(UndoDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="UndoAsync">@BitRichTextEditorIcons.Undo</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("redo", "Redo (Ctrl+Y)")" aria-label="@Loc("redo-label", "Redo")" aria-keyshortcuts="@ShortcutFor("redo")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("redo", "Redo (Ctrl+Y)")" aria-label="@Loc("redo-label", "Redo")" aria-keyshortcuts="@ShortcutFor("redo")" disabled="@RedoDisabled" aria-disabled="@(RedoDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="RedoAsync">@BitRichTextEditorIcons.Redo</button>
     </div>;
 

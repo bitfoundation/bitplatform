@@ -1,6 +1,6 @@
 ---
 name: dependency-update
-description: Sweep every version-pinned surface in the bitplatform repo (NuGet, npm, GitHub Actions, devcontainers, dotnet-tools, global.json, container image tags), update what should move, leave what is deliberately held, and report each change with its release notes and any breaking behaviour. Use when asked to "update dependencies/packages/versions", refresh CI, or before a release.
+description: Sweep every version-pinned surface in the bitplatform repo (NuGet, npm, GitHub Actions, devcontainers, dotnet tools, global.json), update what should move, leave what is deliberately held, and report each change with its release notes and any breaking behaviour. Use when asked to "update dependencies/packages/versions", refresh CI, or before a release.
 ---
 
 # Dependency update sweep
@@ -35,13 +35,14 @@ Open the report with the commit the sweep read.
 
 Work the surfaces in this order. Each is independent; batch the network lookups.
 
-1. NuGet (`*.csproj`, `Directory.Packages.props`)
+1. NuGet (`*.csproj`, `*.props`)
 2. npm (`package.json`, then `npm install` to refresh `package-lock.json`)
-3. GitHub Actions (`.github/workflows/`, `.github/actions/`, `src/Templates/Boilerplate/Bit.Boilerplate/.github/workflows/`)
-4. devcontainers (`.devcontainer/`, `src/Templates/Boilerplate/Bit.Boilerplate/.devcontainer/`)
-5. `dnx <package>@<version>` calls in workflows and docs (`vpk`, `dotnet-ef`), `global.json` (3 files)
-6. Container image tags in the Aspire AppHost
-7. Tools the bit CLI downloads itself (`src/Toolings/Cli/Bit.Cli/Tools/`)
+3. GitHub Actions (`.github/workflows/`, `.github/actions/`)
+4. devcontainers (`.devcontainer/`)
+5. Tool versions in workflows and docs (`dnx <package>@<version>`, `vpk`), `global.json` (4 files)
+
+bit Boilerplate and bit CLI live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric), and their
+dependencies are swept there.
 
 ## The hold-back rules
 
@@ -80,26 +81,26 @@ Applies to `Bit.BlazorUI` / `.Assets` / `.Extras` / `.Legacy` / `.AI`, `Bit.Bswu
 The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a concrete patch —
 `Bit.BlazorUI.Tests` on Components.WebView `10.0.x` — is not a floor: nothing
 consumes a test project, so every band takes the newest patch of its own band. Likewise a lone
-`10.0.0` sitting among `10.0.11` siblings in `Directory.Packages.props` is staleness, not intent.
+`10.0.0` sitting among `10.0.11` siblings is staleness, not intent.
 
 **Version ranges stay.** `[10.0.0,11.0.0)` is a compatibility contract, not a pin. Its lower bound is the band's
 floor, so once a new major ships, a range that starts at its preview or release candidate moves to its `.0`: a dotted
 prerelease bound also makes nuget.org list the package as SemVer 2.0.0, which older clients' searches leave out. An
 EF Core range is the exception, see the EF Core rule below.
 
-**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-23`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-25`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
 **TypeScript is held at 5.9.3 in the libraries.** 7.x is the Go rewrite
-(`microsoft/typescript-go`), not an incremental release. `Boilerplate.Client.Core` is the canary and
-is already on 7.0.2 — if a bump is wanted, move one library project, build it, and only then the
-rest. Do not move all twenty-one at once.
+(`microsoft/typescript-go`), not an incremental release. If a bump is wanted, move one library project,
+build it, and only then the rest. Do not move them all at once.
 
 **`devops-actions/variable-substitution` is held at v1.2** (`ae7b1f36…`). v2.0.0 committed 31
 symlinks into its vendored `node_modules`; the runner cannot stage them and every job dies before
 the action runs with `Could not find file '.../helper-compilation-targets/node_modules/.bin/semver'`.
-v2.0.0 is the only v2 release and has been broken since 2026-05-23. Re-check with the tree API
+v3.0.0 still carries 16 and fails the same way on Linux and macOS runners, while Windows runners stage it
+([devops-actions/variable-substitution#370](https://github.com/devops-actions/variable-substitution/issues/370)). Re-check with the tree API
 before ever moving this pin again:
 
 ```bash
@@ -112,8 +113,8 @@ worth checking for *any* action bump, not just this one — it is invisible in t
 **MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 to 11.0.0 bundle an `Svg.Skia` that
 calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails
 the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 and 11.0.10 fixed it, and the app icons
-of the Boilerplate and the BlazorUI demo have a drop shadow (their `<filter>`), so MAUI never goes below those.
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). 10.0.120 and 11.0.10 fixed it, and the app icon
+of the BlazorUI demo has a drop shadow (its `<filter>`), so MAUI never goes below those.
 Before a major ships, MAUI can't stay behind: a MAUI built for an
 older preview doesn't compile against the newer preview's Android workload (CS1705 on `Java.Interop`). So MAUI
 follows the MAUI manifest of the SDK's newest workload set (`Microsoft.NET.Workloads.<band>` on NuGet), which
@@ -126,56 +127,24 @@ check that each manifest and pack it points at downloads too. A feature band's p
 set the same way: SDK 10.0.404 without one left `wasm-tools` unusable (NETSDK1147). So the SDK, the major's `.0` packages and the `global.json` files move together once it is
 out.
 
-**bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
-the .NET 11 project. In its `Directory.Packages.props`, a package whose 11.x build has no `net10.0` assets has a
-version in each of the two framework groups at the end of the file: the 11.x one, and a 10.x one that moves within
-10.x. So do the `Microsoft.Extensions.*` packages, although their 11.x builds have `net10.0` assets: they bring
-`Microsoft.Extensions.Logging.Abstractions` 11 into the .NET 10 server projects, whose targets file then overrides
-the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logging generator off with, depending
-on import order, and the build fails with CS0757. So do the `CommunityToolkit.Datasync.*` packages: from 10.2.0 the
-client brings SQLitePCLRaw 3, while `Bit.Bsqlite` for .NET 10 asks for 2.x and the restore fails with NU1107, so the
-.NET 10 group keeps the newest Datasync that still brings 2.x. Every other package takes one version for both.
-Outside the Boilerplate, a project that targets only .NET 10 keeps every package built with .NET on its .NET 10
-line the same way: `Microsoft.Extensions.*` (the AI ones too), `Microsoft.AspNetCore.*`, `System.*` and
-`System.CommandLine`, whose 2.0.x ships with .NET 10 and 3.x with .NET 11. A .NET 11 project takes their new
-major. The bit CLI's OpenTelemetry packages are the one exception: their newest can bring the next major's
-`System.Diagnostics.DiagnosticSource` with it, and they move anyway once the CLI's tests pass and the built CLI
-runs on the .NET 10 runtime. The few literals that differ per framework are switch
-symbols in `template.json` (the SDK, the dev container image, the `dotnet-ef` version, the
-runner image), so they move together with the files they replace. A template line written with the .NET 10 value
-of such a literal is one no symbol maps, so look for the .NET 10 values in the template's files and give them the
-.NET 11 one.
+**A project that targets only .NET 10 keeps every package built with .NET on its .NET 10 line**:
+`Microsoft.Extensions.*` (the AI ones too), `Microsoft.AspNetCore.*`, `System.*` and `System.CommandLine`, whose
+2.0.x ships with .NET 10 and 3.x with .NET 11. A .NET 11 project takes their new major.
 
-**`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
-(through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
-graph still brings `Fragment.Ktx` 1.8.9.x. R8 then fails the Android build with
-`Type androidx.fragment.app.FragmentKt is defined multiple times`. Move it only once something else in
-the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinning Ktx in the template.
-`Xamarin.GooglePlayServices.Auth.Api.Phone` is held at 118.3.1 for the same reason: 118.3.1.1 pulls
-`GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0. So do the `Xamarin.AndroidX.Camera.*`
-packages of `Bit.BbScanner.Maui`: 1.6.x's `Camera.View` pulls Fragment 1.9.0, so they stay on the newest 1.5.x.
+**The `Xamarin.AndroidX.Camera.*` packages of `Bit.BbScanner.Maui` stay on the newest 1.5.x.** 1.6.x's
+`Camera.View` pulls `Xamarin.AndroidX.Fragment` 1.9.0, which absorbed the ktx classes, while the rest of the graph
+still brings `Fragment.Ktx` 1.8.9.x. R8 then fails an app's Android build with
+`Type androidx.fragment.app.FragmentKt is defined multiple times`.
 
-**EF Core in the Boilerplate follows its PostgreSQL provider.** A preview of
-`Npgsql.EntityFrameworkCore.PostgreSQL` asks for one exact EF Core version, and a provider built for another
-one fails at runtime ("Method not found"). So the Boilerplate's EF Core stays on the version the newest Npgsql
-names, together with every package that requires it (`Microsoft.EntityFrameworkCore.*`,
-`Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore`,
-`Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore`) and its `dnx dotnet-ef` calls, while the
-rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was missed. A shipped library's EF Core
-floor in the band the Boilerplate uses can't go above that version either: one that raises the offline database's
-Sqlite above it fails the project's restore with NU1605.
-
-**The Boilerplate's Aspire stays on 13.** Aspire 17 builds every project it starts itself, in MSBuild's multithreaded
-mode on .NET 11, and the WebAssembly SDK's `ReadWasmProps` task can't run in that mode, so the web app never comes up
-under `aspire start` or a `dotnet run` of the app host. Aspire 13 builds that way only when the dashboard rebuilds a
-project. Move once a new project's web app starts under the newer major, checked with `aspire start` and test-platform's
-`aspire` stage, since CI doesn't build through Aspire; the `CommunityToolkit.Aspire.*` packages move with it.
+**A shipped library's EF Core floor follows bit Boilerplate's EF Core.** bit Boilerplate, in
+[bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric), keeps its EF Core on the version its PostgreSQL
+provider names, so a library's EF Core floor in that band (Bsqlite's Sqlite, BlazeDb's EF Core provider) can't go
+above it: the generated project's restore fails with NU1605.
 
 **Linux runners are on `ubuntu-26.04`** in the GitHub workflows. It
 defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
 RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). .NET for Android 10 accepts up
-to 21, so the jobs that build a .NET 10 Boilerplate project (the Todo CD's Linux jobs) and a .NET 10 project's
-runner image in `template.json` stay on `ubuntu-24.04`.
+to 21, so a job that builds a .NET 10 Android app stays on `ubuntu-24.04`.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
@@ -193,12 +162,8 @@ grep -rhoE '<Package(Reference|Version)[^>]*/?>' --include=*.csproj --include=*.
   | sort -u
 ```
 
-A `Condition="..."` attribute sits between `PackageVersion` and `Include` on many
-`Directory.Packages.props` lines — a naive `Include="X" Version="Y"` regex silently drops ~60
-packages, including everything Aspire, FusionCache, and Agents.AI.
-
-The Boilerplate AppHost's `<Project Sdk="Aspire.AppHost.Sdk/<version>">` is a NuGet pin the grep
-doesn't see. Keep it equal to the `Aspire.Hosting.*` packages; it stayed two patches behind them once.
+A `Condition="..."` attribute can sit between `PackageReference` and `Include` (the TFM-conditioned floors) — a
+naive `Include="X" Version="Y"` regex silently drops those packages.
 
 NuGet audit warnings (NU1902/NU1903) on a transitive package whose DLL the shared framework also
 carries, such as `System.Security.Cryptography.Pkcs` in `Microsoft.AspNetCore.App`, are noise: the
@@ -210,11 +175,9 @@ versions ascending):
 
 - latest stable = last entry with no `-`
 - target = latest stable, **except** a package whose newest release is a prerelease with no stable
-  above it, which takes the prerelease. That is the `OpenTelemetry.*` packages on beta and rc,
-  `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace` and
-  `Aspire.Hosting.Keycloak`.
+  above it, which takes the prerelease, such as the `OpenTelemetry.*` packages on beta and rc.
 
-Run the lookups with `xargs -P 12`; ~210 packages otherwise takes minutes.
+Run the lookups with `xargs -P 12`; one at a time takes minutes.
 
 **Check for intra-repo drift too.** The same package at different versions across projects is a bug
 even when neither is behind latest — grep for duplicate ids with differing versions and reconcile,
@@ -238,9 +201,8 @@ lock file, and report what only a held major would fix.
 
 A lock file has to come out of `npm install` on Linux unchanged. npm on Windows can write a `"name"`
 into the lock's root package from the folder name when `package.json` has none, and Linux npm drops
-it again. In the Boilerplate every generated project then ends its build with a modified
-`package-lock.json`, and the CI test that wants a clean git tree after `bit new` fails. Run
-`npm install` once in a Linux container to check, or keep the root package as it was.
+it again, so every Linux build ends with a modified `package-lock.json`. Run `npm install` once in a
+Linux container to check, or keep the root package as it was.
 
 ### GitHub Actions
 
@@ -264,11 +226,6 @@ object instead of the commit does not work.
 Where the pin's comment is a moving major (`# v2`), rewrite it to the concrete release the SHA
 belongs to (`# v2.0.0`), so the comment records a version rather than a branch.
 
-**bit platform's own actions in the Boilerplate stay on a tag.** The template's workflows use
-`bitfoundation/bitplatform/.github/actions/bit-bp/<action>@v-<the in-development version>`, with no SHA and
-no comment. The release's commit only exists once its PR is squash merged, so a SHA pin would always be a release
-behind; the version bump moves the tag with every other version string instead. Leave them as they are.
-
 Runner images (`runs-on`) are part of this: no `ubuntu-latest`, pin the concrete image.
 
 **Xcode follows the iOS workload.** The iOS jobs pin a runner image and `setup-xcode`'s `xcode-version`, and both
@@ -290,56 +247,21 @@ Feature *options* take a major too, never `latest` — `"helm": "3"`, not `"helm
 install scripts resolve a partial version through `find_version_from_git_tags`.
 
 The `image` follows the newest SDK of the major `src/global.json` uses: `curl -s
-https://builds.dotnet.microsoft.com/dotnet/release-metadata/<major>.0/releases.json` → `.latest-sdk`. Both
-devcontainers must agree, and `template.json`'s .NET 10 image takes the newest 10.0 SDK. MCR publishes an SDK's image
-hours after the SDK itself, so ask `https://mcr.microsoft.com/v2/dotnet/sdk/manifests/<tag>` before moving to it.
+https://builds.dotnet.microsoft.com/dotnet/release-metadata/<major>.0/releases.json` → `.latest-sdk`. MCR publishes an
+SDK's image hours after the SDK itself, so ask `https://mcr.microsoft.com/v2/dotnet/sdk/manifests/<tag>` before moving
+to it.
 
 ### dnx tool versions and global.json
 
-There are no `.config/dotnet-tools.json` manifests any more: every tool is run with `dnx
-<package>@<version>`, so the pins live in the workflow and doc lines that call them (`grep -rn "dnx
-.*@"`). `vpk` must equal the `Velopack` PackageReference version in the same project — Velopack
-requires the CLI and the library to match, and this has drifted before. `dotnet-ef` should equal the
-EF Core package version of the project it runs on: the .NET 11 one in the template's files, the .NET 10 one in
-`template.json`'s `efToolVersion` and in the Todo CD. Likewise the `npx playwright@<version>` command in the Boilerplate's two
-`.runsettings` (`src/Tests` and `src/Internal/Boilerplate.Tests.E2E`) must equal
-`Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
-every test that runs on it fails at connect.
+There are no `.config/dotnet-tools.json` manifests any more: a tool is run with `dnx <package>@<version>` or
+installed with `dotnet tool install <package> --version <version>`, so the pins live in the workflow and doc lines
+that call them (`grep -rnE "dnx .*@|tool install"`). `vpk` must equal the `Velopack` PackageReference version in the
+same project — Velopack requires the CLI and the library to match, and this has drifted before.
 
-`src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template `global.json` files pin
-`11.0.100` + `latestFeature`, so they accept any 11.0.x on a consumer's machine, and a .NET 10 project gets
-`10.0.100` + `latestFeature` from `template.json`. While the next major is a preview or release candidate, the
-template files pin the same SDK as `src/global.json`, also `rollForward: disable`, with a `template.json` switch
-for the `rollForward` too, and go back to `<major>.0.100` + `latestFeature` once it ships.
-
-### Container images
-
-In `Boilerplate.Server.AppHost/Infrastructure/Extensions/IDistributedApplicationBuilderExtensions.cs`.
-Pin a major (`pgvector/pgvector:pg18`, `mssql/server:2025-latest`, `redis:8`), never `latest`. Where
-an image publishes no major-only tag, pin the full newest tag and note it. Read every tag in that file,
-`WithImageTag` included, and the images it pulls from `ghcr.io`, whose tags Docker Hub's API doesn't list: ask
-`ghcr.io/v2/<repo>/manifests/<tag>` for the next minor with an anonymous pull token. The same tag also appears in
-the `docker run` hint of the Server.Api `appsettings.json`.
-
-Check the image is still *maintained*, not just that the tag is newest of its line. `redis/redis-stack`
-was pinned here until its upstream stopped publishing — Redis 8 folded the Stack modules into core, so
-Stack was abandoned at 7.4.x while `redis` kept shipping. A stale-but-valid tag looks identical to a
-current one; compare the registry's `last_updated` against the project's newest tag:
-
-```bash
-curl -s "https://hub.docker.com/v2/repositories/<repo>/tags?page_size=3&ordering=last_updated" \
-  | tr '{' '\n' | grep -oE '"name":"[^"]*"|"last_updated":"[^"]*"'
-```
-
-### Tools the bit CLI downloads
-
-`Oasdiff.cs` pins oasdiff's version together with the SHA-256 of every archive `bit api` downloads, and the CLI
-refuses an archive whose hash differs. So a new version takes new hashes too, each from the `checksums.txt` of that
-release: a version moved without them fails `bit api` on every machine. Read its release notes for renamed or removed
-rule ids as well: `ApiCompatibility.SeverityLevels` names one, and oasdiff refuses an id it doesn't know. The CLI's
-tests run a stand-in for oasdiff, so try the real one: with the CLI built from the branch, run `bit api release` and
-then `bit api check` in a project generated from the template, which downloads the archive, checks its hash and
-compares.
+`src/global.json` is `rollForward: disable` and tracks the newest SDK. The BlazorEmpty template's `global.json` pins
+`11.0.100` + `latestFeature`, so it accepts any 11.0.x on a consumer's machine. While the next major is a preview or
+release candidate, it pins the same SDK as `src/global.json`, also `rollForward: disable`, and goes back to
+`<major>.0.100` + `latestFeature` once it ships. The Platform and Sales websites pin their own .NET SDK.
 
 ## The report
 
@@ -393,7 +315,7 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
    The body starts with `closes #<n>` and carries the report: Changed, Breaking or important,
    Held back, Missed / drifted, Not verified.
 5. Run All Other CI (`all.other.ci.yml`), All Toolings CI (`all.toolings.ci.yml`), All Utilities CI
-   (`all.utilities.ci.yml`) and CI Templates E2E (`ci.templates.e2e.yml`, the Boilerplate's tests against each database)
+   (`all.utilities.ci.yml`) and CI Templates E2E (`ci.templates.e2e.yml`, projects made from BlazorEmpty)
    on the fork against the branch and give the four URLs with the PR link. All CI is split by folder now, so no one run
    covers every project:
 

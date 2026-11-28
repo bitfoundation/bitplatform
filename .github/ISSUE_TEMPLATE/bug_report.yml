@@ -4,7 +4,7 @@ body:
 - type: checkboxes
   attributes:
     label: Is there an existing issue for this?
-    description: Please search to see if an issue already exists for the bug you encountered ([bitplatform/issues](https://github.com/bitfoundation/bitplatform/issues)).
+    description: Please search to see if an issue already exists for the bug you encountered ([bitplatform/issues](https://github.com/bitfoundation/bitplatform/issues)). Bugs in bit Boilerplate or bit CLI go to [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric/issues).
     options:
     - label: I have searched the existing issues
       required: true
@@ -58,7 +58,6 @@ body:
       - .NET Sdk version? For example `10.0.100`
       - IDE / Version? For example `Visual Studio 17.8`
       - Bit.BlazorUI nuget package's version? (If applicable) For example `9.0.0`
-      - Bit.Boilerplate nuget package's version? (If applicable) For example `9.0.0`
       - Blazor mode? (If applicable) `WebAssembly (Client)`, `Server`, `Hybrid (MAUI)`, `Electron`
       - Customer / Consumers Browser / OS? (If applicable) For example `Chrome 101` For blazor web assembly and server or `Android 12` for hybrid
 

@@ -3,8 +3,9 @@
 <PageTitle>Variant Variables Regression</PageTitle>
 
 @* Every component that reads a tier of its public variables per variant (#13655), each rendered in all three variants,
-   enabled and disabled, in a wrapper the test sets the variables on. The second half holds the cases the tier must not
-   break: a variable set on a part's own style, a class an app hands a part, a variant an item overrides. *@
+   enabled and disabled (and a header scrolled as well), in a wrapper the test sets the variables on. The second half
+   holds the cases the tier must not break: a variable set on a part's own style, a class an app hands a part, a variant
+   an item overrides. *@
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>Variant Variables Regression</h3>
     <p>Status: <span id="status">@_status</span></p>
@@ -114,6 +115,7 @@
         new() { Text = "B", Value = "b", Style = "--bit-ChoiceGroup-item-background: rgb(201, 1, 1); --bit-ChoiceGroup-item-border-color: rgb(201, 1, 2);" },
     ];
     private readonly List<BitChoiceGroupItem<string>> _tileItems = [new() { Text = "Tile", Value = "t", IconName = BitIconName.Home }];
+    private readonly BitHeaderClassStyles _scrolledHeaderClasses = new() { Scrolled = "scrolled" };
     private readonly ICollection<string> _tags = ["one", "two"];
     private readonly List<BitTimelineItem> _timelineItems =
     [
@@ -152,7 +154,18 @@
         <div data-cmp="OtpInput"><BitOtpInput Variant="variant" Disabled="disabled" Length="2" /></div>
         <div data-cmp="TagsInput"><BitTagsInput Variant="variant" TagVariant="variant" Disabled="disabled" DefaultValue="_tags" /></div>
         <div data-cmp="Footer" style="width: 200px;"><BitFooter Variant="variant" Disabled="disabled" Bordered>Footer</BitFooter></div>
-        <div data-cmp="Header" style="width: 200px;"><BitHeader Variant="variant" Disabled="disabled" Bordered>Header</BitHeader></div>
+        <div data-cmp="Header" style="width: 200px;">
+            <BitHeader Variant="variant" Disabled="disabled" Bordered>Header</BitHeader>
+            @if (disabled is false)
+            {
+                @* The scrolled tier only reaches a header in its scrolled state: a pinned one that tracks it (a Scrolled
+                   class does) in a box the test scrolls off its top. The disabled rules outweigh that tier. *@
+                <div data-header-scroller style="height: 48px; overflow-y: auto;">
+                    <BitHeader Variant="variant" Bordered Sticky Classes="_scrolledHeaderClasses">Scrolled</BitHeader>
+                    <div style="height: 200px;"></div>
+                </div>
+            }
+        </div>
         <div data-cmp="Timeline" style="width: 200px;"><BitTimeline TItem="BitTimelineItem" Variant="variant" Disabled="disabled" Items="_timelineItems" /></div>
         <div data-cmp="DropMenu"><BitDropMenu Variant="variant" Disabled="disabled" Text="Drop"><div>Body</div></BitDropMenu></div>
         <div data-cmp="Pagination"><BitPagination Variant="variant" Disabled="disabled" Count="3" /></div>

@@ -9,7 +9,7 @@
 @code {
     [Parameter] public bool WithParams { get; set; } = true;
 
-    public static readonly BitFullCalendarTexts CascadedTexts = new() { TodayButton = "Now" };
+    public static readonly BitFullCalendarStrings CascadedStrings = new() { TodayButton = "Now" };
 
     public static readonly BitFullCalendarSettings SharedSettings = new() { Use24HourFormat = false };
 
@@ -20,7 +20,7 @@
             Class = "cascaded",
             Views = [BitFullCalendarView.Week, BitFullCalendarView.Month],
             HideFilters = true,
-            Texts = CascadedTexts,
+            Strings = CascadedStrings,
             Settings = SharedSettings,
             Classes = new() { Header = "cascaded-header", Event = "cascaded-event" },
             Styles = new() { Body = "outline: 1px solid red" }

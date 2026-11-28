@@ -250,6 +250,7 @@ public static class ComponentCatalog
         ["Button"] = BitIconName.ButtonControl,
         ["ButtonGroup"] = BitIconName.Group,
         ["MenuButton"] = BitIconName.ContextMenu,
+        ["ScrollToTop"] = BitIconName.Up,
         ["ToggleButton"] = BitIconName.PowerButton,
 
         // Inputs
@@ -277,6 +278,7 @@ public static class ComponentCatalog
         ["TimePicker"] = BitIconName.Timer,
 
         // Layouts
+        ["Container"] = BitIconName.SingleColumn,
         ["Footer"] = BitIconName.Footer,
         ["Grid"] = BitIconName.GridViewMedium,
         ["Header"] = BitIconName.Header,
@@ -328,7 +330,9 @@ public static class ComponentCatalog
 
         // Utilities
         ["CascadingValueProvider"] = BitIconName.Share,
+        ["CodeBlock"] = BitIconName.FileCode,
         ["Element"] = BitIconName.WebComponents,
+        ["Embed"] = BitIconName.Embed,
         ["FocusOnInvalidSubmit"] = BitIconName.Focus,
         ["Icon"] = BitIconName.AppIconDefault,
         ["Image"] = BitIconName.FileImage,
@@ -349,7 +353,9 @@ public static class ComponentCatalog
         ["AppShell"] = BitIconName.Devices4,
         ["AvatarGroup"] = BitIconName.People,
         ["Chart"] = BitIconName.BarChartVertical,
+        ["CommandPalette"] = BitIconName.CommandPrompt,
         ["ContextMenu"] = BitIconName.ContextMenu,
+        ["CopyButton"] = BitIconName.Copy,
         ["CountryPicker"] = BitIconName.Globe,
         ["DataGrid"] = BitIconName.Table,
         ["ErrorBoundary"] = BitIconName.ErrorBadge,
@@ -368,9 +374,11 @@ public static class ComponentCatalog
         ["PopConfirm"] = BitIconName.StatusCircleQuestionMark,
         ["ResourceTimeline"] = BitIconName.TimelineMatrixView,
         ["RichTextEditor"] = BitIconName.EditNote,
+        ["TextRotator"] = BitIconName.Sync,
         ["TextShimmer"] = BitIconName.ChatBot,
         ["TimeZonePicker"] = BitIconName.WorldClock,
         ["Virtualize"] = BitIconName.RowsGroup,
+        ["VirtualKeyboard"] = BitIconName.KeyboardClassic,
 
         // AI
         ["AiAgentRunView"] = BitIconName.FlowChart,
@@ -440,6 +448,7 @@ public static class ComponentCatalog
         ["Button"] = "The primary way to trigger an action, in fill, outline and text variants, floating if needed.",
         ["ButtonGroup"] = "Joins related buttons into one unit, optionally single- or multi-select.",
         ["MenuButton"] = "A button that opens a menu of related actions, with submenus, check and choice items.",
+        ["ScrollToTop"] = "A button back to the top of the page or a pane, floating in a corner and revealed once the reader has scrolled away.",
         ["ToggleButton"] = "A button that stays pressed and reports its state through aria-pressed or the ARIA mode it is given.",
 
         // Inputs
@@ -467,6 +476,7 @@ public static class ComponentCatalog
         ["TimePicker"] = "A drop-down for an hour and minute value, with a typeable text field.",
 
         // Layouts
+        ["Container"] = "Centers the content of a page in a column with a maximum width and side gutters.",
         ["Footer"] = "The bar at the bottom of a site or an application.",
         ["Grid"] = "Divides the available width into equal columns and lays its items out on them.",
         ["Header"] = "The bar at the top of a site or an application.",
@@ -518,7 +528,9 @@ public static class ComponentCatalog
 
         // Utilities
         ["CascadingValueProvider"] = "Cascades several values to child components without nesting providers.",
+        ["CodeBlock"] = "Shows a block of code with a button that copies it, an optional header naming it, and a terminal look for shell commands.",
         ["Element"] = "Renders any HTML tag with the library's own styling parameters.",
+        ["Embed"] = "Frames a video, a map or another site in an iframe at an aspect ratio that scales with its container, with an optional click-to-load placeholder.",
         ["FocusOnInvalidSubmit"] = "Moves the focus to the first invalid field of an EditForm when its submit fails.",
         ["Icon"] = "Renders a Fabric glyph, or an icon from any other set you point it at.",
         ["Image"] = "An image with fit, shape and responsive sources, loading states and a fallback.",
@@ -539,7 +551,9 @@ public static class ComponentCatalog
         ["AppShell"] = "The cross-platform application container: safe areas, scroll state, chrome.",
         ["AvatarGroup"] = "The avatars of a group of people as overlapping coins, with a +N coin for the rest.",
         ["Chart"] = "A native Blazor charting component rendered entirely with SVG.",
+        ["CommandPalette"] = "The Ctrl+K box that fuzzy-searches every page, action and setting of an app and runs the one picked.",
         ["ContextMenu"] = "A menu opened where an area of the page is right-clicked, or with Shift+F10 or the Menu key.",
+        ["CopyButton"] = "A button that copies a value to the clipboard and says so for a moment, to the eye and to screen readers.",
         ["CountryPicker"] = "A searchable country selector with flags, bound to a BitCountry.",
         ["DataGrid"] = "An information-rich grid with sorting, filtering, paging and virtualization.",
         ["ErrorBoundary"] = "Catches exceptions thrown by its children and renders a recoverable fallback UI.",
@@ -558,9 +572,11 @@ public static class ComponentCatalog
         ["PopConfirm"] = "A confirmation asked in a small popup anchored to the action that needs it.",
         ["ResourceTimeline"] = "A resource planner: allocation bars on resource rows along a zoomable, time-zone-aware time axis.",
         ["RichTextEditor"] = "A native WYSIWYG editor written in C#, with a configurable toolbar.",
+        ["TextRotator"] = "Cycles through words or phrases in one place, without moving the text around it.",
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",
         ["TimeZonePicker"] = "A searchable time zone selector with UTC offsets, bound to a TimeZoneInfo or its IANA id.",
         ["Virtualize"] = "Renders only the rows currently in view, for very long lists.",
+        ["VirtualKeyboard"] = "An on-screen keyboard of language layouts and purpose pads (phone, PIN, POS, ...), typing into a value or into the focused input.",
 
         // AI
         ["AiAgentRunView"] = "An agent's run: its goal, its plan, each step's state and timing, and the question it is waiting on.",

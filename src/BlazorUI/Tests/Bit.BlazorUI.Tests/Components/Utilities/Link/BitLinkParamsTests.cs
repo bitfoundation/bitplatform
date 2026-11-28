@@ -174,6 +174,33 @@ public class BitLinkParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitLinkShouldTakeACascadedIconUrl()
+    {
+        var component = RenderComponent<BitLinkParamsTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Params, new BitLinkParams { IconUrl = "/images/logo.svg" });
+        });
+
+        Assert.AreEqual("/images/logo.svg", component.Find(".bit-lnk-icu").GetAttribute("src"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldTakeACascadedIconAlt()
+    {
+        var component = RenderComponent<BitLinkParamsTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Params, new BitLinkParams { IconUrl = "/images/logo.svg", IconAlt = "bit platform" });
+        });
+
+        var picture = component.Find(".bit-lnk-icu");
+
+        Assert.AreEqual("bit platform", picture.GetAttribute("alt"));
+        Assert.IsFalse(picture.HasAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
     public void BitLinkShouldKeepItsOwnValuesOverTheCascadedOnes()
     {
         var component = RenderComponent<BitLinkParamsTest>(parameters =>

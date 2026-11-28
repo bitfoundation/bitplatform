@@ -16,7 +16,7 @@ namespace Bit.Bmage.Demo.Server.Services;
 /// call that returns its full text, so one search is enough to know what to ask for next. The
 /// ranking itself is <see cref="McpSearch"/>, shared with the other utilities' MCP servers: it reads
 /// a query word by its stem ("uploaded" finds "upload", "persist" finds "persistence"), only from the
-/// start of a word ("let" is not inside "Balette"), and by how rare it is, so the words a request is
+/// start of a word ("let" is not inside "Palette"), and by how rare it is, so the words a request is
 /// phrased in ("photo") cannot outrank the one it is about ("shrink").
 /// </para>
 /// </summary>
