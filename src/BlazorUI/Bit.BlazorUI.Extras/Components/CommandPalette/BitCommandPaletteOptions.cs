@@ -9,7 +9,13 @@ public sealed class BitCommandPaletteOptions
     /// <summary>Additional toggle shortcuts (e.g. <c>Ctrl+Shift+P</c>, <c>/</c>).</summary>
     public List<BitCommandPaletteKeyboardShortcut> AdditionalToggleShortcuts { get; } = [];
 
-    /// <summary>Don't fire global command shortcuts while an input, textarea or contenteditable has focus.</summary>
+    /// <summary>
+    /// Don't fire global command shortcuts on a plain key pressed while an input, textarea or contenteditable has focus. A
+    /// chord with a modifier still fires there. The palette's toggle is the element's first (an editor's Ctrl+K, which it
+    /// claims by preventing its default): the palette decides on it only after the element has had it. A chord registered
+    /// as a command is the palette's ahead of the page, there as everywhere. Set to false to fire on plain keys too, the
+    /// palette then hearing every key ahead of the page.
+    /// </summary>
     public bool SuppressShortcutsInEditableElements { get; set; } = true;
 
     /// <summary>Milliseconds a multi-chord sequence (<c>G I</c>) waits for the next chord. Must be positive.</summary>

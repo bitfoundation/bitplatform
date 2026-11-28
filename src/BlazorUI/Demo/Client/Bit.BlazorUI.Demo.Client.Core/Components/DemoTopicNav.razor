@@ -1,0 +1,56 @@
+﻿@inherits AppComponentBase
+
+@* The ways from one topic of a component page to another (see DemoTopic). The page renders three of
+   these: the strip under its title, the cards closing its overview and the pager at its foot. They are
+   rendered before the topics have registered - the topics are further down the same page - so each one
+   listens for the page's TopicsChanged and draws itself again once there is something to list. The
+   links are plain anchors: a crawler follows them, and the router takes them over in the browser. *@
+@if (Page is not null && Page.Topics.Count > 0)
+{
+    @switch (Kind)
+    {
+        case DemoTopicNavKind.Strip:
+            <nav class="demo-topics" aria-label="@($"{Page.Name} topics")">
+                <ul class="demo-topics-list">
+                    @foreach (var link in Links())
+                    {
+                        <li>
+                            <a href="@link.Url"
+                               class="@($"demo-topics-link{(link.Active ? " active" : "")}")"
+                               aria-current="@(link.Active ? "page" : null)">@link.Title</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+
+            @if (Page.IsUnknownTopic)
+            {
+                <p class="demo-topics-missing">@Page.Name has no topic called "@Page.Topic". Pick one of the topics above.</p>
+            }
+            break;
+
+        case DemoTopicNavKind.Cards:
+            <DocSection Id="topics-section" Title="Topics"
+                        Description="@($"Everything else about {Page.Name}, one page per topic.")">
+                <ul class="demo-topic-cards">
+                    @foreach (var link in Links().Where(l => l.Active is false))
+                    {
+                        <li>
+                            <a href="@link.Url" class="demo-topic-card">
+                                <span class="demo-topic-card-title">@link.Title</span>
+                                @if (link.Description.HasValue())
+                                {
+                                    <span class="demo-topic-card-text">@link.Description</span>
+                                }
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </DocSection>
+            break;
+
+        case DemoTopicNavKind.Pager:
+            <DocPager Pages="PagerItems()" CurrentUrl="@Page.ActiveTopicUrl" AriaLabel="@($"{Page.Name} topics")" />
+            break;
+    }
+}

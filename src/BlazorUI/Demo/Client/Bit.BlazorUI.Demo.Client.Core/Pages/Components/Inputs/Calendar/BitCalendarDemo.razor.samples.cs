@@ -71,7 +71,9 @@ private void HandleOnMonthChange(DateTimeOffset month)
 <BitCalendar DisabledDates=""@disabledDates"" IsDateDisabled=""@(d => d.Day % 2 == 1)"" />
 
 <BitCalendar HighlightedDates=""@highlightedDates""
-             GetDayClass=""@(d => d.DayOfWeek == DayOfWeek.Sunday ? ""sunday-cell"" : null)"" />";
+             GetDayClass=""@(d => d.DayOfWeek == DayOfWeek.Sunday ? ""sunday-cell"" : null)"" />
+
+<BitCalendar HighlightToday=""false"" />";
     private readonly string example5CsharpCode = @"
 private DayOfWeek[] weekendDays = [DayOfWeek.Saturday, DayOfWeek.Sunday];
 

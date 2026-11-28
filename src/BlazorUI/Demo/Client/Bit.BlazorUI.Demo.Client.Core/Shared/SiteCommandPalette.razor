@@ -1,0 +1,11 @@
+﻿@inherits AppComponentBase
+
+@* The site's Ctrl+K (Cmd+K on a Mac): every component page and guide of the nav, and - once something is typed -
+   every topic and example section of the component pages, which is what makes a page of sixty sections as easy to
+   reach into as a page of six. The library's own BitCommandPalette, so the docs use the component they document.
+
+   The CommandPalette pages leave it out (MainLayout): they hold a modal palette of their own to demonstrate, and one
+   modal palette per app is the rule - two would both answer Ctrl+K. *@
+<BitCommandPalette Commands="_commands"
+                   Placeholder="Search components, guides and examples"
+                   NoResultsText="Nothing matches. Try a component name, or what an example shows - &quot;multi select&quot;, &quot;rtl&quot;." />

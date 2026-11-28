@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Models;
@@ -24,6 +25,12 @@ public sealed class ComponentCatalogItem
 
     /// <summary>The demo page's route (e.g. "/components/datepicker").</summary>
     public required string Url { get; init; }
+
+    /// <summary>
+    /// The other routes the same page answers on (the nav item's <c>AdditionalUrls</c>, e.g.
+    /// "/components/date-picker"), so a page reached through one still finds its catalog entry.
+    /// </summary>
+    public IReadOnlyList<string> AdditionalUrls { get; init; } = [];
 
     /// <summary>The category the nav groups it under (e.g. "Inputs").</summary>
     public required string Category { get; init; }

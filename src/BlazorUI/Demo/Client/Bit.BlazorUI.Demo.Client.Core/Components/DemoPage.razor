@@ -196,13 +196,17 @@ else
                         }
                     </div>
                 }
+                @if (HasTopics)
+                {
+                    <DemoTopicNav Kind="DemoTopicNavKind.Strip" ActiveRoute="@ActiveRoute" />
+                }
             </header>
 
             <div class="motion-bar">
                 <BitToggle @bind-Value="_forceAnimation" Text="ForceAnimation (whole page)" />
             </div>
 
-            @if (Notes.HasValue() || NotesTemplate is not null)
+            @if (IsOverviewTopic && (Notes.HasValue() || NotesTemplate is not null))
             {
                 <DocSection Id="notes-section" Title="Notes">
                     @if (NotesTemplate is not null)
@@ -216,7 +220,7 @@ else
                 </DocSection>
             }
 
-            @if (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null)
+            @if (IsOverviewTopic && (IntroductionVideoUrl.HasValue() || Introduction.HasValue() || IntroductionTemplate is not null))
             {
                 <DocSection Id="introduction-section" Title="Introduction">
                     @if (IntroductionVideoUrl.HasValue())
@@ -242,12 +246,34 @@ else
                 </DocSection>
             }
 
-            <DocSection Id="@USAGE_ELEMENT_ID" Title="Usage"
-                        Description="Every example is live. Open its code to see exactly what produced the component running underneath.">
+            @if (HasTopics)
+            {
+                @* Every topic is in the markup, and each one draws its own section - only the one the address
+                   names renders anything. What the page puts beside them (the one modal palette a page may
+                   have) is drawn on every topic. *@
                 @(ChildContent ?? Examples)
-            </DocSection>
 
-            @if (CssVariables.Any())
+                @if (IsOverviewTopic)
+                {
+                    <DemoTopicNav Kind="DemoTopicNavKind.Cards" ActiveRoute="@ActiveRoute" />
+                }
+            }
+            else
+            {
+                <DocSection Id="@USAGE_ELEMENT_ID" Title="Usage"
+                            Description="Every example is live. Open its code to see exactly what produced the component running underneath.">
+                    @(ChildContent ?? Examples)
+                </DocSection>
+            }
+
+            @if (IsApiTopic)
+            {
+                <PageOutlet Url="@TopicUrl(API_TOPIC_ROUTE).TrimStart('/')"
+                            Title="@($"{Name}: {API_TOPIC_TITLE}")"
+                            Description="@($"Every parameter, public member, sub-class, enum and CSS variable of Bit{Name}.")" />
+            }
+
+            @if (CssVariables.Any() && (HasTopics is false || IsApiTopic))
             {
                 <DocSection Id="css-variables-section" Title="CSS variables"
                             Description="The public custom properties this component reads off its root, for what no parameter covers.">
@@ -265,6 +291,8 @@ else
                 </DocSection>
             }
 
+            @if (HasTopics is false || IsApiTopic)
+            {
             <DocSection Id="api-section" Title="API"
                         Description="Every parameter, public member, sub-class and enum this component exposes.">
 
@@ -315,6 +343,12 @@ else
                     }
                 </div>
             </DocSection>
+            }
+
+            @if (HasTopics)
+            {
+                <DemoTopicNav Kind="DemoTopicNavKind.Pager" ActiveRoute="@ActiveRoute" />
+            }
 
             @* The same closing block as every prose page. The source links the old wall of "Or you
                can review / edit ..." sentences carried are all still here - as buttons, because that

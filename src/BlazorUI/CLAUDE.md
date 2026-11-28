@@ -663,6 +663,25 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
   passes its language as the third argument. One pane draws no tab strip, so an example that has only
   `CodeFiles`, or only the pair, looks exactly as it always has.
 
+- **A page too long for one page is split into topics**, each a page of its own. `DemoPage HasTopics
+  Topic="@Topic"`, a second route `@page "/components/<name>/{Topic}"` beside the page's own and a
+  `[Parameter] public string? Topic` in its code-behind; then every `DemoExample` sits inside a
+  `<DemoTopic Title="..." Route="..." Description="...">` (the first is the overview, with no `Route`).
+  Only the topic the address names renders: the overview carries the notes and closes with a card per
+  topic, the strip under the title and the pager at the foot link them all, and the CSS variables and
+  the API tables are the `/api` topic. Sections keep one numbering across the whole file (the anchors
+  stay unique, so a section's address is its topic's plus `#exampleN`), and what the page renders
+  beside the topics (BitCommandPalette's one modal palette) is drawn on every one. The MCP server reads
+  the topic around each section as its `Tab`, with the topic's address. Reach for it past ~30
+  sections whose subjects fall apart into groups; a multi-API page keeps its `BitPivot`. A topic's
+  sections are written inline (BitCommandPalette) or are a component of their own inside the
+  `DemoTopic` (BitChart's `<_BitChartBarDemo />`, one per chart type or feature). The component's nav item
+  takes `Match = BitNavMatch.Prefix`, so it stays selected on every topic; the server lists each topic in the
+  sitemap and answers an address naming no topic of the page with a 404 (`Startup/Middlewares.cs`), both off
+  the same markup the MCP server reads. A link to a part of the API tables (`#css-variables-section`, a
+  class-styles anchor) is written to the `/api` topic: `/components/<name>/api#<anchor>`.
+  `DemoPageContractTests` pins the routes, the overview and that every section is in a topic.
+
 ## The two page shells
 
 Every page is one column of anchored sections with the "on this page" rail beside it; only what the
@@ -694,6 +713,12 @@ Shared by both:
   the map may lag the nav without leaving a card blank. `ComponentCatalog.Search` ranks matches (name,
   then alias, then the words that only describe it); the gallery uses it when a term is typed, the
   header's box always.
+- **`SiteCommandPalette`** - the site's Ctrl+K, a `BitCommandPalette` in `MainLayout`: every
+  component and guide of the nav, and, once something is typed, every topic and example section of
+  the component pages, fetched once from the server's `api/SiteSearch/GetSections` (read off the same
+  demo markup as the MCP server, which only the server carries). The CommandPalette pages leave it
+  out: their own modal palette is the one they show, and an app has one. The header's search box
+  keeps `/`.
 - **`Styles/abstracts/_docs.scss`** - the docs layer's own tokens and mixins (rhythm, measure, focus
   ring, surfaces, scrollbars, eyebrow, display type), each either derived from a `--bit-*` token, so
   all four presets and both schemes re-skin the chrome for free, or a pure layout value the library

@@ -10,6 +10,18 @@ public partial class DemoPage
     /// <summary>The anchor of the section that holds the examples.</summary>
     private const string USAGE_ELEMENT_ID = "usage-section";
 
+    /// <summary>
+    /// The route of the API reference of a page split into topics (<see cref="HasTopics"/>), which is a topic of
+    /// every such page and so a route no <see cref="DemoTopic"/> may take.
+    /// </summary>
+    public const string API_TOPIC_ROUTE = "api";
+
+    /// <summary>What the API reference of a page split into topics is called in its strip, cards and pager.</summary>
+    public const string API_TOPIC_TITLE = "API reference";
+
+    /// <summary>The topics of a page split into them, in the order they are written; see <see cref="RegisterTopic"/>.</summary>
+    private readonly List<DemoTopic> _topics = [];
+
     private bool _forceAnimation;
 
     /// <summary>
@@ -56,6 +68,7 @@ public partial class DemoPage
     public bool HasRendered { get; private set; }
 
     [AutoInject] private DemoContentDeferral _contentDeferral = default!;
+    [AutoInject] private HttpClient _httpClient = default!;
 
     /// <summary>
     /// This page's entry in the catalog, which is what supplies the category shown above the title.
@@ -92,6 +105,12 @@ public partial class DemoPage
     [Parameter] public List<ComponentParameter> PublicMembers { get; set; } = [];
 
     /// <summary>
+    /// The topic the address names, for a page that <see cref="HasTopics"/>: the last segment of the route, or null for
+    /// the component's own address, which shows the overview.
+    /// </summary>
+    [Parameter] public string? Topic { get; set; }
+
+    /// <summary>
     /// The public CSS custom properties the component reads off its root. Rendered as its own section
     /// between the examples and the API tables, since they are the theming surface a stylesheet reaches
     /// rather than a parameter markup sets.
@@ -102,7 +121,114 @@ public partial class DemoPage
     [Parameter] public string? GitHubLegacyUrl { get; set; }
     [Parameter] public string? GitHubAIUrl { get; set; }
     [Parameter] public string? GitHubDemoUrl { get; set; }
+
+    /// <summary>
+    /// Whether the examples are split into <see cref="DemoTopic"/>s, each with a page of its own under
+    /// <c>/components/&lt;component&gt;/&lt;topic&gt;</c>, for a component whose documentation is too long to read,
+    /// render or navigate as one page. The component's own address then shows the overview topic with the notes and
+    /// the introduction, every topic is one link of the strip under the title, and the CSS variables and the API
+    /// tables are a topic of their own (<see cref="API_TOPIC_ROUTE"/>). The page declares the route
+    /// <c>@page "/components/&lt;component&gt;/{Topic}"</c> beside its own and hands <see cref="Topic"/> in.
+    /// </summary>
+    [Parameter] public bool HasTopics { get; set; }
     [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+
+    /// <summary>The topics of the page, in the order they are written. Empty for a page that is not split into topics.</summary>
+    public IReadOnlyList<DemoTopic> Topics => _topics;
+
+    /// <summary>
+    /// Raised as the topics register and go. The topics are written below the strip that lists them, so the strip
+    /// is drawn before there is anything to list and draws itself again on this.
+    /// </summary>
+    public event Action? TopicsChanged;
+
+    /// <summary>The topic route the address names, normalized; empty for the component's own address.</summary>
+    private string ActiveRoute => Topic?.Trim('/').ToLowerInvariant() ?? string.Empty;
+
+    /// <summary>Whether the overview is on screen - always, for a page that is not split into topics.</summary>
+    private bool IsOverviewTopic => HasTopics is false || ActiveRoute.Length == 0;
+
+    /// <summary>Whether the API reference of a page split into topics is on screen.</summary>
+    public bool IsApiTopic => HasTopics && ActiveRoute == API_TOPIC_ROUTE;
+
+    /// <summary>Whether the address names a topic the page does not have.</summary>
+    public bool IsUnknownTopic => HasTopics && ActiveRoute.Length > 0 && IsApiTopic is false && _topics.Count > 0 && _topics.Any(IsTopicActive) is false;
+
+    /// <summary>The address of the topic on screen.</summary>
+    public string ActiveTopicUrl => TopicUrl(ActiveRoute);
+
+    /// <summary>Whether a topic is the one the address names: the overview for the component's own address.</summary>
+    public bool IsTopicActive(DemoTopic topic)
+        => string.Equals(topic.Route?.Trim('/') ?? string.Empty, ActiveRoute, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>The address of a topic of this page: the component's own for the overview (a null or empty route).</summary>
+    public string TopicUrl(string? route)
+    {
+        var baseUrl = _catalogItem?.Url ?? BaseUrlFromAddress();
+
+        return route.HasValue() ? $"{baseUrl}/{route!.Trim('/').ToLowerInvariant()}" : baseUrl;
+    }
+
+    /// <summary>The component's address for a page with no nav entry: the address on screen less the topic segment.</summary>
+    private string BaseUrlFromAddress()
+    {
+        var path = "/" + NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Split('?', '#')[0].TrimEnd('/');
+
+        return ActiveRoute.Length > 0 && path.EndsWith("/" + ActiveRoute, StringComparison.OrdinalIgnoreCase)
+            ? path[..^(ActiveRoute.Length + 1)]
+            : path;
+    }
+
+    /// <summary>Called by a <see cref="DemoTopic"/> as it starts, which lists it in the strip, the cards and the pager.</summary>
+    public void RegisterTopic(DemoTopic topic)
+    {
+        if (_topics.Contains(topic)) return;
+
+        _topics.Add(topic);
+
+        TopicsChanged?.Invoke();
+    }
+
+    /// <summary>Called by a <see cref="DemoTopic"/> as it goes.</summary>
+    public void UnregisterTopic(DemoTopic topic)
+    {
+        if (_topics.Remove(topic) is false) return;
+
+        TopicsChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// Sends an "#exampleN" address of the overview to the topic that renders that section. A page split into topics
+    /// keeps its section numbers, so a link written while it was one page (/components/fullcalendar#example8) still
+    /// names the section - only the overview no longer renders it. Which topic does is read off the server's search
+    /// list, built from the same markup; the overview's own sections, and a failed lookup, leave the address alone.
+    /// </summary>
+    private async Task RedirectToSectionTopicAsync()
+    {
+        try
+        {
+            if (HasTopics is false || IsOverviewTopic is false) return;
+
+            var fragment = new Uri(NavigationManager.Uri).Fragment.TrimStart('#');
+
+            if (fragment.StartsWith("example", StringComparison.OrdinalIgnoreCase) is false) return;
+
+            var baseUrl = TopicUrl(null).TrimEnd('/');
+            var sections = await _httpClient.GetFromJsonAsync("api/SiteSearch/GetSections", AppJsonContext.Default.ListSiteSearchSectionDto);
+
+            var section = sections?.FirstOrDefault(s => s.Url.StartsWith($"{baseUrl}/", StringComparison.OrdinalIgnoreCase)
+                                                     && s.Url.EndsWith($"#{fragment}", StringComparison.OrdinalIgnoreCase));
+
+            // The reader may have moved on while the list was on its way.
+            if (section is null || new Uri(NavigationManager.Uri).Fragment.TrimStart('#') != fragment || IsOverviewTopic is false) return;
+
+            NavigationManager.NavigateTo(section.Url, replace: true);
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
+        }
+    }
 
 
     /// <summary>
@@ -119,6 +245,8 @@ public partial class DemoPage
     private bool ShouldDeferApi()
     {
         if (RenderForMcpClient) return false;
+        // On a page split into topics the tables are a page of their own, and on that page they are what the reader came for.
+        if (HasTopics) return false;
         if (InPrerenderSession) return false;
         if (NavigationManager.Uri.Contains('#', StringComparison.Ordinal)) return false;
 
@@ -141,6 +269,8 @@ public partial class DemoPage
         await base.OnAfterFirstRenderAsync();
 
         if (RenderForMcpClient) return;
+
+        _ = RedirectToSectionTopicAsync();
 
         if (_isApiMounted is false)
         {

@@ -47,7 +47,8 @@ public partial class BitFullCalendarE2ETests
         var cal = Page.Locator("#default-date-cal");
 
         await Expect(Title(cal)).ToHaveTextAsync("December 2025");
-        await Expect(Page.Locator("#default-date-range")).ToHaveTextAsync("2025-12-01");
+        // The month grid's range starts on the first day it shows: Sunday, November 30 in en-US.
+        await Expect(Page.Locator("#default-date-range")).ToHaveTextAsync("2025-11-30");
         await cal.Locator(".bit-bfc-btn-nav[aria-label='Next']").ClickAsync();
         await Expect(Title(cal)).ToHaveTextAsync("January 2026");
         await cal.Locator(".bit-bfc-header-left > .bit-bfc-btn", new() { HasText = "Today" }).ClickAsync();
@@ -120,8 +121,8 @@ public partial class BitFullCalendarE2ETests
         var html = await response.TextAsync();
 
         Assert.IsTrue(response.Ok);
-        StringAssert.Contains(html, "Loaded Jul 1");
-        StringAssert.Contains(html, "id=\"loaded\">2025-07-01|2025-07-31|5");
+        StringAssert.Contains(html, "Loaded Jun 29");
+        StringAssert.Contains(html, "id=\"loaded\">2025-06-29|2025-08-02|5");
     }
 
     [TestMethod]

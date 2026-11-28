@@ -100,8 +100,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// Whether the TimePicker allows input a time string directly or not.
     /// </summary>
     /// <remarks>
-    /// The text is parsed with the exact <see cref="ValueFormat"/> of the picker, so what is typed has to
-    /// match the format the picker itself writes.
+    /// With a <see cref="ValueFormat"/> the text is parsed with that exact format, so what is typed has to
+    /// match the format the picker itself writes. Without one it is read in the culture's time pattern for the
+    /// <see cref="TimeFormat"/> (with seconds when they are shown), with or without the leading zeros.
     /// </remarks>
     [Parameter] public bool AllowTextInput { get; set; }
 
@@ -362,8 +363,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// </summary>
     /// <remarks>
     /// Hours past it, and the minutes past it inside its own hour, are dimmed on the dial and refused by the
-    /// pointer and the keyboard. When the text input is allowed, a time typed past it fails validation the
-    /// same way an unparsable one does. A value outside of a day is a time of day all the same, so it is
+    /// pointer and the keyboard. When the text input is allowed, a time typed past it fails validation with
+    /// the <see cref="OutOfRangeErrorMessage"/>, apart from an unreadable one. A value outside of a day is a time of day all the same, so it is
     /// clamped into one before anything is compared against it.
     /// <br />
     /// The pair is a range inside one day and does not wrap past midnight: a <see cref="MinTime"/> later than
@@ -375,7 +376,17 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// The earliest time that can be selected.
     /// </summary>
-    /// <inheritdoc cref="MaxTime" path="/remarks"/>
+    /// <remarks>
+    /// The minimum itself and every time after it are selectable; hours before it, and the minutes before it
+    /// inside its own hour, are dimmed on the dial and refused by the pointer and the keyboard. When the text
+    /// input is allowed, a time typed before it fails validation with the <see cref="OutOfRangeErrorMessage"/>,
+    /// apart from an unreadable one. A value outside of a day is a time of day all the same, so it is clamped
+    /// into one before anything is compared against it.
+    /// <br />
+    /// The pair is a range inside one day and does not wrap past midnight: a <see cref="MinTime"/> later than
+    /// the <see cref="MaxTime"/> leaves nothing selectable. A window that does wrap - a night shift, a quiet
+    /// period - is expressed with <see cref="AllowedHours"/> instead.
+    /// </remarks>
     [Parameter] public TimeSpan? MinTime { get; set; }
 
     /// <summary>

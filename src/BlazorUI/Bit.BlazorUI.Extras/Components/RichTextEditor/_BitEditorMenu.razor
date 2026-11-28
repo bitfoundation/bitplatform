@@ -1,0 +1,36 @@
+﻿@namespace Bit.BlazorUI
+@typeparam TItem
+
+<div class="@Class" style="@Style">
+    @* data-bit-esc on the filter claims the Escape that dismisses the menu (HandleOnKeyDownAsync, see
+       Utils.claimEscape), so a dialog around the editor does not close on that same press. The filter is only
+       rendered while the menu is, which is when its handler acts on the key. *@
+    <input type="text" class="@Classes.Input" aria-label="@Label"
+           placeholder="@Placeholder"
+           @ref="_inputRef"
+           role="combobox"
+           aria-expanded="true"
+           aria-autocomplete="list"
+           aria-controls="@($"{Id}-list")"
+           aria-activedescendant="@(Items.Count > 0 ? $"{Id}-item-{_index}" : null)"
+           value="@Filter" @oninput="HandleOnInput"
+           @onkeydown="HandleOnKeyDownAsync"
+           data-bit-esc="claim" />
+    <div class="@Classes.List" role="listbox" id="@($"{Id}-list")" aria-label="@Label">
+        @for (var i = 0; i < Items.Count; i++)
+        {
+            var index = i;
+            var item = Items[index];
+            <button type="button" id="@($"{Id}-item-{index}")"
+                    role="option"
+                    tabindex="-1"
+                    aria-selected="@(index == _index ? "true" : "false")"
+                    class="@(index == _index ? $"{Classes.Item} {Classes.SelectedItem}" : Classes.Item)"
+                    @onmousedown:preventDefault="true" @onclick="() => OnPick.InvokeAsync(item)">@ItemTemplate(item)</button>
+        }
+    </div>
+    @if (Items.Count == 0)
+    {
+        <div class="@Classes.Empty" role="status">@EmptyText</div>
+    }
+</div>

@@ -677,6 +677,44 @@ public class BitSeparatorTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitSeparatorShouldRespectFade(bool fade)
+    {
+        var component = RenderComponent<BitSeparator>(parameters =>
+        {
+            parameters.Add(p => p.Fade, fade);
+        });
+
+        var cssClass = fade ? "bit-spr-fad " : null;
+
+        component.MarkupMatches(@$"<div role=""separator"" class=""bit-spr {cssClass}bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldRespectFadeChangingAfterRender()
+    {
+        var component = RenderComponent<BitSeparator>();
+
+        component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Fade, true);
+        });
+
+        component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-fad bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Fade, false);
+        });
+
+        component.MarkupMatches(@"<div role=""separator"" class=""bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+    }
+
+    [TestMethod,
         DataRow("3px"),
         DataRow("0.5rem"),
         DataRow(null)

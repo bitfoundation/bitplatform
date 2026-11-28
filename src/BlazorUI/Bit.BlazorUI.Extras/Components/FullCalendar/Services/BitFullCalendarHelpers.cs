@@ -1655,6 +1655,10 @@ internal static class BitFullCalendarHelpers
         return events.Where(ev => OverlapsPeriod(ev, monthStart, monthEnd)).ToList();
     }
 
+    /// <summary>Events overlapping the inclusive range from <paramref name="start"/> to <paramref name="endInclusive"/>.</summary>
+    internal static List<BitFullCalendarEvent> GetEventsInRange(List<BitFullCalendarEvent> events, DateTime start, DateTime endInclusive)
+        => events.Where(ev => OverlapsPeriod(ev, start, endInclusive)).ToList();
+
     /// <summary>
     /// Events overlapping the date range implied by the current view and selected date
     /// (used for attendee filters and similar "in this view" logic).

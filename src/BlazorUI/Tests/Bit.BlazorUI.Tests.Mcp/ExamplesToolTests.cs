@@ -89,6 +89,26 @@ public class ExamplesToolTests : McpTestBase
     }
 
     [TestMethod]
+    public async Task A_page_split_into_topics_names_each_topic_with_its_address()
+    {
+        // BitCommandPalette's page is split into topics, each a page of its own under the component's address: the
+        // sections are read off the DemoTopic around them, and the answer says where each topic lives.
+        var reference = await CallAsync("GetBitBlazorUIComponent", new { name = "BitCommandPalette", section = "Worked examples" });
+        var keyboard = await CallAsync("GetBitBlazorUIComponentExamples", new { name = "BitCommandPalette", example = "Keyboard & shortcuts" });
+
+        using var scope = Assert.Scope();
+
+        StringAssert.Contains(reference, "**Overview** (/components/commandpalette) - Basic,");
+        StringAssert.Contains(reference, "**Search & sources** (/components/commandpalette/search) - Fuzzy matching,");
+        Assert.DoesNotContain(" tab** - ", reference, "A topic was called a tab.");
+
+        // A topic is asked for by its title, as a tab is.
+        StringAssert.Contains(keyboard, "## Keyboard & shortcuts · Global shortcuts");
+        StringAssert.Contains(keyboard, "```razor");
+        Assert.DoesNotContain("## Overview · ", keyboard);
+    }
+
+    [TestMethod]
     public async Task A_tab_name_wins_over_a_section_whose_title_contains_it()
     {
         // "Option" is one of BitDropdown's three APIs and also a word in "Search options". A caller

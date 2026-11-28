@@ -156,14 +156,16 @@ public partial class BitFullCalendarE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task Views_TheMonthViewRange_IsTheMonthItself()
+    public async Task Views_TheMonthViewRange_IsTheWholeGrid()
     {
         await OpenMainAsync("Week");
 
         await SwitchViewAsync(Cal, "Month");
 
         await Expect(Cal.Locator(".bit-bfc-month")).ToBeVisibleAsync();
-        await Expect(Page.Locator("#last-range")).ToHaveTextAsync(new Regex(@"^2025-0[67]-\d\d\|2025-0[78]-\d\d\|Month$"));
+        // July 2025 in en-US: the grid runs from Sunday, June 29 to Saturday, August 2, and those borrowed days show
+        // their events, so they are in the range an app loads the events of.
+        await Expect(Page.Locator("#last-range")).ToHaveTextAsync("2025-06-29|2025-08-02|Month");
     }
 
     [TestMethod]

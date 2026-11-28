@@ -66,6 +66,11 @@ public partial class AppHeader
     [AutoInject] private IBitDeviceCoordinator _bitDeviceCoordinator { get; set; } = default!;
 
 
+    /// <summary>
+    /// Whether the site's command palette is on the page. The CommandPalette pages leave it out for their own modal palette,
+    /// which the trigger would open instead.
+    /// </summary>
+    [Parameter] public bool HasSitePalette { get; set; } = true;
     [Parameter] public bool IsHomePage { get; set; }
     [Parameter] public EventCallback OnToggleNavPanel { get; set; }
 

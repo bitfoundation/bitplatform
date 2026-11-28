@@ -3448,6 +3448,88 @@ private async Task EReadStoredHistory()
 }";
 
     private readonly string example48RazorCode = @"
+<BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" DisablePointerSelection Commands=""fSkinCommands"">
+    <ItemTemplate Context=""item"">
+        <span class=""f-row"">
+            <span class=""f-text"">
+                <span class=""f-title"">
+                    @if (item.IsConfirming)
+                    {
+                        <b>Confirm: </b>
+                    }
+                    <BitCommandPaletteHighlightedText Text=""@item.Row.Command.Title"" Positions=""@item.Row.Match?.TitlePositions"" />
+                </span>
+                @if (item.Row.Command.Disabled && item.Row.Command.DisabledReason is not null)
+                {
+                    <span class=""f-sub"">@item.Row.Command.DisabledReason</span>
+                }
+            </span>
+            @if (item.Row.Command.Checked is { } on)
+            {
+                @* Drawn for the eye, said in words for screen readers. *@
+                <span class=""f-switch"" aria-hidden=""true"">@(on ? ""●"" : ""○"")</span>
+                <span class=""f-vhd"">@(on ? ""On"" : ""Off"")</span>
+            }
+            @if (item.Row.Command.Shortcut is not null)
+            {
+                <BitCommandPaletteShortcutHint Shortcut=""item.Row.Command.Shortcut"" MacKeys=""item.IsMac"" />
+            }
+        </span>
+    </ItemTemplate>
+</BitCommandPalette>
+
+<style>
+    .f-switch { flex: none; color: var(--bit-clr-pri); }
+    .f-vhd { position: absolute; width: 1px; height: 1px; overflow: hidden; white-space: nowrap; clip-path: inset(50%); }
+</style>";
+    private readonly string example48CsharpCode = @"
+// fSkinCommands and FBuildSkinCommands: as in the CSS variables sample. The .f-row, .f-text, .f-title and .f-sub
+// classes: as in the Item template sample.";
+
+    private readonly string example49RazorCode = @"
+@* Nothing to set up: the dialog, the combobox, the grouped listbox and the live regions come with the palette. *@
+<BitCommandPaletteTrigger />
+<BitCommandPalette />";
+
+    private readonly string example50RazorCode = @"
+";
+    private readonly string example50CsharpCode = @"
+// File: Program.cs - OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .WithMetrics(m => m.AddMeter(BitCommandPaletteDiagnostics.MeterName))
+    .WithTracing(t => t.AddSource(BitCommandPaletteDiagnostics.ActivitySourceName));
+
+// File: Program.cs - or Bit.Belemetry
+builder.Services.AddBitBelemetryServices(options =>
+{
+    options.Metrics.Meters.Add(BitCommandPaletteDiagnostics.MeterName);
+    options.Traces.Sources.Add(BitCommandPaletteDiagnostics.ActivitySourceName);
+});
+
+// File: Program.cs - keep command ids out of traces and logs when they embed personal data
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options => options.RecordCommandIdsInTraces = false);";
+
+    private readonly string example51RazorCode = @"
+";
+    private readonly string example51CsharpCode = @"
+// File: ServiceCollectionExtensions.cs in a project both the server and the client reference -
+// so the two Program.cs files register the same services with the same options.
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddClientServices(this IServiceCollection services)
+    {
+        services.AddBitBlazorUIExtrasServices(commandPalette: options => options.GroupOrder.AddRange([""Navigation"", ""Actions""]));
+        return services;
+    }
+}
+
+// File: Program.cs of the server, and Program.cs of the client
+builder.Services.AddClientServices();
+
+// File: any component - after the state a VisibleWhen predicate reads has changed
+Palette.Refresh();";
+
+    private readonly string example52RazorCode = @"
 <BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" Commands=""fFiles"" Placeholder=""Search files…"">
     <ItemTemplate Context=""item"">
         <span class=""f-row"">
@@ -3487,7 +3569,7 @@ private async Task EReadStoredHistory()
     .f-go { flex: none; font: inherit; font-size: .6875rem; padding: 0 .375rem;
             border: 1px solid var(--bit-clr-brd-pri); border-radius: .25rem; }
 </style>";
-    private readonly string example48CsharpCode = @"
+    private readonly string example52CsharpCode = @"
 private sealed record FFileInfo(string Name, string Folder, string Size, string Modified);
 
 private static readonly FFileInfo[] fRecentFiles =
@@ -3550,7 +3632,7 @@ private static string FExtension(BitCommandPaletteCommand command)
     return dot < 0 ? ""txt"" : command.Title[(dot + 1)..];
 }";
 
-    private readonly string example49RazorCode = @"
+    private readonly string example53RazorCode = @"
 <BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" Commands=""fFiles"" Placeholder=""Search files…"">
     <IconTemplate Context=""command"">
         <span class=""f-icon"" data-ext=""@FExtension(command)"">@(FExtension(command)[..1].ToUpperInvariant())</span>
@@ -3571,10 +3653,10 @@ private static string FExtension(BitCommandPaletteCommand command)
     .f-icon[data-ext=""dir""] { background: #475569; }
     .f-group { color: var(--bit-clr-pri); }
 </style>";
-    private readonly string example49CsharpCode = @"
+    private readonly string example53CsharpCode = @"
 // fFiles, FFileInfo, FFile and FExtension: as in the Item template sample.";
 
-    private readonly string example50RazorCode = @"
+    private readonly string example54RazorCode = @"
 <BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" Commands=""fFiles"" Placeholder=""Search files…"">
     <HeaderTemplate Context=""state"">
         <div class=""f-header"">
@@ -3611,10 +3693,10 @@ private static string FExtension(BitCommandPaletteCommand command)
                 background: var(--bit-clr-bg-sec); border-top: 1px solid var(--bit-clr-brd-sec); }
     .f-footer-text { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 </style>";
-    private readonly string example50CsharpCode = @"
+    private readonly string example54CsharpCode = @"
 // fFiles, FFileInfo and FFile: as in the Item template sample. The files carry their FFileInfo as Data.";
 
-    private readonly string example51RazorCode = @"
+    private readonly string example55RazorCode = @"
 <BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" Commands=""fFiles"" Placeholder=""Search files…"">
     <DetailTemplate Context=""command"">
         <div class=""f-detail"">
@@ -3649,10 +3731,10 @@ private static string FExtension(BitCommandPaletteCommand command)
     .f-detail dd { margin: 0; color: var(--bit-clr-fg-pri); }
     .f-detail p { margin: 0; }
 </style>";
-    private readonly string example51CsharpCode = @"
+    private readonly string example55CsharpCode = @"
 // fFiles, FFileInfo and FFile: as in the Item template sample. The files carry their FFileInfo as Data.";
 
-    private readonly string example52RazorCode = @"
+    private readonly string example56RazorCode = @"
 <BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" Commands=""fFiles"" Placeholder=""Search files…"">
     <LoadingTemplate>
         <p class=""f-state"" role=""status"">Opening the folder…</p>
@@ -3674,7 +3756,7 @@ private static string FExtension(BitCommandPaletteCommand command)
 <style>
     .f-state { margin: 0; padding: 2rem 1rem; text-align: center; color: var(--bit-clr-fg-sec); }
 </style>";
-    private readonly string example52CsharpCode = @"
+    private readonly string example56CsharpCode = @"
 // fFiles, FFileInfo and FFile: as in the Item template sample. ""The archive…"" and ""An empty folder"" are lazily loaded pages:
 BitCommandPaletteCmd.New(""The archive…"").Id(""f-archive"").Group(""Folders"").Subtitle(""Loads for a second"")
     .Children(async (_, ct) =>
@@ -3689,7 +3771,7 @@ BitCommandPaletteCmd.New(""An empty folder"").Id(""f-empty-folder"").Group(""Fol
         return [];
     }),";
 
-    private readonly string example53RazorCode = @"
+    private readonly string example57RazorCode = @"
 <div class=""f-buttons"">
     @foreach (var language in fLanguages)
     {
@@ -3707,7 +3789,7 @@ BitCommandPaletteCmd.New(""An empty folder"").Id(""f-empty-folder"").Group(""Fol
                        Strings=""fLanguage.Strings""
                        Commands=""fL10nCommands"" />
 </div>";
-    private readonly string example53CsharpCode = @"
+    private readonly string example57CsharpCode = @"
 // What the sample commands say, in one language.
 private sealed record FTexts(
     string General, string DangerZone,
@@ -3959,7 +4041,7 @@ public sealed class GermanBitStrings : BitStrings
 
 builder.Services.AddBitBlazorUIServices(options => options.Strings = new GermanBitStrings());";
 
-    private readonly string example54RazorCode = @"
+    private readonly string example58RazorCode = @"
 <BitCommandPaletteTrigger Label=""Search mail"" Style=""@fTriggerStyle"" />
 
 <BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" Commands=""fSkinCommands"" Style=""@fVariablesStyle"">
@@ -3968,7 +4050,7 @@ builder.Services.AddBitBlazorUIServices(options => options.Strings = new GermanB
         <p>@(command.Subtitle ?? command.Group)</p>
     </DetailTemplate>
 </BitCommandPalette>";
-    private readonly string example54CsharpCode = @"
+    private readonly string example58CsharpCode = @"
 private const string fVariablesStyle =
     ""--bit-CommandPalette-width: 760px;"" +                       // the modal dialog only
     ""--bit-CommandPalette-max-height: 320px;"" +
@@ -4034,7 +4116,7 @@ private List<BitCommandPaletteCommand> FBuildSkinCommands() =>
 }
 */";
 
-    private readonly string example55RazorCode = @"
+    private readonly string example59RazorCode = @"
 @foreach (var skin in fSkins)
 {
     <BitButton Size=""BitSize.Small""
@@ -4045,7 +4127,7 @@ private List<BitCommandPaletteCommand> FBuildSkinCommands() =>
 <BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" Commands=""fSkinCommands"" Style=""@fSkin.Style"" />
 
 <BitText>Style: <code>@(fSkin.Style.Length == 0 ? ""(none)"" : fSkin.Style)</code></BitText>";
-    private readonly string example55CsharpCode = @"
+    private readonly string example59CsharpCode = @"
 private sealed record FSkin(string Name, string Style);
 
 private static readonly FSkin[] fSkins =
@@ -4097,7 +4179,7 @@ private FSkin fSkin = fSkins[1];
 
 // fSkinCommands and FBuildSkinCommands: as in the CSS variables sample.";
 
-    private readonly string example56RazorCode = @"
+    private readonly string example60RazorCode = @"
 @foreach (var (scheme, label) in fSchemes)
 {
     <BitButton Size=""BitSize.Small""
@@ -4112,7 +4194,7 @@ private FSkin fSkin = fSkins[1];
 <BitThemeProvider Theme=""fDarkTheme"">
     <BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" Commands=""fSkinCommands"" />
 </BitThemeProvider>";
-    private readonly string example56CsharpCode = @"
+    private readonly string example60CsharpCode = @"
 private static readonly (string? Scheme, string Label)[] fSchemes =
 [
     (null, ""Follows the page""),
@@ -4126,7 +4208,7 @@ private readonly BitTheme fDarkTheme = BitThemeFactory.CreateDarkThemeFromSeed(B
 
 // fSkinCommands and FBuildSkinCommands: as in the CSS variables sample.";
 
-    private readonly string example57RazorCode = @"
+    private readonly string example61RazorCode = @"
 @foreach (var (name, scale) in fDensities)
 {
     <BitButton Size=""BitSize.Small""
@@ -4141,7 +4223,7 @@ private readonly BitTheme fDarkTheme = BitThemeFactory.CreateDarkThemeFromSeed(B
                    EnableHistory=""false""
                    Commands=""fSkinCommands""
                    Style=""@($""--bit-layout-density-scale: {fDensity}"")"" />";
-    private readonly string example57CsharpCode = @"
+    private readonly string example61CsharpCode = @"
 // Strings, not numbers: a number would be written in the current culture (""0,8"" in German), which CSS does not read.
 private static readonly (string Name, string Scale)[] fDensities =
 [
@@ -4154,12 +4236,12 @@ private string fDensity = ""0.8"";
 
 // fSkinCommands and FBuildSkinCommands: as in the CSS variables sample.";
 
-    private readonly string example58RazorCode = @"
+    private readonly string example62RazorCode = @"
 <BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" Commands=""fSkinCommands"" />";
-    private readonly string example58CsharpCode = @"
+    private readonly string example62CsharpCode = @"
 // fSkinCommands and FBuildSkinCommands: as in the CSS variables sample.";
 
-    private readonly string example59RazorCode = @"
+    private readonly string example63RazorCode = @"
 <BitCommandPalette Inline
                    Class=""f-pantry""
                    IncludeRegisteredCommands=""false""
@@ -4183,7 +4265,7 @@ private string fDensity = ""0.8"";
     .f-pantry [data-bit-cpl=""mark""] { color: inherit; background: none; text-decoration: underline; }
     .f-pantry [data-bit-cpl=""footer""] { display: none; }
 </style>";
-    private readonly string example59CsharpCode = @"
+    private readonly string example63CsharpCode = @"
 private static readonly BitCommandPaletteCommand[] fPantry =
 [
     BitCommandPaletteCmd.New(""Apples"").Id(""f-pantry:apples"").Group(""Fruit"").Subtitle(""6 left"")
@@ -4199,88 +4281,6 @@ private static readonly BitCommandPaletteCommand[] fPantry =
         .Destructive(""Throw them all out?"")
         .Handler(_ => Task.FromResult(BitCommandPaletteCommandResult.KeepOpen)),
 ];";
-
-    private readonly string example60RazorCode = @"
-<BitCommandPalette Inline IncludeRegisteredCommands=""false"" EnableHistory=""false"" DisablePointerSelection Commands=""fSkinCommands"">
-    <ItemTemplate Context=""item"">
-        <span class=""f-row"">
-            <span class=""f-text"">
-                <span class=""f-title"">
-                    @if (item.IsConfirming)
-                    {
-                        <b>Confirm: </b>
-                    }
-                    <BitCommandPaletteHighlightedText Text=""@item.Row.Command.Title"" Positions=""@item.Row.Match?.TitlePositions"" />
-                </span>
-                @if (item.Row.Command.Disabled && item.Row.Command.DisabledReason is not null)
-                {
-                    <span class=""f-sub"">@item.Row.Command.DisabledReason</span>
-                }
-            </span>
-            @if (item.Row.Command.Checked is { } on)
-            {
-                @* Drawn for the eye, said in words for screen readers. *@
-                <span class=""f-switch"" aria-hidden=""true"">@(on ? ""●"" : ""○"")</span>
-                <span class=""f-vhd"">@(on ? ""On"" : ""Off"")</span>
-            }
-            @if (item.Row.Command.Shortcut is not null)
-            {
-                <BitCommandPaletteShortcutHint Shortcut=""item.Row.Command.Shortcut"" MacKeys=""item.IsMac"" />
-            }
-        </span>
-    </ItemTemplate>
-</BitCommandPalette>
-
-<style>
-    .f-switch { flex: none; color: var(--bit-clr-pri); }
-    .f-vhd { position: absolute; width: 1px; height: 1px; overflow: hidden; white-space: nowrap; clip-path: inset(50%); }
-</style>";
-    private readonly string example60CsharpCode = @"
-// fSkinCommands and FBuildSkinCommands: as in the CSS variables sample. The .f-row, .f-text, .f-title and .f-sub
-// classes: as in the Item template sample.";
-
-    private readonly string example61RazorCode = @"
-@* Nothing to set up: the dialog, the combobox, the grouped listbox and the live regions come with the palette. *@
-<BitCommandPaletteTrigger />
-<BitCommandPalette />";
-
-    private readonly string example62RazorCode = @"
-";
-    private readonly string example62CsharpCode = @"
-// File: Program.cs - OpenTelemetry
-builder.Services.AddOpenTelemetry()
-    .WithMetrics(m => m.AddMeter(BitCommandPaletteDiagnostics.MeterName))
-    .WithTracing(t => t.AddSource(BitCommandPaletteDiagnostics.ActivitySourceName));
-
-// File: Program.cs - or Bit.Belemetry
-builder.Services.AddBitBelemetryServices(options =>
-{
-    options.Metrics.Meters.Add(BitCommandPaletteDiagnostics.MeterName);
-    options.Traces.Sources.Add(BitCommandPaletteDiagnostics.ActivitySourceName);
-});
-
-// File: Program.cs - keep command ids out of traces and logs when they embed personal data
-builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options => options.RecordCommandIdsInTraces = false);";
-
-    private readonly string example63RazorCode = @"
-";
-    private readonly string example63CsharpCode = @"
-// File: ServiceCollectionExtensions.cs in a project both the server and the client reference -
-// so the two Program.cs files register the same services with the same options.
-public static class ServiceCollectionExtensions
-{
-    public static IServiceCollection AddClientServices(this IServiceCollection services)
-    {
-        services.AddBitBlazorUIExtrasServices(commandPalette: options => options.GroupOrder.AddRange([""Navigation"", ""Actions""]));
-        return services;
-    }
-}
-
-// File: Program.cs of the server, and Program.cs of the client
-builder.Services.AddClientServices();
-
-// File: any component - after the state a VisibleWhen predicate reads has changed
-Palette.Refresh();";
 
     private readonly string example64RazorCode = @"
 <BitCommandPalette Inline

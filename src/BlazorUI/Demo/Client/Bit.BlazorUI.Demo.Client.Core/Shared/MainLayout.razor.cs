@@ -12,6 +12,12 @@ public partial class MainLayout : IDisposable
     /// decoration - see the motion policy in Styles/app.scss.
     /// </summary>
     private bool _isDemoPage;
+
+    /// <summary>
+    /// Whether the route is one of the CommandPalette demo's pages, which hold a modal palette of their own to show,
+    /// so the site's (<see cref="SiteCommandPalette"/>) steps aside there.
+    /// </summary>
+    private bool _isCommandPalettePage;
     private bool _isNavPanelOpen;
     private BitAppShell? _appShellRef;
 
@@ -123,18 +129,21 @@ public partial class MainLayout : IDisposable
         return index < 0 ? url : url[..index];
     }
 
-    /// <summary>Returns whether either flag changed.</summary>
+    /// <summary>Returns whether any of the flags changed.</summary>
     private bool SetCurrentUrl()
     {
         var url = _navigationManager.Uri.Replace(_navigationManager.BaseUri, "/", StringComparison.InvariantCultureIgnoreCase);
 
         var isHomePage = url == "/";
         var isDemoPage = url.StartsWith("/components/", StringComparison.OrdinalIgnoreCase);
+        var isCommandPalettePage = url.StartsWith("/components/commandpalette", StringComparison.OrdinalIgnoreCase)
+                                   || url.StartsWith("/components/command-palette", StringComparison.OrdinalIgnoreCase);
 
-        if (isHomePage == _isHomePage && isDemoPage == _isDemoPage) return false;
+        if (isHomePage == _isHomePage && isDemoPage == _isDemoPage && isCommandPalettePage == _isCommandPalettePage) return false;
 
         _isHomePage = isHomePage;
         _isDemoPage = isDemoPage;
+        _isCommandPalettePage = isCommandPalettePage;
 
         return true;
     }
