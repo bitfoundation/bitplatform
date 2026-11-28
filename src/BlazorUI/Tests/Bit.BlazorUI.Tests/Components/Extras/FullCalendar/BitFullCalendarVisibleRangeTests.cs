@@ -146,4 +146,37 @@ public class BitFullCalendarVisibleRangeTests : BunitTestContext
 
         Assert.IsTrue(component.Instance.State.ExpandedEvents.Any(e => e.StartDate.Date == lastDay));
     }
+
+    [TestMethod]
+    public void TheAttendeeFilterListsTheAttendeesOfTheBorrowedDays()
+    {
+        // Alice's events are only on June 30 and August 1, days of the July grid borrowed from its neighbours: they are
+        // drawn there, so she is in the attendee filter, and her selection survives the next filtering.
+        var alice = new BitFullCalendarAttendee { Id = "alice", FirstName = "Alice" };
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new() { Id = "a1", Title = "Review", StartDate = new(2025, 6, 30, 9, 0, 0), EndDate = new(2025, 6, 30, 10, 0, 0), Attendees = [alice] },
+                new() { Id = "a2", Title = "Retro", StartDate = new(2025, 8, 1, 9, 0, 0), EndDate = new(2025, 8, 1, 10, 0, 0), Attendees = [alice] },
+            ]);
+            parameters.Add(p => p.CultureName, "en-US");
+            parameters.Add(p => p.DefaultDate, Anchor);
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Month);
+        });
+
+        var state = component.Instance.State;
+        CollectionAssert.AreEqual(new[] { "id:alice" }, state.GetAttendeesInCurrentView().Select(a => a.Key).ToArray());
+
+        component.InvokeAsync(() => state.SetAttendeeFilter("id:alice"));
+        Assert.AreEqual("id:alice", state.SelectedAttendeeKey);
+
+        component.Render(parameters => parameters.Add(p => p.Settings, new BitFullCalendarSettings { FixedWeekCount = true }));
+        Assert.AreEqual("id:alice", state.SelectedAttendeeKey);
+
+        // Blank borrowed days show no events, so then she is not in view and her selection is dropped.
+        component.Render(parameters => parameters.Add(p => p.Settings, new BitFullCalendarSettings { ShowNonCurrentDates = false }));
+        Assert.IsEmpty(state.GetAttendeesInCurrentView());
+        Assert.IsNull(state.SelectedAttendeeKey);
+    }
 }

@@ -1902,6 +1902,30 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDateRangePickerShouldWriteTheOffsetOfItsTimeZoneInTheField()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        // An offset no machine runs in, so the machine's own offset can never pass for it.
+        var zone = TimeZoneInfo.CreateCustomTimeZone("test+09:45", new TimeSpan(9, 45, 0), "test+09:45", "test+09:45");
+
+        // A format printing the offset prints the zone's, which the date and time beside it are read in - never the
+        // offset of the machine the app runs on, nor the one the value was handed in with.
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd HH:mm zzz");
+            parameters.Add(p => p.TimeZone, zone);
+            parameters.Add(p => p.Value, new BitDateRangePickerValue
+            {
+                StartDate = new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2024, 3, 4, 0, 0, 0, TimeSpan.Zero)
+            });
+        });
+
+        Assert.AreEqual("Start: 2024-03-01 09:45 +09:45 - End: 2024-03-04 09:45 +09:45", component.Find(".bit-dtrp-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
     public void BitDateRangePickerShouldOpenOnTheMonthOfTheStartInItsTimeZone()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

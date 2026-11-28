@@ -278,13 +278,16 @@ namespace BitBlazorUI {
             }
 
             /**
-             * A key pressed in an editable element while the palette is closed is that element's first: an editor binding the
-             * chord itself (a Markdown editor's Ctrl+K for a link) claims it by preventing its default, so the palette decides
-             * on it only as it bubbles back up to the document (onEditableKeyDown) and leaves a claimed one alone. Everywhere
-             * else the palette listens in the capture phase, ahead of the page.
+             * The palette's toggle pressed in an editable element while the palette is closed is that element's first: an
+             * editor binding the chord itself (a Markdown editor's Ctrl+K for a link) claims it by preventing its default, so
+             * the palette decides on it only as it bubbles back up to the document (onEditableKeyDown) and leaves a claimed one
+             * alone. Only the toggle waits: a chord the app registered as a command of its own, and every key of a sequence
+             * already under way, is the palette's in the capture phase, ahead of the page's handlers, as everywhere else.
              */
             function isEditorsFirst(e: KeyboardEvent): boolean {
-                return !modal.open && suppressInEditable && isEditable(e.target);
+                if (modal.open || !suppressInEditable || !isEditable(e.target) || buffer.length > 0) return false;
+                const alts = chordsFor(e, isMac);
+                return singleChordMatch(alts, toggleShortcuts) !== null && singleChordMatch(alts, commandShortcuts) === null;
             }
 
             function onDocumentKeyDown(e: KeyboardEvent): void {

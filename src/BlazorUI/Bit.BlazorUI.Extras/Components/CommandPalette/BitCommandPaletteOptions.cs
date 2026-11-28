@@ -11,9 +11,10 @@ public sealed class BitCommandPaletteOptions
 
     /// <summary>
     /// Don't fire global command shortcuts on a plain key pressed while an input, textarea or contenteditable has focus. A
-    /// chord with a modifier still fires there, unless the element claims it itself (an editor's Ctrl+K, by preventing its
-    /// default): the palette decides on a key of an editable element only after the element has had it. Set to false to
-    /// fire on plain keys too, the palette then hearing every key ahead of the page.
+    /// chord with a modifier still fires there. The palette's toggle is the element's first (an editor's Ctrl+K, which it
+    /// claims by preventing its default): the palette decides on it only after the element has had it. A chord registered
+    /// as a command is the palette's ahead of the page, there as everywhere. Set to false to fire on plain keys too, the
+    /// palette then hearing every key ahead of the page.
     /// </summary>
     public bool SuppressShortcutsInEditableElements { get; set; } = true;
 

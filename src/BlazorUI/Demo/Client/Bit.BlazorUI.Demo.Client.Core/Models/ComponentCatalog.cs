@@ -128,6 +128,8 @@ public static class ComponentCatalog
 
         // A topic of a page split into topics (/components/commandpalette/search) is that component's page too.
         // One segment up and no further, and only below /components/: /components/ai/chat is a page of its own.
+        if (path.StartsWith("/components/", StringComparison.OrdinalIgnoreCase) is false) return null;
+
         var lastSlash = path.LastIndexOf('/');
 
         return lastSlash > "/components".Length && _indexByUrl.TryGetValue(path[..lastSlash], out index) ? index : null;

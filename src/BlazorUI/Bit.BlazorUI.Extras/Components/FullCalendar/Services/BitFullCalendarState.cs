@@ -1404,7 +1404,7 @@ public class BitFullCalendarState
     /// <summary>Distinct attendees on events visible in the current view/date range.</summary>
     public IReadOnlyList<(string Key, string DisplayName)> GetAttendeesInCurrentView(string unnamedAttendeeText = "(Unnamed)")
     {
-        var viewEvents = BitFullCalendarHelpers.GetEventsForView(_foregroundEvents, View, WeekAnchor, Culture, FirstDayOfWeekOverride, WeekDayCount, HiddenDays);
+        var viewEvents = GetForegroundEventsInView();
         var map = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var ev in viewEvents)
         {
@@ -1506,8 +1506,7 @@ public class BitFullCalendarState
         if (SelectedAttendeeKey is null)
             return;
 
-        var validKeys = BitFullCalendarHelpers
-            .GetEventsForView(_foregroundEvents, View, WeekAnchor, Culture, FirstDayOfWeekOverride, WeekDayCount, HiddenDays)
+        var validKeys = GetForegroundEventsInView()
             .SelectMany(e => e.Attendees)
             .Select(BitFullCalendarHelpers.AttendeeFilterKey)
             .Where(k => k.Length > 0)
@@ -1515,6 +1514,20 @@ public class BitFullCalendarState
 
         if (!validKeys.Contains(SelectedAttendeeKey))
             SelectedAttendeeKey = null;
+    }
+
+    // The foreground events the active view shows, which the attendee filter lists and keeps its selection by. The month
+    // view shows the days its grid borrows from the neighbouring months and their events too (GetVisibleRange), so it
+    // reads its own range rather than the month alone.
+    private List<BitFullCalendarEvent> GetForegroundEventsInView()
+    {
+        if (View == BitFullCalendarView.Month)
+        {
+            var (start, end) = GetVisibleRange();
+            return BitFullCalendarHelpers.GetEventsInRange(_foregroundEvents, start, end);
+        }
+
+        return BitFullCalendarHelpers.GetEventsForView(_foregroundEvents, View, WeekAnchor, Culture, FirstDayOfWeekOverride, WeekDayCount, HiddenDays);
     }
 
     // Drag-and-drop helpers

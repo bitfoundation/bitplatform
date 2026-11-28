@@ -172,7 +172,7 @@ public class Middlewares
                 }
                 // A page split into topics routes any /components/<page>/{Topic}, and says "no such topic" for a name it
                 // does not have; the status says so too, so the address is not indexed as a page of its own.
-                if (IsUnknownTopic(context.Request.Path.Value))
+                if (IsUnknownTopic(context.Request.Path.Value, context.RequestServices.GetRequiredService<ILogger<WebApplication>>()))
                 {
                     context.Response.OnStarting(() =>
                     {
@@ -222,7 +222,8 @@ public class Middlewares
 
     /// <summary>
     /// The topic addresses of every page split into topics (/components/datagrid/editing, its /api one), read off the
-    /// demo markup the MCP server reads, keyed by the page's own address. Built on the first request for a topic.
+    /// demo markup the MCP server reads, keyed by the page's own address. Built on the first request for a topic, and
+    /// built again on a later one if that build threw (PublicationOnly caches no exception).
     /// </summary>
     private static readonly Lazy<Dictionary<string, HashSet<string>>> _topicRoutes = new(() =>
         BlazorUIComponentCatalog.Components
@@ -234,10 +235,10 @@ public class Middlewares
                                 .Select(t => t.Route!.Trim('/'))
                                 .Append(Client.Core.Components.DemoPage.API_TOPIC_ROUTE)
                                 .ToHashSet(StringComparer.OrdinalIgnoreCase),
-                          StringComparer.OrdinalIgnoreCase));
+                          StringComparer.OrdinalIgnoreCase), LazyThreadSafetyMode.PublicationOnly);
 
     /// <summary>Whether a path is /components/&lt;page&gt;/&lt;topic&gt; of a page split into topics that has no such topic.</summary>
-    private static bool IsUnknownTopic(string path)
+    private static bool IsUnknownTopic(string path, ILogger logger)
     {
         if (path.StartsWith("/components/", StringComparison.OrdinalIgnoreCase) is false) return false;
 
@@ -246,8 +247,21 @@ public class Middlewares
 
         var pageUrl = $"/components/{segments[1]}";
 
+        Dictionary<string, HashSet<string>> topicRoutes;
+        try
+        {
+            topicRoutes = _topicRoutes.Value;
+        }
+        catch (Exception exp)
+        {
+            // The catalog is read off every demo page, and one that fails to read must not fail every page with three
+            // segments (/components/ai/chat among them) with a 500: the router renders the page, the status left as it is.
+            logger.LogError(exp, "Reading the topics of the demo pages failed; {Path} is answered without checking its topic.", path);
+            return false;
+        }
+
         // Only a page split into topics: /components/ai/chat is a page of its own, and any other address the router answers itself.
-        return _topicRoutes.Value.TryGetValue(pageUrl, out var routes) && routes.Contains(segments[2]) is false;
+        return topicRoutes.TryGetValue(pageUrl, out var routes) && routes.Contains(segments[2]) is false;
     }
 
     private static void UseSiteMap(WebApplication app)

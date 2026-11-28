@@ -94,6 +94,21 @@ public class BitCommandPaletteGlobalShortcutE2ETests : BitCommandPaletteE2ETestB
     }
 
     [TestMethod]
+    public async Task AChordRegisteredAsACommand_IsThePalettes_EvenInAnEditorBindingIt()
+    {
+        await OpenPageAsync();
+        var editor = Page.GetByRole(AriaRole.Textbox, new() { Name = "Link editor", Exact = true });
+
+        // Only the toggle waits for the editor: Ctrl+Up is a command the page registered, so the palette claims it ahead
+        // of the editor's own handler, which never hears it - one key press does one thing.
+        await editor.ClickAsync();
+        await Page.Keyboard.PressAsync("Control+ArrowUp");
+        await Expect(Text("cpl-counter")).ToHaveTextAsync("Counter: 1");
+        await Expect(editor).ToHaveValueAsync("");
+        await ExpectClosedAsync();
+    }
+
+    [TestMethod]
     public async Task ASingleKeyShortcutDeclaredInMarkup_RunsItsOption()
     {
         await OpenPageAsync();

@@ -18,7 +18,7 @@ only in this file.
 
 ## 11.0.0
 
-### `BitFullCalendar`'s month view reports the whole grid to `OnDateChange` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitFullCalendar`'s month view reports the whole grid to `OnDateChange` ([#15511](https://github.com/bitfoundation/bitplatform/issues/15511))
 
 The month grid leads and trails with days of the neighbouring months, and those days show their events like any other.
 `OnDateChange` (and `GetVisibleRange()`) reported the month alone, so an app loading the events of the reported range
@@ -31,7 +31,7 @@ per day of the month, nothing borrowed), report what they did.
 **An app that reads `Start` / `End` as the month** (to title a page, or to key a cache by month) takes the month from
 the calendar's `Date` instead, or from the day half-way through the range.
 
-### `BitDateRangePicker` writes its field in its `TimeZone` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitDateRangePicker` writes its field in its `TimeZone` ([#15511](https://github.com/bitfoundation/bitplatform/issues/15511))
 
 The calendar reads the dates of a value in the picker's `TimeZone`, but the text field wrote each date in the offset the
 value carried, so a value handed in with another offset could show one day in the field and another in the calendar,

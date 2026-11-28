@@ -1654,10 +1654,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     // The text of the input is the same wall clock the calendar shows, so a date is written in the TimeZone of the
     // component rather than in whatever offset the value happens to carry - BitDatePicker writes its own the same way.
+    // It is formatted as a DateTimeOffset in that zone, so a format printing the offset (zzz, K) prints the zone's offset
+    // at that instant, never the offset of the machine the app runs on.
     private string FormatDate(DateTimeOffset? date)
     {
         return date.HasValue
-                ? GetDateTime(date.Value).ToString(DateFormat ?? GetDefaultDateFormat(), _culture)
+                ? TimeZoneInfo.ConvertTime(date.Value, _timeZone).ToString(DateFormat ?? GetDefaultDateFormat(), _culture)
                 : NoDateText;
     }
 
