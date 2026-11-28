@@ -40,6 +40,8 @@ Work the surfaces in this order. Each is independent; batch the network lookups.
 3. GitHub Actions (`.github/workflows/`, `.github/actions/`)
 4. devcontainers (`.devcontainer/`)
 5. Tool versions in workflows and docs (`dnx <package>@<version>`, `vpk`), `global.json` (4 files)
+6. Downloads checked against a hash: the Jsign jar the NuGet publish workflows download with `curl`, whose SHA-256 moves
+   with it, from the release
 
 bit Boilerplate and bit CLI live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric), and their
 dependencies are swept there.
@@ -96,19 +98,16 @@ higher-numbered lines exist there.
 (`microsoft/typescript-go`), not an incremental release. If a bump is wanted, move one library project,
 build it, and only then the rest. Do not move them all at once.
 
-**`devops-actions/variable-substitution` is held at v1.2** (`ae7b1f36…`). v2.0.0 committed 31
-symlinks into its vendored `node_modules`; the runner cannot stage them and every job dies before
-the action runs with `Could not find file '.../helper-compilation-targets/node_modules/.bin/semver'`.
-v3.0.0 still carries 16 and fails the same way on Linux and macOS runners, while Windows runners stage it
-([devops-actions/variable-substitution#370](https://github.com/devops-actions/variable-substitution/issues/370)). Re-check with the tree API
-before ever moving this pin again:
+**A JavaScript action that vendors `node_modules` must have no symlinks in its tree.** The runner can't stage
+them, so every job using it dies before the action runs (`Could not find file '.../node_modules/.bin/...'`), on
+Linux and macOS at least. It is invisible in the release notes, so check every such action's new commit:
 
 ```bash
 gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(.mode=="120000")]|length'
 ```
 
-A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
-worth checking for *any* action bump, not just this one — it is invisible in the release notes.
+`devops-actions/variable-substitution` v2.0.0 and v3.0.0 had them, and v3.1.0 fixed it
+([devops-actions/variable-substitution#370](https://github.com/devops-actions/variable-substitution/issues/370)).
 
 **MAUI's resizetizer breaks on SVG filters.** MAUI 10.0.101 to 10.0.110 and 11.0.0-rc.2 to 11.0.0 bundle an `Svg.Skia` that
 calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails

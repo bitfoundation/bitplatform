@@ -88,9 +88,8 @@ const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder('utf-8', { ignoreBOM: true });
 
 /**
- * A TEXT value, read as the bytes SQLite holds. wa-sqlite's `column_text` reads a NUL-terminated string, so a
- * value with an embedded NUL ('a\0b') would come back cut short at it; Microsoft.Data.Sqlite, which reads the
- * byte count, returns all of it.
+ * A TEXT value, read as the bytes SQLite holds, the way Microsoft.Data.Sqlite reads the byte count: a value with
+ * an embedded NUL ('a\0b') comes back whole.
  */
 export function columnText(sqlite3: SQLiteAPI, stmt: number, column: number): string {
     return textDecoder.decode(sqlite3.column_blob(stmt, column));

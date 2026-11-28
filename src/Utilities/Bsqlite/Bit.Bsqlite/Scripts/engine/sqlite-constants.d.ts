@@ -1,4 +1,4 @@
-﻿// Types for the vendored wa-sqlite constants (engine/sqlite-constants.js, wa-sqlite v1.1.2). The module
+﻿// Types for the vendored wa-sqlite constants (engine/sqlite-constants.js, wa-sqlite v1.2.0). The module
 // itself is fetched and checksummed at restore (see engine/wa-sqlite.lock.props), not compiled here;
 // these declarations only let the TypeScript modules in this folder import it.
 

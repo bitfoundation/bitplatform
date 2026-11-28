@@ -22,7 +22,7 @@ var open = await db.Orders.Where(o => o.Status == OrderStatus.Open).ToListAsync(
 ```
 
 That query runs in a dedicated worker in the browser: SQLite 3.53 (via [wa-sqlite](https://github.com/rhashimoto/wa-sqlite)
-1.1.2), the stock EF Core SQLite provider, and a storage backend chosen and remembered per database.
+1.2.0), the stock EF Core SQLite provider, and a storage backend chosen and remembered per database.
 
 > Targets **.NET 10 and 11** with the matching EF Core · Runs on **Blazor WebAssembly**, in a **Blazor Web App** on
 > **Interactive WebAssembly** or **Interactive Auto** once the page runs on WebAssembly, and in **Blazor Hybrid** apps

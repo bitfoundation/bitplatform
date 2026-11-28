@@ -1,4 +1,4 @@
-﻿// Types for the vendored wa-sqlite JavaScript API (engine/sqlite-api.js, wa-sqlite v1.1.2). The module
+﻿// Types for the vendored wa-sqlite JavaScript API (engine/sqlite-api.js, wa-sqlite v1.2.0). The module
 // itself is fetched and checksummed at restore (see engine/wa-sqlite.lock.props), not compiled here;
 // these declarations only let the TypeScript modules in this folder import it, and they describe the
 // members those modules call rather than the whole API.
@@ -58,7 +58,7 @@ export interface SQLiteAPI {
     column_double(stmt: number, index: number): number;
     column_int64(stmt: number, index: number): bigint;
     column_names(stmt: number): string[];
-    column_text(stmt: number, index: number): string;
+    column_text(stmt: number, index: number): string | null;
     column_type(stmt: number, index: number): number;
 
     create_function(
@@ -72,7 +72,7 @@ export interface SQLiteAPI {
         xFinal?: ((context: Pointer) => void) | null): number;
     result(context: Pointer, value: SQLiteCompatibleType): void;
     value_blob(value: Pointer): Uint8Array;
-    value_text(value: Pointer): string;
+    value_text(value: Pointer): string | null;
     value_type(value: Pointer): number;
 
     vfs_register(vfs: unknown, makeDefault?: boolean): number;

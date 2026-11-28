@@ -1,4 +1,4 @@
-﻿// Types for the vendored wa-sqlite WebLocksMixin (engine/WebLocksMixin.js, wa-sqlite v1.1.2): the mix-in
+﻿// Types for the vendored wa-sqlite WebLocksMixin (engine/WebLocksMixin.js, wa-sqlite v1.2.0): the mix-in
 // that implements SQLite's locking protocol over the Web Locks API, so tabs sharing a database
 // coordinate. The module is fetched and checksummed at restore, not compiled here.
 

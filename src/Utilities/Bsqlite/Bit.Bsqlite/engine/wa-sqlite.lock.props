@@ -15,25 +15,25 @@
   -->
 
   <PropertyGroup>
-    <WaSqliteVersion>v1.1.2</WaSqliteVersion>
+    <WaSqliteVersion>v1.2.0</WaSqliteVersion>
     <WaSqliteRepository>https://raw.githubusercontent.com/rhashimoto/wa-sqlite</WaSqliteRepository>
   </PropertyGroup>
 
   <ItemGroup Label="Engine builds">
     <WaSqliteArtifact Include="wa-sqlite.mjs" SourcePath="dist/wa-sqlite.mjs"
-                      Sha256="53D985DFAB4FC562AF7D7A83345F6715400C212BFDB40A6820439B0E46B6F453" />
+                      Sha256="035D94D6173B3ACD4C9356133492CCDFB7181D970217D54DC6C7BEC7FBDDB3B5" />
     <WaSqliteArtifact Include="wa-sqlite.wasm" SourcePath="dist/wa-sqlite.wasm"
                       Sha256="AA0C2E6F606D49ECB276808BFD9F31176ECC73B5D9C9A80DD15C615FA801846C" />
 
     <WaSqliteArtifact Include="wa-sqlite-jspi.mjs" SourcePath="dist/wa-sqlite-jspi.mjs"
-                      Sha256="BD37B0A73F62BE8967D0FBF85A43848EDC6ED5ADD4D4A3A38B68045487F9CD9F" />
+                      Sha256="A837102F910BD1B15BD50745641CC9602719C4A12341614ED250B84BBFEC196C" />
     <WaSqliteArtifact Include="wa-sqlite-jspi.wasm" SourcePath="dist/wa-sqlite-jspi.wasm"
                       Sha256="712E92D9D085E36F9F5D2AF0F4190BE4FF48CAF2722DC676D9EADC20992774BA" />
 
     <WaSqliteArtifact Include="wa-sqlite-async.mjs" SourcePath="dist/wa-sqlite-async.mjs"
-                      Sha256="4AC8BE5305557AC06F08B70BEAE24B4E55BA21993B608C49B3531DB1CF981A01" />
+                      Sha256="2D777AFE3AEA49E10AFFFFEBFAB615922D54B27ACA67A3D15494847F94FC344C" />
     <WaSqliteArtifact Include="wa-sqlite-async.wasm" SourcePath="dist/wa-sqlite-async.wasm"
-                      Sha256="6BFCF02FE6C30EB05784850D985F37058475FCE686CDCDC4322C8192C5A43722" />
+                      Sha256="BEB3436A10816120200EC32E552158051C76A8132DFBF0312704843267C8E7BF" />
   </ItemGroup>
 
   <!--
@@ -44,7 +44,7 @@
   -->
   <ItemGroup Label="JavaScript API">
     <WaSqliteArtifact Include="sqlite-api.js" SourcePath="src/sqlite-api.js"
-                      Sha256="6A18BC86FA5A2EF300C7A7A84BFC762CAFF396EC56AF17FCC4885D20189FE54C" />
+                      Sha256="AC0E59B8DBA9F661A5D073275CCF8F1F598ABD0D6D89EB371F825ECCD11C3CC9" />
     <WaSqliteArtifact Include="sqlite-constants.js" SourcePath="src/sqlite-constants.js"
                       Sha256="F7B570F0C39E4B54C99F2598B6AD42018D4D8BF791861EDE20D295628AE49F8F" />
     <WaSqliteArtifact Include="VFS.js" SourcePath="src/VFS.js"
@@ -63,9 +63,9 @@
   -->
   <ItemGroup Label="Storage VFSes">
     <WaSqliteArtifact Include="examples/OPFSCoopSyncVFS.js" SourcePath="src/examples/OPFSCoopSyncVFS.js"
-                      Sha256="0D733FF90D684E1884C2B14C701C13B6F849C4E4548A5C64F2DA4BF12B4FD101" />
+                      Sha256="482E94678D69790EAB9954FF4CC231697105C70448D8185F598FCC3FD2DD9C72" />
     <WaSqliteArtifact Include="examples/IDBBatchAtomicVFS.js" SourcePath="src/examples/IDBBatchAtomicVFS.js"
-                      Sha256="809018E8976A8001BFAC6062B1FAA2A75333BD004885C8918F926C9E596E9CC6" />
+                      Sha256="13D9F2EA1C30621AFFD27E407B760A7EB15CE465DED12D79C3F8BF190361E5AD" />
   </ItemGroup>
 
   <!-- Shipped so the MIT terms travel with the bytes they cover. -->

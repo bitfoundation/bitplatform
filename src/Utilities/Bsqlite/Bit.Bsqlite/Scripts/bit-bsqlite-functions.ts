@@ -304,9 +304,9 @@ function readDecimal(sqlite3: SQLiteAPI, pValue: Pointer): DecimalValue | null {
 }
 
 /**
- * An argument as text, read as the bytes SQLite holds. wa-sqlite's `value_text` reads a NUL-terminated string,
- * so 'a\0b' would arrive as 'a' - and `'a\0b' REGEXP 'b'` be false, where Microsoft.Data.Sqlite, which reads
- * the byte count, sees all of it. `value_blob` on a number is its text, as `value_text` gives it.
+ * An argument as text, read as the bytes SQLite holds, the way Microsoft.Data.Sqlite reads the byte count, so
+ * 'a\0b' arrives whole and `'a\0b' REGEXP 'b'` is true. `value_blob` on a number is its text, as `value_text`
+ * gives it.
  */
 function readText(sqlite3: SQLiteAPI, pValue: Pointer): string | null {
     if (sqlite3.value_type(pValue) === SQLite.SQLITE_NULL) {
