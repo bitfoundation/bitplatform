@@ -92,10 +92,10 @@ public partial class BitChartParams : BitComponentBaseParams, IBitComponentParam
     public BitChartClassStyles? Styles { get; set; }
 
     /// <summary>
-    /// The texts the chart writes for assistive technologies and into its CSV export, which is what localizes every
+    /// The strings the chart writes for assistive technologies and into its CSV export, which is what localizes every
     /// chart under the <see cref="BitParams"/> at once.
     /// </summary>
-    public BitChartTexts? Texts { get; set; }
+    public BitChartStrings? Strings { get; set; }
 
     /// <summary>
     /// The custom tooltip template that replaces the default tooltip body.
@@ -196,9 +196,9 @@ public partial class BitChartParams : BitComponentBaseParams, IBitComponentParam
             bitChart.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (Texts is not null)
+        if (Strings is not null)
         {
-            bitChart.TakeFromCascade(nameof(Texts), Texts, static c => c.Texts, static (c, v) => c.Texts = v);
+            bitChart.TakeFromCascade(nameof(Strings), Strings, static c => c.Strings, static (c, v) => c.Strings = v);
         }
 
         if (TooltipTemplate is not null)

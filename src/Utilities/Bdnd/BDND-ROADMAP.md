@@ -47,8 +47,8 @@ What it lacked, in order of severity:
   whichever way a drag was made.
 - Keep high-frequency work in the browser (pointer tracking, hit testing, preview movement, auto-scroll) and send
   .NET only meaningful transitions (begin, hover enter/leave, edge changes, drop, end).
-- Sorting at the SortableJS level (FLIP animations, swap thresholds, multi-drag) is what the sibling library
-  **Bit.Bortable** is for; Bdnd provides the primitives a sortable list is built from (insertion edges, reorder
+- Sorting at the SortableJS level (FLIP animations, swap thresholds, multi-drag) is what the BlazorUI Extras
+  component **BitSortable** is for; Bdnd provides the primitives a sortable list is built from (insertion edges, reorder
   helpers, keyboard moves), not a second sortable component.
 - Accessibility is a release criterion, not an add-on: every drag must be possible without a pointer, and every
   essential operation must have a non-drag alternative pattern documented.
@@ -88,7 +88,7 @@ checklist in the E2E README and a place to record the outcome in the log:
 ## Round 14 - the improvement plan of November 2026, against the code
 
 A plan arrived asking for, among much else, sensors, collision strategies, movement modifiers, transactional sorting,
-multi-drag and integrations with Bortable, Blow, Bink, Bmotion, Blex, Bcrdt, BlazeDb and BevTools. Each of its
+multi-drag and integrations with BitSortable, Blow, Bink, Bmotion, Blex, Bcrdt, BlazeDb and BevTools. Each of its
 requests was read against the code, the tests and this file, and put in one of four classes.
 
 **Already implemented and tested** (nothing to do): one terminal state per drag (a drag that begins while another is in
@@ -121,8 +121,8 @@ and AOT gate; lazy loading; Hybrid under E2E; an MCP catalogue reflected from th
 
 **Not appropriate for Bdnd** (and why):
 
-- *Rebuilding Bortable, Blow, Bink or Bmotion on Bdnd's engine.* Each has its own browser module tuned to its
-  interaction - Bortable's swap thresholds and FLIP, Blow's pointer capture on a transformed canvas, Bink's pressure
+- *Rebuilding BitSortable, Blow, Bink or Bmotion on Bdnd's engine.* Each has its own browser module tuned to its
+  interaction - BitSortable's swap thresholds and FLIP, Blow's pointer capture on a transformed canvas, Bink's pressure
   sampling, Bmotion's gestures - and a shared engine would tie their releases together for no behaviour a user would
   notice. Bdnd works beside them (dragging onto a canvas, a palette, a layer list); the boundaries are documented.
 - *Adapter packages for Blex, Bcrdt and BlazeDb.* The integration is plain C#: a drop handler calls the app's store,

@@ -19,4 +19,7 @@ declare namespace BitBlazorUI.Utils {
     function isRtl(element: HTMLElement): boolean;
     function invokeDotNet<T = any>(dotnetObj: DotNetObject, method: string, ...args: any[]): Promise<T>;
     function notifyDotNet(dotnetObj: DotNetObject, method: string, ...args: any[]): Promise<void>;
+    function addEscapeGesture(takes: () => boolean): void;
+    function removeEscapeGesture(takes: () => boolean): void;
+    function escapeClaimer(e: Event): Element | null;
 }

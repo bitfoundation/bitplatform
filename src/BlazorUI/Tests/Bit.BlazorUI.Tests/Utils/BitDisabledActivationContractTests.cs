@@ -31,6 +31,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitButton)],
         [typeof(BitButtonGroup<BitButtonGroupItem>)],
         [typeof(BitMenuButton<BitMenuButtonItem>)],
+        [typeof(BitScrollToTop)],
         [typeof(BitToggleButton)],
         [typeof(BitCalendar)],
         [typeof(BitCheckbox)],
@@ -63,6 +64,9 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitPersona)],
         [typeof(BitAvatarGroup)],
         [typeof(BitImageViewer)],
+        [typeof(BitCopyButton)],
+        [typeof(BitCommandPaletteTrigger)],
+        [typeof(BitVirtualKeyboard)],
         [typeof(BitTag)],
         [typeof(BitCard)],
         [typeof(BitIcon)],
@@ -110,7 +114,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
 
     // The ones whose Disabled only switches one behaviour of theirs off while the content they host stays live: the
     // panel of an accordion, the slides of a carousel, the panel of a pivot's open tab, the overlay of a map, the body
-    // of a message box, the header and footer of a nav panel, the area of a context menu, the trigger of a pop confirm - and the AI surfaces that frame content of the app or of
+    // of a message box, the header and footer of a nav panel, the area of a context menu, the trigger of a pop confirm, the embedded page of an embed, the items of a sortable list - and the AI surfaces that frame content of the app or of
     // the model (a transcript, a message, a tool card, an artifact, a generated component). What bubbles up to their
     // root from there is an enabled control's own event, so they keep the handlers the page splatted on them.
     public static IEnumerable<object[]> ContentHosts =>
@@ -120,6 +124,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitCarousel)],
         [typeof(BitSwiper)],
         [typeof(BitPivot)],
+        [typeof(BitCodeBlock)],
         [typeof(BitAccordionList<BitAccordionListItem>)],
         [typeof(BitMessageBox)],
         [typeof(BitMap<BitLeafletMapProvider>)],
@@ -127,6 +132,8 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitContextMenu<BitMenuButtonItem>)],
         [typeof(BitPopConfirm)],
         [typeof(BitResourceTimeline)],
+        [typeof(BitEmbed)],
+        [typeof(BitSortable<string>)],
         [typeof(BitAiCollapsible)],
         [typeof(BitAiToolCallView)],
         [typeof(BitAiArtifactView)],
@@ -155,6 +162,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         },
         [typeof(BitAiToolApproval)] = () => new() { [nameof(BitAiToolApproval.Call)] = AiToolCall(BitAiToolCallStatus.AwaitingApproval) },
         [typeof(BitAiErrorView)] = () => new() { [nameof(BitAiErrorView.Error)] = new BitAiError("The model is overloaded.") { Detail = "503" } },
+        [typeof(BitCopyButton)] = () => new() { [nameof(BitCopyButton.Value)] = "Copied text" },
         [typeof(BitAiCopyButton)] = () => new() { [nameof(BitAiCopyButton.Content)] = "Copied text" },
         [typeof(BitAiForm)] = () => new()
         {

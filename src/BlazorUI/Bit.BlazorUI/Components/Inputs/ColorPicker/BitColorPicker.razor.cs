@@ -64,7 +64,7 @@ public partial class BitColorPicker : BitInputBase<string?>
     private string? _contrastParam;
     private BitInternalColor? _contrastColor;
     private readonly BitInternalColor _color = new();
-    private static readonly BitColorPickerTexts _defaultTexts = new();
+    private static readonly BitColorPickerStrings _defaultStrings = new();
     private BitColorFormat _format = BitColorFormat.Rgb;
     private ElementReference _saturationPickerRef;
     private ElementReference _hexInputRef;
@@ -377,11 +377,6 @@ public partial class BitColorPicker : BitInputBase<string?>
     [Parameter, ResetClassBuilder] public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Custom CSS styles for different parts of the BitColorPicker.
-    /// </summary>
-    [Parameter, ResetStyleBuilder] public BitColorPickerClassStyles? Styles { get; set; }
-
-    /// <summary>
     /// Every piece of text the picker writes for itself: the accessible names of its controls, the captions
     /// of its fields, and the sentences it announces the color with.
     /// </summary>
@@ -391,7 +386,12 @@ public partial class BitColorPicker : BitInputBase<string?>
     /// property keeps its English default, and the object cascades through <see cref="BitColorPickerParams"/>,
     /// so an application usually sets it once rather than per picker.
     /// </remarks>
-    [Parameter] public BitColorPickerTexts? Texts { get; set; }
+    [Parameter] public BitColorPickerStrings? Strings { get; set; }
+
+    /// <summary>
+    /// Custom CSS styles for different parts of the BitColorPicker.
+    /// </summary>
+    [Parameter, ResetStyleBuilder] public BitColorPickerClassStyles? Styles { get; set; }
 
 
 
@@ -802,12 +802,12 @@ public partial class BitColorPicker : BitInputBase<string?>
     {
         get
         {
-            var texts = _Texts;
+            var strings = _Strings;
 
             return ShowAlphaSlider
-                ? string.Format(CultureInfo.InvariantCulture, texts.PickerLabelWithAlphaFormat,
+                ? string.Format(CultureInfo.InvariantCulture, strings.PickerLabelWithAlphaFormat,
                                 _color.ColorDescription, _color.R, _color.G, _color.B, Math.Round(_color.A * 100))
-                : string.Format(CultureInfo.InvariantCulture, texts.PickerLabelFormat,
+                : string.Format(CultureInfo.InvariantCulture, strings.PickerLabelFormat,
                                 _color.ColorDescription, _color.R, _color.G, _color.B);
         }
     }
@@ -823,7 +823,7 @@ public partial class BitColorPicker : BitInputBase<string?>
         {
             var (_, saturation, value) = _color.Hsv;
 
-            return string.Format(CultureInfo.InvariantCulture, _Texts.SaturationValueFormat,
+            return string.Format(CultureInfo.InvariantCulture, _Strings.SaturationValueFormat,
                                  _color.ColorDescription, Math.Round(saturation * 100), Math.Round(value * 100), _color.Hex);
         }
     }
@@ -871,11 +871,11 @@ public partial class BitColorPicker : BitInputBase<string?>
         {
             var hue = _color.Hsv.Hue;
 
-            return string.Format(CultureInfo.InvariantCulture, _Texts.HueValueFormat, Math.Round(hue), BitInternalColor.HueDescription(hue));
+            return string.Format(CultureInfo.InvariantCulture, _Strings.HueValueFormat, Math.Round(hue), BitInternalColor.HueDescription(hue));
         }
     }
 
-    private string _AlphaValueText => string.Format(CultureInfo.InvariantCulture, _Texts.AlphaValueFormat, _AlphaPercentValue);
+    private string _AlphaValueText => string.Format(CultureInfo.InvariantCulture, _Strings.AlphaValueFormat, _AlphaPercentValue);
 
     private string _AlphaValue => _color.A.ToString(CultureInfo.InvariantCulture);
 
@@ -998,7 +998,7 @@ public partial class BitColorPicker : BitInputBase<string?>
     {
         get
         {
-            var texts = _Texts;
+            var strings = _Strings;
 
             switch (InputsMode)
             {
@@ -1011,9 +1011,9 @@ public partial class BitColorPicker : BitInputBase<string?>
 
                         return
                         [
-                            (0, "h", texts.HueFieldLabel, texts.HueLabel, Rounded(hue), 360),
-                            (1, "s", texts.SaturationFieldLabel, texts.SaturationLabel, Percent(saturation), 100),
-                            (2, "l", texts.LightnessFieldLabel, texts.LightnessLabel, Percent(lightness), 100)
+                            (0, "h", strings.HueFieldLabel, strings.HueLabel, Rounded(hue), 360),
+                            (1, "s", strings.SaturationFieldLabel, strings.SaturationLabel, Percent(saturation), 100),
+                            (2, "l", strings.LightnessFieldLabel, strings.LightnessLabel, Percent(lightness), 100)
                         ];
                     }
 
@@ -1023,18 +1023,18 @@ public partial class BitColorPicker : BitInputBase<string?>
 
                         return
                         [
-                            (0, "h", texts.HueFieldLabel, texts.HueLabel, Rounded(hue), 360),
-                            (1, "s", texts.SaturationFieldLabel, texts.SaturationLabel, Percent(saturation), 100),
-                            (2, "v", texts.BrightnessFieldLabel, texts.BrightnessLabel, Percent(value), 100)
+                            (0, "h", strings.HueFieldLabel, strings.HueLabel, Rounded(hue), 360),
+                            (1, "s", strings.SaturationFieldLabel, strings.SaturationLabel, Percent(saturation), 100),
+                            (2, "v", strings.BrightnessFieldLabel, strings.BrightnessLabel, Percent(value), 100)
                         ];
                     }
 
                 default:
                     return
                     [
-                        (0, "r", texts.RedFieldLabel, texts.RedLabel, _color.R.ToString(CultureInfo.InvariantCulture), 255),
-                        (1, "g", texts.GreenFieldLabel, texts.GreenLabel, _color.G.ToString(CultureInfo.InvariantCulture), 255),
-                        (2, "b", texts.BlueFieldLabel, texts.BlueLabel, _color.B.ToString(CultureInfo.InvariantCulture), 255)
+                        (0, "r", strings.RedFieldLabel, strings.RedLabel, _color.R.ToString(CultureInfo.InvariantCulture), 255),
+                        (1, "g", strings.GreenFieldLabel, strings.GreenLabel, _color.G.ToString(CultureInfo.InvariantCulture), 255),
+                        (2, "b", strings.BlueFieldLabel, strings.BlueLabel, _color.B.ToString(CultureInfo.InvariantCulture), 255)
                     ];
             }
         }
@@ -1047,11 +1047,11 @@ public partial class BitColorPicker : BitInputBase<string?>
     /// </summary>
     private string _InputsModeLabel => InputsMode switch
     {
-        BitColorInputsMode.Hex => _Texts.HexModeLabel,
-        BitColorInputsMode.Rgb => _Texts.RgbModeLabel,
-        BitColorInputsMode.Hsl => _Texts.HslModeLabel,
-        BitColorInputsMode.Hsv => _Texts.HsvModeLabel,
-        _ => _Texts.HexRgbModeLabel
+        BitColorInputsMode.Hex => _Strings.HexModeLabel,
+        BitColorInputsMode.Rgb => _Strings.RgbModeLabel,
+        BitColorInputsMode.Hsl => _Strings.HslModeLabel,
+        BitColorInputsMode.Hsv => _Strings.HsvModeLabel,
+        _ => _Strings.HexRgbModeLabel
     };
 
     private bool _ShowHexField => InputsMode is BitColorInputsMode.HexRgb or BitColorInputsMode.Hex;
@@ -1059,11 +1059,11 @@ public partial class BitColorPicker : BitInputBase<string?>
     private bool _HasLabel => LabelTemplate is not null || Label.HasValue();
 
     /// <summary>
-    /// The texts the picker writes with, which is the consumer's object wherever there is one and the
+    /// The strings the picker writes with, which is the consumer's object wherever there is one and the
     /// English defaults otherwise. The fallback is a single shared instance rather than one per picker,
     /// since nothing ever writes to it.
     /// </summary>
-    private BitColorPickerTexts _Texts => Texts ?? _defaultTexts;
+    private BitColorPickerStrings _Strings => Strings ?? _defaultStrings;
 
     private string _LabelId => $"{_Id}-label";
 

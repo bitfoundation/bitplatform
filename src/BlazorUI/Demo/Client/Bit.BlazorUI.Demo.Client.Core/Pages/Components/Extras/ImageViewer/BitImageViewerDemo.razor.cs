@@ -85,21 +85,21 @@ public partial class BitImageViewerDemo
         },
         new()
         {
+            Name = "Strings",
+            Type = "BitImageViewerStrings?",
+            DefaultValue = "null",
+            Description = "The words of the viewer: the names of its buttons and the instructions of its keyboard.",
+            LinkType = LinkType.Link,
+            Href = "#strings",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitImageViewerClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for the different parts of the image viewer.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
-        },
-        new()
-        {
-            Name = "Texts",
-            Type = "BitImageViewerTexts?",
-            DefaultValue = "null",
-            Description = "The words of the viewer: the names of its buttons and the instructions of its keyboard.",
-            LinkType = LinkType.Link,
-            Href = "#texts",
         },
         new()
         {
@@ -128,8 +128,8 @@ public partial class BitImageViewerDemo
     [
         new()
         {
-            Id = "texts",
-            Title = "BitImageViewerTexts",
+            Id = "strings",
+            Title = "BitImageViewerStrings",
             Parameters =
             [
                 new() { Name = "RoleDescription", Type = "string", DefaultValue = "\"image viewer\"", Description = "What the viewer is announced as, after its name." },
@@ -236,7 +236,7 @@ public partial class BitImageViewerDemo
     private record Photo(string Src, string Alt);
     private BitImageViewer viewerRef = default!;
 
-    private static readonly BitImageViewerTexts spanishTexts = new()
+    private static readonly BitImageViewerStrings spanishStrings = new()
     {
         RoleDescription = "visor de imágenes",
         Instructions = "Más y menos amplían, las flechas mueven la imagen ampliada y 0 la ajusta de nuevo.",
@@ -246,7 +246,7 @@ public partial class BitImageViewerDemo
         Reset = "Ajustar a la vista",
     };
 
-    private static readonly BitImageViewerTexts persianTexts = new()
+    private static readonly BitImageViewerStrings persianStrings = new()
     {
         RoleDescription = "نمایشگر تصویر",
         Instructions = "مثبت و منفی بزرگ‌نمایی می‌کنند، کلیدهای جهت تصویر بزرگ‌شده را جابه‌جا می‌کنند و ۰ آن را دوباره جا می‌دهد.",

@@ -201,10 +201,7 @@ private static BitResourceTimelineConfig CreateAppearanceConfig()
                 EndTime = today.AddHours(6),
                 Color = "#2f9e44",
                 Height = 10,
-                TextAbove = "LH441",
-                TextBelow = "Frankfurt",
-                TextStart = "02:00",
-                TextEnd = "06:00",
+                Texts = new() { TopCenter = "LH441", BottomCenter = "Frankfurt", Start = "02:00", End = "06:00" },
             },
             new()
             {
@@ -214,7 +211,13 @@ private static BitResourceTimelineConfig CreateAppearanceConfig()
                 EndTime = today.AddHours(15),
                 Color = "#1971c2",
                 Height = 6,
-                TextAbove = "BA117 (hover me)",
+                Texts = new()
+                {
+                    TopStart = "BA117 (hover me)",
+                    TopEnd = new() { Text = "On time", Color = "#2f9e44", Font = "600 11px sans-serif" },
+                    BottomStart = new() { Text = "London", Color = "#868e96", Font = "italic 11px sans-serif" },
+                    BottomEnd = new() { Text = "T5", OffsetX = -4 },
+                },
                 Tooltip = "BA117 to London\nBoarding at 14:20, gate closes at 14:45",
             },
             new()
@@ -225,7 +228,7 @@ private static BitResourceTimelineConfig CreateAppearanceConfig()
                 EndTime = today.AddHours(8),
                 Color = "#e8590c",
                 Height = 10,
-                TextAbove = "AF1380 (delayed)",
+                Texts = new() { TopCenter = new() { Text = "AF1380 (delayed)", Color = "#e03131", Font = "bold 12px sans-serif" } },
                 StartBar = new() { Duration = TimeSpan.FromMinutes(50), Color = "#ffa8a8" },
                 EndBar = new() { Duration = TimeSpan.FromMinutes(30), Color = "#fa5252" },
             },
@@ -269,10 +272,15 @@ private static BitResourceTimelineConfig CreateAppearanceConfig()
                 EndTime = today.AddDays(2).AddHours(14),
                 Color = "#495057",
                 Height = 16,
-                TextAbove = "D-ABYT heavy maintenance",
-                TextBelow = "Hangar 5",
-                TextStart = "Day 1 10:00",
-                TextEnd = "Day 3 14:00",
+                Texts = new()
+                {
+                    TopStart = "D-ABYT",
+                    TopCenter = "Heavy maintenance",
+                    TopEnd = "C-check",
+                    BottomCenter = "Hangar 5",
+                    Start = "Day 1 10:00",
+                    End = "Day 3 14:00",
+                },
                 Icons =
                 [
                     new() { Source = BitResourceTimelineDemoData.LockIcon, Position = BitResourceTimelineBarIconPosition.Above },
@@ -561,7 +569,7 @@ private string NavigationText => navigationView is null
                          OnDoubleClick="args => doubleClickText = DescribePointer(args)"
                          OnContextMenu="args => contextMenuText = DescribePointer(args)" />
 </div>
-<div class="readout">Selected: @(selectedBars.Length == 0 ? "nothing" : string.Join(", ", selectedBars.Select(b => b.TextAbove)))</div>
+<div class="readout">Selected: @(selectedBars.Length == 0 ? "nothing" : string.Join(", ", selectedBars.Select(b => b.Texts?.TopCenter?.Text)))</div>
 <div class="readout">Click: @clickText</div>
 <div class="readout">Double-click: @doubleClickText</div>
 <div class="readout">Right-click: @contextMenuText</div>
@@ -599,7 +607,7 @@ private static string DescribePointer(BitResourceTimelinePointerArgs args)
 
     if (args.Resource is not null) parts.Add(args.Resource.Name);
     if (args.Time is { } time) parts.Add(time.ToLocalTime().ToString("ddd HH:mm"));
-    if (args.Allocation is not null) parts.Add($"flight {args.Allocation.TextAbove}");
+    if (args.Allocation is not null) parts.Add($"flight {args.Allocation.Texts?.TopCenter?.Text}");
 
     return string.Join(" · ", parts);
 }
@@ -667,7 +675,7 @@ private static BitResourceTimelineConfig CreateEditingConfig()
     {
         flight.Locked = true;
         flight.Color = "#868e96";
-        flight.TextBelow = "at the gate";
+        (flight.Texts ??= new()).BottomCenter = "at the gate";
     }
 
     return config;
@@ -694,13 +702,13 @@ private bool AcceptEdit(IReadOnlyList<BitResourceTimelineAllocationChange> chang
 
     if (refused is null) return true;
 
-    Log($"Refused: {refused.Allocation.TextAbove} would start in the past");
+    Log($"Refused: {refused.Allocation.Texts?.TopCenter?.Text} would start in the past");
     return false;
 }
 
 private void HandleAllocationChanged(BitResourceTimelineAllocation flight)
 {
-    Log($"{flight.TextAbove}: Gate {flight.ResourceId}, {flight.StartTime.ToLocalTime():ddd HH:mm} - {flight.EndTime.ToLocalTime():HH:mm}");
+    Log($"{flight.Texts?.TopCenter?.Text}: Gate {flight.ResourceId}, {flight.StartTime.ToLocalTime():ddd HH:mm} - {flight.EndTime.ToLocalTime():HH:mm}");
 }
 
 private Task<BitResourceTimelineAllocation?> HandleAllocationCreating(BitResourceTimelineCreateRequest request)
@@ -713,11 +721,11 @@ private Task<BitResourceTimelineAllocation?> HandleAllocationCreating(BitResourc
         StartTime = request.StartTime,
         EndTime = request.EndTime,
         Color = "#2f9e44",
-        TextAbove = $"NEW{createdCount}",
+        Texts = new() { TopCenter = $"NEW{createdCount}" },
     };
 
     editingConfig.Allocations.Add(flight);
-    Log($"Created {flight.TextAbove} at Gate {flight.ResourceId}");
+    Log($"Created {flight.Texts?.TopCenter?.Text} at Gate {flight.ResourceId}");
 
     return Task.FromResult<BitResourceTimelineAllocation?>(flight);
 }
@@ -733,7 +741,7 @@ private Task<IReadOnlyList<BitResourceTimelineAllocation>?> HandleAllocationsCop
             StartTime = source.StartTime + request.Offset,
             EndTime = source.EndTime + request.Offset,
             Color = "#2f9e44",
-            TextAbove = $"{source.TextAbove} copy",
+            Texts = new() { TopCenter = $"{source.Texts?.TopCenter?.Text} copy" },
         })
     ];
 
@@ -836,10 +844,13 @@ private static BitResourceTimelineConfig CreateOverlapConfig()
         ResourceId = gate,
         StartTime = today.AddHours(from),
         EndTime = today.AddHours(to),
-        TextAbove = id,
-        TextBelow = below,
-        TextStart = origin ?? (times ? today.AddHours(from).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
-        TextEnd = destination ?? (times ? today.AddHours(to).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
+        Texts = new()
+        {
+            TopCenter = id,
+            BottomCenter = below,
+            Start = origin ?? (times ? today.AddHours(from).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
+            End = destination ?? (times ? today.AddHours(to).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
+        },
     };
 
     return new()
@@ -1155,7 +1166,7 @@ private static BitResourceTimelineOptions CreateZoneOptions(string? timeZone, st
         </ResourceTemplate>
         <TooltipTemplate Context="flight">
             <div class="flight-tip">
-                <b>@flight.TextAbove</b>
+                <b>@flight.Texts?.TopCenter?.Text</b>
                 <span>Gate @flight.ResourceId</span>
                 <span>@flight.StartTime.UtcDateTime.ToString("ddd HH:mm") - @flight.EndTime.UtcDateTime.ToString("HH:mm") UTC</span>
             </div>
@@ -1450,17 +1461,17 @@ private int disabledClicks;
 </style>
 
 <div class="toolbar">
-    <BitButton Variant="BitVariant.Outline" OnClick="() => textsConfig = BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Gates(5), labeled: true)">Neu laden</BitButton>
+    <BitButton Variant="BitVariant.Outline" OnClick="() => stringsConfig = BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Gates(5), labeled: true)">Neu laden</BitButton>
 </div>
 <br />
 <div class="timeline">
-    <BitResourceTimeline Config="textsConfig" Options="textsOptions" Texts="germanTexts" LoadingMinDurationMs="800" />
+    <BitResourceTimeline Config="stringsConfig" Options="stringsOptions" Strings="germanStrings" LoadingMinDurationMs="800" />
 </div>
 """;
     private readonly string example17CsharpCode = """
-private BitResourceTimelineConfig textsConfig = BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Gates(5), labeled: true);
-private readonly BitResourceTimelineOptions textsOptions = new() { AutoScrollToNow = true, Locale = "de-DE" };
-private readonly BitResourceTimelineTexts germanTexts = new()
+private BitResourceTimelineConfig stringsConfig = BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Gates(5), labeled: true);
+private readonly BitResourceTimelineOptions stringsOptions = new() { AutoScrollToNow = true, Locale = "de-DE" };
+private readonly BitResourceTimelineStrings germanStrings = new()
 {
     AriaLabel = "Belegungsplan der Gates",
     RoleDescription = "Ressourcen-Zeitachse",
@@ -1689,7 +1700,7 @@ public static class BitResourceTimelineDemoData
                             ResourceId = gate.Id,
                             StartTime = start,
                             EndTime = end,
-                            TextAbove = labeled ? flightNumber : null,
+                            Texts = new() { TopCenter = labeled ? flightNumber : null },
                         });
                     }
 

@@ -225,7 +225,7 @@ private BitDateRangePickerValue? selectedDateRange = new()
                     OnApply=""@(v => applyOutcome = $""Applied {Fmt(v)}"")""
                     OnCancel=""@(() => applyOutcome = ""Cancelled"")"" />
 
-<div>Committed value: <b>@Fmt(applyValue)</b></div>
+<div>Current value: <b>@Fmt(applyValue)</b></div>
 <div>Last outcome: <b>@(applyOutcome ?? ""-"")</b></div>";
     private readonly string example12CsharpCode = @"
 private string? applyOutcome;

@@ -230,7 +230,7 @@ public partial class BitImageDemo
             DefaultValue = "null",
             Description = "Specifies how much of the address of the current page is sent to whoever serves the image.",
             LinkType = LinkType.Link,
-            Href = "#image-referrer-policy"
+            Href = "#image-referrer-policy-enum"
         },
         new()
         {
@@ -631,63 +631,7 @@ public partial class BitImageDemo
                 }
             ]
         },
-        new()
-        {
-            Id = "image-referrer-policy",
-            Name = "BitImageReferrerPolicy",
-            Description = "Represents the img referrerpolicy attribute values explained here: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Referrer-Policy",
-            Items =
-            [
-                new()
-                {
-                    Name= "NoReferrer",
-                    Description="Sends no Referer header at all.",
-                    Value="0",
-                },
-                new()
-                {
-                    Name= "NoReferrerWhenDowngrade",
-                    Description="Sends the full URL, except to a less secure destination (HTTPS to HTTP), where nothing is sent.",
-                    Value="1",
-                },
-                new()
-                {
-                    Name= "Origin",
-                    Description="Sends only the origin - the scheme, the host and the port - of the current page.",
-                    Value="2",
-                },
-                new()
-                {
-                    Name= "OriginWhenCrossOrigin",
-                    Description="Sends the full URL to the same origin, and only the origin to any other one.",
-                    Value="3",
-                },
-                new()
-                {
-                    Name= "SameOrigin",
-                    Description="Sends the full URL to the same origin, and nothing at all to any other one.",
-                    Value="4",
-                },
-                new()
-                {
-                    Name= "StrictOrigin",
-                    Description="Sends only the origin, and nothing to a less secure destination (HTTPS to HTTP).",
-                    Value="5",
-                },
-                new()
-                {
-                    Name= "StrictOriginWhenCrossOrigin",
-                    Description="The default behavior: the full URL to the same origin, the origin alone to another secure one, and nothing to a less secure destination.",
-                    Value="6",
-                },
-                new()
-                {
-                    Name= "UnsafeUrl",
-                    Description="Sends the full URL to every destination, secure or not.",
-                    Value="7",
-                }
-            ]
-        }
+        DemoSharedEnums.BitImageReferrerPolicy()
     ];
 
 

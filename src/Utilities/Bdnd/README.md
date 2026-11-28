@@ -1584,7 +1584,7 @@ the others:
 
 | Library | Owns | With Bdnd |
 | --- | --- | --- |
-| **Bit.Bortable** | Sortable lists the SortableJS way: swap thresholds, FLIP animations, clone and swap modes, groups. | Pick one per list. Bortable for a list that sorts as you hover and animates; Bdnd for drags between different kinds of things (a card to a bin, a file to a folder), trees, palettes and boards whose order changes on drop. |
+| **BitSortable** (Bit.BlazorUI.Extras) | Sortable lists the SortableJS way: swap thresholds, FLIP animations, clone and swap modes, groups. | Pick one per list. BitSortable for a list that sorts as you hover and animates; Bdnd for drags between different kinds of things (a card to a bin, a file to a folder), trees, palettes and boards whose order changes on drop. |
 | **Bit.Blow** | Node editors: nodes, edges, connections, pan and zoom, and dragging inside a canvas. | Dragging *onto* a canvas from outside it - a palette of node types - is a Bdnd drag whose target is the canvas; the drop converts the client point to flow coordinates with Blow's own conversion and adds the node. Moving nodes stays Blow's. |
 | **Bit.Bink** | Drawing and ink: strokes, pressure, selections on its surface. | Assets dragged onto a drawing surface, and layer lists reordered with `BdndList`, are Bdnd drags; drawing and moving what is drawn stay Bink's. |
 | **Bit.Bmotion** | Animations, layout (FLIP) transitions, reduced motion. | Bdnd animates nothing. Render the list in Bmotion's layout animation and the order a drop changes animates into place; a drop's `OnDrop` and the provider's `OnDragEnd` are where an animation starts. |

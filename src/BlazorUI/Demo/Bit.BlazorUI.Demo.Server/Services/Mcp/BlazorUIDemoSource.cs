@@ -13,15 +13,34 @@ namespace Bit.BlazorUI.Demo.Server.Services.Mcp;
 /// <param name="RazorField">The name of the page field holding the Razor sample, resolved by reflection.</param>
 /// <param name="CsharpField">The name of the page field holding the C# sample, when the section shows one.</param>
 /// <param name="CodeFilesField">The name of the page field holding the section's extra source files, when it shows any beside the pair.</param>
-/// <param name="Tab">The pivot tab the section sits under, for the multi-API components that have tabs.</param>
+/// <param name="Tab">The pivot tab the section sits under, for the multi-API components that have tabs, or the topic it belongs to, for a page split into topics.</param>
 public sealed record DemoExampleSource(string Title, string? Prose, string? RazorField, string? CsharpField, string? CodeFilesField, string? Tab)
 {
     /// <summary>The type the sample fields live on - the tab's own component, not the page, when there are tabs.</summary>
     public Type? Owner { get; init; }
+
+    /// <summary>The anchor of the section on its page (<c>example12</c>), when it has one.</summary>
+    public string? Id { get; init; }
+
+    /// <summary>
+    /// The route of the topic the section belongs to, for a page split into topics (<c>search</c> is
+    /// <c>/components/commandpalette/search</c>); null for a section of the overview or of a page with no topics.
+    /// </summary>
+    public string? TopicRoute { get; init; }
 }
 
+/// <summary>One topic of a demo page split into topics: a page of its own under the component's address.</summary>
+/// <param name="Title">What the topic is called.</param>
+/// <param name="Route">The last segment of its address; null for the overview, which is the component's own address.</param>
+/// <param name="Description">What it covers.</param>
+public sealed record DemoTopicSource(string Title, string? Route, string? Description);
+
 /// <summary>What the markup of one demo page says, beyond what its compiled type carries.</summary>
-public sealed record DemoPageSource(string? Description, string? Notes, string? SourceUrl, string? DemoUrl, IReadOnlyList<DemoExampleSource> Examples);
+public sealed record DemoPageSource(string? Description, string? Notes, string? SourceUrl, string? DemoUrl, IReadOnlyList<DemoExampleSource> Examples)
+{
+    /// <summary>The topics the page is split into, in page order; empty for a page that is one page.</summary>
+    public IReadOnlyList<DemoTopicSource> Topics { get; init; } = [];
+}
 
 /// <summary>
 /// Reads the demo pages' own Razor markup - embedded into this assembly by the .csproj - for the
@@ -78,9 +97,12 @@ public static partial class BlazorUIDemoSource
 
         var tabs = new Dictionary<string, string>(StringComparer.Ordinal);
 
-        foreach (var item in document.DocumentNode.Descendants().Where(n => n.Name.Equals("bitpivotitem", StringComparison.OrdinalIgnoreCase)))
+        // A tab's header names the components it renders, and so does a topic's title - a topic's examples may be
+        // written inline instead, which ReadExamples reads off the topic around each of them.
+        foreach (var item in document.DocumentNode.Descendants().Where(n => n.Name.Equals("bitpivotitem", StringComparison.OrdinalIgnoreCase)
+                                                                          || n.Name.Equals("demotopic", StringComparison.OrdinalIgnoreCase)))
         {
-            if (Attribute(item, "HeaderText") is not string header) continue;
+            if ((Attribute(item, "HeaderText") ?? Attribute(item, "Title")) is not string header) continue;
 
             foreach (Match match in TabComponentRegex().Matches(item.InnerHtml))
             {
@@ -100,12 +122,28 @@ public static partial class BlazorUIDemoSource
             examples.AddRange(ReadExamples(sectionDocument.DocumentNode, tabs.GetValueOrDefault(component), owner));
         }
 
+        var topics = document.DocumentNode.Descendants()
+                             .Where(n => n.Name.Equals("demotopic", StringComparison.OrdinalIgnoreCase))
+                             .Select(n => new DemoTopicSource(Attribute(n, "Title") ?? string.Empty, Attribute(n, "Route"), Attribute(n, "Description")))
+                             .ToArray();
+
+        // The topic route of the examples a topic renders as components of their own (<_Foo />) rather than inline.
+        if (topics.Length > 0)
+        {
+            examples = [.. examples.Select(e => e.TopicRoute is null && e.Tab is not null && topics.FirstOrDefault(t => t.Title == e.Tab) is { } topic
+                                                ? e with { TopicRoute = topic.Route }
+                                                : e)];
+        }
+
         return new DemoPageSource(
             Description: page is null ? null : Attribute(page, "Description"),
             Notes: page is null ? null : Attribute(page, "Notes") ?? TemplateText(page, "notestemplate"),
             SourceUrl: page is null ? null : Attribute(page, "GitHubUrl") ?? Attribute(page, "GitHubExtrasUrl") ?? Attribute(page, "GitHubLegacyUrl") ?? Attribute(page, "GitHubAIUrl"),
             DemoUrl: page is null ? null : Attribute(page, "GitHubDemoUrl"),
-            Examples: examples);
+            Examples: examples)
+        {
+            Topics = topics
+        };
     }
 
     private static IEnumerable<DemoExampleSource> ReadExamples(HtmlNode root, string? tab, Type owner)
@@ -116,15 +154,20 @@ public static partial class BlazorUIDemoSource
 
             if (title is null) continue;
 
+            // The topic an inline example is written in, on a page split into topics.
+            var topic = node.Ancestors().FirstOrDefault(n => n.Name.Equals("demotopic", StringComparison.OrdinalIgnoreCase));
+
             yield return new DemoExampleSource(
                 Title: title,
                 Prose: Prose(node),
                 RazorField: Field(node, "RazorCode"),
                 CsharpField: Field(node, "CsharpCode"),
                 CodeFilesField: Field(node, "CodeFiles"),
-                Tab: tab)
+                Tab: tab ?? (topic is null ? null : Attribute(topic, "Title")))
             {
-                Owner = owner
+                Owner = owner,
+                Id = Attribute(node, "Id"),
+                TopicRoute = topic is null ? null : Attribute(topic, "Route"),
             };
         }
     }
@@ -162,7 +205,8 @@ public static partial class BlazorUIDemoSource
             builder.Append(' ').Append(child.InnerText);
         }
 
-        var prose = Collapse(WebUtility.HtmlDecode(builder.ToString()));
+        // The text is read out of the .razor source, where a literal @ is written as the escape @@.
+        var prose = Collapse(WebUtility.HtmlDecode(builder.ToString()).Replace("@@", "@", StringComparison.Ordinal));
 
         // Long enough to be a sentence, and with a space in it. Everything shorter that survived
         // the walk above is a stray label rather than an explanation, and a hit on it would read as
@@ -186,14 +230,26 @@ public static partial class BlazorUIDemoSource
         return string.IsNullOrWhiteSpace(value) ? null : Collapse(WebUtility.HtmlDecode(value).Replace("@@", "@", StringComparison.Ordinal));
     }
 
-    /// <summary>The text of a <c>&lt;NotesTemplate&gt;</c>, for the pages that write their notes as markup.</summary>
+    /// <summary>
+    /// The text of a <c>&lt;NotesTemplate&gt;</c>, for the pages that write their notes as markup.
+    /// <para>
+    /// Read one top-level paragraph at a time, leaving out the one that says to install the package: nearly every
+    /// Extras page opens its notes with it, and the answer says the same with the package name, the registration call
+    /// and the tags. Dropping the whole note for it, as the attribute form is, would also drop the paragraphs after it,
+    /// which are the page's own notes - what the component needs to be used right.
+    /// </para>
+    /// </summary>
     private static string? TemplateText(HtmlNode page, string templateName)
     {
         var template = page.ChildNodes.FirstOrDefault(n => n.Name.Equals(templateName, StringComparison.OrdinalIgnoreCase));
 
         if (template is null) return null;
 
-        var text = Collapse(WebUtility.HtmlDecode(template.InnerText));
+        var paragraphs = template.ChildNodes
+                                 .Select(n => Collapse(WebUtility.HtmlDecode(n.InnerText).Replace("@@", "@", StringComparison.Ordinal)))
+                                 .Where(t => t.Length > 0 && t.Contains("install the", StringComparison.OrdinalIgnoreCase) is false);
+
+        var text = string.Join(" ", paragraphs);
 
         return text.Length == 0 ? null : text;
     }

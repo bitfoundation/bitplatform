@@ -1,0 +1,36 @@
+﻿@inherits AppComponentBase
+
+@* One topic of a component page split into topics (DemoPage HasTopics): a run of examples with a page of
+   its own, under /components/<component>/<Route>. Every topic of the page is in its markup, and every one
+   registers with the page, which is what lists them in the topic strip, the overview's topic cards and the
+   pager - but only the one the address names renders its examples. A reader on one topic builds that
+   topic's sections and no other, the prerender sends that topic alone, and every topic is a link of its
+   own to share, bookmark and land on from a search engine.
+
+   The MCP view (?showallcodes) prints every topic, each under its own heading. *@
+@if (RenderForMcpClient)
+{
+    @($"\n## {Title}\n")
+
+    @if (Description.HasValue())
+    {
+        @($"{Description}\n")
+    }
+
+    @ChildContent
+}
+else if (Page is null || Page.IsTopicActive(this))
+{
+    @if (Page is not null && IsOverview is false)
+    {
+        @* The address, the title and the description a search engine and a shared link read are this
+           topic's own. Rendered after the page's own PageOutlet, so this one is the one that shows. *@
+        <PageOutlet Url="@Page.TopicUrl(Route).TrimStart('/')"
+                    Title="@($"{Page.Name}: {Title}")"
+                    Description="@Description" />
+    }
+
+    <DocSection Id="usage-section" Title="@Title" Description="@Description">
+        @ChildContent
+    </DocSection>
+}

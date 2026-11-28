@@ -120,5 +120,5 @@ The rest of the bit utilities meet Bmage without a package of their own:
   Keep pixels out of replicated state; store the original once and the document beside it.
 - **Blex** holds editor state such as the selected tool or the document's JSON; pixel buffers belong in the session,
   not in a store.
-- **Bdnd** and **Bortable** move files and order lists; `BmageDropZone` and the editor's own drop handling take the
+- **Bdnd** and BlazorUI's **BitSortable** move files and order lists; `BmageDropZone` and the editor's own drop handling take the
   files they hand over, and a layer list is reordered with `BmageImageDocument.MoveLayer`.

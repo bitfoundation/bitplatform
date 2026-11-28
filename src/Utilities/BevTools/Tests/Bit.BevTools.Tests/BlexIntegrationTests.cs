@@ -62,6 +62,44 @@ public class BlexIntegrationTests
     }
 
     [TestMethod]
+    public void Added_as_an_option_it_reaches_a_session_attached_on_demand()
+    {
+        var services = new ServiceCollection();
+        services.AddBitBlexServices();
+        services.AddBitBlexStore<BevCartStore>();
+        services.AddBitBevToolsLoaderServices(o => o
+            .ConfigureBevTools(static options => ((BevToolsOptions)options).AddBlex())
+            .RegisterAtStartup = false);
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        var session = BitBevTools.Attach(scope.ServiceProvider, o => o.Enabled = true);
+        session.EnsureActivated();
+        scope.ServiceProvider.GetRequiredService<BevCartStore>().Add(1, "x");
+
+        var entry = session.State.Entries.Single(e => e.Name == "Blex");
+        Assert.AreEqual("extension", entry.Origin);
+        Assert.AreEqual("cart/Add", Assert.ContainsSingle(entry.Changes).Action);
+        session.Dispose();
+    }
+
+    [TestMethod]
+    public void Added_both_as_an_option_and_through_dependency_injection_it_is_shown_once()
+    {
+        var (session, scope) = TestHelpers.CreateSession(o => o.AddBlex().AddBlex(), services =>
+        {
+            services.AddBitBlexServices();
+            services.AddBitBlexStore<BevCartStore>();
+            services.AddScoped<IBevToolsStateProvider>(sp => new BevToolsBlexStateProvider(sp.GetRequiredService<BlexManager>()));
+        });
+        using (scope)
+        {
+            Assert.ContainsSingle(session.State.Entries.Where(e => e.Name == "Blex"));
+            Assert.DoesNotContain(e => e.Message.Contains("already registered", StringComparison.Ordinal), session.Errors.Snapshot());
+        }
+    }
+
+    [TestMethod]
     public void Registered_through_dependency_injection_it_is_in_the_state_panel()
     {
         var services = new ServiceCollection();

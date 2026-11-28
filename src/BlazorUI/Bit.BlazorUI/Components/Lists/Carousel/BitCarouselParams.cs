@@ -56,6 +56,13 @@ public partial class BitCarouselParams : BitComponentBaseParams, IBitComponentPa
     public bool? AutoPlayReverse { get; set; }
 
     /// <summary>
+    /// Moves the next/prev buttons out of the slides to one of their sides: Bottom, Top, Start or End, with Start and End
+    /// following the reading direction. On the side of the dots they flank the dots. Every other value keeps them over the
+    /// edges of the slides.
+    /// </summary>
+    public BitPlacement? ButtonsPlacement { get; set; }
+
+    /// <summary>
     /// The custom CSS classes for the different parts of the carousel.
     /// </summary>
     public BitCarouselClassStyles? Classes { get; set; }
@@ -326,6 +333,11 @@ public partial class BitCarouselParams : BitComponentBaseParams, IBitComponentPa
         if (AutoPlayReverse.HasValue)
         {
             bitCarousel.TakeFromCascade(nameof(AutoPlayReverse), AutoPlayReverse.Value, static c => c.AutoPlayReverse, static (c, v) => c.AutoPlayReverse = v);
+        }
+
+        if (ButtonsPlacement.HasValue)
+        {
+            bitCarousel.TakeFromCascade(nameof(ButtonsPlacement), ButtonsPlacement.Value, static c => c.ButtonsPlacement, static (c, v) => c.ButtonsPlacement = v);
         }
 
         if (Classes is not null)

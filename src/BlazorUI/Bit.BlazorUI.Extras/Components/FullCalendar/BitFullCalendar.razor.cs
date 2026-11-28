@@ -203,8 +203,9 @@ public partial class BitFullCalendar : BitComponentBase
     /// <see cref="BitFullCalendarEvent"/> with <see cref="BitFullCalendarEvent.StartDate"/> and
     /// <see cref="BitFullCalendarEvent.EndDate"/> set from the interaction (for example the clicked day/week slot);
     /// <see cref="BitFullCalendarEvent.Id"/> is empty and other fields are left at defaults.
-    /// Consumers should show their own UI and
-    /// raise <see cref="OnChange"/> (or mutate <see cref="Events"/> bound to parent state) after persisting changes.
+    /// Consumers should show their own UI and, once the new event is saved, add it to the list they pass to
+    /// <see cref="Events"/>: the calendar only shows what that list holds, and <see cref="OnChange"/> is raised for the
+    /// changes made through its own dialogs, drags and resizes, not for this one.
     /// </summary>
     [Parameter] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
 
@@ -225,7 +226,9 @@ public partial class BitFullCalendar : BitComponentBase
     /// <summary>
     /// Raised when the visible date range changes - on first render, and afterwards whenever the user
     /// navigates with the prev/next/today buttons, switches views, or the grid shape changes. The
-    /// callback receives the inclusive start and end dates of the new range together with the active view.
+    /// callback receives the inclusive start and end dates of the new range together with the active view. The range is
+    /// every day the view shows: the month view's includes the days its grid borrows from the neighbouring months, which
+    /// show their events too, unless <see cref="BitFullCalendarSettings.ShowNonCurrentDates"/> leaves them blank.
     /// A prerendered or statically rendered calendar has no first render in the browser, so there the first
     /// range is raised as the calendar initializes, and awaited, so the events fetched for it are in the HTML
     /// sent before the page is interactive; a handler failing there (calling JavaScript, fetching a URL meant for
@@ -310,16 +313,16 @@ public partial class BitFullCalendar : BitComponentBase
     [Parameter] public BitFullCalendarSettings Settings { get; set; } = new();
 
     /// <summary>
+    /// Localized strings for calendar UI labels, buttons, dialogs, filters, and accessibility text.
+    /// Defaults to English; override individual properties on a <see cref="BitFullCalendarStrings"/>
+    /// instance to localize the component without replacing built-in dialogs.
+    /// </summary>
+    [Parameter] public BitFullCalendarStrings Strings { get; set; } = new();
+
+    /// <summary>
     /// Custom CSS styles for different parts of the calendar.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitFullCalendarClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// Localized strings for calendar UI labels, buttons, dialogs, filters, and accessibility text.
-    /// Defaults to English; override individual properties on a <see cref="BitFullCalendarTexts"/>
-    /// instance to localize the component without replacing built-in dialogs.
-    /// </summary>
-    [Parameter] public BitFullCalendarTexts Texts { get; set; } = new();
 
     /// <summary>
     /// Optional template for customizing event rendering in the resource timeline view.
@@ -425,7 +428,7 @@ public partial class BitFullCalendar : BitComponentBase
     private BitCascadingValueList BuildCascadingValues() => new()
     {
         { State },
-        { Texts },
+        { Strings },
         { _changeNotifier },
         { _colorScheme },
         { Settings },
@@ -469,10 +472,10 @@ public partial class BitFullCalendar : BitComponentBase
         // culture, the date bounds and the settings the state is initialized from.
         CascadingParameters?.UpdateParameters(this);
 
-        // Settings/Texts have default instances but can be set to null when bound externally.
-        // Normalize before any downstream use (ApplySettings, cascaded Texts) to avoid NREs.
+        // Settings/Strings have default instances but can be set to null when bound externally.
+        // Normalize before any downstream use (ApplySettings, cascaded Strings) to avoid NREs.
         Settings ??= new();
-        Texts ??= new();
+        Strings ??= new();
 
         State.SetTimeProvider(TimeProvider);
         State.Initialize(Events ?? [], ResolveCulture());
@@ -500,11 +503,11 @@ public partial class BitFullCalendar : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
-        // A null Settings/Texts can arrive from external binding, overriding the default instances;
+        // A null Settings/Strings can arrive from external binding, overriding the default instances;
 
-        // restore valid defaults before ApplySettings and the cascaded Texts are consumed downstream.
+        // restore valid defaults before ApplySettings and the cascaded Strings are consumed downstream.
         Settings ??= new();
-        Texts ??= new();
+        Strings ??= new();
 
         // Mark the parameter-application window. The state changes made below (events, resources,
         // views, view, mode, date) are held in one update of the state, announced once when it ends,
@@ -1024,10 +1027,10 @@ public partial class BitFullCalendar : BitComponentBase
     {
         var message = showNotice is false ? null : refusal switch
         {
-            BitFullCalendarChangeRefusal.Overlap => Texts.EventOverlapMessage,
-            BitFullCalendarChangeRefusal.OutOfRange => Texts.OutOfRangeMessage,
-            BitFullCalendarChangeRefusal.OutsideBusinessHours => Texts.OutsideBusinessHoursMessage,
-            BitFullCalendarChangeRefusal.Blocked => Texts.BlockedMessage,
+            BitFullCalendarChangeRefusal.Overlap => Strings.EventOverlapMessage,
+            BitFullCalendarChangeRefusal.OutOfRange => Strings.OutOfRangeMessage,
+            BitFullCalendarChangeRefusal.OutsideBusinessHours => Strings.OutsideBusinessHoursMessage,
+            BitFullCalendarChangeRefusal.Blocked => Strings.BlockedMessage,
             _ => null
         };
 
@@ -1113,7 +1116,10 @@ public partial class BitFullCalendar : BitComponentBase
         }
     }
 
-    /// <summary>The inclusive start and end dates the calendar is currently showing.</summary>
+    /// <summary>
+    /// The inclusive start and end dates the calendar is currently showing - the range <see cref="OnDateChange"/>
+    /// reports, which for the month view includes the days its grid borrows from the neighbouring months.
+    /// </summary>
     public (DateTime Start, DateTime End) GetVisibleRange()
         => State.GetVisibleRange();
 

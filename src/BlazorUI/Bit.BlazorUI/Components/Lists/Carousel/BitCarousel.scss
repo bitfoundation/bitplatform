@@ -13,7 +13,7 @@
 //   --bit-Carousel-button-opacity              next/prev and play/pause opacity at rest            (default: 0.5)
 //   --bit-Carousel-button-hover-opacity        their opacity on hover                              (default: 0.9)
 //   --bit-Carousel-button-size                 next/prev glyph size                                (default: $siz-icon-md x 1.5)
-//   --bit-Carousel-button-width                next/prev hit area across the scrolling axis        (default: 10%)
+//   --bit-Carousel-button-width                next/prev hit area across the axis, over the slides (default: 10%)
 //   --bit-Carousel-dot-color                   dot color                                           (default: $clr-brd-pri)
 //   --bit-Carousel-dot-hover-color             dot color on hover                                  (default: $clr-brd-pri-hover)
 //   --bit-Carousel-dot-current-color           current dot color                                   (default: $clr-pri)
@@ -22,7 +22,7 @@
 //   --bit-Carousel-dot-current-length          current dot length along the dots row (the pill)    (default: twice the dot size)
 //   --bit-Carousel-dot-radius                  dot corner radius                                   (default: $shp-radius-full)
 //   --bit-Carousel-dots-gap                    space between the dots                              (default: the room that keeps them 24px apart)
-//   --bit-Carousel-dots-margin                 space between the slides and the dots row           (default: spacing(1.25))
+//   --bit-Carousel-dots-margin                 space between the slides and the rows of controls   (default: spacing(1.25))
 //
 // A parameter written on the carousel wins over the variable that restyles what it sets: an explicit Color over the
 // focus, button and current-dot colors, an explicit Accent over the current-dot colors, an explicit Size over the
@@ -167,19 +167,25 @@ $csl-private-properties:
     }
 }
 
-// The next/prev buttons are rendered before the slides (see the comment in the markup) and the slide
-// of the Fade effect carries a z-index of its own, so they are stacked above it explicitly; equal
-// z-indexes would leave the slide, the later element, painting over them.
 .bit-csl-nbt,
 .bit-csl-pbt {
+    // The glyphs of the controls come from the icon sizes of the theme. The next/prev glyph sits over a whole slide
+    // rather than inside a field, so it is drawn half as large again as a control's own.
+    font-size: var(--bit-csl-btn-size, var(--bit-Carousel-button-size, calc(#{$siz-icon-md} * 1.5)));
+}
+
+// The next/prev buttons are rendered before the slides (see the comment in the markup) and the slide
+// of the Fade effect carries a z-index of its own, so they are stacked above it explicitly; equal
+// z-indexes would leave the slide, the later element, painting over them. Only the buttons over the slides are laid
+// out along their edges: the ones ButtonsPlacement moves into a row of controls are laid out further down. The :where
+// keeps the rule as light as it is without it.
+:where(.bit-csl-cnt) > .bit-csl-nbt,
+:where(.bit-csl-cnt) > .bit-csl-pbt {
     top: 0;
     bottom: 0;
     z-index: 2;
     position: absolute;
     width: var(--bit-Carousel-button-width, 10%);
-    // The glyphs of the controls come from the icon sizes of the theme. The next/prev glyph sits over a whole slide
-    // rather than inside a field, so it is drawn half as large again as a control's own.
-    font-size: var(--bit-csl-btn-size, var(--bit-Carousel-button-size, calc(#{$siz-icon-md} * 1.5)));
 
     // The buttons sit against the edges of the slide container, which clips its overflow, so a ring drawn
     // outside of them would be cut off on three sides. The indicator is drawn inside the button instead, with
@@ -242,8 +248,8 @@ $csl-private-properties:
         touch-action: pan-x;
     }
 
-    .bit-csl-nbt,
-    .bit-csl-pbt {
+    :where(.bit-csl-cnt) > .bit-csl-nbt,
+    :where(.bit-csl-cnt) > .bit-csl-pbt {
         top: unset;
         bottom: unset;
         left: 0;
@@ -252,11 +258,11 @@ $csl-private-properties:
         height: var(--bit-Carousel-button-width, 10%);
     }
 
-    .bit-csl-nbt {
+    :where(.bit-csl-cnt) > .bit-csl-nbt {
         bottom: 0;
     }
 
-    .bit-csl-pbt {
+    :where(.bit-csl-cnt) > .bit-csl-pbt {
         top: 0;
     }
 }
@@ -414,6 +420,84 @@ $csl-private-properties:
         width: var(--bit-csl-dotsz);
         height: var(--bit-Carousel-dot-current-length, calc(var(--bit-csl-dotsz) * 2));
     }
+}
+
+
+// ButtonsPlacement: the next/prev buttons moved out of the slides, into the row of the dots or into one of their own,
+// are laid out like the play/pause button beside them rather than along an edge of the slides: a box around the glyph,
+// kept at the 24px minimum target size and ringed from outside, since nothing clips it there. A button at the end it
+// cannot pass is hidden with visibility rather than display (written inline), so it keeps its room and the dots beside
+// it do not shift. The :where keeps the rule as light as the one sizing every button, so a class a page gives the
+// buttons through Classes still sizes them.
+:where(.bit-csl-dcn, .bit-csl-bcn) > .bit-csl-nbt,
+:where(.bit-csl-dcn, .bit-csl-bcn) > .bit-csl-pbt {
+    flex-shrink: 0;
+    min-width: 24px;
+    min-height: 24px;
+    position: relative;
+    border-radius: $shp-radius-full;
+}
+
+// The row of their own the buttons get on a side the dots are not on, laid out like the row of the dots: across the
+// slides at the Top or Bottom, and in a column beside them at the Start or End.
+.bit-csl-bcn {
+    display: flex;
+    flex-shrink: 0;
+    gap: spacing(1);
+    align-items: center;
+    justify-content: center;
+}
+
+// With the buttons on a side the dots are not on, the root lays the slides and the two rows out on a grid that has a
+// track on every side of the slides, so the rows can sit on sides of different axes (the dots below the slides and the
+// buttons beside them). A track nothing is placed in takes no room, which is why the space between the slides and a
+// row is a margin of the row here rather than the gap of the root: a gap would be left around the empty tracks too.
+// The sides follow the reading direction, as the Start and End of DotsPlacement do.
+.bit-csl-bsep {
+    gap: 0;
+    display: grid;
+    grid-template-areas: ". top ." "start cnt end" ". bottom .";
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+
+    > .bit-csl-cnt {
+        grid-area: cnt;
+    }
+
+    > .bit-csl-dcn {
+        grid-area: bottom;
+        margin-block-start: var(--bit-Carousel-dots-margin, #{spacing(1.25)});
+    }
+}
+
+.bit-csl-bsep.bit-csl-dtop > .bit-csl-dcn,
+.bit-csl-btop > .bit-csl-bcn {
+    grid-area: top;
+    margin-block: 0 var(--bit-Carousel-dots-margin, #{spacing(1.25)});
+}
+
+.bit-csl-bbot > .bit-csl-bcn {
+    grid-area: bottom;
+    margin-block-start: var(--bit-Carousel-dots-margin, #{spacing(1.25)});
+}
+
+.bit-csl-bsep.bit-csl-dstr > .bit-csl-dcn,
+.bit-csl-bstr > .bit-csl-bcn {
+    grid-area: start;
+    margin-block: 0;
+    margin-inline-end: var(--bit-Carousel-dots-margin, #{spacing(1.25)});
+}
+
+.bit-csl-bsep.bit-csl-dend > .bit-csl-dcn,
+.bit-csl-bend > .bit-csl-bcn {
+    grid-area: end;
+    margin-block: 0;
+    margin-inline-start: var(--bit-Carousel-dots-margin, #{spacing(1.25)});
+}
+
+.bit-csl-bstr > .bit-csl-bcn,
+.bit-csl-bend > .bit-csl-bcn {
+    flex-direction: column;
 }
 
 

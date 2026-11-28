@@ -77,8 +77,8 @@ public partial class _BitNavCustomDemo
                             Text = "Project Templates",
                             Links =
                             [
-                                new() { Text = "Todo sample", ImageName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
-                                new() { Text = "AdminPanel sample", ImageName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "Todo sample", ImageName = BitIconName.ToDoLogoOutline, Url = "https://todo.bitfabric.co" },
+                                new() { Text = "AdminPanel sample", ImageName = BitIconName.LocalAdmin, Url = "https://adminpanel.bitfabric.co" },
                             ]
                         },
                         new() { Text = "BlazorUI", ImageName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
@@ -86,7 +86,7 @@ public partial class _BitNavCustomDemo
                         new() { Text = "Bit academy", ImageName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsDisabled = true },
                     ]
                 },
-                new() { Text = "Pricing", ImageName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "Pricing", ImageName = BitIconName.Money, Url = "https://bitfabric.co/pricing" },
                 new() { Text = "About", ImageName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
                 new() { Text = "Contact us", ImageName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             ],
@@ -107,7 +107,7 @@ public partial class _BitNavCustomDemo
     private static readonly List<Section> customSeparatorNavItems =
     [
         new() { Text = "Home", ImageName = BitIconName.Home, Url = "https://bitplatform.dev/" },
-        new() { Text = "Pricing", ImageName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+        new() { Text = "Pricing", ImageName = BitIconName.Money, Url = "https://bitfabric.co/pricing" },
         new() { IsDivider = true },
         new() { Text = "LinkedIn", ImageName = BitIconName.LinkedInLogo, Url = "https://www.linkedin.com/company/bitplatformhq" },
         new() { Text = "GitHub repo", ImageName = BitIconName.GitGraph, Url = "https://github.com/bitfoundation/bitplatform" },
@@ -479,8 +479,8 @@ public partial class _BitNavCustomDemo
                             Text = "Project Templates",
                             Links =
                             [
-                                new() { Text = "Todo sample", ImageName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
-                                new() { Text = "AdminPanel sample", ImageName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "Todo sample", ImageName = BitIconName.ToDoLogoOutline, Url = "https://todo.bitfabric.co" },
+                                new() { Text = "AdminPanel sample", ImageName = BitIconName.LocalAdmin, Url = "https://adminpanel.bitfabric.co" },
                             ]
                         },
                         new() { Text = "BlazorUI", ImageName = BitIconName.F12DevTools, Url = "https://bitplatform.dev/components" },
@@ -488,7 +488,7 @@ public partial class _BitNavCustomDemo
                         new() { Text = "Bit academy", ImageName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsDisabled = true },
                     ]
                 },
-                new() { Text = "Pricing", ImageName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "Pricing", ImageName = BitIconName.Money, Url = "https://bitfabric.co/pricing" },
                 new() { Text = "About", ImageName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
                 new() { Text = "Contact us", ImageName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             ],
@@ -521,7 +521,7 @@ public partial class _BitNavCustomDemo
                     Links =
                     [
                         new() { Text = "BlazorUI", Icon = BitIconInfo.Fa("solid code"), Url = "https://bitplatform.dev/components" },
-                        new() { Text = "Pricing", Icon = BitIconInfo.Css("fa-solid fa-tag"), Url = "https://bitplatform.dev/pricing" },
+                        new() { Text = "Pricing", Icon = BitIconInfo.Css("fa-solid fa-tag"), Url = "https://bitfabric.co/pricing" },
                     ]
                 },
                 new() { Text = "About", Icon = BitIconInfo.Fa("solid circle-info"), Url = "https://bitplatform.dev/about-us" },
@@ -543,7 +543,7 @@ public partial class _BitNavCustomDemo
             [
                 new() { Text = "Home", Icon = BitIconInfo.Bi("house-fill"), Url = "https://bitplatform.dev/" },
                 new() { Text = "BlazorUI", Icon = BitIconInfo.Bi("code-slash"), Url = "https://bitplatform.dev/components" },
-                new() { Text = "Pricing", Icon = BitIconInfo.Bi("tag-fill"), Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "Pricing", Icon = BitIconInfo.Bi("tag-fill"), Url = "https://bitfabric.co/pricing" },
             ],
         },
         new() { Text = "Iconography", Icon = BitIconInfo.Bi("emoji-smile"), Url = "/iconography" },
@@ -606,8 +606,8 @@ public partial class _BitNavCustomDemo
                             Text = "قالب های پروژه",
                             Links =
                             [
-                                new() { Text = "نمونه ی Todo", ImageName = BitIconName.ToDoLogoOutline, Url = "https://bitplatform.dev/templates/overview" },
-                                new() { Text = "نمونه ی AdminPanel", ImageName = BitIconName.LocalAdmin, Url = "https://bitplatform.dev/templates/overview" },
+                                new() { Text = "نمونه ی Todo", ImageName = BitIconName.ToDoLogoOutline, Url = "https://todo.bitfabric.co" },
+                                new() { Text = "نمونه ی AdminPanel", ImageName = BitIconName.LocalAdmin, Url = "https://adminpanel.bitfabric.co" },
                             ]
                         },
                         new() { Text = "رابط کاربری Blazor", ImageName = BitIconName.F12DevTools, Url = "https://blazorui.bitplatform.dev/" },
@@ -615,7 +615,7 @@ public partial class _BitNavCustomDemo
                         new() { Text = "آکادمی بیت", ImageName = BitIconName.LearningTools, Url = "https://bitplatform.dev/#", IsDisabled = true },
                     ]
                 },
-                new() { Text = "قیمت", ImageName = BitIconName.Money, Url = "https://bitplatform.dev/pricing" },
+                new() { Text = "قیمت", ImageName = BitIconName.Money, Url = "https://bitfabric.co/pricing" },
                 new() { Text = "درباره ما", ImageName = BitIconName.Info, Url = "https://bitplatform.dev/about-us" },
                 new() { Text = "ارتباط با ما", ImageName = BitIconName.Contact, Url = "https://bitplatform.dev/contact-us" },
             ],

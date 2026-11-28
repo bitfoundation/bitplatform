@@ -296,82 +296,48 @@
 
     @if (_showSlash && ControlsDisabled is false)
     {
-        <div class="bit-rte-slash @Classes?.Menu" style="@Styles?.Menu">
-            @* data-bit-esc on the filter claims the Escape that dismisses the menu (OnSlashKeyDownAsync, see
-               Utils.claimEscape), so a dialog around the editor does not close on that same press. The filter is
-               only rendered while the menu is open, which is when its handler acts on the key. *@
-            <input type="text" class="bit-rte-inp" aria-label="@Loc("filter-commands", "Filter commands")"
-                   placeholder="@Loc("filter-commands", "Filter commands…")"
-                   @ref="_slashInputRef"
-                   role="combobox"
-                   aria-expanded="true"
-                   aria-autocomplete="list"
-                   aria-controls="@($"{UniqueId}-slash-list")"
-                   aria-activedescendant="@(FilteredSlash().Any() ? $"{UniqueId}-slash-item-{_slashIndex}" : null)"
-                   value="@_slashFilter" @oninput="OnSlashFilterInput"
-                   @onkeydown="OnSlashKeyDownAsync"
-                   data-bit-esc="claim" />
-            <div class="bit-rte-slash-list" role="listbox" id="@($"{UniqueId}-slash-list")" aria-label="@Loc("filter-commands", "Filter commands")">
-                @{ var _slashItemIndex = 0; }
-                @foreach (var c in FilteredSlash())
-                {
-                    var _itemIndex = _slashItemIndex++;
-                    <button type="button" id="@($"{UniqueId}-slash-item-{_itemIndex}")"
-                            role="option"
-                            tabindex="-1"
-                            aria-selected="@((_itemIndex == _slashIndex).ToString().ToLowerInvariant())"
-                            class="bit-rte-slash-item@(_itemIndex == _slashIndex ? " bit-rte-slash-item-sel" : null)"
-                            @onmousedown:preventDefault="true" @onclick="() => ApplySlashAsync(c.Command)">@Loc(c.Key, c.Label)</button>
-                }
-            </div>
-            @if (FilteredSlash().Any() is false)
-            {
-                <div class="bit-rte-emoji-empty" role="status">@Loc("no-command", "No matching command")</div>
-            }
-        </div>
+        <_BitEditorMenu TItem="SlashCommand"
+                        @ref="_slashMenu"
+                        Class="@($"bit-rte-slash {Classes?.Menu}")"
+                        Style="@Styles?.Menu"
+                        Classes="MenuClasses"
+                        Id="@($"{UniqueId}-slash")"
+                        Label="@Loc("filter-commands", "Filter commands")"
+                        Placeholder="@Loc("filter-commands", "Filter commands…")"
+                        EmptyText="@Loc("no-command", "No matching command")"
+                        Filter="@_slashFilter"
+                        Items="_slashItems"
+                        OnFilterInput="OnSlashFilterInput"
+                        OnPick="c => ApplySlashAsync(c.Command)"
+                        OnClose="OnSlashClose">
+            <ItemTemplate Context="c">@Loc(c.Key, c.Label)</ItemTemplate>
+        </_BitEditorMenu>
     }
 
     @if (_showMention && ControlsDisabled is false)
     {
-        <div class="bit-rte-slash bit-rte-mention-menu @Classes?.Menu" style="@Styles?.Menu">
-            @* data-bit-esc on the search box claims the Escape that dismisses the suggestions (OnMentionKeyDownAsync,
-               see Utils.claimEscape), so a dialog around the editor does not close on that same press. The box is
-               only rendered while the suggestions are open, which is when its handler acts on the key. *@
-            <input type="text" class="bit-rte-inp" aria-label="@Loc("mention-filter", "Search people")"
-                   placeholder="@Loc("mention-filter-placeholder", "Search people…")"
-                   @ref="_mentionInputRef"
-                   role="combobox"
-                   aria-expanded="true"
-                   aria-autocomplete="list"
-                   aria-controls="@($"{UniqueId}-mention-list")"
-                   aria-activedescendant="@(_mentionItems.Count > 0 ? $"{UniqueId}-mention-item-{_mentionIndex}" : null)"
-                   value="@_mentionFilter" @oninput="OnMentionFilterInput"
-                   @onkeydown="OnMentionKeyDownAsync"
-                   data-bit-esc="claim" />
-            <div class="bit-rte-slash-list" role="listbox" id="@($"{UniqueId}-mention-list")" aria-label="@Loc("mention-filter", "Search people")">
-                @for (var i = 0; i < _mentionItems.Count; i++)
+        <_BitEditorMenu TItem="BitRichTextEditorMention"
+                        @ref="_mentionMenu"
+                        Class="@($"bit-rte-slash bit-rte-mention-menu {Classes?.Menu}")"
+                        Style="@Styles?.Menu"
+                        Classes="MenuClasses"
+                        Id="@($"{UniqueId}-mention")"
+                        Label="@Loc("mention-filter", "Search people")"
+                        Placeholder="@Loc("mention-filter-placeholder", "Search people…")"
+                        EmptyText="@Loc("no-mention", "No matches")"
+                        Filter="@_mentionFilter"
+                        Items="_mentionItems"
+                        OnFilterInput="OnMentionFilterInput"
+                        OnPick="ApplyMentionAsync"
+                        OnClose="OnMentionClose">
+            <ItemTemplate Context="mention">
+                <span class="bit-rte-mention-name">@mention.Display</span>
+                @if (string.IsNullOrEmpty(mention.Description) is false)
                 {
-                    var index = i;
-                    var mention = _mentionItems[index];
-                    <button type="button" id="@($"{UniqueId}-mention-item-{index}")"
-                            role="option"
-                            tabindex="-1"
-                            aria-selected="@((index == _mentionIndex) ? "true" : "false")"
-                            class="bit-rte-slash-item@(index == _mentionIndex ? " bit-rte-slash-item-sel" : null)"
-                            @onmousedown:preventDefault="true" @onclick="() => ApplyMentionAsync(mention)">
-                        <span class="bit-rte-mention-name">@mention.Display</span>
-                        @if (string.IsNullOrEmpty(mention.Description) is false)
-                        {
-                            <span class="bit-rte-mention-desc">@mention.Description</span>
-                        }
-                    </button>
+                    <span class="bit-rte-mention-desc">@mention.Description</span>
                 }
-            </div>
-            @if (_mentionItems.Count == 0)
-            {
-                <div class="bit-rte-emoji-empty" role="status">@Loc("no-mention", "No matches")</div>
-            }
-        </div>
+            </ItemTemplate>
+        </_BitEditorMenu>
     }
 
     @if (ShowingQuickToolbar)
@@ -503,9 +469,9 @@
     };
 
     private RenderFragment HistoryGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("undo", "Undo (Ctrl+Z)")" aria-label="@Loc("undo-label", "Undo")" aria-keyshortcuts="@ShortcutFor("undo")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("undo", "Undo (Ctrl+Z)")" aria-label="@Loc("undo-label", "Undo")" aria-keyshortcuts="@ShortcutFor("undo")" disabled="@UndoDisabled" aria-disabled="@(UndoDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="UndoAsync">@BitRichTextEditorIcons.Undo</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("redo", "Redo (Ctrl+Y)")" aria-label="@Loc("redo-label", "Redo")" aria-keyshortcuts="@ShortcutFor("redo")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("redo", "Redo (Ctrl+Y)")" aria-label="@Loc("redo-label", "Redo")" aria-keyshortcuts="@ShortcutFor("redo")" disabled="@RedoDisabled" aria-disabled="@(RedoDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="RedoAsync">@BitRichTextEditorIcons.Redo</button>
     </div>;
 

@@ -140,4 +140,26 @@ public class BlexQueryFocusWatcherTests
 
         Assert.IsEmpty(errors);
     }
+
+    [TestMethod]
+    public async Task A_start_the_page_never_answers_does_not_hold_up_disposal_and_lets_go_once_answered()
+    {
+        var js = new FakeJsRuntime();
+        var watch = new TaskCompletionSource<int>();
+        js.Module.Returns["watch"] = watch.Task;
+        var (client, _, _) = Client();
+        var watcher = new BlexQueryFocusWatcher(js, client, new BlexManager());
+
+        var start = watcher.StartAsync();
+        var dispose = watcher.DisposeAsync().AsTask();
+
+        Assert.IsTrue(dispose.IsCompleted);
+        Assert.IsFalse(js.Module.Disposed);
+
+        watch.SetResult(7);
+        await start;
+
+        Assert.AreEqual(7, js.Module.ArgsOf("unwatch")![0]);
+        Assert.IsTrue(js.Module.Disposed);
+    }
 }

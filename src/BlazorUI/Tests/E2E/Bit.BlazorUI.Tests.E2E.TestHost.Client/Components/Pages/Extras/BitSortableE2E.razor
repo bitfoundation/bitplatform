@@ -1,0 +1,134 @@
+﻿@page "/e2e/sortable"
+
+@* BitSortable's basics: a list reordered by dragging and from the keyboard, bound with @bind-Items, with Classes added
+   to the built-in ones and the slide's duration on a slider; rows keyed by their id (ItemKey) that keep their
+   selection when loaded again; what an empty list shows (EmptyText, EmptyTemplate, the default, a BitParams default);
+   and a Disabled list. The other features have pages of their own under /e2e/sortable/..., each fitting the
+   1280 x 1400 viewport the tests drive it in. *@
+
+<PageTitle>BitSortable E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable</h1>
+
+<E2ESection Id="simple" Title="Simple list">
+    <div class="srt-controls">
+        <label>
+            Animation: <span id="simple-animation-value">@_animation ms</span>
+            <input id="simple-animation" type="range" min="0" max="1000" step="50" value="@_animation" @oninput="OnAnimationChanged" />
+        </label>
+    </div>
+    <BitSortable @bind-Items="_simple" TItem="string" Id="simple-list" Animation="_animation"
+                 Class="demo-list" Classes="_classes">
+        <ItemTemplate Context="item">@item</ItemTemplate>
+    </BitSortable>
+    <p class="demo-order">Order: <span id="simple-order">@string.Join(", ", _simple)</span></p>
+</E2ESection>
+
+<E2ESection Id="keys" Title="ItemKey">
+    <div class="srt-controls">
+        <button type="button" id="keys-reload" @onclick="Reload">Load the rows again</button>
+        <label><input id="keys-by-id" type="checkbox" @bind="_byId" /> ItemKey by id</label>
+    </div>
+    <BitSortable @bind-Items="_rows" TItem="TaskRow" ItemKey="@(_byId ? ById : null)" MultiDrag="true" Id="keys-list"
+                 AriaLabel="Tasks" ItemLabel="row => row.Title" Class="demo-list" Classes="_classes">
+        <ItemTemplate Context="row">@row.Title</ItemTemplate>
+    </BitSortable>
+    <p class="demo-order">Order: <span id="keys-order">@string.Join(", ", _rows.Select(r => r.Title))</span></p>
+    <p class="demo-order">Loaded: <span id="keys-loads">@_loads @(_loads == 1 ? "time" : "times")</span></p>
+</E2ESection>
+
+<E2ESection Id="empty" Title="Empty lists">
+    <div class="srt-cols">
+        <div class="srt-col">
+            <BitSortable Items="_emptyText" TItem="string" Id="empty-text" AriaLabel="Empty text" EmptyText="Drop something here"
+                         Class="demo-list" Classes="@(new() { Item = "demo-item", Empty = "custom-empty" })">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <BitSortable Items="_emptyTemplate" TItem="string" Id="empty-template" AriaLabel="Empty template" Class="demo-list">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+                <EmptyTemplate><b class="custom-empty-template">Nothing to sort</b></EmptyTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <BitSortable Items="_emptyDefault" TItem="string" Id="empty-default" AriaLabel="Empty default" Class="demo-list">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <BitParams Parameters="_params">
+                <BitSortable Items="_emptyParams" TItem="string" Id="empty-params" AriaLabel="Empty with params" Class="demo-list">
+                    <ItemTemplate Context="item">@item</ItemTemplate>
+                </BitSortable>
+            </BitParams>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div class="srt-cols">
+        <div class="srt-col">
+            <BitSortable @bind-Items="_archive" TItem="string" Group="disabled" Id="disabled-archive" AriaLabel="Archive"
+                         Disabled="true" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <BitSortable @bind-Items="_desk" TItem="string" Group="disabled" Id="disabled-desk" AriaLabel="Desk"
+                         Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">Archive: <span id="disabled-archive-order">@string.Join(", ", _archive)</span></p>
+    <p class="demo-order">Desk: <span id="disabled-desk-order">@string.Join(", ", _desk)</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    // A row as a server sends it: a class, so two loads of the same row are two different objects.
+    private sealed class TaskRow(int id, string title)
+    {
+        public int Id { get; } = id;
+        public string Title { get; } = title;
+    }
+
+    private static readonly Func<TaskRow, object> ById = row => row.Id;
+
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item", Ghost = "demo-ghost" };
+    private readonly BitSortableParams[] _params = [new() { EmptyText = "Empty, from BitParams" }];
+
+    private IList<string> _simple = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6" };
+    private int _animation = 150;
+
+    private bool _byId = true;
+    private int _loads = 1;
+    private IList<TaskRow> _rows = new List<TaskRow>
+    {
+        new(1, "Write the spec"), new(2, "Review the design"), new(3, "Build the API"), new(4, "Ship it")
+    };
+
+    private readonly IList<string> _emptyText = new List<string>();
+    private readonly IList<string> _emptyTemplate = new List<string>();
+    private readonly IList<string> _emptyDefault = new List<string>();
+    private readonly IList<string> _emptyParams = new List<string>();
+
+    private IList<string> _archive = new List<string> { "2023 report", "2024 report" };
+    private IList<string> _desk = new List<string> { "Draft", "Notes" };
+
+    private void OnAnimationChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var ms)) _animation = ms;
+    }
+
+    // What a refresh from the server does: the same rows, in the order last saved, as new objects.
+    private void Reload()
+    {
+        _rows = _rows.Select(row => new TaskRow(row.Id, row.Title)).ToList();
+        _loads++;
+    }
+}

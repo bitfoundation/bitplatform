@@ -2,8 +2,8 @@
 @inherits AppComponentBase
 
 <PageOutlet Url=""
-            Title="From idea to production on every platform"
-            Description="Start from a full-featured app, customize it with AI, and publish to web, Android, iOS, Windows and macOS - with the full source code and no lock-in.">
+            Title="The AI-ready UI toolkit for Blazor"
+            Description="Blazor components and libraries written for AI agents, each newer library with an MCP server of its own: accessibility, offline sync, live collaboration, an image editor and more. Free, open source and MIT licensed.">
 </PageOutlet>
 
 @* The hero glow and dot grid are painted by CSS (see .page-container::before / .hero-section::before),
@@ -24,13 +24,13 @@
                     bit platform
                 </BitText>
                 <BitText Typography="BitTypography.H4" Gutter Class="hero-subtitle">
-                    Build all of your apps
+                    The AI-ready UI toolkit
                     <br />
-                    without starting from scratch
+                    for Blazor
                 </BitText>
                 <div class="hero-cta-container">
-                    <BitLink Class="hero-cta primary" Href="@($"#{OUR_PRODUCTS_SECTION_ID}")" NoColor NoUnderline>Explore products</BitLink>
-                    <BitLink Class="hero-cta secondary" Href="@Urls.Templates" NoColor NoUnderline>Get started with templates</BitLink>
+                    <BitLink Class="hero-cta primary" Href="@($"#{LIBRARIES_SECTION_ID}")" NoColor NoUnderline>Explore the libraries</BitLink>
+                    <BitLink Class="hero-cta secondary" Href="@BLAZORUI_GETTING_STARTED_URL" Target="_blank" NoColor NoUnderline>Get started</BitLink>
                 </div>
             </div>
         </div>
@@ -47,15 +47,15 @@
             </div>
             <br />
             <BitText Typography="BitTypography.H2" Class="text-title">
-                code, build & deploy
+                written for you
                 <br />
-                your apps easily
+                and for <span class="highlight-1">your AI agent</span>
             </BitText>
             <br />
             <BitText Typography="BitTypography.H5" Class="text-subtitle">
-                Start from a full-featured app, customize it with AI, and hit publish.
+                Blazor components, browser APIs and focused libraries for web, Android, iOS, Windows and macOS.
                 <br />
-                Web, Android, iOS, Windows and macOS - from one project.
+                Your coding agent finds the right API, reads how it works and uses it as intended.
             </BitText>
         </div>
     </section>
@@ -90,29 +90,127 @@
         </div>
     </section>
 
-    <section class="page-section text-section">
+    <section class="page-section ai-section">
         <div class="page-section-content">
             <div class="section-title-container">
                 <div class="section-title-line reversed"></div>
-                <BitText Typography="BitTypography.H6" Gutter Class="section-title">
-                    Why <span style="text-transform:lowercase">bit platform?</span>
-                </BitText>
+                <BitText Typography="BitTypography.H6" Gutter Class="section-title">AI-ready</BitText>
                 <div class="section-title-line"></div>
             </div>
             <br />
             <BitText Typography="BitTypography.H2" Class="text-title">
-                everything ready on day one
+                ask for the API,
                 <br />
-                and you are
-                <br />
-                <span class="highlight-1">never locked in</span>
+                not the <span class="highlight-2">source code</span>
             </BitText>
+            <div class="ai-grid">
+                <div class="ai-points">
+                    <div class="ai-point">
+                        <span class="ai-point-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="6" rx="2" />
+                                <rect x="3" y="14" width="18" height="6" rx="2" />
+                                <path d="M7 7h.01M7 17h.01" />
+                            </svg>
+                        </span>
+                        <div>
+                            <BitText Typography="BitTypography.Inherit" Element="h3" Class="ai-point-title">An MCP server for every newer library</BitText>
+                            <BitText Typography="BitTypography.Inherit" Element="p" Class="ai-point-text">
+                                A search tool that finds the right feature from a plain description of what it must do, the setup guide,
+                                the full API reference and working examples - straight from the library itself.
+                            </BitText>
+                        </div>
+                    </div>
+                    <div class="ai-point">
+                        <span class="ai-point-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="9" />
+                                <circle cx="12" cy="12" r="5" />
+                                <circle cx="12" cy="12" r="1" />
+                            </svg>
+                        </span>
+                        <div>
+                            <BitText Typography="BitTypography.Inherit" Element="h3" Class="ai-point-title">Fewer tokens, fewer guesses</BitText>
+                            <BitText Typography="BitTypography.Inherit" Element="p" Class="ai-point-text">
+                                Your agent asks for the one API it needs instead of reading the source and guessing.
+                                Less context to pay for, and code that follows the library as it is.
+                            </BitText>
+                        </div>
+                    </div>
+                    <div class="ai-point">
+                        <span class="ai-point-icon" aria-hidden="true">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="4.5" r="1.5" />
+                                <path d="M5 8.5l7 1.5 7-1.5M12 10v4m0 0l-3 6m3-6l3 6" />
+                            </svg>
+                        </span>
+                        <div>
+                            <BitText Typography="BitTypography.Inherit" Element="h3" Class="ai-point-title">Accessible from the start</BitText>
+                            <BitText Typography="BitTypography.Inherit" Element="p" Class="ai-point-text">
+                                Keyboard interaction, focus management and ARIA come built in: in the
+                                <BitLink Href="@Urls.BlazorUI" Target="_blank">BlazorUI</BitLink> components, and in the unstyled
+                                <BitLink Href="@Urls.Bheadless" Target="_blank">Bheadless</BitLink> primitives for your own design system.
+                            </BitText>
+                        </div>
+                    </div>
+                </div>
+                <div class="ai-code">
+                    <BitText Typography="BitTypography.Inherit" Element="h3" Class="ai-code-title">Point your coding agent at a library</BitText>
+                    <CodeBox>{
+  "servers": {
+    "bmage": {
+      "type": "http",
+      "url": "https://bmage.bitplatform.dev/mcp"
+    },
+    "bcrdt": {
+      "type": "http",
+      "url": "https://bcrdt.bitplatform.dev/mcp"
+    }
+  }
+}</CodeBox>
+                    <BitText Typography="BitTypography.Inherit" Element="p" Class="ai-code-note">
+                        Each library's server lives on its own site, at <code>https://&lt;library&gt;.bitplatform.dev/mcp</code>:
+                        plain HTTP, no sign-in. Projects made with <BitLink Href="@Urls.BitFabric" Target="_blank">bit Fabric</BitLink>
+                        connect to <code>https://api.bitfabric.co/docs-mcp</code>.
+                    </BitText>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section capabilities-section" id="@LIBRARIES_SECTION_ID" @ref="librariesRef">
+        <div class="page-section-content">
+            <div class="section-title-container">
+                <div class="section-title-line reversed"></div>
+                <BitText Typography="BitTypography.H6" Gutter Class="section-title">What you can build</BitText>
+                <div class="section-title-line"></div>
+            </div>
             <br />
-            <BitText Typography="BitTypography.H5" Class="text-subtitle">
-                Auth, payments, admin panel, SEO, offline, monitoring and much more, already working.
+            <BitText Typography="BitTypography.H2" Class="text-title">
+                the hard parts,
                 <br />
-                Privacy first and fully yours: you own the full source code, and your app runs with or without us.
+                <span class="highlight-1">already built</span>
             </BitText>
+            <div class="capability-grid">
+                @foreach (var capability in capabilities)
+                {
+                    <div class="capability-card @(capability.Featured ? "featured" : null)">
+                        <BitText Typography="BitTypography.Inherit" Element="h3" Class="capability-title">@capability.Title</BitText>
+                        <BitText Typography="BitTypography.Inherit" Element="p" Class="capability-text" Color="BitColor.SecondaryForeground">@capability.Description</BitText>
+                        <div class="capability-libraries">
+                            @foreach (var library in capability.Libraries)
+                            {
+                                <BitLink Class="capability-library" Href="@library.Url" Target="_blank" Title="@($"bit {library.Title}: {library.Description}")" NoColor NoUnderline>
+                                    @library.Title
+                                    <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M7 17L17 7M9 7h8v8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                </BitLink>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </section>
 
@@ -125,9 +223,9 @@
             </div>
             <br />
             <BitText Typography="BitTypography.H2" Class="text-title">
-                variety of <span class="highlight-2">tools</span> to
+                the <span class="highlight-2">foundation</span> of
                 <br />
-                make better apps
+                every bit app
             </BitText>
             <br />
             <Products Group="ProductGroup.Core" />
@@ -138,6 +236,25 @@
                         <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
                 </BitLink>
+            </div>
+        </div>
+    </section>
+
+    <section class="page-section fabric-section">
+        <div class="page-section-content">
+            <div class="fabric-card">
+                <div class="fabric-text">
+                    <BitText Typography="BitTypography.Inherit" Element="span" Class="fabric-eyebrow">bit Fabric</BitText>
+                    <BitText Typography="BitTypography.H3" Element="h2" Class="fabric-title">Building a whole app?</BitText>
+                    <BitText Typography="BitTypography.Inherit" Element="p" Class="fabric-subtitle">
+                        bit Fabric builds full apps on these libraries with AI, for web, Android, iOS, Windows and macOS from one project.
+                        The bit Boilerplate project template and bit CLI are part of it.
+                    </BitText>
+                </div>
+                <div class="fabric-buttons">
+                    <BitLink Class="fabric-btn primary" Href="@Urls.BitFabric" Target="_blank" NoColor NoUnderline>Visit bitfabric.co</BitLink>
+                    <BitLink Class="fabric-btn secondary" Href="@Urls.BitFabricCli" Target="_blank" NoColor NoUnderline>bit CLI</BitLink>
+                </div>
             </div>
         </div>
     </section>
@@ -200,11 +317,10 @@
             </BitText>
             <br />
             <div class="cta-command">
-                <CodeBox>dotnet tool install --global Bit.Cli --version 11.0.0-pre-23
-bit new MyFirstProject</CodeBox>
+                <CodeBox>dotnet add package Bit.BlazorUI</CodeBox>
             </div>
             <div class="cta-buttons">
-                <BitLink Class="cta-btn primary" Href="@Urls.Templates" NoColor NoUnderline>Get started</BitLink>
+                <BitLink Class="cta-btn primary" Href="@BLAZORUI_GETTING_STARTED_URL" Target="_blank" NoColor NoUnderline>Get started</BitLink>
                 <BitLink Class="cta-btn secondary" Href="@Urls.GithubRepo" Target="_blank" NoColor NoUnderline>Star on GitHub</BitLink>
             </div>
         </div>

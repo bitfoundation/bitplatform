@@ -22,13 +22,10 @@ public class NavMenuService
     /// <summary>Current base-relative path, without query, fragment or trailing slash, with a leading slash.</summary>
     public string CurrentUrl { get; private set; } = "/";
 
-    public bool IsTemplateDocRoute { get; private set; }
-    public bool IsToolingsDocRoute { get; private set; }
-
     /// <summary>
-    /// Docs routes get the docs nav menu (hamburger).
+    /// Docs routes get the docs nav menu (hamburger). The toolings pages are the only docs on this site.
     /// </summary>
-    public bool IsDocsRoute => IsTemplateDocRoute || IsToolingsDocRoute;
+    public bool IsDocsRoute { get; private set; }
 
     public bool IsProductsRoute => IsDocsRoute || IsCurrentUrl(Urls.Products);
 
@@ -54,8 +51,7 @@ public class NavMenuService
 
         CurrentUrl = currentUrl.Length == 0 ? "/" : currentUrl;
 
-        // Case-insensitive like IsCurrentUrl, since the router serves /Templates the same page as /templates.
-        IsTemplateDocRoute = currentUrl.Contains("/templates", StringComparison.OrdinalIgnoreCase) || currentUrl.Contains("/boilerplate", StringComparison.OrdinalIgnoreCase);
-        IsToolingsDocRoute = currentUrl.Contains("/toolings", StringComparison.OrdinalIgnoreCase);
+        // Case-insensitive like IsCurrentUrl, since the router serves /Toolings the same page as /toolings.
+        IsDocsRoute = currentUrl.Contains("/toolings", StringComparison.OrdinalIgnoreCase);
     }
 }

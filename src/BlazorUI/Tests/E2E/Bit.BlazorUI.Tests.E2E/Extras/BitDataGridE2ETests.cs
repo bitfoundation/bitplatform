@@ -68,7 +68,7 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await OpenAsync(Url);
 
         await Expect(Cell("grid-basic", 0, 1)).ToHaveClassAsync(HasClass("bit-dtg-end"));
-        await Expect(Cell("grid-basic", 0, 1)).ToHaveCSSAsync("justify-content", "flex-end");
+        await Expect(Cell("grid-basic", 0, 1)).ToHaveCSSAsync("justify-content", Alignment("flex-end"));
         await Expect(HeaderCell("grid-basic", 1)).ToHaveClassAsync(HasClass("bit-dtg-end"));
 
         await Expect(Cell("grid-basic", 0, 10)).ToHaveClassAsync(HasClass("bit-dtg-center"));

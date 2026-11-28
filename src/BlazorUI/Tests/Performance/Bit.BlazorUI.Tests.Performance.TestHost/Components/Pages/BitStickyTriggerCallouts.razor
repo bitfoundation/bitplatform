@@ -18,8 +18,9 @@
     <button id="btn-open" @onclick="Open">Open</button>
 </div>
 
-@* The scroll padding is what an app shell's container is given (BitAppShell's ScrollPadding, the Boilerplate's
-   "5rem 0 4rem"), and what has a header stuck at the top of it count as out of view for a focus(). *@
+@* The scroll padding is what an app shell's container is given (BitAppShell's ScrollPadding, "5rem 0 4rem" in
+   bit Boilerplate, in bitfoundation/bitfabric), and what has a header stuck at the top of it count as out of view
+   for a focus(). *@
 <div id="scroller" data-part="@Part" style="height: 360px; width: 640px; overflow: auto; position: relative; scroll-padding: 5rem 0 4rem;">
     @if (Part?.StartsWith("sticky-") is true)
     {

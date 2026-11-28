@@ -555,7 +555,7 @@ Each paragraph takes the direction of its own text.
 
     private readonly BitMarkdownPipeline _localizedPipeline = new BitMarkdownPipelineBuilder()
         .UseGitHubFlavored()
-        .UseTexts(new BitMarkdownTexts
+        .UseStrings(new BitMarkdownStrings
         {
             AlertNote = "Hinweis",
             AlertTip = "Tipp",

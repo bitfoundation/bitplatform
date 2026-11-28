@@ -46,32 +46,10 @@
     [
         new()
         {
-            Title = "A full-stack app on day one",
-            Subtitle = "bit Boilerplate · full-stack Blazor project template",
-            LinkUrl = Urls.Templates,
-            IsExpanded = true,
-            Body = @<text>
-                <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    One bit new command creates a complete ASP.NET Core and Blazor solution - passkey and 2FA sign-in, multi-tenancy,
-                    an AI chatbot, push notifications and .NET Aspire included - that ships as a PWA and as Android, iOS, Windows and macOS apps.
-                    Turn on only the features you need.
-                </BitText>
-                <div class="template-terminal">
-                    <BitIcon IconName="ChevronRight" /> <span>bit</span> <span>new</span> <span>MyAwesomeProject</span>
-                    <span>--database</span>
-                    <span class="animation-container"><span class="animated a-2">sqlite&nbsp;&nbsp;&nbsp;</span> <span class="animated a-2 delayed d-2">sqlserver</span></span>
-                    <span>--api</span>
-                    <span class="animation-container"><span class="animated a-3">integrated</span> <span class="animated a-3 delayed d-3">standalone</span></span>
-                    <span>--module</span>
-                    <span class="animation-container"><span class="animated a-4">admin</span> <span class="animated a-4 delayed d-4">sales</span></span>
-                </div>
-            </text>
-        },
-        new()
-        {
             Title = "100+ components, from inputs to data grids",
             Subtitle = "bit BlazorUI · Blazor components with built-in theming",
             LinkUrl = Urls.BlazorUI,
+            IsExpanded = true,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
                     bit BlazorUI covers everything from inputs and date pickers to a data grid, charts, maps, a PDF viewer, a rich text editor
@@ -243,17 +221,17 @@ _open = await _live.RefreshAsync();</CodeBox>
         new()
         {
             Title = "A Ctrl+K command palette for your app",
-            Subtitle = "bit Balette · keyboard-first command palette",
-            LinkUrl = Urls.Balette,
+            Subtitle = "bit BlazorUI · BitCommandPalette",
+            LinkUrl = Urls.BlazorUICommandPalette,
             Body = @<text>
                 <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Balette gives your app the Ctrl+K / ⌘K box from VS Code, Linear and Raycast: fuzzy, typo-tolerant search over every
+                    BitCommandPalette gives your app the Ctrl+K / ⌘K box from VS Code, Linear and Raycast: fuzzy, typo-tolerant search over every
                     page, action and API result, with nested pages, global shortcuts and full screen-reader support.
                 </BitText>
                 <div>
                     <CodeBox HideCopyButton>Palette.Register(
-    BaletteCmd.Navigate("Settings", "/settings").Keywords("preferences").Shortcut("G S"),
-    BaletteCmd.Action("Toggle sidebar", Toggle).Shortcut("Mod+B"));</CodeBox>
+    BitCommandPaletteCmd.Navigate("Settings", "/settings").Keywords("preferences").Shortcut("G S"),
+    BitCommandPaletteCmd.Action("Toggle sidebar", Toggle).Shortcut("Mod+B"));</CodeBox>
                 </div>
             </text>
         },
@@ -379,27 +357,6 @@ _open = await _live.RefreshAsync();</CodeBox>
 &lt;/BonboardingTour>
 
 &lt;button data-bonboarding-anchor="new-project">New project&lt;/button></CodeBox>
-                </div>
-            </text>
-        },
-        new()
-        {
-            Title = "Drag to reorder, by mouse or keyboard",
-            Subtitle = "bit Bortable · drag-and-drop lists and boards",
-            LinkUrl = Urls.Bortable,
-            Body = @<text>
-                <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bortable reorders a list, or moves items between lists that share a group - kanban boards, palettes, nested trees.
-                    It sorts your own IList&lt;T&gt; in place, borrows SortableJS's swap behavior, lets your code approve each drop, and
-                    works fully by keyboard and screen reader.
-                </BitText>
-                <div>
-                    <CodeBox HideCopyButton>&lt;Bortable @@bind-Items="todo" TItem="string" Group="board">
-    &lt;ItemTemplate Context="item">@@item&lt;/ItemTemplate>
-&lt;/Bortable>
-&lt;Bortable @@bind-Items="done" TItem="string" Group="board">
-    &lt;ItemTemplate Context="item">@@item&lt;/ItemTemplate>
-&lt;/Bortable></CodeBox>
                 </div>
             </text>
         },

@@ -1,0 +1,21 @@
+﻿// A plain element of the page, which carries the scope attribute itself.
+.example-content {
+    gap: 0.5rem;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+}
+
+// Handed to the copy buttons inside an .example-content, the plain element their scoped rules anchor on.
+::deep {
+    .custom-class {
+        padding: 0.25rem;
+        border-radius: 0.5rem;
+        background-color: var(--bit-clr-bg-sec);
+    }
+
+    .custom-button {
+        font-style: italic;
+        box-shadow: var(--bit-shd-1);
+    }
+}

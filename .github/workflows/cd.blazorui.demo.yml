@@ -188,18 +188,32 @@ jobs:
           cd src\BlazorUI\Demo\Client\Bit.BlazorUI.Demo.Client.Windows\
           vpk download s3 --endpoint ${{ vars.R2_ENDPOINT }} --bucket ${{ env.R2_BUCKET }} --keyId ${{ secrets.R2_ACCESS_KEY_ID }} --secret ${{ secrets.R2_SECRET_ACCESS_KEY }} -o .\Releases
 
-    # '\.dll$' signs only the executables: this CD runs often for end-to-end tests, and a demo's dlls gain nothing from a signature.
-    - name: Sign the executables with Artifact Signing
+    # Lets the vpk pack step below sign the app's files with Azure Artifact Signing. The az login uses the job's OpenID
+    # Connect token, so the job needs id-token write and the app registration a federated credential for its environment.
+    - name: Log in to Azure for code signing
       if: vars.CODE_SIGNING_ACCOUNT != ''
-      uses: ./.github/actions/bit-bp/artifact-signing
+      uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
       with:
-        endpoint: ${{ vars.CODE_SIGNING_ENDPOINT }}
-        account: ${{ vars.CODE_SIGNING_ACCOUNT }}
-        certificate-profile: ${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}
         client-id: ${{ secrets.CODE_SIGNING_CLIENT_ID }}
         tenant-id: ${{ secrets.CODE_SIGNING_TENANT_ID }}
         subscription-id: ${{ secrets.CODE_SIGNING_SUBSCRIPTION_ID }}
-        exclude: '\.dll$'
+
+    # vpk signs through Azure's signing library, whose DefaultAzureCredential tries managed identity, Visual Studio,
+    # VS Code and others before the Azure CLI; on a runner they only cost time, so only the az login above is left.
+    # VPK_SIGN_EXCLUDE '\.dll$' signs only the executables: this CD runs often for end-to-end tests, and a demo's dlls
+    # gain nothing from a signature.
+    - name: Point vpk at the Artifact Signing account
+      if: vars.CODE_SIGNING_ACCOUNT != ''
+      shell: pwsh
+      env:
+        CODE_SIGNING_ENDPOINT: ${{ vars.CODE_SIGNING_ENDPOINT }}
+        CODE_SIGNING_ACCOUNT: ${{ vars.CODE_SIGNING_ACCOUNT }}
+        CODE_SIGNING_CERTIFICATE_PROFILE: ${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}
+      run: |
+        $file = Join-Path $env:RUNNER_TEMP 'code-signing.json'
+        @{ Endpoint = $env:CODE_SIGNING_ENDPOINT; CodeSigningAccountName = $env:CODE_SIGNING_ACCOUNT; CertificateProfileName = $env:CODE_SIGNING_CERTIFICATE_PROFILE; ExcludeCredentials = @('ManagedIdentityCredential', 'WorkloadIdentityCredential', 'SharedTokenCacheCredential', 'VisualStudioCredential', 'VisualStudioCodeCredential') } | ConvertTo-Json | Set-Content $file
+        Add-Content $env:GITHUB_ENV "VPK_AZURE_TRUSTED_SIGN_FILE=$file"
+        Add-Content $env:GITHUB_ENV 'VPK_SIGN_EXCLUDE=\.dll$'
 
     - name: Publish
       run: |

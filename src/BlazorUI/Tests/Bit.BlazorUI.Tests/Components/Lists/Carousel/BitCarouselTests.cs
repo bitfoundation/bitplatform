@@ -3056,6 +3056,7 @@ public partial class BitCarouselTests : BunitTestContext
             AutoPlay = true,
             AutoPlayInterval = 3000,
             AutoPlayReverse = true,
+            ButtonsPlacement = BitPlacement.Top,
             Classes = classes,
             Color = BitColor.Warning,
             DotAriaLabel = "Page",
@@ -3112,6 +3113,7 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsTrue(carousel.AutoPlay);
         Assert.AreEqual(3000, carousel.AutoPlayInterval);
         Assert.IsTrue(carousel.AutoPlayReverse);
+        Assert.AreEqual(BitPlacement.Top, carousel.ButtonsPlacement);
         Assert.AreSame(classes, carousel.Classes);
         Assert.AreEqual(BitColor.Warning, carousel.Color);
         Assert.AreEqual("Page", carousel.DotAriaLabel);

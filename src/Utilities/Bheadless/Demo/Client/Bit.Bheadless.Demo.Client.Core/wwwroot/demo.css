@@ -3635,8 +3635,8 @@
    kit styles four kinds (keyword, string, comment, parameter); the
    highlighter tells more apart, so the extra ones get colours of
    their own here, light and dark, picked to hold their contrast on
-   --bb-code-bg in both themes. The same rules as the Bdnd, Blow and
-   Balette demos, which share the highlighter.
+   --bb-code-bg in both themes. The same rules as the Bdnd and Blow
+   demos, which share the highlighter.
    ============================================================ */
 
 :root {

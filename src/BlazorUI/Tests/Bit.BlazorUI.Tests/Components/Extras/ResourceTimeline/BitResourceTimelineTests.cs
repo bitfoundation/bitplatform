@@ -220,7 +220,7 @@ public class BitResourceTimelineTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitResourceTimelineShouldNameItsViewportThroughItsTexts()
+    public void BitResourceTimelineShouldNameItsViewportThroughItsStrings()
     {
         var component = RenderTimeline();
 
@@ -228,13 +228,13 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreEqual("Resource timeline", viewport.GetAttribute("aria-label"));
         Assert.AreEqual("Resource timeline", viewport.GetAttribute("aria-roledescription"));
 
-        component.Render(p => p.Add(x => x.Texts, new BitResourceTimelineTexts { AriaLabel = "Dienstplan", RoleDescription = "Zeitleiste" }));
+        component.Render(p => p.Add(x => x.Strings, new BitResourceTimelineStrings { AriaLabel = "Dienstplan", RoleDescription = "Zeitleiste" }));
 
         viewport = component.Find(".bit-rtm-vpt");
         Assert.AreEqual("Dienstplan", viewport.GetAttribute("aria-label"));
         Assert.AreEqual("Zeitleiste", viewport.GetAttribute("aria-roledescription"));
 
-        // An AriaLabel of its own names this one timeline over the texts it shares with others.
+        // An AriaLabel of its own names this one timeline over the strings it shares with others.
         component.Render(p => p.Add(x => x.AriaLabel, "Flight plan"));
 
         Assert.AreEqual("Flight plan", component.Find(".bit-rtm-vpt").GetAttribute("aria-label"));
@@ -403,7 +403,7 @@ public class BitResourceTimelineTests : BunitTestContext
         PlanStart();
         var setData = Context.JSInterop.SetupVoid(SetDataFn, _ => true);
 
-        var component = RenderTimeline(p => p.Add(x => x.Texts, new BitResourceTimelineTexts { Loading = "Wird geladen" }));
+        var component = RenderTimeline(p => p.Add(x => x.Strings, new BitResourceTimelineStrings { Loading = "Wird geladen" }));
 
         await WaitUntil(() => Calls(SetDataFn).Count == 1);
 
@@ -463,12 +463,12 @@ public class BitResourceTimelineTests : BunitTestContext
     public void BitResourceTimelineShouldStartTheEngineOnTheViewport()
     {
         var options = new BitResourceTimelineOptions { Editable = true };
-        var texts = new BitResourceTimelineTexts { AriaLabel = "Plan" };
+        var strings = new BitResourceTimelineStrings { AriaLabel = "Plan" };
 
         var component = RenderLoaded(p =>
         {
             p.Add(x => x.Options, options);
-            p.Add(x => x.Texts, texts);
+            p.Add(x => x.Strings, strings);
             p.Add(x => x.Disabled, true);
         });
 
@@ -478,7 +478,7 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.IsInstanceOfType<ElementReference>(setup.Arguments[1]);
         Assert.AreSame(component.Instance, Arg<DotNetObjectReference<BitResourceTimeline>>(setup, 2).Value);
         Assert.AreSame(options, setup.Arguments[3]);
-        Assert.AreSame(texts, setup.Arguments[4]);
+        Assert.AreSame(strings, setup.Arguments[4]);
         Assert.AreEqual(true, setup.Arguments[5]);
         Assert.AreEqual(6, setup.Arguments.Count);
     }
@@ -488,10 +488,10 @@ public class BitResourceTimelineTests : BunitTestContext
     {
         RenderLoaded();
 
-        var texts = Arg<BitResourceTimelineTexts>(Calls(SetupFn).Single(), 4);
+        var strings = Arg<BitResourceTimelineStrings>(Calls(SetupFn).Single(), 4);
 
-        Assert.AreEqual("Resource timeline", texts.AriaLabel);
-        Assert.AreEqual("Bar is locked", texts.BarLocked);
+        Assert.AreEqual("Resource timeline", strings.AriaLabel);
+        Assert.AreEqual("Bar is locked", strings.BarLocked);
         Assert.AreEqual(false, Calls(SetupFn).Single().Arguments[5]);
     }
 
@@ -598,7 +598,7 @@ public class BitResourceTimelineTests : BunitTestContext
 
 
 
-    // ---------------------------------------------------------------- options, texts and the disabled state
+    // ---------------------------------------------------------------- options, strings and the disabled state
 
     [TestMethod]
     public void BitResourceTimelineShouldSendEachChangeOfItsConfigurationOnce()
@@ -613,29 +613,29 @@ public class BitResourceTimelineTests : BunitTestContext
         var call = Calls(SetOptionsFn).Single();
         Assert.AreEqual(component.Instance.UniqueId, call.Arguments[0]);
         Assert.AreSame(options, call.Arguments[1]);
-        Assert.AreEqual("Resource timeline", Arg<BitResourceTimelineTexts>(call, 2).AriaLabel);
+        Assert.AreEqual("Resource timeline", Arg<BitResourceTimelineStrings>(call, 2).AriaLabel);
         Assert.AreEqual(false, call.Arguments[3]);
 
         // The same instances again change nothing.
         component.Render(p => p.Add(x => x.Options, options));
         Assert.AreEqual(1, Calls(SetOptionsFn).Count);
 
-        var texts = new BitResourceTimelineTexts { BarLocked = "Gesperrt" };
-        component.Render(p => p.Add(x => x.Texts, texts));
+        var strings = new BitResourceTimelineStrings { BarLocked = "Gesperrt" };
+        component.Render(p => p.Add(x => x.Strings, strings));
         Assert.AreEqual(2, Calls(SetOptionsFn).Count);
-        Assert.AreSame(texts, Calls(SetOptionsFn)[1].Arguments[2]);
+        Assert.AreSame(strings, Calls(SetOptionsFn)[1].Arguments[2]);
 
         component.Render(p => p.Add(x => x.Disabled, true));
         Assert.AreEqual(3, Calls(SetOptionsFn).Count);
         Assert.AreEqual(true, Calls(SetOptionsFn)[2].Arguments[3]);
         Assert.AreSame(options, Calls(SetOptionsFn)[2].Arguments[1]);
-        Assert.AreSame(texts, Calls(SetOptionsFn)[2].Arguments[2]);
+        Assert.AreSame(strings, Calls(SetOptionsFn)[2].Arguments[2]);
 
         // All three in one render are one call.
         component.Render(p =>
         {
             p.Add(x => x.Options, new BitResourceTimelineOptions());
-            p.Add(x => x.Texts, new BitResourceTimelineTexts());
+            p.Add(x => x.Strings, new BitResourceTimelineStrings());
             p.Add(x => x.Disabled, false);
         });
         Assert.AreEqual(4, Calls(SetOptionsFn).Count);
@@ -707,7 +707,7 @@ public class BitResourceTimelineTests : BunitTestContext
     [TestMethod]
     public async Task BitResourceTimelineShouldSendWhatChangedWhileItsEngineWasStarting()
     {
-        // StartAsync sends Options, Texts and Disabled with the setup, and OnParametersSetAsync has no engine to send a
+        // StartAsync sends Options, Strings and Disabled with the setup, and OnParametersSetAsync has no engine to send a
         // change to until the setup returns: a change landing in that round trip goes out right after it.
         var setup = Context.JSInterop.PlanLayout(SetupFn);
 
@@ -2381,7 +2381,7 @@ public class BitResourceTimelineTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitResourceTimelineShouldNameItsGroupButtonsThroughItsTexts()
+    public async Task BitResourceTimelineShouldNameItsGroupButtonsThroughItsStrings()
     {
         var component = RenderTimeline(p => p.Add(x => x.ResourceTemplate, ctx => b => b.AddContent(0, ctx.Resource.Name)));
 
@@ -2400,7 +2400,7 @@ public class BitResourceTimelineTests : BunitTestContext
         Assert.AreEqual("Expand Group 2", toggles[1].GetAttribute("aria-label"));
         Assert.IsTrue(toggles[1].QuerySelector(".bit-rtm-tgi")!.ClassList.Contains("bit-rtm-tgc"));
 
-        component.Render(p => p.Add(x => x.Texts, new BitResourceTimelineTexts { ExpandGroupFormat = "Aufklappen: {0}", CollapseGroupFormat = "Zuklappen: {0}" }));
+        component.Render(p => p.Add(x => x.Strings, new BitResourceTimelineStrings { ExpandGroupFormat = "Aufklappen: {0}", CollapseGroupFormat = "Zuklappen: {0}" }));
 
         toggles = component.FindAll(".bit-rtm-tgl");
         Assert.AreEqual("Zuklappen: Group", toggles[0].GetAttribute("aria-label"));

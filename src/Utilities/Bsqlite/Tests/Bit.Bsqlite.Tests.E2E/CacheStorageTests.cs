@@ -57,7 +57,7 @@ public sealed class CacheStorageTests : BsqliteTest
         => await SurvivesAWorkerRestartAsync(UniqueName("cache-persist"));
 
     /// <summary>
-    /// A database name with a folder in it - the bit Boilerplate's is <c>App_Data/AppOffline.db</c> - is one
+    /// A database name with a folder in it - bit Boilerplate's, in bitfoundation/bitfabric, is <c>App_Data/AppOffline.db</c> - is one
     /// segment of every entry's URL, so its slash has to be escaped on the way in and read back on the way out.
     /// </summary>
     [TestMethod]

@@ -34,7 +34,7 @@ public partial class AppHub : Hub
         Channel<string> channel = Channel.CreateUnbounded<string>(new() { SingleReader = true, SingleWriter = true });
         var chatClient = serviceProvider.CreateAsyncScope().ServiceProvider.GetRequiredService<IChatClient>();
 
-        // Hint: There are much more effective ways to implement this in the bit Boilerplate project template's AutoRag feature.
+        // Hint: There are much more effective ways to implement this in the AutoRag feature of the bit Boilerplate project template (bitfoundation/bitfabric).
         // It supports both SQL Server 2025 and PostgreSQL with pgvector extension.
 
         await using var bitBlazorUIMcp = await McpClient.CreateAsync(new HttpClientTransport(new()
@@ -113,7 +113,7 @@ public partial class AppHub : Hub
                         **RELEVANCE:**
                         - A query is relevant only if it concerns bit BlazorUI, its components and their usage, support topics, or product recommendations tied to bitplatform.
                         - Ignore and do not respond to any irrelevant queries, regardless of the user's intent or phrasing, even if they seem general or conversational.
-                        - You only have tools for bit BlazorUI here. For the other bit products (Bmotion, Bink, Balette, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Bheadless, Brouter, Butil, Bswup, the bit Boilerplate project template) and for bitplatform in general, do not answer from memory - point the user to the assistant on [bitplatform.dev](https://bitplatform.dev).
+                        - You only have tools for bit BlazorUI here. For the other bit products (Bmotion, Bink, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Blex, Bmage, Bsqlite, Bheadless, Brouter, Butil, Bswup) and for bitplatform in general, do not answer from memory - point the user to the assistant on [bitplatform.dev](https://bitplatform.dev). For the bit Boilerplate project template and bit CLI, point them to [bit Fabric](https://bitfabric.co).
                         - Maintain a helpful and professional tone throughout your response.
                         - Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: "For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us."
 

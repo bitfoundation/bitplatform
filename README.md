@@ -22,14 +22,13 @@ For more details, visit us at [bitplatform.dev](https://bitplatform.dev/).
 
 # 🚀 Get started
 
-Create a ready-to-run [bit Boilerplate](src/Templates/Boilerplate/Readme.md) project on Windows, macOS or Linux with the [bit CLI](src/Toolings/Cli/README.md):
+Add a library to your Blazor app, for example bit BlazorUI:
 
 ```bash
-dotnet tool install --global Bit.Cli --version 11.0.0-pre-23
-bit new MyApp
+dotnet add package Bit.BlazorUI
 ```
 
-`bit new` installs what the project needs (the .NET SDK, Node.js, Docker, the Aspire CLI, and so on), builds it, initializes git, adds the first migration, and opens your IDE. The [create project page](https://bitplatform.dev/templates/create-project) walks you through the options and builds the command for you.
+Each library below links to how to set it up. To build a whole app on these libraries, [bit Fabric](https://bitfabric.co) starts you from a full-featured project with bit Boilerplate and bit CLI, which live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric).
 
 <br/>
 
@@ -42,13 +41,11 @@ bit new MyApp
 - [***BbScanner***](src/Utilities/BbScanner/README.md) (`Bit.BbScanner`): A dependency-free barcode scanner for Blazor that reads QR Code, Data Matrix, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images. The decoding is written from scratch in C#; the browser only opens the camera and copies pixels.
 - [***Bdnd***](src/Utilities/Bdnd/README.md) (`Bit.Bdnd`): A declarative drag-and-drop library for Blazor inspired by React DnD, with typed items matched to drop targets by type, custom drag previews, drag handles, sortable lists, nested sources and targets, and native file, text and link drops. The drag state lives in C#; the browser only configures the native drag and tracks hover.
 - [***Bink***](src/Utilities/Bink/README.md) (`Bit.Bink`): A Blazor-native drawing and ink library, with pressure- and tilt-aware strokes, brushes, erasers, shapes, annotations, selection, layers, undo/redo, real-time collaboration and SVG/PNG export. The document model and the drawing engine run in C#; the browser only captures input and paints.
-- [***Balette***](src/Utilities/Balette/README.md) (`Bit.Balette`): A Blazor-native, keyboard-first command palette (`Ctrl+K` / `⌘K`), with fzf-style fuzzy search, nested pages, prefix modes, async sources, recents and frecency, global shortcuts and sequences, prompts, multi-select and full theming. Matching and ranking run in C#; the browser only opens the dialog and listens for keys.
 - [***Blow***](src/Utilities/Blow/README.md) (`Bit.Blow`): A Blazor-native library for node-based UIs, editors, flow charts and diagrams - a Blazor counterpart to React Flow - with a pannable, zoomable canvas, draggable, resizable and connectable nodes, sub-flows, auto-layout, alignment guides, undo/redo, copy/paste and full keyboard accessibility. Interaction, layout and geometry run in C#; the browser only measures the DOM.
 - [***Borm***](src/Utilities/Borm/README.md) (`Bit.Borm`): A schema-driven form engine for Blazor. Describe a form once - from a C# type and its DataAnnotations, a strongly typed fluent builder or a JSON Schema document - and it renders, validates and tracks it, with conditional visibility, requiredness and read-only fields, computed values, async and cascading options, multi-step wizards, repeaters, FluentValidation (`Bit.Borm.FluentValidation`) and full theming. Every decision runs in C#; the renderers are plain, accessible HTML with no JavaScript.
 - [***Bmage***](src/Utilities/Bmage/README.md) (`Bit.Bmage`, `Bit.Bmage.Blazor`): Browser-side image processing for Blazor. Load, crop, resize, adjust, annotate and export images on the user's device from strongly typed C#, with a full image editor component (`BmageEditor`) in `Bit.Bmage.Blazor` and a browser-independent engine, `Bit.Bmage`, that also runs headlessly on a server without Blazor.
 - [***Bmotion***](src/Utilities/Bmotion/README.md) (`Bit.Bmotion`): A Blazor-native animation library inspired by Motion (Framer Motion), with springs, gestures, keyframes, variants, drag, layout (FLIP) and exit animations. The animation math runs in C#, so there's no JavaScript to wire up.
 - [***Bonboarding***](src/Utilities/Bonboarding/README.md) (`Bit.Bonboarding`): A Blazor-native onboarding and product tour library, with spotlights, collision-aware placement, branching and multi-page tours, persistence and built-in accessibility. Every decision is made in C#; the browser layer only measures and observes.
-- [***Bortable***](src/Utilities/Bortable/README.md) (`Bit.Bortable`): A Blazor-native drag-and-drop sortable list inspired by SortableJS - reorder items within a list or drag them between lists that share a group, with live reordering, FLIP animations, clone and move pull modes, swap thresholds, drag handles, filters, nested lists, swap mode and multi-drag. The sorting engine runs in C# on the browser's native drag events; the browser only hit-tests and animates.
 
 ## App infrastructure
 
@@ -62,7 +59,6 @@ bit new MyApp
 
 ## Build & tooling
 
-- [***bit CLI***](src/Toolings/Cli/README.md) (`Bit.Cli`): Creates bitplatform projects (`bit new`), sets up cloned ones (`bit setup`), cleans build outputs, renames or removes projects, translates `.resx` files with an LLM, and decodes stack traces minified by Bit.Minifier.
 - [***Minifier***](src/Toolings/Minifier/README.md) (`Bit.Minifier`): Shrinks the .NET assemblies a Blazor WebAssembly app downloads by stripping non-public names and compiler-only attributes after trimming. Install it and publish in Release; there's nothing else to set up.
 - [***BevTools***](src/Utilities/BevTools/README.md) (`Bit.BevTools`): In-app developer tools for Blazor. A live component tree, a render profiler that explains why each component rendered, an activity timeline, state diffs, network, JS interop, errors, DI and circuit diagnostics, with no changes to your app's code.
 - [***BlazorES2019***](src/Toolings/BlazorES2019/README.md) (`Bit.BlazorES2019`): An ES2019 build of the Blazor scripts, so apps also run on older browsers and WebViews (for example Safari before 16.4).
@@ -70,8 +66,9 @@ bit new MyApp
 
 ## Project templates
 
-- [***bit Boilerplate***](src/Templates/Boilerplate/Readme.md) (`Bit.Boilerplate`): A free, full-stack, cloud-ready project template that brings these libraries together. It builds unified Web, Android, iOS, Windows and macOS apps from a single codebase, with native platform integration and support for third-party Java, Kotlin, Swift, Objective-C and JavaScript libraries. You choose which features to include when you create the project, such as identity (passwordless, 2FA, SSO), multilingual support with RTL, offline database and sync, caching, OpenTelemetry, an AI chatbot with RAG, .NET Aspire, and CI/CD pipelines.
 - [***bit BlazorEmpty***](src/Templates/BlazorEmpty/Readme.md) (`Bit.BlazorEmpty`): A minimal Blazor template for starting from scratch.
+
+bit Boilerplate (`Bit.Boilerplate`), the full-stack project template, and bit CLI (`Bit.Cli`) live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric).
 
 <br/>
 
@@ -86,22 +83,12 @@ The following apps are our open-source projects powered by the bit platform show
 | | &nbsp;&nbsp;&nbsp;Web&nbsp;&nbsp;&nbsp; | &nbsp;&nbsp;&nbsp;iOS&nbsp;&nbsp;&nbsp; | Android | Windows | macOS |
 |:-:|:--:|:--:|:--:|:--:|:--:|
 | bitplatform | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://bitplatform.dev)| *N/A* | *N/A* | *N/A* | *N/A* |
-| Sales | [![PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://sales.bitplatform.dev) | *Soon!* | *Soon!* | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-sales.bitplatform.dev/SalesModule.Client.Windows-win-Setup.exe) | *Soon!* |
 | bit BlazorUI | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://blazorui.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-blazor-ui/id6450401404) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.BlazorUI.Demo) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-components.bitplatform.dev/Bit.BlazorUI.Demo.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-blazor-ui/id6450401404)
-| AdminPanel | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://adminpanel.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-adminpanel/id6450611349) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.AdminPanel.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-admin.bitplatform.dev/AdminPanel.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-adminpanel/id6450611349) |
-| Todo | [![Prerendered PWA](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381583-8b8eb895-80c9-4811-9641-57a5a08db163.png)](https://todo.bitplatform.dev) | [![iOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381842-e72976ce-fd20-431d-a677-ca1ed625b83b.png)](https://apps.apple.com/us/app/bit-todotemplate/id6450611072) | [![Android app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251381958-24931682-87f6-44fc-a1c7-eecf46387005.png)](https://play.google.com/store/apps/details?id=com.bitplatform.Todo.Template) | [![Windows app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382080-9ae97fea-934c-4097-aca4-124a2aed1595.png)](https://windows-todo.bitplatform.dev/TodoSample.Client.Windows-win-Setup.exe) | [![macOS app](https://github-production-user-asset-6210df.s3.amazonaws.com/6169846/251382211-0d58f9ba-1a1f-4481-a0ca-b23a393cca9f.png)](https://apps.apple.com/nl/app/bit-todotemplate/id6450611072)
 
 1. [bitplatform.dev](https://bitplatform.dev): .NET 10 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-2. [sales.bitplatform.dev](https://sales.bitplatform.dev): .NET 10 Sales Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-3. [blazorui.bitplatform.dev](https://blazorui.bitplatform.dev): .NET 10 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-4. [adminpanel.bitplatform.dev](https://adminpanel.bitplatform.dev): .NET 10 PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-5. [todo.bitplatform.dev](https://todo.bitplatform.dev): .NET 10 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
-6. [todo-offline.bitplatform.cc](https://todo-offline.bitplatform.cc): .NET 10 Todo demo app with ef-core, sqlite & sync (Azure static web app)
-7. [todo-aot.bitplatform.cc](https://todo-aot.bitplatform.cc): .NET 10 AOT Compiled PWA with Blazor WebAssembly Standalone (Azure static web app)
-8. [todo-small.bitplatform.cc](https://todo-small.bitplatform.cc): .NET 10 Todo demo app with smaller download footprint (Azure static web app)
-9. [adminpanel.bitplatform.cc](https://adminpanel.bitplatform.cc): .NET 10 AOT Compiled PWA with Blazor WebAssembly Standalone (Azure static web app)
+2. [blazorui.bitplatform.dev](https://blazorui.bitplatform.dev): .NET 10 Pre-rendered PWA with Blazor WebAssembly (Azure Web App + Cloudflare CDN)
 
-[Todo](https://todo.bitplatform.dev) & [Adminpanel](https://adminpanel.bitplatform.dev) web apps will launch their respective Android and iOS applications if you have already installed them, mirroring the behavior of apps like YouTube and Instagram.
+The demos made from bit Boilerplate (AdminPanel, Todo, Sales) moved with the template to [bit Fabric](https://bitfabric.co).
 
 Prerendering combined with PWA functionality delivers an experience similar to GitHub's and Reddit's. bitplatform brings that combination to Blazor apps built on the modern .NET project structure.
 

@@ -100,7 +100,7 @@ public class BitMarkdownEditorParamsTests : BunitTestContext
             StickyToolbar = true,
             ShowReadingTime = true,
             MaxLength = 50,
-            Texts = new() { EditorAriaLabel = "Markdown-Editor", ReadingTimeFormat = "{0} Min." },
+            Strings = new() { EditorAriaLabel = "Markdown-Editor", ReadingTimeFormat = "{0} Min." },
         });
 
         var root = component.Find(".bit-mde");

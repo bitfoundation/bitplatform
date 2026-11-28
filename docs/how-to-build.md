@@ -12,7 +12,7 @@ bit platform consists of multiple different projects/products with the following
 
 - [bit platform website](../src/Websites/Platform/)
 - [bit BlazorUI (Blazor components)](../src/BlazorUI/)
-- [bit Project Templates](../src/Templates/)
+- [bit BlazorEmpty project template](../src/Templates/BlazorEmpty/)
 
 building each one of them requires some specific steps that are explained below.
 
@@ -90,31 +90,6 @@ dotnet build
 <br/>
 
 ### bit Project Templates
-Like the bit BlazorUI Demo project, the project templates (located in the `src/Templates` folder) have two different projects (Web & App) with different requirements to build.
+The BlazorEmpty project template (in `src/Templates/BlazorEmpty`) builds only after `dotnet new`: pack it, install it and create a project from it, the way `.github/workflows/ci.templates.e2e.yml` does.
 
-For example for the `Boilerplate` project template in the `Boilerplate/Bit.Boilerplate` folder:
-
-The `Web` project just like the bit platform website only needs the basic requirements and can be simply built by running the following command in the `Boilerplate.Client.Web` project folder (`src/Client/Boilerplate.Client.Web`):
-
-```bash
-dotnet build
-```
-
-The `App` project unlike the Web needs the `MAUI` workloads too. This requirement can be installed with the following commands:
-
-**Linux**:
-```bash
-dotnet workload install maui-android
-```
-**Note**: because of MAUI shortcomings, for now only the android version can be built on Linux.
-
-**Windows & macOS**:
-```bash
-dotnet workload install maui
-```
-
-To build the App project run the following command in the `Boilerplate.Client.Maui` project folder (`src/Client/Boilerplate.Client.Maui`):
-
-```bash
-dotnet build
-```
+bit Boilerplate and bit CLI live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric), which says how to build them.

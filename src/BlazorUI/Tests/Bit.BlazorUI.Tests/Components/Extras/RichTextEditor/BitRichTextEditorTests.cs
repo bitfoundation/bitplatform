@@ -40,7 +40,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applyFont");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applySlashCommand");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applyMention");
-        Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.bindSlashKeys");
+        Context.JSInterop.SetupVoid("BitBlazorUI.EditorMenu.bindKeys");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.setFullScreen");
         Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.getHtml", _ => true).SetResult("<p>html</p>");
         Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.getText", _ => true).SetResult("text");
@@ -1501,6 +1501,59 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitRichTextEditorShouldWalkTheSlashMenuWithTheKeyboard()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        await component.InvokeAsync(() => component.Instance._OnSlashTrigger());
+
+        string Selected() => component.Find(".bit-rte-slash-item-sel").TextContent;
+        string ActiveDescendant() => component.Find(".bit-rte-slash input").GetAttribute("aria-activedescendant")!;
+
+        // The highlight starts at the top, wraps both ways, and the filter box names it as its active descendant.
+        Assert.AreEqual("Heading 1", Selected());
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Up);
+        Assert.AreEqual("Divider", Selected());
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Down);
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Down);
+        Assert.AreEqual("Heading 2", Selected());
+        Assert.AreEqual(component.Find(".bit-rte-slash-item-sel").Id, ActiveDescendant());
+        StringAssert.EndsWith(ActiveDescendant(), "-slash-item-1");
+
+        // A new filter starts the highlight at the top of what it matches, whatever was highlighted before.
+        await component.Find(".bit-rte-slash input").InputAsync(new() { Value = "list" });
+        Assert.AreEqual("Bulleted list", Selected());
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Down);
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Enter);
+
+        Assert.AreEqual("insertOrderedList", Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.applySlashCommand").Arguments[1]);
+        Assert.AreEqual(0, component.FindAll(".bit-rte-slash").Count);
+
+        // Opened again, it starts afresh: no filter, every command, the first one highlighted.
+        await component.InvokeAsync(() => component.Instance._OnSlashTrigger());
+        Assert.AreEqual("", component.Find(".bit-rte-slash input").GetAttribute("value"));
+        Assert.AreEqual(10, component.FindAll(".bit-rte-slash-item").Count);
+        Assert.AreEqual("Heading 1", Selected());
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldFocusTheSlashFilterAndHoldItsNavigationKeys()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        await component.InvokeAsync(() => component.Instance._OnSlashTrigger());
+
+        // The shared menu's script keeps the browser from acting on the arrows and Enter in the filter box it focused.
+        component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("BitBlazorUI.EditorMenu.bindKeys"));
+        Assert.IsInstanceOfType<ElementReference>(Context.JSInterop.VerifyInvoke("BitBlazorUI.EditorMenu.bindKeys").Arguments[0]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.bindSlashKeys"].Count);
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorShouldNotOpenTheSlashMenuWhileReadOnly()
     {
         SetupJsInterop();
@@ -1933,6 +1986,107 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(BitRichTextEditorCommand.Bold, "bold")]
+    [DataRow(BitRichTextEditorCommand.StrikeThrough, "strikeThrough")]
+    [DataRow(BitRichTextEditorCommand.InsertOrderedList, "insertOrderedList")]
+    [DataRow(BitRichTextEditorCommand.JustifyFull, "justifyFull")]
+    [DataRow(BitRichTextEditorCommand.InsertHorizontalRule, "insertHorizontalRule")]
+    [DataRow(BitRichTextEditorCommand.Undo, "undo")]
+    public async Task BitRichTextEditorShouldRunATypedCommandAsTheCommandOfItsName(BitRichTextEditorCommand command, string name)
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        await component.InvokeAsync(() => component.Instance.ExecuteCommandAsync(command));
+        Assert.AreEqual(name, Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.exec").Arguments[1]);
+
+        // The string overload takes the same name to the same command.
+        await component.InvokeAsync(() => component.Instance.ExecuteCommandAsync(name));
+        Assert.AreEqual(2, InvokeCount("BitBlazorUI.RichTextEditor.exec"));
+        Assert.AreEqual(name, Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.exec"][1].Arguments[1]);
+    }
+
+    // A command that takes a value goes the way the toolbar's own control does, through the policy checks that come
+    // with it, never straight to the engine.
+    [TestMethod]
+    [DataRow(BitRichTextEditorCommand.FormatBlock, "h2", "BitBlazorUI.RichTextEditor.execBlock", "h2")]
+    [DataRow(BitRichTextEditorCommand.ForeColor, "#ff0000", "BitBlazorUI.RichTextEditor.applyColor", "fore")]
+    [DataRow(BitRichTextEditorCommand.BackColor, "#ff0000", "BitBlazorUI.RichTextEditor.applyColor", "back")]
+    [DataRow(BitRichTextEditorCommand.FontName, "Georgia", "BitBlazorUI.RichTextEditor.applyFont", "family")]
+    [DataRow(BitRichTextEditorCommand.FontSize, "18px", "BitBlazorUI.RichTextEditor.applyFont", "size")]
+    [DataRow(BitRichTextEditorCommand.CreateLink, "https://bitplatform.dev", "BitBlazorUI.RichTextEditor.createLink", "https://bitplatform.dev")]
+    public async Task BitRichTextEditorShouldRunACommandWithAValueThroughItsControl(BitRichTextEditorCommand command, string value, string identifier, string first)
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        await component.InvokeAsync(() => component.Instance.ExecuteCommandAsync(command, value));
+
+        var invocation = Context.JSInterop.VerifyInvoke(identifier);
+        Assert.AreEqual(first, invocation.Arguments[1]);
+        if (invocation.Arguments.Count > 2 && identifier != "BitBlazorUI.RichTextEditor.createLink") Assert.AreEqual(value, invocation.Arguments[2]);
+        Assert.AreEqual(0, InvokeCount("BitBlazorUI.RichTextEditor.exec"));
+    }
+
+    [TestMethod]
+    [DataRow("insertParagraph")]
+    [DataRow("selectAll")]
+    [DataRow("insertHtml")]
+    [DataRow("Bold")]
+    [DataRow("")]
+    public async Task BitRichTextEditorShouldRefuseACommandNameItDoesNotHave(string name)
+    {
+        SetupJsInterop();
+        BitRichTextEditorError? error = null;
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<BitRichTextEditorError>(this, e => error = e));
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExecuteCommandAsync(name));
+
+        Assert.AreEqual("command-failed", error?.Code);
+        Assert.AreEqual(0, InvokeCount("BitBlazorUI.RichTextEditor.exec"));
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldRefuseATypedCommandThatIsNoMember()
+    {
+        SetupJsInterop();
+        BitRichTextEditorError? error = null;
+
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<BitRichTextEditorError>(this, e => error = e));
+        });
+
+        await component.InvokeAsync(() => component.Instance.ExecuteCommandAsync((BitRichTextEditorCommand)999));
+
+        Assert.AreEqual("command-failed", error?.Code);
+        Assert.AreEqual(0, InvokeCount("BitBlazorUI.RichTextEditor.exec"));
+    }
+
+    // Every command reaches a case of the script's engine (or, for undo and redo, its history), so none of them is
+    // refused there as a name it does not know.
+    [TestMethod]
+    public void BitRichTextEditorShouldHaveAScriptCaseForEveryCommand()
+    {
+        var script = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "RichTextEditor", "BitRichTextEditor.ts");
+
+        foreach (var command in Enum.GetValues<BitRichTextEditorCommand>())
+        {
+            var name = command.ToString();
+            name = char.ToLowerInvariant(name[0]) + name[1..];
+            var handled = script.Contains($"case '{name}':", StringComparison.Ordinal)
+                || script.Contains($"command === '{name}'", StringComparison.Ordinal);
+            Assert.IsTrue(handled, $"BitRichTextEditor.ts has no case for '{name}'.");
+        }
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorShouldInsertTextAndHtml()
     {
         SetupJsInterop();
@@ -1961,6 +2115,39 @@ public class BitRichTextEditorTests : BunitTestContext
             .Select(i => i.Arguments[1]).ToArray();
         CollectionAssert.AreEqual(new object[] { "undo", "redo" }, commands);
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.selectAll");
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldFollowItsHistoryInCanUndoCanRedoAndTheButtons()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+        var undo = () => ButtonByLabel(component, "Undo");
+        var redo = () => ButtonByLabel(component, "Redo");
+
+        // Nothing to undo until the bridge says so, and both buttons say it the way every disabled control does.
+        Assert.IsFalse(component.Instance.CanUndo);
+        Assert.IsFalse(component.Instance.CanRedo);
+        Assert.IsTrue(undo().HasAttribute("disabled"));
+        Assert.AreEqual("true", undo().GetAttribute("aria-disabled"));
+        Assert.IsTrue(redo().HasAttribute("disabled"));
+
+        await component.InvokeAsync(() => component.Instance._OnHistoryChanged(true, false));
+        Assert.IsTrue(component.Instance.CanUndo);
+        Assert.IsFalse(component.Instance.CanRedo);
+        Assert.IsFalse(undo().HasAttribute("disabled"));
+        Assert.IsNull(undo().GetAttribute("aria-disabled"));
+        Assert.IsTrue(redo().HasAttribute("disabled"));
+
+        await component.InvokeAsync(() => component.Instance._OnHistoryChanged(false, true));
+        Assert.IsTrue(undo().HasAttribute("disabled"));
+        Assert.IsFalse(redo().HasAttribute("disabled"));
+
+        // A read-only editor offers neither, whatever the history holds.
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+        Assert.IsTrue(component.Instance.CanRedo);
+        Assert.IsTrue(redo().HasAttribute("disabled"));
     }
 
     [TestMethod]

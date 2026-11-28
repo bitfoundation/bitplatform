@@ -6,7 +6,7 @@
    stand in once they are wide enough and the column they take in a narrow container (BitStepperE2ETests). A page of its
    own with nothing on it wider than a phone, since a page wider than the screen would let the row of a stepper that
    sticks out pass for one that fits: the stepper that is not Responsive, there to compare the row with, is clipped by
-   its box, which stays as wide as the screen. *@
+   its box, which stays as wide as the screen. The Compact ones take the compact layout in place of the vertical one. *@
 <h1>BitStepper (Responsive)</h1>
 
 <div style="display: flex; flex-direction: column; gap: 24px;">
@@ -25,6 +25,14 @@
 
     <div id="vertical-box">
         <BitStepper Id="stp-responsive-vertical" Responsive Vertical Items="_items" CurrentIndex="1" />
+    </div>
+
+    <div id="compact-box">
+        <BitStepper Id="stp-compact" Compact Responsive Items="_items" CurrentIndex="1" />
+    </div>
+
+    <div id="compact-narrow-box" style="width: 320px;">
+        <BitStepper Id="stp-compact-narrow" Compact Responsive Items="_items" CurrentIndex="1" />
     </div>
 </div>
 

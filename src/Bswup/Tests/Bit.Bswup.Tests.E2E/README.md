@@ -59,6 +59,7 @@ state of a test by that host name, and the suite drives it through `/_harness/` 
 | Strict first-install abort still starts the app (failure panel); lax asset failure skipped, then cached on first use | - | yes | - | yes |
 | `prohibitedUrls` (403, never reaches the server), `serverHandledUrls`, `serverRenderedUrls` | - | - | yes | yes |
 | Asset navigation offline, `Range` requests answered with 206 from the cache | - | - | yes | yes |
+| `forcePrerender` (the `AlwaysPrerender` preset): navigations rendered by the server, the cached default document when the connection is refused or a gateway answers 502, the app's own errors passed through | - | - | yes | yes |
 | Passive mode, SRI accepted and tampered bytes rejected, transient failures retried, broken manifest, stall watchdog | - | - | yes | yes |
 | `AutoReload="false"` prompt, several tabs, update staged at load, `updateInterval` polling, failed update, two apps on one origin | - | - | yes | yes |
 | `forceRefresh()`, the cleanup worker, hard reload | - | - | yes | yes |

@@ -54,6 +54,13 @@ public partial class BitChoiceGroupDemo
         },
         new()
         {
+            Name = "Columns",
+            Type = "int?",
+            DefaultValue = "null",
+            Description = "Lays the items out in a grid of this many equal columns, filled row by row in the order of the items, instead of the column (or the row of Horizontal) they flow in otherwise. Values below 1 are treated as 1. The columns share the width of the group, and with FullWidth the width of its container. MinItemWidth wins over it when both are set. Horizontal still sets the default gap, and Gap spaces the rows and the columns alike. The arrow keys move between the items in their order, not along the rows and columns, so the group renders no aria-orientation in a grid.",
+        },
+        new()
+        {
             Name = "Comparer",
             Type = "IEqualityComparer<TValue>?",
             DefaultValue = "null",
@@ -186,6 +193,13 @@ public partial class BitChoiceGroupDemo
             Type = "RenderFragment?",
             DefaultValue = "null",
             Description = "Custom RenderFragment for the label of the ChoiceGroup."
+        },
+        new()
+        {
+            Name = "MinItemWidth",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Lays the items out in a grid of equal columns no narrower than this width (any CSS length; a bare number is read as pixels), fitting as many columns on a row as the width allows - the repeat(auto-fill, minmax(MinItemWidth, 1fr)) layout. A width larger than the group is capped at the width of the group. The group takes the full width of its container while it is set, and every column keeps the same width, a last row that is not full included. Wins over Columns when both are set. A number with or without a unit is checked: a zero or negative width, an unknown unit or a malformed number (such as 14 rem) is ignored as if it were not set, so Columns still applies. A CSS function (calc(), clamp(), var(), ...) is passed through as written, unchecked, so it still wins over Columns even when it does not resolve to a positive length the browser can read."
         },
         new()
         {

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Components;
 using Bit.BlazorUI.Demo.Client.Core.Models;
 
@@ -98,10 +99,61 @@ public static class BlazorUIMarkdown
                    .AppendLine();
         }
 
-        builder.Append(header).Append(body);
+        builder.Append(header);
+
+        AppendFitted(builder, component, sections);
 
         return Truncate(builder.ToString());
     }
+
+    /// <summary>
+    /// Appends the sections of a whole reference, leaving out whole sections when they would run past
+    /// <see cref="MaxLength"/> rather than letting the cap cut the answer mid-table.
+    /// <para>
+    /// A cut at the cap loses the end of the answer, and the end is the worked examples - the part an
+    /// agent copies from. So the sections are left out from the one before the examples backwards (the
+    /// own types and the library types, the parts least read in full), never the first table nor the
+    /// examples, and the ones left out are named where they would have been, with the call that returns
+    /// each. The notice is counted in the cap it keeps the answer under, as the examples tool's is.
+    /// </para>
+    /// </summary>
+    private static void AppendFitted(StringBuilder builder, BlazorUIComponent component, List<ComponentSection> sections)
+    {
+        var kept = new List<ComponentSection>(sections);
+        var left = new List<string>();
+
+        string Notice() => left.Count == 0
+            ? string.Empty
+            : $"Left out to stay within one answer, each returned by `GetBitBlazorUIComponent(name: \"{component.Name}\", section: \"...\")`: {string.Join(", ", left.Select(name => $"`{name}`"))}.{Environment.NewLine}{Environment.NewLine}";
+
+        int Length() => builder.Length + kept.Sum(s => s.Text.Length) + Notice().Length;
+
+        for (var i = kept.Count - 1; i > 0 && Length() > MaxLength; i--)
+        {
+            if (kept[i].Name == WorkedExamples) continue;
+
+            left.Insert(0, kept[i].Name);
+            kept.RemoveAt(i);
+        }
+
+        var noticed = false;
+
+        foreach (var section in kept)
+        {
+            if (section.Name == WorkedExamples && noticed is false)
+            {
+                builder.Append(Notice());
+                noticed = true;
+            }
+
+            builder.Append(section.Text);
+        }
+
+        if (noticed is false) builder.Append(Notice());
+    }
+
+    /// <summary>The section a whole reference always keeps, since it is the part an agent copies from.</summary>
+    private const string WorkedExamples = "Worked examples";
 
     /// <summary>
     /// One part of a component's reference: its name as a caller passes it in <c>section</c>, and its text
@@ -145,11 +197,12 @@ public static class BlazorUIMarkdown
 
         // The note nearly every Extras component carries says to install the package, which the
         // block below says with the package name, the registration call and the tags. Two sentences
-        // about the same thing, one of them vague, is the redundancy this server exists to avoid.
-        if (string.IsNullOrWhiteSpace(component.Notes) is false &&
-            component.Notes.Contains("install the", StringComparison.OrdinalIgnoreCase) is false)
+        // about the same thing, one of them vague, is the redundancy this server exists to avoid - so
+        // that sentence is left out, and whatever else the notes say is kept.
+        var notes = WithoutInstallNote(component.Notes);
+        if (string.IsNullOrWhiteSpace(notes) is false)
         {
-            builder.AppendLine($"**Note:** {component.Notes}").AppendLine();
+            builder.AppendLine($"**Note:** {notes}").AppendLine();
         }
 
         AppendPackage(builder, component);
@@ -234,7 +287,7 @@ public static class BlazorUIMarkdown
         }
 
         Add("Library types used here", builder => AppendReferencedTypes(builder, component));
-        Add("Worked examples", builder => AppendExamples(builder, component));
+        Add(WorkedExamples, builder => AppendExamples(builder, component));
 
         return sections;
     }
@@ -452,9 +505,16 @@ public static class BlazorUIMarkdown
             }
             else
             {
+                // A page split into topics names each topic's own address beside it: the topics are pages of the site,
+                // where a tab is only a part of one.
                 foreach (var tab in tabs)
                 {
-                    builder.AppendLine($"{(tab.Key is null ? null : $"**{tab.Key} tab** - ")}{string.Join(", ", tab.Select(e => e.Title))}.");
+                    var topic = component.Topics.FirstOrDefault(t => t.Title == tab.Key);
+                    var label = tab.Key is null ? null
+                        : topic is null ? $"**{tab.Key} tab** - "
+                        : $"**{tab.Key}** ({component.Url}{(topic.Route is null ? null : $"/{topic.Route}")}) - ";
+
+                    builder.AppendLine($"{label}{string.Join(", ", tab.Select(e => e.Title))}.");
                 }
             }
 
@@ -983,4 +1043,19 @@ public static class BlazorUIMarkdown
 
     public static string Truncate(string text)
         => text.Length <= MaxLength ? text : $"{text[..MaxLength]}\n\n[Cut off at {MaxLength:N0} characters.]";
+
+    // "To use this component, you need to install the Bit.BlazorUI.Extras nuget package, as described in the Optional steps
+    // of the Getting started page." - the sentence an Extras page opens its notes with, in whatever whitespace the markup gave it.
+    private static readonly Regex _installNote = new(@"To use this component, you need to install the .*?Getting started\s+page\.\s*",
+                                                     RegexOptions.Singleline | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+    /// <summary>The notes of a component without the sentence saying to install its package, which the package block says.</summary>
+    private static string? WithoutInstallNote(string? notes)
+    {
+        if (string.IsNullOrWhiteSpace(notes)) return null;
+
+        var rest = _installNote.Replace(notes, string.Empty).Trim();
+
+        return rest.Length == 0 ? null : rest;
+    }
 }

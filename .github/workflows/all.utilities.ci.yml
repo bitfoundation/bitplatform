@@ -31,10 +31,6 @@ jobs:
     name: bink
     uses: ./.github/workflows/ci.bink.yml
 
-  balette:
-    name: balette
-    uses: ./.github/workflows/ci.balette.yml
-
   bbscanner:
     name: bbscanner
     uses: ./.github/workflows/ci.bbscanner.yml
@@ -70,10 +66,6 @@ jobs:
   borm:
     name: borm
     uses: ./.github/workflows/ci.borm.yml
-
-  bortable:
-    name: bortable
-    uses: ./.github/workflows/ci.bortable.yml
 
   belemetry:
     name: belemetry

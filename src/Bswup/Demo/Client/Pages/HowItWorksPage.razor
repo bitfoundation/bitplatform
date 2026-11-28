@@ -256,6 +256,11 @@
                 <td>Served the app shell (<a href="service-worker#defaulturl"><code>defaultUrl</code></a>) - unless the navigated URL is itself a concrete managed asset, in which case that asset is served.</td>
             </tr>
             <tr>
+                <td>3b</td>
+                <td>The same navigation with <a href="service-worker#forceprerender"><code>forcePrerender</code></a> on, and <a href="service-worker#defaulturl"><code>defaultUrl</code></a> matching an asset (the navigated URL not being another concrete managed asset)</td>
+                <td>Sent to the server first. When the connection fails or a gateway answers 502, 503, 504, 520-527 or 530, the cached app shell is served instead.</td>
+            </tr>
+            <tr>
                 <td>4</td>
                 <td>The URL resolves to a managed asset</td>
                 <td>Served from cache. A miss goes to the network and is written back, so an asset skipped by a lax install (or evicted) becomes offline-capable after its first successful fetch.</td>

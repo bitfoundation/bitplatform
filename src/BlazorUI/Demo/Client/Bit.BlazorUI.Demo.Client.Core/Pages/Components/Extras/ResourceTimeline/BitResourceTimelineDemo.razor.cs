@@ -179,21 +179,21 @@ public partial class BitResourceTimelineDemo
         },
         new()
         {
+            Name = "Strings",
+            Type = "BitResourceTimelineStrings?",
+            DefaultValue = "null",
+            Description = "The strings of the timeline: its accessible names, loading text, tooltip formats and announcements (English by default).",
+            LinkType = LinkType.Link,
+            Href = "#timeline-strings",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitResourceTimelineClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for different parts of the BitResourceTimeline.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
-        },
-        new()
-        {
-            Name = "Texts",
-            Type = "BitResourceTimelineTexts?",
-            DefaultValue = "null",
-            Description = "The texts of the timeline: its accessible names, loading text, tooltip formats and announcements (English by default).",
-            LinkType = LinkType.Link,
-            Href = "#timeline-texts",
         },
         new()
         {
@@ -434,11 +434,8 @@ public partial class BitResourceTimelineDemo
                 new() { Name = "EndTime", Type = "DateTimeOffset", DefaultValue = "", Description = "The end of the period." },
                 new() { Name = "Color", Type = "string?", DefaultValue = "null", Description = "CSS color of the bar fill (for example #e8590c or tomato). Falls back to the bar color of the theme, or Options.Colors.Bar." },
                 new() { Name = "Height", Type = "int?", DefaultValue = "null", Description = "The height of the bar in pixels, vertically centered in its row. Falls back to Options.BarHeight. The edge bars share it." },
-                new() { Name = "TextAbove", Type = "string?", DefaultValue = "null", Description = "A label centered above the bar." },
-                new() { Name = "TextBelow", Type = "string?", DefaultValue = "null", Description = "A label centered below the bar." },
-                new() { Name = "TextStart", Type = "string?", DefaultValue = "null", Description = "A label just before the start edge of the bar." },
-                new() { Name = "TextEnd", Type = "string?", DefaultValue = "null", Description = "A label just after the end edge of the bar." },
-                new() { Name = "Tooltip", Type = "string?", DefaultValue = "null", Description = "The hover text of the bar (requires Options.ShowTooltips), a line break separating its lines. When null, a default is built from the labels, the resource name and the time range." },
+                new() { Name = "Texts", Type = "BitResourceTimelineBarTexts?", DefaultValue = "null", Description = "The texts drawn around the bar - above it at its start, center and end, below it likewise, and before its start and after its end - each with its own color, font and offset.", LinkType = LinkType.Link, Href = "#bar-texts" },
+                new() { Name = "Tooltip", Type = "string?", DefaultValue = "null", Description = "The hover text of the bar (requires Options.ShowTooltips), a line break separating its lines. When null, a default is built from the texts, the resource name and the time range." },
                 new() { Name = "StartBar", Type = "BitResourceTimelineEdgeBar?", DefaultValue = "null", Description = "A decorative bar drawn immediately before the start edge, in the row and at the height of the bar - commonly a delay before the planned allocation began.", LinkType = LinkType.Link, Href = "#edge-bar" },
                 new() { Name = "EndBar", Type = "BitResourceTimelineEdgeBar?", DefaultValue = "null", Description = "A decorative bar drawn immediately after the end edge, in the row and at the height of the bar - commonly a delay after the planned allocation ended.", LinkType = LinkType.Link, Href = "#edge-bar" },
                 new() { Name = "Icons", Type = "List<BitResourceTimelineBarIcon>?", DefaultValue = "null", Description = "Icons or small images drawn around (or within) the bar, each anchored to its own position; several at one position line up away from the bar in list order.", LinkType = LinkType.Link, Href = "#bar-icon" },
@@ -495,6 +492,37 @@ public partial class BitResourceTimelineDemo
         },
         new()
         {
+            Id = "bar-texts",
+            Title = "BitResourceTimelineBarTexts",
+            Description = "The texts drawn around a bar, one per position; a position left null draws nothing. The top and bottom ones sit on a line just above and just below the bar (past its Above and Below icons), at its start edge, its center or its end edge; Start and End sit on its center line just before its start and just after its end (past a delay bar and the icons outside that end). The first of TopCenter, TopStart, TopEnd, Start, End, BottomCenter, BottomStart and BottomEnd that has a text is the label of the bar in its default tooltip and its accessible name.",
+            Parameters =
+            [
+                new() { Name = "TopStart", Type = "BitResourceTimelineBarText?", DefaultValue = "null", Description = "Above the bar, aligned with its start edge.", LinkType = LinkType.Link, Href = "#bar-text" },
+                new() { Name = "TopCenter", Type = "BitResourceTimelineBarText?", DefaultValue = "null", Description = "Above the bar, centered on it.", LinkType = LinkType.Link, Href = "#bar-text" },
+                new() { Name = "TopEnd", Type = "BitResourceTimelineBarText?", DefaultValue = "null", Description = "Above the bar, aligned with its end edge.", LinkType = LinkType.Link, Href = "#bar-text" },
+                new() { Name = "Start", Type = "BitResourceTimelineBarText?", DefaultValue = "null", Description = "Just before the start edge of the bar, on its center line.", LinkType = LinkType.Link, Href = "#bar-text" },
+                new() { Name = "End", Type = "BitResourceTimelineBarText?", DefaultValue = "null", Description = "Just after the end edge of the bar, on its center line. With Options.CollapseMatchingEdgeLabels, drawn once for this bar and the next one while it says the same as that one's Start.", LinkType = LinkType.Link, Href = "#bar-text" },
+                new() { Name = "BottomStart", Type = "BitResourceTimelineBarText?", DefaultValue = "null", Description = "Below the bar, aligned with its start edge.", LinkType = LinkType.Link, Href = "#bar-text" },
+                new() { Name = "BottomCenter", Type = "BitResourceTimelineBarText?", DefaultValue = "null", Description = "Below the bar, centered on it.", LinkType = LinkType.Link, Href = "#bar-text" },
+                new() { Name = "BottomEnd", Type = "BitResourceTimelineBarText?", DefaultValue = "null", Description = "Below the bar, aligned with its end edge.", LinkType = LinkType.Link, Href = "#bar-text" },
+            ]
+        },
+        new()
+        {
+            Id = "bar-text",
+            Title = "BitResourceTimelineBarText",
+            Description = "A text drawn at one of the positions around a bar, with its own color, font and offset. A string converts to one implicitly: TopCenter = \"AB123\" draws a text in the default look.",
+            Parameters =
+            [
+                new() { Name = "Text", Type = "string?", DefaultValue = "null", Description = "The text to draw; nothing is drawn while it is null or empty." },
+                new() { Name = "Color", Type = "string?", DefaultValue = "null", Description = "CSS color of the text. Falls back to the bar label color." },
+                new() { Name = "Font", Type = "string?", DefaultValue = "null", Description = "CSS font shorthand of the text (for example italic 600 12px sans-serif). Falls back to Options.BarLabelFont, or the font of the theme. The text is measured in it, so the room kept for it follows its size." },
+                new() { Name = "OffsetX", Type = "double?", DefaultValue = "null", Description = "Pixels the text is moved to the right (or to the left, when negative) from where its position puts it. Only the drawing moves, not the room kept for it." },
+                new() { Name = "OffsetY", Type = "double?", DefaultValue = "null", Description = "Pixels the text is moved down (or up, when negative) from where its position puts it. Only the drawing moves, not the room kept for it." },
+            ]
+        },
+        new()
+        {
             Id = "timeline-options",
             Title = "BitResourceTimelineOptions",
             Description = "The visual configuration of the timeline (defaults in parentheses). A new instance is merged into what is in force: a property left null keeps the value applied before it.",
@@ -511,8 +539,8 @@ public partial class BitResourceTimelineDemo
                 new() { Name = "BarMargin", Type = "int?", DefaultValue = "null", Description = "Gap between bars stacked for overlapping in time, in px (2)." },
                 new() { Name = "StackLabelClearance", Type = "bool?", DefaultValue = "null", Description = "Whether stacked bars also keep room for their labels and icons (true). Independent of the zoom." },
                 new() { Name = "StackOnLabelCollision", Type = "bool?", DefaultValue = "null", Description = "Whether bars whose labels, icons or edge bars would collide stack too, not only overlapping times (true)." },
-                new() { Name = "CollapseMatchingEdgeLabels", Type = "bool?", DefaultValue = "null", Description = "Whether neighbouring bars whose facing labels match (one's TextEnd, the next one's TextStart) draw that text once in the gap between them, without stacking for it, while the gap holds the word but is too narrow to show both clearly (false). Follows the zoom; the allocations keep both texts." },
-                new() { Name = "StickyBarLabels", Type = "bool?", DefaultValue = "null", Description = "Whether what is centered on a bar - TextAbove, TextBelow, the Above, Below and Center icons, a section's centered text and icon - follows the part of the bar in view, so a long bar keeps its labels on screen while it is scrolled (false). They never leave their bar; they keep the BarLabelGap clear of the edge of the timeline, one wider than its bar stays centered without holding the others back, the Center icons stay between the icons inside the bar while a section's centered content steps aside for them, and the start and end labels stay beside the bar." },
+                new() { Name = "CollapseMatchingEdgeLabels", Type = "bool?", DefaultValue = "null", Description = "Whether neighbouring bars whose facing labels match (one's Texts.End, the next one's Texts.Start) draw that text once in the gap between them, without stacking for it, while the gap holds the word but is too narrow to show both clearly (false). Follows the zoom; the allocations keep both texts." },
+                new() { Name = "StickyBarLabels", Type = "bool?", DefaultValue = "null", Description = "Whether what is centered on a bar - its TopCenter and BottomCenter texts, the Above, Below and Center icons, a section's centered text and icon - follows the part of the bar in view, so a long bar keeps its labels on screen while it is scrolled, and its TopStart, TopEnd, BottomStart and BottomEnd texts are held in from the edge of the timeline the bar reaches past (false). They never leave their bar; they keep the BarLabelGap clear of the edge of the timeline, one wider than its bar stays centered without holding the others back, the Center icons stay between the icons inside the bar while a section's centered content steps aside for them, and the Start and End texts stay beside the bar." },
                 new() { Name = "MinBarWidth", Type = "int?", DefaultValue = "null", Description = "Minimum drawn width of a bar in px (2)." },
                 new() { Name = "MinBarWidthForLabels", Type = "int?", DefaultValue = "null", Description = "Minimum bar width for its labels and icons to be drawn, in px (24)." },
                 new() { Name = "BarLabelFont", Type = "string?", DefaultValue = "null", Description = "CSS font of the bar labels (11px, theme font family)." },
@@ -784,9 +812,9 @@ public partial class BitResourceTimelineDemo
         },
         new()
         {
-            Id = "timeline-texts",
-            Title = "BitResourceTimelineTexts",
-            Description = "The texts of the BitResourceTimeline: its accessible name and role description, the loading text, the labels of its controls, the formats of its tooltips and everything it announces to screen readers. All of them default to English. A text ending in Format is a composite format string.",
+            Id = "timeline-strings",
+            Title = "BitResourceTimelineStrings",
+            Description = "The strings of the BitResourceTimeline: its accessible name and role description, the loading text, the labels of its controls, the formats of its tooltips and everything it announces to screen readers. All of them default to English. A string ending in Format is a composite format string.",
             Parameters =
             [
                 new() { Name = "AriaLabel", Type = "string", DefaultValue = "Resource timeline", Description = "Accessible name while AriaLabel is unset." },
@@ -1085,10 +1113,7 @@ public partial class BitResourceTimelineDemo
                     EndTime = today.AddHours(6),
                     Color = "#2f9e44",
                     Height = 10,
-                    TextAbove = "LH441",
-                    TextBelow = "Frankfurt",
-                    TextStart = "02:00",
-                    TextEnd = "06:00",
+                    Texts = new() { TopCenter = "LH441", BottomCenter = "Frankfurt", Start = "02:00", End = "06:00" },
                 },
                 new()
                 {
@@ -1098,7 +1123,13 @@ public partial class BitResourceTimelineDemo
                     EndTime = today.AddHours(15),
                     Color = "#1971c2",
                     Height = 6,
-                    TextAbove = "BA117 (hover me)",
+                    Texts = new()
+                    {
+                        TopStart = "BA117 (hover me)",
+                        TopEnd = new() { Text = "On time", Color = "#2f9e44", Font = "600 11px sans-serif" },
+                        BottomStart = new() { Text = "London", Color = "#868e96", Font = "italic 11px sans-serif" },
+                        BottomEnd = new() { Text = "T5", OffsetX = -4 },
+                    },
                     Tooltip = "BA117 to London\nBoarding at 14:20, gate closes at 14:45",
                 },
                 new()
@@ -1109,7 +1140,7 @@ public partial class BitResourceTimelineDemo
                     EndTime = today.AddHours(8),
                     Color = "#e8590c",
                     Height = 10,
-                    TextAbove = "AF1380 (delayed)",
+                    Texts = new() { TopCenter = new() { Text = "AF1380 (delayed)", Color = "#e03131", Font = "bold 12px sans-serif" } },
                     StartBar = new() { Duration = TimeSpan.FromMinutes(50), Color = "#ffa8a8" },
                     EndBar = new() { Duration = TimeSpan.FromMinutes(30), Color = "#fa5252" },
                 },
@@ -1153,10 +1184,15 @@ public partial class BitResourceTimelineDemo
                     EndTime = today.AddDays(2).AddHours(14),
                     Color = "#495057",
                     Height = 16,
-                    TextAbove = "D-ABYT heavy maintenance",
-                    TextBelow = "Hangar 5",
-                    TextStart = "Day 1 10:00",
-                    TextEnd = "Day 3 14:00",
+                    Texts = new()
+                    {
+                        TopStart = "D-ABYT",
+                        TopCenter = "Heavy maintenance",
+                        TopEnd = "C-check",
+                        BottomCenter = "Hangar 5",
+                        Start = "Day 1 10:00",
+                        End = "Day 3 14:00",
+                    },
                     Icons =
                     [
                         new() { Source = BitResourceTimelineDemoData.LockIcon, Position = BitResourceTimelineBarIconPosition.Above },
@@ -1345,7 +1381,7 @@ public partial class BitResourceTimelineDemo
 
         if (args.Resource is not null) parts.Add(args.Resource.Name);
         if (args.Time is { } time) parts.Add(time.ToLocalTime().ToString("ddd HH:mm"));
-        if (args.Allocation is not null) parts.Add($"flight {args.Allocation.TextAbove}");
+        if (args.Allocation is not null) parts.Add($"flight {args.Allocation.Texts?.TopCenter?.Text}");
 
         return string.Join(" · ", parts);
     }
@@ -1368,7 +1404,7 @@ public partial class BitResourceTimelineDemo
         {
             flight.Locked = true;
             flight.Color = "#868e96";
-            flight.TextBelow = "at the gate";
+            (flight.Texts ??= new()).BottomCenter = "at the gate";
         }
 
         return config;
@@ -1395,13 +1431,13 @@ public partial class BitResourceTimelineDemo
 
         if (refused is null) return true;
 
-        Log($"Refused: {refused.Allocation.TextAbove} would start in the past");
+        Log($"Refused: {refused.Allocation.Texts?.TopCenter?.Text} would start in the past");
         return false;
     }
 
     private void HandleAllocationChanged(BitResourceTimelineAllocation flight)
     {
-        Log($"{flight.TextAbove}: Gate {flight.ResourceId}, {flight.StartTime.ToLocalTime():ddd HH:mm} - {flight.EndTime.ToLocalTime():HH:mm}");
+        Log($"{flight.Texts?.TopCenter?.Text}: Gate {flight.ResourceId}, {flight.StartTime.ToLocalTime():ddd HH:mm} - {flight.EndTime.ToLocalTime():HH:mm}");
     }
 
     private Task<BitResourceTimelineAllocation?> HandleAllocationCreating(BitResourceTimelineCreateRequest request)
@@ -1414,11 +1450,11 @@ public partial class BitResourceTimelineDemo
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             Color = "#2f9e44",
-            TextAbove = $"NEW{createdCount}",
+            Texts = new() { TopCenter = $"NEW{createdCount}" },
         };
 
         editingConfig.Allocations.Add(flight);
-        Log($"Created {flight.TextAbove} at Gate {flight.ResourceId}");
+        Log($"Created {flight.Texts?.TopCenter?.Text} at Gate {flight.ResourceId}");
 
         return Task.FromResult<BitResourceTimelineAllocation?>(flight);
     }
@@ -1434,7 +1470,7 @@ public partial class BitResourceTimelineDemo
                 StartTime = source.StartTime + request.Offset,
                 EndTime = source.EndTime + request.Offset,
                 Color = "#2f9e44",
-                TextAbove = $"{source.TextAbove} copy",
+                Texts = new() { TopCenter = $"{source.Texts?.TopCenter?.Text} copy" },
             })
         ];
 
@@ -1500,10 +1536,13 @@ public partial class BitResourceTimelineDemo
             ResourceId = gate,
             StartTime = today.AddHours(from),
             EndTime = today.AddHours(to),
-            TextAbove = id,
-            TextBelow = below,
-            TextStart = origin ?? (times ? today.AddHours(from).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
-            TextEnd = destination ?? (times ? today.AddHours(to).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
+            Texts = new()
+            {
+                TopCenter = id,
+                BottomCenter = below,
+                Start = origin ?? (times ? today.AddHours(from).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
+                End = destination ?? (times ? today.AddHours(to).ToString("HH:mm", CultureInfo.InvariantCulture) : null),
+            },
         };
 
         return new()
@@ -1804,9 +1843,9 @@ public partial class BitResourceTimelineDemo
 
 
 
-    private BitResourceTimelineConfig textsConfig = BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Gates(5), labeled: true);
-    private readonly BitResourceTimelineOptions textsOptions = new() { AutoScrollToNow = true, Locale = "de-DE" };
-    private readonly BitResourceTimelineTexts germanTexts = new()
+    private BitResourceTimelineConfig stringsConfig = BitResourceTimelineDemoData.Airport(BitResourceTimelineDemoData.Gates(5), labeled: true);
+    private readonly BitResourceTimelineOptions stringsOptions = new() { AutoScrollToNow = true, Locale = "de-DE" };
+    private readonly BitResourceTimelineStrings germanStrings = new()
     {
         AriaLabel = "Belegungsplan der Gates",
         RoleDescription = "Ressourcen-Zeitachse",

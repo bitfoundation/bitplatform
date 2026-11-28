@@ -69,7 +69,7 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Preview outside clipping/stacking contexts | dk overlay portal; SJ `fallbackOnBody` | Partial | Verified | Pointer preview in the top layer (popover); drag layers stay app-positioned. |
 | Stable styling hooks | dk data attributes; SJ classes | **Missing (P1)** | Verified | Round 1: `data-bit-bdnd-dragging`, `-can-drop`, `-over`, `-over-shallow`. |
 | Insertion indicators / placeholders | PD drop-indicator + closest edge | Missing (P1) | Verified | `Edges`, `ClosestEdge`, `data-bit-bdnd-edge` (E2E: vertical, horizontal). |
-| Drop animations / sortable transitions | dk, SJ FLIP | Excluded | Excluded | Bit.Bortable's domain; Bdnd renders whatever the app renders. |
+| Drop animations / sortable transitions | dk, SJ FLIP | Excluded | Excluded | BitSortable's domain (Bit.BlazorUI.Extras); Bdnd renders whatever the app renders. |
 | Reduced motion | dk respects | N/A | N/A | Bdnd animates nothing; the pointer preview moves with the pointer only. |
 
 ## D. Sorting and collections
@@ -84,7 +84,7 @@ Competitors: **dk** dnd-kit, **SJ** SortableJS, **RD** React DnD, **PD** Pragmat
 | Clone vs move | SJ `pull: clone`; RD drop effects | Verified | Verified | `DropEffect` + `OnEnd`. |
 | Multi-item drag | SJ MultiDrag; dk app-defined | Partial | Verified | A collection as the item (`ItemFactory`, `IsDraggingOverride`); round 8 demo with checkboxes, mouse and keyboard (E2E). Round 14: the selection reorders together, in its order (`BdndList.PlanMove` with several indexes; unit, E2E with mouse and keyboard). |
 | Moves worked out before they are made | PD `reorder` + app; dk `arrayMove` | Missing (P2) | Verified | Round 14: `BdndListMove<T>` - items, source indexes, finish index; `Apply`, `Revert`, refused once the lists changed under it (unit). |
-| Swap sorting, FLIP animation, thresholds | SJ | Excluded | Excluded | Bit.Bortable implements SortableJS. |
+| Swap sorting, FLIP animation, thresholds | SJ | Excluded | Excluded | BitSortable (Bit.BlazorUI.Extras) implements SortableJS. |
 | Grids / wrapping layouts | dk `rectSortingStrategy`; SJ | Partial | Verified | Round 6: grid demo; pointer drops across rows; keyboard Up/Down go a row (E2E). |
 | Capacity limits, duplicate prevention | app-defined everywhere | Verified | Verified | `CanDropPredicate`. |
 | Undo/redo integration | app-defined | Partial | Verified | Drop results + `OnDragEnd`/`DragEnded` with `DidDrop` and the result (README recipe, unit, drag events demo). Round 14: `BdndListMove<T>.Revert` and `Apply` (redo); Undo on the multi-select and tree demos (E2E). |

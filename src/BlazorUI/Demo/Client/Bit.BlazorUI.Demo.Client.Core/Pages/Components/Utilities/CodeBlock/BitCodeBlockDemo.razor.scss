@@ -1,0 +1,16 @@
+﻿::deep {
+    .custom-root {
+        border-radius: 1rem;
+        box-shadow: var(--bit-shd-card);
+    }
+
+    .custom-header {
+        font-weight: 600;
+        color: var(--bit-clr-pri-text);
+        background-color: var(--bit-clr-pri);
+    }
+
+    .custom-copy {
+        color: var(--bit-clr-pri-text);
+    }
+}

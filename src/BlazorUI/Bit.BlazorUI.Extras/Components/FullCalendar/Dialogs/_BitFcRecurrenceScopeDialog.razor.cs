@@ -17,7 +17,7 @@ public partial class _BitFcRecurrenceScopeDialog : IAsyncDisposable
 {
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
 
     [Parameter] public EventCallback OnCancel { get; set; }

@@ -532,7 +532,7 @@ private void HandleTaskChanged(BitMarkdownViewerTaskChangedEventArgs args)
     private readonly string example16CsharpCode = @"
 private readonly BitMarkdownPipeline localizedPipeline = new BitMarkdownPipelineBuilder()
     .UseGitHubFlavored()
-    .UseTexts(new BitMarkdownTexts
+    .UseStrings(new BitMarkdownStrings
     {
         AlertNote = ""Hinweis"",
         AlertTip = ""Tipp"",

@@ -405,7 +405,7 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts { EditorAriaLabel = "ویرایشگر" });
+            parameters.Add(p => p.Strings, new BitMarkdownEditorStrings { EditorAriaLabel = "ویرایشگر" });
         });
 
         Assert.AreEqual("ویرایشگر", component.Find(".bit-mde-txa").GetAttribute("aria-label"));
@@ -516,7 +516,7 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts
+            parameters.Add(p => p.Strings, new BitMarkdownEditorStrings
             {
                 ModeSplit = "دوستونه",
                 WordsFormat = "{0} واژه",
@@ -1112,7 +1112,7 @@ public class BitMarkdownEditorTests : BunitTestContext
         {
             parameters.Add(p => p.MaxImageSize, 2048L);
             parameters.Add(p => p.AcceptedImageTypes, "image/png,image/jpeg");
-            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts { UploadingText = "بارگذاری" });
+            parameters.Add(p => p.Strings, new BitMarkdownEditorStrings { UploadingText = "بارگذاری" });
         });
 
         Assert.AreEqual(2048L, LastInitConfigValue("MaxImageSize"));
@@ -1753,7 +1753,7 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts { PreviewEmptyText = "rien" });
+            parameters.Add(p => p.Strings, new BitMarkdownEditorStrings { PreviewEmptyText = "rien" });
         });
 
         Assert.AreEqual("rien", component.Find(".bit-mde-emp").TextContent);
@@ -1886,7 +1886,7 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts
+            parameters.Add(p => p.Strings, new BitMarkdownEditorStrings
             {
                 ToolbarTableTools = "Outils de tableau",
                 ToolbarTableDeleteRow = "Supprimer la ligne"
@@ -1941,7 +1941,7 @@ public class BitMarkdownEditorTests : BunitTestContext
     {
         var component = RenderComponent<BitMarkdownEditor>(parameters =>
         {
-            parameters.Add(p => p.Texts, new BitMarkdownEditorTexts
+            parameters.Add(p => p.Strings, new BitMarkdownEditorStrings
             {
                 ReplaceAllButton = "Tout",
                 ReplaceAllAriaLabel = "Tout remplacer"

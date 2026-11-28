@@ -1198,7 +1198,7 @@ moves on only once the operation really succeeded, never because a button was pr
         await BonboardingService.SignalAsync("project-created");   // the step, and the checklist item, move on
     }
 
-    // Drag and drop (Bdnd, Bortable): from the drop handler, once the move was accepted.
+    // Drag and drop (Bdnd, BitSortable): from the drop handler, once the move was accepted.
     private Task OnCardMovedAsync() => BonboardingService.SignalAsync("card-moved");
 
     // A state store (Blex, say): from the code that changes the state, or a subscription to it.

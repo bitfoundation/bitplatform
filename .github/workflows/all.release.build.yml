@@ -33,8 +33,6 @@ jobs:
           solution: src/Bswup/Bit.Bswup.slnx
         - name: Butil
           solution: src/Butil/Bit.Butil.slnx
-        - name: Balette
-          solution: src/Utilities/Balette/Bit.Balette.slnx
         - name: BbScanner
           solution: src/Utilities/BbScanner/Bit.BbScanner.slnx
         - name: Bcrdt
@@ -63,15 +61,10 @@ jobs:
           solution: src/Utilities/Bonboarding/Bit.Bonboarding.slnx
         - name: Borm
           solution: src/Utilities/Borm/Bit.Borm.slnx
-        - name: Bortable
-          solution: src/Utilities/Bortable/Bit.Bortable.slnx
         - name: Bsqlite
           solution: src/Utilities/Bsqlite/Bit.Bsqlite.slnx
         - name: BlazorES2019
           solution: src/Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj
-          tooling: true
-        - name: Cli
-          solution: src/Toolings/Cli/Bit.Cli.slnx
           tooling: true
         - name: CodeAnalyzers
           solution: src/Toolings/CodeAnalyzers/Bit.CodeAnalyzers.slnx
@@ -181,9 +174,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - name: Boilerplate
-          folder: src/Templates/Boilerplate/Bit.Boilerplate
-          solution: Boilerplate.slnx
         - name: Careers
           folder: src/Websites/Careers
           solution: Bit.Websites.Careers.slnx

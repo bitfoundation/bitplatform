@@ -316,7 +316,7 @@ failures being the tests' expectation of the README's old title, which a pending
 | BbScanner preprocessing | Missing | **Built**: `Bit.Bmage.BbScanner`, decoding Bmage pixels with no copy and retrying a photo sharpened, then enlarged. A measurement over softened, small and unevenly lit QR and Code 128 symbols kept only these two: adaptive thresholding rescued nothing (BbScanner binarises locally already) and enlarging with sharpening read nothing either alone did not |
 | Bink annotation round trip | Missing | **Built**: `Bit.Bmage.Bink`, an image as a locked Bink layer, the drawing back as pixels, as a flattened image or as a Bmage `BmageImageLayer` |
 | Borm image field | Not applicable as a package | Borm's renderer registry hosts a `BmageEditor` configured as a cropper; documented in `docs/integrations.md` |
-| Blex, BlazeDb, Bsqlite, Bcrdt, Bdnd, Bortable, Bmotion | Not applicable as packages | Bmage already exposes plain data (JSON documents, `.bmage` projects, layer order) these store, sync or move; a package per pair would add surface without behaviour |
+| Blex, BlazeDb, Bsqlite, Bcrdt, Bdnd, BitSortable, Bmotion | Not applicable as packages | Bmage already exposes plain data (JSON documents, `.bmage` projects, layer order) these store, sync or move; a package per pair would add surface without behaviour |
 | Butil browser infrastructure | Not applicable | Bmage's browser bridge is image specific (worker codecs, bitmaps); nothing in it duplicates a Butil abstraction an app would share |
 
 ### What the round found and fixed

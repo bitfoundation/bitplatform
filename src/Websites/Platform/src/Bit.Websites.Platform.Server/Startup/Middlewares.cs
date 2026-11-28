@@ -2,9 +2,7 @@
 using System.Net;
 using System.Reflection;
 using System.Runtime.Loader;
-using System.Text.Json.Nodes;
 using Bit.Websites.Platform.Client.Shared;
-using Bit.Websites.Platform.Server.Services.Mcp;
 using Bit.Websites.Platform.Server.Components;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Components;
@@ -70,17 +68,6 @@ public class Middlewares
 
         app.MapControllers();
 
-        // Exposes the tools of the MCP servers the team develops against at bitplatform.dev/mcp, per release.
-        app.MapMcp("/mcp");
-
-        // The releases ?v= accepts, newest first. Anything else, and no v at all, is answered by the newest.
-        // Written as nodes rather than serialized off a type, so no json context has to know about it.
-        app.MapGet("/mcp/versions", (McpVersions versions) => Results.Text(new JsonObject
-        {
-            ["latest"] = versions.Latest?.Name,
-            ["versions"] = new JsonArray([.. versions.Served.Select(version => (JsonNode)new JsonObject { ["name"] = version.Name, ["tag"] = version.Tag })])
-        }.ToJsonString(), "application/json"));
-
         var appSettings = configuration.GetSection(nameof(AppSettings)).Get<AppSettings>()!;
 
         var healthCheckSettings = appSettings.HealthCheckSettings;
@@ -111,9 +98,6 @@ public class Middlewares
 
         app.MapGet("/butil", () => Results.Redirect(Urls.Butil, permanent: true));
         app.MapGet("/butil/{**rest}", () => Results.Redirect(Urls.Butil, permanent: true));
-
-        app.MapGet("/templates/samples", () => Results.Redirect(Urls.Demos, permanent: true));
-        app.MapGet("/boilerplate/samples", () => Results.Redirect(Urls.Demos, permanent: true));
     }
 
     private static void Configure_404_Page(WebApplication app)
@@ -162,8 +146,7 @@ public class Middlewares
             .SelectMany(t => t.GetCustomAttributes<Microsoft.AspNetCore.Components.RouteAttribute>())
             .Select(r => r.Template)
             .Where(t => SiteMapUrls.NoIndexUrls.Contains(t) is false
-                     && SiteMapUrls.NonCanonicalUrls.Contains(t) is false
-                     && t.StartsWith("/boilerplate") is false)
+                     && SiteMapUrls.NonCanonicalUrls.Contains(t) is false)
             .ToList();
 
         const string siteMapHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<urlset\r\n      xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\r\n      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n      xsi:schemaLocation=\"http://www.sitemaps.org/schemas/sitemap/0.9\r\n            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd\">";

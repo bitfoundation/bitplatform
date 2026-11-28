@@ -53,21 +53,23 @@ run, update every line of the comment and add one to the log.
 - Work from PR titles. Read a PR's body only for the few big ones the highlights need. Never read code to list or sort PRs.
 - The PR list comes from GitHub's generate-notes API between the previous tag and develop, plus the open PRs.
 - Each PR's section comes from the scope of its squash commit on develop (`feat(blazorui):` and so on), so nothing has
-  to be read to sort them. `blazorui` goes to bit BlazorUI, `templates` to bit Boilerplate, `websites` to Websites, and
-  everything else (each library, the CLI, infra, CI) to Tooling. A new .NET version and license changes go to Platform.
+  to be read to sort them. `blazorui` goes to bit BlazorUI, `websites` to Websites, and everything else (each library,
+  the toolings, the BlazorEmpty template, infra, CI) to Tooling. A new .NET version and license changes go to Platform.
   An open PR has no squash commit yet: take its scope from its title and files.
+- bit Boilerplate and bit CLI live in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric), and their
+  changes are released there, so these notes leave them out.
 
 ## Structure
 
 1. `## What's Changed`
 2. `### Key Highlights`, with `####` subsections: bit platform (a new .NET version, license changes), bit BlazorUI,
-   Tooling, bit Boilerplate, Websites. A new .NET version always goes in the highlights.
+   Tooling, Websites. A new .NET version always goes in the highlights.
 3. After Websites, a general note as a quote: `> **Note:** Everything in bit platform, ... is there to get you to a
    better product with fewer tokens and less time. Nothing limits what you build or what you use.` Keep it in every
    release, with examples from that release.
-4. `### Dependencies`, right after the highlights, in two parts, bit packages and bit Boilerplate: what was added,
-   removed or moved to a new major version since the previous release.
-5. One list per section (Platform, bit BlazorUI, bit Boilerplate, Tooling, Websites) in the format GitHub generates:
+4. `### Dependencies`, right after the highlights, for the bit packages: what was added, removed or moved to a new
+   major version since the previous release.
+5. One list per section (Platform, bit BlazorUI, Tooling, Websites) in the format GitHub generates:
    `* <PR title> by @author in <url>`. Titles stay exactly as they are on GitHub.
 6. Leave out "Update project dependencies" and "Prerelease" PRs.
 7. `## New Contributors` when GitHub lists any, then the Full Changelog link.
@@ -84,14 +86,11 @@ These came from the maintainer's corrections, so get them right the first time:
 - **No jargon dumps.** "Docker Compose, DbGate and Redis dashboards over SSH, GitHub Free, fewer Actions minutes" became
   "give the deploy skill SSH access to a server and get your app delivered there, secure, on a VM that costs about €4 a
   month". Lead with the outcome and a concrete number.
-- **Sell the strong points:** projects that keep up with the template (the template-diff skill), a professional AI-DLC,
-  zero downtime deployments, security. Prefer them over routine changes like branch rules or where settings are stored.
+- **Sell the strong points:** what lets an AI agent use a library well (its own MCP server, fewer tokens), accessibility,
+  performance, security. Prefer them over routine changes like branch rules or where settings are stored.
 - **Watch words that imply a catch.** "You can *still* use it" reads as "soon you can't". Drop still, for now and yet,
   unless that is the point.
-- **Link the live demos and give their proof.** Workbench links to https://workbench.bitplatform.dev and says it is a
-  demo: every project gets its own Workbench that runs on the developer's machine, because bit platform puts privacy
-  first. The landing page links to https://landingpage.bitplatform.dev and says it scores 100 out of 100 for
-  accessibility, SEO and performance. Libraries link to their own sites (`<name>.bitplatform.dev`).
+- **Link the live demos and give their proof.** Libraries link to their own sites (`<name>.bitplatform.dev`).
 - **Benefits without the details.** A library that "keeps your SQLite database in more places, runs faster, and is a
   simple move from the old package" says enough. How it does that does not belong here.
 - **Order inside a subsection:** the newest and most visible first. AI components came before forms and validation.
@@ -101,13 +100,13 @@ These came from the maintainer's corrections, so get them right the first time:
 
 Compare the package versions of the previous tag with develop plus the open PRs counted as merged, applied on top in a
 throwaway merge. Never take them from release notes. For bit packages, list only what the NuGet publish workflow really
-packs. For bit Boilerplate, cover the template's NuGet and npm packages. A whole framework's worth of major updates, such
-as every Microsoft.AspNetCore package moving to a new .NET, is one line, not a list. Only rerun the comparison when the
-PRs that touch package files change: one comes in, one goes out, or an open one gets new commits.
+packs. A whole framework's worth of major updates, such as every Microsoft.AspNetCore package moving to a new .NET, is
+one line, not a list. Only rerun the comparison when the PRs that touch package files change: one comes in, one goes
+out, or an open one gets new commits.
 
 ## Check before claiming
 
-- Check a claim in the code before writing it, such as zero downtime in the template's CD workflow.
+- Check a claim in the code before writing it, such as a library's smaller download.
 - Open every link in the highlights once and expect a 200.
 - Numbers (sizes, prices, scores) come from a measurement or from the maintainer, never from a guess.
 

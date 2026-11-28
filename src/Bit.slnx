@@ -27,13 +27,11 @@
     <File Path="../.github/workflows/all.toolings.ci.yml" />
     <File Path="../.github/workflows/all.utilities.ci.yml" />
     <File Path="../.github/workflows/all.utilities.e2e.ci.yml" />
-    <File Path="../.github/workflows/cd.adminpanel.demo.yml" />
     <File Path="../.github/workflows/cd.blazorui.demo.yml" />
     <File Path="../.github/workflows/cd.nuget.packages.yml" />
     <File Path="../.github/workflows/cd.platform.website.yml" />
     <File Path="../.github/workflows/cd.prerelease.nuget.packages.yml" />
     <File Path="../.github/workflows/cd.sales.website.yml" />
-    <File Path="../.github/workflows/cd.todo.demo.yml" />
   </Folder>
   <Folder Name="/Utilities/" />
   <Folder Name="/Utilities/Blex/">
@@ -220,43 +218,6 @@
     <Project Path="Utilities/Bink/Tests/Bit.Bink.Tests.Mcp/Bit.Bink.Tests.Mcp.csproj" />
     <Project Path="Utilities/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj" />
     <Project Path="Utilities/Bink/Tests/Bit.Bink.Benchmarks/Bit.Bink.Benchmarks.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Balette/">
-    <File Path="Utilities/Balette/README.md" />
-    <Project Path="Utilities/Balette/Bit.Balette/Bit.Balette.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Balette/Demo/">
-    <Project Path="Utilities/Balette/Demo/Client/Bit.Balette.Demo.Client.csproj" />
-    <Project Path="Utilities/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Balette/Samples/">
-    <Project Path="Utilities/Balette/Samples/Maui/Bit.Balette.Samples.Maui.csproj">
-      <Deploy />
-    </Project>
-  </Folder>
-  <Folder Name="/Utilities/Balette/Samples/Auto/">
-    <Project Path="Utilities/Balette/Samples/Auto/Bit.Balette.Samples.Auto/Bit.Balette.Samples.Auto.csproj" />
-    <Project Path="Utilities/Balette/Samples/Auto/Bit.Balette.Samples.Auto.Client/Bit.Balette.Samples.Auto.Client.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Balette/Samples/Core/">
-    <Project Path="Utilities/Balette/Samples/Core/Bit.Balette.Samples.Core.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Balette/Samples/Lazy/">
-    <Project Path="Utilities/Balette/Samples/Lazy/Bit.Balette.Samples.Lazy/Bit.Balette.Samples.Lazy.csproj" />
-    <Project Path="Utilities/Balette/Samples/Lazy/Bit.Balette.Samples.Lazy.Client/Bit.Balette.Samples.Lazy.Client.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Balette/Samples/Server/">
-    <Project Path="Utilities/Balette/Samples/Server/Bit.Balette.Samples.Server.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Balette/Samples/Wasm/">
-    <Project Path="Utilities/Balette/Samples/Wasm/Bit.Balette.Samples.Wasm/Bit.Balette.Samples.Wasm.csproj" />
-    <Project Path="Utilities/Balette/Samples/Wasm/Bit.Balette.Samples.Wasm.Client/Bit.Balette.Samples.Wasm.Client.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Balette/Tests/">
-    <Project Path="Utilities/Balette/Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />
-    <Project Path="Utilities/Balette/Tests/Bit.Balette.Tests.Mcp/Bit.Balette.Tests.Mcp.csproj" />
-    <Project Path="Utilities/Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj" />
-    <Project Path="Utilities/Balette/Tests/Bit.Balette.Benchmarks/Bit.Balette.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/Utilities/BbScanner/">
     <File Path="Utilities/BbScanner/README.md" />
@@ -531,40 +492,6 @@
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
     <Project Path="Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.E2E/Bit.Bonboarding.Tests.E2E.csproj" />
   </Folder>
-  <Folder Name="/Utilities/Bortable/">
-    <File Path="Utilities/Bortable/README.md" />
-    <Project Path="Utilities/Bortable/Bit.Bortable/Bit.Bortable.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Demo/">
-    <Project Path="Utilities/Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj" />
-    <Project Path="Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/">
-    <Project Path="Utilities/Bortable/Samples/Core/Bit.Bortable.Samples.Core.csproj" />
-    <Project Path="Utilities/Bortable/Samples/Maui/Bit.Bortable.Samples.Maui.csproj">
-      <Deploy />
-    </Project>
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/Auto/">
-    <Project Path="Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto/Bit.Bortable.Samples.Auto.csproj" />
-    <Project Path="Utilities/Bortable/Samples/Auto/Bit.Bortable.Samples.Auto.Client/Bit.Bortable.Samples.Auto.Client.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/Lazy/">
-    <Project Path="Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy/Bit.Bortable.Samples.Lazy.csproj" />
-    <Project Path="Utilities/Bortable/Samples/Lazy/Bit.Bortable.Samples.Lazy.Client/Bit.Bortable.Samples.Lazy.Client.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/Server/">
-    <Project Path="Utilities/Bortable/Samples/Server/Bit.Bortable.Samples.Server.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Samples/Wasm/">
-    <Project Path="Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm/Bit.Bortable.Samples.Wasm.csproj" />
-    <Project Path="Utilities/Bortable/Samples/Wasm/Bit.Bortable.Samples.Wasm.Client/Bit.Bortable.Samples.Wasm.Client.csproj" />
-  </Folder>
-  <Folder Name="/Utilities/Bortable/Tests/">
-    <Project Path="Utilities/Bortable/Tests/Bit.Bortable.Tests/Bit.Bortable.Tests.csproj" />
-    <Project Path="Utilities/Bortable/Tests/Bit.Bortable.Tests.Mcp/Bit.Bortable.Tests.Mcp.csproj" />
-    <Project Path="Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj" />
-  </Folder>
   <Folder Name="/Utilities/Belemetry/">
     <File Path="Utilities/Belemetry/README.md" />
     <Project Path="Utilities/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj" />
@@ -832,13 +759,6 @@
   <Folder Name="/Toolings/BlazorES2019/">
     <Project Path="Toolings/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>
-  <Folder Name="/Toolings/Cli/">
-    <File Path="Toolings/Cli/README.md" />
-    <Project Path="Toolings/Cli/Bit.Cli/Bit.Cli.csproj" />
-  </Folder>
-  <Folder Name="/Toolings/Cli/Tests/">
-    <Project Path="Toolings/Cli/Tests/Bit.Cli.Tests/Bit.Cli.Tests.csproj" />
-  </Folder>
   <Folder Name="/Toolings/CodeAnalyzers/">
     <File Path="Toolings/CodeAnalyzers/README.md" />
     <Project Path="Toolings/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj" />
@@ -863,51 +783,6 @@
     <Project Path="Toolings/SourceGenerators/Tests/Bit.SourceGenerators.Tests/Bit.SourceGenerators.Tests.csproj" />
   </Folder>
   <Folder Name="/Templates/" />
-  <Folder Name="/Templates/Boilerplate/">
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/.gitignore" />
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/Clean.bat" />
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/global.json" />
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/src/Directory.Build.props" />
-    <File Path="Templates/Boilerplate/README.md" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj" />
-  </Folder>
-  <Folder Name="/Templates/Boilerplate/.github/" />
-  <Folder Name="/Templates/Boilerplate/.github/workflows/">
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/cd-production.yml" />
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/cd-template.yml" />
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/cd-test.yml" />
-    <File Path="Templates/Boilerplate/Bit.Boilerplate/.github/workflows/ci.yml" />
-  </Folder>
-  <Folder Name="/Templates/Boilerplate/Client/">
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Core/Boilerplate.Client.Core.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Maui/Boilerplate.Client.Maui.csproj">
-      <Deploy />
-    </Project>
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Web/Boilerplate.Client.Web.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Client/Boilerplate.Client.Windows/Boilerplate.Client.Windows.csproj" />
-  </Folder>
-  <Folder Name="/Templates/Boilerplate/Server/">
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Api/Boilerplate.Server.Api.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.AppHost/Boilerplate.Server.AppHost.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Shared/Boilerplate.Server.Shared.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Server/Boilerplate.Server.Web/Boilerplate.Server.Web.csproj" />
-  </Folder>
-  <Folder Name="/Templates/Boilerplate/Shared/">
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Shared/Boilerplate.Shared.csproj" />
-  </Folder>
-  <Folder Name="/Templates/Boilerplate/Tests/">
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Internal/Boilerplate.Tests.E2E/Boilerplate.Tests.E2E.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Tests/Boilerplate.Tests.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/WorkbenchTests/Boilerplate.WorkbenchTests.csproj" />
-  </Folder>
-  <Folder Name="/Templates/Boilerplate/LandingPage/">
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/LandingPage/Boilerplate.LandingPage.Client/Boilerplate.LandingPage.Client.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/LandingPage/Boilerplate.LandingPage.Server/Boilerplate.LandingPage.Server.csproj" />
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/LandingPage/Boilerplate.LandingPage.Tests/Boilerplate.LandingPage.Tests.csproj" />
-  </Folder>
-  <Folder Name="/Templates/Boilerplate/Workbench/">
-    <Project Path="Templates/Boilerplate/Bit.Boilerplate/src/Workbench/Boilerplate.Workbench.csproj" />
-  </Folder>
   <Folder Name="/Templates/BlazorEmpty/">
     <Project Path="Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj" />
     <Project Path="Templates/BlazorEmpty/Bit.BlazorEmpty/BlazorEmpty.Client/BlazorEmpty.Client.csproj" />

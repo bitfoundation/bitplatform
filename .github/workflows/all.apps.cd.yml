@@ -10,10 +10,6 @@ on:
         description: Server web + api
         type: boolean
         default: true
-      wasm:
-        description: Blazor WASM standalone
-        type: boolean
-        default: true
       windows:
         description: Windows apps
         type: boolean
@@ -27,7 +23,7 @@ on:
         type: boolean
         default: true
       prerelease_packages:
-        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org (AdminPanel, Sales, Todo, Workbench, the landing page, and the platform and sales websites)
+        description: Bit packages of the latest CD Prerelease nuget packages run instead of nuget.org (the platform and sales websites)
         type: boolean
         default: false
 
@@ -89,12 +85,6 @@ jobs:
     uses: ./.github/workflows/cd.bink.demo.yml
     secrets: inherit
 
-  balette_demo:
-    name: balette demo
-    if: inputs.server
-    uses: ./.github/workflows/cd.balette.demo.yml
-    secrets: inherit
-
   bbscanner_demo:
     name: bbscanner demo
     if: inputs.server
@@ -135,12 +125,6 @@ jobs:
     name: bonboarding demo
     if: inputs.server
     uses: ./.github/workflows/cd.bonboarding.demo.yml
-    secrets: inherit
-
-  bortable_demo:
-    name: bortable demo
-    if: inputs.server
-    uses: ./.github/workflows/cd.bortable.demo.yml
     secrets: inherit
 
   belemetry_demo:
@@ -187,77 +171,3 @@ jobs:
       windows: ${{ inputs.windows }}
       android: ${{ inputs.android }}
       ios: ${{ inputs.ios }}
-
-  sales_module_demo:
-    name: sales module demo
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
-      attestations: write
-    uses: ./.github/workflows/cd.sales.module.demo.yml
-    secrets: inherit
-    with:
-      server: ${{ inputs.server }}
-      windows: ${{ inputs.windows }}
-      prerelease_packages: ${{ inputs.prerelease_packages }}
-
-  admin_sample:
-    name: admin sample
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
-      attestations: write
-    uses: ./.github/workflows/cd.adminpanel.demo.yml
-    secrets: inherit
-    with:
-      server: ${{ inputs.server }}
-      wasm: ${{ inputs.wasm }}
-      windows: ${{ inputs.windows }}
-      android: ${{ inputs.android }}
-      ios: ${{ inputs.ios }}
-      prerelease_packages: ${{ inputs.prerelease_packages }}
-
-  workbench_demo:
-    name: workbench demo
-    if: inputs.server
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
-      attestations: write
-    uses: ./.github/workflows/cd.workbench.demo.yml
-    secrets: inherit
-    with:
-      prerelease_packages: ${{ inputs.prerelease_packages }}
-
-  landingpage_demo:
-    name: landing page demo
-    if: inputs.server
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
-      attestations: write
-    uses: ./.github/workflows/cd.landing.page.demo.yml
-    secrets: inherit
-    with:
-      prerelease_packages: ${{ inputs.prerelease_packages }}
-
-  todo_sample:
-    name: todo sample
-    permissions:
-      contents: read
-      actions: read
-      id-token: write
-      attestations: write
-    uses: ./.github/workflows/cd.todo.demo.yml
-    secrets: inherit
-    with:
-      server: ${{ inputs.server }}
-      wasm: ${{ inputs.wasm }}
-      windows: ${{ inputs.windows }}
-      android: ${{ inputs.android }}
-      ios: ${{ inputs.ios }}
-      prerelease_packages: ${{ inputs.prerelease_packages }}

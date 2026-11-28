@@ -1,0 +1,81 @@
+﻿@page "/e2e/sortable/shared"
+
+@* BitSortable lists that exchange items: two lists of one group, whose items keep the class ItemClass gives them
+   wherever they are; and a trash list that takes the items of two other groups (PutGroups), which never exchange
+   items with each other, and names the group each came from (FromGroup). *@
+
+<PageTitle>BitSortable shared lists E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable shared lists</h1>
+
+<E2ESection Id="shared" Title="Shared lists">
+    <div class="srt-cols">
+        <div class="srt-col">
+            <p class="srt-col-title">List A</p>
+            <BitSortable @bind-Items="_left" TItem="string" Group="shared" Id="shared-a" AriaLabel="List A"
+                         Class="demo-list" Classes="_classes" ItemClass="Tint">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">List B</p>
+            <BitSortable @bind-Items="_right" TItem="string" Group="shared" Id="shared-b" AriaLabel="List B"
+                         Class="demo-list" Classes="_classes" ItemClass="Tint">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">A: <span id="shared-a-order">@string.Join(", ", _left)</span></p>
+    <p class="demo-order">B: <span id="shared-b-order">@string.Join(", ", _right)</span></p>
+</E2ESection>
+
+<E2ESection Id="trash" Title="PutGroups">
+    <div class="srt-cols">
+        <div class="srt-col">
+            <p class="srt-col-title">Tasks</p>
+            <BitSortable @bind-Items="_tasks" TItem="string" Group="tasks" Id="trash-tasks" AriaLabel="Tasks"
+                         Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">Bugs</p>
+            <BitSortable @bind-Items="_bugs" TItem="string" Group="bugs" Id="trash-bugs" AriaLabel="Bugs"
+                         Class="demo-list" Classes="_tintedClasses">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">Trash</p>
+            <BitSortable @bind-Items="_trash" TItem="string" Group="trash" PutGroups='["tasks", "bugs"]' Id="trash-bin"
+                         AriaLabel="Trash" OnAdd="OnThrownAway" EmptyText="Drop a task or a bug here."
+                         Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">Trash: <span id="trash-order">@string.Join(", ", _trash)</span></p>
+    <p class="demo-order">Last thrown away: <span id="trash-last">@_last</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item", Ghost = "demo-ghost" };
+    private readonly BitSortableClassStyles _tintedClasses = new() { Item = "demo-item tinted", Ghost = "demo-ghost" };
+
+    private IList<string> _left = new List<string> { "A1", "A2", "A3", "A4", "A5" };
+    private IList<string> _right = new List<string> { "B1", "B2", "B3", "B4", "B5" };
+
+    private IList<string> _tasks = new List<string> { "Write the docs", "Plan the release", "Tidy the backlog" };
+    private IList<string> _bugs = new List<string> { "Crash on save", "Typo in the footer" };
+    private IList<string> _trash = new List<string>();
+    private string _last = "nothing yet";
+
+    // The class follows the item, not the list: the B items stay tinted after moving.
+    private static string? Tint(string item) => item.StartsWith('B') ? "tinted" : null;
+
+    private void OnThrownAway(BitSortableEventArgs<string> e) => _last = $"{e.Item}, from the {e.FromGroup} group";
+}

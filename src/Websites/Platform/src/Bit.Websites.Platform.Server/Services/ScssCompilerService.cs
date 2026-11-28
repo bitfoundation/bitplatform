@@ -6,7 +6,7 @@ namespace Bit.Websites.Platform.Server.Services;
 /// Compiles SCSS files into CSS in real-time during development, no extensions required.
 /// Combined with the Watch items of the client csproj file, this lets dotnet watch
 /// hot-apply style changes to the browser without a rebuild.
-/// (Mirrors the ScssCompilerService of the bit Boilerplate template.)
+/// (Mirrors the ScssCompilerService of the bit Boilerplate template, in bitfoundation/bitfabric.)
 /// </summary>
 public static class ScssCompilerService
 {

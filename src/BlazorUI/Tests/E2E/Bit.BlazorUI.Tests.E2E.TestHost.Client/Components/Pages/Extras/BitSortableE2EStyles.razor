@@ -1,0 +1,189 @@
+﻿@* The look the BitSortable pages give their lists: trays of cards of one size, side by side, so a drag aimed at a card
+   lands in its slot (BitSortableE2ETestBase aims every drag at a slot), and every list of a page fits the 1280 x 1400
+   viewport the tests drive it in, since a native drag cannot be aimed below the fold. Nothing here restyles the
+   component's own states (bit-srt-*): the tests read those off the component's stylesheet. *@
+<style>
+    .srt-cols {
+        display: flex;
+        gap: 16px;
+        align-items: stretch;
+        max-width: 960px;
+    }
+
+    .srt-col {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .srt-col > .demo-list {
+        flex: 1;
+        max-width: none;
+    }
+
+    .srt-col-title {
+        margin: 0 0 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .demo-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-width: 520px;
+        min-height: 56px;
+        padding: 8px;
+        box-sizing: border-box;
+        background: #f4f4f4;
+        border: 1px solid #c8c8c8;
+        border-radius: 8px;
+    }
+
+    .demo-item {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        box-sizing: border-box;
+        padding: 10px 14px;
+        background: #ffffff;
+        border: 1px solid #c8c8c8;
+        border-radius: 4px;
+        color: #1a1a1a;
+        font-size: 14px;
+    }
+
+    .demo-item.tinted {
+        border-color: #7fb0dc;
+    }
+
+    .demo-ghost {
+        border-style: dashed !important;
+        border-color: #1276c6 !important;
+    }
+
+    .demo-order {
+        margin: 6px 0 0;
+        font-size: 13px;
+    }
+
+    .handle {
+        margin-inline-end: 10px;
+        padding: 0 2px;
+        cursor: grab;
+        user-select: none;
+    }
+
+    .touch-handle {
+        touch-action: none;
+    }
+
+    .demo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 10px;
+        max-width: 520px;
+    }
+
+    .threshold-grid {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 300px;
+    }
+
+    .grid-square {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 90px;
+        border-radius: 8px;
+        background: #0f5f9e;
+        color: #ffffff;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .nested-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-height: 40px;
+        padding: 7px;
+        box-sizing: border-box;
+        border: 1px dashed #7fb0dc;
+        border-radius: 4px;
+    }
+
+    #nested-root {
+        max-width: 640px;
+    }
+
+    .nested-item {
+        padding: 8px 8px 9px;
+        background: #ffffff;
+        border: 1px solid #c8c8c8;
+        border-radius: 4px;
+    }
+
+    .nested-item__name {
+        margin: 0 0 6px 3px;
+        color: #1a1a1a;
+        font-size: 14px;
+    }
+
+    .large-panel {
+        max-height: 520px;
+        overflow: auto;
+        border: 1px solid #c8c8c8;
+        border-radius: 8px;
+        padding: 8px;
+    }
+
+    .large-panel .demo-item {
+        justify-content: space-between;
+    }
+
+    .large-note {
+        color: #4a4a4a;
+        font-size: 13px;
+    }
+
+    .rules-board {
+        --bit-Sortable-accepts-outline: 2px dashed #7fb0dc;
+        --bit-Sortable-over-outline: 2px solid #1276c6;
+        --bit-Sortable-refused-outline: 2px solid #c62828;
+    }
+
+    .a11y-item {
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .a11y-actions {
+        display: inline-flex;
+        gap: 4px;
+    }
+
+    .a11y-actions > button {
+        min-width: 28px;
+        min-height: 28px;
+    }
+
+    .srt-log {
+        max-height: 220px;
+        overflow: auto;
+        margin: 8px 0 0;
+        padding: 6px;
+        border: 1px solid #c8c8c8;
+        font-family: monospace;
+        font-size: 12px;
+    }
+
+    .srt-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 0 0 8px;
+        font-size: 13px;
+    }
+</style>
