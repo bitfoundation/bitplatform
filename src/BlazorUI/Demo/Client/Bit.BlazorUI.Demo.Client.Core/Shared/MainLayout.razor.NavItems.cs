@@ -36,7 +36,7 @@ public partial class MainLayout
             [
                 // The forms guide heads the inputs it ties together, the way the theming guide heads its group.
                 new() { Text = "Forms", Url = "/forms", Description = "EditForm, Validation, DataAnnotations" },
-                new() { Text = "Calendar", Url = "/components/calendar" },
+                new() { Text = "Calendar", Url = "/components/calendar", Match = BitNavMatch.Prefix },
                 new() { Text = "Checkbox", Url = "/components/checkbox", AdditionalUrls = ["/components/check-box"] },
                 new() { Text = "ChoiceGroup", Url = "/components/choicegroup", AdditionalUrls = ["/components/choice-group"], Description = "Radio, RadioButton" },
                 new() { Text = "Dropdown", Url = "/components/dropdown", Description = "Select, ComboBox, MultiSelect", Data = "Chips" },
@@ -56,10 +56,10 @@ public partial class MainLayout
                     Text = "Pickers",
                     ChildItems =
                     [
-                        new() { Text = "CircularTimePicker", Url = "/components/circulartimepicker", AdditionalUrls = ["/components/circular-time-picker"] },
+                        new() { Text = "CircularTimePicker", Url = "/components/circulartimepicker", AdditionalUrls = ["/components/circular-time-picker"], Match = BitNavMatch.Prefix },
                         new() { Text = "ColorPicker", Url = "/components/colorpicker", AdditionalUrls = ["/components/color-picker"], Description = "ColorPalette, Swatch", Data = "Hex, RGB, HSL, HSV, Alpha, Transparency, Eyedropper, Contrast" },
-                        new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = ["/components/date-picker"], Description = "MonthPicker, YearPicker, DateTimePicker" },
-                        new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = ["/components/date-range-picker"], Description = "DateTimeRangePicker" },
+                        new() { Text = "DatePicker", Url = "/components/datepicker", AdditionalUrls = ["/components/date-picker"], Description = "MonthPicker, YearPicker, DateTimePicker", Match = BitNavMatch.Prefix },
+                        new() { Text = "DateRangePicker", Url = "/components/daterangepicker", AdditionalUrls = ["/components/date-range-picker"], Description = "DateTimeRangePicker", Match = BitNavMatch.Prefix },
                         new() { Text = "TimePicker", Url = "/components/timepicker", AdditionalUrls = ["/components/time-picker"] },
                     ]
                 },
@@ -179,15 +179,15 @@ public partial class MainLayout
                 new() { Text = "AccordionList", Url = "/components/accordionlist", Description = "Expander, Accordion" },
                 new() { Text = "AppShell", Url = "/components/appshell", Description = "SafeArea" },
                 new() { Text = "AvatarGroup", Url = "/components/avatargroup", Description = "Facepile, PersonaGroup, AvatarStack", Data = "Avatars, Team members, People, Collaborators, Participants, Overflow, +N, Presence", AdditionalUrls = ["/components/avatar-group"] },
-                new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
-                new() { Text = "CommandPalette", Url = "/components/commandpalette", Description = "CommandMenu, Cmdk, Spotlight", Data = "Command palette, Ctrl+K, Cmd+K, Quick open, Go to anything, Launcher, Fuzzy search, Keyboard shortcuts, Actions, Search everything", AdditionalUrls = ["/components/command-palette"] },
+                new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js", Match = BitNavMatch.Prefix },
+                new() { Text = "CommandPalette", Url = "/components/commandpalette", Description = "CommandMenu, Cmdk, Spotlight", Data = "Command palette, Ctrl+K, Cmd+K, Quick open, Go to anything, Launcher, Fuzzy search, Keyboard shortcuts, Actions, Search everything", AdditionalUrls = ["/components/command-palette"], Match = BitNavMatch.Prefix },
                 new() { Text = "ContextMenu", Url = "/components/contextmenu", Description = "RightClickMenu, PopupMenu, ShortcutMenu", Data = "Context menu, Right click, Right-click menu, Shift+F10, Menu key, Popup menu, Actions menu", AdditionalUrls = ["/components/context-menu"] },
                 new() { Text = "CopyButton", Url = "/components/copybutton", Description = "ClipboardButton, CopyToClipboardButton", Data = "Copy, Clipboard, Copy to clipboard, Copied, Code snippet, Share link, Install command", AdditionalUrls = ["/components/copy-button"] },
                 new() { Text = "CountryPicker", Url = "/components/countrypicker", Description = "CountrySelector, CountrySelect", Data = "Country, Nationality, Country of residence, Billing country, Flag, ISO code" },
-                new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"], Description = "DataTable, TreeGrid, TreeList" },
+                new() { Text = "DataGrid", Url = "/components/datagrid", AdditionalUrls = ["/components/data-grid"], Description = "DataTable, TreeGrid, TreeList", Match = BitNavMatch.Prefix },
                 new() { Text = "ErrorBoundary", Url = "/components/errorboundary" },
                 new() { Text = "Flag", Url = "/components/flag", Description = "Country, CountryFlag" },
-                new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler, EventCalendar, Planner" },
+                new() { Text = "FullCalendar", Url = "/components/fullcalendar", Description = "Scheduler, EventCalendar, Planner", Match = BitNavMatch.Prefix },
                 new() { Text = "ImageViewer", Url = "/components/imageviewer", Description = "ZoomableImage, PanZoom, ImageZoom", Data = "Image viewer, Zoom, Pan, Pinch to zoom, Photo viewer, Magnify, Inspect, Floor plan, Diagram", AdditionalUrls = ["/components/image-viewer"] },
                 new() { Text = "InfiniteScrolling", Url = "/components/infinitescrolling", Description = "InfiniteScroll, LoadMore", Data = "Endless scroll, Infinite list, Lazy loading, Feed, Chat, Paging" },
                 new() { Text = "Map", Url = "/components/map", Description = "GeoMap, Maps", Data = "Leaflet, MapLibre, Mapbox, OpenLayers, ArcGIS, Azure Maps, Cesium, Globe, Markers, Pins, Clustering, GeoJSON, Tiles, Location, Geolocation, GIS" },

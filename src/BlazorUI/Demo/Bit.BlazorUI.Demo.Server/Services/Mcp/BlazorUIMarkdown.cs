@@ -505,9 +505,16 @@ public static class BlazorUIMarkdown
             }
             else
             {
+                // A page split into topics names each topic's own address beside it: the topics are pages of the site,
+                // where a tab is only a part of one.
                 foreach (var tab in tabs)
                 {
-                    builder.AppendLine($"{(tab.Key is null ? null : $"**{tab.Key} tab** - ")}{string.Join(", ", tab.Select(e => e.Title))}.");
+                    var topic = component.Topics.FirstOrDefault(t => t.Title == tab.Key);
+                    var label = tab.Key is null ? null
+                        : topic is null ? $"**{tab.Key} tab** - "
+                        : $"**{tab.Key}** ({component.Url}{(topic.Route is null ? null : $"/{topic.Route}")}) - ";
+
+                    builder.AppendLine($"{label}{string.Join(", ", tab.Select(e => e.Title))}.");
                 }
             }
 

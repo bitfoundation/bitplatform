@@ -119,11 +119,12 @@ public partial class BitFullCalendarE2ETests
         var cal = Page.Locator("#loading-cal");
         var body = Page.Locator("#loading-cal-body");
 
-        // the first range is reported on the first render and fetched
-        await Expect(Page.Locator("#loaded")).ToHaveTextAsync("2025-07-01|2025-07-31|5");
+        // the first range is reported on the first render and fetched: the whole month grid, June 29 to August 2, whose
+        // borrowed days show the events loaded for them like any other day
+        await Expect(Page.Locator("#loaded")).ToHaveTextAsync("2025-06-29|2025-08-02|5");
         await Expect(cal.Locator(".bit-bfc-loading")).ToHaveCountAsync(0);
         await Expect(body).Not.ToHaveAttributeAsync("aria-busy", new Regex(".*"));
-        await Expect(cal.Locator(".bit-bfc-event-badge-title", new() { HasTextRegex = new Regex("^Loaded Jul 1$") })).ToBeVisibleAsync();
+        await Expect(cal.Locator(".bit-bfc-event-badge-title", new() { HasTextRegex = new Regex("^Loaded Jun 29$") })).ToBeVisibleAsync();
 
         await cal.Locator(".bit-bfc-btn-nav[aria-label='Next']").ClickAsync();
         await Expect(cal.Locator(".bit-bfc-loading")).ToBeVisibleAsync();
@@ -131,17 +132,17 @@ public partial class BitFullCalendarE2ETests
         await Expect(body).ToHaveAttributeAsync("aria-busy", "true");
         // the calendar stays usable meanwhile
         await Expect(cal.Locator(".bit-bfc-btn-nav[aria-label='Next']")).ToBeEnabledAsync();
-        await Badge(cal, "load-20250729").ClickAsync();
-        await Expect(Dialog(cal).Locator("h3")).ToHaveTextAsync("Loaded Jul 29");
+        await Badge(cal, "load-20250727").ClickAsync();
+        await Expect(Dialog(cal).Locator("h3")).ToHaveTextAsync("Loaded Jul 27");
         await PressEscapeAsync();
         await Expect(Page.Locator("#load-count")).ToHaveTextAsync("1");
 
         await Page.Locator("#btn-finish-load").ClickAsync();
 
-        await Expect(Page.Locator("#loaded")).ToHaveTextAsync("2025-08-01|2025-08-31|5");
+        await Expect(Page.Locator("#loaded")).ToHaveTextAsync("2025-07-27|2025-09-06|6");
         await Expect(cal.Locator(".bit-bfc-loading")).ToHaveCountAsync(0);
         await Expect(body).Not.ToHaveAttributeAsync("aria-busy", new Regex(".*"));
-        await Expect(cal.Locator(".bit-bfc-event-badge-title", new() { HasTextRegex = new Regex("^Loaded Aug 1$") })).ToBeVisibleAsync();
+        await Expect(cal.Locator(".bit-bfc-event-badge-title", new() { HasTextRegex = new Regex("^Loaded Aug 3$") })).ToBeVisibleAsync();
     }
 
     [TestMethod]

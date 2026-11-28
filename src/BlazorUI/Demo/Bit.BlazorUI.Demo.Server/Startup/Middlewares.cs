@@ -170,6 +170,16 @@ public class Middlewares
                         return Task.CompletedTask;
                     });
                 }
+                // A page split into topics routes any /components/<page>/{Topic}, and says "no such topic" for a name it
+                // does not have; the status says so too, so the address is not indexed as a page of its own.
+                if (IsUnknownTopic(context.Request.Path.Value))
+                {
+                    context.Response.OnStarting(() =>
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+                        return Task.CompletedTask;
+                    });
+                }
                 if (context.Request.Path.Value.Contains("not-authorized", StringComparison.InvariantCultureIgnoreCase))
                 {
                     var statusCode = context.Request.Query["isForbidden"].FirstOrDefault() is "true" ? (int)HttpStatusCode.Forbidden : (int)HttpStatusCode.Unauthorized;
@@ -210,6 +220,36 @@ public class Middlewares
         });
     }
 
+    /// <summary>
+    /// The topic addresses of every page split into topics (/components/datagrid/editing, its /api one), read off the
+    /// demo markup the MCP server reads, keyed by the page's own address. Built on the first request for a topic.
+    /// </summary>
+    private static readonly Lazy<Dictionary<string, HashSet<string>>> _topicRoutes = new(() =>
+        BlazorUIComponentCatalog.Components
+            .Where(c => c.Topics.Count > 0)
+            .GroupBy(c => c.Url.TrimEnd('/'), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key,
+                          g => g.SelectMany(c => c.Topics)
+                                .Where(t => string.IsNullOrEmpty(t.Route) is false)
+                                .Select(t => t.Route!.Trim('/'))
+                                .Append(Client.Core.Components.DemoPage.API_TOPIC_ROUTE)
+                                .ToHashSet(StringComparer.OrdinalIgnoreCase),
+                          StringComparer.OrdinalIgnoreCase));
+
+    /// <summary>Whether a path is /components/&lt;page&gt;/&lt;topic&gt; of a page split into topics that has no such topic.</summary>
+    private static bool IsUnknownTopic(string path)
+    {
+        if (path.StartsWith("/components/", StringComparison.OrdinalIgnoreCase) is false) return false;
+
+        var segments = path.Trim('/').Split('/');
+        if (segments.Length != 3) return false;
+
+        var pageUrl = $"/components/{segments[1]}";
+
+        // Only a page split into topics: /components/ai/chat is a page of its own, and any other address the router answers itself.
+        return _topicRoutes.Value.TryGetValue(pageUrl, out var routes) && routes.Contains(segments[2]) is false;
+    }
+
     private static void UseSiteMap(WebApplication app)
     {
         var urls = Assembly.Load("Bit.BlazorUI.Demo.Client.Core")
@@ -238,6 +278,11 @@ public class Middlewares
             {
                 var baseUrl = context.Request.GetBaseUrl();
                 var lastmod = DateTimeOffset.UtcNow.ToString("yyyy-MM-dd");
+
+                // A page split into topics has a page per topic, which its @page template ({Topic}) does not list.
+                var topicUrls = _topicRoutes.Value
+                    .SelectMany(page => page.Value.Order(StringComparer.Ordinal).Select(route => $"{page.Key}/{route}".ToLowerInvariant()));
+                urls = [.. urls.Concat(topicUrls).Distinct().OrderBy(u => u == "/" ? 0 : 1).ThenBy(u => u, StringComparer.Ordinal)];
 
                 var entries = urls.Select(u =>
                 {

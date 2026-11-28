@@ -1268,7 +1268,8 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(1, ranges.Count, "consumers need the first range to fetch the events for it");
         Assert.AreEqual(BitFullCalendarView.Month, ranges[0].View);
-        Assert.AreEqual(1, ranges[0].Start.Day);
+        // The month grid's range starts on the first day of its first row, which can be a day of the previous month.
+        Assert.IsTrue(ranges[0].Start <= new DateTime(Today.Year, Today.Month, 1) && ranges[0].Start > new DateTime(Today.Year, Today.Month, 1).AddDays(-7));
     }
 
     [TestMethod]

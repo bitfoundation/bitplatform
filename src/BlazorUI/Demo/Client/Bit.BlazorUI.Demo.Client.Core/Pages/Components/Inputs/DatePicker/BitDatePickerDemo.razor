@@ -1,5 +1,6 @@
 ﻿@page "/components/datepicker"
 @page "/components/date-picker"
+@page "/components/datepicker/{Topic}"
 @using Bit.BlazorUI.Demo.Client.Core.Helpers
 
 <PageOutlet Url="components/datepicker"
@@ -7,6 +8,8 @@
             Description="A BitDatePicker offers a drop-down calendar for picking a date, or a date and time, with any culture and time zone and full keyboard accessibility." />
 
 <DemoPage Name="DatePicker"
+          HasTopics
+          Topic="@Topic"
           SecondaryNames="@(["MonthPicker", "YearPicker", "DateTimePicker"])"
           Description="A BitDatePicker picks a date, or a date and time, from a drop-down or inline calendar with day, month and year views. It supports min/max, disabled and highlighted dates, typed input, any culture, calendar and time zone, and the WAI-ARIA combobox and grid keyboard patterns."
           Parameters="componentParameters"
@@ -16,873 +19,1183 @@
           SubEnums="componentSubEnums"
           GitHubUrl="Inputs/DatePicker/BitDatePicker.razor"
           GitHubDemoUrl="Inputs/DatePicker/BitDatePickerDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-        <div>
-            The everyday options: disabled, required, placeholder, week numbers, month highlighting, time picker,
-            clear and close buttons, <b>AutoClose</b>, <b>AllowDeselect</b> (pick the selected day again to clear it),
-            <b>StartingValue</b> (where an empty picker opens) and <b>Today</b> (overrides the current date).
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Basic DatePicker" />
-            <br /><br />
-            <BitDatePicker Label="Disabled" Disabled />
-            <br /><br />
-            <BitDatePicker Label="Required" Required />
-            <br /><br />
-            <BitDatePicker Label="PlaceHolder" Placeholder="Select a date" />
-            <br /><br />
-            <BitDatePicker Label="Week numbers" ShowWeekNumbers />
-            <br /><br />
-            <BitDatePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth />
-            <br /><br />
-            <BitDatePicker Label="TimePicker" ShowTimePicker />
-            <br /><br />
-            <BitDatePicker Label="Show clear button when has a value" ShowClearButton />
-            <br /><br />
-            <BitDatePicker Label="Show close button" ShowCloseButton />
-            <br /><br />
-            <BitDatePicker Label="AutoClose (false)" AutoClose="false" />
-            <br /><br />
-            <BitDatePicker Label="AllowDeselect (re-select the selected day to clear)" AllowDeselect AutoClose="false" />
-            <br /><br />
-            <BitDatePicker Label="StartingValue: December 2020, 20:45" ShowTimePicker StartingValue="startingValue" />
-            <br /><br />
-            <BitDatePicker Label="Custom Today (March 2021)" Today="customToday" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
-        <div>
-            <b>MinDate</b> and <b>MaxDate</b> disable the days outside the range and stop the navigation at it;
-            <b>DisablePast</b> and <b>DisableFuture</b> do the same with today as the bound. The narrower bound wins.
-        </div>
-        <br /><br />
-        <div class="example-content">
-            <div>Min: Now.AddDays(-5)</div>
-            <div>Max: Now.AddDays(+5)</div>
-            <BitDatePicker MinDate="DateTimeOffset.Now.AddDays(-5)" MaxDate="DateTimeOffset.Now.AddDays(5)" />
-            <br /><br />
-            <div>Min: Now.AddMonths(-2)</div>
-            <div>Max: Now.AddMonths(+1)</div>
-            <BitDatePicker MinDate="DateTimeOffset.Now.AddMonths(-2)" MaxDate="DateTimeOffset.Now.AddMonths(1)" />
-            <br /><br />
-            <div>Min: Now.AddYears(-5)</div>
-            <div>Max: Now.AddYears(+1)</div>
-            <BitDatePicker MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
-            <br /><br />
-            <BitDatePicker Label="DisablePast (from today on)" DisablePast />
-            <br /><br />
-            <BitDatePicker Label="DisableFuture (up to today)" DisableFuture />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Disabled dates" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-        <div>
-            Disable a list of dates (<b>DisabledDates</b>), whole weekdays (<b>DisabledDaysOfWeek</b>) or any rule
-            (<b>IsDateDisabled</b>). Disabled days cannot be selected and the keyboard skips them.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="DisabledDaysOfWeek (weekends)" DisabledDaysOfWeek="@weekendDays" />
-            <br /><br />
-            <BitDatePicker Label="DisabledDates (a few upcoming dates)" DisabledDates="@disabledDates" />
-            <br /><br />
-            <BitDatePicker Label="IsDateDisabled (odd days)" IsDateDisabled="@(d => d.Day % 2 == 1)" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Highlighted dates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>
-            <b>HighlightedDates</b> marks days (and names them as such for a screen reader through
-            <b>HighlightedDateAriaLabel</b>), <b>GetDayClass</b> adds CSS classes to any day, and
-            <b>HighlightToday</b> turns off the accent on today.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="HighlightedDates" HighlightedDates="@highlightedDates" />
-            <br /><br />
-            <BitDatePicker Label="GetDayClass (Sundays)" GetDayClass='@(d => d.DayOfWeek == DayOfWeek.Sunday ? "sunday-cell" : null)' />
-            <br /><br />
-            <BitDatePicker Label="HighlightToday (false)" HighlightToday="false" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Calendar layout" RazorCode="@example5RazorCode" Id="example5">
-        <div>
-            <b>FirstDayOfWeek</b>, <b>WeekNumberRule</b> (ISO 8601: FirstFourDayWeek from Monday),
-            <b>ShowOutsideDays</b> and <b>FixedWeeks</b> shape the day grid. <b>MonthCount</b> shows up to three
-            months side by side (fewer on a narrow viewport) and <b>PagedNavigation</b> moves them all at once.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="FirstDayOfWeek (Monday)" FirstDayOfWeek="DayOfWeek.Monday" />
-            <br /><br />
-            <BitDatePicker Label="ISO 8601 week numbers"
-                           ShowWeekNumbers
-                           FirstDayOfWeek="DayOfWeek.Monday"
-                           WeekNumberRule="CalendarWeekRule.FirstFourDayWeek" />
-            <br /><br />
-            <BitDatePicker Label="ShowOutsideDays (false)" ShowOutsideDays="false" />
-            <br /><br />
-            <BitDatePicker Label="FixedWeeks (always six weeks)" FixedWeeks />
-            <br /><br />
-            <BitDatePicker Label="MonthCount (2)" MonthCount="2" ShowMonthPicker="false" />
-            <br /><br />
-            <BitDatePicker Label="MonthCount (3) with PagedNavigation"
-                           MonthCount="3"
-                           PagedNavigation
-                           ShowMonthPickerAsOverlay />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Month & year pickers" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-        <div>
-            Hide the month/year picker with <b>ShowMonthPicker</b>, or open it over the day picker from the
-            month title with <b>ShowMonthPickerAsOverlay</b> - which a narrow screen turns on by itself.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="ShowMonthPicker" ShowMonthPicker="@isMonthPickerVisible" />
-            <br />
-            <BitToggleButton OnText="MonthPicker visible" OffText="MonthPicker hidden" @bind-Checked="@isMonthPickerVisible" />
-            <br /><br /><br />
-            <BitDatePicker Label="ShowMonthPickerAsOverlay" ShowMonthPickerAsOverlay="@showMonthPickerAsOverlay" />
-            <br />
-            <BitToggleButton OnText="Position overlay" OffText="Position besides" @bind-Checked="@showMonthPickerAsOverlay" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="TimePicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-        <div>
-            <b>ShowTimePicker</b> adds the time of day, <b>ShowSeconds</b> a seconds field, <b>TimeFormat</b> the
-            12-hour clock, <b>ShowTimePickerAsOverlay</b> puts it behind a clock button, and <b>ShowNowButton</b>
-            hides the now button. Selecting a day keeps the callout open so the time can be set too.
-            <br /><br />
-            The offered times: <b>HourStep</b>/<b>MinuteStep</b>/<b>SecondStep</b> set the grid,
-            <b>MinTime</b>/<b>MaxTime</b> bound every day (MinDate/MaxDate only bound the day they fall on), and
-            <b>AllowedHours</b>/<b>AllowedMinutes</b>/<b>AllowedSeconds</b> rule out the rest. The spin buttons, the
-            PageUp/PageDown keys and typing all obey them. <b>ContinuousSpinDelay</b> and
-            <b>ContinuousSpinInterval</b> tune press-and-hold.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Basic time picker (24-hour)" ShowTimePicker @bind-Value="@selectedDateTime" />
-            <div>Selected DateTime: @selectedDateTime.ToString()</div>
-            <br /><br />
-            <BitDatePicker Label="TimeFormat (12-hour with AM/PM)" ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" />
-            <br /><br />
-            <BitDatePicker Label="ShowSeconds (SecondStep 15)" ShowTimePicker ShowSeconds SecondStep="15" />
-            <br /><br />
-            <BitDatePicker Label="ShowTimePickerAsOverlay" ShowTimePicker ShowTimePickerAsOverlay />
-            <br /><br />
-            <BitDatePicker Label="Without the now button" ShowTimePicker ShowNowButton="false" />
-            <br /><br />
-            <BitDatePicker Label="HourStep 2 & MinuteStep 15" ShowTimePicker HourStep="2" MinuteStep="15" />
-            <br /><br />
-            <BitDatePicker Label="Working hours only, no lunch hour"
-                           ShowTimePicker
-                           MinuteStep="15"
-                           MinTime="TimeSpan.FromHours(9)"
-                           MaxTime="new TimeSpan(17, 30, 0)"
-                           AllowedHours="@(h => h != 13)" />
-            <br /><br />
-            <BitDatePicker Label="Slower press-and-hold spin"
-                           ShowTimePicker
-                           ContinuousSpinDelay="800"
-                           ContinuousSpinInterval="200" />
-            <br /><br />
-            <BitDatePicker Label="Nothing later than now (MaxDate)" ShowTimePicker MaxDate="DateTimeOffset.Now" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Date format & text input" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-        <div class="example-desc">
-            <b>DateFormat</b> sets the pattern the value is written and read with (default: the culture's short date,
-            plus its time). <b>AllowTextInput</b> lets the date be typed; the input then carries the expected pattern
-            as its accessible description (<b>DateFormatAriaDescription</b>). Invalid text, a date out of range, a
-            disabled date and a disallowed time fail validation with <b>InvalidErrorMessage</b>,
-            <b>OutOfRangeErrorMessage</b>, <b>DisabledDateErrorMessage</b> and <b>DisallowedTimeErrorMessage</b>.
-        </div>
-        <div class="example-content">
-            <BitDatePicker Label="DateFormat"
-                           DateFormat="dd=MM(yy)"
-                           Placeholder="Select a date" />
-            <br /><br />
-            <BitDatePicker Label="Text input allowed"
-                           AllowTextInput
-                           DateFormat="dd/MM/yyyy"
-                           Placeholder="Enter a date (dd/MM/yyyy)" />
-            <br /><br />
-            <BitDatePicker Label="With custom error messages"
-                           AllowTextInput
-                           DateFormat="dd/MM/yyyy"
-                           MinDate="DateTimeOffset.Now.AddDays(-5)"
-                           MaxDate="DateTimeOffset.Now.AddDays(5)"
-                           DisabledDaysOfWeek="@weekendDays"
-                           InvalidErrorMessage="The date format must be dd/MM/yyyy."
-                           OutOfRangeErrorMessage="Only the ±5 days around today are allowed."
-                           DisabledDateErrorMessage="That day of the week is not available."
-                           Placeholder="Enter a date (dd/MM/yyyy)" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>
-            Two-way bind with <b>@@bind-Value</b>, or set <b>DefaultValue</b> and listen to <b>OnChange</b>.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Two-way binding" @bind-Value="@selectedDate" />
-        </div>
-        <br />
-        <div>Selected date: @selectedDate.ToString()</div>
-        <br /><br /><br />
-        <div class="example-content">
-            <BitDatePicker Label="DefaultValue & OnChange"
-                           DefaultValue="DateTimeOffset.Now"
-                           OnChange="v => changedDate = v" />
-        </div>
-        <br />
-        <div>Changed date: @(changedDate?.ToString() ?? "-")</div>
-    </DemoExample>
-
-    <DemoExample Title="Culture & localization" RazorCode="@example10RazorCode" Id="example10">
-        <div>
-            <b>Culture</b> supplies the names, the first day of the week, the formats and the calendar itself
-            (the Persian one below is a calendar of its own). Every title and accessible name is a parameter, so
-            the rest is localized too - the last picker sets them all. See
-            <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs" Target="_blank">
-                CultureInfoHelper
-            </BitLink> for building a custom culture.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="fa-IR culture with Farsi names"
-                           GoToTodayTitle="برو به امروز"
-                           Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()" />
-            <br /><br />
-            <BitDatePicker Label="fa-IR culture with Fingilish names"
-                           GoToTodayTitle="Boro be emrouz"
-                           Culture="CultureInfoHelper.GetFaIrCultureWithFingilishNames()" />
-            <br /><br />
-            <BitDatePicker Label="Every title and accessible name translated"
-                           ShowTimePicker
-                           ShowWeekNumbers
-                           ShowClearButton
-                           ShowCloseButton
-                           Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()"
-                           Placeholder="یک تاریخ انتخاب کنید"
-                           CalloutAriaLabel="تقویم"
-                           SelectedDateAriaAtomic="تاریخ انتخاب‌شده {0}"
-                           ClearButtonTitle="پاک کردن تاریخ"
-                           CloseButtonTitle="بستن تقویم"
-                           GoToTodayTitle="برو به امروز"
-                           GoToPrevMonthTitle="ماه قبل"
-                           GoToNextMonthTitle="ماه بعد"
-                           GoToPrevYearTitle="سال قبل {0}"
-                           GoToNextYearTitle="سال بعد {0}"
-                           GoToPrevYearRangeTitle="بازه قبلی {0} - {1}"
-                           GoToNextYearRangeTitle="بازه بعدی {0} - {1}"
-                           MonthPickerToggleTitle="{0}، تغییر ماه"
-                           YearPickerToggleTitle="{0}، تغییر سال"
-                           YearRangePickerToggleTitle="{0} - {1}، تغییر ماه"
-                           WeekNumbersHeaderTitle="هفته"
-                           WeekNumberTitle="هفته {0}"
-                           NowButtonTitle="برو به اکنون"
-                           ShowTimePickerTitle="نمایش ساعت"
-                           HideTimePickerTitle="پنهان کردن ساعت"
-                           TimePickerHourTitle="ساعت"
-                           TimePickerMinuteTitle="دقیقه"
-                           TimePickerIncreaseHourTitle="افزایش ساعت"
-                           TimePickerDecreaseHourTitle="کاهش ساعت"
-                           TimePickerIncreaseMinuteTitle="افزایش دقیقه"
-                           TimePickerDecreaseMinuteTitle="کاهش دقیقه" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="TimeZone" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <div>
-            <b>TimeZone</b> is the zone the value is read and shown in: the selected day, the month the calendar
-            opens on and the time. Time zone data differs per OS and runtime settings (e.g. InvariantTimezone,
-            <BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"
-                     Target="_blank">more info</BitLink>).
-        </div>
-        <br /><br />
-        <div><b>Default (local TimeZone)</b>:</div><br/>
-        <div class="example-content">
-            <BitDatePicker @bind-Value="@timeZoneDate1" ShowTimePicker />
-        </div>
-        <br />
-        <div>Selected date: @timeZoneDate1?.ToString()</div>
-
-        @{
-            TimeZoneInfo? timeZoneInfo = null;
-            var allTimeZones = TimeZoneInfo.GetSystemTimeZones();
-            if (allTimeZones.Count > 0)
-            {
-                timeZoneInfo = allTimeZones[0];
-            }
-        }
-
-        @if (timeZoneInfo is not null) {
-            <br /><br /><br /><br />
-            <div><b>"@timeZoneInfo.Id" TimeZone</b>:</div><br/>
-            <div class="example-content">
-                <BitDatePicker TimeZone="timeZoneInfo" @bind-Value="@timeZoneDate2" ShowTimePicker />
+    <DemoTopic Title="Overview"
+               Description="The everyday options and the value, the Min/Max range, and the days a picker disables or highlights.">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                The everyday options: disabled, required, placeholder, week numbers, month highlighting, time picker,
+                clear and close buttons, <b>AutoClose</b>, <b>AllowDeselect</b> (pick the selected day again to clear it),
+                <b>StartingValue</b> (where an empty picker opens) and <b>Today</b> (overrides the current date).
+                <br /><br />
+                The value is a <code>DateTimeOffset?</code>: <code>null</code> until a day is picked, and a picked day
+                carries the time the picker is holding (midnight unless a time picker or <b>StartingValue</b> says
+                otherwise). Clicking the field, or pressing <b>↓</b>/<b>↑</b> in it, opens the calendar in a callout.
+                <ul>
+                    <li><b>Disabled</b>: the field cannot be focused or opened, and the clear button is hidden.</li>
+                    <li><b>Required</b>: renders the <code>required</code> attribute and an asterisk after the label. It
+                        does not validate on its own - in an <code>EditForm</code> the model's <code>[Required]</code>
+                        does (see <BitLink Href="/components/datepicker/behavior#example19">Validation &amp; messages</BitLink>).</li>
+                    <li><b>ShowWeekNumbers</b>: a column of week numbers before the weeks, by the FirstFullWeek rule unless
+                        <b>WeekNumberRule</b> says otherwise.</li>
+                    <li><b>HighlightCurrentMonth</b> / <b>HighlightSelectedMonth</b>: mark this month and the selected
+                        one in the month picker beside the day grid.</li>
+                    <li><b>ShowTimePicker</b>: adds the hour and minute to the value and to the text of the field.</li>
+                    <li><b>ShowClearButton</b>: a button inside the field that empties it, shown only while there is a
+                        value. <b>ShowCloseButton</b> adds a close button to the calendar.</li>
+                    <li><b>AutoClose</b> (default <code>true</code>) closes the callout once a day is picked. It never
+                        closes while a time picker is shown, so the time can be set too.</li>
+                    <li><b>AllowDeselect</b>: picking the selected day again sets the value back to <code>null</code> and
+                        keeps the callout open.</li>
+                    <li><b>StartingValue</b>: the month the empty picker opens on and the time it starts from. It does not
+                        set the value.</li>
+                    <li><b>Today</b>: replaces the current date and time everywhere the picker uses it - the marked
+                        day, the month it opens on, <b>DisablePast</b>/<b>DisableFuture</b> and the now and go-to-today
+                        buttons. Handy for tests and for a server clock.</li>
+                </ul>
             </div>
             <br />
-            <div>Selected date: @timeZoneDate2?.ToString()</div>
-        }
-    </DemoExample>
+            <div class="example-content">
+                <BitDatePicker Label="Basic DatePicker" />
+                <br /><br />
+                <BitDatePicker Label="Disabled" Disabled />
+                <br /><br />
+                <BitDatePicker Label="Required" Required />
+                <br /><br />
+                <BitDatePicker Label="PlaceHolder" Placeholder="Select a date" />
+                <br /><br />
+                <BitDatePicker Label="Week numbers" ShowWeekNumbers />
+                <br /><br />
+                <BitDatePicker Label="Highlight months" HighlightCurrentMonth HighlightSelectedMonth />
+                <br /><br />
+                <BitDatePicker Label="TimePicker" ShowTimePicker />
+                <br /><br />
+                <BitDatePicker Label="Show clear button when has a value" ShowClearButton />
+                <br /><br />
+                <BitDatePicker Label="Show close button" ShowCloseButton />
+                <br /><br />
+                <BitDatePicker Label="AutoClose (false)" AutoClose="false" />
+                <br /><br />
+                <BitDatePicker Label="AllowDeselect (re-select the selected day to clear)" AllowDeselect AutoClose="false" />
+                <br /><br />
+                <BitDatePicker Label="StartingValue: December 2020, 20:45" ShowTimePicker StartingValue="startingValue" />
+                <br /><br />
+                <BitDatePicker Label="Custom Today (March 2021)" Today="customToday" />
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="Standalone" RazorCode="@example12RazorCode" Id="example12">
-        <div>
-            <b>Standalone</b> renders the calendar inline, without the input and callout. It still takes part in
-            an EditForm through a hidden input.
-        </div>
-        <br />
-        <div class="example-content-standalone">
-            <BitDatePicker Label="Basic DatePicker" Standalone />
+        <DemoExample Title="Min & Max" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                <b>MinDate</b> and <b>MaxDate</b> disable the days outside the range and stop the navigation at it;
+                <b>DisablePast</b> and <b>DisableFuture</b> do the same with today as the bound. The narrower bound wins.
+                <br /><br />
+                The bounds are compared day by day: the day <b>MinDate</b> or <b>MaxDate</b> falls on stays
+                selectable, whatever its time. Where a time picker is shown, that time also bounds the hours of that
+                one day, so the picker can never produce an instant outside the range. <b>DisablePast</b> and
+                <b>DisableFuture</b> use the current moment (or <b>Today</b>) as the bound, so beside a time picker they
+                rule out the earlier or later hours of today as well.
+                <br /><br />
+                The months and years outside the range are disabled in the month and year pickers too. A date typed
+                into the field (<b>AllowTextInput</b>) outside the range fails validation. The bounds hold what a person
+                picks or types: a value set from code outside them is kept as it is.
+            </div>
             <br /><br />
-            <BitDatePicker Label="Disabled" Disabled Standalone />
-            <br /><br />
-            <BitDatePicker Label="Week numbers, highlighted months and a time picker"
-                           Standalone
-                           ShowTimePicker
-                           ShowWeekNumbers
-                           HighlightCurrentMonth
-                           HighlightSelectedMonth />
-        </div>
-    </DemoExample>
+            <div class="example-content">
+                <div>Min: Now.AddDays(-5)</div>
+                <div>Max: Now.AddDays(+5)</div>
+                <BitDatePicker MinDate="DateTimeOffset.Now.AddDays(-5)" MaxDate="DateTimeOffset.Now.AddDays(5)" />
+                <br /><br />
+                <div>Min: Now.AddMonths(-2)</div>
+                <div>Max: Now.AddMonths(+1)</div>
+                <BitDatePicker MinDate="DateTimeOffset.Now.AddMonths(-2)" MaxDate="DateTimeOffset.Now.AddMonths(1)" />
+                <br /><br />
+                <div>Min: Now.AddYears(-5)</div>
+                <div>Max: Now.AddYears(+1)</div>
+                <BitDatePicker MinDate="DateTimeOffset.Now.AddYears(-5)" MaxDate="DateTimeOffset.Now.AddYears(1)" />
+                <br /><br />
+                <BitDatePicker Label="DisablePast (from today on)" DisablePast />
+                <br /><br />
+                <BitDatePicker Label="DisableFuture (up to today)" DisableFuture />
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="Mode" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-        <div>
-            <b>Mode</b> picks a month (<b>MonthPicker</b>) or a year (<b>YearPicker</b>) instead of a day: the input
-            shows just that, and the value is its first day the Min/Max range and the day rules allow.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker @bind-Value="monthPickerDate"
-                           Label="MonthPicker"
-                           Placeholder="Select a month"
-                           Mode="BitDatePickerMode.MonthPicker" />
-            <div>Selected date: @(monthPickerDate?.ToString("yyyy/MM/dd") ?? "None")</div>
-            <br /><br />
-            <BitDatePicker Label="MonthPicker with Min/Max and highlighting"
-                           Placeholder="Select a month"
-                           Mode="BitDatePickerMode.MonthPicker"
-                           HighlightCurrentMonth
-                           HighlightSelectedMonth
-                           MinDate="DateTimeOffset.Now.AddMonths(-6)"
-                           MaxDate="DateTimeOffset.Now.AddMonths(6)" />
-            <br /><br />
-            <BitDatePicker @bind-Value="yearPickerDate"
-                           Label="YearPicker (year of birth)"
-                           Placeholder="Select a year"
-                           Mode="BitDatePickerMode.YearPicker"
-                           DisableFuture />
-            <div>Selected date: @(yearPickerDate?.ToString("yyyy/MM/dd") ?? "None")</div>
-        </div>
-        <br /><br />
-        <div class="example-content-standalone">
-            <BitDatePicker Standalone
-                           Label="Standalone MonthPicker"
-                           Mode="BitDatePickerMode.MonthPicker" />
-            <br /><br />
-            <BitDatePicker Standalone
-                           Label="Standalone YearPicker"
-                           Mode="BitDatePickerMode.YearPicker" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="ReadOnly" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-        <div>
-            <b>ReadOnly</b> shows the value and lets the calendar be browsed, but nothing can change it - not the
-            days, the time, the clear button or typing.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Basic" ReadOnly @bind-Value="readOnlyDate" />
-            <br /><br />
-            <BitDatePicker Label="Text input allowed" ReadOnly AllowTextInput @bind-Value="readOnlyDate" />
-        </div>
-        <br /><br />
-        <div class="example-content-standalone">
-            <BitDatePicker Label="Standalone" ReadOnly Standalone @bind-Value="readOnlyDate" />
-            <br /><br />
-            <BitDatePicker Label="Standalone with TimePicker" ReadOnly ShowTimePicker Standalone @bind-Value="readOnlyDate" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Templates" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
-        <div>
-            <b>LabelTemplate</b>, <b>IconTemplate</b>, <b>DayCellTemplate</b>, <b>MonthCellTemplate</b> and
-            <b>YearCellTemplate</b> replace their parts; <b>CalloutHeaderTemplate</b> and
-            <b>CalloutFooterTemplate</b> add content around the calendar, such as preset buttons.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker>
-                <LabelTemplate>
-                    Custom label <BitIcon IconName="@BitIconName.Calendar" />
-                </LabelTemplate>
-            </BitDatePicker>
-            <br /><br /><br />
-            <BitDatePicker Label="DayCellTemplate">
-                <DayCellTemplate>
-                    <span class="day-cell@(context.DayOfWeek == DayOfWeek.Sunday ? " weekend-cell" : null)">
-                        @context.Day
-
-                        @if (context.Day % 5 is 0)
-                        {
-                            <span class="badge"></span>
-                        }
-                    </span>
-                </DayCellTemplate>
-            </BitDatePicker>
-            <br /><br /><br />
-            <BitDatePicker Label="MonthCellTemplate">
-                <MonthCellTemplate>
-                    <div style="padding:3px;color:black;background:@(context.Month == 1 ? "lightcoral" : "yellowgreen")">
-                        @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
-                    </div>
-                </MonthCellTemplate>
-            </BitDatePicker>
-            <br /><br /><br />
-            <BitDatePicker Label="YearCellTemplate">
-                <YearCellTemplate>
-                    <span style="position: relative">
-                        @context
-                        <span class="year-suffix">AC</span>
-                    </span>
-                </YearCellTemplate>
-            </BitDatePicker>
-            <br /><br /><br />
-            <BitDatePicker @ref="presetsPicker" @bind-Value="presetsValue" Label="Callout header & footer (presets)">
-                <CalloutHeaderTemplate>
-                    <div class="callout-header">Pick your appointment</div>
-                </CalloutHeaderTemplate>
-                <CalloutFooterTemplate>
-                    <div class="callout-footer">
-                        <BitButton Variant="BitVariant.Text" OnClick="() => SelectPreset(0)">Today</BitButton>
-                        <BitButton Variant="BitVariant.Text" OnClick="() => SelectPreset(1)">Tomorrow</BitButton>
-                        <BitButton Variant="BitVariant.Text" OnClick="() => SelectPreset(7)">In a week</BitButton>
-                    </div>
-                </CalloutFooterTemplate>
-            </BitDatePicker>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Responsive" RazorCode="@example16RazorCode" Id="example16">
-        <div>
-            <b>Responsive</b> turns the callout into a full-width panel on small screens that slides in from the
-            top and closes with a swipe. Resize the window to try it.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Responsive DatePicker"
-                           Responsive
-                           ShowWeekNumbers
-                           Placeholder="Select a date" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Events" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
-        <div>
-            <b>OnSelectDate</b> reports each picked date and <b>OnMonthChange</b> the first day of the month the
-            calendar moves to (handy for lazy-loading). <b>OnClick</b>, <b>OnFocusIn</b>, <b>OnFocusOut</b>,
-            <b>OnClear</b>, <b>OnOpen</b> and <b>OnClose</b> report the rest, however they were triggered.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="OnSelectDate & OnMonthChange"
-                           OnSelectDate="v => selectedDateEvent = v"
-                           OnMonthChange="v => displayedMonth = v" />
+        <DemoExample Title="Disabled dates" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                Disable a list of dates (<b>DisabledDates</b>), whole weekdays (<b>DisabledDaysOfWeek</b>) or any rule
+                (<b>IsDateDisabled</b>). Disabled days cannot be selected and the keyboard skips them.
+                <br /><br />
+                The three rules add up, on top of the Min/Max range. Only the date part of a <b>DisabledDates</b>
+                entry counts, exactly as written: it is not converted into the picker's <b>TimeZone</b>, so a
+                <code>DateTimeOffset</code> of another offset does not slide onto the next day. <b>IsDateDisabled</b>
+                is called for every day the calendar draws, so keep it cheap. A typed date that a rule disables
+                fails validation (<b>DisabledDateErrorMessage</b>), and in the MonthPicker and YearPicker modes a
+                month or a year none of whose days is allowed cannot be picked.
+            </div>
             <br />
-            <div>Selected date: @(selectedDateEvent?.ToString() ?? "-")</div>
-            <div>Displayed month: @(displayedMonth?.ToString("MMMM yyyy") ?? "-")</div>
-            <br /><br />
-            <BitDatePicker Label="OnClick & OnFocusIn & OnFocusOut & OnClear"
-                           ShowClearButton
-                           OnClick="() => clickCount++"
-                           OnFocusIn="() => focusInCount++"
-                           OnFocusOut="() => focusOutCount++"
-                           OnClear="() => clearCount++" />
-            <br />
-            <div>Clicked: @clickCount times</div>
-            <div>Focused in: @focusInCount times</div>
-            <div>Focused out: @focusOutCount times</div>
-            <div>Cleared: @clearCount times</div>
-            <br /><br />
-            <BitDatePicker Label="OnOpen & OnClose"
-                           OnOpen="() => openCount++"
-                           OnClose="() => closeCount++" />
-            <br />
-            <div>Opened: @openCount times</div>
-            <div>Closed: @closeCount times</div>
-        </div>
-    </DemoExample>
+            <div class="example-content">
+                <BitDatePicker Label="DisabledDaysOfWeek (weekends)" DisabledDaysOfWeek="@weekendDays" />
+                <br /><br />
+                <BitDatePicker Label="DisabledDates (a few upcoming dates)" DisabledDates="@disabledDates" />
+                <br /><br />
+                <BitDatePicker Label="IsDateDisabled (odd days)" IsDateDisabled="@(d => d.Day % 2 == 1)" />
+            </div>
+        </DemoExample>
 
-    <DemoExample Title="Keyboard & screen readers" RazorCode="@example18RazorCode" Id="example18">
-        <div>
-            The input follows the WAI-ARIA combobox pattern: <b>↓</b>/<b>↑</b> - and <b>Enter</b>/<b>Space</b> on a field
-            that is not typed into - open the calendar and move the focus into it, <b>Esc</b> closes it and
-            returns the focus. The callout is a modal dialog that keeps the
-            focus while open. In the day grid:
-            <br /><br />
-            <ul>
-                <li><b>←</b> / <b>→</b>: previous/next day</li>
-                <li><b>↑</b> / <b>↓</b>: same day of the previous/next week</li>
-                <li><b>Home</b> / <b>End</b>: first/last day of the week</li>
-                <li><b>PageUp</b> / <b>PageDown</b>: same day of the previous/next month</li>
-                <li><b>Shift+PageUp</b> / <b>Shift+PageDown</b>: same day of the previous/next year</li>
-                <li><b>Enter</b> / <b>Space</b>: select the focused day</li>
-            </ul>
+        <DemoExample Title="Highlighted dates" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>HighlightedDates</b> marks days (and names them as such for a screen reader through
+                <b>HighlightedDateAriaLabel</b>), <b>GetDayClass</b> adds CSS classes to any day, and
+                <b>HighlightToday</b> turns off the accent on today.
+                <br /><br />
+                A highlighted day stays selectable: highlighting only marks it (a holiday, a day with events), and
+                like <b>DisabledDates</b> only the date part of each entry counts. <b>HighlightedDateAriaLabel</b>
+                (default <code>"{0}, highlighted"</code>, where <code>{0}</code> is the full date) is the accessible
+                name of such a day; set it to an empty string to name it like any other day. <b>GetDayClass</b> receives
+                each day and returns a class for its button, or <code>null</code> for none; the class needs a style
+                that reaches the day button (a global stylesheet, or <code>::deep</code> from a scoped one).
+                <b>HighlightToday</b>="false" only removes the look: today is still announced as the current date.
+            </div>
             <br />
-            The month and year grids take the same keys (PageUp/PageDown move a year or a range of years), and the
-            time fields step with PageUp/PageDown. Disabled cells are skipped. Every day is named with its full
-            date, and the selection and displayed month are announced as they change.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Try the keyboard" ShowWeekNumbers ShowTimePicker />
-            <br /><br />
-            <BitDatePicker Label="Try the keyboard (month picker)" Mode="BitDatePickerMode.MonthPicker" />
-        </div>
-    </DemoExample>
+            <div class="example-content">
+                <BitDatePicker Label="HighlightedDates" HighlightedDates="@highlightedDates" />
+                <br /><br />
+                <BitDatePicker Label="GetDayClass (Sundays)" GetDayClass='@(d => d.DayOfWeek == DayOfWeek.Sunday ? "sunday-cell" : null)' />
+                <br /><br />
+                <BitDatePicker Label="HighlightToday (false)" HighlightToday="false" />
+            </div>
+        </DemoExample>
+    </DemoTopic>
 
-    <DemoExample Title="Validation & messages" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
-        <div>
-            In an <b>EditForm</b> the picker validates like any input and sets <code>aria-invalid</code>.
-            <b>Description</b> adds helper text, <b>ErrorMessage</b> shows a rejection the app decides itself (e.g.
-            a server response) and <b>Invalid</b> marks the field without a message. Both are tied to the input
-            through <code>aria-describedby</code>, the error is announced as it appears, and
-            <b>AriaDescription</b> adds text for screen readers alone.
-            <br /><br />
-            <b>ShowValidationMessage</b> shows the messages of the form under the picker, where <b>ErrorMessage</b>
-            goes, so the form below needs no <code>ValidationMessage</code> component. The input is described by them
-            through <code>aria-describedby</code>, so they are read out when it takes the focus, and an
-            <b>ErrorMessage</b> of the app's own wins the place while it is set. They are not announced as they appear:
-            a submit validates every field at once, and a message from each of them read out in a row would bury the
-            form under its own errors. A <b>BitParams</b> holding a <b>BitDatePickerParams</b> with
-            <b>ShowValidationMessage</b> turns it on for every picker inside it.
-        </div>
-        <br />
-        <div class="example-content">
-            <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
-                <DataAnnotationsValidator />
+    <DemoTopic Title="Calendar & time" Route="calendar"
+               Description="The day grid (week start, week numbers, several months), the month and year pickers, and the time picker with its steps and bounds.">
+        <DemoExample Title="Calendar layout" RazorCode="@example5RazorCode" Id="example5">
+            <div>
+                <b>FirstDayOfWeek</b>, <b>WeekNumberRule</b> (ISO 8601: FirstFourDayWeek from Monday),
+                <b>ShowOutsideDays</b> and <b>FixedWeeks</b> shape the day grid. <b>MonthCount</b> shows up to three
+                months side by side (fewer on a narrow viewport) and <b>PagedNavigation</b> moves them all at once.
+                <ul>
+                    <li><b>FirstDayOfWeek</b> (default: the <b>Culture</b>'s) also starts the week that
+                        <b>Home</b>/<b>End</b> move within and that the week numbers count.</li>
+                    <li><b>WeekNumberRule</b> defaults to <code>CalendarWeekRule.FirstFullWeek</code>; ISO 8601 weeks need
+                        <code>FirstFourDayWeek</code> together with a Monday start, as the second picker sets.</li>
+                    <li><b>ShowOutsideDays</b> (default <code>true</code>) fills the first and last week with the days
+                        of the adjacent months; <b>FixedWeeks</b> always draws six weeks so the height never changes
+                        between months.</li>
+                    <li><b>MonthCount</b> is clamped to 1 - 3. A strip of months always draws six weeks and never the
+                        outside days, so <b>FixedWeeks</b> and <b>ShowOutsideDays</b> do nothing there. The arrow keys
+                        and the selection run across the months, and picking a day in a month already on screen
+                        leaves the strip where it is. A picker with a callout shows fewer months when the viewport
+                        cannot hold them; a <b>Standalone</b> one always shows what it is asked for.</li>
+                    <li><b>PagedNavigation</b> makes the previous/next buttons move by the whole strip instead of one
+                        month; with a single month it changes nothing.</li>
+                </ul>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="FirstDayOfWeek (Monday)" FirstDayOfWeek="DayOfWeek.Monday" />
+                <br /><br />
+                <BitDatePicker Label="ISO 8601 week numbers"
+                               ShowWeekNumbers
+                               FirstDayOfWeek="DayOfWeek.Monday"
+                               WeekNumberRule="CalendarWeekRule.FirstFourDayWeek" />
+                <br /><br />
+                <BitDatePicker Label="ShowOutsideDays (false)" ShowOutsideDays="false" />
+                <br /><br />
+                <BitDatePicker Label="FixedWeeks (always six weeks)" FixedWeeks />
+                <br /><br />
+                <BitDatePicker Label="MonthCount (2)" MonthCount="2" ShowMonthPicker="false" />
+                <br /><br />
+                <BitDatePicker Label="MonthCount (3) with PagedNavigation"
+                               MonthCount="3"
+                               PagedNavigation
+                               ShowMonthPickerAsOverlay />
+            </div>
+        </DemoExample>
 
-                <BitDatePicker Label="Required date" @bind-Value="validationModel.Date" ShowValidationMessage />
+        <DemoExample Title="Month & year pickers" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                Hide the month/year picker with <b>ShowMonthPicker</b>, or open it over the day picker from the
+                month title with <b>ShowMonthPickerAsOverlay</b> - which a narrow screen turns on by itself.
+                <br /><br />
+                By default the month picker sits beside the day grid; its title switches it to a year picker that
+                pages through twelve years at a time. Picking a month there only moves the day grid to it - a day
+                still has to be picked. <b>ShowMonthPicker</b>="false" removes the pane, which leaves the previous/next
+                month buttons as the way to move around. With <b>ShowMonthPickerAsOverlay</b> the pane is hidden
+                until the month title of the day grid is clicked, and closes again once a month is picked. The callout
+                decides each time it opens whether it is wide enough for the pane beside the grid, and falls back
+                to the overlay when it is not. Beside a time picker the time takes that place, so the month picker
+                is opened over the day grid from the title in the same way. Neither parameter applies to the
+                MonthPicker and YearPicker modes of the
+                <BitLink Href="/components/datepicker/modes#example13">Mode</BitLink> section, where the month or
+                year grid is the only view.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="ShowMonthPicker" ShowMonthPicker="@isMonthPickerVisible" />
                 <br />
-                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
-                           OnClick="() => { validationModel = new(); SuccessMessage = string.Empty; }">
-                    Reset
+                <BitToggleButton OnText="MonthPicker visible" OffText="MonthPicker hidden" @bind-Checked="@isMonthPickerVisible" />
+                <br /><br /><br />
+                <BitDatePicker Label="ShowMonthPickerAsOverlay" ShowMonthPickerAsOverlay="@showMonthPickerAsOverlay" />
+                <br />
+                <BitToggleButton OnText="Position overlay" OffText="Position besides" @bind-Checked="@showMonthPickerAsOverlay" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="TimePicker" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                <b>ShowTimePicker</b> adds the time of day, <b>ShowSeconds</b> a seconds field, <b>TimeFormat</b> the
+                12-hour clock, <b>ShowTimePickerAsOverlay</b> puts it behind a clock button, and <b>ShowNowButton</b>
+                hides the now button. Selecting a day keeps the callout open so the time can be set too.
+                <br /><br />
+                The offered times: <b>HourStep</b>/<b>MinuteStep</b>/<b>SecondStep</b> set the grid,
+                <b>MinTime</b>/<b>MaxTime</b> bound every day (MinDate/MaxDate only bound the day they fall on), and
+                <b>AllowedHours</b>/<b>AllowedMinutes</b>/<b>AllowedSeconds</b> rule out the rest. The spin buttons, the
+                PageUp/PageDown keys and typing all obey them. <b>ContinuousSpinDelay</b> and
+                <b>ContinuousSpinInterval</b> tune press-and-hold.
+                <br /><br />
+                How the time and the value meet:
+                <ul>
+                    <li>The time edits the selected day. While the picker is empty the time is only held, and the next
+                        picked day takes it. The now button is the exception: on an empty picker it picks today along
+                        with the current time (unless today is disabled).</li>
+                    <li>A step grid starts at <b>MinTime</b> (at midnight, or at the top of the hour/minute, without
+                        one), so <b>MinuteStep</b>="15" with a <b>MinTime</b> of 09:10 offers :10, :25, :40 and :55.
+                        Steps below 1 count as 1. A typed hour or minute snaps to the nearest allowed value when the
+                        field is committed.</li>
+                    <li><b>MinTime</b>/<b>MaxTime</b> are clamped into a day (00:00:00 - 23:59:59). On the day
+                        <b>MinDate</b>/<b>MaxDate</b> falls on, the narrower of the two bounds wins.</li>
+                    <li><b>AllowedHours</b> receives 0 - 23 whatever the <b>TimeFormat</b>. <b>SecondStep</b> and
+                        <b>AllowedSeconds</b> only matter with <b>ShowSeconds</b>; without it the value has no seconds.</li>
+                    <li>On the 12-hour clock a typed hour keeps the AM/PM already selected.</li>
+                    <li>The default format of the field adds the time (and the seconds) in the chosen clock format. The
+                        time picker is only offered in the DatePicker <b>Mode</b>.</li>
+                </ul>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="Basic time picker (24-hour)" ShowTimePicker @bind-Value="@selectedDateTime" />
+                <div>Selected DateTime: @selectedDateTime.ToString()</div>
+                <br /><br />
+                <BitDatePicker Label="TimeFormat (12-hour with AM/PM)" ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" />
+                <br /><br />
+                <BitDatePicker Label="ShowSeconds (SecondStep 15)" ShowTimePicker ShowSeconds SecondStep="15" />
+                <br /><br />
+                <BitDatePicker Label="ShowTimePickerAsOverlay" ShowTimePicker ShowTimePickerAsOverlay />
+                <br /><br />
+                <BitDatePicker Label="Without the now button" ShowTimePicker ShowNowButton="false" />
+                <br /><br />
+                <BitDatePicker Label="HourStep 2 & MinuteStep 15" ShowTimePicker HourStep="2" MinuteStep="15" />
+                <br /><br />
+                <BitDatePicker Label="Working hours only, no lunch hour"
+                               ShowTimePicker
+                               MinuteStep="15"
+                               MinTime="TimeSpan.FromHours(9)"
+                               MaxTime="new TimeSpan(17, 30, 0)"
+                               AllowedHours="@(h => h != 13)" />
+                <br /><br />
+                <BitDatePicker Label="Slower press-and-hold spin"
+                               ShowTimePicker
+                               ContinuousSpinDelay="800"
+                               ContinuousSpinInterval="200" />
+                <br /><br />
+                <BitDatePicker Label="Nothing later than now (MaxDate)" ShowTimePicker MaxDate="DateTimeOffset.Now" />
+            </div>
+        </DemoExample>
+    </DemoTopic>
+
+    <DemoTopic Title="Input, binding & culture" Route="input"
+               Description="Date formats and typing a date, binding the value, cultures, calendars and localized texts, and time zones.">
+        <DemoExample Title="Date format & text input" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div class="example-desc">
+                <b>DateFormat</b> sets the pattern the value is written and read with (default: the culture's short date,
+                plus its time). <b>AllowTextInput</b> lets the date be typed; the input then carries the expected pattern
+                as its accessible description (<b>DateFormatAriaDescription</b>). Invalid text, a date out of range, a
+                disabled date and a disallowed time fail validation with <b>InvalidErrorMessage</b>,
+                <b>OutOfRangeErrorMessage</b>, <b>DisabledDateErrorMessage</b> and <b>DisallowedTimeErrorMessage</b>.
+                <br /><br />
+                <b>DateFormat</b> is a .NET custom format string, written and read with the <b>Culture</b> (and its
+                calendar). Without it the field uses the culture's short date pattern - plus the time where a time
+                picker is shown, the culture's year-month pattern in the MonthPicker mode and <code>yyyy</code> in the
+                YearPicker mode - and reads a typed date more freely: with the time left off (the day then keeps the
+                time the picker holds), with or without the seconds, and in either clock format. A <b>DateFormat</b>
+                you set is the only pattern a typed date is read with, so include the time in it if the time matters.
+                <br /><br />
+                Without <b>AllowTextInput</b> the field is read-only and a click or <b>Enter</b>/<b>Space</b> moves
+                the focus into the calendar. With it, the text is read on every keystroke, a click opens the calendar
+                but leaves the focus in the field, and only <b>↓</b>/<b>↑</b> move it into the calendar. Text that is
+                cleared sets the value to <code>null</code>. Without the custom messages the errors read "The {field}
+                field is not valid.", "... is out of the allowed range.", "... is not an allowed date." and "... is not
+                an allowed time.", where the field is <b>DisplayName</b> or the bound property's name. The messages
+                go to the <code>EditContext</code>, so they show inside an <code>EditForm</code>, through
+                <b>ShowValidationMessage</b> or a <code>ValidationMessage</code> (see
+                <BitLink Href="/components/datepicker/behavior#example19">Validation &amp; messages</BitLink>).
+            </div>
+            <div class="example-content">
+                <BitDatePicker Label="DateFormat"
+                               DateFormat="dd=MM(yy)"
+                               Placeholder="Select a date" />
+                <br /><br />
+                <BitDatePicker Label="Text input allowed"
+                               AllowTextInput
+                               DateFormat="dd/MM/yyyy"
+                               Placeholder="Enter a date (dd/MM/yyyy)" />
+                <br /><br />
+                <BitDatePicker Label="With custom error messages"
+                               AllowTextInput
+                               DateFormat="dd/MM/yyyy"
+                               MinDate="DateTimeOffset.Now.AddDays(-5)"
+                               MaxDate="DateTimeOffset.Now.AddDays(5)"
+                               DisabledDaysOfWeek="@weekendDays"
+                               InvalidErrorMessage="The date format must be dd/MM/yyyy."
+                               OutOfRangeErrorMessage="Only the ±5 days around today are allowed."
+                               DisabledDateErrorMessage="That day of the week is not available."
+                               Placeholder="Enter a date (dd/MM/yyyy)" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                Two-way bind with <b>@@bind-Value</b>, or set <b>DefaultValue</b> and listen to <b>OnChange</b>.
+                <br /><br />
+                The bound type is <code>DateTimeOffset?</code>. <b>DefaultValue</b> is only the starting value of an
+                unbound picker (uncontrolled mode): the picker keeps its own value from then on and reports each change
+                through <b>OnChange</b>. A bound <b>Value</b> wins over it. <b>OnChange</b> and <b>ValueChanged</b>
+                fire for every change of the value, however it came - a picked day, the time picker, typed text, the
+                clear button or a deselection (<code>null</code>) - while <b>OnSelectDate</b> (see
+                <BitLink Href="/components/datepicker/behavior#example17">Events</BitLink>) reports only what is
+                picked in the calendar.
+                <br /><br />
+                A value the picker produces carries the UTC offset of its <b>TimeZone</b> (the local one by default)
+                for that date. A value bound in with any other offset is the same instant: it is converted into the
+                <b>TimeZone</b> to be shown.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="Two-way binding" @bind-Value="@selectedDate" />
+            </div>
+            <br />
+            <div>Selected date: @selectedDate.ToString()</div>
+            <br /><br /><br />
+            <div class="example-content">
+                <BitDatePicker Label="DefaultValue & OnChange"
+                               DefaultValue="DateTimeOffset.Now"
+                               OnChange="v => changedDate = v" />
+            </div>
+            <br />
+            <div>Changed date: @(changedDate?.ToString() ?? "-")</div>
+        </DemoExample>
+
+        <DemoExample Title="Culture & localization" RazorCode="@example10RazorCode" Id="example10">
+            <div>
+                <b>Culture</b> supplies the names, the first day of the week, the formats and the calendar itself
+                (the Persian one below is a calendar of its own). Every title and accessible name is a parameter, so
+                the rest is localized too - the last picker sets them all. See
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs" Target="_blank">
+                    CultureInfoHelper
+                </BitLink> for building a custom culture.
+                <br /><br />
+                Left unset, <b>Culture</b> is <code>CultureInfo.CurrentUICulture</code>. The calendar of the culture
+                decides the months and years the picker shows, navigates and reads typed text in, but the value stays
+                an ordinary <code>DateTimeOffset</code> - a date picked in the Persian calendar is bound as the same
+                day in the Gregorian one. A culture that writes right to left mirrors the picker on its own. The texts
+                with a <code>{0}</code> (or <code>{0}</code> and <code>{1}</code>) placeholder, such as
+                <b>GoToNextYearTitle</b>, <b>MonthPickerToggleTitle</b> or <b>YearRangePickerToggleTitle</b>, get the
+                year, the month title or the year range formatted into them; <b>SelectedDateAriaAtomic</b> - what a
+                screen reader hears when the selection changes - gets the value as the field writes it.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="fa-IR culture with Farsi names"
+                               GoToTodayTitle="برو به امروز"
+                               Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()" />
+                <br /><br />
+                <BitDatePicker Label="fa-IR culture with Fingilish names"
+                               GoToTodayTitle="Boro be emrouz"
+                               Culture="CultureInfoHelper.GetFaIrCultureWithFingilishNames()" />
+                <br /><br />
+                <BitDatePicker Label="Every title and accessible name translated"
+                               ShowTimePicker
+                               ShowWeekNumbers
+                               ShowClearButton
+                               ShowCloseButton
+                               Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()"
+                               Placeholder="یک تاریخ انتخاب کنید"
+                               CalloutAriaLabel="تقویم"
+                               SelectedDateAriaAtomic="تاریخ انتخاب‌شده {0}"
+                               ClearButtonTitle="پاک کردن تاریخ"
+                               CloseButtonTitle="بستن تقویم"
+                               GoToTodayTitle="برو به امروز"
+                               GoToPrevMonthTitle="ماه قبل"
+                               GoToNextMonthTitle="ماه بعد"
+                               GoToPrevYearTitle="سال قبل {0}"
+                               GoToNextYearTitle="سال بعد {0}"
+                               GoToPrevYearRangeTitle="بازه قبلی {0} - {1}"
+                               GoToNextYearRangeTitle="بازه بعدی {0} - {1}"
+                               MonthPickerToggleTitle="{0}، تغییر ماه"
+                               YearPickerToggleTitle="{0}، تغییر سال"
+                               YearRangePickerToggleTitle="{0} - {1}، تغییر ماه"
+                               WeekNumbersHeaderTitle="هفته"
+                               WeekNumberTitle="هفته {0}"
+                               NowButtonTitle="برو به اکنون"
+                               ShowTimePickerTitle="نمایش ساعت"
+                               HideTimePickerTitle="پنهان کردن ساعت"
+                               TimePickerHourTitle="ساعت"
+                               TimePickerMinuteTitle="دقیقه"
+                               TimePickerIncreaseHourTitle="افزایش ساعت"
+                               TimePickerDecreaseHourTitle="کاهش ساعت"
+                               TimePickerIncreaseMinuteTitle="افزایش دقیقه"
+                               TimePickerDecreaseMinuteTitle="کاهش دقیقه" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="TimeZone" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>TimeZone</b> is the zone the value is read and shown in: the selected day, the month the calendar
+                opens on and the time. Time zone data differs per OS and runtime settings (e.g. InvariantTimezone,
+                <BitLink Href="https://learn.microsoft.com/en-us/aspnet/core/blazor/globalization-localization?view=aspnetcore-9.0#timezone-information"
+                         Target="_blank">more info</BitLink>).
+                <br /><br />
+                Left unset, it is <code>TimeZoneInfo.Local</code> - the browser's zone in WebAssembly, the server's
+                in a server-rendered app. A bound value is converted into the zone to be shown, whatever offset it
+                carries, and a picked or typed date is stored with the zone's UTC offset for that date (so daylight
+                saving time is taken into account). Set it when the dates belong to a place rather than to the
+                person picking them, such as a venue's opening hours.
+            </div>
+            <br /><br />
+            <div><b>Default (local TimeZone)</b>:</div><br/>
+            <div class="example-content">
+                <BitDatePicker @bind-Value="@timeZoneDate1" ShowTimePicker />
+            </div>
+            <br />
+            <div>Selected date: @timeZoneDate1?.ToString()</div>
+
+            @{
+                TimeZoneInfo? timeZoneInfo = null;
+                var allTimeZones = TimeZoneInfo.GetSystemTimeZones();
+                if (allTimeZones.Count > 0)
+                {
+                    timeZoneInfo = allTimeZones[0];
+                }
+            }
+
+            @if (timeZoneInfo is not null) {
+                <br /><br /><br /><br />
+                <div><b>"@timeZoneInfo.Id" TimeZone</b>:</div><br/>
+                <div class="example-content">
+                    <BitDatePicker TimeZone="timeZoneInfo" @bind-Value="@timeZoneDate2" ShowTimePicker />
+                </div>
+                <br />
+                <div>Selected date: @timeZoneDate2?.ToString()</div>
+            }
+        </DemoExample>
+    </DemoTopic>
+
+    <DemoTopic Title="Modes & templates" Route="modes"
+               Description="An inline calendar, month and year pickers, read-only pickers, templates and the full-width panel of small screens.">
+        <DemoExample Title="Standalone" RazorCode="@example12RazorCode" Id="example12">
+            <div>
+                <b>Standalone</b> renders the calendar inline, without the input and callout. It still takes part in
+                an EditForm through a hidden input.
+                <br /><br />
+                Use it where the calendar is the content itself - a booking page, a sidebar, a dialog of its own.
+                The hidden input carries the value (and the <b>Name</b>) for the form and is kept out of the tab order;
+                the calendar is what is browsed with the keyboard - a group named by <b>CalloutAriaLabel</b> and
+                described by the <b>Description</b> and the validation messages, which render below it. Everything about the field and the callout does nothing here:
+                <b>IsOpen</b>, <b>OpenCallout</b>, <b>AutoClose</b>, <b>AutoFocus</b>, <b>Responsive</b>,
+                <b>ShowCloseButton</b>, <b>DropDirection</b>, <b>AllowTextInput</b> and the field's icon and clear
+                button. <b>MonthCount</b> is not cut back for a narrow viewport, since the room the calendar has is
+                the page's to give.
+            </div>
+            <br />
+            <div class="example-content-standalone">
+                <BitDatePicker Label="Basic DatePicker" Standalone />
+                <br /><br />
+                <BitDatePicker Label="Disabled" Disabled Standalone />
+                <br /><br />
+                <BitDatePicker Label="Week numbers, highlighted months and a time picker"
+                               Standalone
+                               ShowTimePicker
+                               ShowWeekNumbers
+                               HighlightCurrentMonth
+                               HighlightSelectedMonth />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Mode" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                <b>Mode</b> picks a month (<b>MonthPicker</b>) or a year (<b>YearPicker</b>) instead of a day: the input
+                shows just that, and the value is its first day the Min/Max range and the day rules allow.
+                <br /><br />
+                Use it for a billing month, a card expiry or a year of birth. The value is still a full
+                <code>DateTimeOffset</code>: read its year (and month) and ignore the day. The field writes the
+                culture's year-month pattern (MonthPicker) or <code>yyyy</code> (YearPicker) unless <b>DateFormat</b>
+                says otherwise, and a typed month or year lands on the same first allowed day. A month or year with no
+                allowed day at all is disabled. The time picker, <b>ShowMonthPicker</b> and
+                <b>ShowMonthPickerAsOverlay</b> do nothing in these modes, and <b>HighlightCurrentMonth</b> /
+                <b>HighlightSelectedMonth</b> work as they do in the month pane.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker @bind-Value="monthPickerDate"
+                               Label="MonthPicker"
+                               Placeholder="Select a month"
+                               Mode="BitDatePickerMode.MonthPicker" />
+                <div>Selected date: @(monthPickerDate?.ToString("yyyy/MM/dd") ?? "None")</div>
+                <br /><br />
+                <BitDatePicker Label="MonthPicker with Min/Max and highlighting"
+                               Placeholder="Select a month"
+                               Mode="BitDatePickerMode.MonthPicker"
+                               HighlightCurrentMonth
+                               HighlightSelectedMonth
+                               MinDate="DateTimeOffset.Now.AddMonths(-6)"
+                               MaxDate="DateTimeOffset.Now.AddMonths(6)" />
+                <br /><br />
+                <BitDatePicker @bind-Value="yearPickerDate"
+                               Label="YearPicker (year of birth)"
+                               Placeholder="Select a year"
+                               Mode="BitDatePickerMode.YearPicker"
+                               DisableFuture />
+                <div>Selected date: @(yearPickerDate?.ToString("yyyy/MM/dd") ?? "None")</div>
+            </div>
+            <br /><br />
+            <div class="example-content-standalone">
+                <BitDatePicker Standalone
+                               Label="Standalone MonthPicker"
+                               Mode="BitDatePickerMode.MonthPicker" />
+                <br /><br />
+                <BitDatePicker Standalone
+                               Label="Standalone YearPicker"
+                               Mode="BitDatePickerMode.YearPicker" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="ReadOnly" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <b>ReadOnly</b> shows the value and lets the calendar be browsed, but nothing can change it - not the
+                days, the time, the clear button or typing.
+                <br /><br />
+                Choose it over <b>Disabled</b> when the value should stay readable, focusable and explorable (a
+                submitted form, a record the person may not edit): a disabled picker cannot be focused or opened at
+                all. Read-only, the callout still opens and the months and years can be navigated, but the days are marked <code>aria-readonly</code>, the time and now
+                buttons are marked disabled, none of them changes anything, the clear button is disabled, and the
+                field cannot be typed into even with <b>AllowTextInput</b> - so it also opens like a field without it,
+                moving the focus into the calendar. The value is still submitted with the form.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="Basic" ReadOnly @bind-Value="readOnlyDate" />
+                <br /><br />
+                <BitDatePicker Label="Text input allowed" ReadOnly AllowTextInput @bind-Value="readOnlyDate" />
+            </div>
+            <br /><br />
+            <div class="example-content-standalone">
+                <BitDatePicker Label="Standalone" ReadOnly Standalone @bind-Value="readOnlyDate" />
+                <br /><br />
+                <BitDatePicker Label="Standalone with TimePicker" ReadOnly ShowTimePicker Standalone @bind-Value="readOnlyDate" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                <b>LabelTemplate</b>, <b>IconTemplate</b>, <b>DayCellTemplate</b>, <b>MonthCellTemplate</b> and
+                <b>YearCellTemplate</b> replace their parts; <b>CalloutHeaderTemplate</b> and
+                <b>CalloutFooterTemplate</b> add content around the calendar, such as preset buttons.
+                <br /><br />
+                <ul>
+                    <li><b>DayCellTemplate</b> gets the day as a <code>DateTimeOffset</code> (midnight, in the
+                        picker's <b>TimeZone</b>), <b>MonthCellTemplate</b> the first day of the month, and
+                        <b>YearCellTemplate</b> the year as an <code>int</code>. With a non-Gregorian <b>Culture</b>
+                        the year is the culture's, and the day and month dates are Gregorian - read their month and
+                        year through <code>Culture.DateTimeFormat.Calendar</code>.</li>
+                    <li>A cell template replaces only what is inside the cell's button: selecting, disabling, the
+                        keyboard and the accessible name (the full date) keep working.</li>
+                    <li><b>LabelTemplate</b> replaces <b>Label</b> and is still the input's label;
+                        <b>IconTemplate</b> replaces the calendar icon of the field, without the icon's styles.</li>
+                    <li>The header and footer stay inside the callout's focus trap, so their buttons are reachable with
+                        Tab. A preset button sets the bound value and can close the callout with
+                        <b>CloseCalloutAndFocus</b>, as the last picker does.</li>
+                </ul>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker>
+                    <LabelTemplate>
+                        Custom label <BitIcon IconName="@BitIconName.Calendar" />
+                    </LabelTemplate>
+                </BitDatePicker>
+                <br /><br /><br />
+                <BitDatePicker Label="DayCellTemplate">
+                    <DayCellTemplate>
+                        <span class="day-cell@(context.DayOfWeek == DayOfWeek.Sunday ? " weekend-cell" : null)">
+                            @context.Day
+
+                            @if (context.Day % 5 is 0)
+                            {
+                                <span class="badge"></span>
+                            }
+                        </span>
+                    </DayCellTemplate>
+                </BitDatePicker>
+                <br /><br /><br />
+                <BitDatePicker Label="MonthCellTemplate">
+                    <MonthCellTemplate>
+                        <div style="padding:3px;color:black;background:@(context.Month == 1 ? "lightcoral" : "yellowgreen")">
+                            @culture.DateTimeFormat.GetAbbreviatedMonthName(context.Month)
+                        </div>
+                    </MonthCellTemplate>
+                </BitDatePicker>
+                <br /><br /><br />
+                <BitDatePicker Label="YearCellTemplate">
+                    <YearCellTemplate>
+                        <span style="position: relative">
+                            @context
+                            <span class="year-suffix">AC</span>
+                        </span>
+                    </YearCellTemplate>
+                </BitDatePicker>
+                <br /><br /><br />
+                <BitDatePicker @ref="presetsPicker" @bind-Value="presetsValue" Label="Callout header & footer (presets)">
+                    <CalloutHeaderTemplate>
+                        <div class="callout-header">Pick your appointment</div>
+                    </CalloutHeaderTemplate>
+                    <CalloutFooterTemplate>
+                        <div class="callout-footer">
+                            <BitButton Variant="BitVariant.Text" OnClick="() => SelectPreset(0)">Today</BitButton>
+                            <BitButton Variant="BitVariant.Text" OnClick="() => SelectPreset(1)">Tomorrow</BitButton>
+                            <BitButton Variant="BitVariant.Text" OnClick="() => SelectPreset(7)">In a week</BitButton>
+                        </div>
+                    </CalloutFooterTemplate>
+                </BitDatePicker>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Responsive" RazorCode="@example16RazorCode" Id="example16">
+            <div>
+                <b>Responsive</b> turns the callout into a full-width panel on small screens that slides in from the
+                top and closes with a swipe. Resize the window to try it.
+                <br /><br />
+                The panel takes over below 600px of viewport width; wider, the picker is an ordinary callout under its
+                field. Swiping the panel up dismisses it like a click outside it would, and the keyboard, the focus
+                trap and Esc work as they do in the callout. It has no effect on a <b>Standalone</b> picker, which has
+                no callout. Without <b>Responsive</b>, a narrow screen still gets a usable calendar: the extra months
+                of <b>MonthCount</b> are dropped and the month and time pickers turn into overlays.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="Responsive DatePicker"
+                               Responsive
+                               ShowWeekNumbers
+                               Placeholder="Select a date" />
+            </div>
+        </DemoExample>
+    </DemoTopic>
+
+    <DemoTopic Title="Events & validation" Route="behavior"
+               Description="The events, keyboard and screen-reader support, validation and its messages, and opening and closing the callout from code.">
+        <DemoExample Title="Events" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <div>
+                <b>OnSelectDate</b> reports each picked date and <b>OnMonthChange</b> the first day of the month the
+                calendar moves to (handy for lazy-loading). <b>OnClick</b>, <b>OnFocusIn</b>, <b>OnFocusOut</b>,
+                <b>OnClear</b>, <b>OnOpen</b> and <b>OnClose</b> report the rest, however they were triggered.
+                <ul>
+                    <li><b>OnSelectDate</b> receives the picked value with its time, or <code>null</code> when
+                        <b>AllowDeselect</b> clears it. Typing and the clear button do not raise it; <b>OnChange</b>
+                        reports every change of the value.</li>
+                    <li><b>OnMonthChange</b> fires whenever the day grid lands on another month - the arrows, the month
+                        and year pickers, go-to-today, the keyboard, or picking a day of another month - with the first
+                        day of that month (of the first month of a <b>MonthCount</b> strip).</li>
+                    <li><b>OnClick</b> fires when the field is activated - a click (also on an open picker), the keys
+                        that open it, or <b>OpenCallout</b>. It does not fire on a disabled or <b>Standalone</b> picker,
+                        or when a one-way bound <b>IsOpen</b> keeps the callout closed.</li>
+                    <li><b>OnFocus</b>, <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the focus of the input itself, not
+                        of the calendar: opening the callout moves the focus into it.</li>
+                    <li><b>OnClear</b> fires for the clear button only.</li>
+                    <li><b>OnOpen</b> and <b>OnClose</b> fire once per opening and closing, including the ones driven
+                        by <b>IsOpen</b>; a click on an already open field raises no second <b>OnOpen</b>.</li>
+                </ul>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="OnSelectDate & OnMonthChange"
+                               OnSelectDate="v => selectedDateEvent = v"
+                               OnMonthChange="v => displayedMonth = v" />
+                <br />
+                <div>Selected date: @(selectedDateEvent?.ToString() ?? "-")</div>
+                <div>Displayed month: @(displayedMonth?.ToString("MMMM yyyy") ?? "-")</div>
+                <br /><br />
+                <BitDatePicker Label="OnClick & OnFocusIn & OnFocusOut & OnClear"
+                               ShowClearButton
+                               OnClick="() => clickCount++"
+                               OnFocusIn="() => focusInCount++"
+                               OnFocusOut="() => focusOutCount++"
+                               OnClear="() => clearCount++" />
+                <br />
+                <div>Clicked: @clickCount times</div>
+                <div>Focused in: @focusInCount times</div>
+                <div>Focused out: @focusOutCount times</div>
+                <div>Cleared: @clearCount times</div>
+                <br /><br />
+                <BitDatePicker Label="OnOpen & OnClose"
+                               OnOpen="() => openCount++"
+                               OnClose="() => closeCount++" />
+                <br />
+                <div>Opened: @openCount times</div>
+                <div>Closed: @closeCount times</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Keyboard & screen readers" RazorCode="@example18RazorCode" Id="example18">
+            <div>
+                The input follows the WAI-ARIA combobox pattern: <b>↓</b>/<b>↑</b> - and <b>Enter</b>/<b>Space</b> on a field
+                that is not typed into - open the calendar and move the focus into it, <b>Esc</b> closes it and
+                returns the focus. The callout is a modal dialog that keeps the
+                focus while open. In the day grid:
+                <br /><br />
+                <ul>
+                    <li><b>←</b> / <b>→</b>: previous/next day</li>
+                    <li><b>↑</b> / <b>↓</b>: same day of the previous/next week</li>
+                    <li><b>Home</b> / <b>End</b>: first/last day of the week</li>
+                    <li><b>PageUp</b> / <b>PageDown</b>: same day of the previous/next month</li>
+                    <li><b>Shift+PageUp</b> / <b>Shift+PageDown</b>: same day of the previous/next year</li>
+                    <li><b>Enter</b> / <b>Space</b>: select the focused day</li>
+                </ul>
+                <br />
+                The month and year grids take the same keys (PageUp/PageDown move a year or a range of years), and the
+                time fields step with PageUp/PageDown. Disabled cells are skipped. Every day is named with its full
+                date, and the selection and displayed month are announced as they change.
+                <br /><br />
+                In the month and year grids <b>Home</b>/<b>End</b> go to the first/last month of the year and the
+                first/last year of the range. The arrow keys follow the reading direction, so <b>→</b> moves to the
+                previous day in a right-to-left picker. <b>Tab</b> and <b>Shift+Tab</b> cycle inside the open callout;
+                a click outside it closes it, and so does <b>Tab</b> from a field that kept the focus. On a field with <b>AllowTextInput</b>, <b>Enter</b> and
+                <b>Space</b> stay with the text (Enter submits the form) and only the arrows open the calendar. Today
+                carries <code>aria-current="date"</code> and the selected day <code>aria-selected</code>, and the texts
+                a screen reader hears are all parameters (see
+                <BitLink Href="/components/datepicker/input#example10">Culture &amp; localization</BitLink>).
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="Try the keyboard" ShowWeekNumbers ShowTimePicker />
+                <br /><br />
+                <BitDatePicker Label="Try the keyboard (month picker)" Mode="BitDatePickerMode.MonthPicker" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Validation & messages" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+            <div>
+                In an <b>EditForm</b> the picker validates like any input and sets <code>aria-invalid</code>.
+                <b>Description</b> adds helper text, <b>ErrorMessage</b> shows a rejection the app decides itself (e.g.
+                a server response) and <b>Invalid</b> marks the field without a message. Both are tied to the input
+                through <code>aria-describedby</code>, the error is announced as it appears, and
+                <b>AriaDescription</b> adds text for screen readers alone.
+                <br /><br />
+                <b>ShowValidationMessage</b> shows the messages of the form under the picker, where <b>ErrorMessage</b>
+                goes, so the form below needs no <code>ValidationMessage</code> component. The input is described by them
+                through <code>aria-describedby</code>, so they are read out when it takes the focus, and an
+                <b>ErrorMessage</b> of the app's own wins the place while it is set. They are not announced as they appear:
+                a submit validates every field at once, and a message from each of them read out in a row would bury the
+                form under its own errors. A <b>BitParams</b> holding a <b>BitDatePickerParams</b> with
+                <b>ShowValidationMessage</b> turns it on for every picker inside it.
+                <br /><br />
+                The templates: <b>DescriptionTemplate</b> replaces <b>Description</b> and <b>ErrorMessageTemplate</b>
+                replaces <b>ErrorMessage</b> (and marks the picker invalid the same way), as the last picker shows. A
+                template may render anything, so the live region announces <b>ErrorMessageAriaLabel</b> for it, or a
+                bare "Invalid input" without one - give it the reason the template shows. <b>ErrorMessageAriaLabel</b>
+                also gives the forced <b>Invalid</b> state something to announce.
+                <br /><br />
+                The messages the picker adds itself for typed text are covered in
+                <BitLink Href="/components/datepicker/input#example8">Date format &amp; text input</BitLink>; they name
+                the field by <b>DisplayName</b>. <b>NoValidate</b> keeps the picker out of validation altogether.
+            </div>
+            <br />
+            <div class="example-content">
+                <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <BitDatePicker Label="Required date" @bind-Value="validationModel.Date" ShowValidationMessage />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    <BitButton ButtonType="BitButtonType.Reset" Variant="BitVariant.Outline"
+                               OnClick="() => { validationModel = new(); SuccessMessage = string.Empty; }">
+                        Reset
+                    </BitButton>
+                </EditForm>
+                @if (string.IsNullOrEmpty(SuccessMessage) is false)
+                {
+                    <br />
+                    <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
+                }
+                <br /><br />
+                <BitDatePicker Label="Appointment"
+                               Description="Pick a weekday - we are closed on weekends."
+                               ErrorMessage="@appointmentError"
+                               OnChange="CheckAppointment" />
+                <br /><br />
+                <BitDatePicker Label="Invalid"
+                               Invalid
+                               Description="Marked invalid by the app."
+                               AriaDescription="Dates are stored in UTC." />
+                <br /><br />
+                <BitDatePicker Label="Templates" ErrorMessageAriaLabel="This date is already booked.">
+                    <DescriptionTemplate>
+                        Bookings open <b>three months</b> ahead.
+                    </DescriptionTemplate>
+                    <ErrorMessageTemplate>
+                        <b>Booked:</b> this date is already booked.
+                    </ErrorMessageTemplate>
+                </BitDatePicker>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Programmatic control" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+            <div>
+                Two-way bind <b>IsOpen</b>, or call <b>OpenCallout</b> and <b>CloseCalloutAndFocus</b> on a reference.
+                <br /><br />
+                With <b>@@bind-IsOpen</b> the app and the picker share the state: setting it opens or closes the
+                callout (with <b>OnOpen</b>/<b>OnClose</b>, and the focus moved into the calendar on open, as a click
+                does), and the picker writes it back whenever a click, a key, a selection or a click outside opens or
+                closes it. A one-way bound <b>IsOpen</b> (no <b>IsOpenChanged</b>) hands the callout to the app
+                alone: the picker never changes it, so clicks, Esc, <b>AutoClose</b> and the two methods leave it as
+                set. <b>OpenCallout</b> opens the callout exactly as a click on the field does;
+                <b>CloseCalloutAndFocus</b> closes it and returns the focus to the field - the call a button in
+                <b>CalloutFooterTemplate</b> makes after setting the value. Both are safe to call from any thread and do
+                nothing on a <b>Standalone</b> picker.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker @ref="programmaticPicker" @bind-IsOpen="isCalloutOpen" Label="Controlled callout" />
+                <br />
+                <div>IsOpen: @isCalloutOpen</div>
+                <br />
+                <BitButton OnClick="() => programmaticPicker?.OpenCallout()">OpenCallout()</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="() => programmaticPicker?.CloseCalloutAndFocus()">
+                    CloseCalloutAndFocus()
                 </BitButton>
-            </EditForm>
-            @if (string.IsNullOrEmpty(SuccessMessage) is false)
-            {
-                <br />
-                <BitMessage Color="BitColor.Success">@SuccessMessage</BitMessage>
-            }
-            <br /><br />
-            <BitDatePicker Label="Appointment"
-                           Description="Pick a weekday - we are closed on weekends."
-                           ErrorMessage="@appointmentError"
-                           OnChange="CheckAppointment" />
-            <br /><br />
-            <BitDatePicker Label="Invalid"
-                           Invalid
-                           Description="Marked invalid by the app."
-                           AriaDescription="Dates are stored in UTC." />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Programmatic control" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
-        <div>
-            Two-way bind <b>IsOpen</b>, or call <b>OpenCallout</b> and <b>CloseCalloutAndFocus</b> on a reference.
-            A one-way bound IsOpen leaves the callout to the app: the picker reports changes but never closes it.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker @ref="programmaticPicker" @bind-IsOpen="isCalloutOpen" Label="Controlled callout" />
-            <br />
-            <div>IsOpen: @isCalloutOpen</div>
-            <br />
-            <BitButton OnClick="() => programmaticPicker?.OpenCallout()">OpenCallout()</BitButton>
-            <BitButton Variant="BitVariant.Outline" OnClick="() => programmaticPicker?.CloseCalloutAndFocus()">
-                CloseCalloutAndFocus()
-            </BitButton>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Appearance" RazorCode="@example21RazorCode" Id="example21">
-        <div>
-            <b>Underlined</b>, <b>HasBorder</b>, <b>IconPlacement</b> and <b>IconName</b> style the field,
-            <b>ShowGoToToday</b> hides the today button, and <b>DropDirection</b> lets the callout open on any side.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Underlined" Underlined />
-            <br /><br />
-            <BitDatePicker Label="HasBorder (false)" HasBorder="false" />
-            <br /><br />
-            <BitDatePicker Label="IconPlacement (Start)" IconPlacement="BitPlacement.Start" />
-            <br /><br />
-            <BitDatePicker Label="IconName" IconName="@BitIconName.Calendar" />
-            <br /><br />
-            <BitDatePicker Label="ShowGoToToday (false)" ShowGoToToday="false" />
-            <br /><br />
-            <BitDatePicker Label="DropDirection (All sides)" DropDirection="BitDropDirection.All" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="CSS variables" RazorCode="@example22RazorCode" Id="example22">
-        <div>
-            Every visual value reads a <code>--bit-DatePicker-*</code> variable: set one on <code>:root</code> to
-            re-skin every picker, on an ancestor to re-skin the pickers inside it, or on <b>Style</b> to re-skin one.
-            The callout keeps inheriting from the picker while it is open, so the field and the calendar change
-            together. <b>Styles.Callout</b> targets the calendar alone. The variables restyle the default, not a
-            choice: an explicit <b>Color</b> or <b>Size</b> wins over them for what it sets.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Re-skinned field and calendar"
-                           ShowWeekNumbers
-                           HighlightedDates="@highlightedDates"
-                           Style="--bit-DatePicker-input-radius: 1rem;
-                                  --bit-DatePicker-input-border-color: mediumpurple;
-                                  --bit-DatePicker-icon-color: mediumpurple;
-                                  --bit-DatePicker-focus-color: mediumpurple;
-                                  --bit-DatePicker-callout-radius: 1rem;
-                                  --bit-DatePicker-day-radius: 0.5rem;
-                                  --bit-DatePicker-today-radius: 0.5rem;
-                                  --bit-DatePicker-today-background: mediumpurple;
-                                  --bit-DatePicker-selected-background: #ede7f6;
-                                  --bit-DatePicker-highlighted-background: #d1c4e9;" />
-            <br /><br />
-            <BitDatePicker Label="Roomier calendar, same field"
-                           ShowTimePicker
-                           Styles="@(new() { Callout = "--bit-DatePicker-day-size: 2.75rem;" +
-                                                       "--bit-DatePicker-day-font-size: 1rem;" +
-                                                       "--bit-DatePicker-header-font-size: 1rem;" +
-                                                       "--bit-DatePicker-time-font-size: 1.5rem;" +
-                                                       "--bit-DatePicker-padding: 1rem;" })" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Cascading parameters" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
-        <div>
-            <b>BitParams</b> hands a <b>BitDatePickerParams</b> to every DatePicker inside it. The values are
-            defaults, not overrides: a picker keeps whatever it sets itself.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitParams Parameters="@datePickerParams">
-                <div>Takes the week layout, the bounds and the clear button from the cascade:</div>
-                <BitDatePicker Label="Start" />
-                <br /><br />
-                <div>So does this one, without repeating any of it:</div>
-                <BitDatePicker Label="End" />
-                <br /><br />
-                <div>Its own bounds and placeholder, the cascaded week layout:</div>
-                <BitDatePicker Label="Deadline"
-                               Placeholder="Any day of the next year"
-                               MinDate="DateTimeOffset.Now"
-                               MaxDate="DateTimeOffset.Now.AddYears(1)" />
-            </BitParams>
-            <br /><br />
-            <div>Outside the cascade, and back to the defaults:</div>
-            <BitDatePicker Label="Anything" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Color" RazorCode="@example24RazorCode" Id="example24">
-        <div>
-            <b>Color</b> (Primary by default) paints today, the highlighted current month and the selected AM/PM.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Primary" Color="BitColor.Primary" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="Secondary" Color="BitColor.Secondary" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="Tertiary" Color="BitColor.Tertiary" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="Info" Color="BitColor.Info" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="Success" Color="BitColor.Success" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="Warning" Color="BitColor.Warning" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="SevereWarning" Color="BitColor.SevereWarning" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="Error" Color="BitColor.Error" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="PrimaryBackground" Color="BitColor.PrimaryBackground" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="SecondaryBackground" Color="BitColor.SecondaryBackground" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="TertiaryBackground" Color="BitColor.TertiaryBackground" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="PrimaryForeground" Color="BitColor.PrimaryForeground" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="SecondaryForeground" Color="BitColor.SecondaryForeground" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="TertiaryForeground" Color="BitColor.TertiaryForeground" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="PrimaryBorder" Color="BitColor.PrimaryBorder" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="SecondaryBorder" Color="BitColor.SecondaryBorder" HighlightCurrentMonth />
-            <br /><br />
-            <BitDatePicker Label="TertiaryBorder" Color="BitColor.TertiaryBorder" HighlightCurrentMonth />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="External Icons" RazorCode="@example25RazorCode" Id="example25">
-        <div>Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.</div>
-
-        <br />
-        <br />
-
-        <div class="example-content">
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-
-            <div>FontAwesome:</div>
-            <br />
-            <BitDatePicker Label="Icon (string)" Icon="@("fa-solid fa-calendar-days")" />
-            <br />
-            <BitDatePicker Label="BitIconInfo.Css" Icon="@BitIconInfo.Css("fa-solid fa-calendar-days")" />
-            <br />
-            <BitDatePicker Label="BitIconInfo.Fa" Icon="@BitIconInfo.Fa("solid calendar")" />
-
-            <br /><br /><br />
-
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-
-            <div>Bootstrap:</div>
-            <br />
-            <BitDatePicker Label="Icon (string)" Icon="@("bi bi-calendar3")" />
-            <br />
-            <BitDatePicker Label="BitIconInfo.Css" Icon="@BitIconInfo.Css("bi bi-calendar3-event")" />
-            <br />
-            <BitDatePicker Label="BitIconInfo.Bi" Icon="@BitIconInfo.Bi("calendar3")" />
-
-            <br /><br /><br />
-
-            <div>Navigation &amp; TimePicker Icons (FontAwesome):</div>
-            <br />
-            <BitDatePicker Label="Custom nav icons (FA)"
-                           PrevMonthNavIcon="@BitIconInfo.Fa("solid chevron-left")"
-                           NextMonthNavIcon="@BitIconInfo.Fa("solid chevron-right")"
-                           PrevYearNavIcon="@BitIconInfo.Fa("solid angles-left")"
-                           NextYearNavIcon="@BitIconInfo.Fa("solid angles-right")"
-                           PrevYearRangeNavIcon="@BitIconInfo.Fa("solid angles-left")"
-                           NextYearRangeNavIcon="@BitIconInfo.Fa("solid angles-right")"
-                           GoToTodayIcon="@BitIconInfo.Fa("solid calendar-day")" />
-            <br />
-            <BitDatePicker Label="TimePicker icons (FA)"
-                           ShowTimePicker
-                           ShowClearButton
-                           NowButtonIcon="@BitIconInfo.Fa("solid clock")"
-                           HideTimePickerIcon="@BitIconInfo.Fa("solid calendar")"
-                           TimePickerIncreaseHourIcon="@BitIconInfo.Fa("solid chevron-up")"
-                           TimePickerDecreaseHourIcon="@BitIconInfo.Fa("solid chevron-down")"
-                           TimePickerIncreaseMinuteIcon="@BitIconInfo.Fa("solid chevron-up")"
-                           TimePickerDecreaseMinuteIcon="@BitIconInfo.Fa("solid chevron-down")"
-                           ClearButtonIcon="@BitIconInfo.Fa("solid xmark")" />
-
-            <br /><br /><br />
-
-            <div>Navigation Icons (Bootstrap):</div>
-            <br />
-            <BitDatePicker Label="Custom nav icons (Bootstrap)"
-                           PrevMonthNavIcon="@BitIconInfo.Bi("chevron-left")"
-                           NextMonthNavIcon="@BitIconInfo.Bi("chevron-right")"
-                           PrevYearNavIcon="@BitIconInfo.Bi("chevron-double-left")"
-                           NextYearNavIcon="@BitIconInfo.Bi("chevron-double-right")"
-                           PrevYearRangeNavIcon="@BitIconInfo.Bi("chevron-double-left")"
-                           NextYearRangeNavIcon="@BitIconInfo.Bi("chevron-double-right")"
-                           GoToTodayIcon="@BitIconInfo.Bi("calendar-event")" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Size" RazorCode="@example26RazorCode" Id="example26">
-        <div>
-            <b>Size</b> scales the field, the calendar cells and the time picker together (Medium by default).
-        </div>
-        <br />
-        <div class="example-content">
-            <BitDatePicker Label="Small" Size="BitSize.Small" ShowTimePicker />
-            <br /><br />
-            <BitDatePicker Label="Medium" Size="BitSize.Medium" ShowTimePicker />
-            <br /><br />
-            <BitDatePicker Label="Large" Size="BitSize.Large" ShowTimePicker />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Style & Class" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
-        <div>
-            <b>Style</b> and <b>Class</b> target the root; <b>Styles</b> and <b>Classes</b> target every part.
-        </div>
-        <br /><br />
-        <div>Component's Style & Class:</div><br />
-        <div class="example-content">
-            <BitDatePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
-            <br />
-            <BitDatePicker Class="custom-class" />
-        </div>
-        <br /><br /><br />
-        <div><b>Styles</b> & <b>Classes</b>:</div><br />
-        <div class="example-content">
-            <BitDatePicker ShowTimePicker
-                           Styles="@(new() { Root = "margin-inline: 1rem;",
-                                             Focused = "--focused-background: #b2b2b25a;",
-                                             Input = "padding: 0.5rem;",
-                                             InputContainer = "background: var(--focused-background);",
-                                             Group = "border: 1px solid mediumseagreen; background: #1c73324d;",
-                                             Divider = "border-color: mediumseagreen;",
-                                             DayPickerMonth = "color: darkgreen;",
-                                             TodayDayButton = "background-color: green;",
-                                             SelectedDayButton = "background-color: limegreen;",
-                                             TimePickerIncreaseHourButton = "background-color: limegreen;",
-                                             TimePickerIncreaseMinuteButton = "background-color: limegreen;",
-                                             TimePickerDecreaseHourButton = "background-color: limegreen;",
-                                             TimePickerDecreaseMinuteButton = "background-color: limegreen;" })" />
-            <br />
-            <BitDatePicker @bind-Value="@classesValue"
-                           Label="Select a date"
-                           HighlightedDates="@highlightedDates"
-                           Classes="@(new() { Root = "custom-root",
-                                              Focused = "custom-focus",
-                                              Input = "custom-input",
-                                              InputContainer = "custom-input-container",
-                                              Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}",
-                                              DayPickerWrapper = "custom-day-picker",
-                                              DayButton = "custom-day",
-                                              TodayDayButton = "custom-today-day",
-                                              SelectedDayButton = "custom-selected-day",
-                                              HighlightedDayButton = "custom-highlighted-day",
-                                              PrevMonthNavButton = "custom-prev-month",
-                                              NextMonthNavButton = "custom-next-month",
-                                              DayPickerMonth = "custom-day-month",
-                                              DayPickerHeader = "custom-day-header",
-                                              DayNameHeader = "custom-week-header",
-                                              YearMonthPickerWrapper = "custom-year-picker" })" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="RTL" RazorCode="@example28RazorCode" Id="example28">
-        <div>
-            <b>Dir</b>="Rtl" mirrors the picker, including the arrow keys; an RTL culture (like fa-IR) does it
-            automatically.
-        </div>
-        <br />
-        <div dir="rtl">
-            <div class="example-content">
-                <BitDatePicker Dir="BitDir.Rtl" />
             </div>
-        </div>
-    </DemoExample>
+        </DemoExample>
+    </DemoTopic>
+
+    <DemoTopic Title="Styling" Route="styling"
+               Description="Appearance, CSS variables, cascading parameters, colors, icons, sizes, Style & Class and right-to-left pickers.">
+        <DemoExample Title="Appearance" RazorCode="@example21RazorCode" Id="example21">
+            <div>
+                <b>Underlined</b>, <b>HasBorder</b>, <b>IconPlacement</b> and <b>IconName</b> style the field,
+                <b>ShowGoToToday</b> hides the today button, and <b>DropDirection</b> lets the callout open on any side.
+                <ul>
+                    <li><b>Underlined</b> draws only a bottom line under the field; <b>HasBorder</b>="false" removes the
+                        border entirely, for a field inside a surface of its own.</li>
+                    <li><b>IconPlacement</b> honours <code>Start</code> and <code>End</code> (the default) only; the side
+                        follows the reading direction. <b>IconName</b> picks a built-in icon (default
+                        <code>CalendarMirrored</code>); external icons are in
+                        <BitLink Href="/components/datepicker/styling#example25">External Icons</BitLink>.</li>
+                    <li>The go-to-today button moves the calendar to today's month without selecting anything.</li>
+                    <li><b>DropDirection</b> defaults to <code>TopAndBottom</code>: the callout opens below the field,
+                        or above it when there is no room. <code>All</code> also lets it open to either side.</li>
+                </ul>
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="Underlined" Underlined />
+                <br /><br />
+                <BitDatePicker Label="HasBorder (false)" HasBorder="false" />
+                <br /><br />
+                <BitDatePicker Label="IconPlacement (Start)" IconPlacement="BitPlacement.Start" />
+                <br /><br />
+                <BitDatePicker Label="IconName" IconName="@BitIconName.Calendar" />
+                <br /><br />
+                <BitDatePicker Label="ShowGoToToday (false)" ShowGoToToday="false" />
+                <br /><br />
+                <BitDatePicker Label="DropDirection (All sides)" DropDirection="BitDropDirection.All" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="CSS variables" RazorCode="@example22RazorCode" Id="example22">
+            <div>
+                Every visual value reads a <code>--bit-DatePicker-*</code> variable: set one on <code>:root</code> to
+                re-skin every picker, on an ancestor to re-skin the pickers inside it, or on <b>Style</b> to re-skin one.
+                The callout keeps inheriting from the picker while it is open, so the field and the calendar change
+                together. <b>Styles.Callout</b> targets the calendar alone. The variables restyle the default, not a
+                choice: an explicit <b>Color</b> or <b>Size</b> wins over them for what it sets.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="Re-skinned field and calendar"
+                               ShowWeekNumbers
+                               HighlightedDates="@highlightedDates"
+                               Style="--bit-DatePicker-input-radius: 1rem;
+                                      --bit-DatePicker-input-border-color: mediumpurple;
+                                      --bit-DatePicker-icon-color: mediumpurple;
+                                      --bit-DatePicker-focus-color: mediumpurple;
+                                      --bit-DatePicker-callout-radius: 1rem;
+                                      --bit-DatePicker-day-radius: 0.5rem;
+                                      --bit-DatePicker-today-radius: 0.5rem;
+                                      --bit-DatePicker-today-background: mediumpurple;
+                                      --bit-DatePicker-selected-background: #ede7f6;
+                                      --bit-DatePicker-highlighted-background: #d1c4e9;" />
+                <br /><br />
+                <BitDatePicker Label="Roomier calendar, same field"
+                               ShowTimePicker
+                               Styles="@(new() { Callout = "--bit-DatePicker-day-size: 2.75rem;" +
+                                                           "--bit-DatePicker-day-font-size: 1rem;" +
+                                                           "--bit-DatePicker-header-font-size: 1rem;" +
+                                                           "--bit-DatePicker-time-font-size: 1.5rem;" +
+                                                           "--bit-DatePicker-padding: 1rem;" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+            <div>
+                <b>BitParams</b> hands a <b>BitDatePickerParams</b> to every DatePicker inside it. The values are
+                defaults, not overrides: a picker keeps whatever it sets itself.
+                <br /><br />
+                Use it for the settings a whole form or app shares - the culture, the time zone, the week layout, the
+                bounds, the texts of a translation. Every parameter of the DatePicker can be cascaded, along with
+                <b>ReadOnly</b>, <b>Required</b> and the common ones (<b>Disabled</b>, <b>Dir</b>, <b>Class</b>,
+                <b>Style</b>, ...), except what belongs to one instance: the value and its binding,
+                <b>IsOpen</b>, the events, and <b>Invalid</b>, <b>ErrorMessage</b> and <b>ErrorMessageTemplate</b>. A
+                cascaded <b>ErrorMessageAriaLabel</b> reaches every picker under it, so set it there only as a generic
+                replacement for "Invalid input". Only the members of the <b>BitDatePickerParams</b> that are set
+                (not <code>null</code>) are handed down.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitParams Parameters="@datePickerParams">
+                    <div>Takes the week layout, the bounds and the clear button from the cascade:</div>
+                    <BitDatePicker Label="Start" />
+                    <br /><br />
+                    <div>So does this one, without repeating any of it:</div>
+                    <BitDatePicker Label="End" />
+                    <br /><br />
+                    <div>Its own bounds and placeholder, the cascaded week layout:</div>
+                    <BitDatePicker Label="Deadline"
+                                   Placeholder="Any day of the next year"
+                                   MinDate="DateTimeOffset.Now"
+                                   MaxDate="DateTimeOffset.Now.AddYears(1)" />
+                </BitParams>
+                <br /><br />
+                <div>Outside the cascade, and back to the defaults:</div>
+                <BitDatePicker Label="Anything" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example24RazorCode" Id="example24">
+            <div>
+                <b>Color</b> (Primary by default) paints today, the highlighted current month and the selected AM/PM.
+                <br /><br />
+                Left unset (<code>null</code>), the picker is primary unless the <code>--bit-DatePicker-*</code> today
+                and focus color variables of the
+                <BitLink Href="/components/datepicker/styling#example22">CSS variables</BitLink> section say otherwise;
+                an explicit <b>Color</b> wins over those variables. The open field's border and the focus ring follow it
+                too. The selected day keeps its own style.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="Primary" Color="BitColor.Primary" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="Secondary" Color="BitColor.Secondary" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="Tertiary" Color="BitColor.Tertiary" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="Info" Color="BitColor.Info" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="Success" Color="BitColor.Success" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="Warning" Color="BitColor.Warning" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="SevereWarning" Color="BitColor.SevereWarning" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="Error" Color="BitColor.Error" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="PrimaryBackground" Color="BitColor.PrimaryBackground" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="SecondaryBackground" Color="BitColor.SecondaryBackground" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="TertiaryBackground" Color="BitColor.TertiaryBackground" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="PrimaryForeground" Color="BitColor.PrimaryForeground" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="SecondaryForeground" Color="BitColor.SecondaryForeground" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="TertiaryForeground" Color="BitColor.TertiaryForeground" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="PrimaryBorder" Color="BitColor.PrimaryBorder" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="SecondaryBorder" Color="BitColor.SecondaryBorder" HighlightCurrentMonth />
+                <br /><br />
+                <BitDatePicker Label="TertiaryBorder" Color="BitColor.TertiaryBorder" HighlightCurrentMonth />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example25RazorCode" Id="example25">
+            <div>
+                Use icons from external libraries like FontAwesome, Material Icons, and Bootstrap Icons with the <b>Icon</b> parameter.
+                <br /><br />
+                Every icon of the picker comes as a pair: a <code>BitIconInfo</code> parameter (<b>Icon</b>,
+                <b>ClearButtonIcon</b>, <b>PrevMonthNavIcon</b>, <b>NowButtonIcon</b>, ...) for any icon font, and an
+                <code>...IconName</code> string for a built-in Fluent UI icon. The <code>BitIconInfo</code> one wins
+                when both are set. Pass a string of CSS classes, or build it with <code>BitIconInfo.Css</code>,
+                <code>.Fa</code> or <code>.Bi</code>. The library only adds the classes: the icon font's stylesheet has to
+                be loaded by the app, as the <code>link</code> elements below do.
+            </div>
+
+            <br />
+            <br />
+
+            <div class="example-content">
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+                <div>FontAwesome:</div>
+                <br />
+                <BitDatePicker Label="Icon (string)" Icon="@("fa-solid fa-calendar-days")" />
+                <br />
+                <BitDatePicker Label="BitIconInfo.Css" Icon="@BitIconInfo.Css("fa-solid fa-calendar-days")" />
+                <br />
+                <BitDatePicker Label="BitIconInfo.Fa" Icon="@BitIconInfo.Fa("solid calendar")" />
+
+                <br /><br /><br />
+
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+                <div>Bootstrap:</div>
+                <br />
+                <BitDatePicker Label="Icon (string)" Icon="@("bi bi-calendar3")" />
+                <br />
+                <BitDatePicker Label="BitIconInfo.Css" Icon="@BitIconInfo.Css("bi bi-calendar3-event")" />
+                <br />
+                <BitDatePicker Label="BitIconInfo.Bi" Icon="@BitIconInfo.Bi("calendar3")" />
+
+                <br /><br /><br />
+
+                <div>Navigation &amp; TimePicker Icons (FontAwesome):</div>
+                <br />
+                <BitDatePicker Label="Custom nav icons (FA)"
+                               PrevMonthNavIcon="@BitIconInfo.Fa("solid chevron-left")"
+                               NextMonthNavIcon="@BitIconInfo.Fa("solid chevron-right")"
+                               PrevYearNavIcon="@BitIconInfo.Fa("solid angles-left")"
+                               NextYearNavIcon="@BitIconInfo.Fa("solid angles-right")"
+                               PrevYearRangeNavIcon="@BitIconInfo.Fa("solid angles-left")"
+                               NextYearRangeNavIcon="@BitIconInfo.Fa("solid angles-right")"
+                               GoToTodayIcon="@BitIconInfo.Fa("solid calendar-day")" />
+                <br />
+                <BitDatePicker Label="TimePicker icons (FA)"
+                               ShowTimePicker
+                               ShowClearButton
+                               NowButtonIcon="@BitIconInfo.Fa("solid clock")"
+                               HideTimePickerIcon="@BitIconInfo.Fa("solid calendar")"
+                               TimePickerIncreaseHourIcon="@BitIconInfo.Fa("solid chevron-up")"
+                               TimePickerDecreaseHourIcon="@BitIconInfo.Fa("solid chevron-down")"
+                               TimePickerIncreaseMinuteIcon="@BitIconInfo.Fa("solid chevron-up")"
+                               TimePickerDecreaseMinuteIcon="@BitIconInfo.Fa("solid chevron-down")"
+                               ClearButtonIcon="@BitIconInfo.Fa("solid xmark")" />
+
+                <br /><br /><br />
+
+                <div>Navigation Icons (Bootstrap):</div>
+                <br />
+                <BitDatePicker Label="Custom nav icons (Bootstrap)"
+                               PrevMonthNavIcon="@BitIconInfo.Bi("chevron-left")"
+                               NextMonthNavIcon="@BitIconInfo.Bi("chevron-right")"
+                               PrevYearNavIcon="@BitIconInfo.Bi("chevron-double-left")"
+                               NextYearNavIcon="@BitIconInfo.Bi("chevron-double-right")"
+                               PrevYearRangeNavIcon="@BitIconInfo.Bi("chevron-double-left")"
+                               NextYearRangeNavIcon="@BitIconInfo.Bi("chevron-double-right")"
+                               GoToTodayIcon="@BitIconInfo.Bi("calendar-event")" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example26RazorCode" Id="example26">
+            <div>
+                <b>Size</b> scales the field, the calendar cells and the time picker together (Medium by default).
+                <br /><br />
+                Left unset (<code>null</code>), the picker is medium unless the <code>--bit-DatePicker-*</code> size
+                variables (label, input, icon, day, header and time sizes) say otherwise; an explicit <b>Size</b> wins
+                over them. A larger size also widens the callout, so it falls back to fewer months and to overlay
+                pickers on a slightly wider viewport.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitDatePicker Label="Small" Size="BitSize.Small" ShowTimePicker />
+                <br /><br />
+                <BitDatePicker Label="Medium" Size="BitSize.Medium" ShowTimePicker />
+                <br /><br />
+                <BitDatePicker Label="Large" Size="BitSize.Large" ShowTimePicker />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" Id="example27">
+            <div>
+                <b>Style</b> and <b>Class</b> target the root; <b>Styles</b> and <b>Classes</b> target every part.
+                <br /><br />
+                The callout is rendered beside the root and moved to the end of the page while it is open, so a
+                selector written for the root's <b>Class</b> does not reach the calendar: style it through
+                <b>Classes.Callout</b> / <b>Styles.Callout</b> or the parts inside it (<b>DayButton</b>,
+                <b>SelectedDayButton</b>, <b>TodayDayButton</b>, ...). CSS variables set on <b>Style</b> do reach it. The
+                <b>Focused</b> part applies while the field has the focus. A class from a scoped (<code>.razor.css</code>)
+                stylesheet needs <code>::deep</code> to reach the parts, the way this page's stylesheet does. Every part
+                is listed in the
+                <code>BitDatePickerClassStyles</code> table of the API.
+            </div>
+            <br /><br />
+            <div>Component's Style & Class:</div><br />
+            <div class="example-content">
+                <BitDatePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
+                <br />
+                <BitDatePicker Class="custom-class" />
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div><br />
+            <div class="example-content">
+                <BitDatePicker ShowTimePicker
+                               Styles="@(new() { Root = "margin-inline: 1rem;",
+                                                 Focused = "--focused-background: #b2b2b25a;",
+                                                 Input = "padding: 0.5rem;",
+                                                 InputContainer = "background: var(--focused-background);",
+                                                 Group = "border: 1px solid mediumseagreen; background: #1c73324d;",
+                                                 Divider = "border-color: mediumseagreen;",
+                                                 DayPickerMonth = "color: darkgreen;",
+                                                 TodayDayButton = "background-color: green;",
+                                                 SelectedDayButton = "background-color: limegreen;",
+                                                 TimePickerIncreaseHourButton = "background-color: limegreen;",
+                                                 TimePickerIncreaseMinuteButton = "background-color: limegreen;",
+                                                 TimePickerDecreaseHourButton = "background-color: limegreen;",
+                                                 TimePickerDecreaseMinuteButton = "background-color: limegreen;" })" />
+                <br />
+                <BitDatePicker @bind-Value="@classesValue"
+                               Label="Select a date"
+                               HighlightedDates="@highlightedDates"
+                               Classes="@(new() { Root = "custom-root",
+                                                  Focused = "custom-focus",
+                                                  Input = "custom-input",
+                                                  InputContainer = "custom-input-container",
+                                                  Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}",
+                                                  DayPickerWrapper = "custom-day-picker",
+                                                  DayButton = "custom-day",
+                                                  TodayDayButton = "custom-today-day",
+                                                  SelectedDayButton = "custom-selected-day",
+                                                  HighlightedDayButton = "custom-highlighted-day",
+                                                  PrevMonthNavButton = "custom-prev-month",
+                                                  NextMonthNavButton = "custom-next-month",
+                                                  DayPickerMonth = "custom-day-month",
+                                                  DayPickerHeader = "custom-day-header",
+                                                  DayNameHeader = "custom-week-header",
+                                                  YearMonthPickerWrapper = "custom-year-picker" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example28RazorCode" Id="example28">
+            <div>
+                <b>Dir</b>="Rtl" mirrors the picker, including the arrow keys; an RTL culture (like fa-IR) does it
+                automatically.
+                <br /><br />
+                Left unset, the picker follows the direction of the page around it. The callout carries the direction
+                with it while it is open, and the side the icon sits on (<b>IconPlacement</b>) and the left/right
+                arrow keys follow the reading direction.
+            </div>
+            <br />
+            <div dir="rtl">
+                <div class="example-content">
+                    <BitDatePicker Dir="BitDir.Rtl" />
+                </div>
+            </div>
+        </DemoExample>
+    </DemoTopic>
 </DemoPage>

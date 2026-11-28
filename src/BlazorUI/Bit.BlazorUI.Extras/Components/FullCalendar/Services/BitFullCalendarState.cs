@@ -107,9 +107,25 @@ public class BitFullCalendarState
     public DateTime[] GetVisibleWeekDates()
         => BitFullCalendarHelpers.GetWeekDates(WeekSpanStart, Culture, FirstDayOfWeekOverride, HiddenDays, WeekDayCount);
 
-    /// <summary>The inclusive first and last date the active view covers.</summary>
+    /// <summary>
+    /// The inclusive first and last date the active view shows. For the month view that is the whole grid - the days it
+    /// borrows from the neighbouring months lead and trail it and show their events too, so an app loading the events of
+    /// the reported range has to load theirs as well - unless <see cref="ShowNonCurrentDates"/> leaves those days blank,
+    /// in which case it is the month alone. The timeline's month view has a column per day of the month and nothing
+    /// more, so its range is always the month.
+    /// </summary>
     public (DateTime Start, DateTime End) GetVisibleRange()
-        => BitFullCalendarHelpers.GetDateRange(View, WeekAnchor, Culture, FirstDayOfWeekOverride, WeekDayCount, HiddenDays);
+    {
+        if (View == BitFullCalendarView.Month && Mode == BitFullCalendarMode.Event && ShowNonCurrentDates)
+        {
+            var cells = BitFullCalendarHelpers.GetCalendarCells(SelectedDate, Culture, FirstDayOfWeekOverride, HiddenDays, FixedWeekCount);
+
+            if (cells.Count > 0)
+                return (cells[0].Date.Date, cells[^1].Date.Date);
+        }
+
+        return BitFullCalendarHelpers.GetDateRange(View, WeekAnchor, Culture, FirstDayOfWeekOverride, WeekDayCount, HiddenDays);
+    }
 
     private void SyncDaySpan()
     {
@@ -537,11 +553,11 @@ public class BitFullCalendarState
             View = clamped;
 
         UpdateUI();
-        // The visible date range is a function of View + SelectedDate (+ Culture); none of those
-        // change here unless the View was clamped. Only surface OnDateChange when the range really
-        // changed, matching the BitFullCalendar.razor.cs visible-range contract.
-        if (viewChanged)
-            NotifyDateRangeChanged();
+        // The range moves when the View is clamped, and in the month view the timeline shows the
+        // month alone where the event grid also shows the neighbouring months' days. Reported only
+        // when it really changed (NotifyDateRangeChanged skips an identical range), matching the
+        // BitFullCalendar.razor.cs visible-range contract.
+        NotifyDateRangeChanged();
     }
 
     /// <summary>The allowed views the supplied mode can render, in display order.</summary>
@@ -884,7 +900,9 @@ public class BitFullCalendarState
         if (FixedWeekCount == value)
             return;
         FixedWeekCount = value;
-        NotifyStateChanged();
+        // A sixth row moves the end of the month view's range, and the recurrences are expanded over the range.
+        UpdateUI();
+        NotifyDateRangeChanged();
     }
 
     internal void SetShowNonCurrentDates(bool value)
@@ -892,7 +910,10 @@ public class BitFullCalendarState
         if (ShowNonCurrentDates == value)
             return;
         ShowNonCurrentDates = value;
-        NotifyStateChanged();
+        // The borrowed days are in the month view's range only while they are shown, and the recurrences are
+        // expanded over the range.
+        UpdateUI();
+        NotifyDateRangeChanged();
     }
 
     internal void SetNavLinks(bool value)

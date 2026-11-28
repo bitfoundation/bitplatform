@@ -277,8 +277,27 @@ namespace BitBlazorUI {
                 return suppressInEditable && isEditable(e.target) && (!hasModifier || typesWithAlt(e));
             }
 
+            /**
+             * A key pressed in an editable element while the palette is closed is that element's first: an editor binding the
+             * chord itself (a Markdown editor's Ctrl+K for a link) claims it by preventing its default, so the palette decides
+             * on it only as it bubbles back up to the document (onEditableKeyDown) and leaves a claimed one alone. Everywhere
+             * else the palette listens in the capture phase, ahead of the page.
+             */
+            function isEditorsFirst(e: KeyboardEvent): boolean {
+                return !modal.open && suppressInEditable && isEditable(e.target);
+            }
+
             function onDocumentKeyDown(e: KeyboardEvent): void {
-                if (disposed || e.defaultPrevented || Utils.isComposingKey(e)) return;
+                if (disposed || e.defaultPrevented || Utils.isComposingKey(e) || isEditorsFirst(e)) return;
+                onShortcutKey(e);
+            }
+
+            function onEditableKeyDown(e: KeyboardEvent): void {
+                if (disposed || e.defaultPrevented || Utils.isComposingKey(e) || !isEditorsFirst(e)) return;
+                onShortcutKey(e);
+            }
+
+            function onShortcutKey(e: KeyboardEvent): void {
                 const alts = chordsFor(e, isMac);
                 if (alts.length === 0) return;
 
@@ -457,6 +476,7 @@ namespace BitBlazorUI {
 
             if (!isInline) {
                 document.addEventListener('keydown', onDocumentKeyDown, true);
+                document.addEventListener('keydown', onEditableKeyDown);
                 document.addEventListener('pointerdown', onPointerDown, true);
                 dialog.addEventListener('cancel', onCancel);
                 dialog.addEventListener('click', onDialogClick);
@@ -578,6 +598,7 @@ namespace BitBlazorUI {
                 dispose() {
                     disposed = true;
                     document.removeEventListener('keydown', onDocumentKeyDown, true);
+                    document.removeEventListener('keydown', onEditableKeyDown);
                     document.removeEventListener('pointerdown', onPointerDown, true);
                     dialog.removeEventListener('keydown', onDialogKeyDown);
                     dialog.removeEventListener('cancel', onCancel);

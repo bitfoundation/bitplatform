@@ -2,6 +2,9 @@
 
 public partial class BitDatePickerDemo
 {
+    /// <summary>The topic the address names (/components/datepicker/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentPublicMembers =
     [
         new()
@@ -39,21 +42,21 @@ public partial class BitDatePickerDemo
             Name = "AllowedMinutes",
             Type = "Func<int, bool>?",
             DefaultValue = "null",
-            Description = "The minutes the time picker can be set to, on top of what MinTime, MaxTime and the bounds of the day already allow."
+            Description = "The minutes the time picker can be set to, on top of what MinTime, MaxTime and the bounds of the day already allow. The predicate receives a minute of the hour (0-59); the spin buttons skip over the minutes it rejects, a typed one snaps to the nearest it accepts, and a date entered as text whose time lands on one fails validation."
         },
         new()
         {
             Name = "AllowedSeconds",
             Type = "Func<int, bool>?",
             DefaultValue = "null",
-            Description = "The seconds the time picker can be set to, on top of what MinTime, MaxTime and the bounds of the day already allow. It only has an effect while ShowSeconds is set."
+            Description = "The seconds the time picker can be set to, on top of what MinTime, MaxTime and the bounds of the day already allow. It only has an effect while ShowSeconds is set. The predicate receives a second of the minute (0-59); the spin buttons skip over the seconds it rejects, a typed one snaps to the nearest it accepts, and a date entered as text whose time lands on one fails validation."
         },
         new()
         {
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the DatePicker allows a string date input."
+            Description = "Whether the date can be typed into the field. The text is read with DateFormat (or the culture's default pattern) and the Culture, and invalid, out-of-range, disabled and disallowed-time text fails validation. A click then opens the callout but leaves the focus in the field; Enter and Space stay with the text. It does nothing on a ReadOnly or Standalone picker."
         },
         new()
         {
@@ -185,9 +188,9 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "Culture",
-            Type = "CultureInfo",
-            DefaultValue = "CultureInfo.CurrentUICulture",
-            Description = "CultureInfo for the DatePicker."
+            Type = "CultureInfo?",
+            DefaultValue = "null",
+            Description = "The culture of the DatePicker: its month and day names, first day of the week, date and time patterns and calendar (a Persian culture shows the Persian calendar). The value is still a Gregorian DateTimeOffset. A right-to-left culture mirrors the picker. When null, CultureInfo.CurrentUICulture is used."
         },
         new()
         {
@@ -208,7 +211,7 @@ public partial class BitDatePickerDemo
             Name = "DayCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "Custom template to render the day cells of the DatePicker."
+            Description = "Custom template to render the day cells of the DatePicker. It receives the day (midnight, with the offset of the TimeZone) and replaces only the content of the day's button, which keeps its selection, keyboard and accessible name."
         },
         new()
         {
@@ -229,14 +232,14 @@ public partial class BitDatePickerDemo
             Name = "DisabledDateErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for a typed value that the DatePicker does not allow to be selected, through DisabledDates, DisabledDaysOfWeek or IsDateDisabled."
+            Description = "The custom validation error message for a typed value that the DatePicker does not allow to be selected, through DisabledDates, DisabledDaysOfWeek or IsDateDisabled. Without it the message is \"The {field} field is not an allowed date.\", named by DisplayName or the bound field."
         },
         new()
         {
             Name = "DisabledDates",
             Type = "IEnumerable<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "The list of dates that are disabled (not selectable) in the DatePicker, in addition to MinDate and MaxDate."
+            Description = "The list of dates that are disabled (not selectable) in the DatePicker, in addition to MinDate and MaxDate. Only the date part of each value counts, as written - it is not converted into the TimeZone first."
         },
         new()
         {
@@ -264,14 +267,14 @@ public partial class BitDatePickerDemo
             Name = "DisallowedTimeErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for a date entered as text whose time of day the DatePicker does not allow, through MinTime, MaxTime, AllowedHours, AllowedMinutes or AllowedSeconds."
+            Description = "The custom validation error message for a date entered as text whose time of day the DatePicker does not allow, through MinTime, MaxTime, AllowedHours, AllowedMinutes or AllowedSeconds. Without it the message is \"The {field} field is not an allowed time.\""
         },
         new()
         {
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
-            Description = "Determines the allowed drop directions of the callout.",
+            Description = "Determines the allowed drop directions of the callout: TopAndBottom opens it below or above the field, whichever has room; All may also open it to either side. A Standalone picker has no callout.",
             LinkType = LinkType.Link,
             Href = "#drop-direction-enum"
         },
@@ -308,7 +311,7 @@ public partial class BitDatePickerDemo
             Name = "FixedWeeks",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the day picker should always render six weeks, filling the extra rows with the days of the adjacent months, to keep the height of the calendar fixed while navigating between the months."
+            Description = "Whether the day picker should always render six weeks, filling the extra rows with the days of the adjacent months, to keep the height of the calendar fixed while navigating between the months. It is always on when MonthCount renders more than one month."
         },
         new()
         {
@@ -452,7 +455,7 @@ public partial class BitDatePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day that every hour the picker produces sits on, starting at the hour of MinTime and at midnight where there is none - the buttons, the PageUp/PageDown keys and what is typed into the hour alike.",
+            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day that every hour the picker produces sits on, starting at the hour of MinTime and at midnight where there is none - the buttons, the PageUp/PageDown keys and what is typed into the hour alike. Values below 1 are treated as 1.",
         },
         new()
         {
@@ -484,7 +487,7 @@ public partial class BitDatePickerDemo
             Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom template for the DatePicker's icon."
+            Description = "Custom template for the DatePicker's icon, rendered inside the field in place of the calendar icon (Icon / IconName). A click on it opens the callout like a click on the field."
         },
         new()
         {
@@ -498,21 +501,21 @@ public partial class BitDatePickerDemo
             Name = "InvalidErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for the invalid value."
+            Description = "The custom validation error message for typed text that cannot be read as a date with DateFormat (or the culture's default pattern). Without it the message is \"The {field} field is not valid.\", named by DisplayName or the bound field."
         },
         new()
         {
             Name = "IsDateDisabled",
             Type = "Func<DateTimeOffset, bool>?",
             DefaultValue = "null",
-            Description = "Custom function to determine if a specific date is disabled (not selectable) in the DatePicker."
+            Description = "Custom function to determine if a specific date is disabled (not selectable) in the DatePicker. It receives each day (midnight, with the offset of the TimeZone) and is called for every day the calendar draws or the keyboard moves over, so keep it cheap."
         },
         new()
         {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not this DatePicker is open."
+            Description = "Whether the callout of the DatePicker is open. Two-way bindable (@bind-IsOpen): the picker writes it back as it opens and closes. Bound one way (without IsOpenChanged) the callout is the app's alone - clicks, Esc, AutoClose, OpenCallout and CloseCalloutAndFocus leave it as set. It has no effect on a Standalone picker."
         },
         new()
         {
@@ -540,7 +543,7 @@ public partial class BitDatePickerDemo
             Name = "MaxTime",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "The latest time of day the time picker can be set to, on every day the DatePicker offers - the time-of-day bound MaxDate is not. Where both bound the same day, the earlier of the two wins."
+            Description = "The latest time of day the time picker can be set to, on every day the DatePicker offers - the time-of-day bound MaxDate is not. Where both bound the same day, the earlier of the two wins. A value outside of a day is clamped into one, and it only has an effect while ShowTimePicker is set."
         },
         new()
         {
@@ -554,14 +557,14 @@ public partial class BitDatePickerDemo
             Name = "MinTime",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "The earliest time of day the time picker can be set to, on every day the DatePicker offers - the time-of-day bound MinDate is not. Where both bound the same day, the later of the two wins."
+            Description = "The earliest time of day the time picker can be set to, on every day the DatePicker offers - the time-of-day bound MinDate is not. Where both bound the same day, the later of the two wins. A value outside of a day is clamped into one, and it only has an effect while ShowTimePicker is set. It is also where the HourStep, MinuteStep and SecondStep grids start."
         },
         new()
         {
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour that every minute the picker produces sits on, starting at the minute of MinTime and at the top of the hour where there is none - which is what turns it into a five-minute or quarter-hour picker. The buttons, the PageUp/PageDown keys and what is typed into the minute are all held to it.",
+            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour that every minute the picker produces sits on, starting at the minute of MinTime and at the top of the hour where there is none - which is what turns it into a five-minute or quarter-hour picker. The buttons, the PageUp/PageDown keys and what is typed into the minute are all held to it. Values below 1 are treated as 1.",
         },
         new()
         {
@@ -577,14 +580,14 @@ public partial class BitDatePickerDemo
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "Custom template to render the month cells of the DatePicker."
+            Description = "Custom template to render the month cells of the DatePicker. It receives the first day of the month and replaces only the content of the month's button."
         },
         new()
         {
             Name = "MonthCount",
             Type = "int",
             DefaultValue = "1",
-            Description = "The number of consecutive months rendered side by side in the day picker (1 to 3). Such a strip always draws six week rows, never draws the days of the adjacent months, and falls back to fewer months on a viewport too narrow to hold them."
+            Description = "The number of consecutive months rendered side by side in the day picker (1 to 3). Such a strip always draws six week rows, never draws the days of the adjacent months, and falls back to fewer months on a viewport too narrow to hold them - except on a Standalone picker, which renders what it is asked for. Values outside 1 to 3 are clamped."
         },
         new()
         {
@@ -674,7 +677,7 @@ public partial class BitDatePickerDemo
         {
             Name = "OnClick",
             Type = "EventCallback",
-            Description = "The callback for clicking on the DatePicker's input."
+            Description = "The callback for clicking on the DatePicker's input. It also fires when the keys that open the callout are pressed in the field and when OpenCallout is called, but not on a disabled or Standalone picker, nor when a one-way bound IsOpen keeps the callout closed."
         },
         new()
         {
@@ -704,7 +707,7 @@ public partial class BitDatePickerDemo
         {
             Name = "OnMonthChange",
             Type = "EventCallback<DateTimeOffset>",
-            Description = "The callback for when the displayed month of the day picker changes. The argument is the first day of the newly displayed month."
+            Description = "The callback for when the displayed month of the day picker changes. The argument is the first day of the newly displayed month - of the first of them where MonthCount renders a strip. It fires for the navigation buttons, the month and year pickers, go-to-today, the keyboard and a picked day of another month."
         },
         new()
         {
@@ -723,7 +726,7 @@ public partial class BitDatePickerDemo
             Name = "OutOfRangeErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for a typed value that falls outside of the MinDate and MaxDate range."
+            Description = "The custom validation error message for a typed value that falls outside of the MinDate and MaxDate range (DisablePast and DisableFuture included). Without it the message is \"The {field} field is out of the allowed range.\""
         },
         new()
         {
@@ -792,21 +795,21 @@ public partial class BitDatePickerDemo
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the responsive mode in small screens."
+            Description = "Enables the responsive mode in small screens: below 600px of viewport width the callout becomes a full-width panel that slides in from the top and is dismissed by swiping it up. It has no effect on a Standalone picker."
         },
         new()
         {
             Name = "SecondStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in seconds, the spin buttons move the second by. The grid it lays over the minute starts at the second of MinTime, and at the top of the minute where there is none."
+            Description = "The step, in seconds, the spin buttons move the second by. The grid it lays over the minute starts at the second of MinTime, and at the top of the minute where there is none. Values below 1 are treated as 1, and it only has an effect while ShowSeconds is set."
         },
         new()
         {
             Name = "SelectedDateAriaAtomic",
             Type = "string",
             DefaultValue = "Selected date {0}",
-            Description = "The text of selected date aria-atomic of the calendar."
+            Description = "The text of the visually hidden live region of the calendar that announces the selection to a screen reader as it changes; {0} is the value as the field writes it."
         },
         new()
         {
@@ -827,21 +830,21 @@ public partial class BitDatePickerDemo
             Name = "ShowGoToToday",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the GoToToday button should be shown or not."
+            Description = "Whether the GoToToday button should be shown or not. The button moves the calendar to the month of today (or of Today) without selecting anything."
         },
         new()
         {
             Name = "ShowMonthPicker",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the month picker is shown next to the day picker or hidden. It has no effect in the MonthPicker mode, where the month picker is the only view."
+            Description = "Whether the month picker is shown next to the day picker or hidden. It has no effect in the MonthPicker and YearPicker modes, where the month or the year picker is the only view."
         },
         new()
         {
             Name = "ShowMonthPickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible."
+            Description = "Show month picker on top of date picker when visible: it is hidden until the month title of the day picker is clicked, and closes once a month is picked. The callout falls back to it on its own when the viewport is too narrow for the pane beside the day picker. It has no effect while ShowMonthPicker is false."
         },
         new()
         {
@@ -862,21 +865,21 @@ public partial class BitDatePickerDemo
             Name = "ShowSeconds",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the time picker shows a seconds field beside the hour and the minute, which adds the second to the value and to the default date format."
+            Description = "Whether the time picker shows a seconds field beside the hour and the minute, which adds the second to the value and to the default date format. It has no effect without ShowTimePicker; without it the value carries no seconds."
         },
         new()
         {
             Name = "ShowTimePicker",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not render the time-picker."
+            Description = "Whether the time picker (hour and minute, with ShowSeconds the second) is rendered beside the day picker. The time edits the time of the selected day and is added to the default date format; picking a day keeps the callout open whatever AutoClose says. It is only offered in the DatePicker Mode."
         },
         new()
         {
             Name = "ShowTimePickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show the time picker as an overlay on top of the date picker when visible."
+            Description = "Show the time picker as an overlay on top of the date picker when visible, opened with the ShowTimePicker button and closed with the HideTimePicker one. The callout falls back to it on its own when the viewport is too narrow for the time picker beside the day picker."
         },
         new()
         {
@@ -929,14 +932,14 @@ public partial class BitDatePickerDemo
             Name = "Standalone",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the date-picker is rendered standalone or with the input component and callout.",
+            Description = "Whether the date-picker is rendered standalone or with the input component and callout. Standalone, the calendar is rendered inline and the value is carried for the form by a hidden input; IsOpen, AutoClose, AutoFocus, Responsive, DropDirection, ShowCloseButton and AllowTextInput then have no effect.",
         },
         new()
         {
             Name = "StartingValue",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "Specifies the date and time of the date-picker when it is opened without any selected value.",
+            Description = "Specifies the date and time of the date-picker when it is opened without any selected value: the month the calendar shows and the time the time picker starts from. It does not set the value, and it is brought inside the MinDate/MaxDate range. Without it the picker opens on today (or Today) at midnight, or at the earliest time MinTime allows.",
         },
         new()
         {
@@ -1120,7 +1123,7 @@ public partial class BitDatePickerDemo
             Name = "TimeZone",
             Type = "TimeZoneInfo?",
             DefaultValue = "null",
-            Description = "TimeZone for the DatePicker."
+            Description = "The time zone the value is shown and picked in: a bound value is converted into it for display, and a picked or typed date is stored with its UTC offset for that date. When null, TimeZoneInfo.Local is used (the browser's zone in WebAssembly, the server's in a server-rendered app)."
         },
         new()
         {
@@ -1141,7 +1144,7 @@ public partial class BitDatePickerDemo
             Name = "WeekNumberRule",
             Type = "CalendarWeekRule?",
             DefaultValue = "null",
-            Description = "The rule used to calculate the week numbers. Defaults to the FirstFullWeek rule."
+            Description = "The rule used to calculate the week numbers. Defaults to the FirstFullWeek rule. The weeks are counted from FirstDayOfWeek (or the Culture's); ISO 8601 week numbers are FirstFourDayWeek with a Monday start."
         },
         new()
         {
@@ -1162,7 +1165,7 @@ public partial class BitDatePickerDemo
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
-            Description = "Custom template to render the year cells of the DatePicker."
+            Description = "Custom template to render the year cells of the DatePicker. It receives the year, counted in the calendar of the Culture, and replaces only the content of the year's button."
         },
         new()
         {

@@ -1,0 +1,90 @@
+﻿@import '../Styles/abstracts/_docs.scss';
+
+// The strip under the title: one pill per topic, the one on screen filled. It wraps rather than
+// scrolls - a topic hidden past the edge of a scroller is one the reader never learns exists.
+.demo-topics {
+    margin-top: $doc-space-sm;
+}
+
+.demo-topics-list {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    list-style: none;
+    flex-flow: row wrap;
+    gap: $doc-space-3xs $doc-space-2xs;
+}
+
+.demo-topics-link {
+    display: block;
+    text-decoration: none;
+    white-space: nowrap;
+    font-size: $bit-typography-fs-sm;
+    padding: rem2(5px) rem2(12px);
+    color: $bit-color-foreground-secondary;
+    border-radius: $bit-shape-radius-full;
+    border: rem2(1px) solid $bit-color-border-secondary;
+    transition: color $bit-motion-duration $bit-motion-easing,
+                background-color $bit-motion-duration $bit-motion-easing,
+                border-color $bit-motion-duration $bit-motion-easing;
+
+    &:hover {
+        color: $bit-color-foreground-primary;
+        border-color: $bit-color-border-primary;
+    }
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+
+    &.active {
+        color: $bit-color-primary-text;
+        border-color: $bit-color-primary;
+        background-color: $bit-color-primary;
+        font-weight: $bit-typography-fw-semibold;
+    }
+}
+
+.demo-topics-missing {
+    margin: $doc-space-sm 0 0;
+    color: $bit-color-foreground-secondary;
+}
+
+// The overview's closing grid: what each topic covers, so the reader picks one by its content
+// rather than by a two-word label.
+.demo-topic-cards {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    list-style: none;
+    gap: $doc-space-sm;
+    grid-template-columns: repeat(auto-fill, minmax(rem2(240px), 1fr));
+}
+
+.demo-topic-card {
+    height: 100%;
+    display: flex;
+    gap: $doc-space-3xs;
+    text-decoration: none;
+    box-sizing: border-box;
+    flex-flow: column nowrap;
+    padding: $doc-space-sm;
+    color: $bit-color-foreground-primary;
+
+    @include doc-surface;
+    @include doc-surface-interactive;
+
+    &:focus-visible {
+        @include doc-focus-ring;
+    }
+}
+
+.demo-topic-card-title {
+    font-size: $bit-typography-fs-md;
+    font-weight: $bit-typography-fw-semibold;
+}
+
+.demo-topic-card-text {
+    font-size: $bit-typography-fs-sm;
+    color: $bit-color-foreground-secondary;
+}

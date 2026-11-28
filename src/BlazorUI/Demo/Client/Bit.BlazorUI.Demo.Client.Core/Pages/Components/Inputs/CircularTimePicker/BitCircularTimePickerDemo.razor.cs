@@ -4,6 +4,9 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.CircularTimePick
 
 public partial class BitCircularTimePickerDemo
 {
+    /// <summary>The topic the address names (/components/circulartimepicker/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -32,7 +35,7 @@ public partial class BitCircularTimePickerDemo
             Name = "AllowTextInput",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the TimePicker allows input a time string directly or not. The text is parsed with the exact ValueFormat of the picker.",
+            Description = "Makes the field editable, so a time can be typed instead of dialled. The text is read on every keystroke with the ValueFormat, or, left unset, with the pattern of the Culture with or without the leading zeros. A typed time is checked against MinTime, MaxTime and the Allowed* predicates but not the steps. On an editable field Enter and Space no longer open the callout, and opening it leaves the focus in the field.",
         },
         new()
         {
@@ -46,7 +49,7 @@ public partial class BitCircularTimePickerDemo
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Closes the callout as soon as the selection is complete - the last part the dial offers is picked, or the \"now\" button is used - without waiting for the close button or a click outside of it."
+            Description = "Closes the callout as soon as the selection is complete - the last part the dial offers is picked, or the \"now\" button is used - without waiting for the close button or a click outside of it. A standalone picker has no callout and ignores it."
         },
         new()
         {
@@ -60,14 +63,14 @@ public partial class BitCircularTimePickerDemo
             Name = "AutoFocus",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, the input of the TimePicker automatically receives focus when the page renders."
+            Description = "If true, the input of the TimePicker automatically receives focus when the page renders - the dial of a standalone picker, which has no visible input."
         },
         new()
         {
             Name = "CalloutAriaLabel",
             Type = "string",
             DefaultValue = "Clock",
-            Description = "Aria label for time picker popup for screen reader users."
+            Description = "The accessible name of the callout: the dialog that holds the clock, or the group of a standalone picker."
         },
         new()
         {
@@ -141,7 +144,7 @@ public partial class BitCircularTimePickerDemo
             Name = "Culture",
             Type = "CultureInfo?",
             DefaultValue = "CultureInfo.CurrentUICulture",
-            Description = "CultureInfo for the TimePicker."
+            Description = "The culture the value is formatted and parsed with and the AM/PM designators are taken from; left unset it follows CultureInfo.CurrentUICulture. It does not change the TimeFormat, and the numbers of the dial are always written with the digits 0-9."
         },
         new()
         {
@@ -162,14 +165,14 @@ public partial class BitCircularTimePickerDemo
             Name = "DisallowedTimeErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for a time entered as text that AllowedHours, AllowedMinutes or AllowedSeconds rejects. The steps are the one constraint typed text is not held to.",
+            Description = "The custom validation error message for a time entered as text that AllowedHours, AllowedMinutes or AllowedSeconds rejects. The steps are the one constraint typed text is not held to. Left unset it is \"The {DisplayName or field name} field is not an allowed time.\"",
         },
         new()
         {
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
-            Description = "Determines the allowed drop directions of the callout.",
+            Description = "Determines the allowed drop directions of the callout: TopAndBottom keeps it above or below the field, All lets it take any side. Ignored by a standalone picker.",
             Href = "#drop-direction-enum",
             LinkType = LinkType.Link
         },
@@ -187,7 +190,7 @@ public partial class BitCircularTimePickerDemo
             Name = "HasBorder",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Determines if the TimePicker has a border.",
+            Description = "Determines if the field of the TimePicker has a border. Set it to false for a picker that sits inside a container of its own.",
         },
         new()
         {
@@ -201,7 +204,7 @@ public partial class BitCircularTimePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in hours, the dial and the keyboard move the hour by. A step greater than 1 lays a grid over the day that the pick snaps to, dimming the hours in between, starting at the hour of MinTime and at midnight where there is none."
+            Description = "The step, in hours, the dial and the keyboard move the hour by. A step greater than 1 lays a grid over the day that the pick snaps to, dimming the hours in between, starting at the hour of MinTime and at midnight where there is none. Values below 1 are treated as 1."
         },
         new()
         {
@@ -231,14 +234,14 @@ public partial class BitCircularTimePickerDemo
             Name = "IconTemplate",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Custom TimePicker icon template."
+            Description = "Custom markup for the glyph of the field, which wins over Icon and IconName."
         },
         new()
         {
             Name = "InvalidErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for the invalid value."
+            Description = "The custom validation error message for a time entered as text that cannot be read with the ValueFormat. Left unset it is \"The {DisplayName or field name} field is not valid.\""
         },
         new()
         {
@@ -252,7 +255,7 @@ public partial class BitCircularTimePickerDemo
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not this TimePicker is open. Supports two-way binding.",
+            Description = "Whether or not the callout of this TimePicker is open. Supports two-way binding; a change pushed in raises OnOpen or OnClose too, and closing it this way leaves the focus where it is. Ignored by a standalone picker.",
         },
         new()
         {
@@ -301,7 +304,7 @@ public partial class BitCircularTimePickerDemo
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in minutes, the dial and the keyboard move the minute by. A step greater than 1 lays a grid over the hour that the pick snaps to, starting at the minute of MinTime and at the top of the hour where there is none."
+            Description = "The step, in minutes, the dial and the keyboard move the minute by. A step greater than 1 lays a grid over the hour that the pick snaps to, starting at the minute of MinTime and at the top of the hour where there is none. Values below 1 are treated as 1, and typed text is not held to it."
         },
         new()
         {
@@ -327,7 +330,7 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "OnClick",
             Type = "EventCallback",
-            Description = "Callback for when clicking on TimePicker input.",
+            Description = "Callback for when the field of the TimePicker is clicked, raised after the click has opened the callout. Opening it through OpenCallout or IsOpen does not raise it, and a standalone picker has no field to click.",
         },
         new()
         {
@@ -363,7 +366,7 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "OnSelectTime",
             Type = "EventCallback<TimeSpan?>",
-            Description = "Callback for when the selected time changes.",
+            Description = "Callback for every change of the time the picker itself makes - a pick or drag on the dial, a key, the AM/PM pair, the now and clear buttons (clear passes null) and each keystroke of typed text - with the new value.",
         },
         new()
         {
@@ -378,7 +381,7 @@ public partial class BitCircularTimePickerDemo
             Name = "OutOfRangeErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for a time entered as text that falls outside of MinTime and MaxTime. Text that does not read as a time at all reports InvalidErrorMessage instead.",
+            Description = "The custom validation error message for a time entered as text that falls outside of MinTime and MaxTime. Text that does not read as a time at all reports InvalidErrorMessage instead. Left unset it is \"The {DisplayName or field name} field is out of the allowed range.\"",
         },
         new()
         {
@@ -392,7 +395,7 @@ public partial class BitCircularTimePickerDemo
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the responsive mode in small screens.",
+            Description = "Below the small breakpoint, turns the callout into a sheet anchored to the top of the screen that can be swiped away upwards. Ignored by a standalone picker.",
         },
         new()
         {
@@ -406,21 +409,21 @@ public partial class BitCircularTimePickerDemo
             Name = "SecondStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in seconds, the dial and the keyboard move the second by. A step greater than 1 lays a grid over the minute that the pick snaps to, starting at the second of MinTime and at the top of the minute where there is none."
+            Description = "The step, in seconds, the dial and the keyboard move the second by. A step greater than 1 lays a grid over the minute that the pick snaps to, starting at the second of MinTime and at the top of the minute where there is none. Values below 1 are treated as 1."
         },
         new()
         {
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders a button that clears the value of the TimePicker under the clock."
+            Description = "Renders a button that clears the value of the TimePicker under the clock. It is disabled while the picker is empty, and clearing moves the dial back to its start view and raises OnClear."
         },
         new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the TimePicker's close button should be shown or not."
+            Description = "Whether the TimePicker's close button is shown in the corner of the callout - over the toolbar, or over the CalloutHeaderTemplate where there is one. A standalone picker has no callout to close and shows none."
         },
         new()
         {
@@ -450,7 +453,7 @@ public partial class BitCircularTimePickerDemo
             Name = "Standalone",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the TimePicker is rendered standalone or with the input component and callout.",
+            Description = "Renders the clock inline on the page instead of a field that opens it in a callout. The value still travels through a hidden input, and the dial takes the focus, the name of the field and its validation state. Everything about the callout (IsOpen, AutoClose, ShowCloseButton, DropDirection, Responsive) is ignored.",
         },
         new()
         {
@@ -482,7 +485,7 @@ public partial class BitCircularTimePickerDemo
             Name = "TimeFormat",
             Type = "BitTimeFormat",
             DefaultValue = "BitTimeFormat.TwentyFourHours",
-            Description = "The time format of the time-picker, 24H or 12H.",
+            Description = "The face of the clock: TwentyFourHours draws a double ring (13-00 outside, 01-12 inside), TwelveHours a single 1-12 ring with the AM/PM pair. The value is the same TimeSpan of the day either way, and the default ValueFormat follows it.",
             LinkType = LinkType.Link,
             Href = "#time-format-enum",
         },
@@ -491,14 +494,14 @@ public partial class BitCircularTimePickerDemo
             Name = "Underlined",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the Text field of the TimePicker is underlined.",
+            Description = "Whether or not the field of the TimePicker is drawn as a single rule under it instead of a box.",
         },
         new()
         {
             Name = "ValueFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = @"The format of the time in the TimePicker like ""HH:mm"". Left unset it follows the time pattern of the culture, rewritten into the TimeFormat, extended with the seconds where ShowSeconds is set and padded with the leading zeros.",
+            Description = @"The format of the time in the TimePicker like ""HH:mm"". Left unset it follows the time pattern of the culture, rewritten into the TimeFormat, extended with the seconds where ShowSeconds is set and padded with the leading zeros. A format set here is used exactly as given, to write and to read the field, whatever TimeFormat and ShowSeconds say.",
         }
     ];
 
@@ -522,13 +525,13 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "OpenCallout",
             Type = "Task OpenCallout()",
-            Description = "Opens the callout of the TimePicker, doing nothing when it is already open or when the picker is standalone and has no callout to open."
+            Description = "Opens the callout of the TimePicker on its start view and moves the focus to the dial (unless AllowTextInput keeps it in the field), doing nothing when it is already open, disabled, or standalone and has no callout to open. It raises OnOpen but not OnClick."
         },
         new()
         {
             Name = "DismissCallout",
             Type = "Task DismissCallout()",
-            Description = "Closes the callout of the TimePicker."
+            Description = "Closes the callout of the TimePicker, leaving the focus where it is - unlike a close the person makes, which hands it back to the field."
         },
         new()
         {
@@ -627,7 +630,7 @@ public partial class BitCircularTimePickerDemo
                     Name = "Focused",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the focused state of the BitCircularTimePicker."
+                    Description = "Custom CSS classes/styles added to the root of the BitCircularTimePicker while the field or its open callout holds the focus."
                 },
                 new()
                 {
@@ -669,14 +672,14 @@ public partial class BitCircularTimePickerDemo
                     Name = "Overlay",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the overlay of the BitCircularTimePicker."
+                    Description = "Custom CSS classes/styles for the transparent overlay behind the open callout, a click on which closes it."
                 },
                 new()
                 {
                     Name = "Callout",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the callout of the BitCircularTimePicker."
+                    Description = "Custom CSS classes/styles for the callout of the BitCircularTimePicker - the dial of a standalone picker. It is rendered beside the root rather than inside it, so Class does not reach it."
                 },
                 new()
                 {
@@ -781,7 +784,7 @@ public partial class BitCircularTimePickerDemo
                     Name = "SelectedButtons",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the selected buttons of the BitCircularTimePicker."
+                    Description = "Custom CSS classes/styles added to the toolbar part the dial is on and to the selected half of the AM/PM pair."
                 },
                 new()
                 {

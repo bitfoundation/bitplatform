@@ -4,6 +4,9 @@ public partial class BitCommandPaletteDemo : IDisposable
 {
     [Inject] private IBitCommandPaletteService paletteService { get; set; } = default!;
 
+    /// <summary>The topic the address names (/components/commandpalette/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     // What the sections register with the service, removed when the page goes.
     private readonly List<IDisposable> registrations = [];
 
@@ -366,7 +369,7 @@ public partial class BitCommandPaletteDemo : IDisposable
             [
                 new() { Name = "ToggleShortcut", Type = "BitCommandPaletteKeyboardShortcut?", DefaultValue = "BitCommandPaletteKeyboardShortcut.Parse(\"Mod+K\")", Description = "Shortcut that toggles the palette. Default Mod+K (⌘K on macOS, Ctrl+K elsewhere)." },
                 new() { Name = "AdditionalToggleShortcuts", Type = "List<BitCommandPaletteKeyboardShortcut>", DefaultValue = "[]", Description = "Additional toggle shortcuts (e.g. Ctrl+Shift+P, /)." },
-                new() { Name = "SuppressShortcutsInEditableElements", Type = "bool", DefaultValue = "true", Description = "Don't fire global command shortcuts while an input, textarea or contenteditable has focus." },
+                new() { Name = "SuppressShortcutsInEditableElements", Type = "bool", DefaultValue = "true", Description = "Don't fire global command shortcuts on a plain key pressed while an input, textarea or contenteditable has focus. A chord with a modifier still fires there, unless the element claims it itself (an editor's Ctrl+K, by preventing its default). False fires on plain keys too, the palette hearing every key ahead of the page." },
                 new() { Name = "Loop", Type = "bool", DefaultValue = "true", Description = "Wrap around when arrowing past the first/last item." },
                 new() { Name = "VimBindings", Type = "bool", DefaultValue = "false", Description = "Enable Ctrl+J/Ctrl+K navigation inside the list (Ctrl+N/Ctrl+P are always on)." },
                 new() { Name = "EnableHistory", Type = "bool", DefaultValue = "true", Description = "Track recents and frecency." },
@@ -2688,7 +2691,7 @@ public partial class BitCommandPaletteDemo : IDisposable
     [
         new("ToggleShortcut", "Keyboard", o => o.ToggleShortcut?.ToString() ?? "none", "Opens and closes the palette; null for none. The palette's ToggleShortcut parameter overrides it."),
         new("AdditionalToggleShortcuts", "Keyboard", o => EJoin(o.AdditionalToggleShortcuts), "More shortcuts that open and close the palette."),
-        new("SuppressShortcutsInEditableElements", "Keyboard", o => EBool(o.SuppressShortcutsInEditableElements), "Plain keys pressed in an input, a text area or a content-editable element are typing, not shortcuts; chords with a modifier still fire."),
+        new("SuppressShortcutsInEditableElements", "Keyboard", o => EBool(o.SuppressShortcutsInEditableElements), "Plain keys pressed in an input, a text area or a content-editable element are typing, not shortcuts; chords with a modifier still fire, unless the element claims them itself."),
         new("SequenceTimeoutMs", "Keyboard", o => ENumber(o.SequenceTimeoutMs), "How long a sequence (G I) waits for its next chord. Must be positive."),
         new("ShowSequenceHint", "Keyboard", o => EBool(o.ShowSequenceHint), "Shows and announces a sequence in progress."),
         new("Loop", "Keyboard", o => EBool(o.Loop), "Arrowing past the last row comes back to the first."),

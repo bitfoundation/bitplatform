@@ -1652,10 +1652,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return string.Format(_culture, ValueFormat, FormatDate(value.StartDate), FormatDate(value.EndDate));
     }
 
+    // The text of the input is the same wall clock the calendar shows, so a date is written in the TimeZone of the
+    // component rather than in whatever offset the value happens to carry - BitDatePicker writes its own the same way.
     private string FormatDate(DateTimeOffset? date)
     {
         return date.HasValue
-                ? date.Value.ToString(DateFormat ?? GetDefaultDateFormat(), _culture)
+                ? GetDateTime(date.Value).ToString(DateFormat ?? GetDefaultDateFormat(), _culture)
                 : NoDateText;
     }
 
@@ -2136,10 +2138,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             }
         }
 
+        // Read in the TimeZone the day cells are rendered in, or a start near midnight opens the month next to the one
+        // holding the day that is marked as selected.
         var calendarDate = startDateHasValue
-                           ? CurrentValue!.StartDate!.Value.DateTime
+                           ? GetDateTime(CurrentValue!.StartDate!.Value)
                            : (startingValueStartDateHasValue
-                             ? StartingValue!.StartDate!.Value.DateTime
+                             ? GetDateTime(StartingValue!.StartDate!.Value)
                              : GetToday());
 
         // With several months on screen the start date is very often already one of them, and
@@ -2194,6 +2198,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         _hoveredDate = null;
         _focusedDate = selectedDate;
+
+        var pickedDay = selectedDate.Date;
 
         // Works on a copy so the instance handed in through the Value binding is never mutated in place.
         var curValue = CurrentValue is null
@@ -2284,6 +2290,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             EndDate = curValue.EndDate
         };
 
+        // The days ExcludeDisabledDates puts out of reach follow the start just picked (or are lifted by the end), now
+        // rather than at the next parameter set: the focus below and the render read them.
+        BuildExcludedBounds();
+
         var previousYear = _currentYear;
         var previousMonth = _currentMonth;
 
@@ -2299,6 +2309,31 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         GenerateMonthData(_currentYear, _currentMonth);
 
         await NotifyMonthChange(previousYear, previousMonth);
+
+        // With a MinRange, the start just picked disables its own day and the days around it until the end is picked,
+        // and a disabled button cannot keep the focus: the browser drops it onto the body, outside the open callout,
+        // and a keyboard user loses their place. It moves to the nearest day that can close the range instead - one
+        // on screen when there is one, so a click does not slide the calendar away.
+        if (CurrentValue?.StartDate is not null && CurrentValue.EndDate.HasValue is false && IsDayDisabled(pickedDay))
+        {
+            var later = FindEnabledDay(pickedDay, 1);
+            var earlier = FindEnabledDay(pickedDay, -1);
+
+            if (later.HasValue && IsInRenderedMonths(later.Value))
+            {
+                _focusedDate = later;
+                _focusAfterRender = true;
+            }
+            else if (earlier.HasValue && IsInRenderedMonths(earlier.Value))
+            {
+                _focusedDate = earlier;
+                _focusAfterRender = true;
+            }
+            else if ((later ?? earlier) is { } offScreen)
+            {
+                await MoveFocusToDay(offScreen);
+            }
+        }
 
         await OnSelectDate.InvokeAsync(CurrentValue);
     }
@@ -3714,13 +3749,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         if (CurrentValue is null) return;
         if (CurrentValue.StartDate.HasValue is false) return;
 
-        var currentValue = CurrentValue.StartDate.GetValueOrDefault(DateTimeOffset.Now);
-        var currentValueYear = _culture.DateTimeFormat.Calendar.GetYear(currentValue.DateTime);
-        var currentValueMonth = _culture.DateTimeFormat.Calendar.GetMonth(currentValue.DateTime);
+        // In the TimeZone the day cells are rendered in, like the selection they highlight.
+        var currentValue = GetDateTime(CurrentValue.StartDate.Value);
+        var currentValueYear = _culture.DateTimeFormat.Calendar.GetYear(currentValue);
+        var currentValueMonth = _culture.DateTimeFormat.Calendar.GetMonth(currentValue);
 
         // Any of the rendered months showing the start date is enough, so the grid is only rebased
         // when the start date would otherwise be off screen.
-        if (IsInRenderedMonths(currentValue.DateTime)) return;
+        if (IsInRenderedMonths(currentValue.Date)) return;
 
         if (currentValueYear != _currentYear || currentValueMonth != _currentMonth)
         {

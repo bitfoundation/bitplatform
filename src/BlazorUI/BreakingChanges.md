@@ -18,6 +18,28 @@ only in this file.
 
 ## 11.0.0
 
+### `BitFullCalendar`'s month view reports the whole grid to `OnDateChange` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The month grid leads and trails with days of the neighbouring months, and those days show their events like any other.
+`OnDateChange` (and `GetVisibleRange()`) reported the month alone, so an app loading the events of the reported range
+left the borrowed days empty. The month view now reports every day its grid shows - from the first day of its first row
+to the last day of its last, a sixth row included when `FixedWeekCount` is on - and the range is reported again when
+`FixedWeekCount` or `ShowNonCurrentDates` changes. With `ShowNonCurrentDates` off the borrowed days are blank, and the
+range is the month alone as before. The day, week, year and agenda views, and the timeline's month view (a column
+per day of the month, nothing borrowed), report what they did.
+
+**An app that reads `Start` / `End` as the month** (to title a page, or to key a cache by month) takes the month from
+the calendar's `Date` instead, or from the day half-way through the range.
+
+### `BitDateRangePicker` writes its field in its `TimeZone` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The calendar reads the dates of a value in the picker's `TimeZone`, but the text field wrote each date in the offset the
+value carried, so a value handed in with another offset could show one day in the field and another in the calendar,
+and open the calendar on the month next to the one holding its start. The field and the month the calendar opens on now
+read the value in the `TimeZone` too, as `BitDatePicker` always did. A value in the picker's own zone - every value the
+picker produces, and every value of an app that leaves `TimeZone` at its default and hands in local dates - shows exactly
+as before.
+
 ### `AddBitBlazorUIExtrasServices` takes a `commandPalette` argument ([#15465](https://github.com/bitfoundation/bitplatform/issues/15465))
 
 `AddBitBlazorUIExtrasServices` registers the services of `BitCommandPalette` (its registry, open state and history) along

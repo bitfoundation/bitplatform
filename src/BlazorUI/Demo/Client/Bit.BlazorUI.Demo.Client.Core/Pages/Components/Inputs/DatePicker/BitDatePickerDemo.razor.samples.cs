@@ -458,7 +458,16 @@ private int closeCount;";
 <BitDatePicker Label=""Invalid""
                Invalid
                Description=""Marked invalid by the app.""
-               AriaDescription=""Dates are stored in UTC."" />";
+               AriaDescription=""Dates are stored in UTC."" />
+
+<BitDatePicker Label=""Templates"" ErrorMessageAriaLabel=""This date is already booked."">
+    <DescriptionTemplate>
+        Bookings open <b>three months</b> ahead.
+    </DescriptionTemplate>
+    <ErrorMessageTemplate>
+        <b>Booked:</b> this date is already booked.
+    </ErrorMessageTemplate>
+</BitDatePicker>";
     private readonly string example19CsharpCode = @"
 public class BitDatePickerValidationModel
 {

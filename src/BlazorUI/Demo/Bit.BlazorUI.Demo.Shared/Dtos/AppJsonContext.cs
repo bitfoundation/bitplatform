@@ -1,4 +1,5 @@
 ﻿using Bit.BlazorUI.Demo.Shared.Dtos.QuickGridDemo;
+using Bit.BlazorUI.Demo.Shared.Dtos.SiteSearch;
 
 namespace Bit.BlazorUI.Demo.Shared.Dtos;
 
@@ -14,6 +15,7 @@ namespace Bit.BlazorUI.Demo.Shared.Dtos;
 [JsonSerializable(typeof(PagedResult<ProductDto>))]
 [JsonSerializable(typeof(PagedResult<CategoryOrProductDto>))]
 [JsonSerializable(typeof(RestErrorInfo))]
+[JsonSerializable(typeof(List<SiteSearchSectionDto>))]
 public partial class AppJsonContext : JsonSerializerContext
 {
 }

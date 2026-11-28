@@ -2,6 +2,9 @@
 
 public partial class BitDateRangePickerDemo
 {
+    /// <summary>The topic the address names (/components/daterangepicker/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -30,7 +33,7 @@ public partial class BitDateRangePickerDemo
             Name = "AutoClose",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the DateRangePicker closes automatically after selecting the second value.",
+            Description = "Whether the DateRangePicker closes automatically after selecting the second value, or after applying a preset. Ignored while AutoApply is off (the callout then waits for its Apply button), on a Standalone picker, and while IsOpen is bound one way.",
         },
         new()
         {
@@ -157,63 +160,63 @@ public partial class BitDateRangePickerDemo
             Name = "Culture",
             Type = "CultureInfo?",
             DefaultValue = "null",
-            Description = "CultureInfo for the DateRangePicker. If not set, CultureInfo.CurrentUICulture is used."
+            Description = "CultureInfo for the DateRangePicker. If not set, CultureInfo.CurrentUICulture is used. It drives the calendar system of the grids (e.g. Persian for fa-IR), the month and day names, the first day of the week, the default DateFormat and the parsing of typed text, the AM/PM designators and the text direction. It does not translate the picker's own titles and labels, which are parameters of their own."
         },
         new()
         {
             Name = "DateFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The format of each of the two dates in the DateRangePicker. Defaults to the short date pattern of the Culture, extended with the time pattern when ShowTimePicker is enabled.",
+            Description = "The format of each of the two dates in the DateRangePicker. Defaults to the short date pattern of the Culture, extended with the time pattern when ShowTimePicker is enabled. It is also the pattern typed text is parsed with when AllowTextInput is enabled; with the default format and the time picker on, a bare date is accepted too.",
         },
         new()
         {
             Name = "DayCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "Custom template to render the day cells of the DateRangePicker."
+            Description = "Custom template to render the day cells of the DateRangePicker. The context is the day at midnight in the TimeZone; the template replaces only the content of the day button, which still handles the selection, the states and the accessible name."
         },
         new()
         {
             Name = "DisabledDateErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for a typed range that lands on a day blocked by DisabledDates, DisabledDaysOfWeek or IsDateDisabled, told apart from a range that merely breaks the bounds.",
+            Description = "The custom validation error message for a typed range that lands on a day blocked by DisabledDates, DisabledDaysOfWeek or IsDateDisabled (or covers one under ExcludeDisabledDates), told apart from a range that merely breaks the bounds. Defaults to \"The {DisplayName} field contains a date that is not available.\" It reaches the screen through the cascading EditContext.",
         },
         new()
         {
             Name = "DisabledDates",
             Type = "IEnumerable<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "The list of dates that are disabled (not selectable) in the DateRangePicker, in addition to MinDate and MaxDate."
+            Description = "The list of dates that are disabled (not selectable) in the DateRangePicker, in addition to MinDate and MaxDate. Compared by calendar day in the TimeZone, so the time of each entry does not matter. A range may still span over them unless ExcludeDisabledDates is set."
         },
         new()
         {
             Name = "DisabledDaysOfWeek",
             Type = "IEnumerable<DayOfWeek>?",
             DefaultValue = "null",
-            Description = "The days of the week that are disabled (not selectable) in the DateRangePicker (e.g. weekends)."
+            Description = "The days of the week that are disabled (not selectable) in the DateRangePicker (e.g. weekends). A range may still span over them unless ExcludeDisabledDates is set."
         },
         new()
         {
             Name = "DisableFuture",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Disables every day after today, exactly as a MaxDate of today would. When both are set, the earlier of the two bounds wins.",
+            Description = "Disables every day after today, exactly as a MaxDate of today would. When both are set, the earlier of the two bounds wins. Today stays selectable, and is taken from the Today parameter when it is set.",
         },
         new()
         {
             Name = "DisablePast",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Disables every day before today, exactly as a MinDate of today would. When both are set, the later of the two bounds wins.",
+            Description = "Disables every day before today, exactly as a MinDate of today would. When both are set, the later of the two bounds wins. Today stays selectable, and is taken from the Today parameter when it is set.",
         },
         new()
         {
             Name = "DropDirection",
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
-            Description = "Determines the allowed drop directions of the callout.",
+            Description = "Determines the allowed drop directions of the callout: TopAndBottom (default) opens it below or above the field, All lets it open beside the field too when that is where the room is.",
             LinkType = LinkType.Link,
             Href = "#drop-direction-enum",
         },
@@ -363,14 +366,14 @@ public partial class BitDateRangePickerDemo
             Name = "FixedWeeks",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the day picker should always render six weeks, filling the extra rows with the days of the adjacent months, to keep the calendar height fixed while navigating between months."
+            Description = "Whether the day picker should always render six weeks, filling the extra rows with the days of the adjacent months, to keep the calendar height fixed while navigating between months. It is always on when MonthCount renders more than one month, so the months keep an even height next to each other."
         },
         new()
         {
             Name = "GetDayClass",
             Type = "Func<DateTimeOffset, string?>?",
             DefaultValue = "null",
-            Description = "Custom function to provide additional CSS classes for each day button of the DateRangePicker."
+            Description = "Custom function to provide additional CSS classes for each day button of the DateRangePicker. It is handed the day at midnight in the TimeZone, returns null for no class, and runs for every day cell on every render. The buttons are inside the callout, which a component-scoped stylesheet only reaches through ::deep."
         },
         new()
         {
@@ -472,21 +475,21 @@ public partial class BitDateRangePickerDemo
             Name = "HighlightCurrentMonth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the month picker should highlight the current month."
+            Description = "Whether the month picker should highlight the current month (today's month, while the month picker shows today's year)."
         },
         new()
         {
             Name = "HighlightedDates",
             Type = "IEnumerable<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "The list of dates that are highlighted (marked) in the day picker of the DateRangePicker."
+            Description = "The list of dates that are highlighted (marked) in the day picker of the DateRangePicker. Compared by calendar day in the TimeZone; a highlighted day stays selectable."
         },
         new()
         {
             Name = "HighlightSelectedMonth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the month picker should highlight the selected month."
+            Description = "Whether the month picker should highlight the selected month, which is the month the day picker is currently showing."
         },
         new()
         {
@@ -500,7 +503,7 @@ public partial class BitDateRangePickerDemo
             Name = "HourStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at midnight, that every hour the buttons produce sits on. A time entered as text is not held to it.",
+            Description = "The step, in hours, the spin buttons move the hour by. A step greater than 1 lays a grid over the day, starting at midnight, that every hour the buttons produce sits on. A time entered as text is not held to it. Values below 1 are treated as 1.",
         },
         new()
         {
@@ -546,21 +549,21 @@ public partial class BitDateRangePickerDemo
             Name = "InvalidErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for the invalid value."
+            Description = "The custom validation error message for a typed text that cannot be read as a range with ValueFormat and DateFormat. Defaults to \"The {DisplayName} field is not valid.\" It reaches the screen through the cascading EditContext (see ShowValidationMessage)."
         },
         new()
         {
             Name = "IsDateDisabled",
             Type = "Func<DateTimeOffset, bool>?",
             DefaultValue = "null",
-            Description = "Custom function to determine if a specific date is disabled (not selectable) in the DateRangePicker."
+            Description = "Custom function to determine if a specific date is disabled (not selectable) in the DateRangePicker. It is handed each day at midnight in the TimeZone and is called for every day cell on every render, so keep it cheap."
         },
         new()
         {
             Name = "IsOpen",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the DateRangePicker's callout is open.",
+            Description = "Whether or not the DateRangePicker's callout is open. Two-way bindable (@bind-IsOpen); bound one way, the picker never closes the callout itself and the page decides. Ignored on a Standalone picker.",
         },
         new()
         {
@@ -581,7 +584,7 @@ public partial class BitDateRangePickerDemo
             Name = "MaxDate",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "The maximum date allowed for the DateRangePicker.",
+            Description = "The maximum date allowed for the DateRangePicker. The days after it are disabled and the navigation stops at its month; a day counts from its midnight, so the day of MaxDate itself stays selectable.",
         },
         new()
         {
@@ -595,35 +598,35 @@ public partial class BitDateRangePickerDemo
             Name = "MinDate",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "The minimum date allowed for the DateRangePicker.",
+            Description = "The minimum date allowed for the DateRangePicker. The days before it are disabled and the navigation stops at its month. A day counts from its midnight, so a MinDate later than midnight disables its own day too: pass a midnight (e.g. DateTimeOffset.Now.Date) to keep it.",
         },
         new()
         {
             Name = "MinRange",
             Type = "TimeSpan?",
             DefaultValue = "null",
-            Description = "The minimum number of days that the selected range must span in the DateRangePicker. Only the days part of the provided TimeSpan is considered.",
+            Description = "The minimum number of days that the selected range must span in the DateRangePicker. Only the whole days of the provided TimeSpan are considered, counted between the start and the end day: TimeSpan.FromDays(3) puts the end at least three days after the start, and less than a day has no effect. Once the start is picked, the days closer to it on either side are disabled.",
         },
         new()
         {
             Name = "MinuteStep",
             Type = "int",
             DefaultValue = "1",
-            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the top of it, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it.",
+            Description = "The step, in minutes, the spin buttons move the minute by. A step greater than 1 lays a grid over the hour, starting at the top of it, that every minute the buttons produce sits on - which is what turns it into a five-minute or quarter-hour picker. A time entered as text is not held to it. Values below 1 are treated as 1.",
         },
         new()
         {
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "Custom template to render the month cells of the DateRangePicker."
+            Description = "Custom template to render the month cells of the DateRangePicker. The context is the first day of the month at midnight in the TimeZone; the template replaces only the content of the month button."
         },
         new()
         {
             Name = "MonthCount",
             Type = "int",
             DefaultValue = "1",
-            Description = "The number of consecutive months rendered side by side in the day picker (1 to 3), which makes picking a range that spans two months a single move. It falls back to a single month whenever the viewport is not wide enough to fit them all."
+            Description = "The number of consecutive months rendered side by side in the day picker (1 to 3), which makes picking a range that spans two months a single move. It falls back to fewer months, down to one, whenever the viewport is not wide enough to fit them all when the callout opens. Values outside 1 to 3 are clamped. With more than one month, FixedWeeks is always on and ShowOutsideDays always off."
         },
         new()
         {
@@ -705,13 +708,13 @@ public partial class BitDateRangePickerDemo
         {
             Name = "OnClear",
             Type = "EventCallback",
-            Description = "Callback for when the value is cleared using the clear button.",
+            Description = "Callback for when the value is cleared using the clear button, raised after the value has become null and the focus has returned to the input.",
         },
         new()
         {
             Name = "OnClick",
             Type = "EventCallback",
-            Description = "The callback for clicking on the DateRangePicker's input.",
+            Description = "The callback for clicking on the DateRangePicker's input. It is raised after the callout has opened, also when OpenCallout opened it.",
         },
         new()
         {
@@ -753,7 +756,7 @@ public partial class BitDateRangePickerDemo
         {
             Name = "OnPresetSelect",
             Type = "EventCallback<BitDateRangePickerPreset>",
-            Description = "The callback for when a preset is selected. The argument is the selected preset.",
+            Description = "The callback for when a preset is selected. The argument is the selected preset. It is not raised for a preset the calendar's restrictions refuse.",
             Href = "#date-range-picker-preset",
             LinkType = LinkType.Link
         },
@@ -762,14 +765,14 @@ public partial class BitDateRangePickerDemo
             Name = "OnSelectDate",
             Type = "EventCallback<BitDateRangePickerValue?>",
             DefaultValue = "",
-            Description = "The callback for when the user picks a day in the calendar, reporting the range as it stands after the pick - so a range with only its start date set, while the second day is still to be chosen, is reported too.",
+            Description = "The callback for when the user picks a day in the calendar, reporting the range as it stands after the pick - so a range with only its start date set, while the second day is still to be chosen, is reported too. It is raised for day picks only: presets, typed text, the time picker and the clear button change the value without it (OnChange follows them all).",
         },
         new()
         {
             Name = "OutOfRangeErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for a range entered as text that breaks the bounds, the disabled days, or MinRange and MaxRange. Text that does not read as a range at all reports InvalidErrorMessage instead.",
+            Description = "The custom validation error message for a range entered as text that breaks the bounds (MinDate, MaxDate, DisablePast, DisableFuture) or MinRange and MaxRange. Text that does not read as a range at all reports InvalidErrorMessage instead, and a range touching a day blocked by DisabledDates, DisabledDaysOfWeek or IsDateDisabled reports DisabledDateErrorMessage. Defaults to \"The {DisplayName} field is out of the allowed range.\" It reaches the screen through the cascading EditContext.",
         },
         new()
         {
@@ -790,7 +793,7 @@ public partial class BitDateRangePickerDemo
             Name = "Presets",
             Type = "IEnumerable<BitDateRangePickerPreset>?",
             DefaultValue = "null",
-            Description = "The list of shortcuts, rendered next to the calendar, that fill the DateRangePicker with a predefined range (e.g. \"Last 7 days\").",
+            Description = "The list of shortcuts, rendered next to the calendar, that fill the DateRangePicker with a predefined range (e.g. \"Last 7 days\"). A preset's range is applied exactly as given, times included. One whose ends fall outside MinDate/MaxDate or on a disabled day, that is shorter than MinRange, or that covers a disabled day under ExcludeDisabledDates is ignored; one longer than MaxRange is cut to it.",
             LinkType = LinkType.Link,
             Href = "#date-range-picker-preset",
         },
@@ -854,7 +857,7 @@ public partial class BitDateRangePickerDemo
             Name = "Responsive",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Enables the responsive mode in small screens.",
+            Description = "Enables the responsive mode in small screens: below the small-screen breakpoint the callout becomes a full-width panel that slides down from the top of the screen and is dismissed by swiping it up. It has no effect on a Standalone picker.",
         },
         new()
         {
@@ -868,56 +871,56 @@ public partial class BitDateRangePickerDemo
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the clear button should be shown or not when the DateRangePicker has a value."
+            Description = "Whether the clear button should be shown or not when the DateRangePicker has a value. It is never shown while the picker is Disabled or ReadOnly."
         },
         new()
         {
             Name = "ShowCloseButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the DateRangePicker's close button should be shown or not."
+            Description = "Whether the DateRangePicker's close button should be shown or not. It is never rendered on a Standalone picker."
         },
         new()
         {
             Name = "ShowGoToToday",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the GoToToday button should be shown or not."
+            Description = "Whether the GoToToday button should be shown or not. The button navigates back to today's month without selecting anything, and is disabled while that month is already shown."
         },
         new()
         {
             Name = "ShowMonthPicker",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the month picker is shown or hidden.",
+            Description = "Whether the month picker is shown or hidden. Hidden, the calendar is navigated with the month arrows alone.",
         },
         new()
         {
             Name = "ShowMonthPickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show month picker on top of date range picker when visible.",
+            Description = "Show month picker on top of date range picker when visible: instead of beside the day grid, it opens over it from the month title. The picker does this on its own on a narrow viewport and whenever the time picker is shown beside the calendar.",
         },
         new()
         {
             Name = "ShowOutsideDays",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the days of the previous and next months, filling the first and last week rows, should be rendered.",
+            Description = "Whether the days of the previous and next months, filling the first and last week rows, should be rendered. They can be picked like any other day. It has no effect when MonthCount renders more than one month, since those days would then show up in two grids at once.",
         },
         new()
         {
             Name = "ShowTimePicker",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not render the time-picker.",
+            Description = "Whether or not render the time-picker: a start time for StartDate and an end time for EndDate. It also adds the time to the default DateFormat. Without it, a picked range runs from 00:00 on its first day to 23:59 on its last (or the times of StartingValue).",
         },
         new()
         {
             Name = "ShowTimePickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show the time picker on top of the date range picker when visible.",
+            Description = "Show the time picker on top of the date range picker when visible: instead of beside the calendar, it is opened over it by a toggle button (ShowTimePickerIcon / HideTimePickerIcon). The picker does this on its own on a narrow viewport.",
         },
         new()
         {
@@ -970,14 +973,14 @@ public partial class BitDateRangePickerDemo
             Name = "Standalone",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the DateRangePicker is rendered standalone or with the input component and callout.",
+            Description = "Whether the DateRangePicker is rendered standalone or with the input component and callout. Standalone, the calendar is part of the page and every pick applies at once; IsOpen, AutoClose, AutoApply, ShowCloseButton, Responsive, DropDirection and AutoFocus have no effect, and the value is carried by a hidden input.",
         },
         new()
         {
             Name = "StartingValue",
             Type = "BitDateRangePickerValue?",
             DefaultValue = "null",
-            Description = "Specifies the date and time of the date and time picker when it is opened without any selected value.",
+            Description = "Specifies the date and time of the date and time picker when it is opened without any selected value: the month of its StartDate is the one shown, and its start and end times are the times the time picker starts from and the picked days take. It never becomes the value itself.",
         },
         new()
         {
@@ -1099,7 +1102,7 @@ public partial class BitDateRangePickerDemo
             Name = "TimeFormat",
             Type = "BitTimeFormat",
             DefaultValue = "BitTimeFormat.TwentyFourHours",
-            Description = "Time format of the time-pickers, 24H or 12H.",
+            Description = "Time format of the time-pickers, 24H or 12H. TwelveHours adds AM/PM buttons to each time and changes the time pattern of the default DateFormat.",
             LinkType = LinkType.Link,
             Href = "#time-format-enum",
         },
@@ -1108,14 +1111,14 @@ public partial class BitDateRangePickerDemo
             Name = "TimeZone",
             Type = "TimeZoneInfo?",
             DefaultValue = "null",
-            Description = "TimeZone for the DateRangePicker."
+            Description = "TimeZone for the DateRangePicker. If not set, TimeZoneInfo.Local is used, which is the browser's zone under WebAssembly but the server's under Blazor Server and prerendering. Picked dates carry its offset, and today, the bounds, the disabled and highlighted dates and the times are all read in it."
         },
         new()
         {
             Name = "Today",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "Overrides the date considered as today by the DateRangePicker, which is DateTimeOffset.Now by default."
+            Description = "Overrides the date considered as today by the DateRangePicker, which is DateTimeOffset.Now by default. It moves the highlighted today cell, the GoToToday button, DisablePast/DisableFuture and the month an empty picker opens on."
         },
         new()
         {
@@ -1129,7 +1132,7 @@ public partial class BitDateRangePickerDemo
             Name = "ValueFormat",
             Type = "string",
             DefaultValue = "Start: {0} - End: {1}",
-            Description = "The string format used to show the DateRangePicker's value in its input, where {0} is the start date and {1} is the end date. It is also the template used to parse the typed text back when AllowTextInput is enabled.",
+            Description = "The string format used to show the DateRangePicker's value in its input, where {0} is the start date and {1} is the end date. It is also the template used to parse the typed text back when AllowTextInput is enabled, for which it must hold {0} before {1} with some text between them; its literal parts are matched ignoring case.",
         },
         new()
         {
@@ -1157,7 +1160,7 @@ public partial class BitDateRangePickerDemo
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
-            Description = "Custom template to render the year cells of the DateRangePicker."
+            Description = "Custom template to render the year cells of the DateRangePicker. The context is the year, counted in the Culture's calendar; the template replaces only the content of the year button."
         },
         new()
         {
@@ -1444,14 +1447,14 @@ public partial class BitDateRangePickerDemo
                    Name = "StartDate",
                    Type = "DateTimeOffset?",
                    DefaultValue = "null",
-                   Description = "Indicates the beginning of the date range.",
+                   Description = "Indicates the beginning of the date range. A day picked in the calendar carries the start time: 00:00 unless the time picker or StartingValue sets another.",
                },
                new()
                {
                    Name = "EndDate",
                    Type = "DateTimeOffset?",
                    DefaultValue = "null",
-                   Description = "Indicates the end of the date range.",
+                   Description = "Indicates the end of the date range, null while only the start is picked. A day picked in the calendar carries the end time: 23:59 unless the time picker or StartingValue sets another.",
                }
             ]
         },
@@ -1473,7 +1476,7 @@ public partial class BitDateRangePickerDemo
                     Name = "Value",
                     Type = "BitDateRangePickerValue?",
                     DefaultValue = "null",
-                    Description = "The range applied when the preset is selected. ValueProvider takes precedence over this when both are set.",
+                    Description = "The range applied when the preset is selected, exactly as given, times included. ValueProvider takes precedence over this when both are set.",
                     Href = "#date-range-picker-value",
                     LinkType = LinkType.Link
                 },

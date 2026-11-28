@@ -1585,6 +1585,9 @@ public class BitDateRangePickerTests : BunitTestContext
         {
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            // The field writes the date in the picker's TimeZone, so a UTC midnight is read in UTC rather than in the
+            // machine's own zone, where it is the day before anywhere west of Greenwich.
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.Value, new BitDateRangePickerValue
             {
                 StartDate = new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero)
@@ -1873,6 +1876,116 @@ public class BitDateRangePickerTests : BunitTestContext
         var focusedAfter = component.FindAll(".bit-dtrp-dbt").Single(d => d.GetAttribute("tabindex") == "0");
 
         Assert.AreEqual("16", focusedAfter.TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldWriteTheFieldInItsTimeZone()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var tehran = TimeZoneInfo.CreateCustomTimeZone("test+03:30", TimeSpan.FromHours(3.5), "test+03:30", "test+03:30");
+
+        // 22:00 UTC on March 1 is 01:30 on March 2 in a zone three and a half hours ahead: the day the calendar marks,
+        // and so the day the field has to say - BitDatePicker writes its field the same way.
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.TimeZone, tehran);
+            parameters.Add(p => p.Value, new BitDateRangePickerValue
+            {
+                StartDate = new DateTimeOffset(2024, 3, 1, 22, 0, 0, TimeSpan.Zero),
+                EndDate = new DateTimeOffset(2024, 3, 4, 22, 0, 0, TimeSpan.Zero)
+            });
+        });
+
+        Assert.AreEqual("Start: 2024-03-02 - End: 2024-03-05", component.Find(".bit-dtrp-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldOpenOnTheMonthOfTheStartInItsTimeZone()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var tehran = TimeZoneInfo.CreateCustomTimeZone("test+03:30", TimeSpan.FromHours(3.5), "test+03:30", "test+03:30");
+
+        // 22:00 UTC on January 31 is February 1 in the picker's zone, the day it marks as the start, so the calendar
+        // opens on February rather than on the month the offset the value carries would say.
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, tehran);
+            parameters.Add(p => p.Value, new BitDateRangePickerValue
+            {
+                StartDate = new DateTimeOffset(2024, 1, 31, 22, 0, 0, TimeSpan.Zero)
+            });
+        });
+
+        StringAssert.Contains(component.Markup, MonthTitle(2024, 2));
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dss").Count, "The start day is not marked on the month shown.");
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldKeepTheFocusInTheCalendarWhenTheMinRangeDisablesThePickedStart()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var today = new DateTimeOffset(2024, 6, 12, 0, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.MinRange, TimeSpan.FromDays(3));
+        });
+
+        var june12 = component.FindAll(".bit-dtrp-dbt")
+                              .Single(d => d.TextContent.Trim() == "12" && d.ClassList.Contains("bit-dtrp-dbo") is false);
+        var focusCalls = Context.JSInterop.Invocations["BitBlazorUI.Calendars.focusCell"].Count;
+
+        june12.Click();
+
+        // The picked start now cannot close a 3-day-minimum range, so its button is disabled and cannot hold the focus:
+        // the focus moves on to June 15, the first day that can close the range.
+        var picked = component.FindAll(".bit-dtrp-dbt")
+                              .Single(d => d.TextContent.Trim() == "12" && d.ClassList.Contains("bit-dtrp-dbo") is false);
+        Assert.IsTrue(picked.HasAttribute("disabled"));
+
+        var focus = Context.JSInterop.Invocations["BitBlazorUI.Calendars.focusCell"];
+        Assert.HasCount(focusCalls + 1, focus);
+        StringAssert.EndsWith((string)focus[^1].Arguments[0]!, "-day-2024-06-15");
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldMoveTheFocusPastTheDaysTheExcludedDatesPutOutOfReach()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var today = new DateTimeOffset(2024, 6, 12, 0, 0, 0, TimeSpan.Zero);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Today, today);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.MinRange, TimeSpan.FromDays(3));
+            parameters.Add(p => p.DisabledDates, [new DateTimeOffset(2024, 6, 14, 0, 0, 0, TimeSpan.Zero)]);
+            parameters.Add(p => p.ExcludeDisabledDates, true);
+        });
+
+        var june12 = component.FindAll(".bit-dtrp-dbt")
+                              .Single(d => d.TextContent.Trim() == "12" && d.ClassList.Contains("bit-dtrp-dbo") is false);
+
+        june12.Click();
+
+        // A range from June 12 can't reach past the disabled June 14, so June 15 is out of reach as well as the
+        // 3-day minimum's days: the first day that can close the range is June 9, before the start.
+        var june15 = component.FindAll(".bit-dtrp-dbt")
+                              .Single(d => d.TextContent.Trim() == "15" && d.ClassList.Contains("bit-dtrp-dbo") is false);
+        Assert.IsTrue(june15.HasAttribute("disabled"));
+
+        var focus = Context.JSInterop.Invocations["BitBlazorUI.Calendars.focusCell"];
+        StringAssert.EndsWith((string)focus[^1].Arguments[0]!, "-day-2024-06-09");
     }
 
     [TestMethod]
