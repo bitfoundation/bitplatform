@@ -34,7 +34,7 @@ public partial class HomePage
         new("Command palette", "A keyboard-first Ctrl+K palette with fuzzy search, nested pages and shortcuts.", ["BlazorUI"]),
         new("Barcode scanner", "QR codes and barcodes from the camera or from images, decoded in C# with no SDK.", ["BbScanner"]),
         new("Motion", "Springs, gestures, drag, layout and exit animations, declared in Razor.", ["Bmotion"]),
-        new("Drag and drop", "Typed drag and drop between any sources and targets, and lists that reorder by mouse or keyboard.", ["Bdnd", "Bortable"]),
+        new("Drag and drop", "Typed drag and drop between any sources and targets.", ["Bdnd"]),
         new("Forms", "Describe a form once, from a C# type, a fluent builder or JSON Schema, and it renders and validates itself.", ["Borm"]),
         new("Telemetry", "Logs, traces, metrics and web vitals from the browser and from .NET, over OpenTelemetry.", ["Belemetry"]),
         new("Node editors", "Flow charts, diagrams and node-based editors on a pannable, zoomable canvas.", ["Blow"]),

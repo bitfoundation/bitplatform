@@ -1,0 +1,144 @@
+﻿@page "/e2e/sortable/accessibility"
+
+@* Two BitSortable lists to drive without a pointer: the buttons of each item move it with MoveAsync and MoveToAsync,
+   OnEnd logs each move with its Input, and the announcements are read in English or, through Strings, in German -
+   each also written to the page's "heard" log. *@
+
+<PageTitle>BitSortable accessibility E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable accessibility</h1>
+
+<E2ESection Id="a11y" Title="MoveAsync, MoveToAsync and Strings">
+    <div class="srt-controls">
+        <button type="button" id="a11y-english" aria-pressed="@(!_german ? "true" : "false")" @onclick="() => _german = false">English</button>
+        <button type="button" id="a11y-german" aria-pressed="@(_german ? "true" : "false")" @onclick="() => _german = true">Deutsch</button>
+    </div>
+    <div class="srt-cols">
+        <div class="srt-col">
+            <p class="srt-col-title">Backlog</p>
+            <BitSortable @ref="_backlogList" @bind-Items="_backlog" TItem="string" Group="a11y" Id="a11y-backlog"
+                         AriaLabel="Backlog" OnEnd="Log" Strings="Texts" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">
+                    <span>@item</span>
+                    <span class="a11y-actions">
+                        <button type="button" aria-label="@($"Move {item} up")" @onclick="() => MoveUp(_backlogList, _backlog, item)">↑</button>
+                        <button type="button" aria-label="@($"Move {item} down")" @onclick="() => MoveDown(_backlogList, _backlog, item)">↓</button>
+                        <button type="button" aria-label="@($"Move {item} to the Sprint")" @onclick='() => _backlogList.MoveToAsync(item, "a11y-sprint", _sprint.Count)'>→</button>
+                    </span>
+                </ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">Sprint</p>
+            <BitSortable @ref="_sprintList" @bind-Items="_sprint" TItem="string" Group="a11y" Id="a11y-sprint"
+                         AriaLabel="Sprint" OnEnd="Log" Strings="Texts" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">
+                    <span>@item</span>
+                    <span class="a11y-actions">
+                        <button type="button" aria-label="@($"Move {item} up")" @onclick="() => MoveUp(_sprintList, _sprint, item)">↑</button>
+                        <button type="button" aria-label="@($"Move {item} down")" @onclick="() => MoveDown(_sprintList, _sprint, item)">↓</button>
+                        <button type="button" aria-label="@($"Move {item} back to the Backlog")" @onclick='() => _sprintList.MoveToAsync(item, "a11y-backlog", _backlog.Count)'>←</button>
+                    </span>
+                </ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">Backlog: <span id="a11y-backlog-order">@string.Join(", ", _backlog)</span></p>
+    <p class="demo-order">Sprint: <span id="a11y-sprint-order">@string.Join(", ", _sprint)</span></p>
+    <div class="srt-cols">
+        <div class="srt-col">
+            <p class="srt-col-title">What a screen reader hears</p>
+            <div class="srt-log" id="a11y-heard">
+                @foreach (var line in _heard)
+                {
+                    <div class="event-log__line">@line</div>
+                }
+            </div>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">Moves</p>
+            <div class="srt-log" id="a11y-log">
+                @foreach (var line in _log)
+                {
+                    <div class="event-log__line">@line</div>
+                }
+            </div>
+        </div>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item a11y-item", Ghost = "demo-ghost" };
+
+    private BitSortable<string> _backlogList = default!;
+    private BitSortable<string> _sprintList = default!;
+    private IList<string> _backlog = new List<string> { "Sign-up page", "Password reset", "Audit log", "Dark mode" };
+    private IList<string> _sprint = new List<string> { "Search", "Export to CSV" };
+    private readonly List<string> _log = [];
+    private readonly List<string> _heard = [];
+    private bool _german;
+
+    private BitSortableStrings? _englishTexts, _germanTexts;
+
+    private BitSortableStrings Texts => _german ? (_germanTexts ??= Overheard(German)) : (_englishTexts ??= Overheard(new BitSortableStrings()));
+
+    private static Task MoveUp(BitSortable<string> list, IList<string> items, string item)
+        => list.MoveAsync(item, Math.Max(0, items.IndexOf(item) - 1));
+
+    private static Task MoveDown(BitSortable<string> list, IList<string> items, string item)
+        => list.MoveAsync(item, Math.Min(items.Count - 1, items.IndexOf(item) + 1));
+
+    private void Log(BitSortableEventArgs<string> e)
+    {
+        var what = e.Canceled ? "cancelled" : e.CrossedLists ? $"{e.FromId} -> {e.ToId}#{e.NewIndex}" : $"#{e.OldIndex} -> #{e.NewIndex}";
+        _log.Insert(0, $"[{e.Input.ToString().ToLowerInvariant()}] {e.Item}: {what}");
+    }
+
+    private static readonly BitSortableStrings German = new()
+    {
+        RoleDescription = "sortierbares Element",
+        PickedUp = a => $"{a.Item} aufgenommen. Position {a.Position} von {a.Count}{In(a.List)}.",
+        Moved = a => $"{a.Item} auf Position {a.Position} von {a.Count}{In(a.List)} verschoben.",
+        Dropped = a => a.Returned
+            ? $"{a.Item} abgelegt. Wieder auf Position {a.Position} von {a.Count}{In(a.List)}."
+            : $"{a.Item} auf Position {a.Position} von {a.Count}{In(a.List)} abgelegt.",
+        Canceled = a => $"Abgebrochen. {a.Item} ist wieder auf Position {a.Position} von {a.Count}{In(a.List)}.",
+    };
+
+    private static string In(string? list) => list is null ? "" : $" in {list}";
+
+    // The same strings, each also written to the page's "heard" log.
+    private BitSortableStrings Overheard(BitSortableStrings m) => new()
+    {
+        Instructions = m.Instructions,
+        SelectionInstructions = m.SelectionInstructions,
+        RoleDescription = m.RoleDescription,
+        PickedUp = a => Heard(m.PickedUp(a)),
+        Moved = a => Heard(m.Moved(a)),
+        SwapTarget = a => Heard(m.SwapTarget(a)),
+        Dropped = a => Heard(m.Dropped(a)),
+        Canceled = a => Heard(m.Canceled(a)),
+        Refused = a => Heard(m.Refused(a)),
+        Locked = a => Heard(m.Locked(a)),
+        Selected = a => Heard(m.Selected(a)),
+        Deselected = a => Heard(m.Deselected(a)),
+    };
+
+    // A string is made while the list is busy with the drag: the log is shown once the list is done.
+    private string Heard(string text)
+    {
+        _heard.Insert(0, text);
+        _ = ShowHeardAsync();
+        return text;
+    }
+
+    private async Task ShowHeardAsync()
+    {
+        await Task.Yield();
+        StateHasChanged();
+    }
+}

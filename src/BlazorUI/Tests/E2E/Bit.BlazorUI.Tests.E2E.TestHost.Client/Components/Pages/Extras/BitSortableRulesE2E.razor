@@ -1,0 +1,106 @@
+﻿@page "/e2e/sortable/rules"
+
+@* BitSortable's rules: a board with a column that holds three cards at most (MaxItems), one that takes cards from one
+   other column only (CanDrop) and asks the "server" about every drop (ConfirmDrop), and cards that go back when they
+   are released outside the board (RevertOnSpill), with the lists marked while a drag runs (the accepts, over and
+   refused outlines); and a pipeline that keeps at least two steps (MinItems). *@
+
+<PageTitle>BitSortable rules E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable rules</h1>
+
+<E2ESection Id="rules" Title="CanDrop, ConfirmDrop, MaxItems, RevertOnSpill">
+    <div class="rules-board">
+    <div class="srt-controls">
+        <label><input id="rules-approve" type="checkbox" @bind="_approve" /> The server approves drops into Done</label>
+    </div>
+    <div class="srt-cols">
+        <div class="srt-col">
+            <p class="srt-col-title">To do</p>
+            <BitSortable @bind-Items="_todo" TItem="Card" Group="rules" Id="rules-todo" AriaLabel="To do"
+                         ItemLabel="c => c.Title" RevertOnSpill="true" OnEnd="OnDragEnd" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="card">@card.Title</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">In progress (3 at most)</p>
+            <BitSortable @bind-Items="_doing" TItem="Card" Group="rules" Id="rules-doing" AriaLabel="In progress"
+                         ItemLabel="c => c.Title" RevertOnSpill="true" MaxItems="3" OnEnd="OnDragEnd" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="card">@card.Title</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">Done (from In progress)</p>
+            <BitSortable @bind-Items="_done" TItem="Card" Group="rules" Id="rules-done" AriaLabel="Done"
+                         ItemLabel="c => c.Title" RevertOnSpill="true" OnEnd="OnDragEnd"
+                         CanDrop='e => e.FromId is "rules-doing" or "rules-done"' ConfirmDrop="ConfirmAsync"
+                         Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="card">@card.Title</ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">To do: <span id="rules-todo-order">@string.Join(", ", _todo.Select(c => c.Title))</span></p>
+    <p class="demo-order">In progress: <span id="rules-doing-order">@string.Join(", ", _doing.Select(c => c.Title))</span></p>
+    <p class="demo-order">Done: <span id="rules-done-order">@string.Join(", ", _done.Select(c => c.Title))</span></p>
+    <p class="demo-order">Server: <span id="rules-status">@_status</span></p>
+    <p class="demo-order">Last drag: <span id="rules-last">@_last</span></p>
+    </div>
+</E2ESection>
+
+<E2ESection Id="steps" Title="MinItems">
+    <div class="srt-cols">
+        <div class="srt-col">
+            <p class="srt-col-title">Pipeline (at least 2 steps)</p>
+            <BitSortable @bind-Items="_pipeline" TItem="string" Group="steps" MinItems="2" Id="steps-pipeline"
+                         AriaLabel="Pipeline" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="step">@step</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">Unused steps</p>
+            <BitSortable @bind-Items="_shelf" TItem="string" Group="steps" Id="steps-shelf" AriaLabel="Unused steps"
+                         EmptyText="Every step is in the pipeline." Class="demo-list" Classes="_tintedClasses">
+                <ItemTemplate Context="step">@step</ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">Pipeline: <span id="steps-order">@string.Join(" → ", _pipeline)</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private sealed record Card(int Id, string Title);
+
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item", Ghost = "demo-ghost" };
+    private readonly BitSortableClassStyles _tintedClasses = new() { Item = "demo-item tinted", Ghost = "demo-ghost" };
+
+    private IList<Card> _todo = new List<Card> { new(1, "Write the spec"), new(2, "Draw the icons"), new(3, "Plan the launch") };
+    private IList<Card> _doing = new List<Card> { new(4, "Build the API"), new(5, "Review the PR") };
+    private IList<Card> _done = new List<Card> { new(6, "Set up CI") };
+
+    private bool _approve = true;
+    private string _status = "idle";
+    private string _last = "nothing yet";
+
+    private IList<string> _pipeline = new List<string> { "Build", "Test", "Deploy" };
+    private IList<string> _shelf = new List<string> { "Lint", "Benchmark" };
+
+    // Stands in for a call to a server that may refuse the move.
+    private async Task<bool> ConfirmAsync(BitSortableEventArgs<Card> e)
+    {
+        _status = $"asking about {e.Item.Title}…";
+        StateHasChanged();
+        await Task.Delay(300);
+        _status = _approve ? $"saved {e.Item.Title}" : $"refused {e.Item.Title}";
+        StateHasChanged();
+        return _approve;
+    }
+
+    private void OnDragEnd(BitSortableEventArgs<Card> e)
+        => _last = e.Canceled ? $"{e.Item.Title}: cancelled, everything put back"
+                 : e.CrossedLists ? $"{e.Item.Title}: {e.FromId} -> {e.ToId}#{e.NewIndex}"
+                 : $"{e.Item.Title}: #{e.OldIndex} -> #{e.NewIndex}";
+}

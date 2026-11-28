@@ -195,7 +195,7 @@ Engineering tracking document; see [gap-analysis.md](gap-analysis.md) for the re
 | --- | --- | --- | --- | --- | --- |
 | Barcodes and QR codes from Bmage images, with preprocessing retries | verified | P1 | `Bit.Bmage.BbScanner` | `Tests/Bit.Bmage.Tests.Integrations/BarcodeTests` (soft QR and Code 128 read only after preprocessing, corners mapped back, image unchanged), E2E `ScanAndCropperTests` | Preprocessing limited to what measurably rescues reads |
 | Bink documents from Bmage images, drawings back as images and layers | verified | P1 | `Bit.Bmage.Bink` | `Tests/Bit.Bmage.Tests.Integrations/BinkTests` (round trip exact, flatten, overlay at 2x, layer equals flatten, size limit, skipped text) | Text drawn only with a `TextRasterizer`, reported otherwise |
-| Borm, Blex, BlazeDb, Bsqlite, Bcrdt, Bdnd, Bortable | not applicable as packages | - | `docs/integrations.md` | - | Plain data and documented recipes; see gap analysis 12 |
+| Borm, Blex, BlazeDb, Bsqlite, Bcrdt, Bdnd, BitSortable | not applicable as packages | - | `docs/integrations.md` | - | Plain data and documented recipes; see gap analysis 12 |
 
 ## Verification log
 

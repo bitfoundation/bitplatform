@@ -1,0 +1,82 @@
+﻿@page "/e2e/sortable/clone"
+
+@* BitSortable's pull and put rules: a clone source (Pull="Clone" with a Clone factory), whose items are copied into
+   the target and stay; and a list to pick from (Sort="false", Put="false"), whose order never changes and which
+   refuses every drop, while its items can still be dragged out. *@
+
+<PageTitle>BitSortable clone, sort and put E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable clone, sort and put</h1>
+
+<E2ESection Id="clone" Title="Clone">
+    <div class="srt-cols">
+        <div class="srt-col">
+            <p class="srt-col-title">Source (clone)</p>
+            <BitSortable @bind-Items="_source" TItem="Fruit" Group="clone-shared" Id="clone-source" AriaLabel="Source"
+                         Pull="BitSortablePull.Clone" Clone="Duplicate" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item.Name</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">Target</p>
+            <BitSortable @bind-Items="_target" TItem="Fruit" Group="clone-shared" Id="clone-target" AriaLabel="Target"
+                         Class="demo-list" Classes="_tintedClasses">
+                <ItemTemplate Context="item">@item.Name</ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">Source: <span id="clone-source-order">@string.Join(", ", _source.Select(i => i.Name))</span></p>
+    <p class="demo-order">Target: <span id="clone-target-order">@string.Join(", ", _target.Select(i => i.Name))</span></p>
+</E2ESection>
+
+<E2ESection Id="disable-sort" Title="Sort and Put">
+    <div class="srt-cols">
+        <div class="srt-col">
+            <p class="srt-col-title">Source (no sorting, no put)</p>
+            <BitSortable @bind-Items="_pickFrom" TItem="string" Group="ds-shared" Id="disable-sort-source" AriaLabel="Pick from"
+                         Sort="false" Put="false" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <p class="srt-col-title">Target</p>
+            <BitSortable @bind-Items="_picked" TItem="string" Group="ds-shared" Id="disable-sort-target" AriaLabel="Picked"
+                         Class="demo-list" Classes="_tintedClasses">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">Source: <span id="disable-sort-source-order">@string.Join(", ", _pickFrom)</span></p>
+    <p class="demo-order">Target: <span id="disable-sort-target-order">@string.Join(", ", _picked)</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    // A reference type: every clone the factory makes is an item of its own.
+    public sealed class Fruit
+    {
+        public required string Name { get; init; }
+    }
+
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item", Ghost = "demo-ghost" };
+    private readonly BitSortableClassStyles _tintedClasses = new() { Item = "demo-item tinted", Ghost = "demo-ghost" };
+
+    private IList<Fruit> _source = new List<Fruit>
+    {
+        new() { Name = "Apple" }, new() { Name = "Banana" }, new() { Name = "Cherry" }, new() { Name = "Date" }, new() { Name = "Elderberry" },
+    };
+
+    private IList<Fruit> _target = new List<Fruit>
+    {
+        new() { Name = "Item 1" }, new() { Name = "Item 2" }, new() { Name = "Item 3" },
+        new() { Name = "Item 4" }, new() { Name = "Item 5" }, new() { Name = "Item 6" },
+    };
+
+    private IList<string> _pickFrom = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+    private IList<string> _picked = new List<string> { "Item A", "Item B", "Item C" };
+
+    private static Fruit Duplicate(Fruit item) => new() { Name = item.Name };
+}

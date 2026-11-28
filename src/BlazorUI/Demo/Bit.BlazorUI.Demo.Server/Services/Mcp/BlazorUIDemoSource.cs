@@ -205,7 +205,7 @@ public static partial class BlazorUIDemoSource
             builder.Append(' ').Append(child.InnerText);
         }
 
-        // Read out of the .razor source, where a literal @ is written as the escape @@.
+        // The text is read out of the .razor source, where a literal @ is written as the escape @@.
         var prose = Collapse(WebUtility.HtmlDecode(builder.ToString()).Replace("@@", "@", StringComparison.Ordinal));
 
         // Long enough to be a sentence, and with a space in it. Everything shorter that survived
@@ -230,14 +230,26 @@ public static partial class BlazorUIDemoSource
         return string.IsNullOrWhiteSpace(value) ? null : Collapse(WebUtility.HtmlDecode(value).Replace("@@", "@", StringComparison.Ordinal));
     }
 
-    /// <summary>The text of a <c>&lt;NotesTemplate&gt;</c>, for the pages that write their notes as markup.</summary>
+    /// <summary>
+    /// The text of a <c>&lt;NotesTemplate&gt;</c>, for the pages that write their notes as markup.
+    /// <para>
+    /// Read one top-level paragraph at a time, leaving out the one that says to install the package: nearly every
+    /// Extras page opens its notes with it, and the answer says the same with the package name, the registration call
+    /// and the tags. Dropping the whole note for it, as the attribute form is, would also drop the paragraphs after it,
+    /// which are the page's own notes - what the component needs to be used right.
+    /// </para>
+    /// </summary>
     private static string? TemplateText(HtmlNode page, string templateName)
     {
         var template = page.ChildNodes.FirstOrDefault(n => n.Name.Equals(templateName, StringComparison.OrdinalIgnoreCase));
 
         if (template is null) return null;
 
-        var text = Collapse(WebUtility.HtmlDecode(template.InnerText).Replace("@@", "@", StringComparison.Ordinal));
+        var paragraphs = template.ChildNodes
+                                 .Select(n => Collapse(WebUtility.HtmlDecode(n.InnerText).Replace("@@", "@", StringComparison.Ordinal)))
+                                 .Where(t => t.Length > 0 && t.Contains("install the", StringComparison.OrdinalIgnoreCase) is false);
+
+        var text = string.Join(" ", paragraphs);
 
         return text.Length == 0 ? null : text;
     }

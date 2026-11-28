@@ -1,0 +1,23 @@
+﻿@page "/e2e/sortable/grid"
+
+@* BitSortable laid out as a CSS grid, which reorders across its rows in both directions. *@
+
+<PageTitle>BitSortable grid E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable grid</h1>
+
+<E2ESection Id="grid" Title="Grid">
+    <BitSortable @bind-Items="_items" TItem="int" Id="grid-list" AriaLabel="Squares" Class="demo-grid"
+                 Classes="@(new() { Ghost = "demo-ghost" })">
+        <ItemTemplate Context="n"><div class="grid-square">@n</div></ItemTemplate>
+    </BitSortable>
+    <p class="demo-order">Order: <span id="grid-order">@string.Join(", ", _items)</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private IList<int> _items = Enumerable.Range(1, 16).ToList();
+}

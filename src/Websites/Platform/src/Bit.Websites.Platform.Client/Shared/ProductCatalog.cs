@@ -34,7 +34,6 @@ public static class ProductCatalog
         new("Borm", "Schema-driven forms for Blazor", Urls.Borm, External: true),
         new("Bcrdt", "Real-time collaborative editing for Blazor", Urls.Bcrdt, External: true),
         new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
-        new("Bortable", "Blazor-native sortable lists", Urls.Bortable, External: true),
         new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
         new("Belemetry", "OpenTelemetry for every Blazor app", Urls.Belemetry, External: true),
         new("Bheadless", "Accessible, unstyled Blazor UI primitives", Urls.Bheadless, External: true),

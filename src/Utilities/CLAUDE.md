@@ -1,7 +1,7 @@
 ﻿# bit Utilities
 
 Guidance that holds for every library under `src/Utilities` (BbScanner, Bcrdt, Bdnd, Belemetry, BevTools,
-Bheadless, Bink, BlazeDb, Blex, Blow, Bmage, Bmotion, Bonboarding, Borm, Bortable, Bsqlite, ...). A library's own
+Bheadless, Bink, BlazeDb, Blex, Blow, Bmage, Bmotion, Bonboarding, Borm, Bsqlite, ...). A library's own
 `CLAUDE.md`, where it has one, adds to these rules; it never relaxes them. Coding style comes from the `.editorconfig`
 at the root of the `src` folder ([../CLAUDE.md](../CLAUDE.md)).
 

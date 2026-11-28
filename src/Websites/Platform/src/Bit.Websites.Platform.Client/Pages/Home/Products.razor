@@ -362,27 +362,6 @@ _open = await _live.RefreshAsync();</CodeBox>
         },
         new()
         {
-            Title = "Drag to reorder, by mouse or keyboard",
-            Subtitle = "bit Bortable · drag-and-drop lists and boards",
-            LinkUrl = Urls.Bortable,
-            Body = @<text>
-                <BitText Typography="BitTypography.Subtitle1" Gutter>
-                    bit Bortable reorders a list, or moves items between lists that share a group - kanban boards, palettes, nested trees.
-                    It sorts your own IList&lt;T&gt; in place, borrows SortableJS's swap behavior, lets your code approve each drop, and
-                    works fully by keyboard and screen reader.
-                </BitText>
-                <div>
-                    <CodeBox HideCopyButton>&lt;Bortable @@bind-Items="todo" TItem="string" Group="board">
-    &lt;ItemTemplate Context="item">@@item&lt;/ItemTemplate>
-&lt;/Bortable>
-&lt;Bortable @@bind-Items="done" TItem="string" Group="board">
-    &lt;ItemTemplate Context="item">@@item&lt;/ItemTemplate>
-&lt;/Bortable></CodeBox>
-                </div>
-            </text>
-        },
-        new()
-        {
             Title = "State management without the boilerplate",
             Subtitle = "bit Blex · reactive state for Blazor and .NET MAUI",
             LinkUrl = Urls.Blex,

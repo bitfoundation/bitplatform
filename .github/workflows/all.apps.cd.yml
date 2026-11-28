@@ -127,12 +127,6 @@ jobs:
     uses: ./.github/workflows/cd.bonboarding.demo.yml
     secrets: inherit
 
-  bortable_demo:
-    name: bortable demo
-    if: inputs.server
-    uses: ./.github/workflows/cd.bortable.demo.yml
-    secrets: inherit
-
   belemetry_demo:
     name: belemetry demo
     if: inputs.server

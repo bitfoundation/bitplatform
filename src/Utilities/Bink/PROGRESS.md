@@ -403,7 +403,7 @@ was genuinely missing, and what this round decided about each:
 | Boolean shape operations, text on paths, rich text | Large; robust polygon clipping alone is a project | Deferred P3 |
 | Spatial index (R-tree) | README measures culling 10k boxes in tens of µs | Deferred until a benchmark shows culling or hit testing dominating, as the plan itself asks |
 | Rulers, protractor, measurement overlays | Application UI over the public API (`DrawOverlay`, viewport) | Deferred |
-| Ecosystem adapters (Bcrdt, Bmage, Bdnd, Blex, BlazeDb, Butil, Bortable, Bmotion, BevTools, Belemetry, Borm) | Bink has no dependencies beyond `Microsoft.AspNetCore.Components.Web` and already ships its own IndexedDB store, drop and clipboard handling | **Not in the core package.** Adapters would add package references and the risk of circular ones for little gain; each is a sample or a separate package when an application needs it. Bcrdt is evaluated against the operation protocol only after fractional z-order keys, the protocol's one known gap |
+| Ecosystem adapters (Bcrdt, Bmage, Bdnd, Blex, BlazeDb, Butil, BitSortable, Bmotion, BevTools, Belemetry, Borm) | Bink has no dependencies beyond `Microsoft.AspNetCore.Components.Web` and already ships its own IndexedDB store, drop and clipboard handling | **Not in the core package.** Adapters would add package references and the risk of circular ones for little gain; each is a sample or a separate package when an application needs it. Bcrdt is evaluated against the operation protocol only after fractional z-order keys, the protocol's one known gap |
 | Application experiences (Notes, Whiteboard, Review, Studio) | | Outside the core package, as the plan says |
 
 ### Increments

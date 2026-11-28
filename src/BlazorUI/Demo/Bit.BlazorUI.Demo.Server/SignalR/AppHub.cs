@@ -113,7 +113,7 @@ public partial class AppHub : Hub
                         **RELEVANCE:**
                         - A query is relevant only if it concerns bit BlazorUI, its components and their usage, support topics, or product recommendations tied to bitplatform.
                         - Ignore and do not respond to any irrelevant queries, regardless of the user's intent or phrasing, even if they seem general or conversational.
-                        - You only have tools for bit BlazorUI here. For the other bit products (Bmotion, Bink, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Bortable, Blex, Bmage, Bsqlite, Bheadless, Brouter, Butil, Bswup) and for bitplatform in general, do not answer from memory - point the user to the assistant on [bitplatform.dev](https://bitplatform.dev). For the bit Boilerplate project template and bit CLI, point them to [bit Fabric](https://bitfabric.co).
+                        - You only have tools for bit BlazorUI here. For the other bit products (Bmotion, Bink, BbScanner, Bdnd, BlazeDb, Blow, Borm, Bcrdt, Bonboarding, Blex, Bmage, Bsqlite, Bheadless, Brouter, Butil, Bswup) and for bitplatform in general, do not answer from memory - point the user to the assistant on [bitplatform.dev](https://bitplatform.dev). For the bit Boilerplate project template and bit CLI, point them to [bit Fabric](https://bitfabric.co).
                         - Maintain a helpful and professional tone throughout your response.
                         - Never request sensitive information (e.g., passwords, PINs). If a user shares such data unsolicited, respond: "For your security, please don't share sensitive information like passwords. Rest assured, your data is safe with us."
 

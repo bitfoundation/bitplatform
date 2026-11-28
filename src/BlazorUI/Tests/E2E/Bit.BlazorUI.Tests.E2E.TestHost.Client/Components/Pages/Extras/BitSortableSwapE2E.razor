@@ -1,0 +1,54 @@
+﻿@page "/e2e/sortable/swap"
+
+@* BitSortable in swap mode: the item dropped on trades places with the dragged one, and nothing moves meanwhile -
+   within a list (whose OnUpdate names the item it traded with, SwappedWith), and across two lists of one group, which
+   each keep their length. *@
+
+<PageTitle>BitSortable swap E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable swap</h1>
+
+<E2ESection Id="swap" Title="Swap">
+    <BitSortable @bind-Items="_list" TItem="string" Swap="true" Id="swap-list" AriaLabel="Single list" OnUpdate="OnSwapped"
+                 Class="demo-list" Classes="_classes">
+        <ItemTemplate Context="item">@item</ItemTemplate>
+    </BitSortable>
+    <p class="demo-order">Order: <span id="swap-order">@string.Join(", ", _list)</span></p>
+    <p class="demo-order">Last swap: <span id="swap-last">@_lastSwap</span></p>
+</E2ESection>
+
+<E2ESection Id="swap-shared" Title="Swap across lists">
+    <div class="srt-cols">
+        <div class="srt-col">
+            <BitSortable @bind-Items="_left" TItem="string" Group="swap-shared" Swap="true" Id="swap-left" AriaLabel="Left"
+                         Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <BitSortable @bind-Items="_right" TItem="string" Group="swap-shared" Swap="true" Id="swap-right" AriaLabel="Right"
+                         Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">Left: <span id="swap-left-order">@string.Join(", ", _left)</span></p>
+    <p class="demo-order">Right: <span id="swap-right-order">@string.Join(", ", _right)</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item", Ghost = "demo-ghost" };
+
+    private IList<string> _list = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6" };
+    private string _lastSwap = "nothing yet";
+
+    private IList<string> _left = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4" };
+    private IList<string> _right = new List<string> { "Item A", "Item B", "Item C", "Item D" };
+
+    private void OnSwapped(BitSortableEventArgs<string> e)
+        => _lastSwap = e.IsSwap ? $"{e.Item} ⇄ {e.SwappedWith}" : $"{e.Item} moved";
+}

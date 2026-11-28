@@ -1,0 +1,37 @@
+﻿@page "/e2e/sortable/handle"
+
+@* BitSortable's say on what may start a drag: a list whose items drag only by their handle (Handle, a CSS selector
+   matched inside each item), and a list with an item its Filter locks. *@
+
+<PageTitle>BitSortable handle and filter E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable handle and filter</h1>
+
+<E2ESection Id="handle" Title="Handle">
+    <BitSortable @bind-Items="_rows" TItem="string" Handle=".handle" Id="handle-list" AriaLabel="Rows"
+                 Class="demo-list" Classes="_classes">
+        <ItemTemplate Context="item"><span class="handle" aria-hidden="true">☰</span>@item</ItemTemplate>
+    </BitSortable>
+    <p class="demo-order">Order: <span id="handle-order">@string.Join(", ", _rows)</span></p>
+</E2ESection>
+
+<E2ESection Id="filter" Title="Filter">
+    <BitSortable @bind-Items="_items" TItem="string" Id="filter-list" AriaLabel="Items" Filter="IsLocked"
+                 Class="demo-list" Classes="_classes">
+        <ItemTemplate Context="item">@item</ItemTemplate>
+    </BitSortable>
+    <p class="demo-order">Order: <span id="filter-order">@string.Join(", ", _items)</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item", Ghost = "demo-ghost" };
+
+    private IList<string> _rows = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6" };
+    private IList<string> _items = new List<string> { "Item 1", "Item 2", "Item 3", "Filtered (locked)", "Item 4", "Item 5" };
+
+    private static bool IsLocked(string item) => item.StartsWith("Filtered", StringComparison.Ordinal);
+}

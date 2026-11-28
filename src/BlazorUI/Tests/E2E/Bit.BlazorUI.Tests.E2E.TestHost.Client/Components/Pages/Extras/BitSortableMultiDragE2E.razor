@@ -1,0 +1,59 @@
+﻿@page "/e2e/sortable/multi-drag"
+
+@* BitSortable's MultiDrag: a list whose selection is bound both ways (@bind-SelectedItems), and two lists of one
+   group a selection is dragged across. A drag of a selection carries its count on its picture. *@
+
+<PageTitle>BitSortable multi-drag E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable multi-drag</h1>
+
+<E2ESection Id="multi" Title="MultiDrag">
+    <div class="srt-controls">
+        <button type="button" id="multi-select-all" @onclick="() => _selected = _list.ToList()">Select all</button>
+        <button type="button" id="multi-clear" @onclick="() => _selected = []">Clear the selection</button>
+    </div>
+    <BitSortable @bind-Items="_list" @bind-SelectedItems="_selected" TItem="string" MultiDrag="true" Id="multi-list"
+                 AriaLabel="Single list" OnEnd="OnListDragEnd" Class="demo-list" Classes="_classes">
+        <ItemTemplate Context="item">@item</ItemTemplate>
+    </BitSortable>
+    <p class="demo-order">Order: <span id="multi-order">@string.Join(", ", _list)</span></p>
+    <p class="demo-order">Selected: <span id="multi-selected">@(_selected.Count == 0 ? "nothing" : string.Join(", ", _selected))</span></p>
+    <p class="demo-order">Last drag moved: <span id="multi-last">@_lastDrag</span></p>
+</E2ESection>
+
+<E2ESection Id="multi-shared" Title="MultiDrag across lists">
+    <div class="srt-cols">
+        <div class="srt-col">
+            <BitSortable @bind-Items="_left" TItem="string" Group="multi-shared" MultiDrag="true" Id="multi-left"
+                         AriaLabel="Left" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <BitSortable @bind-Items="_right" TItem="string" Group="multi-shared" MultiDrag="true" Id="multi-right"
+                         AriaLabel="Right" Class="demo-list" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">Left: <span id="multi-left-order">@string.Join(", ", _left)</span></p>
+    <p class="demo-order">Right: <span id="multi-right-order">@string.Join(", ", _right)</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item", Ghost = "demo-ghost" };
+
+    private IList<string> _list = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6" };
+    private IReadOnlyCollection<string> _selected = [];
+    private string _lastDrag = "nothing yet";
+
+    private IList<string> _left = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4" };
+    private IList<string> _right = new List<string> { "Item A", "Item B", "Item C", "Item D" };
+
+    private void OnListDragEnd(BitSortableEventArgs<string> e)
+        => _lastDrag = e.Canceled ? "nothing (cancelled)" : $"{string.Join(", ", e.Items)} - dragged by {e.Item}";
+}

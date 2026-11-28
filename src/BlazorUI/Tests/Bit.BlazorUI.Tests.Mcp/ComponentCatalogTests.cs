@@ -442,6 +442,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitAvatarGroup", "BitAvatarGroupParams")]
     [DataRow("BitImageViewer", "BitImageViewerParams")]
     [DataRow("BitCopyButton", "BitCopyButtonParams")]
+    [DataRow("BitSortable", "BitSortableParams")]
     [DataRow("BitVirtualKeyboard", "BitVirtualKeyboardParams")]
     [DataRow("BitResourceTimeline", "BitResourceTimelineParams")]
     [DataRow("BitToggle", "BitToggleParams")]

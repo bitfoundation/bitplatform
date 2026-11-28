@@ -61,8 +61,6 @@ jobs:
           solution: src/Utilities/Bonboarding/Bit.Bonboarding.slnx
         - name: Borm
           solution: src/Utilities/Borm/Bit.Borm.slnx
-        - name: Bortable
-          solution: src/Utilities/Bortable/Bit.Bortable.slnx
         - name: Bsqlite
           solution: src/Utilities/Bsqlite/Bit.Bsqlite.slnx
         - name: BlazorES2019

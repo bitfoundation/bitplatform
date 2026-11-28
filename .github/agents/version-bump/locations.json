@@ -152,9 +152,6 @@
   "src/Utilities/Borm/Demo/Client/Bit.Borm.Demo.Client.csproj": [
     "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
   ],
-  "src/Utilities/Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj": [
-    "<PackageReference Include=\"Bit.Minifier\" Version=\"{V}\" PrivateAssets=\"all\" />"
-  ],
   "src/Websites/Careers/src/Bit.Websites.Careers.Client/Bit.Websites.Careers.Client.csproj": [
     "<PackageReference Include=\"Bit.Bswup\" Version=\"{V}\" />",
     "<PackageReference Include=\"Bit.BlazorUI\" Version=\"{V}\" />",

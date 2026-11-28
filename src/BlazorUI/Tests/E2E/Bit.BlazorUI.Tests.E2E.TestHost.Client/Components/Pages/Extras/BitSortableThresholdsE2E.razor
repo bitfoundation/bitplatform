@@ -1,0 +1,76 @@
+﻿@page "/e2e/sortable/thresholds"
+@using System.Globalization
+
+@* BitSortable's swap zones: a vertical list and a grid whose SwapThreshold, InvertSwap and InvertedSwapThreshold
+   follow the controls above them. *@
+
+<PageTitle>BitSortable thresholds E2E</PageTitle>
+
+<BitSortableE2EStyles />
+
+<h1>BitSortable thresholds</h1>
+
+<E2ESection Id="thresholds" Title="Swap thresholds">
+    <div class="srt-controls">
+        <label>
+            SwapThreshold: <span id="swap-threshold-value">@Format(_swapThreshold)</span>
+            <input id="swap-threshold" type="range" min="0.1" max="1" step="0.05" value="@Format(_swapThreshold)" @oninput="OnSwapThresholdChanged" />
+        </label>
+        <label>
+            <input id="invert-swap" type="checkbox" checked="@_invertSwap" @onchange="OnInvertSwapChanged" /> InvertSwap
+        </label>
+        <label>
+            InvertedSwapThreshold: <span id="inverted-swap-threshold-value">@Format(_invertedSwapThreshold)</span>
+            <input id="inverted-swap-threshold" type="range" min="0.1" max="1" step="0.05" value="@Format(_invertedSwapThreshold)" @oninput="OnInvertedSwapThresholdChanged" />
+        </label>
+    </div>
+    <div class="srt-cols">
+        <div class="srt-col">
+            <BitSortable @bind-Items="_list" TItem="string" Id="thresholds-list" AriaLabel="Vertical list"
+                         SwapThreshold="_swapThreshold" InvertSwap="_invertSwap" InvertedSwapThreshold="_invertedSwapThreshold"
+                         Direction="BitSortableDirection.Vertical"
+                         Class="@($"demo-list {ZoneClass}")" Classes="_classes">
+                <ItemTemplate Context="item">@item</ItemTemplate>
+            </BitSortable>
+        </div>
+        <div class="srt-col">
+            <BitSortable @bind-Items="_grid" TItem="int" Id="thresholds-grid" AriaLabel="Grid"
+                         SwapThreshold="_swapThreshold" InvertSwap="_invertSwap" InvertedSwapThreshold="_invertedSwapThreshold"
+                         Direction="BitSortableDirection.Horizontal"
+                         Class="@($"demo-grid threshold-grid {ZoneClass}")" Classes="@(new() { Ghost = "demo-ghost" })">
+                <ItemTemplate Context="n"><div class="grid-square">@n</div></ItemTemplate>
+            </BitSortable>
+        </div>
+    </div>
+    <p class="demo-order">List: <span id="thresholds-list-order">@string.Join(", ", _list)</span></p>
+    <p class="demo-order">Grid: <span id="thresholds-grid-order">@string.Join(", ", _grid)</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly BitSortableClassStyles _classes = new() { Item = "demo-item", Ghost = "demo-ghost" };
+
+    private double _swapThreshold = 0.65;
+    private bool _invertSwap;
+    private double _invertedSwapThreshold = 0.65;
+
+    private IList<string> _list = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6" };
+    private IList<int> _grid = Enumerable.Range(1, 9).ToList();
+
+    private string ZoneClass => _invertSwap ? "zones-inverted" : "";
+
+    private static string Format(double value) => value.ToString("0.00", CultureInfo.InvariantCulture);
+
+    private void OnSwapThresholdChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var v)) _swapThreshold = v;
+    }
+
+    private void OnInvertedSwapThresholdChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var v)) _invertedSwapThreshold = v;
+    }
+
+    private void OnInvertSwapChanged(ChangeEventArgs e) => _invertSwap = e.Value is true;
+}

@@ -1,0 +1,111 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitComponentBase
+@typeparam TItem
+@implements IBitSortableZone
+
+@{
+    var keyboard = KeyboardEnabled;
+    var activeKey = ActiveKey();
+    var strings = EffectiveStrings;
+}
+
+@* The drag events are the BitSortable script's: it routes them to the lists that take the drag and calls .NET only when
+   something changes. The markup names the list, its items and their keys, and gives assistive technology the list's
+   semantics and the keyboard instructions. The Disabled of a list only takes the dragging away: the content its items
+   render stays live, so the page's handlers on the list stay as they are (HtmlAttributes, not the disabled-aware set). *@
+<div @ref="RootElement" @attributes="HtmlAttributes"
+     id="@_Id"
+     role="list"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     dir="@Dir?.ToString().ToLower()"
+     aria-label="@Label"
+     data-bit-srt-list="@_Id">
+    @if (Items is not null)
+    {
+        PruneKeys();
+        for (int i = 0; i < Items.Count; i++)
+        {
+            TItem current = Items[i];
+
+            if (IsPlaceholderAt(i))
+            {
+                @Placeholder
+            }
+
+            bool canDrag = CanDrag(current);
+            string? key = KeyOf(current);
+            bool selected = MultiDrag && _selected.Contains(current);
+            <div @key="ElementKey(current)"
+                 role="listitem"
+                 style="@ItemCssStyle(current, selected)"
+                 class="@ItemCssClass(current, selected)"
+                 tabindex="@(keyboard ? (key == activeKey ? "0" : "-1") : null)"
+                 aria-roledescription="@(keyboard ? strings.RoleDescription : null)"
+                 aria-describedby="@(keyboard ? InstructionsId : null)"
+                 data-bit-srt-item="true"
+                 data-bit-srt-key="@key"
+                 data-bit-srt-disabled="@(canDrag ? null : "true")"
+                 data-bit-srt-selected="@(selected ? "true" : null)"
+                 draggable="@(canDrag && Handle.HasNoValue() ? "true" : "false")"
+                 @onclick="ItemClickCallback(current)">
+                @if (ItemTemplate is not null)
+                {
+                    if (IsolateItems)
+                    {
+                        @IsolatedItem(current)
+                    }
+                    else
+                    {
+                        @ItemTemplate(current)
+                    }
+                }
+            </div>
+        }
+
+        if (IsPlaceholderAt(Items.Count))
+        {
+            @Placeholder
+        }
+    }
+
+    @* What an empty list says is the one entry of the list while it has no items: a list (role="list") whose content is
+       not its items fails its required children for assistive technology, so the message stands in that role. *@
+    @if (ShowsEmpty)
+    {
+        <div role="listitem" style="@Styles?.Empty" class="bit-srt-emp @Classes?.Empty">
+            @if (EmptyTemplate is not null)
+            {
+                @EmptyTemplate
+            }
+            else
+            {
+                @(EmptyText ?? BitStrings.Current.NoItemsFound)
+            }
+        </div>
+    }
+
+    @ChildContent
+
+    @if (keyboard)
+    {
+        <div id="@InstructionsId" class="bit-srt-ins" hidden>@(MultiDrag ? $"{strings.Instructions} {strings.SelectionInstructions}" : strings.Instructions)</div>
+    }
+</div>
+
+@code {
+    // The drop preview shown in a list the dragged item would be moved into. It renders the dragged item's own template,
+    // so it looks like the item will once dropped. Inert, as it is only a picture: the controls the template renders in
+    // it can be neither focused nor clicked.
+    private RenderFragment Placeholder => @<div style="@PlaceholderCssStyle()"
+                                                class="@PlaceholderCssClass()"
+                                                aria-hidden="true"
+                                                data-bit-srt-item="true"
+                                                data-bit-srt-placeholder="true"
+                                                inert>
+        @if (ItemTemplate is not null && Service.Context?.Item is TItem preview)
+        {
+            @ItemTemplate(preview)
+        }
+    </div>;
+}

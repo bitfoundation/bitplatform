@@ -152,7 +152,7 @@ suite found in rounds 1-4 were fixed with negative controls. Class **4** applies
 |---|---|---|---|
 | BevTools / Belemetry | 6 | **2** | The `Bit.Bmotion` meter works with Belemetry and OpenTelemetry today, with no dependency; an `AnimationEvent` stream is there for a BevTools panel. No adapter package yet. |
 | Bit.BlazorUI, Bheadless, Brouter, Bonboarding, Blow, Bink, Bmage | 6 | 6 | P2-P3. Each wants an optional adapter package, with the other library's maintainers. |
-| Bdnd / Bortable | 6 | 6 | Bmotion's own reorder group covers the animated list; coordinating with Bdnd's state machine is an adapter, P3. |
+| Bdnd / BitSortable | 6 | 6 | Bmotion's own reorder group covers the animated list; coordinating with Bdnd's state machine is an adapter, P3. |
 | Bcrdt, Blex, BlazeDb, Bsqlite | 6 | *Decision* | Nothing to persist or synchronise: motion values follow state, and animation frames must never be replicated. |
 | One package, trimmable, AOT-compatible, no dependencies beyond ASP.NET Core | 1 | 1 | `System.Diagnostics.Metrics` is in the BCL. |
 
