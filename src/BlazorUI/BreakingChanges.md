@@ -18,7 +18,7 @@ only in this file.
 
 ## 11.0.0
 
-### `BitRichTextEditor`'s commands are typed: `BitRichTextEditorCommand` ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+### `BitRichTextEditor`'s commands are typed: `BitRichTextEditorCommand` ([#15506](https://github.com/bitfoundation/bitplatform/issues/15506))
 
 `ExecuteCommandAsync` has an overload taking a `BitRichTextEditorCommand`, the commands the toolbar and the shortcuts
 use (`ExecuteCommandAsync(BitRichTextEditorCommand.FormatBlock, "h2")`). The string overload stays, and takes a

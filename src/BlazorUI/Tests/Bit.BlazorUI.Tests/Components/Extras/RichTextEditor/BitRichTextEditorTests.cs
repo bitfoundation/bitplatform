@@ -40,7 +40,7 @@ public class BitRichTextEditorTests : BunitTestContext
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applyFont");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applySlashCommand");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.applyMention");
-        Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.bindSlashKeys");
+        Context.JSInterop.SetupVoid("BitBlazorUI.EditorMenu.bindKeys");
         Context.JSInterop.SetupVoid("BitBlazorUI.RichTextEditor.setFullScreen");
         Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.getHtml", _ => true).SetResult("<p>html</p>");
         Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.getText", _ => true).SetResult("text");
@@ -1498,6 +1498,59 @@ public class BitRichTextEditorTests : BunitTestContext
         var items = component.FindAll(".bit-rte-slash-item");
         Assert.AreEqual(1, items.Count);
         Assert.AreEqual("Task list", items[0].TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldWalkTheSlashMenuWithTheKeyboard()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        await component.InvokeAsync(() => component.Instance._OnSlashTrigger());
+
+        string Selected() => component.Find(".bit-rte-slash-item-sel").TextContent;
+        string ActiveDescendant() => component.Find(".bit-rte-slash input").GetAttribute("aria-activedescendant")!;
+
+        // The highlight starts at the top, wraps both ways, and the filter box names it as its active descendant.
+        Assert.AreEqual("Heading 1", Selected());
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Up);
+        Assert.AreEqual("Divider", Selected());
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Down);
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Down);
+        Assert.AreEqual("Heading 2", Selected());
+        Assert.AreEqual(component.Find(".bit-rte-slash-item-sel").Id, ActiveDescendant());
+        StringAssert.EndsWith(ActiveDescendant(), "-slash-item-1");
+
+        // A new filter starts the highlight at the top of what it matches, whatever was highlighted before.
+        await component.Find(".bit-rte-slash input").InputAsync(new() { Value = "list" });
+        Assert.AreEqual("Bulleted list", Selected());
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Down);
+        await component.Find(".bit-rte-slash input").KeyDownAsync(Key.Enter);
+
+        Assert.AreEqual("insertOrderedList", Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.applySlashCommand").Arguments[1]);
+        Assert.AreEqual(0, component.FindAll(".bit-rte-slash").Count);
+
+        // Opened again, it starts afresh: no filter, every command, the first one highlighted.
+        await component.InvokeAsync(() => component.Instance._OnSlashTrigger());
+        Assert.AreEqual("", component.Find(".bit-rte-slash input").GetAttribute("value"));
+        Assert.AreEqual(10, component.FindAll(".bit-rte-slash-item").Count);
+        Assert.AreEqual("Heading 1", Selected());
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorShouldFocusTheSlashFilterAndHoldItsNavigationKeys()
+    {
+        SetupJsInterop();
+
+        var component = RenderComponent<BitRichTextEditor>();
+
+        await component.InvokeAsync(() => component.Instance._OnSlashTrigger());
+
+        // The shared menu's script keeps the browser from acting on the arrows and Enter in the filter box it focused.
+        component.WaitForAssertion(() => Context.JSInterop.VerifyInvoke("BitBlazorUI.EditorMenu.bindKeys"));
+        Assert.IsInstanceOfType<ElementReference>(Context.JSInterop.VerifyInvoke("BitBlazorUI.EditorMenu.bindKeys").Arguments[0]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.bindSlashKeys"].Count);
     }
 
     [TestMethod]
