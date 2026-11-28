@@ -6,6 +6,10 @@
 //   --bit-Separator-color                 color of the line                              (default: $clr-brd-sec)
 //   --bit-Separator-thickness             weight of the line                             (default: $siz-divider)
 //   --bit-Separator-line-style            style of the line: solid, dashed, dotted, ...  (default: solid)
+//   --bit-Separator-line-background       gradient painted along each segment of the line
+//                                         in place of its color, running along the line (default: none)
+//   --bit-Separator-vertical-line-background  the same for a vertical separator, whose
+//                                         gradient runs top to bottom      (default: --bit-Separator-line-background)
 //   --bit-Separator-spacing               room on either side of the line, across it     (default: spacing(0.5))
 //   --bit-Separator-inset                 room held off both ends of the line, or off
 //                                         the start and the end given two lengths        (default: 0)
@@ -19,16 +23,31 @@
 //
 // A parameter set on the separator itself wins over the variable standing for the same thing - Color and Border
 // over the color, Size and Thickness over the thickness, LineStyle, Inset, ContentOffset and Background - since it
-// is the more specific ask; the variables re-skin what the theme would otherwise decide. A disabled separator keeps
-// the disabled colors of the theme whatever the colors above say.
+// is the more specific ask; the variables re-skin what the theme would otherwise decide. The line background is drawn
+// in place of the color and the style of the line, so Color, Border and a dashed, dotted or double LineStyle win over
+// it too. A disabled separator keeps the disabled colors of the theme whatever the colors above say.
+//
+// A line background has to be a gradient that runs along the line: each segment shows the one-pixel edge of it that
+// lies along the line, so a gradient across the line is drawn in its first color, and an image of its own size, such as
+// a url(), shows its edge row stretched rather than the image. That is why a vertical separator reads a variable of its
+// own first: a left-to-right gradient set on :root for the horizontal ones would draw every vertical one in a single
+// color. A gradient does not follow the reading direction either, so a right-to-left page or container sets it
+// mirrored. And as a border image paints over the border, a Class or Style that restyles the line of one separator
+// itself - its border-color or border-style - also sets --bit-Separator-line-background: none on it (and the vertical
+// one on a vertical separator), which keeps a line background set on an ancestor off that separator.
 //
 // The rule is drawn by the two pseudo elements of the root, laid out as flex items beside the content: a separator
 // with content flanks it with two segments rather than running one line behind it and masking the middle with an
 // opaque patch. That is what keeps a labeled separator right on a gradient, a picture or a surface tier other than
 // the one it was configured for, and what lets the offset of a start- or end-aligned label be a percentage of the
 // length of the line whichever way it runs.
+//
+// The line background is the border image of each segment rather than a background under it: a border image takes
+// the place of the paint of the border it is set on and of nothing else, so a separator that is not given one keeps
+// its border - and with it every line style - exactly as it was, and one given something that is no image (a plain
+// color is the --bit-Separator-color's) falls back to that border too.
 
-$spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
+$spr-private-properties: brd, siz, stl, bg, ofs, ins, img, dis-brd, dis-fg;
 
 // Every rule below reads the separator's own private variables, which the parameter classes set on the root and the
 // length parameters write onto its style. Custom properties inherit, which would hand the line of a separator to one
@@ -50,6 +69,13 @@ $spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
         flex-basis: 0;
         align-self: center;
         border: 0 var(--bit-spr-stl, var(--bit-Separator-line-style, solid)) var(--bit-spr-dis-brd, var(--bit-spr-brd, var(--bit-Separator-color, #{$clr-brd-sec})));
+        // After the border shorthand, which would reset it. One pixel sliced off each edge of an image as large as the
+        // segment leaves the edge the line is drawn on showing the image along the whole length of the segment.
+        border-image-source: var(--bit-spr-img, var(--bit-Separator-line-background, none));
+        border-image-slice: 1;
+        // The fade of the Fade parameter, which its rules below give each segment as a mask of its own.
+        -webkit-mask-image: var(--bit-spr-fdm, none);
+        mask-image: var(--bit-spr-fdm, none);
     }
 
     &::before {
@@ -76,6 +102,7 @@ $spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
     // A separator is never disabled of itself, but one standing in a disabled group dims with it: the line and the
     // content take the disabled colors of the theme, whatever the color parameters and variables ask for.
     &.bit-dis {
+        --bit-spr-img: none;
         --bit-spr-dis-brd: #{$clr-brd-dis};
         --bit-spr-dis-fg: #{$clr-fg-dis};
     }
@@ -127,6 +154,7 @@ $spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
     &::before,
     &::after {
         border-left-width: var(--bit-spr-siz, var(--bit-Separator-thickness, #{$siz-divider}));
+        border-image-source: var(--bit-spr-img, var(--bit-Separator-vertical-line-background, var(--bit-Separator-line-background, none)));
     }
 
     // Between runs of text, or sized to its content without any, the line would otherwise collapse to nothing, so it
@@ -139,6 +167,59 @@ $spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
 
     > .bit-spr-cnt {
         padding: var(--bit-Separator-content-gap, #{spacing(1.5)}) 0;
+    }
+}
+
+
+// A faded line runs out toward its ends: each segment beside the content is drawn in full where it meets the content
+// and fades away toward its outer end, the two mirroring each other around the content, and the one segment of a
+// separator without content fades toward both of its ends. It is a mask rather than a gradient of the color, so it
+// fades whatever the line is painted with - a role, a line style, a line background - and whatever it is drawn on.
+// The outer ends follow the reading direction on a horizontal separator; a vertical one fades up and down.
+//
+// The fade toward both ends is the default of the leading segment and the one-sided fades are the ones that ask for
+// content, so an engine without :has() - which has no trailing segment either - still fades the line symmetrically.
+.bit-spr-fad {
+    &.bit-spr-hrz {
+        &::before {
+            --bit-spr-fdm: linear-gradient(to right, transparent, #000, transparent);
+        }
+
+        &:has(> .bit-spr-cnt) {
+            &::before {
+                --bit-spr-fdm: linear-gradient(to right, transparent, #000);
+            }
+
+            &::after {
+                --bit-spr-fdm: linear-gradient(to left, transparent, #000);
+            }
+
+            &:is(.bit-rtl, :dir(rtl)) {
+                &::before {
+                    --bit-spr-fdm: linear-gradient(to left, transparent, #000);
+                }
+
+                &::after {
+                    --bit-spr-fdm: linear-gradient(to right, transparent, #000);
+                }
+            }
+        }
+    }
+
+    &.bit-spr-vrt {
+        &::before {
+            --bit-spr-fdm: linear-gradient(to bottom, transparent, #000, transparent);
+        }
+
+        &:has(> .bit-spr-cnt) {
+            &::before {
+                --bit-spr-fdm: linear-gradient(to bottom, transparent, #000);
+            }
+
+            &::after {
+                --bit-spr-fdm: linear-gradient(to top, transparent, #000);
+            }
+        }
     }
 }
 
@@ -276,9 +357,50 @@ $spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
 }
 
 
+// The line background is drawn in place of the color and the style of the line, so a parameter that picks either of
+// them takes it away: the parameter is the more specific ask, as it is over every other variable. A solid line style
+// is the one a line background is drawn in anyway, and leaves it.
+.bit-spr-dsh,
+.bit-spr-dot,
+.bit-spr-dbl,
+.bit-spr-bpr,
+.bit-spr-bsr,
+.bit-spr-btr,
+.bit-spr-brr,
+.bit-spr-pri,
+.bit-spr-sec,
+.bit-spr-ter,
+.bit-spr-inf,
+.bit-spr-suc,
+.bit-spr-wrn,
+.bit-spr-swr,
+.bit-spr-err,
+.bit-spr-pbg,
+.bit-spr-sbg,
+.bit-spr-tbg,
+.bit-spr-pfg,
+.bit-spr-sfg,
+.bit-spr-tfg,
+.bit-spr-pbr,
+.bit-spr-sbr,
+.bit-spr-tbr {
+    --bit-spr-img: none;
+}
+
+
 // A forced-colors mode repaints the line and the content in the ordinary system colors, which takes away the one
 // thing that says the group a separator stands in is disabled, so it is re-established in GrayText.
+//
+// It leaves a border image alone, though, so a line background would keep its own colors there; it is taken away, and
+// the line is drawn as the border in the system color again.
 @media (forced-colors: active) {
+    .bit-spr {
+        &::before,
+        &::after {
+            border-image-source: none;
+        }
+    }
+
     .bit-spr.bit-dis {
         &::before,
         &::after {
@@ -287,6 +409,19 @@ $spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
 
         > .bit-spr-cnt {
             color: GrayText;
+        }
+    }
+}
+
+// A faded end is the line drawn at a fraction of its contrast, which a reader who asked the system for more contrast -
+// or for colors of their own - asked not to be shown, so the line is drawn in full there. It sits at the end of the file
+// because the mask it drops is read by a rule of the same specificity above.
+@media (forced-colors: active), (prefers-contrast: more) {
+    .bit-spr {
+        &::before,
+        &::after {
+            -webkit-mask-image: none;
+            mask-image: none;
         }
     }
 }

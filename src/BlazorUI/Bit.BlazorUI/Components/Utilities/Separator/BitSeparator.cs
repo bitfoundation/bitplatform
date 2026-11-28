@@ -14,7 +14,8 @@ namespace Bit.BlazorUI;
 /// to be readable and the separator stays right over a gradient, a picture or any surface tier.
 /// The line itself is drawn by the theme and restyled through <see cref="LineStyle"/>, <see cref="Size"/>,
 /// <see cref="Thickness"/> and <see cref="Color"/>, while <see cref="Background"/> and <see cref="Border"/>
-/// keep it on the neutral surface tiers and <see cref="Inset"/> holds it off the ends of its container.
+/// keep it on the neutral surface tiers, <see cref="Inset"/> holds it off the ends of its container and
+/// <see cref="Fade"/> runs it out toward its ends.
 /// The public <c>--bit-Separator-*</c> CSS variables re-skin what the theme would otherwise decide, and a
 /// <see cref="BitParams"/> ancestor sets the defaults of every separator under it.
 /// <br />
@@ -165,6 +166,20 @@ public partial class BitSeparator : BitComponentBase
     [Parameter] public string? Element { get; set; }
 
     /// <summary>
+    /// Fades the line out toward its ends.
+    /// </summary>
+    /// <remarks>
+    /// Each segment beside the content is drawn in full where it meets the content and fades away toward its outer
+    /// end, so the two mirror each other around the content; a separator without content fades toward both of its
+    /// ends. The outer ends follow the reading direction on a horizontal separator, and a vertical one fades up and
+    /// down. It is a mask over the line, so it fades whatever the line is painted with - the <see cref="Color"/>, the
+    /// <see cref="LineStyle"/>, the <c>--bit-Separator-line-background</c> variable. In a forced-colors mode, and for
+    /// a reader who asked the system for more contrast, the line is drawn in full.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Fade { get; set; }
+
+    /// <summary>
     /// Holds the separator off the ends of its container: one CSS length for both ends, or two for the start
     /// and the end.
     /// </summary>
@@ -285,6 +300,8 @@ public partial class BitSeparator : BitComponentBase
             BitColor.TertiaryBorder => "bit-spr-tbr",
             _ => null
         });
+
+        ClassBuilder.Register(() => Fade ? "bit-spr-fad" : null);
 
         ClassBuilder.Register(() => LineStyle switch
         {
