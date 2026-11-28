@@ -20,6 +20,7 @@ internal static class BelemetryTraceState
     private const string KeyPrefix = Key + "=";
     private const string RatioField = "sr:";
     private const int MaxMembers = 32;
+    private const int MaxLength = 512;
 
     /// <summary>
     /// <paramref name="traceState"/> with an entry recording <paramref name="ratio"/> first. The entry replaces one the
@@ -72,5 +73,122 @@ internal static class BelemetryTraceState
         }
 
         return 1;
+    }
+
+    /// <summary>The key of OpenTelemetry's own tracestate entry.</summary>
+    public const string OtelKey = "ot";
+
+    private const string OtelKeyPrefix = OtelKey + "=";
+    private const string ThresholdField = "th";
+    private const string RandomnessField = "rv";
+    private const int MaxOtelEntryLength = 256;
+    private const long MaxAdjustedCount = 1L << 56;
+
+    /// <summary>
+    /// The tracestate an OTLP exporter sends for a span of trace <paramref name="traceIdHex"/> kept at
+    /// <paramref name="ratio"/> (above 0, below 1): <paramref name="traceState"/> with OpenTelemetry's <c>ot</c> entry first,
+    /// carrying the rejection threshold of that ratio (<c>th</c>) and the randomness it was compared against (<c>rv</c>),
+    /// its other values kept. Null when the threshold cannot be written consistently, and the ratio goes elsewhere.
+    /// </summary>
+    /// <remarks>
+    /// OpenTelemetry's probability sampling keeps a span when its randomness is at least the threshold, and a consumer
+    /// erases a threshold the randomness contradicts. <see cref="BelemetrySampler"/> decides on the first 8 bytes of the
+    /// trace id, as OpenTelemetry .NET's <c>TraceIdRatioBased</c> sampler does, while the default randomness is the last 7:
+    /// a bare <c>th</c> would contradict them for most kept spans. So the randomness is written too, derived from the bytes
+    /// the decision read (<see cref="Randomness"/>): every span <see cref="BelemetrySampler.ShouldSample(string, double)"/>
+    /// keeps at a ratio satisfies its threshold, the head decision and a tail sampler's alike. The value is the same for
+    /// every span of the trace. A state whose <c>ot</c> entry already has another randomness (a root in a service sampling
+    /// with its own) does not get a threshold this decision did not make: null. Neither does a span whose trace id
+    /// <see cref="BelemetrySampler.ShouldSample(string, double)"/> would not keep at the ratio: the ratio may come from a
+    /// caller's tracestate (through <c>max(entry, own ratio)</c>) or from a processor that sampled at random, and a
+    /// threshold would then contradict the randomness. Members past the W3C limits (32 members, 512 characters) are left
+    /// out from the end, as the specification allows.
+    /// </remarks>
+    public static string? WithOtelThreshold(string? traceState, string traceIdHex, double ratio)
+    {
+        if ((ratio > 0 && ratio < 1) is false || Randomness(traceIdHex) is not { } randomness) return null;
+        if (BelemetrySampler.ShouldSample(traceIdHex, ratio) is false) return null;
+
+        var threshold = Threshold(ratio);
+        var entry = new StringBuilder(OtelKeyPrefix, MaxLength);
+        entry.Append(RandomnessField).Append(':').Append(randomness).Append(';').Append(ThresholdField).Append(':').Append(threshold);
+
+        var rest = new List<string>();
+        if (string.IsNullOrWhiteSpace(traceState) is false)
+        {
+            foreach (var range in traceState.AsSpan().Split(','))
+            {
+                var member = traceState.AsSpan(range).Trim();
+                if (member.IsEmpty) continue;
+
+                if (member.StartsWith(OtelKeyPrefix, StringComparison.Ordinal))
+                {
+                    var value = member[OtelKeyPrefix.Length..];
+                    foreach (var fieldRange in value.Split(';'))
+                    {
+                        var field = value[fieldRange].Trim();
+                        if (field.IsEmpty) continue;
+
+                        var colon = field.IndexOf(':');
+                        var key = colon < 0 ? field : field[..colon];
+                        if (key.SequenceEqual(RandomnessField))
+                        {
+                            if (field[(colon + 1)..].SequenceEqual(randomness) is false) return null;
+                        }
+                        else if (key.SequenceEqual(ThresholdField) is false)
+                        {
+                            entry.Append(';').Append(field);
+                        }
+                    }
+                    continue;
+                }
+
+                if (rest.Count + 1 == MaxMembers) break;
+                rest.Add(member.ToString());
+            }
+        }
+
+        // The specification's limit on the entry; past it the threshold is not written rather than other values lost.
+        if (entry.Length - OtelKeyPrefix.Length > MaxOtelEntryLength) return null;
+
+        // W3C: a vendor that would go past 512 characters drops members from the end; the threshold is the one added.
+        foreach (var member in rest)
+        {
+            if (entry.Length + 1 + member.Length > MaxLength) break;
+            entry.Append(',').Append(member);
+        }
+
+        return entry.ToString();
+    }
+
+    /// <summary>
+    /// The rejection threshold of <paramref name="ratio"/> as OpenTelemetry encodes it: <c>2^56 - ceil(ratio * 2^56)</c>,
+    /// 14 lowercase hex digits without the trailing zeros (<c>c</c> for 0.25). Rounded down, never up: a span the ratio
+    /// keeps must never fall below its threshold.
+    /// </summary>
+    internal static string Threshold(double ratio)
+    {
+        // Multiplying by a power of two is exact, and so is the ceiling of the product.
+        var threshold = MaxAdjustedCount - (long)Math.Ceiling(ratio * MaxAdjustedCount);
+        var hex = threshold.ToString("x14", CultureInfo.InvariantCulture).TrimEnd('0');
+        return hex.Length == 0 ? "0" : hex;
+    }
+
+    /// <summary>
+    /// The 56-bit randomness <see cref="BelemetrySampler"/>'s decision on <paramref name="traceIdHex"/> amounts to, as 14
+    /// lowercase hex digits: <c>2^56 - 1 - (|first 8 bytes| &gt;&gt; 7)</c>. The sampler keeps a trace at a ratio when that
+    /// absolute value is below <c>ratio * 2^63</c>, so the randomness is then at least <see cref="Threshold"/> of the ratio.
+    /// Null for an id that is not 32 hex digits.
+    /// </summary>
+    internal static string? Randomness(string traceIdHex)
+    {
+        if (traceIdHex is null || traceIdHex.Length != 32) return null;
+
+        Span<byte> bytes = stackalloc byte[16];
+        if (BelemetryHex.TryDecode(traceIdHex, bytes) is false) return null;
+
+        var value = System.Buffers.Binary.BinaryPrimitives.ReadInt64BigEndian(bytes);
+        var abs = value == long.MinValue ? long.MaxValue : Math.Abs(value);
+        return (MaxAdjustedCount - 1 - (abs >> 7)).ToString("x14", CultureInfo.InvariantCulture);
     }
 }

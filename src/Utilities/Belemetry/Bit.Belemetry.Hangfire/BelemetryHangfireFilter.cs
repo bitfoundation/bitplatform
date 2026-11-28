@@ -10,7 +10,11 @@ namespace Bit.Belemetry;
 /// Records a consumer span on the <see cref="SourceName"/> source for every job execution, parented to the trace
 /// that enqueued the job: as a client filter it stores the W3C trace context of the enqueue in the job's parameters;
 /// as a server filter it starts the span from them around <c>Perform</c>. A failed execution is an error span with
-/// <c>error.type</c>. Registered by <c>UseBitBelemetry()</c> on the global configuration.
+/// <c>error.type</c>. Every execution is also measured on the <see cref="MeterName"/> meter, whether or not its span
+/// is recorded: the <c>hangfire.job.executions</c> counter and the <c>hangfire.job.duration</c> histogram (seconds),
+/// by <c>job.type</c>, <c>job.method</c>, <c>job.outcome</c> and, unless it succeeded, <c>error.type</c>. Registered
+/// by <c>UseBitBelemetry()</c> on the global configuration, which also adds the storage gauges
+/// (<see cref="BelemetryHangfireOptions.StorageMetrics"/>).
 /// </summary>
 /// <remarks>
 /// The span's kind is <see cref="ActivityKind.Consumer"/> - the job is a message taken off a queue - which is also
@@ -23,9 +27,13 @@ public sealed class BelemetryHangfireFilter : IClientFilter, IServerFilter
     /// <summary>The <see cref="ActivitySource"/> name; the core collects every <c>Bit.Belemetry.*</c> source by default.</summary>
     public const string SourceName = "Bit.Belemetry.Hangfire";
 
+    /// <summary>The <see cref="System.Diagnostics.Metrics.Meter"/> name; the core collects every <c>Bit.Belemetry.*</c> meter by default.</summary>
+    public const string MeterName = "Bit.Belemetry.Hangfire";
+
     private const string TraceParentParameter = "traceparent";
     private const string TraceStateParameter = "tracestate";
     private const string ActivityItem = "Bit.Belemetry.Activity";
+    private const string StartItem = "Bit.Belemetry.Start";
 
     private static readonly ActivitySource _source = new(SourceName, typeof(BelemetryHangfireFilter).Assembly.GetName().Version?.ToString());
 
@@ -66,13 +74,20 @@ public sealed class BelemetryHangfireFilter : IClientFilter, IServerFilter
     /// <inheritdoc />
     public void OnPerforming(PerformingContext context)
     {
-        if (_source.HasListeners() is false) return;
+        var measured = BelemetryHangfireMetrics.Enabled;
+        var traced = _source.HasListeners();
+        if (measured is false && traced is false) return;
 
         Activity? activity = null;
+        var measure = false;
         try
         {
             var job = context.BackgroundJob.Job;
             if (_options.Filter is { } filter && filter(job) is false) return;
+
+            // Apart from the span: the metrics are not sampled, so they count every execution, a dropped trace's too.
+            measure = measured;
+            if (traced is false) return;
 
             var parent = default(ActivityContext);
             if (_options.PropagateTraceContext && context.GetJobParameter<string>(TraceParentParameter) is { Length: > 0 } traceparent)
@@ -98,33 +113,83 @@ public sealed class BelemetryHangfireFilter : IClientFilter, IServerFilter
             // Telemetry must never fail the job - nor leave a span current on the worker.
             if (activity is not null && context.Items.Remove(ActivityItem)) activity.Stop();
         }
+        finally
+        {
+            // Last, on every path: the duration is the job's, not the storage round trips that read the trace context.
+            if (measure) context.Items[StartItem] = Stopwatch.GetTimestamp();
+        }
     }
 
     /// <inheritdoc />
     public void OnPerformed(PerformedContext context)
     {
+        // Hangfire hands the job's own exception over wrapped in a JobPerformanceException; the wrapper says nothing
+        // about what went wrong.
+        var exception = context.Exception is JobPerformanceException { InnerException: { } inner } ? inner : context.Exception;
+        var errorType = exception is not null ? exception.GetType().FullName
+                      : context.Canceled ? typeof(OperationCanceledException).FullName
+                      : null;
+
+        // Canceled, not failed: the job was aborted (deleted or rescheduled while it ran) or stopped by the server's
+        // shutdown - a rolling deploy is no failure. An OperationCanceledException of the job's own (an HTTP timeout)
+        // without either is a failure like any other exception.
+        var canceled = exception is JobAbortedException
+                    || (exception is OperationCanceledException && IsShuttingDown(context));
+        var outcome = canceled ? "canceled" : exception is not null ? "failed" : "succeeded";
+
+        // A job a later filter canceled in its OnPerforming (context.Canceled) never ran: it is no execution to count.
+        if (context.Items.Remove(StartItem, out var start) && start is long timestamp && context.Canceled is false) Measure(context, timestamp, outcome, errorType);
+
         if (context.Items.TryGetValue(ActivityItem, out var item) is false || item is not Activity activity) return;
 
         try
         {
-            if (context.Exception is { } exception)
+            if (errorType is not null)
             {
-                // Hangfire hands the job's own exception over wrapped in a JobPerformanceException; the wrapper says
-                // nothing about what went wrong.
-                if (exception is JobPerformanceException { InnerException: { } inner }) exception = inner;
-                activity.SetTag(BelemetrySemanticConventions.ErrorType, exception.GetType().FullName);
-                activity.SetStatus(ActivityStatusCode.Error, exception.Message);
-            }
-            else if (context.Canceled)
-            {
-                activity.SetTag(BelemetrySemanticConventions.ErrorType, typeof(OperationCanceledException).FullName);
-                activity.SetStatus(ActivityStatusCode.Error, "canceled");
+                activity.SetTag(BelemetrySemanticConventions.ErrorType, errorType);
+                activity.SetStatus(ActivityStatusCode.Error, exception?.Message ?? "canceled");
             }
         }
         finally
         {
             context.Items.Remove(ActivityItem);
             activity.Stop();
+        }
+    }
+
+    private static bool IsShuttingDown(PerformedContext context)
+    {
+        try
+        {
+            return context.CancellationToken?.ShutdownToken.IsCancellationRequested is true;
+        }
+        catch
+        {
+            // A disposed token source: nothing to tell from it.
+            return false;
+        }
+    }
+
+    private static void Measure(PerformedContext context, long timestamp, string outcome, string? errorType)
+    {
+        try
+        {
+            var job = context.BackgroundJob.Job;
+            // The job's type and method, never its id, queue or arguments: one series per kind of job and outcome.
+            var tags = new TagList
+            {
+                { "job.type", job.Type.FullName },
+                { "job.method", job.Method.Name },
+                { "job.outcome", outcome },
+            };
+            if (errorType is not null) tags.Add(BelemetrySemanticConventions.ErrorType, errorType);
+
+            BelemetryHangfireMetrics.Executions.Add(1, tags);
+            BelemetryHangfireMetrics.Duration.Record(Stopwatch.GetElapsedTime(timestamp).TotalSeconds, tags);
+        }
+        catch
+        {
+            // Telemetry must never fail the job.
         }
     }
 }

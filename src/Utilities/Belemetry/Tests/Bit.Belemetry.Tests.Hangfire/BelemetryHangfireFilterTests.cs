@@ -32,7 +32,9 @@ public class BelemetryHangfireFilterTests
     private static BelemetryInMemoryExporter _memory = null!;
     private static BackgroundJobServer _server = null!;
 
-    [ClassInitialize]
+    // Started once for the assembly: Hangfire's configuration is process-wide, and BelemetryHangfireMetricsTests runs
+    // jobs on the same server.
+    [AssemblyInitialize]
     public static void StartServer(TestContext testContext)
     {
         _memory = new BelemetryInMemoryExporter();
@@ -60,7 +62,7 @@ public class BelemetryHangfireFilterTests
         _server = new BackgroundJobServer(new BackgroundJobServerOptions { WorkerCount = 1, Queues = ["default", "critical"], SchedulePollingInterval = TimeSpan.FromMilliseconds(100) });
     }
 
-    [ClassCleanup]
+    [AssemblyCleanup]
     public static async Task StopServer()
     {
         _server.Dispose();

@@ -2,9 +2,10 @@
 
     <Import Project="../../../Bit.Build.props" />
 
-    <!-- Hangfire spans for Bit.Belemetry: a job filter that carries the trace context of the enqueue into the job's
+    <!-- Hangfire spans and metrics for Bit.Belemetry: a job filter that carries the trace context of the enqueue into the job's
          parameters and starts an Activity around each execution, on the Bit.Belemetry.Hangfire source the core
-         collects by default. A separate package because Hangfire is a server-only dependency. -->
+         collects by default, and measures executions and the job storage on the Bit.Belemetry.Hangfire meter. A separate
+         package because Hangfire is a server-only dependency. -->
 
     <PropertyGroup>
         <RootNamespace>Bit.Belemetry</RootNamespace>

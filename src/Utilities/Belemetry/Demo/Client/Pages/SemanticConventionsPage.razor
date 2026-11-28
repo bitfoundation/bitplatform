@@ -199,7 +199,11 @@
                 </tr>
                 <tr>
                     <td>Hangfire execution (<code>Bit.Belemetry.Hangfire</code>)</td>
-                    <td>Consumer span <code>JOB {Type}.{Method}</code>, parented to the enqueue's trace: <code>job.id</code>, <code>job.type</code>, <code>job.method</code>, <code>job.queue</code>, <code>job.created_at</code>, <code>error.type</code></td>
+                    <td>Consumer span <code>JOB {Type}.{Method}</code>, parented to the enqueue's trace: <code>job.id</code>, <code>job.type</code>, <code>job.method</code>, <code>job.queue</code>, <code>job.created_at</code>, <code>error.type</code>. Metrics <code>hangfire.job.executions</code> and <code>hangfire.job.duration</code> (s): <code>job.type</code>, <code>job.method</code>, <code>job.outcome</code>, <code>error.type</code></td>
+                </tr>
+                <tr>
+                    <td>Hangfire storage (<code>Bit.Belemetry.Hangfire</code>)</td>
+                    <td>Gauges <code>hangfire.jobs.enqueued</code>, <code>hangfire.jobs.processing</code>, <code>hangfire.jobs.scheduled</code>, <code>hangfire.jobs.failed</code>, <code>hangfire.jobs.retries</code>: storage-wide, the same on every instance</td>
                 </tr>
                 <tr>
                     <td>Belemetry's own health (the <code>Bit.Belemetry</code> meter)</td>

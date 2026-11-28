@@ -86,7 +86,9 @@ public class BelemetrySettingsTests
         var defaults = new BelemetrySettings(new BelemetryOptions(), new BelemetryHostDetection(false));
         CollectionAssert.AreEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*", "Bit.Belemetry.*" }, defaults.TraceSources);
         Assert.IsTrue(BelemetrySettings.Matches("Bit.Belemetry.EntityFrameworkCore", defaults.TraceSources), "The instrumentation packages need no configuration.");
-        CollectionAssert.AreEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*", "System.Runtime" }, defaults.Meters);
+        CollectionAssert.AreEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*", "System.Runtime", "Bit.Belemetry.*" }, defaults.Meters);
+        Assert.IsTrue(BelemetrySettings.Matches("Bit.Belemetry.Hangfire", defaults.Meters), "The instrumentation packages' meters need no configuration.");
+        Assert.IsFalse(BelemetrySettings.Matches("Bit.Belemetry", defaults.Meters), "Belemetry's own health meter stays opt-in.");
     }
 
     [TestMethod]

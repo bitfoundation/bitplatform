@@ -1,7 +1,11 @@
 ﻿namespace Bit.Belemetry;
 
 /// <summary>Exports over OTLP: HTTP with protobuf or JSON payloads, or gRPC.</summary>
-internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options, BelemetryMetricTemporality temporality, string name) : IBelemetryHttpExporter
+/// <param name="ratioAttribute">
+/// Whether a record may get <see cref="BelemetryOtlpSampling.RatioAttribute"/>: false when privacy blocks that key, as
+/// the serializers add it after privacy ran. A span's tracestate threshold is no attribute and is written either way.
+/// </param>
+internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options, BelemetryMetricTemporality temporality, string name, bool ratioAttribute = true) : IBelemetryHttpExporter
 {
     /// <summary>The content type of a gRPC request; the sender frames and sends it over HTTP/2.</summary>
     internal const string GrpcContentType = "application/grpc";
@@ -32,13 +36,13 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
         if (batch.Spans.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Traces))
         {
             yield return Create(Resolve(options.TracesEndpoint, options.Endpoint, protocol, BelemetrySignals.Traces), contentType,
-                json ? BelemetryOtlpJsonSerializer.SerializeTraces(batch) : BelemetryOtlpProtobufSerializer.SerializeTraces(batch), batch.Spans.Count);
+                json ? BelemetryOtlpJsonSerializer.SerializeTraces(batch, ratioAttribute) : BelemetryOtlpProtobufSerializer.SerializeTraces(batch, ratioAttribute), batch.Spans.Count);
         }
 
         if (batch.Logs.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Logs))
         {
             yield return Create(Resolve(options.LogsEndpoint, options.Endpoint, protocol, BelemetrySignals.Logs), contentType,
-                json ? BelemetryOtlpJsonSerializer.SerializeLogs(batch) : BelemetryOtlpProtobufSerializer.SerializeLogs(batch), batch.Logs.Count);
+                json ? BelemetryOtlpJsonSerializer.SerializeLogs(batch, ratioAttribute) : BelemetryOtlpProtobufSerializer.SerializeLogs(batch, ratioAttribute), batch.Logs.Count);
         }
 
         if (batch.Metrics.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Metrics))

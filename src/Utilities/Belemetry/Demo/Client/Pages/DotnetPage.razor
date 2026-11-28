@@ -157,7 +157,8 @@
     <h3 class="bb-card-title"><span class="bb-dot bb-dot-warning"></span> Metrics</h3>
     <p>
         The instruments of every meter named in <code>Metrics.Meters</code> are aggregated in process - by default
-        <code>System.Net.Http</code>, <code>Microsoft.AspNetCore.Components*</code> and <code>System.Runtime</code>,
+        <code>System.Net.Http</code>, <code>Microsoft.AspNetCore.Components*</code>, <code>System.Runtime</code> and
+        <code>Bit.Belemetry.*</code> (the instrumentation packages, such as Hangfire's execution and storage metrics),
         with the same trailing-<code>*</code> patterns. Counters and up-down counters become sums, histograms become
         explicit-bucket histograms (<code>HistogramBoundaries</code>; empty by default, which means the OpenTelemetry
         defaults, unless the instrument advises its own), and gauges keep their last value.
@@ -272,6 +273,16 @@
         parented to the trace that enqueued the job - the W3C trace context travels in the job's parameters, so the
         enqueue and the execution may run in different processes - and marked as an error with
         <code>error.type</code> when the job throws. Application Insights shows them as requests.
+    </p>
+    <p>
+        Hangfire has no meter of its own, so the package measures the jobs too, on the <code>Bit.Belemetry.Hangfire</code>
+        meter (collected by default): every execution the filter keeps, sampled trace or not, in the counter
+        <code>hangfire.job.executions</code> and the histogram <code>hangfire.job.duration</code> (seconds), by
+        <code>job.type</code>, <code>job.method</code>, <code>job.outcome</code> and, unless it succeeded,
+        <code>error.type</code>; and the storage's state as the gauges <code>hangfire.jobs.enqueued</code>,
+        <code>.processing</code>, <code>.scheduled</code>, <code>.failed</code> and <code>.retries</code>, read with one
+        cached <code>GetStatistics()</code> query per collection (<code>StorageMetrics</code>, on by default). The gauges
+        describe the whole storage, so every instance reports the same values: take their maximum, not their sum.
     </p>
 </div>
 
@@ -541,7 +552,8 @@
             .UseBitBelemetry(o =>
             {
                 o.PropagateTraceContext = true;                        // the enqueue's trace is the execution's parent
-                o.Filter = job => job.Type != typeof(HeartbeatJob);    // skip the noisy ones
+                o.Filter = job => job.Type != typeof(HeartbeatJob);    // skip the noisy ones (no span, not counted)
+                o.StorageMetrics = true;                               // the hangfire.jobs.* gauges
             }));
         """;
 

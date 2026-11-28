@@ -35,14 +35,14 @@ Every feature is gated by runtime consent (GDPR), per feature.
 | `Bit.Belemetry/Components/` | `<BelemetryScript />` (static `<head>` tag), `<BelemetryInitializer />` (interactive bridge) and `<BelemetryCapturePreview />` (the unstyled support-bundle preview) |
 | `Bit.Belemetry/Diagnostics/` | Production diagnostics: the diagnostic timeline (`BelemetryDiagnosticRecorder`, one per process on client hosts, one per circuit on a server, routed by `BelemetryDiagnosticHub`), the event model, the sanitizer, exception fingerprints, captures, issue reports and the support bundle format. See "Production diagnostics" below |
 | `Bit.Belemetry.EntityFrameworkCore/` | Separate package: a `DbCommandInterceptor` that starts a client span per EF Core command on the `Bit.Belemetry.EntityFrameworkCore` source (`UseBitBelemetry()` on the context options). Depends on the core and `Microsoft.EntityFrameworkCore.Relational` only |
-| `Bit.Belemetry.Hangfire/` | Separate package: a client + server job filter that carries the W3C trace context in the job's parameters and starts a consumer span per execution on the `Bit.Belemetry.Hangfire` source (`UseBitBelemetry()` on the global configuration). Depends on the core and `Hangfire.Core` only |
+| `Bit.Belemetry.Hangfire/` | Separate package: a client + server job filter that carries the W3C trace context in the job's parameters and starts a consumer span per execution on the `Bit.Belemetry.Hangfire` source, plus execution metrics (not sampled) and storage gauges (one cached `GetStatistics()` per collection) on the `Bit.Belemetry.Hangfire` meter (`UseBitBelemetry()` on the global configuration). Depends on the core and `Hangfire.Core` only |
 | `Demo/` | Documentation site (Client) and its host (Server). The host also runs the MCP server at `/mcp` and an in-process OTLP receiver that the demo exports to |
 | `Samples/` | Minimal hosting samples: `Core` (shared pages), `Server`, `Wasm`, `Auto`, `Maui`, `WinForms` |
 | `Tests/` | `Bit.Belemetry.Tests` (MSTest + bunit), `Tests.EntityFrameworkCore`, `Tests.Hangfire`, `Tests.Hosting`, `Tests.E2E` (Playwright) with `Tests.Harness.*`, `Tests.Mcp`, `bit-belemetry-js` (vitest) |
 
 The core stays small on purpose: anything that needs a dependency most Blazor apps do not have (a database provider,
-a job server, a cloud SDK) goes in a package of its own that starts plain `Activity` instances on a `Bit.Belemetry.*`
-source, which the core collects by default. gRPC, resource detection and the appsettings binding shape are in the
+a job server, a cloud SDK) goes in a package of its own that starts plain `Activity` instances (and records on a plain
+`Meter`) on a `Bit.Belemetry.*` source (meter), which the core collects by default. gRPC, resource detection and the appsettings binding shape are in the
 core because every host may need them and they add no dependency.
 
 ## Coding style
@@ -396,8 +396,9 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   { TraceState = ... }`, the property is init-only). The entry then flows to children, explicit contexts, Hangfire
   job parameters and downstream services. At stop the span takes `max(entry, Traces.SamplingRatio)`. It is 1 when the
   process's ratio is not in (0, 1) or the span's state has no entry: a tracestate is untrusted, and no caller may
-  make a span count for more than the process's own ratio. Not `ot=th:` (G-31: that is the consistent probability
-  sampler's threshold, on other trace id bits). A span's event items take the span's rate. .NET logs
+  make a span count for more than the process's own ratio. The propagated entry is not `ot=th:` (G-31: that is the
+  consistent probability sampler's threshold, on other trace id bits); only the OTLP exporters write one, with its `rv`,
+  on the copy they export (see "OTLP sampling ratio" below). A span's event items take the span's rate. .NET logs
   (`BelemetryLogRecord.SamplingRatio`, 1 unless a processor sets it) and metrics are not sampled. A tail sampler using
   `BelemetrySampler` sets `Math.Min(SamplingRatio, its ratio)`: the decisions nest. Live Metrics (.NET only) counts a
   record as `ItemCount` in its rates, its average durations and its custom charts' sums and averages; min, max and
@@ -443,6 +444,30 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   only the items the response lists with those codes.
 - **Compression:** `compression: "gzip"` sends `Content-Encoding: gzip`, from the browser too (the ingestion
   endpoint's CORS preflight allows that header). Unload batches go uncompressed (compression is async).
+
+### OTLP sampling ratio (C# `Exporters/Otlp/BelemetryOtlpSampling.cs`, TS `exporters/otlp-common.ts`)
+
+The ratio Azure Monitor sends as `sampleRate`, written by the OTLP serializers only for a ratio above 0 and below 1 (at 1
+a request is unchanged), without touching the records (every exporter shares them):
+
+- **A .NET span** (`BelemetrySpan.SamplingRatio`) gets OpenTelemetry's probability-sampling entry first in its exported
+  trace state: `ot=rv:<14 hex>;th:<threshold>` (`BelemetryTraceState.WithOtelThreshold`), the other members and other
+  `ot` values kept (32 members and 512 characters at most, members dropped from the end; an `ot` entry past 256
+  characters is not written). `th` is
+  `2^56 - ceil(ratio * 2^56)` in lowercase hex without trailing zeros (`Threshold`; 0.25 is `c`), rounded down so a kept
+  span never falls below it. `rv` is `2^56 - 1 - (|first 8 bytes as a big-endian int64| >> 7)` (`Randomness`): the
+  bytes `BelemetrySampler.ShouldSample` decides on, so whatever it keeps at a ratio - head or tail - satisfies
+  `rv >= th`, and a consumer's consistency check holds. A bare `th` would be checked against the last 7 bytes and
+  contradicted for most kept spans (the specification erases it then). A state whose `ot` entry already has another `rv`
+  gets no threshold: that randomness is not what decided. Nor does a span whose trace id `ShouldSample` would not keep
+  at its ratio (raised by a caller's `belemetry=sr:`, or a processor's random decision): its `rv` contradicts the `th`.
+- **The attribute `belemetry.sampling.ratio`** (double) otherwise: every log record, a span of a batch whose resource is
+  the browser's (`telemetry.sdk.language = webjs`: relayed, kept by its session, not its trace id), and a span refused a
+  threshold as above. Not added when the record has it already (a processor's value wins), nor when `blockedAttributes`
+  holds it (the serializers write it after privacy ran: `BelemetryOtlpExporter`'s `ratioAttribute`, and the script passes
+  no `sessionRatio` to `createOtlpExporter`); a span's threshold is written either way.
+- **The script** (`createOtlpExporter(..., sessionRatio)` from `sampling.sessionRatio`) writes the attribute on every span
+  and log record, never a trace state: the page keeps whole sessions.
 
 ### Sentry mapping (C# `Exporters/Sentry/`, TS `exporters/sentry.ts`; identical for a browser record)
 
@@ -574,7 +599,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | --- | --- | --- |
 | `Tests/Bit.Belemetry.Tests` | Model, collectors, aggregation, processors, consent state machine, privacy scrubbing, sampling, both OTLP serializers (protobuf bytes decoded by `Google.Protobuf` types generated from the vendored official `.proto` files in `Tests/Bit.Belemetry.Tests/Protos`), Azure envelopes, the sender's retry and persistence, components (bunit) | `dotnet test` from that folder |
 | `Tests/Bit.Belemetry.Tests.EntityFrameworkCore` | The EF Core interceptor against SQLite in memory: span shape, parenting, failures, the filter, the no-listener path | `dotnet test` from that folder |
-| `Tests/Bit.Belemetry.Tests.Hangfire` | The Hangfire filter against a real `BackgroundJobServer` on in-memory storage: the execution span, its parent from the enqueue, failures, the filter | `dotnet test` from that folder |
+| `Tests/Bit.Belemetry.Tests.Hangfire` | The Hangfire filter against a real `BackgroundJobServer` on in-memory storage: the execution span, its parent from the enqueue, failures, the filter, the execution metrics and the storage gauges | `dotnet test` from that folder |
 | `Tests/Bit.Belemetry.Tests.Hosting` | Every render mode prerenders `<BelemetryScript />` with the right config, the script is served, and a real export reaches an in-process OTLP receiver when the server pipeline is enabled | `dotnet test` from that folder |
 | `Tests/Bit.Belemetry.Tests.E2E` | Real browser: page views, clicks, errors, web vitals, fetch + `traceparent`, consent gating, purge on revoke, and unload flush, against the harness hosts and a capturing OTLP/Azure receiver; a support bundle captured and downloaded in Server, WebAssembly and Auto (`/diagnostics` harness page), validated against the format without the library; Blazor Hybrid in the WinForms harness and the unchanged MAUI sample (Windows, WebView2). CI runs it, and the trimmed/AOT publish gate, on demand only (`ci.belemetry.e2e.yml`); `ci.belemetry.yml` builds the MAUI sample for Android, iOS and Mac Catalyst on pull requests | `dotnet test` from that folder (needs `playwright.ps1 install chromium`; the MAUI suite needs the MAUI workloads) |
 | `Tests/Bit.Belemetry.Tests.Mcp` | The demo's MCP server | `dotnet test` from that folder |

@@ -128,6 +128,37 @@ public class BelemetryMetricsTests
     }
 
     [TestMethod]
+    public void ObservableGauge_ThatReportsNothing_ExportsNoStalePoint()
+    {
+        using var meter = NewMeter();
+        var settings = TestHost.CreateSettings(o => o.Metrics.Meters.Add(meter.Name));
+        using var collector = new BelemetryMeterCollector(settings);
+
+        long? enqueued = 7;
+        meter.CreateObservableGauge("enqueued", () => enqueued is { } value ? [new Measurement<long>(value)] : Array.Empty<Measurement<long>>());
+
+        Assert.AreEqual(7L, collector.Collect().Single(m => m.Name == "enqueued").Points[0].LongValue);
+
+        enqueued = null; // the storage could not be read
+        Assert.IsFalse(collector.Collect().Any(m => m.Name == "enqueued"), "A collection without an observation must not export the last one again.");
+
+        enqueued = 3;
+        Assert.AreEqual(3L, collector.Collect().Single(m => m.Name == "enqueued").Points[0].LongValue);
+    }
+
+    [TestMethod]
+    public void Gauge_KeepsItsLastValue_AcrossCollectionsWithoutARecord()
+    {
+        using var meter = NewMeter();
+        var aggregator = Aggregator(meter.CreateGauge<int>("temperature"));
+        aggregator.IsInteger = true;
+        aggregator.Record(20, 20, []);
+        aggregator.Collect(100);
+
+        Assert.AreEqual(20L, aggregator.Collect(200)!.Points[0].LongValue, "A synchronous gauge still reports its last value.");
+    }
+
+    [TestMethod]
     public void Gauge_KeepsTheLastValue()
     {
         using var meter = NewMeter();
