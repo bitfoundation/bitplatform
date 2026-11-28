@@ -94,6 +94,24 @@ public class OtlpSamplingTests
         Assert.IsNull(BelemetryTraceState.WithOtelThreshold(null, Records.TraceId, double.NaN));
         Assert.IsNull(BelemetryTraceState.WithOtelThreshold(null, "not a trace id", 0.25));
         Assert.IsNull(BelemetryTraceState.WithOtelThreshold("ot=x:" + new string('a', 250), Records.TraceId, 0.25), "Past the entry's 256 characters.");
+        // About 0.99 of the way: the sampler keeps it at 0.5 only by someone else's say (a caller's entry, a random processor).
+        const string unkept = "7f000000000000000000000000000001";
+        Assert.IsFalse(BelemetrySampler.ShouldSample(unkept, 0.5));
+        Assert.IsNull(BelemetryTraceState.WithOtelThreshold("belemetry=sr:0.5", unkept, 0.5), "Its rv would contradict the th.");
+    }
+
+    [TestMethod]
+    public void WithOtelThreshold_KeepsTheW3CLimitOf512Characters_DroppingMembersFromTheEnd()
+    {
+        var state = string.Join(",", Enumerable.Range(0, 10).Select(i => $"k{i}={new string('v', 45)}"));
+        Assert.IsLessThan(512, state.Length);
+
+        var result = BelemetryTraceState.WithOtelThreshold(state, Records.TraceId, 0.25)!;
+        Assert.IsLessThanOrEqualTo(512, result.Length);
+        Assert.StartsWith("ot=", result);
+        var members = result.Split(',');
+        Assert.AreEqual("k0=" + new string('v', 45), members[1]);
+        Assert.IsLessThan(11, members.Length, "The last member made room for the threshold.");
     }
 
     [TestMethod]
@@ -198,6 +216,54 @@ public class OtlpSamplingTests
         var l = ExportLogsServiceRequest.Parser.ParseFrom(BelemetryOtlpProtobufSerializer.SerializeLogs(new BelemetryBatch(Records.Resource(), logs: [log])))
             .ResourceLogs[0].ScopeLogs[0].LogRecords[0];
         Assert.AreEqual(0.2, l.Attributes.Single(a => a.Key == BelemetryOtlpSampling.RatioAttribute).Value.DoubleValue);
+    }
+
+    [TestMethod]
+    [DataRow(BelemetryOtlpProtocol.HttpProtobuf)]
+    [DataRow(BelemetryOtlpProtocol.HttpJson)]
+    public void ABlockedRatioAttribute_IsNotWritten_ButTheThresholdStill(BelemetryOtlpProtocol protocol)
+    {
+        var exporter = new BelemetryOtlpExporter(new BelemetryOtlpExporterOptions { Endpoint = new Uri("http://collector.test:4318"), Protocol = protocol },
+                                                 BelemetryMetricTemporality.Cumulative, "otlp", ratioAttribute: false);
+        var browser = new BelemetryResource(new BelemetryAttributes().Set(BelemetrySemanticConventions.TelemetrySdkLanguage, "webjs"));
+        var relayed = Records.Span();
+        relayed.SamplingRatio = 0.5;
+        var sampled = Records.Span();
+        sampled.SamplingRatio = 0.25;
+        var log = Records.Log();
+        log.SamplingRatio = 0.25;
+
+        var requests = exporter.CreateRequests(new BelemetryBatch(browser, [relayed], [log]))
+            .Concat(exporter.CreateRequests(new BelemetryBatch(Records.Resource(), [sampled])))
+            .ToList();
+        Assert.AreEqual(3, requests.Count);
+
+        foreach (var request in requests)
+        {
+            CollectionAssert.DoesNotContain(Attributes(request, protocol), BelemetryOtlpSampling.RatioAttribute, request.Url);
+        }
+
+        var traceState = protocol == BelemetryOtlpProtocol.HttpProtobuf
+            ? ExportTraceServiceRequest.Parser.ParseFrom(requests[2].Body).ResourceSpans[0].ScopeSpans[0].Spans[0].TraceState
+            : JsonDocument.Parse(requests[2].Body).RootElement.GetProperty("resourceSpans")[0].GetProperty("scopeSpans")[0].GetProperty("spans")[0].GetProperty("traceState").GetString();
+        Assert.AreEqual($"ot=rv:{BelemetryTraceState.Randomness(Records.TraceId)};th:c", traceState, "The tracestate is no attribute: blocking the key leaves it.");
+    }
+
+    private static List<string> Attributes(BelemetryHttpRequest request, BelemetryOtlpProtocol protocol)
+    {
+        var logs = request.Url.EndsWith("v1/logs", StringComparison.Ordinal);
+        if (protocol == BelemetryOtlpProtocol.HttpProtobuf)
+        {
+            return logs
+                ? [.. ExportLogsServiceRequest.Parser.ParseFrom(request.Body).ResourceLogs[0].ScopeLogs[0].LogRecords[0].Attributes.Select(a => a.Key)]
+                : [.. ExportTraceServiceRequest.Parser.ParseFrom(request.Body).ResourceSpans[0].ScopeSpans[0].Spans[0].Attributes.Select(a => a.Key)];
+        }
+
+        using var doc = JsonDocument.Parse(request.Body);
+        var record = logs
+            ? doc.RootElement.GetProperty("resourceLogs")[0].GetProperty("scopeLogs")[0].GetProperty("logRecords")[0]
+            : doc.RootElement.GetProperty("resourceSpans")[0].GetProperty("scopeSpans")[0].GetProperty("spans")[0];
+        return record.TryGetProperty("attributes", out var attributes) ? [.. attributes.EnumerateArray().Select(a => a.GetProperty("key").GetString()!)] : [];
     }
 
     private static long ParseThreshold(string th) => long.Parse(th.PadRight(14, '0'), NumberStyles.HexNumber, CultureInfo.InvariantCulture);

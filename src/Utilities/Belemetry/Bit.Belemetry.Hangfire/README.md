@@ -15,9 +15,12 @@ Hangfire.Core has no meter of its own, so the package measures the jobs too, on 
 | `hangfire.job.duration` | histogram, `s` | the same |
 | `hangfire.jobs.enqueued`, `.processing`, `.scheduled`, `.failed`, `.retries` | gauges, `{job}` | none |
 
-The execution metrics count every execution the filter keeps, whether or not its trace is sampled. The gauges read
-`JobStorage.Current.GetMonitoringApi().GetStatistics()` once per collection (cached for a second, so the five share one
-query), and report nothing when the query fails. They describe the whole storage, so every instance reports the same
+The execution metrics count every execution the filter keeps, whether or not its trace is sampled. `canceled` is a
+job aborted while it ran or stopped by the server's shutdown; a job another filter cancels before it runs is not
+counted. The gauges read `GetMonitoringApi().GetStatistics()` of `o.Storage`, else `JobStorage.Current`, once per
+collection (cached for a second after the query ends, so the five share one query). They report nothing when the query
+fails, and a failed query is not retried for 30 seconds; `.retries` reports nothing on a storage that does not count
+retries. They describe the whole storage, so every instance reports the same
 values: a dashboard takes their maximum, not their sum.
 
 ```csharp
@@ -30,6 +33,7 @@ services.AddHangfire(configuration => configuration
         o.PropagateTraceContext = true;                       // the enqueue's trace is the execution's parent
         o.Filter = job => job.Type != typeof(HeartbeatJob);   // skip the noisy ones (no span, not counted)
         o.StorageMetrics = true;                              // the hangfire.jobs.* gauges
+        o.Storage = null;                                     // the storage they read; null is JobStorage.Current
     }));
 ```
 

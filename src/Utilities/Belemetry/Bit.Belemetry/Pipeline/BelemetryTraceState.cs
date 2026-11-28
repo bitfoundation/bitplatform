@@ -20,6 +20,7 @@ internal static class BelemetryTraceState
     private const string KeyPrefix = Key + "=";
     private const string RatioField = "sr:";
     private const int MaxMembers = 32;
+    private const int MaxLength = 512;
 
     /// <summary>
     /// <paramref name="traceState"/> with an entry recording <paramref name="ratio"/> first. The entry replaces one the
@@ -97,18 +98,22 @@ internal static class BelemetryTraceState
     /// the decision read (<see cref="Randomness"/>): every span <see cref="BelemetrySampler.ShouldSample(string, double)"/>
     /// keeps at a ratio satisfies its threshold, the head decision and a tail sampler's alike. The value is the same for
     /// every span of the trace. A state whose <c>ot</c> entry already has another randomness (a root in a service sampling
-    /// with its own) does not get a threshold this decision did not make: null.
+    /// with its own) does not get a threshold this decision did not make: null. Neither does a span whose trace id
+    /// <see cref="BelemetrySampler.ShouldSample(string, double)"/> would not keep at the ratio: the ratio may come from a
+    /// caller's tracestate (through <c>max(entry, own ratio)</c>) or from a processor that sampled at random, and a
+    /// threshold would then contradict the randomness. Members past the W3C limits (32 members, 512 characters) are left
+    /// out from the end, as the specification allows.
     /// </remarks>
     public static string? WithOtelThreshold(string? traceState, string traceIdHex, double ratio)
     {
         if ((ratio > 0 && ratio < 1) is false || Randomness(traceIdHex) is not { } randomness) return null;
+        if (BelemetrySampler.ShouldSample(traceIdHex, ratio) is false) return null;
 
         var threshold = Threshold(ratio);
-        var entry = new StringBuilder(OtelKeyPrefix, MaxOtelEntryLength + 8);
+        var entry = new StringBuilder(OtelKeyPrefix, MaxLength);
         entry.Append(RandomnessField).Append(':').Append(randomness).Append(';').Append(ThresholdField).Append(':').Append(threshold);
 
-        var rest = new StringBuilder();
-        var members = 1;
+        var rest = new List<string>();
         if (string.IsNullOrWhiteSpace(traceState) is false)
         {
             foreach (var range in traceState.AsSpan().Split(','))
@@ -138,15 +143,22 @@ internal static class BelemetryTraceState
                     continue;
                 }
 
-                if (members++ == MaxMembers) break;
-                rest.Append(',').Append(member);
+                if (rest.Count + 1 == MaxMembers) break;
+                rest.Add(member.ToString());
             }
         }
 
         // The specification's limit on the entry; past it the threshold is not written rather than other values lost.
         if (entry.Length - OtelKeyPrefix.Length > MaxOtelEntryLength) return null;
 
-        return entry.Append(rest).ToString();
+        // W3C: a vendor that would go past 512 characters drops members from the end; the threshold is the one added.
+        foreach (var member in rest)
+        {
+            if (entry.Length + 1 + member.Length > MaxLength) break;
+            entry.Append(',').Append(member);
+        }
+
+        return entry.ToString();
     }
 
     /// <summary>

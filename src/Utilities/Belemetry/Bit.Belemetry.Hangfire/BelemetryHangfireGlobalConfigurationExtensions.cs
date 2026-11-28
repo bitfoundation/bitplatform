@@ -23,7 +23,7 @@ public static class BelemetryHangfireGlobalConfigurationExtensions
 
         var options = new BelemetryHangfireOptions();
         configure?.Invoke(options);
-        if (options.StorageMetrics) BelemetryHangfireMetrics.EnableStorageGauges();
+        if (options.StorageMetrics) BelemetryHangfireMetrics.EnableStorageGauges(options.Storage);
         return configuration.UseFilter(new BelemetryHangfireFilter(options));
     }
 }

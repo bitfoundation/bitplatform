@@ -26,9 +26,11 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
 
         var options = settings.Options;
 
+        // Blocked keys are exact and case-sensitive, as BelemetryPrivacy matches them.
+        var ratioAttribute = options.Privacy.BlockedAttributes.Contains(BelemetryOtlpSampling.RatioAttribute, StringComparer.Ordinal) is false;
         for (var i = 0; i < settings.OtlpExporters.Count; i++)
         {
-            _httpExporters.Add(new BelemetryOtlpExporter(settings.OtlpExporters[i], options.Metrics.Temporality, $"otlp{(i == 0 ? string.Empty : i.ToString(System.Globalization.CultureInfo.InvariantCulture))}"));
+            _httpExporters.Add(new BelemetryOtlpExporter(settings.OtlpExporters[i], options.Metrics.Temporality, $"otlp{(i == 0 ? string.Empty : i.ToString(System.Globalization.CultureInfo.InvariantCulture))}", ratioAttribute));
         }
 
         for (var i = 0; i < settings.AzureMonitorExporters.Count; i++)

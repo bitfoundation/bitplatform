@@ -12,8 +12,17 @@ namespace Bit.Belemetry;
 /// </summary>
 internal static class BelemetryHangfireMetrics
 {
-    /// <summary>How long one read of the storage's statistics serves: every gauge of one collection reads it once.</summary>
+    /// <summary>
+    /// How long one read of the storage's statistics serves, counted from the end of the query: every gauge of one
+    /// collection reads it once, however long the query took.
+    /// </summary>
     internal static readonly TimeSpan StatisticsLifetime = TimeSpan.FromSeconds(1);
+
+    /// <summary>
+    /// How long a failed query is not retried. The collection runs the gauges inline with the export loop, so a storage
+    /// that is down (each query waiting out its connection timeout) must not stall every collection.
+    /// </summary>
+    internal static readonly TimeSpan FailureBackoff = TimeSpan.FromSeconds(30);
 
     // OpenTelemetry's duration buckets (seconds), stretched to an hour: a job is not a request, and the default
     // buckets (made for milliseconds) would put nearly every execution in the first one.
@@ -30,6 +39,7 @@ internal static class BelemetryHangfireMetrics
 
     private static readonly Lock _gate = new();
     private static int _storageGauges;
+    private static Func<JobStorage>? _storage;
     private static StatisticsDto? _statistics;
     private static long _statisticsTimestamp;
 
@@ -37,38 +47,46 @@ internal static class BelemetryHangfireMetrics
     public static bool Enabled => Executions.Enabled || Duration.Enabled;
 
     /// <summary>
-    /// Creates the storage gauges, once per process: the storage is <see cref="JobStorage.Current"/>, read when a
-    /// collection observes them, so registering the filter before the storage is configured is fine.
+    /// Creates the storage gauges, once per process: the storage is <paramref name="storage"/>, else
+    /// <see cref="JobStorage.Current"/>, read when a collection observes them, so registering the filter before the
+    /// storage is configured is fine. A later call changes nothing, its storage included.
     /// </summary>
-    public static void EnableStorageGauges()
+    public static void EnableStorageGauges(JobStorage? storage = null)
     {
         if (Interlocked.Exchange(ref _storageGauges, 1) == 1) return;
+
+        _storage = storage is null ? static () => JobStorage.Current : () => storage;
 
         _meter.CreateObservableGauge("hangfire.jobs.enqueued", () => Observe(static s => s.Enqueued), "{job}", "Jobs waiting in the storage's queues.");
         _meter.CreateObservableGauge("hangfire.jobs.processing", () => Observe(static s => s.Processing), "{job}", "Jobs being performed.");
         _meter.CreateObservableGauge("hangfire.jobs.scheduled", () => Observe(static s => s.Scheduled), "{job}", "Jobs scheduled for later, retries included.");
         _meter.CreateObservableGauge("hangfire.jobs.failed", () => Observe(static s => s.Failed), "{job}", "Jobs in the failed state.");
-        _meter.CreateObservableGauge("hangfire.jobs.retries", () => Observe(static s => s.Retries ?? 0), "{job}", "Jobs waiting for an automatic retry.");
+        // Null on a storage that does not count retries: nothing is reported then, not a zero.
+        _meter.CreateObservableGauge("hangfire.jobs.retries", () => Observe(static s => s.Retries), "{job}", "Jobs waiting for an automatic retry.");
     }
 
-    private static IEnumerable<Measurement<long>> Observe(Func<StatisticsDto, long> value) =>
-        Statistics() is { } statistics ? [new Measurement<long>(value(statistics))] : [];
+    private static IEnumerable<Measurement<long>> Observe(Func<StatisticsDto, long?> value) =>
+        Statistics() is { } statistics && value(statistics) is { } measured ? [new Measurement<long>(measured)] : [];
 
     /// <summary>
-    /// The storage's statistics, queried at most once per <see cref="StatisticsLifetime"/>: the five gauges of one
-    /// collection cost one query. Null when there is no storage or the query failed - a gauge then reports nothing,
-    /// rather than a zero that would read as an empty queue.
+    /// The storage's statistics, queried at most once per <see cref="StatisticsLifetime"/> (counted from the end of the
+    /// query): the five gauges of one collection cost one query. Null when there is no storage or the query failed - a
+    /// gauge then reports nothing, rather than a zero that would read as an empty queue - and a failed query is not
+    /// retried for <see cref="FailureBackoff"/>.
     /// </summary>
     internal static StatisticsDto? Statistics()
     {
         lock (_gate)
         {
-            var now = Stopwatch.GetTimestamp();
-            if (_statisticsTimestamp != 0 && Stopwatch.GetElapsedTime(_statisticsTimestamp, now) < StatisticsLifetime) return _statistics;
+            if (_statisticsTimestamp != 0
+                && Stopwatch.GetElapsedTime(_statisticsTimestamp) < (_statistics is null ? FailureBackoff : StatisticsLifetime))
+            {
+                return _statistics;
+            }
 
             try
             {
-                _statistics = JobStorage.Current.GetMonitoringApi().GetStatistics();
+                _statistics = (_storage ?? (static () => JobStorage.Current))().GetMonitoringApi().GetStatistics();
             }
             catch
             {
@@ -76,7 +94,8 @@ internal static class BelemetryHangfireMetrics
                 _statistics = null;
             }
 
-            _statisticsTimestamp = now;
+            // Taken after the query: one that outlasts the lifetime still serves the rest of its collection.
+            _statisticsTimestamp = Stopwatch.GetTimestamp();
             return _statistics;
         }
     }

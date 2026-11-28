@@ -452,16 +452,20 @@ a request is unchanged), without touching the records (every exporter shares the
 
 - **A .NET span** (`BelemetrySpan.SamplingRatio`) gets OpenTelemetry's probability-sampling entry first in its exported
   trace state: `ot=rv:<14 hex>;th:<threshold>` (`BelemetryTraceState.WithOtelThreshold`), the other members and other
-  `ot` values kept (32 members at most; an `ot` entry past 256 characters is not written). `th` is
+  `ot` values kept (32 members and 512 characters at most, members dropped from the end; an `ot` entry past 256
+  characters is not written). `th` is
   `2^56 - ceil(ratio * 2^56)` in lowercase hex without trailing zeros (`Threshold`; 0.25 is `c`), rounded down so a kept
   span never falls below it. `rv` is `2^56 - 1 - (|first 8 bytes as a big-endian int64| >> 7)` (`Randomness`): the
   bytes `BelemetrySampler.ShouldSample` decides on, so whatever it keeps at a ratio - head or tail - satisfies
   `rv >= th`, and a consumer's consistency check holds. A bare `th` would be checked against the last 7 bytes and
   contradicted for most kept spans (the specification erases it then). A state whose `ot` entry already has another `rv`
-  gets no threshold: that randomness is not what decided.
+  gets no threshold: that randomness is not what decided. Nor does a span whose trace id `ShouldSample` would not keep
+  at its ratio (raised by a caller's `belemetry=sr:`, or a processor's random decision): its `rv` contradicts the `th`.
 - **The attribute `belemetry.sampling.ratio`** (double) otherwise: every log record, a span of a batch whose resource is
   the browser's (`telemetry.sdk.language = webjs`: relayed, kept by its session, not its trace id), and a span refused a
-  threshold as above. Not added when the record has it already (a processor's value wins).
+  threshold as above. Not added when the record has it already (a processor's value wins), nor when `blockedAttributes`
+  holds it (the serializers write it after privacy ran: `BelemetryOtlpExporter`'s `ratioAttribute`, and the script passes
+  no `sessionRatio` to `createOtlpExporter`); a span's threshold is written either way.
 - **The script** (`createOtlpExporter(..., sessionRatio)` from `sampling.sessionRatio`) writes the attribute on every span
   and log record, never a trace state: the page keeps whole sessions.
 

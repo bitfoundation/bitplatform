@@ -79,13 +79,14 @@ public sealed class BelemetryHangfireFilter : IClientFilter, IServerFilter
         if (measured is false && traced is false) return;
 
         Activity? activity = null;
+        var measure = false;
         try
         {
             var job = context.BackgroundJob.Job;
             if (_options.Filter is { } filter && filter(job) is false) return;
 
             // Apart from the span: the metrics are not sampled, so they count every execution, a dropped trace's too.
-            if (measured) context.Items[StartItem] = Stopwatch.GetTimestamp();
+            measure = measured;
             if (traced is false) return;
 
             var parent = default(ActivityContext);
@@ -112,6 +113,11 @@ public sealed class BelemetryHangfireFilter : IClientFilter, IServerFilter
             // Telemetry must never fail the job - nor leave a span current on the worker.
             if (activity is not null && context.Items.Remove(ActivityItem)) activity.Stop();
         }
+        finally
+        {
+            // Last, on every path: the duration is the job's, not the storage round trips that read the trace context.
+            if (measure) context.Items[StartItem] = Stopwatch.GetTimestamp();
+        }
     }
 
     /// <inheritdoc />
@@ -124,7 +130,15 @@ public sealed class BelemetryHangfireFilter : IClientFilter, IServerFilter
                       : context.Canceled ? typeof(OperationCanceledException).FullName
                       : null;
 
-        if (context.Items.Remove(StartItem, out var start) && start is long timestamp) Measure(context, timestamp, exception is not null, errorType);
+        // Canceled, not failed: the job was aborted (deleted or rescheduled while it ran) or stopped by the server's
+        // shutdown - a rolling deploy is no failure. An OperationCanceledException of the job's own (an HTTP timeout)
+        // without either is a failure like any other exception.
+        var canceled = exception is JobAbortedException
+                    || (exception is OperationCanceledException && IsShuttingDown(context));
+        var outcome = canceled ? "canceled" : exception is not null ? "failed" : "succeeded";
+
+        // A job a later filter canceled in its OnPerforming (context.Canceled) never ran: it is no execution to count.
+        if (context.Items.Remove(StartItem, out var start) && start is long timestamp && context.Canceled is false) Measure(context, timestamp, outcome, errorType);
 
         if (context.Items.TryGetValue(ActivityItem, out var item) is false || item is not Activity activity) return;
 
@@ -143,7 +157,20 @@ public sealed class BelemetryHangfireFilter : IClientFilter, IServerFilter
         }
     }
 
-    private static void Measure(PerformedContext context, long timestamp, bool failed, string? errorType)
+    private static bool IsShuttingDown(PerformedContext context)
+    {
+        try
+        {
+            return context.CancellationToken?.ShutdownToken.IsCancellationRequested is true;
+        }
+        catch
+        {
+            // A disposed token source: nothing to tell from it.
+            return false;
+        }
+    }
+
+    private static void Measure(PerformedContext context, long timestamp, string outcome, string? errorType)
     {
         try
         {
@@ -153,7 +180,7 @@ public sealed class BelemetryHangfireFilter : IClientFilter, IServerFilter
             {
                 { "job.type", job.Type.FullName },
                 { "job.method", job.Method.Name },
-                { "job.outcome", failed ? "failed" : context.Canceled ? "canceled" : "succeeded" },
+                { "job.outcome", outcome },
             };
             if (errorType is not null) tags.Add(BelemetrySemanticConventions.ErrorType, errorType);
 

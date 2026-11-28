@@ -7,6 +7,7 @@ import { createAzureExporter } from './exporters/azure';
 import { createConsoleExporter } from './exporters/console';
 import type { Exporter } from './exporters/exporter';
 import { createOtlpExporter } from './exporters/otlp';
+import { SAMPLING_RATIO_ATTRIBUTE } from './exporters/otlp-common';
 import { DotNetCallbacks, relayBatch, type DotNetRef } from './exporters/relay';
 import { createSentryExporter } from './exporters/sentry';
 import { Features } from './features';
@@ -26,6 +27,7 @@ import { onHidden } from './lifecycle';
 import { debug, setDebug } from './log';
 import { Severity, type Attributes, type TelemetryRecord } from './model';
 import { Pipeline, type Processor } from './pipeline';
+import { isBlocked } from './privacy';
 import { createException, createLog, sanitizeAttributes } from './records';
 import { buildResource } from './resource';
 import { SessionManager } from './session';
@@ -128,7 +130,8 @@ function createExporters(config: ResolvedConfig, transport: Transport): Exporter
     const list: Exporter[] = [];
     for (const exporter of config.exporters || []) {
         try {
-            if (exporter.type === 'otlp') list.push(createOtlpExporter(exporter, transport, config.sdkVersion, config.sampling.sessionRatio));
+            // The exporter adds the ratio after privacy ran, so a blocked key must keep it from being added at all.
+            if (exporter.type === 'otlp') list.push(createOtlpExporter(exporter, transport, config.sdkVersion, isBlocked(SAMPLING_RATIO_ATTRIBUTE, config.privacy) ? undefined : config.sampling.sessionRatio));
             else if (exporter.type === 'azureMonitor') list.push(createAzureExporter(exporter, transport, config.sdkVersion, config.sampling.sessionRatio));
             else if (exporter.type === 'sentry') list.push(createSentryExporter(exporter, transport, config.sdkVersion));
             else if (exporter.type === 'console') list.push(createConsoleExporter());

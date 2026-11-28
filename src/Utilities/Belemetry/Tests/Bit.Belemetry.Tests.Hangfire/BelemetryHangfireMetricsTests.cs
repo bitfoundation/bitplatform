@@ -111,7 +111,8 @@ public class BelemetryHangfireMetricsTests
             Assert.AreEqual(statistics.Enqueued, recorder.Of("hangfire.jobs.enqueued").Single().Value);
             Assert.AreEqual(statistics.Processing, recorder.Of("hangfire.jobs.processing").Single().Value);
             Assert.AreEqual(statistics.Failed, recorder.Of("hangfire.jobs.failed").Single().Value);
-            Assert.AreEqual(statistics.Retries ?? 0, recorder.Of("hangfire.jobs.retries").Single().Value);
+            if (statistics.Retries is { } retries) Assert.AreEqual(retries, recorder.Of("hangfire.jobs.retries").Single().Value);
+            else Assert.IsEmpty(recorder.Of("hangfire.jobs.retries"), "A storage that does not count retries reports nothing, not a zero.");
         }
         finally
         {

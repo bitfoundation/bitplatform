@@ -1,4 +1,5 @@
-﻿using Hangfire.Common;
+﻿using Hangfire;
+using Hangfire.Common;
 
 namespace Bit.Belemetry;
 
@@ -21,12 +22,21 @@ public sealed class BelemetryHangfireOptions
     public bool PropagateTraceContext { get; set; } = true;
 
     /// <summary>
-    /// Whether the state of <c>JobStorage.Current</c> is reported as gauges on the <c>Bit.Belemetry.Hangfire</c>
-    /// meter: <c>hangfire.jobs.enqueued</c>, <c>.processing</c>, <c>.scheduled</c>, <c>.failed</c> and
-    /// <c>.retries</c>. Defaults to <see langword="true"/>. They cost one <c>GetStatistics()</c> query of the storage per
-    /// collection (cached for a second, so the five gauges share it), and are storage-wide: every instance reports the
+    /// Whether the state of the job storage (<see cref="Storage"/>, else <c>JobStorage.Current</c>) is reported as
+    /// gauges on the <c>Bit.Belemetry.Hangfire</c> meter: <c>hangfire.jobs.enqueued</c>, <c>.processing</c>,
+    /// <c>.scheduled</c>, <c>.failed</c> and <c>.retries</c>. Defaults to <see langword="true"/>. They cost one
+    /// <c>GetStatistics()</c> query of the storage per collection (cached for a second after the query ends, so the five
+    /// gauges share it; a failed query is not retried for 30 seconds), and are storage-wide: every instance reports the
     /// same values, so a backend takes their maximum rather than their sum. Created once per process, by the first
     /// <c>UseBitBelemetry()</c> that asks for them; turn it off on all but one kind of instance to save the queries.
     /// </summary>
     public bool StorageMetrics { get; set; } = true;
+
+    /// <summary>
+    /// The storage the <see cref="StorageMetrics"/> gauges read. Null (the default) reads <c>JobStorage.Current</c> at
+    /// each collection; set it when the app hands its storage to the server alone (<c>new BackgroundJobServer(options,
+    /// storage)</c>, <c>AddHangfireServer(..., storage)</c>) and never sets the global one, or uses several storages.
+    /// Only the first <c>UseBitBelemetry()</c> that creates the gauges sets it.
+    /// </summary>
+    public JobStorage? Storage { get; set; }
 }

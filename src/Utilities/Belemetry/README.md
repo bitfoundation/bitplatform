@@ -703,12 +703,16 @@ OTLP tells the backend the same ratio (the OTLP exporters, .NET and browser, add
   sampler does), while the randomness a consumer assumes otherwise is the last 7: a bare `th` would contradict them for
   most kept spans, and a consumer erases a threshold that contradicts the randomness. The `rv` is derived from the bytes
   the decision read, the same for every span of the trace, so every span `BelemetrySampler` keeps - by the head ratio or a
-  tail processor - satisfies its threshold. Only the exported copy changes: the propagated `tracestate` stays
+  tail processor - satisfies its threshold. The exported trace state keeps the W3C limits (32 members, 512 characters),
+  dropping members from the end to make room for the `ot` entry. Only the exported copy changes: the propagated `tracestate` stays
   `belemetry=sr:<ratio>`.
 - **A log record** has no trace state, so it carries the ratio as the double attribute `belemetry.sampling.ratio`. So
   does a span kept by its browser session (the browser's own, and relayed ones: the session id decided, not the trace id)
-  and a span whose trace state already has another `rv` (its trace's randomness came from elsewhere, and this decision did
-  not use it). A record that already has the attribute (a processor set it) keeps its value.
+  a span whose trace state already has another `rv` (its trace's randomness came from elsewhere, and this decision did
+  not use it), and a span whose trace id `BelemetrySampler` would not keep at its ratio (a caller's `belemetry=sr:` entry
+  raised it, or a processor sampled at random: a threshold would contradict the `rv`). A record that already has the attribute (a processor set it) keeps its value.
+  Listing `belemetry.sampling.ratio` in `Privacy.BlockedAttributes` keeps it off every record, in the browser too; a
+  span's trace state threshold is not an attribute and is still written.
 
 - A span of a trace this process started takes `Traces.SamplingRatio`.
 - A span that came with a sampled remote parent takes the ratio the caller's tracestate carries. It is never below this
@@ -830,10 +834,14 @@ services.AddHangfire(configuration => configuration
 - **Hangfire metrics**, on the `Bit.Belemetry.Hangfire` meter, which `Metrics.Meters` collects by default (Hangfire has
   no meter of its own). Every execution the filter keeps, sampled trace or not: the counter `hangfire.job.executions`
   and the histogram `hangfire.job.duration` (seconds; buckets up to an hour), by `job.type`, `job.method`,
-  `job.outcome` (`succeeded`, `failed`, `canceled`) and, unless it succeeded, `error.type`. And the storage's state as
+  `job.outcome` (`succeeded`, `failed`, `canceled`) and, unless it succeeded, `error.type`. `canceled` is a job
+  aborted while it ran or stopped by the server's shutdown, not a failure; a job another filter cancels before it runs
+  is not counted. The duration is the job's, from after the filter read the trace context. And the storage's state as
   gauges - `hangfire.jobs.enqueued`, `.processing`, `.scheduled`, `.failed` and `.retries` - read from
-  `GetMonitoringApi().GetStatistics()` of `JobStorage.Current` once per collection (cached for a second); a failed
-  query reports nothing. They are storage-wide, so every instance reports the same values: take their maximum on a
+  `GetMonitoringApi().GetStatistics()` of `o.Storage`, else `JobStorage.Current`, once per collection (cached for a
+  second after the query ends). A failed query reports nothing and is not retried for 30 seconds, so a storage that is
+  down does not stall every collection; `.retries` reports nothing on a storage that does not count retries. Set
+  `o.Storage` when the app hands its storage only to the server (`AddHangfireServer(..., storage)`). They are storage-wide, so every instance reports the same values: take their maximum on a
   dashboard, not their sum. `o.StorageMetrics = false` leaves the gauges, and their query, out.
 
 ---

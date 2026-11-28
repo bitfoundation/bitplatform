@@ -52,7 +52,11 @@ internal sealed class BelemetryInstrumentAggregator
             case "Histogram":
                 Type = BelemetryMetricType.Histogram;
                 break;
-            default: // Gauge, ObservableGauge and anything newer: last value wins.
+            case "ObservableGauge":
+                Type = BelemetryMetricType.Gauge;
+                ObservesOnly = true;
+                break;
+            default: // Gauge and anything newer: last value wins.
                 Type = BelemetryMetricType.Gauge;
                 break;
         }
@@ -73,6 +77,12 @@ internal sealed class BelemetryInstrumentAggregator
 
     /// <summary>Observable counters report running totals, not increments.</summary>
     public bool ObservesCumulative { get; }
+
+    /// <summary>
+    /// An observable gauge's points are only what its callback reported in this collection: one it did not report (a
+    /// storage that could not be read) is dropped, not exported again with its last value as if it were current.
+    /// </summary>
+    public bool ObservesOnly { get; }
 
     public double[] Bounds { get; }
 
@@ -150,6 +160,16 @@ internal sealed class BelemetryInstrumentAggregator
     {
         lock (_lock)
         {
+            if (ObservesOnly)
+            {
+                List<string>? stale = null;
+                foreach (var (key, point) in _points)
+                {
+                    if (point.Updated is false) (stale ??= []).Add(key);
+                }
+                if (stale is not null) foreach (var key in stale) _points.Remove(key);
+            }
+
             if (_points.Count == 0) return null;
 
             var metric = new BelemetryMetric

@@ -307,6 +307,29 @@ describe('public API', () => {
         expect(items.map(e => e.sampleRate)).toEqual([25, 25]);
     });
 
+    it('does not add belemetry.sampling.ratio to OTLP records when privacy blocks that key', async () => {
+        const fetch = mockFetch(200);
+        vi.stubGlobal('fetch', fetch);
+        const now = Date.now();
+        sessionStorage.setItem('bit-belemetry-session', JSON.stringify({ id: '00000000' + 'a'.repeat(24), start: now, last: now }));
+        await load();
+        const config = relayConfig({ transport: 'direct' });
+        api.start({
+            ...config,
+            consent: { default: 4095 },
+            sampling: { sessionRatio: 0.25 },
+            privacy: { ...config.privacy, blockedAttributes: ['belemetry.sampling.ratio'] },
+            exporters: [{ type: 'otlp', endpoint: 'https://otlp.test', protocol: 'http/json' }],
+        });
+        api.trackEvent('checkout');
+        await api.flush();
+        await api._getState().transport.idle();
+        const bodies = fetch.calls.map(c => new TextDecoder().decode(c.init.body));
+        expect(bodies.length).toBeGreaterThan(0);
+        expect(bodies.some(b => b.includes('checkout'))).toBe(true);
+        expect(bodies.some(b => b.includes('belemetry.sampling.ratio'))).toBe(false);
+    });
+
     it('reads a session ratio given as a string as the number it samples by, for the sampleRate too', async () => {
         const fetch = mockFetch(200);
         vi.stubGlobal('fetch', fetch);
