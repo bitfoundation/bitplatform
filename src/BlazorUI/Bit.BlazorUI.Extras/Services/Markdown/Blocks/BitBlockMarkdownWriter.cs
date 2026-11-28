@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Bit.BlazorUI;
 
@@ -18,7 +19,7 @@ namespace Bit.BlazorUI;
 /// italic is written as <c>_</c> where it meets bold at an edge, so the two delimiters never run together.
 /// </para>
 /// </remarks>
-internal static class BitBlockMarkdownWriter
+internal static partial class BitBlockMarkdownWriter
 {
     public static string Write(IReadOnlyList<BitBlock> blocks, Dictionary<string, BitBlockType> registry)
         => WriteBlocks(blocks, registry);
@@ -178,7 +179,7 @@ internal static class BitBlockMarkdownWriter
 
         var alt = EscapeText(Collapse(block.GetProp("alt") ?? ""), lineStart: false, heading: false);
         var caption = block.GetProp("caption");
-        var title = string.IsNullOrEmpty(caption) ? "" : $" \"{caption.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
+        var title = string.IsNullOrEmpty(caption) ? "" : $" \"{EncodeReferences(caption).Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
 
         return $"![{alt}]({Destination(src)}{title})";
     }
@@ -186,16 +187,28 @@ internal static class BitBlockMarkdownWriter
     private static string Collapse(string text) => string.Join(' ', text.Split([' ', '\t', '\n', '\r'], StringSplitOptions.RemoveEmptyEntries));
 
     // A link destination as written inside the parentheses: bare when it can be, in angle brackets when it holds a
-    // space, a parenthesis or an angle bracket, or is empty.
+    // space, a parenthesis or an angle bracket, or is empty. The reader decodes character references in both, so an
+    // '&' that would start one is written as one; it reads backslash escapes in a bare destination only, so inside
+    // angle brackets a bracket is written as a character reference too and a backslash as it is.
     private static string Destination(string url)
     {
+        var encoded = EncodeReferences(url);
+
         if (url.Length > 0 && url.Any(c => c is ' ' or '(' or ')' or '<' or '>' or '\n' or '\r') is false)
         {
-            return url.Replace("\\", "\\\\");
+            return encoded.Replace("\\", "\\\\");
         }
 
-        return "<" + url.Replace("\\", "\\\\").Replace("<", "\\<").Replace(">", "\\>").Replace("\n", " ").Replace("\r", " ") + ">";
+        return "<" + encoded.Replace("<", "&lt;").Replace(">", "&gt;").Replace("\n", " ").Replace("\r", " ") + ">";
     }
+
+    // Writes as "&amp;" every '&' that starts what reads as a character reference, so the reader's decoding gives the
+    // text back.
+    private static string EncodeReferences(string text)
+        => text.Contains('&') ? CharacterReference().Replace(text, m => "&amp;" + m.Value[1..]) : text;
+
+    [GeneratedRegex("&#?[A-Za-z0-9]+;")]
+    private static partial Regex CharacterReference();
 
 
 
@@ -247,6 +260,9 @@ internal static class BitBlockMarkdownWriter
                         break;
 
                     case "a":
+                        // A '!' of the text right before the link would make it an image. The text never writes one
+                        // escaped, so one at the end is always bare.
+                        if (_sb.Length > 0 && _sb[^1] == '!') _sb.Insert(_sb.Length - 1, '\\');
                         Append("[");
                         Write(element.Children, element);
                         Append("](" + Destination(element.Href ?? "") + ")");

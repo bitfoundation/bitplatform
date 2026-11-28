@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.BlockEditor;
@@ -22,14 +25,12 @@ public class BitBlockDocumentTests
 
     private static BitBlockDocument Doc(params BitBlock[] blocks) => new(blocks);
 
-    // The same document with every id blanked, for comparing a form that does not keep ids (Markdown, HTML).
-    private static BitBlockDocument WithoutIds(BitBlockDocument document) => new(WithoutIds(document.Blocks));
-
-    private static List<BitBlock> WithoutIds(IReadOnlyList<BitBlock> blocks)
-        => [.. blocks.Select(b => b with { Id = "", Children = WithoutIds(b.Children) })];
+    // The JSON of a document with every id left out, for comparing a form that does not keep ids (Markdown, HTML). The
+    // ids are taken out of the JSON rather than off the blocks, since a document gives a block with no id a new one.
+    private static string WithoutIds(BitBlockDocument document) => Regex.Replace(document.ToJson(), "\"id\":\"[^\"]*\",", "");
 
     private static void AssertSameBlocks(BitBlockDocument expected, BitBlockDocument actual)
-        => Assert.AreEqual(WithoutIds(expected).ToJson(), WithoutIds(actual).ToJson());
+        => Assert.AreEqual(WithoutIds(expected), WithoutIds(actual));
 
     private static IEnumerable<BitBlock> All(IEnumerable<BitBlock> blocks)
         => blocks.SelectMany(b => new[] { b }.Concat(All(b.Children)));
@@ -37,12 +38,85 @@ public class BitBlockDocumentTests
 
 
     [TestMethod]
-    public void BitBlockShouldGetAShortUniqueIdWhenNoneIsGiven()
+    public void BitBlockShouldGetAShortIdWhenNoneIsGiven()
     {
         var ids = Enumerable.Range(0, 200).Select(_ => new BitBlock { Type = "paragraph" }.Id).ToList();
 
         Assert.IsTrue(ids.All(id => id.Length == 8 && id.All(c => char.IsAsciiLetterLower(c) || char.IsAsciiDigit(c))));
+    }
+
+    [TestMethod]
+    public void BitBlockDocumentShouldGiveARepeatedOrEmptyIdANewOneAndKeepTheRest()
+    {
+        var first = new BitBlock { Id = "same", Type = "paragraph", Text = "one" };
+        var child = new BitBlock { Id = "same", Type = "listItem", Text = "child" };
+        var parent = new BitBlock { Id = "p", Type = "listItem", Text = "parent", Children = [child] };
+        var blank = new BitBlock { Id = "", Type = "paragraph", Text = "blank" };
+        var unique = new BitBlock { Id = "u", Type = "paragraph", Text = "unique" };
+
+        var document = Doc(first, parent, blank, unique);
+
+        var ids = All(document.Blocks).Select(b => b.Id).ToList();
         Assert.AreEqual(ids.Count, ids.Distinct().Count());
+        Assert.IsTrue(ids.All(id => id.Length > 0));
+        Assert.AreSame(first, document.Blocks[0], "The first block with an id keeps it, as the same instance.");
+        Assert.AreSame(unique, document.Blocks[3]);
+        Assert.AreEqual("p", document.Blocks[1].Id);
+        Assert.AreNotEqual("same", document.Blocks[1].Children[0].Id);
+        Assert.AreEqual("child", document.Blocks[1].Children[0].Text);
+
+        var edited = document with { Blocks = [.. document.Blocks, first] };
+        Assert.AreEqual(5, edited.Blocks.Count);
+        Assert.AreNotEqual("same", edited.Blocks[4].Id, "A with expression makes the ids unique too.");
+        Assert.AreSame(document.Blocks[1], edited.Blocks[1]);
+    }
+
+    [TestMethod]
+    public void BitBlockShouldNotFollowChangesToTheCollectionsItWasGiven()
+    {
+        var props = new Dictionary<string, string> { ["level"] = "2" };
+        var child = Block("listItem", "child");
+        var children = new List<BitBlock> { child };
+        var block = new BitBlock { Type = "heading", Props = props, Children = children };
+
+        props["level"] = "5";
+        props["extra"] = "x";
+        children.Add(Block("listItem", "other"));
+
+        Assert.AreEqual("2", block.GetProp("level"));
+        Assert.AreEqual(1, block.Props.Count);
+        Assert.AreEqual(1, block.Children.Count);
+        Assert.AreSame(child, block.Children[0]);
+
+        var blocks = new List<BitBlock> { block };
+        var document = Doc([.. blocks]);
+        var withList = document with { Blocks = blocks };
+        blocks.Add(Block("paragraph"));
+
+        Assert.AreEqual(1, document.Blocks.Count);
+        Assert.AreEqual(1, withList.Blocks.Count);
+        Assert.AreSame(block, withList.Blocks[0]);
+    }
+
+    [TestMethod]
+    public void BitBlockShouldMatchPropNamesOrdinallyWhateverComparerTheyCameWith()
+    {
+        var ignoringCase = new BitBlock
+        {
+            Id = "a",
+            Type = "heading",
+            Props = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase) { ["Level"] = "2" }
+        };
+        var ordinal = new BitBlock { Id = "a", Type = "heading", Props = new Dictionary<string, string> { ["level"] = "2" } };
+
+        Assert.IsNull(ignoringCase.GetProp("level"));
+        Assert.AreEqual("2", ignoringCase.GetProp("Level"));
+        Assert.AreNotEqual(ignoringCase, ordinal);
+        Assert.AreNotEqual(ordinal, ignoringCase);
+
+        var edited = ignoringCase.WithProp("Level", "3");
+        Assert.AreEqual(1, edited.Props.Count);
+        Assert.AreEqual("3", edited.GetProp("Level"));
     }
 
     [TestMethod]
@@ -399,6 +473,108 @@ public class BitBlockDocumentTests
         AssertSameBlocks(document, read);
     }
 
+    [TestMethod]
+    public void BitBlockDocumentShouldRoundTripHtmlOfCodeEndingInANewlineAndOfAnItemWithNoText()
+    {
+        var document = Doc(
+            Block("code", "line\n"),
+            Block("code", "line"),
+            new BitBlock { Type = "listItem", Children = [Block("paragraph", "note")] },
+            new BitBlock { Type = "listItem", Text = "text", Children = [Block("paragraph", "note")] });
+
+        AssertSameBlocks(document, BitBlockDocument.FromHtml(document.ToHtml()));
+        Assert.AreEqual("<pre><code>line\n\n</code></pre><pre><code>line</code></pre>", Doc(document.Blocks[0], document.Blocks[1]).ToHtml());
+    }
+
+    [TestMethod]
+    public void BitBlockDocumentShouldKeepAnImageInsideALink()
+    {
+        var document = BitBlockDocument.FromHtml("<p>a <a href=\"https://bitplatform.dev\">before <img src=\"https://bitplatform.dev/a.png\" alt=\"pic\"> after</a> b</p>");
+
+        AssertSameBlocks(
+            Doc(
+                // A link keeps the white space at its edges (see BitBlockInline).
+                Block("paragraph", "a <a href=\"https://bitplatform.dev\">before </a>"),
+                Block("image", "", ("src", "https://bitplatform.dev/a.png"), ("alt", "pic")),
+                Block("paragraph", "<a href=\"https://bitplatform.dev\"> after</a> b")),
+            document);
+    }
+
+    [TestMethod]
+    public void BitBlockDocumentShouldReadInsAndDelAsTagsOnly()
+    {
+        var document = BitBlockDocument.FromHtml("<p><ins>u</ins> <DEL>d</DEL> <img src=\"https://bitplatform.dev/a.png\" alt=\"<del>x</del>\"></p>");
+
+        Assert.AreEqual("<ins>u</ins> <s>d</s>", document.Blocks[0].Text);
+        Assert.AreEqual("<del>x</del>", document.Blocks[1].GetProp("alt"));
+    }
+
+    [TestMethod]
+    public void BitBlockDocumentShouldReadAndWriteHtmlPastAMegabyteWhole()
+    {
+        var sb = new StringBuilder();
+        for (var i = 0; sb.Length < 1_200_000; i++) sb.Append("<p>paragraph number ").Append(i).Append("</p>");
+        sb.Append("<p>the last</p>");
+
+        var document = BitBlockDocument.FromHtml(sb.ToString());
+        Assert.AreEqual("the last", document.Blocks[^1].Text);
+
+        var code = new string('x', 1_200_000) + "\nend";
+        var html = Doc(Block("code", code)).ToHtml();
+        Assert.IsTrue(html.EndsWith("\nend</code></pre>", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
+    public void BitBlockDocumentShouldKeepEveryIdTheJsonGivesAndGiveTheMissingOnesNewOnes()
+    {
+        var read = BitBlockDocument.FromJson("""
+            {"v":1,"blocks":[
+              {"type":"paragraph","text":"no id"},
+              {"id":"a","type":"listItem","text":"a","children":[{"type":"listItem","text":"no id either"}]},
+              {"id":"b","type":"paragraph","text":"b"}
+            ]}
+            """);
+
+        var ids = All(read.Blocks).Select(b => b.Id).ToList();
+        Assert.AreEqual("a", ids[1]);
+        Assert.AreEqual("b", ids[3]);
+        Assert.AreEqual(8, ids[0].Length);
+        Assert.AreEqual(8, ids[2].Length);
+        Assert.AreEqual(ids.Count, ids.Distinct().Count());
+    }
+
+    // The JSON of blocks nested the given number of levels deep, written by hand.
+    private static string DeepJson(int levels, bool props)
+    {
+        var json = props ? """{"type":"listItem","props":{"style":"task"}}""" : """{"type":"listItem"}""";
+        for (var i = 1; i < levels; i++) json = $$"""{"type":"listItem","children":[{{json}}]}""";
+        return $$"""{"v":1,"blocks":[{{json}}]}""";
+    }
+
+    [TestMethod]
+    [DataRow(255, false, true)]
+    [DataRow(256, false, false)]
+    [DataRow(254, true, true)]
+    [DataRow(255, true, false)]
+    public void BitBlockDocumentShouldHoldJsonUpToItsDepthLimit(int levels, bool props, bool fits)
+    {
+        var block = new BitBlock { Id = "n", Type = "listItem", Props = props ? new Dictionary<string, string> { ["style"] = "task" } : null! };
+        for (var i = 1; i < levels; i++) block = new BitBlock { Id = $"n{i}", Type = "listItem", Children = [block] };
+        var document = Doc(block);
+
+        if (fits)
+        {
+            Assert.AreEqual(document, BitBlockDocument.FromJson(document.ToJson()));
+        }
+        else
+        {
+            Assert.ThrowsExactly<JsonException>(() => document.ToJson());
+            // Reading counts the levels of blocks alone: props on the deepest block take it past the limit only when
+            // the document is written.
+            if (props is false) Assert.ThrowsExactly<JsonException>(() => BitBlockDocument.FromJson(DeepJson(levels, props)));
+        }
+    }
+
 
 
     [TestMethod]
@@ -540,6 +716,39 @@ public class BitBlockDocumentTests
         var document = Doc(Block("image", "", ("src", "javascript:alert(1)")), Block("paragraph", "after"));
 
         Assert.AreEqual("after", document.ToMarkdown());
+    }
+
+    [TestMethod]
+    public void BitBlockDocumentShouldRoundTripMarkdownOfAddressesAndCaptionsThatLookLikeCharacterReferences()
+    {
+        var document = Doc(
+            Block("paragraph", "<a href=\"https://bitplatform.dev/a?b=&amp;amp;c\">bare</a> <a href=\"https://bitplatform.dev/a%20(b)\\c&amp;lt;\">angled</a>"),
+            Block("image", "", ("src", "https://bitplatform.dev/a.png?x=&amp;"), ("alt", "pic"), ("caption", "Tom &amp; Jerry & co")));
+
+        var markdown = document.ToMarkdown();
+
+        AssertSameBlocks(document, BitBlockDocument.FromMarkdown(markdown));
+    }
+
+    [TestMethod]
+    public void BitBlockDocumentShouldEscapeAnExclamationMarkBeforeALink()
+    {
+        var document = Doc(Block("paragraph", "Wow!<a href=\"https://bitplatform.dev\">link</a> and back\\!<a href=\"https://bitplatform.dev\">two</a>"));
+
+        Assert.AreEqual("Wow\\![link](https://bitplatform.dev) and back\\\\\\![two](https://bitplatform.dev)", document.ToMarkdown());
+        AssertSameBlocks(document, BitBlockDocument.FromMarkdown(document.ToMarkdown()));
+    }
+
+    [TestMethod]
+    public void BitBlockDocumentShouldRoundTripMarkdownOfAnItemWithNoTextAndOfCodeEndingInANewline()
+    {
+        var document = Doc(
+            new BitBlock { Type = "listItem", Children = [Block("paragraph", "note")] },
+            Block("paragraph", "between"),
+            Block("code", "line\n"),
+            Block("code", "\n"));
+
+        AssertSameBlocks(document, BitBlockDocument.FromMarkdown(document.ToMarkdown()));
     }
 
     [TestMethod]

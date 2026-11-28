@@ -22,8 +22,8 @@ internal static partial class BitBlockHtmlConverter
         foreach (var unit in Units(blocks))
         {
             // Each block (each list) is sanitized on its own, so an app's export of one cannot reach into another, and
-            // no single call nears the sanitizer's input limit however long the document is.
-            sb.Append(BitRichTextEditorHtmlSanitizer.Sanitize(WriteUnit(unit, registry), null));
+            // whole, so a long code block, list or export is never cut at the prerender's input limit.
+            sb.Append(BitRichTextEditorHtmlSanitizer.Sanitize(WriteUnit(unit, registry), null, whole: true));
         }
 
         return sb.ToString();
@@ -99,8 +99,12 @@ internal static partial class BitBlockHtmlConverter
             sb.Append(style == "task"
                 ? $"<li data-checked=\"{(BitBlockTypes.IsChecked(item) ? "true" : "false")}\">"
                 : "<li>");
-            sb.Append(BitBlockInline.WriteHtml(BitBlockInline.Parse(item.Text)));
-            sb.Append(WriteChildren(item, registry));
+            var text = BitBlockInline.WriteHtml(BitBlockInline.Parse(item.Text));
+            var children = WriteChildren(item, registry);
+            // An item with no text opens with an empty paragraph, so the reader never takes its first child's
+            // paragraph for its text.
+            sb.Append(text.Length == 0 && children.Length > 0 ? "<p><br></p>" : text);
+            sb.Append(children);
             sb.Append("</li>");
         }
         sb.Append("</").Append(tag).Append('>');
@@ -127,7 +131,10 @@ internal static partial class BitBlockHtmlConverter
         {
             var language = Language(block.GetProp("language"));
             var attribute = language is null ? "" : $" class=\"language-{language}\"";
-            return $"<pre><code{attribute}>{BitBlockInline.Encode(block.Text)}</code></pre>";
+            // Code that ends in a newline gets one more, the newline that ends the markup's last line, which the
+            // reader takes off again; without it the reader would take the code's own.
+            var trailer = block.Text.EndsWith('\n') ? "\n" : "";
+            return $"<pre><code{attribute}>{BitBlockInline.Encode(block.Text)}{trailer}</code></pre>";
         }
 
         if (ReferenceEquals(type, BitBlockTypes.Image)) return $"<p>{ImageTag(block)}</p>";
@@ -274,7 +281,7 @@ internal static partial class BitBlockHtmlConverter
             run.Clear();
         }
 
-        foreach (var node in nodes)
+        foreach (var node in LiftImages(nodes))
         {
             if (node.Tag == "img")
             {
@@ -290,6 +297,37 @@ internal static partial class BitBlockHtmlConverter
         // A paragraph with no image is kept even when empty: it is an empty line the author left.
         Flush(always: images == 0);
         return blocks;
+    }
+
+    // The nodes in document order with every image brought up to their level: an inline element around one (a link,
+    // which an image block cannot keep) becomes a copy of itself around what comes before the image, the image, and a
+    // copy around what comes after it.
+    private static IEnumerable<BitBlockHtmlTree> LiftImages(IEnumerable<BitBlockHtmlTree> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            if (node.IsText || node.Tag == "img" || node.HoldsImage() is false)
+            {
+                yield return node;
+                continue;
+            }
+
+            var run = new List<BitBlockHtmlTree>();
+            foreach (var child in LiftImages(node.Children))
+            {
+                if (child.Tag != "img")
+                {
+                    run.Add(child);
+                    continue;
+                }
+
+                if (run.Count > 0) yield return node.WithChildren(run);
+                run = [];
+                yield return child;
+            }
+
+            if (run.Count > 0) yield return node.WithChildren(run);
+        }
     }
 
     private static string InlineText(IEnumerable<BitBlockHtmlTree> nodes)

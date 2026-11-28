@@ -127,9 +127,9 @@ internal static class BitBlockMarkdownReader
 
     private static BitBlock CodeBlock(BitMarkdownCodeBlockNode code)
     {
+        // The parser's content holds the code's lines without the newline that ends the last one, so a newline at its
+        // end is one of the code's own (a blank last line) and is kept.
         var text = code.Content.Replace("\r\n", "\n");
-        // The newline that ends the last line is how the fence is written, not a line of the code.
-        if (text.EndsWith('\n')) text = text[..^1];
 
         var language = code.Info?.Split([' ', '\t'], 2, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
 
@@ -171,13 +171,14 @@ internal static class BitBlockMarkdownReader
 
         var style = checkbox is not null ? "task" : ordered ? "ordered" : null;
 
-        // The item's text is its first paragraph; everything after it is nested. An image in that paragraph splits
+        // The item's text is its first paragraph, when that starts on the marker's line; everything after it is
+        // nested, and so is all of an item whose marker stands alone on its line. An image in that paragraph splits
         // it, and what follows the text is nested too.
         var text = "";
         var children = new List<BitBlock>();
         var rest = item.Children.AsEnumerable();
 
-        if (item.Children.FirstOrDefault() is BitMarkdownParagraphNode paragraph)
+        if (item.Children.FirstOrDefault() is BitMarkdownParagraphNode paragraph && string.IsNullOrWhiteSpace(item.Source) is false)
         {
             var opening = Paragraphs(paragraph.Inlines, BitBlockTypes.Paragraph.Name);
             if (opening.Count > 0 && opening[0].Type == BitBlockTypes.Paragraph.Name)

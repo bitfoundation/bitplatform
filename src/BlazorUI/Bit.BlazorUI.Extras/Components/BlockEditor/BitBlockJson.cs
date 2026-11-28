@@ -18,7 +18,16 @@ internal static class BitBlockJson
     public static string Write(BitBlockDocument document)
     {
         var json = new BitBlockJsonDocument { V = Version, Blocks = [.. document.Blocks.Select(ToJson)] };
-        return JsonSerializer.Serialize(json, BitBlockJsonContext.Default.BitBlockJsonDocument);
+        try
+        {
+            return JsonSerializer.Serialize(json, BitBlockJsonContext.Default.BitBlockJsonDocument);
+        }
+        catch (InvalidOperationException e)
+        {
+            // The writer reports a document past the depth limit this way, and a block's props past it as a
+            // JsonException; both are the same limit, so both are reported as the reader reports it.
+            throw new JsonException($"The document is nested deeper than the JSON form's {BitBlockJsonContext.Default.Options.MaxDepth} levels.", e);
+        }
     }
 
     public static IReadOnlyList<BitBlock> Read(string? json)
@@ -60,8 +69,9 @@ internal static class BitBlockJson
 
         return new BitBlock
         {
-            // A block without an id gets one; the document then makes every id unique.
-            Id = string.IsNullOrEmpty(block.Id) ? BitBlock.NewId() : block.Id,
+            // A block without an id is left without one: the document gives it one once every id the JSON does give is
+            // known, so the new id can be none of them.
+            Id = block.Id ?? "",
             Type = string.IsNullOrEmpty(block.Type) ? BitBlockTypes.Paragraph.Name : block.Type,
             Text = block.Text ?? "",
             Props = props,

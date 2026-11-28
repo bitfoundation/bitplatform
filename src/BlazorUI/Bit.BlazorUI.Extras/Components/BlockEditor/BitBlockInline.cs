@@ -273,24 +273,26 @@ internal static class BitBlockInline
 
             var before = new List<Node>();
             var after = new List<Node>();
+            var start = 0;
+            var end = children.Count;
 
-            while (children.Count > 0)
+            while (start < end)
             {
-                if (children[0] is ElementNode { Tag: "br" } br)
+                if (children[start] is ElementNode { Tag: "br" } br)
                 {
                     before.Add(br);
-                    children.RemoveAt(0);
+                    start++;
                 }
-                else if (children[0] is TextNode first && first.Text.Length > 0 && IsEdgeSpace(first.Text[0]))
+                else if (children[start] is TextNode first && first.Text.Length > 0 && IsEdgeSpace(first.Text[0]))
                 {
                     var lead = first.Text.Length - first.Text.TrimStart(' ', ' ').Length;
                     before.Add(new TextNode(first.Text[..lead]));
                     first.Text = first.Text[lead..];
-                    if (first.Text.Length == 0) children.RemoveAt(0);
+                    if (first.Text.Length == 0) start++;
                 }
-                else if (children[0] is TextNode { Text.Length: 0 })
+                else if (children[start] is TextNode { Text.Length: 0 })
                 {
-                    children.RemoveAt(0);
+                    start++;
                 }
                 else
                 {
@@ -298,23 +300,23 @@ internal static class BitBlockInline
                 }
             }
 
-            while (children.Count > 0)
+            while (end > start)
             {
-                if (children[^1] is ElementNode { Tag: "br" } br)
+                if (children[end - 1] is ElementNode { Tag: "br" } br)
                 {
-                    after.Insert(0, br);
-                    children.RemoveAt(children.Count - 1);
+                    after.Add(br);
+                    end--;
                 }
-                else if (children[^1] is TextNode last && last.Text.Length > 0 && IsEdgeSpace(last.Text[^1]))
+                else if (children[end - 1] is TextNode last && last.Text.Length > 0 && IsEdgeSpace(last.Text[^1]))
                 {
                     var trimmed = last.Text.TrimEnd(' ', ' ');
-                    after.Insert(0, new TextNode(last.Text[trimmed.Length..]));
+                    after.Add(new TextNode(last.Text[trimmed.Length..]));
                     last.Text = trimmed;
-                    if (last.Text.Length == 0) children.RemoveAt(children.Count - 1);
+                    if (last.Text.Length == 0) end--;
                 }
-                else if (children[^1] is TextNode { Text.Length: 0 })
+                else if (children[end - 1] is TextNode { Text.Length: 0 })
                 {
-                    children.RemoveAt(children.Count - 1);
+                    end--;
                 }
                 else
                 {
@@ -322,8 +324,11 @@ internal static class BitBlockInline
                 }
             }
 
+            // The trailing run was collected from the end inwards.
+            after.Reverse();
+
             result.AddRange(before);
-            if (children.Count > 0) result.Add(new ElementNode(element.Tag, element.Href, children));
+            if (end > start) result.Add(new ElementNode(element.Tag, element.Href, children.GetRange(start, end - start)));
             result.AddRange(after);
         }
 
@@ -331,43 +336,58 @@ internal static class BitBlockInline
     }
 
     // Joins neighboring text nodes, and neighboring elements of the same mark (and link address), all the way down.
+    // A run of the same mark is gathered whole - the children of every element of it, in order, with empty text between
+    // them skipped - and merged once. A line break is never part of a run.
     private static List<Node> Merge(List<Node> nodes)
     {
         var result = new List<Node>();
-        foreach (var node in nodes)
+        StringBuilder? pending = null;
+
+        void FlushText()
         {
-            if (node is TextNode text)
-            {
-                if (text.Text.Length == 0) continue;
-
-                if (result.Count > 0 && result[^1] is TextNode previous)
-                {
-                    previous.Text += text.Text;
-                }
-                else
-                {
-                    result.Add(new TextNode(text.Text));
-                }
-                continue;
-            }
-
-            var element = (ElementNode)node;
-            var merged = new ElementNode(element.Tag, element.Href, Merge(element.Children));
-
-            if (merged.Tag != "br"
-                && result.Count > 0
-                && result[^1] is ElementNode last
-                && last.Tag == merged.Tag
-                && last.Href == merged.Href)
-            {
-                last.Children.AddRange(merged.Children);
-                result[^1] = new ElementNode(last.Tag, last.Href, Merge(last.Children));
-                continue;
-            }
-
-            result.Add(merged);
+            if (pending is null) return;
+            result.Add(new TextNode(pending.ToString()));
+            pending = null;
         }
 
+        for (var i = 0; i < nodes.Count; i++)
+        {
+            if (nodes[i] is TextNode text)
+            {
+                if (text.Text.Length > 0) (pending ??= new StringBuilder()).Append(text.Text);
+                continue;
+            }
+
+            FlushText();
+
+            var element = (ElementNode)nodes[i];
+            if (element.Tag == "br")
+            {
+                result.Add(new ElementNode("br", null, []));
+                continue;
+            }
+
+            var children = new List<Node>(element.Children);
+            var next = i + 1;
+            while (next < nodes.Count)
+            {
+                if (nodes[next] is TextNode { Text.Length: 0 })
+                {
+                    next++;
+                    continue;
+                }
+
+                if (nodes[next] is not ElementNode same || same.Tag != element.Tag || same.Href != element.Href) break;
+
+                children.AddRange(same.Children);
+                i = next;
+                next++;
+            }
+
+            result.Add(new ElementNode(element.Tag, element.Href, Merge(children)));
+        }
+
+        FlushText();
         return result;
     }
 

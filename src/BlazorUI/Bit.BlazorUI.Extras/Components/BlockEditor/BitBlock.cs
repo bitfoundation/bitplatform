@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Immutable;
 
 namespace Bit.BlazorUI;
 
@@ -9,11 +9,19 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <remarks>
 /// Two blocks are equal when their id, type, text, props and children are; the props compare as a set of pairs, in
-/// whatever order they were written.
+/// whatever order they were written. The props and the children are copied as they are set, so a change to the
+/// collection they came from never reaches the block; the child blocks themselves are kept as they are.
 /// </remarks>
 public sealed record BitBlock
 {
-    private static readonly IReadOnlyDictionary<string, string> NoProps = ReadOnlyDictionary<string, string>.Empty;
+    // Prop names are matched ordinally, whatever comparer the dictionary they were set from used.
+    private static readonly ImmutableDictionary<string, string> NoProps = ImmutableDictionary.Create<string, string>(StringComparer.Ordinal);
+
+    private static readonly IReadOnlyList<BitBlock> NoChildren = ImmutableArray<BitBlock>.Empty;
+
+    private readonly ImmutableDictionary<string, string> _props = NoProps;
+
+    private readonly IReadOnlyList<BitBlock> _children = NoChildren;
 
     /// <summary>
     /// The block's id, unique in its document and kept through every edit of the block. A new block is given a short
@@ -41,10 +49,23 @@ public sealed record BitBlock
     /// item's <c>style</c> and <c>checked</c>, an image's <c>src</c>. Each type documents its own and reads them leniently,
     /// so a value it cannot read falls back to its default.
     /// </summary>
-    public IReadOnlyDictionary<string, string> Props { get; init; } = NoProps;
+    public IReadOnlyDictionary<string, string> Props
+    {
+        get => _props;
+        init => _props = value switch
+        {
+            null or { Count: 0 } => NoProps,
+            ImmutableDictionary<string, string> props when ReferenceEquals(props.KeyComparer, StringComparer.Ordinal) => props,
+            _ => NoProps.SetItems(value)
+        };
+    }
 
     /// <summary>The blocks nested under this one, for a type that nests (<see cref="BitBlockType.Nests"/>).</summary>
-    public IReadOnlyList<BitBlock> Children { get; init; } = [];
+    public IReadOnlyList<BitBlock> Children
+    {
+        get => _children;
+        init => _children = Freeze(value);
+    }
 
     /// <summary>Returns the prop of this name, or null when the block has none.</summary>
     public string? GetProp(string name) => Props.TryGetValue(name, out var value) ? value : null;
@@ -56,18 +77,17 @@ public sealed record BitBlock
     {
         ArgumentNullException.ThrowIfNull(name);
 
-        var props = new Dictionary<string, string>(Props, StringComparer.Ordinal);
-        if (value is null)
-        {
-            if (props.Remove(name) is false) return this;
-        }
-        else
-        {
-            props[name] = value;
-        }
-
-        return this with { Props = props };
+        var props = value is null ? _props.Remove(name) : _props.SetItem(name, value);
+        return ReferenceEquals(props, _props) ? this : this with { Props = props };
     }
+
+    // An immutable copy of a list of blocks, holding the same instances in the same order.
+    internal static IReadOnlyList<BitBlock> Freeze(IReadOnlyList<BitBlock>? blocks) => blocks switch
+    {
+        null or { Count: 0 } => NoChildren,
+        ImmutableArray<BitBlock> frozen => frozen,
+        _ => ImmutableArray.CreateRange(blocks)
+    };
 
     /// <summary>A new block id: eight characters of lowercase letters and digits.</summary>
     public static string NewId()
@@ -92,14 +112,15 @@ public sealed record BitBlock
         return Id == other.Id
             && Type == other.Type
             && Text == other.Text
-            && PropsEqual(Props, other.Props)
+            && PropsEqual(_props, other._props)
             && Children.SequenceEqual(other.Children);
     }
 
     /// <inheritdoc />
     public override int GetHashCode() => HashCode.Combine(Id, Type, Text, Props.Count, Children.Count);
 
-    private static bool PropsEqual(IReadOnlyDictionary<string, string> a, IReadOnlyDictionary<string, string> b)
+    // Both sides key their props ordinally (see Props), so the comparison is the same whichever side is asked.
+    private static bool PropsEqual(ImmutableDictionary<string, string> a, ImmutableDictionary<string, string> b)
     {
         if (ReferenceEquals(a, b)) return true;
         if (a.Count != b.Count) return false;

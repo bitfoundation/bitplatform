@@ -1,5 +1,5 @@
 ﻿using System.Net;
-using System.Text.RegularExpressions;
+using System.Text;
 
 namespace Bit.BlazorUI;
 
@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// output needs no parsing rules of its own: a start tag opens, an end tag closes the element it opened, a void tag
 /// opens nothing.
 /// </remarks>
-internal sealed partial class BitBlockHtmlTree
+internal sealed class BitBlockHtmlTree
 {
     private static readonly HashSet<string> VoidTags = ["area", "br", "col", "embed", "hr", "img", "input", "source", "track", "wbr"];
 
@@ -36,6 +36,18 @@ internal sealed partial class BitBlockHtmlTree
 
     public string? GetAttribute(string name) => Attributes.TryGetValue(name, out var value) ? value : null;
 
+    /// <summary>Whether an <c>img</c> is anywhere inside the node.</summary>
+    public bool HoldsImage() => Children.Any(c => c.Tag == "img" || c.HoldsImage());
+
+    /// <summary>A copy of this element - its name and attributes - holding <paramref name="children"/>.</summary>
+    public BitBlockHtmlTree WithChildren(IEnumerable<BitBlockHtmlTree> children)
+    {
+        var copy = new BitBlockHtmlTree(Tag, Text);
+        foreach (var (name, value) in Attributes) copy.Attributes[name] = value;
+        copy.Children.AddRange(children);
+        return copy;
+    }
+
     /// <summary>The text of the node and everything inside it, with a <c>br</c> read as a newline.</summary>
     public string InnerText()
     {
@@ -58,8 +70,8 @@ internal sealed partial class BitBlockHtmlTree
         var root = new BitBlockHtmlTree(null, null);
         if (string.IsNullOrEmpty(html)) return root;
 
-        var renamed = InsertedOrDeleted().Replace(html, m => $"<{m.Groups[1].Value}{(m.Groups[2].Value.Equals("ins", StringComparison.OrdinalIgnoreCase) ? "u" : "s")}");
-        var sanitized = BitRichTextEditorHtmlSanitizer.Sanitize(renamed, policy);
+        // Sanitized whole: a document read on purpose is never cut at the prerender's input limit.
+        var sanitized = BitRichTextEditorHtmlSanitizer.Sanitize(RenameInsertedAndDeleted(html), policy, whole: true);
 
         var open = new Stack<BitBlockHtmlTree>();
         open.Push(root);
@@ -123,6 +135,77 @@ internal sealed partial class BitBlockHtmlTree
         return element;
     }
 
-    [GeneratedRegex(@"<(/?)(ins|del)(?=[\s/>])", RegexOptions.IgnoreCase)]
-    private static partial Regex InsertedOrDeleted();
+    // Renames the ins and del tags to u and s, as start and end tag names only: text, comments and attribute values
+    // (quoted or not, since a tag is read up to its unquoted '>') are copied as they are.
+    private static string RenameInsertedAndDeleted(string html)
+    {
+        if (html.Contains("ins", StringComparison.OrdinalIgnoreCase) is false
+            && html.Contains("del", StringComparison.OrdinalIgnoreCase) is false) return html;
+
+        var sb = new StringBuilder(html.Length);
+        var i = 0;
+        while (i < html.Length)
+        {
+            var lt = html.IndexOf('<', i);
+            if (lt < 0)
+            {
+                sb.Append(html, i, html.Length - i);
+                break;
+            }
+
+            sb.Append(html, i, lt - i);
+
+            if (string.CompareOrdinal(html, lt, "<!--", 0, 4) == 0)
+            {
+                var close = html.IndexOf("-->", lt + 4, StringComparison.Ordinal);
+                var end = close < 0 ? html.Length : close + 3;
+                sb.Append(html, lt, end - lt);
+                i = end;
+                continue;
+            }
+
+            var nameStart = lt + 1 < html.Length && html[lt + 1] == '/' ? lt + 2 : lt + 1;
+            if (nameStart >= html.Length || char.IsAsciiLetter(html[nameStart]) is false)
+            {
+                // Not a tag: a '<' of the text.
+                sb.Append('<');
+                i = lt + 1;
+                continue;
+            }
+
+            var nameEnd = nameStart;
+            while (nameEnd < html.Length && html[nameEnd] is not (' ' or '\t' or '\n' or '\r' or '\f' or '/' or '>')) nameEnd++;
+
+            sb.Append(html, lt, nameStart - lt);
+            var name = html.AsSpan(nameStart, nameEnd - nameStart);
+            if (name.Equals("ins", StringComparison.OrdinalIgnoreCase)) sb.Append('u');
+            else if (name.Equals("del", StringComparison.OrdinalIgnoreCase)) sb.Append('s');
+            else sb.Append(name);
+
+            // The rest of the tag, up to the '>' outside any quoted value (a quote opens one only after an '=').
+            var j = nameEnd;
+            var afterEquals = false;
+            while (j < html.Length)
+            {
+                var c = html[j];
+                if (afterEquals && c is '"' or '\'')
+                {
+                    var closeQuote = html.IndexOf(c, j + 1);
+                    j = closeQuote < 0 ? html.Length : closeQuote + 1;
+                    afterEquals = false;
+                    continue;
+                }
+
+                j++;
+                if (c == '>') break;
+                if (c == '=') afterEquals = true;
+                else if (c is not (' ' or '\t' or '\n' or '\r' or '\f')) afterEquals = false;
+            }
+
+            sb.Append(html, nameEnd, j - nameEnd);
+            i = j;
+        }
+
+        return sb.ToString();
+    }
 }

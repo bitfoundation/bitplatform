@@ -21,22 +21,39 @@
 /// <para>
 /// Two documents are equal when their blocks are, in order (see <see cref="BitBlock"/>).
 /// </para>
+/// <para>
+/// The blocks are copied as they are set - by the constructor or by a <c>with</c> - so a change to the list they came
+/// from never reaches the document, and every block id is made unique there: a block whose id is empty, or is one an
+/// earlier block of the document (in document order, children after their parent) already has, is given a new one, and
+/// every other block stays the same instance.
+/// </para>
 /// </remarks>
 public sealed record BitBlockDocument
 {
+    private readonly IReadOnlyList<BitBlock> _blocks = BitBlock.Freeze(null);
+
     /// <summary>Creates a document of the given blocks.</summary>
     public BitBlockDocument(IReadOnlyList<BitBlock> blocks)
     {
-        Blocks = blocks ?? [];
+        Blocks = blocks;
     }
 
     /// <summary>A document with no blocks.</summary>
     public static BitBlockDocument Empty { get; } = new([]);
 
     /// <summary>The document's top-level blocks, in order.</summary>
-    public IReadOnlyList<BitBlock> Blocks { get; init; }
+    public IReadOnlyList<BitBlock> Blocks
+    {
+        get => _blocks;
+        init => _blocks = WithUniqueIds(BitBlock.Freeze(value));
+    }
 
     /// <summary>Writes the document as JSON, the lossless form to store it in.</summary>
+    /// <remarks>
+    /// The JSON is limited to 512 levels of depth, which a document reaches at 255 levels of nested blocks (254 when
+    /// the deepest block has props).
+    /// </remarks>
+    /// <exception cref="System.Text.Json.JsonException">The document is nested deeper than that.</exception>
     public string ToJson() => BitBlockJson.Write(this);
 
     /// <summary>
@@ -47,12 +64,18 @@ public sealed record BitBlockDocument
     /// The app's own block types, if any. The text of a block whose type is formatted text is put into the text
     /// vocabulary on the way in; that of a code block, or of a type nobody registered, is kept as it is.
     /// </param>
-    /// <exception cref="System.Text.Json.JsonException">The string is not JSON of this form.</exception>
+    /// <remarks>
+    /// Every id the JSON gives is kept, but for one an earlier block already has; a block without one, or with a
+    /// repeated one, is given an id no block of the document has.
+    /// </remarks>
+    /// <exception cref="System.Text.Json.JsonException">
+    /// The string is not JSON of this form, or is deeper than 512 levels (more than 255 levels of nested blocks).
+    /// </exception>
     public static BitBlockDocument FromJson(string? json, IEnumerable<BitBlockType>? types = null)
     {
         var registry = BitBlockTypes.Resolve(types);
         var blocks = BitBlockJson.Read(json);
-        return new(Prepare(blocks, registry, new HashSet<string>(StringComparer.Ordinal)));
+        return new(Prepare(blocks, registry));
     }
 
     /// <summary>
@@ -72,7 +95,7 @@ public sealed record BitBlockDocument
     /// and media becomes a link to its source. A null or empty string is an empty document.
     /// </summary>
     public static BitBlockDocument FromHtml(string? html)
-        => new(Prepare(BitBlockHtmlConverter.Read(html), BitBlockTypes.Resolve(null), new HashSet<string>(StringComparer.Ordinal)));
+        => new(Prepare(BitBlockHtmlConverter.Read(html), BitBlockTypes.Resolve(null)));
 
     /// <summary>
     /// Writes the document as Markdown, with the emphasis extensions for what CommonMark lacks
@@ -90,7 +113,7 @@ public sealed record BitBlockDocument
     /// or empty string is an empty document.
     /// </summary>
     public static BitBlockDocument FromMarkdown(string? markdown)
-        => new(Prepare(BitBlockMarkdownReader.Read(markdown), BitBlockTypes.Resolve(null), new HashSet<string>(StringComparer.Ordinal)));
+        => new(Prepare(BitBlockMarkdownReader.Read(markdown), BitBlockTypes.Resolve(null)));
 
     /// <inheritdoc />
     public bool Equals(BitBlockDocument? other)
@@ -99,28 +122,77 @@ public sealed record BitBlockDocument
     /// <inheritdoc />
     public override int GetHashCode() => Blocks.Count;
 
-    // Gives every block an id no other block of the document has, and puts the text of every formatted-text block into
-    // the vocabulary, all the way down.
-    private static List<BitBlock> Prepare(IReadOnlyList<BitBlock> blocks, Dictionary<string, BitBlockType> registry, HashSet<string> ids)
+    // Puts the text of every formatted-text block into the vocabulary, all the way down. The ids are the constructor's.
+    private static List<BitBlock> Prepare(IReadOnlyList<BitBlock> blocks, Dictionary<string, BitBlockType> registry)
     {
         var result = new List<BitBlock>(blocks.Count);
         foreach (var block in blocks)
         {
-            var id = block.Id;
-            while (ids.Add(id) is false) id = BitBlock.NewId();
-
             var text = registry.TryGetValue(block.Type, out var type) && type.Kind == BitBlockKind.Text
                 ? BitBlockInline.Normalize(block.Text)
                 : block.Text;
 
             result.Add(block with
             {
-                Id = id,
                 Text = text,
-                Children = block.Children.Count == 0 ? block.Children : Prepare(block.Children, registry, ids)
+                Children = block.Children.Count == 0 ? block.Children : Prepare(block.Children, registry)
             });
         }
 
         return result;
+    }
+
+    // Gives a new id to every block whose id is empty or taken by an earlier block, one no block of the document has,
+    // so a generated id never takes an id a later block brings. The rest stay the same instances, and a list with
+    // nothing to change is returned as it is.
+    private static IReadOnlyList<BitBlock> WithUniqueIds(IReadOnlyList<BitBlock> blocks)
+    {
+        var reserved = new HashSet<string>(StringComparer.Ordinal);
+        if (CollectIds(blocks, reserved) is false) return blocks;
+
+        return Renumber(blocks, reserved, new HashSet<string>(StringComparer.Ordinal));
+    }
+
+    // Collects every id, and says whether any of them is empty or repeated.
+    private static bool CollectIds(IReadOnlyList<BitBlock> blocks, HashSet<string> ids)
+    {
+        var clash = false;
+        foreach (var block in blocks)
+        {
+            if (block.Id.Length == 0 || ids.Add(block.Id) is false) clash = true;
+            if (CollectIds(block.Children, ids)) clash = true;
+        }
+
+        return clash;
+    }
+
+    private static IReadOnlyList<BitBlock> Renumber(IReadOnlyList<BitBlock> blocks, HashSet<string> reserved, HashSet<string> seen)
+    {
+        List<BitBlock>? result = null;
+        for (var i = 0; i < blocks.Count; i++)
+        {
+            var block = blocks[i];
+
+            var id = block.Id;
+            if (id.Length == 0 || seen.Add(id) is false)
+            {
+                do id = BitBlock.NewId(); while (reserved.Add(id) is false);
+                seen.Add(id);
+            }
+
+            var children = block.Children.Count == 0 ? block.Children : Renumber(block.Children, reserved, seen);
+
+            if (ReferenceEquals(id, block.Id) is false || ReferenceEquals(children, block.Children) is false)
+            {
+                result ??= [.. blocks.Take(i)];
+                result.Add(block with { Id = id, Children = children });
+            }
+            else
+            {
+                result?.Add(block);
+            }
+        }
+
+        return result is null ? blocks : BitBlock.Freeze(result);
     }
 }
