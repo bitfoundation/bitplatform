@@ -97,6 +97,11 @@ public class ForcePrerenderTests : BswupTest
         // The fault answers with no body, which Chromium shows as its own error page for that status; Playwright
         // reports it as ERR_HTTP_RESPONSE_CODE_FAILURE. The cached default document would have loaded with 200,
         // and a failure in the worker would have been ERR_FAILED.
+        IResponse? diagResponse = null; PlaywrightException? diagThrown = null;
+        try { diagResponse = await GotoAsync("counter"); } catch (PlaywrightException ex) { diagThrown = ex; }
+        await Page.WaitForTimeoutAsync(3000);
+        var diagHtml = await Page.ContentAsync();
+        Assert.Fail($"DIAG thrown={diagThrown?.Message?.Split((char)10)[0]} status={diagResponse?.Status} fromSW={diagResponse?.FromServiceWorker} url={Page.Url} counter={await Page.Locator("#page-counter").CountAsync()} title={await Page.TitleAsync()} htmlLength={diagHtml.Length} html={(diagHtml.Length > 400 ? diagHtml[..400] : diagHtml).Replace((char)10, (char)32)}");
         var error = await Assert.ThrowsExactlyAsync<PlaywrightException>(() => GotoAsync("counter"));
         StringAssert.Contains(error.Message, "ERR_HTTP_RESPONSE_CODE_FAILURE");
         Assert.AreEqual(0, await Page.Locator("#page-counter").CountAsync(), "The cached default document answered an error the server sent.");
