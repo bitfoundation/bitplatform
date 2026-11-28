@@ -4,7 +4,7 @@
 /// BitCarousel in a real browser: the slide on screen and where it is, the next / previous buttons and their
 /// visibility at the ends, the dots, the keyboard (arrows, Home, End, and the focus kept on dots), OnChange,
 /// InfiniteScrolling, HideDots / HideNextPrev, VisibleItemsCount / ScrollItemsCount / Gap, the per breakpoint counts and
-/// ResponsiveOptions measured off the carousel and re-measured on resize, Vertical and every DotsPlacement, Fade and
+/// ResponsiveOptions measured off the carousel and re-measured on resize, Vertical and every DotsPlacement, ButtonsPlacement, Fade and
 /// AnimationDuration, AutoPlay with ShowPlayPause / PauseOnHover / PauseOnFocus / the hidden page / StopOnInteraction /
 /// AutoPlayReverse / StopOnLastSlide / reduced motion and ForceAnimation, the mouse wheel, a mouse drag and
 /// DragThreshold, NoDrag, NoKeyboard, Disabled (and the slides staying live), @bind-SelectedPage, DefaultPage, the public
@@ -281,6 +281,40 @@ public class BitCarouselE2ETests : E2ETestBase
 
         var end = await BoxAsync("#dots-end .bit-csl-dcn");
         Assert.IsTrue(end.X >= (await BoxAsync("#dots-end .bit-csl-cnt")).Right - Tolerance, "End: after the slides");
+    }
+
+    [TestMethod]
+    public async Task ButtonsPlacement_PutsTheButtonsOutsideTheSlides()
+    {
+        await OpenAsync("/e2e/carousel");
+
+        // On the side of the dots the buttons flank them, below the slides; the previous one keeps its room on the first
+        // page, invisible, and shows once there is a page before.
+        var slides = await BoxAsync("#buttons-bottom .bit-csl-cnt");
+        var dots = await BoxAsync("#buttons-bottom .bit-csl-dts");
+        var next = await BoxAsync("#buttons-bottom .bit-csl-dcn > .bit-csl-nbt");
+        Assert.IsTrue(dots.Y >= slides.Bottom - Tolerance, "Bottom: the dots below the slides");
+        Assert.IsTrue(next.X >= dots.Right - Tolerance, "Bottom: the next button after the dots");
+        Assert.IsTrue(next.Y >= slides.Bottom - Tolerance, "Bottom: the next button below the slides");
+        await Expect(Page.Locator("#buttons-bottom .bit-csl-dcn > .bit-csl-pbt")).ToHaveCSSAsync("visibility", "hidden");
+
+        await Page.Locator("#buttons-bottom .bit-csl-nbt").ClickAsync();
+        await ExpectCurrentAsync("buttons-bottom", "S2");
+        await Expect(Page.Locator("#buttons-bottom .bit-csl-pbt")).ToHaveCSSAsync("visibility", "visible");
+        Assert.IsTrue((await BoxAsync("#buttons-bottom .bit-csl-pbt")).Right <= (await BoxAsync("#buttons-bottom .bit-csl-dts")).X + Tolerance, "Bottom: the previous button before the dots");
+        AssertClose(dots.X, (await BoxAsync("#buttons-bottom .bit-csl-dts")).X, "Bottom: the dots did not shift");
+
+        // On another side they get a column of their own beside the slides, and the dots stay below them.
+        var endSlides = await BoxAsync("#buttons-end .bit-csl-cnt");
+        var endPrev = await BoxAsync("#buttons-end .bit-csl-bcn > .bit-csl-pbt");
+        var endNext = await BoxAsync("#buttons-end .bit-csl-bcn > .bit-csl-nbt");
+        Assert.IsTrue(endPrev.X >= endSlides.Right - Tolerance, "End: after the slides");
+        Assert.IsTrue(endNext.Y >= endPrev.Bottom - Tolerance, "End: the buttons stacked");
+        Assert.IsTrue((await BoxAsync("#buttons-end .bit-csl-dcn")).Y >= endSlides.Bottom - Tolerance, "End: the dots still below the slides");
+        await Expect(Page.Locator("#buttons-end")).ToHaveClassAsync(HasClass("bit-csl-bend"));
+
+        var topRow = await BoxAsync("#buttons-top .bit-csl-bcn");
+        Assert.IsTrue(topRow.Bottom <= (await BoxAsync("#buttons-top .bit-csl-cnt")).Y + Tolerance, "Top: above the slides");
     }
 
     [TestMethod]

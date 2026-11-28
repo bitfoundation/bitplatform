@@ -43,6 +43,15 @@ public partial class BitCarouselDemo
         },
         new()
         {
+            Name = "ButtonsPlacement",
+            Type = "BitPlacement?",
+            DefaultValue = "null",
+            Description = "Moves the next/prev buttons out of the slides to one of their sides: Bottom, Top, or in a column at the Start or End, which follow the reading direction. On the side of the dots (DotsPlacement) they flank the dots, and hold that row on their own while the dots are hidden; on another side they get a row of their own, which also takes the play/pause button when it comes before the dots (Top, then Start, then End, then Bottom). Left unset, and for every other value, they sit over the edges of the slides. Outside the slides, a button at an end only turns invisible, so the dots beside it do not shift.",
+            LinkType = LinkType.Link,
+            Href = "#placement-enum",
+        },
+        new()
+        {
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
@@ -92,7 +101,7 @@ public partial class BitCarouselDemo
             Name = "DotsPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the dots (and the play/pause button) are placed around the slides: Bottom (the default), Top, or in a column at the Start or End, which follow the reading direction. Every other value renders the default.",
+            Description = "Where the dots (and the play/pause button) are placed around the slides: Bottom (the default), Top, or in a column at the Start or End, which follow the reading direction. Every other value renders the default. The next/prev buttons join them when ButtonsPlacement names the same side, and take the play/pause button into their own row on a side that comes before them.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },
@@ -196,6 +205,12 @@ public partial class BitCarouselDemo
             Name = "OnChange",
             Type = "EventCallback<int>",
             Description = "The event that will be called on carousel page navigation. The provided value is the zero based index of the page the carousel moved to."
+        },
+        new()
+        {
+            Name = "OnNavigationStateChange",
+            Type = "EventCallback",
+            Description = "The event that will be called when CanGoNext, CanGoPrev, CurrentPage or PagesCount changes. Unlike OnChange it is also called once the carousel is first laid out and when a re-layout (a resize, a slide added or removed) changes the state without a move, which is what keeps the page's own controls in step with the carousel."
         },
         new()
         {
@@ -314,7 +329,7 @@ public partial class BitCarouselDemo
             Name = "ShowPlayPause",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders a play/pause button next to the dots, so the auto scrolling can be stopped and started again. Only rendered while AutoPlay is enabled."
+            Description = "Renders a play/pause button next to the dots, so the auto scrolling can be stopped and started again. Only rendered while AutoPlay is enabled. It moves to the row of the next/prev buttons when ButtonsPlacement puts that row on a side that comes before the dots."
         },
         new()
         {
@@ -547,6 +562,13 @@ public partial class BitCarouselDemo
                },
                new()
                {
+                   Name = "ButtonsContainer",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the row of its own the next/prev buttons get when ButtonsPlacement puts them on a side the dots are not on."
+               },
+               new()
+               {
                    Name = "DotsContainer",
                    Type = "string?",
                    DefaultValue = "null",
@@ -623,6 +645,18 @@ public partial class BitCarouselDemo
 
     private readonly List<ComponentParameter> componentPublicMembers =
     [
+        new()
+        {
+            Name = "CanGoNext",
+            Type = "bool",
+            Description = "Whether the carousel can move to a page after the one it is showing (when its next button is shown). Always true with InfiniteScrolling and more than one page, false with a single page.",
+        },
+        new()
+        {
+            Name = "CanGoPrev",
+            Type = "bool",
+            Description = "Whether the carousel can move to a page before the one it is showing (when its previous button is shown). Always true with InfiniteScrolling and more than one page, false with a single page.",
+        },
         new()
         {
             Name = "CurrentPage",
@@ -771,7 +805,7 @@ public partial class BitCarouselDemo
         {
             Name = "--bit-Carousel-button-width",
             DefaultValue = "10%",
-            Description = "Hit area of the next/prev buttons across the scrolling axis (their height in a vertical carousel).",
+            Description = "Hit area of the next/prev buttons across the scrolling axis (their height in a vertical carousel), while they sit over the slides.",
         },
         new()
         {
@@ -825,7 +859,7 @@ public partial class BitCarouselDemo
         {
             Name = "--bit-Carousel-dots-margin",
             DefaultValue = "spacing(1.25)",
-            Description = "Space between the slides and the dots, on whichever side DotsPlacement puts them.",
+            Description = "Space between the slides and the dots, on whichever side DotsPlacement puts them, and the next/prev buttons ButtonsPlacement moves out of the slides.",
         },
     ];
 

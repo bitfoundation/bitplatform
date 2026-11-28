@@ -314,7 +314,11 @@ public partial class BitCarouselDemo
 </BitCarousel>";
 
     private readonly string example10RazorCode = @"
-<BitCarousel HideNextPrev @ref=""carousel"" @bind-SelectedPage=""selectedPage"" OnChange=""v => changedIndex = v"">
+<BitCarousel HideNextPrev
+             @ref=""carousel""
+             @bind-SelectedPage=""selectedPage""
+             OnChange=""v => changedIndex = v""
+             OnNavigationStateChange=""StateHasChanged"">
     <BitCarouselItem>
         <div class=""number"">1 / 4</div>
         <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
@@ -333,8 +337,8 @@ public partial class BitCarouselDemo
     </BitCarouselItem>
 </BitCarousel>
 
-<BitButton OnClick=""GoPrev"">&lt; Prev</BitButton>
-<BitButton OnClick=""GoNext"">Next &gt;</BitButton>
+<BitButton OnClick=""GoPrev"" Disabled=""@(carousel?.CanGoPrev is not true)"">&lt; Prev</BitButton>
+<BitButton OnClick=""GoNext"" Disabled=""@(carousel?.CanGoNext is not true)"">Next &gt;</BitButton>
 
 <BitPagination Count=""4"" @bind-SelectedPage=""selectedPage"" />
 
@@ -545,6 +549,55 @@ private readonly BitCarouselParams[] carouselParams =
 ];";
 
     private readonly string example15RazorCode = @"
+<BitCarousel ButtonsPlacement=""BitPlacement.Bottom"">
+    <BitCarouselItem>
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
+    </BitCarouselItem>
+</BitCarousel>
+
+<BitCarousel Style=""height: 100px"" HideDots ButtonsPlacement=""BitPlacement.Bottom"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+</BitCarousel>
+
+<BitCarousel Style=""height: 100px"" InfiniteScrolling ButtonsPlacement=""BitPlacement.End"">
+    <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
+    <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
+</BitCarousel>
+
+<BitCarousel Vertical Style=""height: 200px"" DotsPlacement=""BitPlacement.End"" ButtonsPlacement=""BitPlacement.End"">
+    <BitCarouselItem>
+        <div class=""number"">1 / 4</div>
+        <img class=""image"" alt=""Aurora"" src=""img1.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""number"">2 / 4</div>
+        <img class=""image"" alt=""Beautiful mountain"" src=""img2.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""number"">3 / 4</div>
+        <img class=""image"" alt=""Forest in the valley"" src=""img3.jpg"" />
+    </BitCarouselItem>
+    <BitCarouselItem>
+        <div class=""number"">4 / 4</div>
+        <img class=""image"" alt=""Road among the mountains"" src=""img4.jpg"" />
+    </BitCarouselItem>
+</BitCarousel>";
+
+    private readonly string example16RazorCode = @"
 <BitCarousel Color=""BitColor.Primary"" Style=""height: 72px"" InfiniteScrolling>
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
@@ -581,7 +634,7 @@ private readonly BitCarouselParams[] carouselParams =
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -613,7 +666,7 @@ private readonly BitCarouselParams[] carouselParams =
     </BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitCarousel Size=""BitSize.Small"" Style=""height: 72px"" InfiniteScrolling>
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
@@ -632,7 +685,7 @@ private readonly BitCarouselParams[] carouselParams =
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <style>
     .custom-item {
         color: white;
@@ -653,7 +706,7 @@ private readonly BitCarouselParams[] carouselParams =
     <BitCarouselItem><div>4</div></BitCarouselItem>
 </BitCarousel>";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitCarousel Style=""height: 100px"" Dir=""BitDir.Rtl"" VisibleItemsCount=""3"" ScrollItemsCount=""1"" InfiniteScrolling>
     <BitCarouselItem Class=""item""><div>یک</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>دو</div></BitCarouselItem>

@@ -13,12 +13,14 @@
               Vertical="Vertical"
               HideDots="HideDots"
               OnChange="OnChange"
+              OnNavigationStateChange="OnNavigationStateChange"
               Disabled="Disabled"
               AriaLabel="@AriaLabel"
               NoKeyboard="NoKeyboard"
               DefaultPage="DefaultPage"
               DotTemplate="DotTemplate"
               DotsPlacement="DotsPlacement"
+              ButtonsPlacement="ButtonsPlacement"
               HideNextPrev="HideNextPrev"
               ShowPlayPause="ShowPlayPause"
               PauseOnHover="PauseOnHover"
@@ -92,8 +94,10 @@
     [Parameter] public string? ItemAriaLabelFormat { get; set; }
     [Parameter] public RenderFragment<int>? DotTemplate { get; set; }
     [Parameter] public BitPlacement? DotsPlacement { get; set; }
+    [Parameter] public BitPlacement? ButtonsPlacement { get; set; }
     [Parameter] public IEnumerable<BitCarouselResponsiveOption>? ResponsiveOptions { get; set; }
     [Parameter] public BitCarouselClassStyles? Styles { get; set; }
     [Parameter] public BitCarouselClassStyles? Classes { get; set; }
     [Parameter] public EventCallback<int> OnChange { get; set; }
+    [Parameter] public EventCallback OnNavigationStateChange { get; set; }
 }
