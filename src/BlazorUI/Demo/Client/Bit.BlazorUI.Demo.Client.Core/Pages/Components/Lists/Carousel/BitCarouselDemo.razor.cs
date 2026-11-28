@@ -46,7 +46,7 @@ public partial class BitCarouselDemo
             Name = "ButtonsPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Moves the next/prev buttons out of the slides to one of their sides: Bottom, Top, or in a column at the Start or End, which follow the reading direction. On the side of the dots (DotsPlacement) they flank the dots, and hold that row on their own while the dots are hidden; on another side they get a row of their own. Left unset, and for every other value, they sit over the edges of the slides. Outside the slides, a button at an end only turns invisible, so the dots beside it do not shift.",
+            Description = "Moves the next/prev buttons out of the slides to one of their sides: Bottom, Top, or in a column at the Start or End, which follow the reading direction. On the side of the dots (DotsPlacement) they flank the dots, and hold that row on their own while the dots are hidden; on another side they get a row of their own, which also takes the play/pause button when it comes before the dots (Top, then Start, then End, then Bottom). Left unset, and for every other value, they sit over the edges of the slides. Outside the slides, a button at an end only turns invisible, so the dots beside it do not shift.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },
@@ -101,7 +101,7 @@ public partial class BitCarouselDemo
             Name = "DotsPlacement",
             Type = "BitPlacement?",
             DefaultValue = "null",
-            Description = "Where the dots (and the play/pause button) are placed around the slides: Bottom (the default), Top, or in a column at the Start or End, which follow the reading direction. Every other value renders the default. The next/prev buttons join them when ButtonsPlacement names the same side.",
+            Description = "Where the dots (and the play/pause button) are placed around the slides: Bottom (the default), Top, or in a column at the Start or End, which follow the reading direction. Every other value renders the default. The next/prev buttons join them when ButtonsPlacement names the same side, and take the play/pause button into their own row on a side that comes before them.",
             LinkType = LinkType.Link,
             Href = "#placement-enum",
         },
@@ -329,7 +329,7 @@ public partial class BitCarouselDemo
             Name = "ShowPlayPause",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders a play/pause button next to the dots, so the auto scrolling can be stopped and started again. Only rendered while AutoPlay is enabled."
+            Description = "Renders a play/pause button next to the dots, so the auto scrolling can be stopped and started again. Only rendered while AutoPlay is enabled. It moves to the row of the next/prev buttons when ButtonsPlacement puts that row on a side that comes before the dots."
         },
         new()
         {

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -37,6 +38,8 @@ public partial class BitCarouselTests
             parameters.Add(p => p.DotsPlacement, dots);
         });
 
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Carousel.PagesCount));
+
         var classes = component.Find(".bit-csl").ClassList;
 
         foreach (var cls in new[] { "bit-csl-btop", "bit-csl-bbot", "bit-csl-bstr", "bit-csl-bend" })
@@ -45,6 +48,60 @@ public partial class BitCarouselTests
         }
 
         Assert.AreEqual(expectedClass is not null, classes.Contains("bit-csl-bsep"));
+    }
+
+    // The root is only laid out on the grid while the row of the buttons is rendered, so hidden buttons, or buttons left
+    // out of a single page, leave the layout of the root (and a gap a page gives it) alone.
+    [TestMethod,
+        DataRow(true, 3),
+        DataRow(false, 1)
+    ]
+    public void BitCarouselShouldNotLayTheRootOutOnTheGridWithoutTheRowOfTheButtons(bool hideNextPrev, int pagesCount)
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ItemsCount, 3);
+            parameters.Add(p => p.VisibleItemsCount, pagesCount == 1 ? 3 : 1);
+            parameters.Add(p => p.HideNextPrev, hideNextPrev);
+            parameters.Add(p => p.ButtonsPlacement, BitPlacement.Start);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(pagesCount, component.Instance.Carousel.PagesCount));
+
+        var classes = component.Find(".bit-csl").ClassList;
+
+        Assert.IsFalse(classes.Contains("bit-csl-bsep"));
+        Assert.IsFalse(classes.Contains("bit-csl-bstr"));
+        Assert.AreEqual(0, component.FindAll(".bit-csl-bcn").Count);
+    }
+
+    // The grid follows the row of the buttons as it comes and goes: with HideNextPrev, and with the pages a re-layout
+    // leaves the carousel.
+    [TestMethod]
+    public void BitCarouselShouldFollowTheRowOfTheButtonsWithTheGridOfTheRoot()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ButtonsPlacement, BitPlacement.Start);
+        });
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-bsep")));
+
+        component.Render(parameters => parameters.Add(p => p.HideNextPrev, true));
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-csl").ClassList.Contains("bit-csl-bsep")));
+
+        component.Render(parameters => parameters.Add(p => p.HideNextPrev, false));
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-bsep")));
+
+        component.Render(parameters => parameters.Add(p => p.VisibleItemsCount, 3));
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-csl").ClassList.Contains("bit-csl-bsep")));
+
+        component.Render(parameters => parameters.Add(p => p.VisibleItemsCount, 1));
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl").ClassList.Contains("bit-csl-bsep")));
     }
 
     [TestMethod,
@@ -174,9 +231,10 @@ public partial class BitCarouselTests
         var root = component.Find(".bit-csl").Children;
         var buttonsRow = component.Find(".bit-csl-bcn");
 
-        // The row is rendered before the slides, after the row of the dots, as the controls come before what they control.
-        Assert.IsTrue(root[0].ClassList.Contains("bit-csl-dcn"));
-        Assert.IsTrue(root[1].ClassList.Contains("bit-csl-bcn"));
+        // The row is rendered before the slides, as the controls come before what they control, and before the row of
+        // the dots below the slides, which it is laid out above.
+        Assert.IsTrue(root[0].ClassList.Contains("bit-csl-bcn"));
+        Assert.IsTrue(root[1].ClassList.Contains("bit-csl-dcn"));
         Assert.IsTrue(root[2].ClassList.Contains("bit-csl-cnt"));
 
         Assert.AreEqual(2, buttonsRow.Children.Length);
@@ -187,6 +245,68 @@ public partial class BitCarouselTests
 
         Assert.AreEqual(0, component.Find(".bit-csl-dcn").QuerySelectorAll(".bit-csl-pbt, .bit-csl-nbt").Length);
         Assert.AreEqual(0, component.Find(".bit-csl-cnt").QuerySelectorAll(".bit-csl-pbt, .bit-csl-nbt").Length);
+    }
+
+    // The two rows are rendered in the order they are laid out in (Top, then Start, then End, then Bottom), so the
+    // keyboard reaches them in that order, and the play/pause button goes into whichever comes first, which keeps it the
+    // first control the keyboard reaches.
+    [TestMethod,
+        DataRow(BitPlacement.Top, null, true),
+        DataRow(BitPlacement.Start, null, true),
+        DataRow(BitPlacement.End, null, true),
+        DataRow(BitPlacement.Bottom, BitPlacement.Top, false),
+        DataRow(BitPlacement.Top, BitPlacement.Start, true),
+        DataRow(BitPlacement.Start, BitPlacement.End, true),
+        DataRow(BitPlacement.End, BitPlacement.Start, false),
+        DataRow(BitPlacement.Bottom, BitPlacement.End, false)
+    ]
+    public void BitCarouselShouldRenderTheRowsInTheOrderTheyAreLaidOutIn(BitPlacement buttons, BitPlacement? dots, bool buttonsFirst)
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ButtonsPlacement, buttons);
+            parameters.Add(p => p.DotsPlacement, dots);
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.ShowPlayPause, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-csl-bcn").Count));
+
+        var root = component.Find(".bit-csl").Children;
+        var firstRow = root[0];
+
+        Assert.IsTrue(firstRow.ClassList.Contains(buttonsFirst ? "bit-csl-bcn" : "bit-csl-dcn"));
+        Assert.IsTrue(root[1].ClassList.Contains(buttonsFirst ? "bit-csl-dcn" : "bit-csl-bcn"));
+        Assert.IsTrue(root[2].ClassList.Contains("bit-csl-cnt"));
+
+        // The play/pause button is the first control of the first row, and the only one of the carousel.
+        Assert.AreEqual(1, component.FindAll(".bit-csl-ppb").Count);
+        Assert.IsTrue(firstRow.Children[0].ClassList.Contains("bit-csl-ppb"));
+    }
+
+    // With the dots hidden, a row of the buttons that comes first takes the play/pause button, which leaves nothing for
+    // the row of the dots to hold.
+    [TestMethod]
+    public void BitCarouselShouldNotRenderAnEmptyRowOfDotsWhenTheButtonsTakeThePlayPauseButton()
+    {
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.ButtonsPlacement, BitPlacement.Top);
+            parameters.Add(p => p.HideDots, true);
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.ShowPlayPause, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-csl-bcn").Count));
+
+        Assert.AreEqual(0, component.FindAll(".bit-csl-dcn").Count);
+
+        var row = component.Find(".bit-csl-bcn").Children;
+
+        Assert.AreEqual(3, row.Length);
+        Assert.IsTrue(row[0].ClassList.Contains("bit-csl-ppb"));
+        Assert.IsTrue(row[1].ClassList.Contains("bit-csl-pbt"));
+        Assert.IsTrue(row[2].ClassList.Contains("bit-csl-nbt"));
     }
 
     [TestMethod]
@@ -469,6 +589,40 @@ public partial class BitCarouselTests
         Assert.AreEqual(1, carousel.PagesCount);
         Assert.IsFalse(carousel.CanGoNext);
         Assert.IsFalse(carousel.CanGoPrev);
+    }
+
+    // The state is reported once the carousel has rendered it, so a handler reading the markup finds it in step - also
+    // after the first layout and a re-layout, which change the state in OnAfterRenderAsync, after the render.
+    [TestMethod]
+    public void BitCarouselShouldReportTheNavigationStateOnceItIsRendered()
+    {
+        var reports = new List<(int PagesCount, int Dots)>();
+        IRenderedComponent<BitCarouselTest>? component = null;
+
+        component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.OnNavigationStateChange, EventCallback.Factory.Create(this, () =>
+            {
+                if (component is null) return;
+
+                reports.Add((component.Instance.Carousel.PagesCount, component.FindAll(".bit-csl-dot").Count));
+            }));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.Carousel.PagesCount));
+
+        // Showing every slide at once leaves a single page, whose dots are left out.
+        component.Render(parameters => parameters.Add(p => p.VisibleItemsCount, 3));
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.Carousel.PagesCount));
+        component.WaitForAssertion(() => Assert.IsNotEmpty(reports));
+
+        Assert.AreEqual((1, 0), reports[^1]);
+
+        foreach (var (pagesCount, dots) in reports)
+        {
+            Assert.AreEqual(pagesCount > 1 ? pagesCount : 0, dots);
+        }
     }
 
     [TestMethod]
