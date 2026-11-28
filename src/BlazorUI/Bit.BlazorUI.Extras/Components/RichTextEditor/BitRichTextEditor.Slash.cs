@@ -1,14 +1,15 @@
 ﻿namespace Bit.BlazorUI;
 
 // Slash command menu. Markdown shortcuts are handled in the JS bridge; the slash trigger is
-// detected there and surfaced here so the menu and command list live in C#.
+// detected there and surfaced here so the command list lives in C#. The menu itself - the filter
+// box, the highlight, the keys and the ARIA - is the shared _BitEditorMenu.
 public partial class BitRichTextEditor
 {
     private bool _showSlash;
     private string _slashFilter = "";
-    private int _slashIndex;
+    private IReadOnlyList<SlashCommand> _slashItems = SlashCommands;
     private bool _focusSlashPending;
-    private ElementReference _slashInputRef = default!;
+    private _BitEditorMenu<SlashCommand>? _slashMenu;
 
     private readonly record struct SlashCommand(string Key, string Label, string Command, string Keywords);
 
@@ -26,6 +27,10 @@ public partial class BitRichTextEditor
         new("divider", "Divider", "insertHorizontalRule", "hr rule separator line"),
     ];
 
+    // The classes the slash and mention menus are drawn with, which the editor's stylesheet styles.
+    private static readonly _BitEditorMenuClasses MenuClasses =
+        new("bit-rte-inp", "bit-rte-slash-list", "bit-rte-slash-item", "bit-rte-slash-item-sel", "bit-rte-emoji-empty");
+
     /// <summary>Called by the bridge when the user types the slash trigger.</summary>
     [JSInvokable("OnSlashTrigger")]
     public void _OnSlashTrigger()
@@ -38,7 +43,7 @@ public partial class BitRichTextEditor
         // The two menus answer different triggers and share the same spot, so only one is ever up.
         CloseMention();
         _slashFilter = "";
-        _slashIndex = 0;
+        _slashItems = SlashCommands;
         _showSlash = true;
         // Move keyboard focus into the filter input once it renders so typing filters the list
         // (rather than landing in the editor), arrow keys navigate, and Enter applies a command
@@ -57,60 +62,25 @@ public partial class BitRichTextEditor
                                      || c.Keywords.Contains(term, StringComparison.OrdinalIgnoreCase));
     }
 
-    // Resets the highlighted item to the top of the (re)filtered list as the user types so the
-    // selection never points past the end of the shrinking result set.
-    private void OnSlashFilterInput(ChangeEventArgs e)
+    // Each keystroke hands the menu a new list, which moves its highlight back to the top so it
+    // never points past the end of the shrinking result set.
+    private void OnSlashFilterInput(string filter)
     {
-        _slashFilter = e.Value?.ToString() ?? "";
-        _slashIndex = 0;
+        _slashFilter = filter;
+        _slashItems = FilteredSlash().ToList();
     }
 
-    // Keyboard navigation for the slash menu: arrows move the highlight, Enter applies the
-    // highlighted command, Escape dismisses the menu. The filter input owns focus while the menu
-    // is open, so these keys are handled here and never reach the editor.
-    private async Task OnSlashKeyDownAsync(KeyboardEventArgs e)
+    private void OnSlashClose()
     {
-        if (_showSlash is false) return;
-
-        var items = FilteredSlash().ToList();
-
-        switch (e.Key)
-        {
-            case "ArrowDown":
-                if (items.Count > 0)
-                {
-                    _slashIndex = (_slashIndex + 1) % items.Count;
-                }
-                break;
-
-            case "ArrowUp":
-                if (items.Count > 0)
-                {
-                    _slashIndex = (_slashIndex - 1 + items.Count) % items.Count;
-                }
-                break;
-
-            case "Enter":
-                if (items.Count > 0 && _slashIndex >= 0 && _slashIndex < items.Count)
-                {
-                    await ApplySlashAsync(items[_slashIndex].Command);
-                }
-                break;
-
-            // Only the plain key, the one the box claims (data-bit-esc): an Escape with a modifier is the
-            // surrounding surface's.
-            case "Escape" when e.IsPlainEscape():
-                CloseSlash();
-                RequestEditorFocus();
-                break;
-        }
+        CloseSlash();
+        RequestEditorFocus();
     }
 
     private void CloseSlash()
     {
         _showSlash = false;
         _slashFilter = "";
-        _slashIndex = 0;
+        _slashItems = SlashCommands;
     }
 
     private async Task ApplySlashAsync(string command)
@@ -118,9 +88,7 @@ public partial class BitRichTextEditor
         // Gate on ControlsDisabled (ReadOnly || _inSourceView) so the slash command cannot mutate
         // the WYSIWYG DOM while source view is controlling the visible content.
         if (ControlsDisabled) return;
-        _showSlash = false;
-        _slashFilter = "";
-        _slashIndex = 0;
+        CloseSlash();
         await _js.BitRichTextEditorApplySlashCommand(_editorRef, command);
         RequestEditorFocus();
     }
@@ -131,14 +99,6 @@ public partial class BitRichTextEditor
     {
         if (_focusSlashPending is false) return;
         _focusSlashPending = false;
-        try
-        {
-            await _slashInputRef.FocusSafelyAsync();
-            // Suppress native browser handling of the menu's navigation keys (Arrow/Enter) on this
-            // input while leaving normal typing intact. Escape's is prevented by its claim (data-bit-esc).
-            await _js.BitRichTextEditorBindSlashKeys(_slashInputRef);
-        }
-        catch (JSDisconnectedException) { } // circuit gone; nothing to focus
-        catch (JSException) { } // interop unavailable; ignore like ToggleFullScreen does
+        if (_slashMenu is not null) await _slashMenu.FocusAsync();
     }
 }

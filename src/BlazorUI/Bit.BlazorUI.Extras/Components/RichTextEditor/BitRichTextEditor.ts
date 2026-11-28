@@ -155,11 +155,7 @@
                     editor._range = range.cloneRange();
                     // The marks set at a caret are for the text typed there: once the caret moves, they are gone, as
                     // they have always been with the browser's own commands.
-                    const pending = editor._pendingMarks;
-                    if (pending && (!range.collapsed
-                        || BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) !== pending.at)) {
-                        editor._pendingMarks = null;
-                    }
+                    BitRichTextEditorPendingMarks.follow(editor, range);
                     RichTextEditor.reportState(editor);
                 }
             };
@@ -303,8 +299,7 @@
             editor._history = null;
             editor._historyReported = null;
             editor._leaveMark = null;
-            editor._pendingMarks = null;
-            editor._composeMarks = null;
+            BitRichTextEditorPendingMarks.clear(editor);
             editor._activeImage = null;
             // Transient view/input state, cleared so a re-initialized element never starts out
             // believing it is in the CSS full-screen fallback or owes someone a plain-text paste.
@@ -1575,22 +1570,6 @@
             RichTextEditor.afterChange(editor);
         }
 
-        // Suppresses the browser default for the slash menu's navigation keys on the filter input
-        // so ArrowUp/ArrowDown don't move the text caret, Enter doesn't submit, and Escape doesn't
-        // clear the field - while the C# @onkeydown handler still runs and normal typing is left
-        // untouched. Bound once per input element (which Blazor recreates each time the menu opens,
-        // so no explicit teardown is needed).
-        public static bindSlashKeys(input: any) {
-            if (!input || input._slashKeysBound) return;
-            input._slashKeysBound = true;
-            input.addEventListener('keydown', (e: KeyboardEvent) => {
-                // Escape is not among them: the input claims the plain one (data-bit-esc, see Utils.claimEscape),
-                // which prevents its default, and one with a modifier goes on to a dialog the editor sits in.
-                if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter') {
-                    e.preventDefault();
-                }
-            });
-        }
         private static dispatch(editor: any, command: string, args: any): boolean {
             if (!editor) return false;
             // Single choke point for every mutating operation: a read-only (or disabled) editor
@@ -3394,13 +3373,7 @@
 
         // A color or font where the selection is: set at a caret for the text typed there next, else as laid out.
         private static styleState(editor: any, range: Range | null, property: string): string {
-            if (!range) return '';
-            const pending = editor._pendingMarks;
-            if (range.collapsed && pending && pending.styles && property in pending.styles
-                && BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) === pending.at) {
-                return pending.styles[property];
-            }
-            return BitRichTextEditorMarks.styleAt(editor, range, property);
+            return BitRichTextEditorPendingMarks.styleAt(editor, range, property);
         }
 
         private static computeFacts(editor: any): any {
@@ -3517,12 +3490,7 @@
 
         // Whether a mark is on where the selection is: off the markup, or at a caret, as set there for what is typed next.
         private static markActive(editor: any, range: Range, mark: BitRichTextEditorMark): boolean {
-            const pending = editor._pendingMarks;
-            if (range.collapsed && pending && mark in pending.marks
-                && BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) === pending.at) {
-                return pending.marks[mark];
-            }
-            return BitRichTextEditorMarks.isActive(editor, range, mark);
+            return BitRichTextEditorPendingMarks.isActive(editor, range, mark);
         }
 
         private static markState(editor: any, mark: BitRichTextEditorMark): boolean {
@@ -3541,7 +3509,7 @@
             if (on && !RichTextEditor.isTagAllowed(editor, BitRichTextEditorMarks.WRITES[command])) return false;
 
             if (range.collapsed) {
-                RichTextEditor.setPendingMark(editor, range, command, on);
+                BitRichTextEditorPendingMarks.set(editor, range, command, on);
                 return true;
             }
             const next = BitRichTextEditorMarks.apply(editor, range, command, on);
@@ -3555,31 +3523,13 @@
             const range = RichTextEditor.editorRange(editor);
             if (!range) return false;
             if (range.collapsed) {
-                for (const mark of Object.keys(BitRichTextEditorMarks.WRITES) as BitRichTextEditorMark[]) {
-                    if (RichTextEditor.markActive(editor, range, mark)) RichTextEditor.setPendingMark(editor, range, mark, false);
-                }
+                BitRichTextEditorPendingMarks.clearAt(editor, range);
                 return true;
             }
             const next = BitRichTextEditorMarks.removeFormat(editor, range);
             if (!next) return false;
             RichTextEditor.selectRange(editor, next);
             return true;
-        }
-
-        // Sets a mark for the text typed next at the caret. A mark set back to what the markup there already says is
-        // no longer pending; turning one of sub- and superscript on turns the other off.
-        private static setPendingMark(editor: any, range: Range, mark: BitRichTextEditorMark, on: boolean) {
-            const at = BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset);
-            let pending = editor._pendingMarks;
-            if (!pending || pending.at !== at) pending = editor._pendingMarks = { at, marks: {}, styles: {} };
-            const set = (name: BitRichTextEditorMark, value: boolean) => {
-                if (BitRichTextEditorMarks.isActive(editor, range, name) === value) delete pending.marks[name];
-                else pending.marks[name] = value;
-            };
-            const other = BitRichTextEditorMarks.EXCLUDES[mark] as BitRichTextEditorMark | undefined;
-            if (on && other && RichTextEditor.markActive(editor, range, other)) set(other, false);
-            set(mark, on);
-            if (Object.keys(pending.marks).length === 0 && Object.keys(pending.styles).length === 0) editor._pendingMarks = null;
         }
 
         // Paints the selection with a color or font, or at a caret sets it for the text typed there next, which is what
@@ -3590,10 +3540,7 @@
             const range = RichTextEditor.editorRange(editor);
             if (!range) return false;
             if (range.collapsed) {
-                const at = BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset);
-                let pending = editor._pendingMarks;
-                if (!pending || pending.at !== at) pending = editor._pendingMarks = { at, marks: {}, styles: {} };
-                pending.styles[property] = written;
+                BitRichTextEditorPendingMarks.setStyle(editor, range, property, written);
                 return true;
             }
             const next = BitRichTextEditorMarks.applyStyle(editor, range, property, written);
@@ -3605,20 +3552,10 @@
         // A character typed where marks are pending is written by the editor, inside the marks turned on and outside
         // the ones turned off; what is typed after it goes on in the same text, which the engine takes over.
         private static typePendingMarks(editor: any, e: InputEvent): boolean {
-            const pending = editor._pendingMarks;
-            if (!pending) return false;
-            if ((e.inputType !== 'insertText' && e.inputType !== 'insertReplacementText') || !e.data) return false;
-            editor._pendingMarks = null;
-            const range = RichTextEditor.editorRange(editor);
-            if (!range || !range.collapsed
-                || BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) !== pending.at) {
-                return false;
-            }
-
-            e.preventDefault();
+            if (!editor._pendingMarks) return false;
+            const caret = BitRichTextEditorPendingMarks.type(editor, RichTextEditor.editorRange(editor), e);
+            if (caret === undefined) return false;
             editor._leaveMark = null;
-            // A lone trailing space collapses away unless it is non-breaking, which is also what the engines write.
-            const caret = BitRichTextEditorMarks.insertText(editor, range, e.data === ' ' ? ' ' : e.data, pending.marks, pending.styles);
             if (!caret) return true;
             RichTextEditor.selectRange(editor, caret);
             editor.dispatchEvent(new InputEvent('input', { inputType: 'insertText', data: e.data, bubbles: true }));
@@ -3626,36 +3563,17 @@
         }
 
         private static startComposition(editor: any) {
-            const pending = editor._pendingMarks;
-            const range = RichTextEditor.editorRange(editor);
-            editor._composeMarks = pending && range && range.collapsed
-                && BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) === pending.at
-                ? pending
-                : null;
+            BitRichTextEditorPendingMarks.startComposition(editor, RichTextEditor.editorRange(editor));
         }
 
         private static endComposition(editor: any) {
-            const compose = editor._composeMarks;
-            editor._composeMarks = null;
-            editor._pendingMarks = null;
-            const range = compose ? RichTextEditor.editorRange(editor) : null;
-            let written = range && range.collapsed
-                ? BitRichTextEditorMarks.rangeAt(editor, compose.at, BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset))
-                : null;
-            if (!written) {
+            const range = editor._composeMarks ? RichTextEditor.editorRange(editor) : null;
+            const caret = BitRichTextEditorPendingMarks.endComposition(editor, range);
+            if (!caret) {
                 RichTextEditor.historyCommit(editor);
                 return;
             }
 
-            for (const mark of Object.keys(compose.marks)) {
-                if (!written || !BitRichTextEditorMarks.isMark(mark)) continue;
-                written = BitRichTextEditorMarks.apply(editor, written, mark, compose.marks[mark]) || written;
-            }
-            for (const property of Object.keys(compose.styles || {})) {
-                written = BitRichTextEditorMarks.applyStyle(editor, written!, property, compose.styles[property]) || written;
-            }
-            const caret = written!.cloneRange();
-            caret.collapse(false);
             RichTextEditor.selectRange(editor, caret);
             // The composition and its marks are one step, and the content is reported like any other edit.
             const history = editor._history as BitRichTextEditorHistory | null;
