@@ -2,6 +2,9 @@
 
 public partial class BitPhoneInputDemo
 {
+    /// <summary>The topic the address names (/components/phoneinput/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

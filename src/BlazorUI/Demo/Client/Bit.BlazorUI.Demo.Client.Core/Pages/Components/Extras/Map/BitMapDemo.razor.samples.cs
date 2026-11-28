@@ -399,7 +399,11 @@ private void SetBasemap(string name)
 
 private async Task OnLayersReady()
 {
-    await layersMapRef.AddCircle(""area"", new(51.5074, -0.1278), 6000, layerStyles[0]);
+    await layersMapRef.AddCircle(""area"", new(51.5074, -0.1278), 6000, layerStyles[layerStyleIndex]);
+    if (layerVisible is false)
+    {
+        await layersMapRef.SetLayerVisible(""area"", false);
+    }
     await layersMapRef.AddTileOverlay(new()
     {
         Id = ""labels"",

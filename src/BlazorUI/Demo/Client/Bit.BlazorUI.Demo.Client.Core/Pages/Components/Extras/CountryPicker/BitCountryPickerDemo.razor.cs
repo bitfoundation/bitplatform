@@ -2,6 +2,9 @@
 
 public partial class BitCountryPickerDemo
 {
+    /// <summary>The topic the address names (/components/countrypicker/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

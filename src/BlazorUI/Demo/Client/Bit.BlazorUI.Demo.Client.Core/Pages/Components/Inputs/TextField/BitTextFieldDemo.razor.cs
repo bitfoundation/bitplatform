@@ -5,6 +5,9 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TextField;
 
 public partial class BitTextFieldDemo : IDisposable
 {
+    /// <summary>The topic the address names (/components/textfield/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -1713,6 +1716,20 @@ private string? countValue;
 private static int CountTextElements(string? value) => new StringInfo(value ?? string.Empty).LengthInTextElements;";
 
     private readonly string example10RazorCode = @"
+<BitTextField Label=""Date"" Mask=""##/##/####"" Placeholder=""MM/DD/YYYY"" Immediate @bind-Value=""maskedDate"" />
+<BitText>Value: @maskedDate</BitText>
+
+<BitTextField Label=""Phone (raw value)"" Mask=""(###) ###-####"" MaskRawValue Immediate @bind-Value=""maskedPhone"" />
+<BitText>Value: @maskedPhone</BitText>
+
+<BitTextField Label=""License plate"" Mask=""AA-####"" Immediate />
+
+<BitTextField Label=""Part number (the A is escaped)"" Mask=""@(@""\AX-####"")"" Immediate />";
+
+    private readonly string example10CsharpCode = @"
+private string? maskedDate;
+private string? maskedPhone;";
+    private readonly string example11RazorCode = @"
 <BitTextField>
     <LabelTemplate>
         <BitLabel Style=""color:coral"">Custom Label</BitLabel>
@@ -1763,11 +1780,11 @@ private static int CountTextElements(string? value) => new StringInfo(value ?? s
 
 <BitTextField Label=""Custom error message"" DefaultValue=""admin"">
     <ErrorMessageTemplate>
-        <span>✖ This name is reserved. <a href=""#example17"">See the Validation section</a>.</span>
+        <span>✖ This name is reserved. <a href=""/components/textfield/validation#example18"">See the Validation section</a>.</span>
     </ErrorMessageTemplate>
 </BitTextField>";
 
-    private readonly string example11RazorCode = @"
+    private readonly string example12RazorCode = @"
 <BitTextField @bind-Value=""ghostBasicTextValue""
               Immediate
               Label=""Basic Single-line""
@@ -1816,7 +1833,7 @@ private static int CountTextElements(string? value) => new StringInfo(value ?? s
               OnGhostTextAccepted=""(_ => ClearGhostSuggestion(isMultiline: true))""
               OnChange=""(v => SetGhostSuggestionAsync(v, isMultiline: true))"" />
 <div>Value: [@ghostMultilineValue]</div>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 private string? ghostBasicTextValue;
 private string? ghostBasicSuggestion;
 
@@ -1919,7 +1936,7 @@ private static async Task<string?> GetGhostSuggestionAsync(string? value, Cancel
     return GetGhostSuggestion(value);
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <BitTextField Label=""Type here and press Enter or Escape""
               OnEnter=""HandleOnEnter""
               OnEscape=""HandleOnEscape""
@@ -1944,7 +1961,7 @@ private static async Task<string?> GetGhostSuggestionAsync(string? value, Cancel
 
 <BitTextField Label=""Clearable"" ShowClearButton DefaultValue=""Clear me"" OnClear=""HandleOnClear"" />
 <div>OnClear: [@clearLog]</div>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 private int eventCount;
 private int clearCount;
 private string? eventLog;
@@ -1978,7 +1995,7 @@ private string? onInputCommittedValue;
 
 private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString();";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitTextField Label=""SelectOnFocus"" SelectOnFocus DefaultValue=""Focus me and start typing"" />
 
 <BitTextField Label=""ReadOnly + SelectOnFocus"" SelectOnFocus ReadOnly DefaultValue=""AB12-CD34-EF56"" />
@@ -1990,10 +2007,10 @@ private void HandleOnInput(ChangeEventArgs e) => onInputText = e.Value?.ToString
     <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(4, 12); }"">SelectRangeAsync(4, 12)</BitButton>
     <BitButton OnClick=""async () => { if (selectionRef is not null) await selectionRef.SelectRangeAsync(0, 0); }"">Caret to the start</BitButton>
 </BitStack>";
-    private readonly string example13CsharpCode = @"
-private BitTextField? selectionRef;";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example14CsharpCode = @"
+private BitTextField? selectionRef;";
+    private readonly string example15RazorCode = @"
 <BitTextField Label=""Top"" LabelPlacement=""BitPlacement.Top"" Placeholder=""Enter a text..."" />
 <BitTextField Label=""Bottom"" LabelPlacement=""BitPlacement.Bottom"" Placeholder=""Enter a text..."" />
 <BitTextField Label=""Start"" LabelPlacement=""BitPlacement.Start"" Placeholder=""Enter a text..."" />
@@ -2012,7 +2029,7 @@ private BitTextField? selectionRef;";
               Placeholder=""Enter a text...""
               Description=""The underlined variant lays its label out in a row of its own, and an explicit position takes that row apart."" />";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitTextField Label=""Loading"" Loading DefaultValue=""Checking..."" />
 
 <BitTextField Label=""Loading with a clear button and an icon""
@@ -2035,7 +2052,8 @@ private BitTextField? selectionRef;";
               Description=""@userNameStatus""
               @bind-Value=""userName""
               OnChange=""CheckUserNameAsync"" />";
-    private readonly string example15CsharpCode = @"
+
+    private readonly string example16CsharpCode = @"
 private string? userName;
 private bool userNameLoading;
 private string? userNameStatus;
@@ -2085,8 +2103,7 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
     cts?.Dispose();
     cts = null;
 }";
-
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitTextField Label=""With a hidden description""
               AriaDescription=""Use the number printed on the back of your card, without the spaces between the groups.""
               Description=""Card number""
@@ -2118,7 +2135,7 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
               InputHtmlAttributes=""@(new() { { ""aria-labelledby"", ""shipping-heading"" } })""
               Description=""Named by the heading above it rather than by a label of its own."" />";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitTextField Label=""Invalid"" Invalid DefaultValue=""Not accepted by the server"" />
 
 <BitTextField Label=""Invalid with a description""
@@ -2162,7 +2179,7 @@ private static void CancelAndDispose(ref CancellationTokenSource? cts)
 
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 public class ValidationTextFieldModel
 {
     [Required(ErrorMessage = ""This field is required."")]
@@ -2194,7 +2211,7 @@ private ValidationTextFieldModel validationTextFieldModel = new();
 private void HandleValidSubmit() { }
 private void HandleInvalidSubmit() { }";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <BitParams Parameters=""@textFieldParams"">
     <BitTextField Label=""Takes the underline, the clear button and the trimming from the cascade""
                   DefaultValue=""bit BlazorUI"" />
@@ -2206,7 +2223,7 @@ private void HandleInvalidSubmit() { }";
 
 
 <BitTextField Label=""Outside the cascade, and back to the defaults"" DefaultValue=""bit BlazorUI"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private readonly BitTextFieldParams[] textFieldParams =
 [
     new()
@@ -2217,20 +2234,6 @@ private readonly BitTextFieldParams[] textFieldParams =
         Placeholder = ""Enter a text..."",
     }
 ];";
-
-    private readonly string example19RazorCode = @"
-<BitTextField Label=""Date"" Mask=""##/##/####"" Placeholder=""MM/DD/YYYY"" Immediate @bind-Value=""maskedDate"" />
-<BitText>Value: @maskedDate</BitText>
-
-<BitTextField Label=""Phone (raw value)"" Mask=""(###) ###-####"" MaskRawValue Immediate @bind-Value=""maskedPhone"" />
-<BitText>Value: @maskedPhone</BitText>
-
-<BitTextField Label=""License plate"" Mask=""AA-####"" Immediate />
-
-<BitTextField Label=""Part number (the A is escaped)"" Mask=""@(@""\AX-####"")"" Immediate />";
-    private readonly string example19CsharpCode = @"
-private string? maskedDate;
-private string? maskedPhone;";
 
     private readonly string example20RazorCode = @"
 <BitTextField Label=""Primary"" Background=""BitColorKind.Primary"" IconName=""@BitIconName.Calendar"" />

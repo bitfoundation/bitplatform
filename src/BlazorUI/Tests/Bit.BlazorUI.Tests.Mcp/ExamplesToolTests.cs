@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Text.RegularExpressions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bit.BlazorUI.Tests.Mcp.Infrastructure;
 
 namespace Bit.BlazorUI.Tests.Mcp;
@@ -149,12 +150,16 @@ public class ExamplesToolTests : McpTestBase
     {
         var component = await CallAsync("GetBitBlazorUIComponent", new { name = "BitTextField" });
 
+        // BitTextField's page is split into topics, so the list is one line per topic, each led by the topic's name
+        // and address ("**Overview** (/components/textfield) - Basics, Variants, ..."): every line is read, less its label.
         var titles = component[component.IndexOf("returns the Razor and C# for:", StringComparison.Ordinal)..]
-            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Split('\n', StringSplitOptions.TrimEntries)
             .Skip(1)
-            .First(line => line.Length > 0)
-            .TrimEnd('.')
-            .Split(", ", StringSplitOptions.RemoveEmptyEntries);
+            .SkipWhile(line => line.Length == 0)
+            .TakeWhile(line => line.Length > 0)
+            .Select(line => Regex.Replace(line, @"^\*\*[^*]+\*\*(?: tab)?(?: \([^)]*\))? - ", string.Empty))
+            .SelectMany(line => line.TrimEnd('.').Split(", ", StringSplitOptions.RemoveEmptyEntries))
+            .ToArray();
 
         Assert.IsGreaterThan(3, titles.Length, "BitTextField advertises almost no sections.");
 

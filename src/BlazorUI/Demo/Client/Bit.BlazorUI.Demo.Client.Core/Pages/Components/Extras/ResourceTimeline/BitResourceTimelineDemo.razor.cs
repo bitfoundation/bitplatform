@@ -5,6 +5,9 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.ResourceTimeline
 
 public partial class BitResourceTimelineDemo
 {
+    /// <summary>The topic the address names (/components/resourcetimeline/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

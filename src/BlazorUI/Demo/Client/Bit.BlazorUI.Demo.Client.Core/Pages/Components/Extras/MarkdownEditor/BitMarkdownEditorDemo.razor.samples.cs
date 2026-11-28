@@ -432,25 +432,8 @@ private async Task SubmitFromEditor(string? value)
 private void HandleValidSubmit() => submittedStatus = $""Published {formModel.ReleaseNotes?.Length ?? 0} characters."";";
 
     private readonly string example16RazorCode = @"
-<BitParams Parameters=""markdownEditorParams"">
-    <BitMarkdownEditor />
-    <BitMarkdownEditor Placeholder=""My own placeholder"" />
-</BitParams>";
-    private readonly string example16CsharpCode = @"
-private readonly BitMarkdownEditorParams[] markdownEditorParams =
-[
-    new()
-    {
-        Height = ""8rem"",
-        Resizable = true,
-        ShowReadingTime = true,
-        Placeholder = ""Defaults come from BitParams..."",
-    }
-];";
-
-    private readonly string example17RazorCode = @"
 <BitMarkdownEditor Label=""Keyboard tour"" DefaultValue=""@accessibilityDefaultValue"" Height=""12rem"" />";
-    private readonly string example17CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private string accessibilityDefaultValue =
 @""# Keyboard tour
 
@@ -462,6 +445,23 @@ private string accessibilityDefaultValue =
 | the | cells |
 
 F9 cycles the panes, F11 goes full-screen and Ctrl+/ lists every shortcut."";";
+
+    private readonly string example17RazorCode = @"
+<BitParams Parameters=""markdownEditorParams"">
+    <BitMarkdownEditor />
+    <BitMarkdownEditor Placeholder=""My own placeholder"" />
+</BitParams>";
+    private readonly string example17CsharpCode = @"
+private readonly BitMarkdownEditorParams[] markdownEditorParams =
+[
+    new()
+    {
+        Height = ""8rem"",
+        Resizable = true,
+        ShowReadingTime = true,
+        Placeholder = ""Defaults come from BitParams..."",
+    }
+];";
 
     private readonly string example18RazorCode = @"
 <style>

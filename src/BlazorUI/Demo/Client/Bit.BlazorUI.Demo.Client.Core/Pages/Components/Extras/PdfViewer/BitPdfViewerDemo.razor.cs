@@ -4,6 +4,9 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PdfViewer;
 
 public partial class BitPdfViewerDemo
 {
+    /// <summary>The topic the address names (/components/pdfviewer/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

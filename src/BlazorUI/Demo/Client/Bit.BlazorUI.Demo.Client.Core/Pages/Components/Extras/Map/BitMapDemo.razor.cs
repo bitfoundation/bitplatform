@@ -2,6 +2,9 @@
 
 public partial class BitMapDemo
 {
+    /// <summary>The topic the address names (/components/map/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -1732,7 +1735,11 @@ public partial class BitMapDemo
 
     private async Task OnLayersReady()
     {
-        await layersMapRef.AddCircle("area", new(51.5074, -0.1278), 6000, layerStyles[0]);
+        await layersMapRef.AddCircle("area", new(51.5074, -0.1278), 6000, layerStyles[layerStyleIndex]);
+        if (layerVisible is false)
+        {
+            await layersMapRef.SetLayerVisible("area", false);
+        }
         await layersMapRef.AddTileOverlay(new()
         {
             Id = "labels",

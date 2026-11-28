@@ -14,6 +14,17 @@
     @include sm {
         grid-template-columns: 1fr;
     }
+
+    // A pager that does not close the article (the topic pager of a split demo page, which the Feedback
+    // section follows) needs the same air under it as above it, or the next section's hairline sits
+    // right on its buttons.
+    &:not(:last-child) {
+        margin-bottom: $doc-space-xl;
+
+        @include sm {
+            margin-bottom: $doc-space-lg;
+        }
+    }
 }
 
 .doc-pager-link {

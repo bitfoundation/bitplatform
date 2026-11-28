@@ -4,6 +4,9 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.TagsInput;
 
 public partial class BitTagsInputDemo
 {
+    /// <summary>The topic the address names (/components/tagsinput/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

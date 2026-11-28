@@ -308,69 +308,11 @@ private double boundZoom = 1;
 private int boundRotation;";
 
     private readonly string example14RazorCode = @"
-<BitButton Disabled=""publicApiSource is not null""
-           OnClick='() => publicApiSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
-
-<BitButton OnClick=""() => pdfViewerRef.FirstPage()"">First</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.PrevPage()"">Prev</BitButton>
-<BitTag Variant=""BitVariant.Outline"" Text=""@PublicApiPosition"" Color=""BitColor.Info"" />
-<BitButton OnClick=""() => pdfViewerRef.NextPage()"">Next</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.LastPage()"">Last</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.ZoomOut()"">Zoom -</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.SetZoom(1)"">100%</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.ZoomIn()"">Zoom +</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.SetZoomMode(BitPdfZoomMode.FitPage)"">Fit page</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.RotateClockwise()"">Rotate</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.ShowSidebar(BitPdfSidebar.Thumbnails)"">Thumbnails</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.GoToDestination(FirstBookmarkDestination())"">First bookmark</BitButton>
-<BitButton OnClick=""ShowSelectedText"">Selected text</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.Download()"">Download</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.Print()"">Print all</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.PrintCurrentPage()"">Print page</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.Print(1, 2)"">Print 1-2</BitButton>
-<BitButton OnClick=""() => pdfViewerRef.TogglePresentationMode()"">Present</BitButton>
-
-<BitPdfViewer @ref=""pdfViewerRef""
-              Source=""publicApiSource""
-              Height=""400px""
-              ShowToolbar=""false""
-              OnDocumentLoaded=""StateHasChanged""
-              OnPageChanged=""_ => StateHasChanged()"" />
-
-@if (selectedText is not null)
-{
-    <div>Selected: @(selectedText.Length == 0 ? ""(nothing)"" : selectedText)</div>
-}";
-    private readonly string example14CsharpCode = @"
-private BitPdfSource? publicApiSource;
-
-private BitPdfViewer pdfViewerRef = default!;
-
-private string? selectedText;
-
-// The reference is only set once the viewer has rendered.
-private string PublicApiPosition => $""{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}"";
-
-// A destination lands on the exact spot a bookmark points at, not just its page.
-private BitPdfDestination? FirstBookmarkDestination()
-    => pdfViewerRef?.Outline.FirstOrDefault()?.Destination;
-
-private async Task ShowSelectedText()
-{
-    selectedText = await pdfViewerRef.GetSelectedText();
-}
-
-// await pdfViewerRef.OpenAsync(BitPdfSource.FromBytes(bytes, ""other.pdf""));
-// await pdfViewerRef.GoToNamedDestination(""chapter-2"");
-// string text = pdfViewerRef.ExtractText();
-// string html = pdfViewerRef.RenderPageHtml(1);";
-
-    private readonly string example15RazorCode = @"
 <BitButton Disabled=""localizedSource is not null""
            OnClick='() => localizedSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Source=""localizedSource"" Height=""400px"" Strings=""germanStrings"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 private BitPdfSource? localizedSource;
 
 // Only the properties you assign are replaced; the rest keep their English defaults.
@@ -423,42 +365,78 @@ private readonly BitPdfViewerStrings germanStrings = new()
     PageCountFormat = ""{0} Seite(n)."",
 };";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitToggle @bind-Value=""a11yDisabled"" Label=""Disabled"" />
 <BitButton Disabled=""a11ySource is not null""
            OnClick='() => a11ySource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 @* EnableKeyboardShortcuts=""false"" hands every key back to the page. *@
 <BitPdfViewer Source=""a11ySource"" Height=""450px"" DefaultSidebar=""BitPdfSidebar.Bookmarks"" Disabled=""a11yDisabled"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private BitPdfSource? a11ySource;
 private bool a11yDisabled;";
 
+    private readonly string example16RazorCode = @"
+<BitButton Disabled=""publicApiSource is not null""
+           OnClick='() => publicApiSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
+
+<BitButton OnClick=""() => pdfViewerRef.FirstPage()"">First</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.PrevPage()"">Prev</BitButton>
+<BitTag Variant=""BitVariant.Outline"" Text=""@PublicApiPosition"" Color=""BitColor.Info"" />
+<BitButton OnClick=""() => pdfViewerRef.NextPage()"">Next</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.LastPage()"">Last</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.ZoomOut()"">Zoom -</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.SetZoom(1)"">100%</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.ZoomIn()"">Zoom +</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.SetZoomMode(BitPdfZoomMode.FitPage)"">Fit page</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.RotateClockwise()"">Rotate</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.ShowSidebar(BitPdfSidebar.Thumbnails)"">Thumbnails</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.GoToDestination(FirstBookmarkDestination())"">First bookmark</BitButton>
+<BitButton OnClick=""ShowSelectedText"">Selected text</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.Download()"">Download</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.Print()"">Print all</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.PrintCurrentPage()"">Print page</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.Print(1, 2)"">Print 1-2</BitButton>
+<BitButton OnClick=""() => pdfViewerRef.TogglePresentationMode()"">Present</BitButton>
+
+<BitPdfViewer @ref=""pdfViewerRef""
+              Source=""publicApiSource""
+              Height=""400px""
+              ShowToolbar=""false""
+              OnDocumentLoaded=""StateHasChanged""
+              OnPageChanged=""_ => StateHasChanged()"" />
+
+@if (selectedText is not null)
+{
+    <div>Selected: @(selectedText.Length == 0 ? ""(nothing)"" : selectedText)</div>
+}";
+    private readonly string example16CsharpCode = @"
+private BitPdfSource? publicApiSource;
+
+private BitPdfViewer pdfViewerRef = default!;
+
+private string? selectedText;
+
+// The reference is only set once the viewer has rendered.
+private string PublicApiPosition => $""{pdfViewerRef?.CurrentPage}/{pdfViewerRef?.PageCount}"";
+
+// A destination lands on the exact spot a bookmark points at, not just its page.
+private BitPdfDestination? FirstBookmarkDestination()
+    => pdfViewerRef?.Outline.FirstOrDefault()?.Destination;
+
+private async Task ShowSelectedText()
+{
+    selectedText = await pdfViewerRef.GetSelectedText();
+}
+
+// await pdfViewerRef.OpenAsync(BitPdfSource.FromBytes(bytes, ""other.pdf""));
+// await pdfViewerRef.GoToNamedDestination(""chapter-2"");
+// string text = pdfViewerRef.ExtractText();
+// string html = pdfViewerRef.RenderPageHtml(1);";
+
     private readonly string example17RazorCode = @"
-<BitButton Disabled=""cascadeSource is not null""
-           OnClick='() => cascadeSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
-
-<BitParams Parameters=""pdfViewerParams"">
-    <BitPdfViewer Source=""cascadeSource"" />
-    <BitPdfViewer Source=""cascadeSource"" ToolbarItems=""BitPdfToolbarItems.All"" />
-</BitParams>";
-    private readonly string example17CsharpCode = @"
-private BitPdfSource? cascadeSource;
-
-private readonly BitPdfViewerParams[] pdfViewerParams =
-[
-    new()
-    {
-        Height = ""300px"",
-        InitialZoomMode = BitPdfZoomMode.FitPage,
-        ToolbarItems = BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom | BitPdfToolbarItems.Search,
-        Strings = new() { NoDocument = ""Both viewers share their defaults - load a document."" },
-    }
-];";
-
-    private readonly string example18RazorCode = @"
 <BitPdfViewer Source=""streamSource"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 // Keep a stable source in a field. Open a fresh stream each time, without using:
 // the viewer owns it, including a separate stream for server prerendering.
 private readonly BitPdfSource streamSource = BitPdfSource.FromStreamFactory(
@@ -468,9 +446,9 @@ private readonly BitPdfSource streamSource = BitPdfSource.FromStreamFactory(
         return Task.FromResult<Stream>(File.OpenRead(""document.pdf""));
     }, ""document.pdf"");";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitPdfViewer @ref=""rangeViewer"" Source=""rangeSource"" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private BitPdfViewer? rangeViewer;
 private readonly BitPdfSource rangeSource = BitPdfSource.FromUrl(""document.pdf"")
     .WithRangeLoading(new BitPdfRangeLoadingOptions
@@ -484,6 +462,28 @@ private readonly BitPdfSource rangeSource = BitPdfSource.FromUrl(""document.pdf"
 // authentication. The server must supply strong ETag and byte range responses.
 // When the host needs metadata, forms, tagged structure or attachments:
 // await rangeViewer!.LoadDocumentDetailsAsync();";
+
+    private readonly string example19RazorCode = @"
+<BitButton Disabled=""cascadeSource is not null""
+           OnClick='() => cascadeSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
+
+<BitParams Parameters=""pdfViewerParams"">
+    <BitPdfViewer Source=""cascadeSource"" />
+    <BitPdfViewer Source=""cascadeSource"" ToolbarItems=""BitPdfToolbarItems.All"" />
+</BitParams>";
+    private readonly string example19CsharpCode = @"
+private BitPdfSource? cascadeSource;
+
+private readonly BitPdfViewerParams[] pdfViewerParams =
+[
+    new()
+    {
+        Height = ""300px"",
+        InitialZoomMode = BitPdfZoomMode.FitPage,
+        ToolbarItems = BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom | BitPdfToolbarItems.Search,
+        Strings = new() { NoDocument = ""Both viewers share their defaults - load a document."" },
+    }
+];";
 
     private readonly string example20RazorCode = @"
 <style>

@@ -235,6 +235,9 @@ private readonly List<BitTimeZone> germanTimeZones =
 ];";
 
     private readonly string example18RazorCode = @"
+<BitTimeZonePicker TValue=""string"" AriaLabel=""Meeting time zone"" Placeholder=""Named by AriaLabel alone"" />
+<BitTimeZonePicker TValue=""string"" Label=""Type-ahead"" NoSearchBox Placeholder=""Focus me and type a city"" />";
+    private readonly string example19RazorCode = @"
 <BitParams Parameters=""@timeZonePickerParams"">
     <BitTimeZonePicker TValue=""string"" Label=""Takes the preferred time zones"" />
     <BitTimeZonePicker TValue=""TimeZoneInfo"" Label=""So does this one, bound to a TimeZoneInfo"" />
@@ -242,7 +245,8 @@ private readonly List<BitTimeZone> germanTimeZones =
 </BitParams>
 
 <BitTimeZonePicker TValue=""string"" Label=""Outside the cascade"" />";
-    private readonly string example18CsharpCode = @"
+
+    private readonly string example19CsharpCode = @"
 private readonly BitTimeZonePickerParams[] timeZonePickerParams =
 [
     new()
@@ -252,10 +256,6 @@ private readonly BitTimeZonePickerParams[] timeZonePickerParams =
         NoCountry = true,
     }
 ];";
-
-    private readonly string example19RazorCode = @"
-<BitTimeZonePicker TValue=""string"" AriaLabel=""Meeting time zone"" Placeholder=""Named by AriaLabel alone"" />
-<BitTimeZonePicker TValue=""string"" Label=""Type-ahead"" NoSearchBox Placeholder=""Focus me and type a city"" />";
 
     private readonly string example20RazorCode = @"
 <BitTimeZonePicker TValue=""string"" Color=""BitColor.Primary"" Placeholder=""Primary"" />
