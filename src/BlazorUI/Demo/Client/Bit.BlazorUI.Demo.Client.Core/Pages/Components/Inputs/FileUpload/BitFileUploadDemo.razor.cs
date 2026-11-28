@@ -2,6 +2,9 @@
 
 public partial class BitFileUploadDemo
 {
+    /// <summary>The topic the address names (/components/fileupload/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -3021,54 +3024,6 @@ private static string? AnnounceUploads(IReadOnlyList<BitFileInfo> files)
     private readonly DemoCodeFile[] example19CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example20RazorCode = @"
-<BitChoiceGroup @bind-Value=""variant"" Horizontal TItem=""BitChoiceGroupOption<BitVariant>"" TValue=""BitVariant"">
-    <BitChoiceGroupOption Text=""Fill"" Value=""BitVariant.Fill"" />
-    <BitChoiceGroupOption Text=""Outline"" Value=""BitVariant.Outline"" />
-    <BitChoiceGroupOption Text=""Text"" Value=""BitVariant.Text"" />
-</BitChoiceGroup>
-
-<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Variant=""variant"" />
-
-<BitFileUpload Label=""Disabled"" UploadUrl=""@UploadUrl"" Variant=""variant"" Disabled />
-
-<BitFileUpload Label=""Disabled drop area"" UploadUrl=""@UploadUrl"" ShowDropArea Disabled />";
-    private readonly string example20CsharpCode = @"
-private string UploadUrl = ""/Upload"";
-private BitVariant variant = BitVariant.Fill;";
-    private readonly DemoCodeFile[] example20CodeFiles = [uploadServerFile];
-
-    private readonly string example21RazorCode = @"
-<BitParams Parameters=""@fileUploadParams"">
-    <BitFileUpload Label=""Takes the endpoint, the limits and the look from the cascade"" />
-
-    <BitFileUpload Label=""So does this one, without repeating any of it"" />
-
-    <BitFileUpload Label=""Its own Variant and MaxSize, the cascaded rest""
-                   Variant=""BitVariant.Fill"" MaxSize=""1024 * 1024 * 1"" />
-</BitParams>
-
-
-<BitFileUpload Label=""Outside the cascade, and back to the defaults"" UploadUrl=""@UploadUrl"" />";
-    private readonly string example21CsharpCode = @"
-private string UploadUrl = ""/Upload"";
-
-private readonly BitFileUploadParams[] fileUploadParams =
-[
-    new()
-    {
-        UploadUrl = ""/Upload"",
-        RemoveUrl = ""/Remove"",
-        Multiple = true,
-        ShowRemoveButton = true,
-        MaxSize = 1024 * 1024 * 5,
-        Variant = BitVariant.Outline,
-        LabelIconName = ""Upload"",
-        Description = ""Up to 5 MB per file."",
-    }
-];";
-    private readonly DemoCodeFile[] example21CodeFiles = [uploadRemoveServerFile];
-
-    private readonly string example22RazorCode = @"
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
@@ -3085,7 +3040,7 @@ private readonly BitFileUploadParams[] fileUploadParams =
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
 <div>@validationResult</div>";
-    private readonly string example22CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 public class BitFileUploadDemoFormModel
 {
     [Required(ErrorMessage = ""Add at least one attachment"")]
@@ -3105,15 +3060,63 @@ private void HandleInvalidSubmit()
 {
     validationResult = null;
 }";
-    private const string example22ScssCode = @"
+    private const string example20ScssCode = @"
 .validation-message {
     color: var(--bit-clr-err);
 }";
-    private readonly DemoCodeFile[] example22CodeFiles =
+
+    private readonly DemoCodeFile[] example20CodeFiles =
     [
-        new("BitFileUploadDemo.razor.scss", example22ScssCode),
+        new("BitFileUploadDemo.razor.scss", example20ScssCode),
         uploadServerFile,
     ];
+    private readonly string example21RazorCode = @"
+<BitChoiceGroup @bind-Value=""variant"" Horizontal TItem=""BitChoiceGroupOption<BitVariant>"" TValue=""BitVariant"">
+    <BitChoiceGroupOption Text=""Fill"" Value=""BitVariant.Fill"" />
+    <BitChoiceGroupOption Text=""Outline"" Value=""BitVariant.Outline"" />
+    <BitChoiceGroupOption Text=""Text"" Value=""BitVariant.Text"" />
+</BitChoiceGroup>
+
+<BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Variant=""variant"" />
+
+<BitFileUpload Label=""Disabled"" UploadUrl=""@UploadUrl"" Variant=""variant"" Disabled />
+
+<BitFileUpload Label=""Disabled drop area"" UploadUrl=""@UploadUrl"" ShowDropArea Disabled />";
+    private readonly string example21CsharpCode = @"
+private string UploadUrl = ""/Upload"";
+private BitVariant variant = BitVariant.Fill;";
+
+    private readonly DemoCodeFile[] example21CodeFiles = [uploadServerFile];
+    private readonly string example22RazorCode = @"
+<BitParams Parameters=""@fileUploadParams"">
+    <BitFileUpload Label=""Takes the endpoint, the limits and the look from the cascade"" />
+
+    <BitFileUpload Label=""So does this one, without repeating any of it"" />
+
+    <BitFileUpload Label=""Its own Variant and MaxSize, the cascaded rest""
+                   Variant=""BitVariant.Fill"" MaxSize=""1024 * 1024 * 1"" />
+</BitParams>
+
+
+<BitFileUpload Label=""Outside the cascade, and back to the defaults"" UploadUrl=""@UploadUrl"" />";
+    private readonly string example22CsharpCode = @"
+private string UploadUrl = ""/Upload"";
+
+private readonly BitFileUploadParams[] fileUploadParams =
+[
+    new()
+    {
+        UploadUrl = ""/Upload"",
+        RemoveUrl = ""/Remove"",
+        Multiple = true,
+        ShowRemoveButton = true,
+        MaxSize = 1024 * 1024 * 5,
+        Variant = BitVariant.Outline,
+        LabelIconName = ""Upload"",
+        Description = ""Up to 5 MB per file."",
+    }
+];";
+    private readonly DemoCodeFile[] example22CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example23RazorCode = @"
 <BitFileUpload Label=""Primary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Primary"" />

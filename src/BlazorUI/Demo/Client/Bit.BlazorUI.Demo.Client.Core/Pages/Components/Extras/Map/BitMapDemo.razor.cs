@@ -2,6 +2,9 @@
 
 public partial class BitMapDemo
 {
+    /// <summary>The topic the address names (/components/map/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

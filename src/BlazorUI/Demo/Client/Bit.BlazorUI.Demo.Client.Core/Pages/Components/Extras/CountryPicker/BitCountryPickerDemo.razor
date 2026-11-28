@@ -1,10 +1,13 @@
 ﻿@page "/components/countrypicker"
+@page "/components/countrypicker/{Topic}"
 
 <PageOutlet Url="components/countrypicker"
             Title="CountryPicker"
             Description="BitCountryPicker is a country selector: a searchable list of the countries of BitCountries with their flags and names, bound to a BitCountry and working with the keyboard, screen readers, RTL and EditForm validation." />
 
 <DemoPage Name="CountryPicker"
+          HasTopics
+          Topic="@Topic"
           SecondaryNames="@(["CountrySelector", "CountrySelect"])"
           Description="BitCountryPicker picks a country out of a searchable list that shows the flag and the name of each one - for the billing country, the nationality or the country of residence a form asks for. Value is the selected BitCountry; the list can be replaced, trimmed and reordered, searched by name or ISO code, and the whole field is keyboard and screen-reader operable."
           Parameters="componentParameters"
@@ -28,524 +31,541 @@
         </BitText>
     </NotesTemplate>
     <Examples>
-        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-            <div>
-                The field opens a list of every country of <code>BitCountries.All</code>, each with its flag and name.
-                <b>Placeholder</b> fills the field while no country is selected.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Placeholder="Select a country" />
-            </div>
-        </DemoExample>
 
-        <DemoExample Title="Label & description" RazorCode="@example2RazorCode" Id="example2">
-            <div>
-                <b>Label</b> (or <b>LabelTemplate</b>) names the field and its list; a click on it moves the focus to
-                the field. <b>Required</b> adds the asterisk and <code>aria-required</code>. <b>Description</b> (or
-                <b>DescriptionTemplate</b>) writes a hint under the field, tied to it through
-                <code>aria-describedby</code>.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Country" Placeholder="Select a country" />
-                <BitCountryPicker Label="Nationality" Required Placeholder="Select a country" />
-                <BitCountryPicker Label="Country of residence"
-                                  Description="Where you have lived for the last six months."
-                                  Placeholder="Select a country" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-            <div>
-                <b>Value</b> is the selected <b>BitCountry</b> and is two-way bindable, so everything a country carries -
-                its name, its ISO codes, its emoji flag - is at hand the moment it is picked.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Country" Placeholder="Select a country" @bind-Value="boundCountry" />
-                <div>Name: @boundCountry?.Name</div>
-                <div>Iso2: @boundCountry?.Iso2</div>
-                <div>Iso3: @boundCountry?.Iso3</div>
-                <div>Emoji: @boundCountry?.Emoji</div>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="DefaultValue & DefaultCountry" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-            <div>
-                An unbound picker starts on <b>DefaultValue</b>, and <b>OnChange</b> reports what is picked after it.
-                <b>DefaultCountry</b> does the same when no DefaultValue is given - it is the one a cascade hands every
-                picker under it as the market of the app. A bound Value is left as it is by both.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="DefaultValue"
-                                  DefaultValue="BitCountries.Canada"
-                                  OnChange="c => changedCountry = c" />
-                <div>Changed to: @changedCountry?.Name</div>
-                <br />
-                <BitCountryPicker Label="DefaultCountry" DefaultCountry="BitCountries.Germany" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Custom countries" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-            <div>
-                <b>Countries</b> replaces the built-in list (<code>BitCountries.All</code>) and <b>ExcludeCountries</b>
-                trims it.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Countries (five markets)" Countries="customCountries" Placeholder="Select a country" />
-                <BitCountryPicker Label="ExcludeCountries (every country but these three)" ExcludeCountries="excludedCountries" Placeholder="Select a country" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Preferred countries" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-            <div>
-                <b>PreferredCountries</b> pins countries to the top of the list, set apart from the rest by a rule.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Country" PreferredCountries="preferredCountries" Placeholder="Select a country" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Search box" RazorCode="@example7RazorCode" Id="example7">
-            <div>
-                The search matches names (accents folded, word starts, so <code>united s</code> finds the United States)
-                and ISO codes (<code>de</code>, <code>deu</code>), and the result count is announced to screen readers.
-                Typing on the closed field opens it with the search already started. <b>SearchBoxPlaceholder</b>,
-                <b>SearchBoxAriaLabel</b> and <b>NoResultsText</b> set its texts. <b>NoSearchBox</b> removes it; the
-                field then answers to type-ahead, open or closed. The same letter typed again cycles through the
-                countries starting with it, and what is typed is matched by the rules of the current culture: case is
-                ignored, and so are the accents that culture treats as marks on a letter ("a" finds Åland Islands in
-                English, but not in Swedish, where å is a letter of its own).
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Search box"
-                                  Placeholder="Select a country"
-                                  SearchBoxPlaceholder="Country or ISO code"
-                                  NoResultsText="No matching country" />
-                <BitCountryPicker Label="NoSearchBox" NoSearchBox Placeholder="Select a country" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Flags" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-            <div>
-                <b>NoFlags</b> leaves the flags out of the field and the list, and <b>FlagUrlSelector</b> serves them from
-                your own source (returning null keeps the built-in one).
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="NoFlags" NoFlags DefaultValue="BitCountries.Japan" />
-                <BitCountryPicker Label="FlagUrlSelector" FlagUrlSelector="GetFlagUrl" DefaultValue="BitCountries.Switzerland" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
-            <div>
-                <b>ValueTemplate</b> renders the content of the field from the selected country, <b>ItemTemplate</b>
-                each row, and <b>NoResultsTemplate</b> the empty result.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Country" DefaultValue="BitCountries.Portugal">
-                    <ValueTemplate Context="country">
-                        <span>@(country is null ? "Pick one" : $"{country.Emoji} {country.Name} ({country.Iso3})")</span>
-                    </ValueTemplate>
-                    <ItemTemplate Context="country">
-                        <span>@country.Emoji</span>
-                        <span style="flex:1 1 0;overflow:hidden;text-overflow:ellipsis">@country.Name</span>
-                        <b>@country.Iso2</b>
-                    </ItemTemplate>
-                    <NoResultsTemplate>
-                        <span>🔍 nothing here</span>
-                    </NoResultsTemplate>
-                </BitCountryPicker>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-            <div>
-                Inside an <b>EditForm</b> the data annotations validate the bound country and the field gets
-                <code>aria-invalid</code>; <b>NoValidate</b> opts out. Outside a form, <b>Invalid</b> marks the field and
-                <b>ErrorMessage</b> (or <b>ErrorMessageTemplate</b>) also writes the reason under it, referenced by
-                <code>aria-describedby</code> and announced when it appears.
-            </div>
-            <br />
-            <div>
-                <b>ShowValidationMessage</b> shows the messages of the form under the field, where <b>ErrorMessage</b>
-                goes, so the form below needs no <b>ValidationMessage</b> component. The field is described by them
-                through <code>aria-describedby</code>, so they are read out when it takes the focus, and an
-                <b>ErrorMessage</b> of the app's own wins the place while it is set. They are not announced as they
-                appear: a submit validates every field at once, and a message from each of them read out in a row
-                would bury the form under its own errors. A <b>BitParams</b> holding a <b>BitCountryPickerParams</b>
-                with <b>ShowValidationMessage</b> turns it on for every country picker inside it.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Invalid Label="Invalid" DefaultValue="BitCountries.Spain" />
-                <BitCountryPicker Label="Shipping country"
-                                  ErrorMessage="We do not ship there yet."
-                                  Description="We ship to the European Union only."
-                                  DefaultValue="BitCountries.Brazil" />
-                <br />
-                <EditForm Model="validationModel" OnValidSubmit="() => validationSubmitted = true" novalidate>
-                    <DataAnnotationsValidator />
-                    <BitCountryPicker Label="Nationality"
-                                      Required
-                                      Placeholder="Select a country"
-                                      ShowValidationMessage
-                                      @bind-Value="validationModel.Nationality" />
-                    <br />
-                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                </EditForm>
-                @if (validationSubmitted)
-                {
-                    <div>Submitted: @validationModel.Nationality?.Name</div>
-                }
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Disabled & ReadOnly" RazorCode="@example11RazorCode" Id="example11">
-            <div>
-                <b>Disabled</b> dims the field and takes it out of the tab order. <b>ReadOnly</b> keeps it focusable and
-                its country readable while refusing to open the list; the field drops its caret.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Disabled" Disabled DefaultValue="BitCountries.Spain" />
-                <BitCountryPicker Label="ReadOnly" ReadOnly DefaultValue="BitCountries.Spain" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Variants" RazorCode="@example12RazorCode" Id="example12">
-            <div>
-                <b>NoBorder</b> removes the frame, and <b>Underlined</b> keeps only a bottom rule that thickens on focus.
-                <b>Background</b> and <b>Border</b> take the fill and the frame from the neutral color kinds, for a field
-                on a surface other than the primary one.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker NoBorder Placeholder="NoBorder" />
-                <BitCountryPicker Underlined Placeholder="Underlined" />
-            </div>
-            <br />
-            <div class="example-box cnp-kind-box">
-                <BitCountryPicker Background="BitColorKind.Primary" Placeholder="Background Primary" />
-                <BitCountryPicker Background="BitColorKind.Secondary" Placeholder="Background Secondary" />
-                <BitCountryPicker Background="BitColorKind.Tertiary" Placeholder="Background Tertiary" />
-                <BitCountryPicker Background="BitColorKind.Transparent" Placeholder="Background Transparent" />
-                <BitCountryPicker Border="BitColorKind.Tertiary" Placeholder="Border Tertiary" />
-                <BitCountryPicker Border="BitColorKind.Transparent" Background="BitColorKind.Secondary" Placeholder="Border Transparent" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Callout" RazorCode="@example13RazorCode" Id="example13">
-            <div>
-                <b>DropDirection</b> (<code>TopAndBottom</code> by default, or <code>All</code>) and <b>MaxHeight</b> place
-                and size the list. The arrow keys wrap at its ends unless <b>NoWrapNavigation</b> is set; Home, End,
-                Page Up and Page Down move through it too, and Escape or Alt+Up close it. <b>Responsive</b> turns it into
-                a full-height side panel on small screens, with the Label and a close button
-                (<b>ResponsiveCloseIconName</b>, <b>ResponsiveCloseButtonAriaLabel</b>) - narrow the window to see it.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="DropDirection All + MaxHeight 200"
-                                  MaxHeight="200"
-                                  DropDirection="BitDropDirection.All"
-                                  Placeholder="Select a country" />
-                <BitCountryPicker Label="NoWrapNavigation (open it and hold the up arrow)"
-                                  NoWrapNavigation
-                                  NoSearchBox
-                                  Placeholder="Select a country" />
-                <BitCountryPicker Label="Responsive" Responsive Placeholder="Select a country" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
-            <div>
-                <b>OnChange</b> reports the picked country, <b>OnOpen</b> / <b>OnClose</b> follow the list,
-                <b>OnSearch</b> reports the search term, and <b>OnFocus</b> / <b>OnBlur</b> follow the field.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Country"
-                                  Placeholder="Select a country"
-                                  OnChange="c => eventCountry = c"
-                                  OnSearch="s => searchedText = s"
-                                  OnOpen='() => calloutState = "opened"'
-                                  OnClose='() => calloutState = "closed"'
-                                  OnFocus='() => focusState = "focused"'
-                                  OnBlur='() => focusState = "blurred"' />
-                <div>Selected country: @eventCountry?.Name</div>
-                <div>Search text: @searchedText</div>
-                <div>Callout: @calloutState</div>
-                <div>Field: @focusState</div>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Programmatic control" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
-            <div>
-                <b>IsOpen</b> is two-way bindable, and a reference offers <b>OpenAsync</b>, <b>CloseAsync</b>,
-                <b>SelectCountryAsync</b> (which raises the same events picking it in the list does) and
-                <b>FocusAsync</b>.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker @ref="controlledPicker"
-                                  @bind-IsOpen="isCalloutOpen"
-                                  Label="Country"
-                                  Placeholder="Select a country" />
-            </div>
-            <br />
-            <BitStack Horizontal Wrap>
-                <BitButton OnClick="() => isCalloutOpen = !isCalloutOpen">Toggle the list</BitButton>
-                <BitButton OnClick="() => controlledPicker.SelectCountryAsync(BitCountries.Japan)">Select Japan</BitButton>
-                <BitButton OnClick="async () => await controlledPicker.FocusAsync()">Focus</BitButton>
-            </BitStack>
-            <br />
-            <div>IsOpen: @isCalloutOpen</div>
-        </DemoExample>
-
-        <DemoExample Title="Form submission" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
-            <div>
-                For a plain HTML form, <b>Name</b> posts the ISO 3166-1 alpha-2 code of the selected country through a
-                hidden field.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Name="country"
-                                  Label="Billing country"
-                                  Placeholder="Select a country"
-                                  @bind-Value="submissionCountry" />
-                <div>Posted as country: @submissionCountry?.Iso2</div>
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Localization" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
-            <div>
-                Every text the picker shows or announces can be translated. Country names come from <b>Countries</b>;
-                the search box and the empty result take <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and
-                <b>NoResultsText</b>; and <b>SearchResultsAnnouncement</b> phrases the result count a screen reader
-                hears.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Land"
-                                  Countries="germanCountries"
-                                  Placeholder="Land auswählen"
-                                  SearchBoxPlaceholder="Suchen"
-                                  SearchBoxAriaLabel="Land suchen"
-                                  NoResultsText="Kein Land gefunden"
-                                  SearchResultsAnnouncement="@(count => count == 1 ? "1 Land gefunden" : $"{count} Länder gefunden")" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Cascading parameters" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
-            <div>
-                <b>BitParams</b> hands a <b>BitCountryPickerParams</b> to every country picker under it - the app's
-                market, country list, look and translated texts, set once. The visitor's own country is
-                <code>BitCountries.FindByIso2(RegionInfo.CurrentRegion.TwoLetterISORegionName)</code>. A picker keeps any
-                parameter it sets itself. What belongs to one field only (Value, DefaultValue, IsOpen, Name, Invalid,
-                ErrorMessage and the events) is not cascaded.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitParams Parameters="@countryPickerParams">
-                    <BitCountryPicker Label="Takes the market and the list order" />
-                    <BitCountryPicker Label="So does this one" />
-                    <BitCountryPicker Label="Its own DefaultCountry, the cascaded rest" DefaultCountry="BitCountries.France" />
-                </BitParams>
-                <br />
-                <BitCountryPicker Label="Outside the cascade" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Accessibility" RazorCode="@example19RazorCode" Id="example19">
-            <div>
-                The field is a native button with the <code>combobox</code> role that pops up a <code>listbox</code>: it
-                reports <code>aria-expanded</code> and points at the list through <code>aria-controls</code> while it is
-                open. Each country is an <code>option</code> with <code>aria-selected</code>, kept out of the tab order.
-                The country the keys are on is not focused but named through <code>aria-activedescendant</code> - by the
-                search box, itself a combobox of the same list, or by the field when <b>NoSearchBox</b> is set - and
-                outlined on screen.
-            </div>
-            <br />
-            <div>
-                <b>Label</b> (or <b>LabelTemplate</b>) names the field and the list through <code>aria-labelledby</code>.
-                <b>AriaLabel</b> names both instead, for a field with no visible label; with neither, the field is read as
-                "Country" and the list as "Countries". The search box is named by <b>SearchBoxAriaLabel</b>, else
-                <b>SearchBoxPlaceholder</b>, else "Search countries". Flags and the caret are hidden from screen readers,
-                so each country is read by its name alone.
-            </div>
-            <br />
-            <div>
-                On the closed field:
-                <ul>
-                    <li>
-                        <b>Enter</b>, <b>Space</b>, <b>ArrowDown</b> and <b>ArrowUp</b> open the list on the selected
-                        country, or the first one; <b>Home</b> and <b>End</b> open it on the first and the last.
-                    </li>
-                    <li>
-                        A letter or a digit opens it with that character as the start of the search, or, with
-                        <b>NoSearchBox</b>, on the country whose name it starts.
-                    </li>
-                </ul>
-                In the open list:
-                <ul>
-                    <li>
-                        <b>ArrowDown</b> / <b>ArrowUp</b> move one country, wrapping around the ends unless
-                        <b>NoWrapNavigation</b> is set; <b>PageDown</b> / <b>PageUp</b> move ten and stop at the ends;
-                        <b>Home</b> / <b>End</b> jump to the first and the last country, except in the search box, where
-                        they move the caret.
-                    </li>
-                    <li>
-                        <b>Enter</b> picks the active country. <b>Space</b> does too when there is no search box to type
-                        it into, unless it falls inside a name being typed ahead.
-                    </li>
-                    <li>
-                        Without a search box, letters typed in quick succession move to the country whose name they
-                        start; after a pause of a second the next letter starts a new term.
-                    </li>
-                    <li>
-                        <b>Escape</b> closes the list. <b>Alt+ArrowUp</b> closes it too, picking the active country when
-                        there is no search box.
-                    </li>
-                    <li>
-                        <b>Tab</b>: the search box of the open list comes right after the field in the tab order. Tab out of
-                        the list moves on to what follows the field and closes it; <b>Shift+Tab</b> from the search box
-                        goes back to the field with the list still open, where the arrows and letters lead back into the
-                        search box. Without a search box, Tab closes the list and moves on.
-                    </li>
-                </ul>
-                Opening moves the focus into the search box; without one it stays on the field. Picking a country,
-                Escape, Alt+ArrowUp, a click outside the list and the close button of the <b>Responsive</b> panel all
-                return it to the field, and the list closes on its own once the focus has left both the field and the list.
-            </div>
-            <br />
-            <div>
-                A visually hidden polite live region says how many countries a search term leaves ("1 country found",
-                "12 countries found"), or reads <b>NoResultsText</b> when none is left; <b>SearchResultsAnnouncement</b>
-                rephrases the count. It also reads out an <b>ErrorMessage</b> when it appears, and the country picked from
-                a list without a search box, where the focus never leaves the field.
-            </div>
-            <br />
-            <div>
-                <b>Required</b> sets <code>aria-required</code>, and its asterisk carries empty alternative text so it is
-                not read out on top of that. <b>Invalid</b>, <b>ErrorMessage</b> and a failed EditForm validation set
-                <code>aria-invalid</code>, and <code>aria-describedby</code> points at the error message and the
-                <b>Description</b>. <b>Disabled</b> disables the native button, which takes it out of the tab order, and
-                adds <code>aria-disabled</code>; <b>ReadOnly</b> sets <code>aria-readonly</code> and keeps the field
-                focusable while refusing to open the list. In forced colors (Windows High Contrast) the selected, active
-                and hovered rows and the disabled field keep showing in system colors.
-            </div>
-            <br />
-            <div>
-                Try both with the keyboard alone: the first searches its list, the second has no visible label and types
-                ahead.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Label="Country of birth"
-                                  Required
-                                  Description="Arrow keys open the list, typing searches it, Enter picks."
-                                  Placeholder="Select a country" />
-                <BitCountryPicker AriaLabel="Country of citizenship"
-                                  NoSearchBox
-                                  Placeholder="Named by AriaLabel, no search box" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Color" RazorCode="@example20RazorCode" Id="example20">
-            <div>
-                <b>Color</b> paints the frame and the focus ring in one of the general colors - a semantic one or a
-                neutral family. A <b>Border</b> kind, when set, takes the frame back and leaves Color the ring.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Color="BitColor.Primary" Placeholder="Primary" />
-                <BitCountryPicker Color="BitColor.Secondary" Placeholder="Secondary" />
-                <BitCountryPicker Color="BitColor.Tertiary" Placeholder="Tertiary" />
-                <BitCountryPicker Color="BitColor.Info" Placeholder="Info" />
-                <BitCountryPicker Color="BitColor.Success" Placeholder="Success" />
-                <BitCountryPicker Color="BitColor.Warning" Placeholder="Warning" />
-                <BitCountryPicker Color="BitColor.SevereWarning" Placeholder="SevereWarning" />
-                <BitCountryPicker Color="BitColor.Error" Placeholder="Error" />
-                <BitCountryPicker Color="BitColor.PrimaryForeground" Placeholder="PrimaryForeground" />
-                <BitCountryPicker Color="BitColor.TertiaryBorder" Placeholder="TertiaryBorder" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="External Icons" RazorCode="@example21RazorCode" Id="example21">
-            <div>
-                <b>ResponsiveCloseIcon</b> takes the icon of the close button of the responsive panel from any CSS-class
-                based library (FontAwesome, Bootstrap Icons) as raw classes or through the <b>BitIconInfo</b> helpers, and
-                wins over <b>ResponsiveCloseIconName</b>. Reference the library's stylesheet in your app, and narrow the
-                window to see it.
-            </div>
-            <br />
-            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-            <div class="example-box">
-                <BitCountryPicker Responsive
-                                  Label="Country"
-                                  ResponsiveCloseIcon="@BitIconInfo.Css("fa-solid fa-xmark")"
-                                  Placeholder="Select a country" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22">
-            <div>
-                <b>Size</b> scales the height, padding, text, flags and list rows together.
-            </div>
-            <br />
-            <div class="example-box">
-                <BitCountryPicker Size="BitSize.Small" DefaultValue="BitCountries.UnitedStates" />
-                <BitCountryPicker Size="BitSize.Medium" DefaultValue="BitCountries.UnitedStates" />
-                <BitCountryPicker Size="BitSize.Large" DefaultValue="BitCountries.UnitedStates" />
-            </div>
-        </DemoExample>
-
-        <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CodeFiles="@example23CodeFiles" Id="example23">
-            <div>
-                The public <b>--bit-CountryPicker-*</b> custom properties (see the
-                <BitLink Href="#css-variables-section">CSS variables</BitLink> table) re-skin the field without a
-                selector: on <code>:root</code> for the whole app, on an ancestor for the pickers inside it, or in one
-                picker's <b>Style</b>. The country list is moved to the end of the body while it is open, yet it keeps
-                inheriting from the field and every ancestor of it, so a variable set in any of those places re-skins
-                the list as well. They restyle the default, not a choice: an explicit <b>Color</b>, <b>Background</b>,
-                <b>Border</b> or <b>Size</b> wins over the variables for what it sets.
-                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part by name.
-            </div>
-            <br />
-            <div class="example-box">
-                <div>CSS variables on one picker (open its list too):</div>
-                <BitCountryPicker DefaultValue="BitCountries.Netherlands"
-                                  Style="--bit-CountryPicker-radius: 1.5rem; --bit-CountryPicker-focus-color: #7c4dff; --bit-CountryPicker-item-selected-background: #ede7f6; --bit-CountryPicker-item-selected-color: #311b92; --bit-CountryPicker-callout-radius: 1rem;" />
-                <br />
-                <div>CSS variables on an ancestor (open its list too):</div>
-                <div class="cnp-brand-scope">
-                    <BitCountryPicker DefaultValue="BitCountries.Netherlands" />
+        <DemoTopic Title="Overview"
+                   Description="A country field with its label and description, binding the selected BitCountry, and the country it starts on.">
+            <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+                <div>
+                    The field opens a list of every country of <code>BitCountries.All</code>, each with its flag and name.
+                    <b>Placeholder</b> fills the field while no country is selected.
                 </div>
                 <br />
-                <div>Style, Class, Styles and Classes:</div>
-                <BitCountryPicker DefaultValue="BitCountries.Netherlands"
-                                  Style="width: 250px;"
-                                  Class="custom-class"
-                                  Styles="@(new() { Field = "border-color: blueviolet;", ItemName = "color: blueviolet;" })"
-                                  Classes="@(new() { Text = "custom-text" })" />
-            </div>
-        </DemoExample>
+                <div class="example-box">
+                    <BitCountryPicker Placeholder="Select a country" />
+                </div>
+            </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
-            <div>
-                <b>Dir="BitDir.Rtl"</b> mirrors the field, the callout and the responsive panel.
-            </div>
-            <br />
-            <div dir="rtl" class="example-box">
-                <BitCountryPicker Dir="BitDir.Rtl" Countries="persianCountries" Label="کشور" Placeholder="یک کشور انتخاب کنید" />
-            </div>
-        </DemoExample>
+            <DemoExample Title="Label & description" RazorCode="@example2RazorCode" Id="example2">
+                <div>
+                    <b>Label</b> (or <b>LabelTemplate</b>) names the field and its list; a click on it moves the focus to
+                    the field. <b>Required</b> adds the asterisk and <code>aria-required</code>. <b>Description</b> (or
+                    <b>DescriptionTemplate</b>) writes a hint under the field, tied to it through
+                    <code>aria-describedby</code>.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Country" Placeholder="Select a country" />
+                    <BitCountryPicker Label="Nationality" Required Placeholder="Select a country" />
+                    <BitCountryPicker Label="Country of residence"
+                                      Description="Where you have lived for the last six months."
+                                      Placeholder="Select a country" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+                <div>
+                    <b>Value</b> is the selected <b>BitCountry</b> and is two-way bindable, so everything a country carries -
+                    its name, its ISO codes, its emoji flag - is at hand the moment it is picked.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Country" Placeholder="Select a country" @bind-Value="boundCountry" />
+                    <div>Name: @boundCountry?.Name</div>
+                    <div>Iso2: @boundCountry?.Iso2</div>
+                    <div>Iso3: @boundCountry?.Iso3</div>
+                    <div>Emoji: @boundCountry?.Emoji</div>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="DefaultValue & DefaultCountry" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+                <div>
+                    An unbound picker starts on <b>DefaultValue</b>, and <b>OnChange</b> reports what is picked after it.
+                    <b>DefaultCountry</b> does the same when no DefaultValue is given - it is the one a cascade hands every
+                    picker under it as the market of the app. A bound Value is left as it is by both.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="DefaultValue"
+                                      DefaultValue="BitCountries.Canada"
+                                      OnChange="c => changedCountry = c" />
+                    <div>Changed to: @changedCountry?.Name</div>
+                    <br />
+                    <BitCountryPicker Label="DefaultCountry" DefaultCountry="BitCountries.Germany" />
+                </div>
+            </DemoExample>
+        </DemoTopic>
+
+        <DemoTopic Title="List & search" Route="list"
+                   Description="Replacing and trimming the list, preferred countries, the search box, the flags, and templates for the field and the rows.">
+            <DemoExample Title="Custom countries" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+                <div>
+                    <b>Countries</b> replaces the built-in list (<code>BitCountries.All</code>) and <b>ExcludeCountries</b>
+                    trims it.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Countries (five markets)" Countries="customCountries" Placeholder="Select a country" />
+                    <BitCountryPicker Label="ExcludeCountries (every country but these three)" ExcludeCountries="excludedCountries" Placeholder="Select a country" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Preferred countries" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+                <div>
+                    <b>PreferredCountries</b> pins countries to the top of the list, set apart from the rest by a rule.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Country" PreferredCountries="preferredCountries" Placeholder="Select a country" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Search box" RazorCode="@example7RazorCode" Id="example7">
+                <div>
+                    The search matches names (accents folded, word starts, so <code>united s</code> finds the United States)
+                    and ISO codes (<code>de</code>, <code>deu</code>), and the result count is announced to screen readers.
+                    Typing on the closed field opens it with the search already started. <b>SearchBoxPlaceholder</b>,
+                    <b>SearchBoxAriaLabel</b> and <b>NoResultsText</b> set its texts. <b>NoSearchBox</b> removes it; the
+                    field then answers to type-ahead, open or closed. The same letter typed again cycles through the
+                    countries starting with it, and what is typed is matched by the rules of the current culture: case is
+                    ignored, and so are the accents that culture treats as marks on a letter ("a" finds Åland Islands in
+                    English, but not in Swedish, where å is a letter of its own).
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Search box"
+                                      Placeholder="Select a country"
+                                      SearchBoxPlaceholder="Country or ISO code"
+                                      NoResultsText="No matching country" />
+                    <BitCountryPicker Label="NoSearchBox" NoSearchBox Placeholder="Select a country" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Flags" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+                <div>
+                    <b>NoFlags</b> leaves the flags out of the field and the list, and <b>FlagUrlSelector</b> serves them from
+                    your own source (returning null keeps the built-in one).
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="NoFlags" NoFlags DefaultValue="BitCountries.Japan" />
+                    <BitCountryPicker Label="FlagUrlSelector" FlagUrlSelector="GetFlagUrl" DefaultValue="BitCountries.Switzerland" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Templates" RazorCode="@example9RazorCode" Id="example9">
+                <div>
+                    <b>ValueTemplate</b> renders the content of the field from the selected country, <b>ItemTemplate</b>
+                    each row, and <b>NoResultsTemplate</b> the empty result.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Country" DefaultValue="BitCountries.Portugal">
+                        <ValueTemplate Context="country">
+                            <span>@(country is null ? "Pick one" : $"{country.Emoji} {country.Name} ({country.Iso3})")</span>
+                        </ValueTemplate>
+                        <ItemTemplate Context="country">
+                            <span>@country.Emoji</span>
+                            <span style="flex:1 1 0;overflow:hidden;text-overflow:ellipsis">@country.Name</span>
+                            <b>@country.Iso2</b>
+                        </ItemTemplate>
+                        <NoResultsTemplate>
+                            <span>🔍 nothing here</span>
+                        </NoResultsTemplate>
+                    </BitCountryPicker>
+                </div>
+            </DemoExample>
+        </DemoTopic>
+
+        <DemoTopic Title="Validation & states" Route="states"
+                   Description="Validation inside and outside an EditForm, disabled and read-only fields, the borderless and underlined variants, and placing and sizing the list.">
+            <DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+                <div>
+                    Inside an <b>EditForm</b> the data annotations validate the bound country and the field gets
+                    <code>aria-invalid</code>; <b>NoValidate</b> opts out. Outside a form, <b>Invalid</b> marks the field and
+                    <b>ErrorMessage</b> (or <b>ErrorMessageTemplate</b>) also writes the reason under it, referenced by
+                    <code>aria-describedby</code> and announced when it appears.
+                </div>
+                <br />
+                <div>
+                    <b>ShowValidationMessage</b> shows the messages of the form under the field, where <b>ErrorMessage</b>
+                    goes, so the form below needs no <b>ValidationMessage</b> component. The field is described by them
+                    through <code>aria-describedby</code>, so they are read out when it takes the focus, and an
+                    <b>ErrorMessage</b> of the app's own wins the place while it is set. They are not announced as they
+                    appear: a submit validates every field at once, and a message from each of them read out in a row
+                    would bury the form under its own errors. A <b>BitParams</b> holding a <b>BitCountryPickerParams</b>
+                    with <b>ShowValidationMessage</b> turns it on for every country picker inside it.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Invalid Label="Invalid" DefaultValue="BitCountries.Spain" />
+                    <BitCountryPicker Label="Shipping country"
+                                      ErrorMessage="We do not ship there yet."
+                                      Description="We ship to the European Union only."
+                                      DefaultValue="BitCountries.Brazil" />
+                    <br />
+                    <EditForm Model="validationModel" OnValidSubmit="() => validationSubmitted = true" novalidate>
+                        <DataAnnotationsValidator />
+                        <BitCountryPicker Label="Nationality"
+                                          Required
+                                          Placeholder="Select a country"
+                                          ShowValidationMessage
+                                          @bind-Value="validationModel.Nationality" />
+                        <br />
+                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    </EditForm>
+                    @if (validationSubmitted)
+                    {
+                        <div>Submitted: @validationModel.Nationality?.Name</div>
+                    }
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Disabled & ReadOnly" RazorCode="@example11RazorCode" Id="example11">
+                <div>
+                    <b>Disabled</b> dims the field and takes it out of the tab order. <b>ReadOnly</b> keeps it focusable and
+                    its country readable while refusing to open the list; the field drops its caret.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Disabled" Disabled DefaultValue="BitCountries.Spain" />
+                    <BitCountryPicker Label="ReadOnly" ReadOnly DefaultValue="BitCountries.Spain" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Variants" RazorCode="@example12RazorCode" Id="example12">
+                <div>
+                    <b>NoBorder</b> removes the frame, and <b>Underlined</b> keeps only a bottom rule that thickens on focus.
+                    <b>Background</b> and <b>Border</b> take the fill and the frame from the neutral color kinds, for a field
+                    on a surface other than the primary one.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker NoBorder Placeholder="NoBorder" />
+                    <BitCountryPicker Underlined Placeholder="Underlined" />
+                </div>
+                <br />
+                <div class="example-box cnp-kind-box">
+                    <BitCountryPicker Background="BitColorKind.Primary" Placeholder="Background Primary" />
+                    <BitCountryPicker Background="BitColorKind.Secondary" Placeholder="Background Secondary" />
+                    <BitCountryPicker Background="BitColorKind.Tertiary" Placeholder="Background Tertiary" />
+                    <BitCountryPicker Background="BitColorKind.Transparent" Placeholder="Background Transparent" />
+                    <BitCountryPicker Border="BitColorKind.Tertiary" Placeholder="Border Tertiary" />
+                    <BitCountryPicker Border="BitColorKind.Transparent" Background="BitColorKind.Secondary" Placeholder="Border Transparent" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Callout" RazorCode="@example13RazorCode" Id="example13">
+                <div>
+                    <b>DropDirection</b> (<code>TopAndBottom</code> by default, or <code>All</code>) and <b>MaxHeight</b> place
+                    and size the list. The arrow keys wrap at its ends unless <b>NoWrapNavigation</b> is set; Home, End,
+                    Page Up and Page Down move through it too, and Escape or Alt+Up close it. <b>Responsive</b> turns it into
+                    a full-height side panel on small screens, with the Label and a close button
+                    (<b>ResponsiveCloseIconName</b>, <b>ResponsiveCloseButtonAriaLabel</b>) - narrow the window to see it.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="DropDirection All + MaxHeight 200"
+                                      MaxHeight="200"
+                                      DropDirection="BitDropDirection.All"
+                                      Placeholder="Select a country" />
+                    <BitCountryPicker Label="NoWrapNavigation (open it and hold the up arrow)"
+                                      NoWrapNavigation
+                                      NoSearchBox
+                                      Placeholder="Select a country" />
+                    <BitCountryPicker Label="Responsive" Responsive Placeholder="Select a country" />
+                </div>
+            </DemoExample>
+        </DemoTopic>
+
+        <DemoTopic Title="Events, forms & accessibility" Route="events"
+                   Description="The events the picker raises, opening it and picking a country from code, posting it with a plain HTML form, translating its texts, and keyboard and screen-reader support.">
+            <DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+                <div>
+                    <b>OnChange</b> reports the picked country, <b>OnOpen</b> / <b>OnClose</b> follow the list,
+                    <b>OnSearch</b> reports the search term, and <b>OnFocus</b> / <b>OnBlur</b> follow the field.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Country"
+                                      Placeholder="Select a country"
+                                      OnChange="c => eventCountry = c"
+                                      OnSearch="s => searchedText = s"
+                                      OnOpen='() => calloutState = "opened"'
+                                      OnClose='() => calloutState = "closed"'
+                                      OnFocus='() => focusState = "focused"'
+                                      OnBlur='() => focusState = "blurred"' />
+                    <div>Selected country: @eventCountry?.Name</div>
+                    <div>Search text: @searchedText</div>
+                    <div>Callout: @calloutState</div>
+                    <div>Field: @focusState</div>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Programmatic control" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+                <div>
+                    <b>IsOpen</b> is two-way bindable, and a reference offers <b>OpenAsync</b>, <b>CloseAsync</b>,
+                    <b>SelectCountryAsync</b> (which raises the same events picking it in the list does) and
+                    <b>FocusAsync</b>.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker @ref="controlledPicker"
+                                      @bind-IsOpen="isCalloutOpen"
+                                      Label="Country"
+                                      Placeholder="Select a country" />
+                </div>
+                <br />
+                <BitStack Horizontal Wrap>
+                    <BitButton OnClick="() => isCalloutOpen = !isCalloutOpen">Toggle the list</BitButton>
+                    <BitButton OnClick="() => controlledPicker.SelectCountryAsync(BitCountries.Japan)">Select Japan</BitButton>
+                    <BitButton OnClick="async () => await controlledPicker.FocusAsync()">Focus</BitButton>
+                </BitStack>
+                <br />
+                <div>IsOpen: @isCalloutOpen</div>
+            </DemoExample>
+
+            <DemoExample Title="Form submission" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+                <div>
+                    For a plain HTML form, <b>Name</b> posts the ISO 3166-1 alpha-2 code of the selected country through a
+                    hidden field.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Name="country"
+                                      Label="Billing country"
+                                      Placeholder="Select a country"
+                                      @bind-Value="submissionCountry" />
+                    <div>Posted as country: @submissionCountry?.Iso2</div>
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Localization" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+                <div>
+                    Every text the picker shows or announces can be translated. Country names come from <b>Countries</b>;
+                    the search box and the empty result take <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and
+                    <b>NoResultsText</b>; and <b>SearchResultsAnnouncement</b> phrases the result count a screen reader
+                    hears.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Land"
+                                      Countries="germanCountries"
+                                      Placeholder="Land auswählen"
+                                      SearchBoxPlaceholder="Suchen"
+                                      SearchBoxAriaLabel="Land suchen"
+                                      NoResultsText="Kein Land gefunden"
+                                      SearchResultsAnnouncement="@(count => count == 1 ? "1 Land gefunden" : $"{count} Länder gefunden")" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Accessibility" RazorCode="@example18RazorCode" Id="example18">
+                <div>
+                    The field is a native button with the <code>combobox</code> role that pops up a <code>listbox</code>: it
+                    reports <code>aria-expanded</code> and points at the list through <code>aria-controls</code> while it is
+                    open. Each country is an <code>option</code> with <code>aria-selected</code>, kept out of the tab order.
+                    The country the keys are on is not focused but named through <code>aria-activedescendant</code> - by the
+                    search box, itself a combobox of the same list, or by the field when <b>NoSearchBox</b> is set - and
+                    outlined on screen.
+                </div>
+                <br />
+                <div>
+                    <b>Label</b> (or <b>LabelTemplate</b>) names the field and the list through <code>aria-labelledby</code>.
+                    <b>AriaLabel</b> names both instead, for a field with no visible label; with neither, the field is read as
+                    "Country" and the list as "Countries". The search box is named by <b>SearchBoxAriaLabel</b>, else
+                    <b>SearchBoxPlaceholder</b>, else "Search countries". Flags and the caret are hidden from screen readers,
+                    so each country is read by its name alone.
+                </div>
+                <br />
+                <div>
+                    On the closed field:
+                    <ul>
+                        <li>
+                            <b>Enter</b>, <b>Space</b>, <b>ArrowDown</b> and <b>ArrowUp</b> open the list on the selected
+                            country, or the first one; <b>Home</b> and <b>End</b> open it on the first and the last.
+                        </li>
+                        <li>
+                            A letter or a digit opens it with that character as the start of the search, or, with
+                            <b>NoSearchBox</b>, on the country whose name it starts.
+                        </li>
+                    </ul>
+                    In the open list:
+                    <ul>
+                        <li>
+                            <b>ArrowDown</b> / <b>ArrowUp</b> move one country, wrapping around the ends unless
+                            <b>NoWrapNavigation</b> is set; <b>PageDown</b> / <b>PageUp</b> move ten and stop at the ends;
+                            <b>Home</b> / <b>End</b> jump to the first and the last country, except in the search box, where
+                            they move the caret.
+                        </li>
+                        <li>
+                            <b>Enter</b> picks the active country. <b>Space</b> does too when there is no search box to type
+                            it into, unless it falls inside a name being typed ahead.
+                        </li>
+                        <li>
+                            Without a search box, letters typed in quick succession move to the country whose name they
+                            start; after a pause of a second the next letter starts a new term.
+                        </li>
+                        <li>
+                            <b>Escape</b> closes the list. <b>Alt+ArrowUp</b> closes it too, picking the active country when
+                            there is no search box.
+                        </li>
+                        <li>
+                            <b>Tab</b>: the search box of the open list comes right after the field in the tab order. Tab out of
+                            the list moves on to what follows the field and closes it; <b>Shift+Tab</b> from the search box
+                            goes back to the field with the list still open, where the arrows and letters lead back into the
+                            search box. Without a search box, Tab closes the list and moves on.
+                        </li>
+                    </ul>
+                    Opening moves the focus into the search box; without one it stays on the field. Picking a country,
+                    Escape, Alt+ArrowUp, a click outside the list and the close button of the <b>Responsive</b> panel all
+                    return it to the field, and the list closes on its own once the focus has left both the field and the list.
+                </div>
+                <br />
+                <div>
+                    A visually hidden polite live region says how many countries a search term leaves ("1 country found",
+                    "12 countries found"), or reads <b>NoResultsText</b> when none is left; <b>SearchResultsAnnouncement</b>
+                    rephrases the count. It also reads out an <b>ErrorMessage</b> when it appears, and the country picked from
+                    a list without a search box, where the focus never leaves the field.
+                </div>
+                <br />
+                <div>
+                    <b>Required</b> sets <code>aria-required</code>, and its asterisk carries empty alternative text so it is
+                    not read out on top of that. <b>Invalid</b>, <b>ErrorMessage</b> and a failed EditForm validation set
+                    <code>aria-invalid</code>, and <code>aria-describedby</code> points at the error message and the
+                    <b>Description</b>. <b>Disabled</b> disables the native button, which takes it out of the tab order, and
+                    adds <code>aria-disabled</code>; <b>ReadOnly</b> sets <code>aria-readonly</code> and keeps the field
+                    focusable while refusing to open the list. In forced colors (Windows High Contrast) the selected, active
+                    and hovered rows and the disabled field keep showing in system colors.
+                </div>
+                <br />
+                <div>
+                    Try both with the keyboard alone: the first searches its list, the second has no visible label and types
+                    ahead.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Label="Country of birth"
+                                      Required
+                                      Description="Arrow keys open the list, typing searches it, Enter picks."
+                                      Placeholder="Select a country" />
+                    <BitCountryPicker AriaLabel="Country of citizenship"
+                                      NoSearchBox
+                                      Placeholder="Named by AriaLabel, no search box" />
+                </div>
+            </DemoExample>
+        </DemoTopic>
+
+        <DemoTopic Title="Customization" Route="customization"
+                   Description="Defaults through BitParams, colors, external icons, sizes, styling every part of the picker, and right-to-left layouts.">
+            <DemoExample Title="Cascading parameters" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+                <div>
+                    <b>BitParams</b> hands a <b>BitCountryPickerParams</b> to every country picker under it - the app's
+                    market, country list, look and translated texts, set once. The visitor's own country is
+                    <code>BitCountries.FindByIso2(RegionInfo.CurrentRegion.TwoLetterISORegionName)</code>. A picker keeps any
+                    parameter it sets itself. What belongs to one field only (Value, DefaultValue, IsOpen, Name, Invalid,
+                    ErrorMessage and the events) is not cascaded.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitParams Parameters="@countryPickerParams">
+                        <BitCountryPicker Label="Takes the market and the list order" />
+                        <BitCountryPicker Label="So does this one" />
+                        <BitCountryPicker Label="Its own DefaultCountry, the cascaded rest" DefaultCountry="BitCountries.France" />
+                    </BitParams>
+                    <br />
+                    <BitCountryPicker Label="Outside the cascade" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Color" RazorCode="@example20RazorCode" Id="example20">
+                <div>
+                    <b>Color</b> paints the frame and the focus ring in one of the general colors - a semantic one or a
+                    neutral family. A <b>Border</b> kind, when set, takes the frame back and leaves Color the ring.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Color="BitColor.Primary" Placeholder="Primary" />
+                    <BitCountryPicker Color="BitColor.Secondary" Placeholder="Secondary" />
+                    <BitCountryPicker Color="BitColor.Tertiary" Placeholder="Tertiary" />
+                    <BitCountryPicker Color="BitColor.Info" Placeholder="Info" />
+                    <BitCountryPicker Color="BitColor.Success" Placeholder="Success" />
+                    <BitCountryPicker Color="BitColor.Warning" Placeholder="Warning" />
+                    <BitCountryPicker Color="BitColor.SevereWarning" Placeholder="SevereWarning" />
+                    <BitCountryPicker Color="BitColor.Error" Placeholder="Error" />
+                    <BitCountryPicker Color="BitColor.PrimaryForeground" Placeholder="PrimaryForeground" />
+                    <BitCountryPicker Color="BitColor.TertiaryBorder" Placeholder="TertiaryBorder" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="External Icons" RazorCode="@example21RazorCode" Id="example21">
+                <div>
+                    <b>ResponsiveCloseIcon</b> takes the icon of the close button of the responsive panel from any CSS-class
+                    based library (FontAwesome, Bootstrap Icons) as raw classes or through the <b>BitIconInfo</b> helpers, and
+                    wins over <b>ResponsiveCloseIconName</b>. Reference the library's stylesheet in your app, and narrow the
+                    window to see it.
+                </div>
+                <br />
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+                <div class="example-box">
+                    <BitCountryPicker Responsive
+                                      Label="Country"
+                                      ResponsiveCloseIcon="@BitIconInfo.Css("fa-solid fa-xmark")"
+                                      Placeholder="Select a country" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22">
+                <div>
+                    <b>Size</b> scales the height, padding, text, flags and list rows together.
+                </div>
+                <br />
+                <div class="example-box">
+                    <BitCountryPicker Size="BitSize.Small" DefaultValue="BitCountries.UnitedStates" />
+                    <BitCountryPicker Size="BitSize.Medium" DefaultValue="BitCountries.UnitedStates" />
+                    <BitCountryPicker Size="BitSize.Large" DefaultValue="BitCountries.UnitedStates" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CodeFiles="@example23CodeFiles" Id="example23">
+                <div>
+                    The public <b>--bit-CountryPicker-*</b> custom properties (see the
+                    <BitLink Href="/components/countrypicker/api#css-variables-section">CSS variables</BitLink> table) re-skin the field without a
+                    selector: on <code>:root</code> for the whole app, on an ancestor for the pickers inside it, or in one
+                    picker's <b>Style</b>. The country list is moved to the end of the body while it is open, yet it keeps
+                    inheriting from the field and every ancestor of it, so a variable set in any of those places re-skins
+                    the list as well. They restyle the default, not a choice: an explicit <b>Color</b>, <b>Background</b>,
+                    <b>Border</b> or <b>Size</b> wins over the variables for what it sets.
+                    <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part by name.
+                </div>
+                <br />
+                <div class="example-box">
+                    <div>CSS variables on one picker (open its list too):</div>
+                    <BitCountryPicker DefaultValue="BitCountries.Netherlands"
+                                      Style="--bit-CountryPicker-radius: 1.5rem; --bit-CountryPicker-focus-color: #7c4dff; --bit-CountryPicker-item-selected-background: #ede7f6; --bit-CountryPicker-item-selected-color: #311b92; --bit-CountryPicker-callout-radius: 1rem;" />
+                    <br />
+                    <div>CSS variables on an ancestor (open its list too):</div>
+                    <div class="cnp-brand-scope">
+                        <BitCountryPicker DefaultValue="BitCountries.Netherlands" />
+                    </div>
+                    <br />
+                    <div>Style, Class, Styles and Classes:</div>
+                    <BitCountryPicker DefaultValue="BitCountries.Netherlands"
+                                      Style="width: 250px;"
+                                      Class="custom-class"
+                                      Styles="@(new() { Field = "border-color: blueviolet;", ItemName = "color: blueviolet;" })"
+                                      Classes="@(new() { Text = "custom-text" })" />
+                </div>
+            </DemoExample>
+
+            <DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+                <div>
+                    <b>Dir="BitDir.Rtl"</b> mirrors the field, the callout and the responsive panel.
+                </div>
+                <br />
+                <div dir="rtl" class="example-box">
+                    <BitCountryPicker Dir="BitDir.Rtl" Countries="persianCountries" Label="کشور" Placeholder="یک کشور انتخاب کنید" />
+                </div>
+            </DemoExample>
+        </DemoTopic>
+
     </Examples>
 </DemoPage>

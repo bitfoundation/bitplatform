@@ -1,4 +1,5 @@
 ﻿@page "/components/markdownviewer"
+@page "/components/markdownviewer/{Topic}"
 
 <PageOutlet Url="components/markdownviewer"
             Title="MarkdownViewer"
@@ -6,6 +7,8 @@
 
 <div class="markdownviewer-demo">
     <DemoPage Name="MarkdownViewer"
+              HasTopics
+              Topic="@Topic"
               Description="BitMarkdownViewer parses Markdown into an AST and renders it straight to the Blazor render tree - no JavaScript interop, no third-party packages. Composable pipelines add exactly the flavors a document needs, untrusted input is sanitized and bounded by default, and the parsed tree, the rendering of any node and the words the renderers write are all yours to change."
               SecondaryNames="@(["MdViewer", "MD"])"
               Parameters="componentParameters"
@@ -22,361 +25,376 @@
         </NotesTemplate>
 
         <Examples>
-            <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
-                <div>
-                    Assign the source to <b>Markdown</b>. With no <b>Pipeline</b> only the CommonMark core is understood:
-                    headings, emphasis, links and images (reference links too), lists, block quotes, code and character
-                    references - the safest starting point for untrusted content.
-                </div>
-                <br />
-                <BitMarkdownViewer Markdown="@basicMarkdown" />
-            </DemoExample>
-
-            <DemoExample Title="GitHub flavored" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
-                <div>
-                    <b>BitMarkdownPipelines.GitHub</b> adds pipe tables, strikethrough, task lists, autolink literals,
-                    footnotes and alerts. An alert's kind is written out as its title beside its icon, so it does not rely on color.
-                </div>
-                <br />
-                <BitMarkdownViewer Markdown="@gitHubMarkdown" Pipeline="BitMarkdownPipelines.GitHub" />
-            </DemoExample>
-
-            <DemoExample Title="Custom pipeline" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-                <div>
-                    Compose exactly the flavors you want with <b>BitMarkdownPipelineBuilder</b>
-                    (<b>BitMarkdownPipelines.Advanced</b> is the ready-made superset). A built pipeline is immutable and
-                    thread-safe: build it once, as a field or a singleton - a new one on every render re-parses every time.
-                </div>
-                <br />
-                <BitMarkdownViewer Markdown="@customMarkdown" Pipeline="customPipeline" />
-            </DemoExample>
-
-            <DemoExample Title="Typography" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-                <div>
-                    <b>UseEmphasisExtras()</b> adds <code>~sub~</code>, <code>^sup^</code>, <code>++ins++</code> and
-                    <code>==mark==</code> as real elements; <b>UseSmartyPants()</b> curls quotes and turns <code>--</code>,
-                    <code>---</code> and <code>...</code> into dashes and an ellipsis. Code is never rewritten.
-                </div>
-                <br />
-                <BitMarkdownViewer Markdown="@typographyMarkdown" Pipeline="@typographyPipeline" />
-            </DemoExample>
-
-            <DemoExample Title="Line breaks" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-                <div>
-                    Markdown reflows a single newline into the paragraph. <b>UseSoftLineAsHardLine()</b> makes every newline
-                    a break - what a chat or comment box expects.
-                </div>
-                <br />
-                <div class="mdv-columns">
-                    <div class="mdv-column">
-                        <div class="mdv-column-title">Default</div>
-                        <BitMarkdownViewer Markdown="@lineBreaksMarkdown" />
+            <DemoTopic Title="Overview"
+                       Description="Rendering CommonMark, the GitHub flavor, and composing a pipeline of your own.">
+                <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+                    <div>
+                        Assign the source to <b>Markdown</b>. With no <b>Pipeline</b> only the CommonMark core is understood:
+                        headings, emphasis, links and images (reference links too), lists, block quotes, code and character
+                        references - the safest starting point for untrusted content.
                     </div>
-                    <div class="mdv-column">
-                        <div class="mdv-column-title">UseSoftLineAsHardLine()</div>
-                        <BitMarkdownViewer Markdown="@lineBreaksMarkdown" Pipeline="@softBreakPipeline" />
+                    <br />
+                    <BitMarkdownViewer Markdown="@basicMarkdown" />
+                </DemoExample>
+
+                <DemoExample Title="GitHub flavored" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+                    <div>
+                        <b>BitMarkdownPipelines.GitHub</b> adds pipe tables, strikethrough, task lists, autolink literals,
+                        footnotes and alerts. An alert's kind is written out as its title beside its icon, so it does not rely on color.
                     </div>
-                </div>
-            </DemoExample>
+                    <br />
+                    <BitMarkdownViewer Markdown="@gitHubMarkdown" Pipeline="BitMarkdownPipelines.GitHub" />
+                </DemoExample>
 
-            <DemoExample Title="Front matter" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
-                <div>
-                    <b>UseFrontMatter()</b> reads a leading <code>---</code> (YAML) or <code>+++</code> (TOML) block into a
-                    node that renders nothing, instead of a rule and a heading. <b>OnParsed</b> hands over the parsed
-                    document, and <b>BitMarkdownFrontMatterNode.Find</b> reads the block's raw text out of it.
-                </div>
-                <br />
-                <div class="mdv-columns">
-                    <div class="mdv-column">
-                        <div class="mdv-column-title">Default</div>
-                        <BitMarkdownViewer Markdown="@frontMatterMarkdown" />
+                <DemoExample Title="Custom pipeline" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+                    <div>
+                        Compose exactly the flavors you want with <b>BitMarkdownPipelineBuilder</b>
+                        (<b>BitMarkdownPipelines.Advanced</b> is the ready-made superset). A built pipeline is immutable and
+                        thread-safe: build it once, as a field or a singleton - a new one on every render re-parses every time.
                     </div>
-                    <div class="mdv-column">
-                        <div class="mdv-column-title">UseFrontMatter()</div>
-                        <BitMarkdownViewer Markdown="@frontMatterMarkdown" Pipeline="@frontMatterPipeline" OnParsed="HandleFrontMatterParsed" />
-                        <div class="mdv-hint">Metadata read from the AST: @frontMatterText</div>
+                    <br />
+                    <BitMarkdownViewer Markdown="@customMarkdown" Pipeline="customPipeline" />
+                </DemoExample>
+            </DemoTopic>
+
+            <DemoTopic Title="Syntax extensions" Route="extensions"
+                       Description="Typography, line breaks, front matter, containers, definition lists, abbreviations and figures, and mathematics.">
+                <DemoExample Title="Typography" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+                    <div>
+                        <b>UseEmphasisExtras()</b> adds <code>~sub~</code>, <code>^sup^</code>, <code>++ins++</code> and
+                        <code>==mark==</code> as real elements; <b>UseSmartyPants()</b> curls quotes and turns <code>--</code>,
+                        <code>---</code> and <code>...</code> into dashes and an ellipsis. Code is never rewritten.
                     </div>
-                </div>
-            </DemoExample>
+                    <br />
+                    <BitMarkdownViewer Markdown="@typographyMarkdown" Pipeline="@typographyPipeline" />
+                </DemoExample>
 
-            <DemoExample Title="Containers" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-                <div>
-                    <b>UseContainers()</b> adds <code>:::</code> fences: the word after the fence becomes the class, the rest
-                    of the line the title. <code>note</code>, <code>info</code>, <code>tip</code>, <code>success</code>,
-                    <code>warning</code>, <code>caution</code> and <code>danger</code> are pre-styled,
-                    <code>details</code> renders a real collapsible <code>&lt;details&gt;</code>, and containers nest.
-                </div>
-                <br />
-                <BitMarkdownViewer Markdown="@containersMarkdown" Pipeline="@containersPipeline" />
-            </DemoExample>
-
-            <DemoExample Title="Definition lists, abbreviations & figures" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-                <div>
-                    Three documentation flavors that map to real HTML: <b>UseDefinitionLists()</b> (a term, then
-                    <code>: its definition</code>), <b>UseAbbreviations()</b> (<code>*[HTML]: ...</code> expands every
-                    whole-word use into an <code>&lt;abbr&gt;</code>) and <b>UseFigures()</b> (a titled image on its own
-                    becomes a <code>&lt;figure&gt;</code> captioned by its title, never by its alt text).
-                </div>
-                <br />
-                <BitMarkdownViewer Markdown="@documentationMarkdown" Pipeline="@documentationPipeline" />
-            </DemoExample>
-
-            <DemoExample Title="Mathematics" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
-                <div>
-                    <b>UseMathematics()</b> keeps <code>$inline$</code> and <code>$$display$$</code> TeX verbatim - safe from
-                    emphasis - in <code>.math-inline</code> / <code>.math-display</code> elements, and leaves prices such as
-                    <code>$5</code> alone. Typesetting is the page's choice: here KaTeX renders each element after the
-                    viewer draws it.
-                </div>
-                <br />
-                <div class="mdv-columns">
-                    <div class="mdv-column">
-                        <div class="mdv-column-title">No typesetter</div>
-                        <BitMarkdownViewer Markdown="@mathMarkdown" Pipeline="@mathPipeline" />
+                <DemoExample Title="Line breaks" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+                    <div>
+                        Markdown reflows a single newline into the paragraph. <b>UseSoftLineAsHardLine()</b> makes every newline
+                        a break - what a chat or comment box expects.
                     </div>
-                    <div class="mdv-column">
-                        <div class="mdv-column-title">KaTeX</div>
-                        <KatexTypesetter>
-                            <BitMarkdownViewer Markdown="@mathMarkdown" Pipeline="@mathPipeline" />
-                        </KatexTypesetter>
-                    </div>
-                </div>
-            </DemoExample>
-
-            <DemoExample Title="Untrusted content" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
-                <div>
-                    <b>ImageRendering</b> decides which images may load - a remote image leaks whatever its URL encodes the
-                    moment it renders. <b>SameOrigin</b> (default) blocks cross-origin images, <b>None</b> blocks all,
-                    <b>All</b> is for trusted sources. <b>StripBidiControlCharacters</b> defeats "Trojan Source" spoofing,
-                    <b>MaxLength</b> caps the parsed source and <b>MaxNestingDepth</b> (100) bounds nesting.
-                </div>
-                <br />
-                <div class="mdv-toolbar">
-                    <span class="mdv-label">ImageRendering:</span>
-                    @foreach (var mode in imageRenderingModes)
-                    {
-                        <BitButton Size="BitSize.Small"
-                                   aria-pressed="@(imageRendering == mode ? "true" : "false")"
-                                   Variant="@(imageRendering == mode ? BitVariant.Fill : BitVariant.Outline)"
-                                   OnClick="@(() => imageRendering = mode)">@mode</BitButton>
-                    }
-                </div>
-                <BitMarkdownViewer Markdown="@untrustedMarkdown"
-                                   Pipeline="BitMarkdownPipelines.GitHub"
-                                   ImageRendering="@imageRendering"
-                                   StripBidiControlCharacters="true"
-                                   MaxLength="100000" />
-            </DemoExample>
-
-            <DemoExample Title="Headings & table of contents" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-                <div>
-                    <b>UseAutoIdentifiers(anchorLinks: true)</b> gives every heading a slug id and a permalink shown on hover
-                    or focus; ending a heading with <code>{#id}</code> pins an id that survives rewording. The parsed tree
-                    (<b>OnParsed</b>, or <b>Document</b> afterwards) is walked with <b>BitMarkdownAstHelper.Descendants</b>
-                    for a table of contents, and <b>ToPlainText</b> gives the text for an excerpt or a search index. Under
-                    a sticky app bar, <b>--bit-MarkdownViewer-scroll-margin</b> keeps the heading a link lands on in view.
-                </div>
-                <br />
-                <div class="mdv-toc-layout">
-                    <nav class="mdv-toc" aria-label="On this page">
-                        <div class="mdv-toc-title">On this page</div>
-                        @foreach (var entry in tocEntries)
-                        {
-                            <BitLink Class="@($"mdv-toc-item mdv-toc-level-{entry.Level}")" Href="@($"#{entry.Id}")">@entry.Text</BitLink>
-                        }
-                    </nav>
-                    <BitMarkdownViewer Markdown="@tocMarkdown" Pipeline="@tocPipeline" OnParsed="HandleTocParsed" />
-                </div>
-                <div class="mdv-hint">Excerpt: @tocExcerpt</div>
-            </DemoExample>
-
-            <DemoExample Title="Links & URLs" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-                <div>
-                    By default an external link opens in a new tab with <code>rel="noopener noreferrer"</code>, and its
-                    accessible name says so.
-                    <b>UseLinkOptions()</b> changes that - here external links stay in the tab and are marked
-                    <code>nofollow ugc</code>, as user-written links should be. <b>UseBaseUrl()</b> resolves relative
-                    destinations (a README's images) against an address; <b>UseUrlRewriter()</b> is the general form, and
-                    whatever it returns is sanitized again.
-                </div>
-                <br />
-                <div class="mdv-columns">
-                    <div class="mdv-column">
-                        <div class="mdv-column-title">UseLinkOptions(...)</div>
-                        <BitMarkdownViewer Markdown="@linkPolicyMarkdown" Pipeline="@linkPolicyPipeline" />
-                    </div>
-                    <div class="mdv-column">
-                        <div class="mdv-column-title">UseBaseUrl(...)</div>
-                        <BitMarkdownViewer Markdown="@baseUrlMarkdown" Pipeline="@baseUrlPipeline" />
-                    </div>
-                </div>
-            </DemoExample>
-
-            <DemoExample Title="Inline" RazorCode="@example13RazorCode" Id="example13">
-                <div>
-                    <b>Inline</b> renders the root as a <code>span</code> without the paragraph wrappers, so a short piece of
-                    Markdown can sit inside a sentence, a table cell or a label. Other blocks still render; a document
-                    holding one keeps a <code>div</code> laid out inline.
-                </div>
-                <br />
-                <div>
-                    Formatting a value in place:
-                    <BitMarkdownViewer Inline Markdown="@("the **fastest** path is `Span<T>` - [read why](https://learn.microsoft.com/dotnet/api/system.span-1)")" />
-                </div>
-            </DemoExample>
-
-            <DemoExample Title="Templates" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" CodeFiles="@example14CodeFiles" Id="example14">
-                <div>
-                    <b>CodeBlockTemplate</b>, <b>ImageTemplate</b> and <b>LinkTemplate</b> draw those nodes with your own
-                    markup - a highlighter, a copy button, a lightbox, a router-aware link. They run after URL sanitizing and
-                    the <b>ImageRendering</b> policy, and their output is outside the viewer's stylesheet, so a component
-                    keeps its own look.
-                </div>
-                <br />
-                <BitMarkdownViewer Markdown="@templatesMarkdown" Pipeline="BitMarkdownPipelines.GitHub">
-                    <CodeBlockTemplate>
-                        <div class="mdv-code-card">
-                            <div class="mdv-code-card-head">
-                                <span>@(context.Info ?? "text")</span>
-                                <BitButton Size="BitSize.Small" Variant="BitVariant.Text"
-                                           IconName="@(copiedBlock == context ? BitIconName.CheckMark : BitIconName.Copy)"
-                                           AriaLabel="@(copiedBlock == context ? "Copied" : "Copy code")"
-                                           OnClick="@(() => CopyCodeAsync(context))" />
-                            </div>
-                            <pre tabindex="0"><code>@context.Content</code></pre>
+                    <br />
+                    <div class="mdv-columns">
+                        <div class="mdv-column">
+                            <div class="mdv-column-title">Default</div>
+                            <BitMarkdownViewer Markdown="@lineBreaksMarkdown" />
                         </div>
-                    </CodeBlockTemplate>
-                    <LinkTemplate>
-                        <BitLink Href="@context.Url" Target="_blank" Rel="BitLinkRels.NoReferrer">
-                            @BitMarkdownInlineHelpers.PlainText(context.Children)
-                            <BitIcon IconName="@BitIconName.NavigateExternalInline" AriaLabel="opens in a new tab" />
-                        </BitLink>
-                    </LinkTemplate>
-                </BitMarkdownViewer>
-            </DemoExample>
+                        <div class="mdv-column">
+                            <div class="mdv-column-title">UseSoftLineAsHardLine()</div>
+                            <BitMarkdownViewer Markdown="@lineBreaksMarkdown" Pipeline="@softBreakPipeline" />
+                        </div>
+                    </div>
+                </DemoExample>
 
-            <DemoExample Title="Interactive task lists" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
-                <div>
-                    Handling <b>OnTaskChanged</b> enables the checkboxes: a tick reports the index, the new state and the
-                    source rewritten to match, so storing it is one assignment. Each box is named after its item's text,
-                    and a disabled viewer keeps them read-only.
-                </div>
-                <br />
-                <BitCheckbox Label="Disabled" @bind-Value="tasksDisabled" />
-                <br />
-                <BitMarkdownViewer Markdown="@taskListMarkdown"
-                                   Pipeline="BitMarkdownPipelines.GitHub"
-                                   Disabled="tasksDisabled"
-                                   OnTaskChanged="HandleTaskChanged" />
-                <div class="mdv-hint">@taskListStatus</div>
-            </DemoExample>
+                <DemoExample Title="Front matter" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+                    <div>
+                        <b>UseFrontMatter()</b> reads a leading <code>---</code> (YAML) or <code>+++</code> (TOML) block into a
+                        node that renders nothing, instead of a rule and a heading. <b>OnParsed</b> hands over the parsed
+                        document, and <b>BitMarkdownFrontMatterNode.Find</b> reads the block's raw text out of it.
+                    </div>
+                    <br />
+                    <div class="mdv-columns">
+                        <div class="mdv-column">
+                            <div class="mdv-column-title">Default</div>
+                            <BitMarkdownViewer Markdown="@frontMatterMarkdown" />
+                        </div>
+                        <div class="mdv-column">
+                            <div class="mdv-column-title">UseFrontMatter()</div>
+                            <BitMarkdownViewer Markdown="@frontMatterMarkdown" Pipeline="@frontMatterPipeline" OnParsed="HandleFrontMatterParsed" />
+                            <div class="mdv-hint">Metadata read from the AST: @frontMatterText</div>
+                        </div>
+                    </div>
+                </DemoExample>
 
-            <DemoExample Title="Localization" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
-                <div>
-                    The few words the renderers write themselves - alert titles, footnote back-links, the names of a table's
-                    scroll region, a permalink or a task box, the new-tab notice of a link - default to English. <b>UseStrings()</b> replaces them per
-                    pipeline; the numbered ones take their number through <code>{0}</code>.
-                </div>
-                <br />
-                <BitMarkdownViewer Markdown="@localizedMarkdown" Pipeline="@localizedPipeline" />
-            </DemoExample>
+                <DemoExample Title="Containers" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+                    <div>
+                        <b>UseContainers()</b> adds <code>:::</code> fences: the word after the fence becomes the class, the rest
+                        of the line the title. <code>note</code>, <code>info</code>, <code>tip</code>, <code>success</code>,
+                        <code>warning</code>, <code>caution</code> and <code>danger</code> are pre-styled,
+                        <code>details</code> renders a real collapsible <code>&lt;details&gt;</code>, and containers nest.
+                    </div>
+                    <br />
+                    <BitMarkdownViewer Markdown="@containersMarkdown" Pipeline="@containersPipeline" />
+                </DemoExample>
 
-            <DemoExample Title="Accessibility" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
-                <div>
-                    <b>HeadingLevelOffset</b> nests the document's outline under the page's own: here <code>#</code> renders
-                    as an <code>h4</code> under the card's <code>h3</code>. <b>AriaLabel</b> names the document and makes it
-                    a region. <b>HeadingIdPrefix</b> keeps its heading ids, and the links to them, apart from every other
-                    comment's. Links are underlined and tell a screen reader when they open a new tab; code blocks and wide
-                    tables are keyboard-scrollable; in-page links keep working under <code>&lt;base href&gt;</code>.
-                </div>
-                <br />
-                <div class="mdv-comment">
-                    <h3 class="mdv-comment-title">Comment by Sam</h3>
-                    <BitMarkdownViewer Markdown="@commentMarkdown"
-                                       Pipeline="BitMarkdownPipelines.Advanced"
-                                       HeadingLevelOffset="3"
-                                       HeadingIdPrefix="comment-42-"
-                                       AriaLabel="Comment by Sam" />
-                </div>
-            </DemoExample>
+                <DemoExample Title="Definition lists, abbreviations & figures" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+                    <div>
+                        Three documentation flavors that map to real HTML: <b>UseDefinitionLists()</b> (a term, then
+                        <code>: its definition</code>), <b>UseAbbreviations()</b> (<code>*[HTML]: ...</code> expands every
+                        whole-word use into an <code>&lt;abbr&gt;</code>) and <b>UseFigures()</b> (a titled image on its own
+                        becomes a <code>&lt;figure&gt;</code> captioned by its title, never by its alt text).
+                    </div>
+                    <br />
+                    <BitMarkdownViewer Markdown="@documentationMarkdown" Pipeline="@documentationPipeline" />
+                </DemoExample>
 
-            <DemoExample Title="Playground" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
-                <div>
-                    Everything above, live: type on the left and switch the flavor to see the same source under the three
-                    ready-made pipelines.
-                </div>
-                <br />
-                <div class="mdv-playground">
+                <DemoExample Title="Mathematics" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
+                    <div>
+                        <b>UseMathematics()</b> keeps <code>$inline$</code> and <code>$$display$$</code> TeX verbatim - safe from
+                        emphasis - in <code>.math-inline</code> / <code>.math-display</code> elements, and leaves prices such as
+                        <code>$5</code> alone. Typesetting is the page's choice: here KaTeX renders each element after the
+                        viewer draws it.
+                    </div>
+                    <br />
+                    <div class="mdv-columns">
+                        <div class="mdv-column">
+                            <div class="mdv-column-title">No typesetter</div>
+                            <BitMarkdownViewer Markdown="@mathMarkdown" Pipeline="@mathPipeline" />
+                        </div>
+                        <div class="mdv-column">
+                            <div class="mdv-column-title">KaTeX</div>
+                            <KatexTypesetter>
+                                <BitMarkdownViewer Markdown="@mathMarkdown" Pipeline="@mathPipeline" />
+                            </KatexTypesetter>
+                        </div>
+                    </div>
+                </DemoExample>
+            </DemoTopic>
+
+            <DemoTopic Title="Safety, headings & links" Route="safety"
+                       Description="Rendering untrusted content, heading ids and a table of contents, and how links and URLs are written.">
+                <DemoExample Title="Untrusted content" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+                    <div>
+                        <b>ImageRendering</b> decides which images may load - a remote image leaks whatever its URL encodes the
+                        moment it renders. <b>SameOrigin</b> (default) blocks cross-origin images, <b>None</b> blocks all,
+                        <b>All</b> is for trusted sources. <b>StripBidiControlCharacters</b> defeats "Trojan Source" spoofing,
+                        <b>MaxLength</b> caps the parsed source and <b>MaxNestingDepth</b> (100) bounds nesting.
+                    </div>
+                    <br />
                     <div class="mdv-toolbar">
-                        <span class="mdv-label">Flavor:</span>
-                        @foreach (var flavor in Enum.GetValues<MarkdownFlavor>())
+                        <span class="mdv-label">ImageRendering:</span>
+                        @foreach (var mode in imageRenderingModes)
                         {
                             <BitButton Size="BitSize.Small"
-                                       aria-pressed="@(playgroundFlavor == flavor ? "true" : "false")"
-                                       Variant="@(playgroundFlavor == flavor ? BitVariant.Fill : BitVariant.Outline)"
-                                       OnClick="@(() => SetPlaygroundFlavor(flavor))">@flavor</BitButton>
+                                       aria-pressed="@(imageRendering == mode ? "true" : "false")"
+                                       Variant="@(imageRendering == mode ? BitVariant.Fill : BitVariant.Outline)"
+                                       OnClick="@(() => imageRendering = mode)">@mode</BitButton>
                         }
-                        <span class="mdv-spacer"></span>
-                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="ResetPlaygroundSample">Reset sample</BitButton>
-                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="@(() => playgroundMarkdown = string.Empty)">Clear</BitButton>
                     </div>
+                    <BitMarkdownViewer Markdown="@untrustedMarkdown"
+                                       Pipeline="BitMarkdownPipelines.GitHub"
+                                       ImageRendering="@imageRendering"
+                                       StripBidiControlCharacters="true"
+                                       MaxLength="100000" />
+                </DemoExample>
 
-                    <div class="mdv-hint">@playgroundHint</div>
+                <DemoExample Title="Headings & table of contents" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+                    <div>
+                        <b>UseAutoIdentifiers(anchorLinks: true)</b> gives every heading a slug id and a permalink shown on hover
+                        or focus; ending a heading with <code>{#id}</code> pins an id that survives rewording. The parsed tree
+                        (<b>OnParsed</b>, or <b>Document</b> afterwards) is walked with <b>BitMarkdownAstHelper.Descendants</b>
+                        for a table of contents, and <b>ToPlainText</b> gives the text for an excerpt or a search index. Under
+                        a sticky app bar, <b>--bit-MarkdownViewer-scroll-margin</b> keeps the heading a link lands on in view.
+                    </div>
+                    <br />
+                    <div class="mdv-toc-layout">
+                        <nav class="mdv-toc" aria-label="On this page">
+                            <div class="mdv-toc-title">On this page</div>
+                            @foreach (var entry in tocEntries)
+                            {
+                                <BitLink Class="@($"mdv-toc-item mdv-toc-level-{entry.Level}")" Href="@($"#{entry.Id}")">@entry.Text</BitLink>
+                            }
+                        </nav>
+                        <BitMarkdownViewer Markdown="@tocMarkdown" Pipeline="@tocPipeline" OnParsed="HandleTocParsed" />
+                    </div>
+                    <div class="mdv-hint">Excerpt: @tocExcerpt</div>
+                </DemoExample>
 
-                    <div class="mdv-split">
-                        <textarea class="mdv-editor" spellcheck="false" aria-label="Markdown source" @bind="playgroundMarkdown" @bind:event="oninput"></textarea>
-                        <div class="mdv-preview">
-                            <BitMarkdownViewer Markdown="@playgroundMarkdown"
-                                               Pipeline="@playgroundPipeline"
-                                               AriaLabel="Preview"
-                                               StripBidiControlCharacters="true"
-                                               MaxLength="100000" />
+                <DemoExample Title="Links & URLs" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+                    <div>
+                        By default an external link opens in a new tab with <code>rel="noopener noreferrer"</code>, and its
+                        accessible name says so.
+                        <b>UseLinkOptions()</b> changes that - here external links stay in the tab and are marked
+                        <code>nofollow ugc</code>, as user-written links should be. <b>UseBaseUrl()</b> resolves relative
+                        destinations (a README's images) against an address; <b>UseUrlRewriter()</b> is the general form, and
+                        whatever it returns is sanitized again.
+                    </div>
+                    <br />
+                    <div class="mdv-columns">
+                        <div class="mdv-column">
+                            <div class="mdv-column-title">UseLinkOptions(...)</div>
+                            <BitMarkdownViewer Markdown="@linkPolicyMarkdown" Pipeline="@linkPolicyPipeline" />
+                        </div>
+                        <div class="mdv-column">
+                            <div class="mdv-column-title">UseBaseUrl(...)</div>
+                            <BitMarkdownViewer Markdown="@baseUrlMarkdown" Pipeline="@baseUrlPipeline" />
                         </div>
                     </div>
-                </div>
-            </DemoExample>
+                </DemoExample>
+            </DemoTopic>
 
-            <DemoExample Title="Cascading parameters" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
-                <div>
-                    <b>BitParams</b> with a <b>BitMarkdownViewerParams</b> sets defaults (pipeline, input limits, templates,
-                    styles) for every viewer under it - one place for a site's flavors and its highlighter. A viewer's own
-                    value wins: the second one keeps the Basic pipeline.
-                </div>
-                <br />
-                <BitParams Parameters="markdownViewerParams">
-                    <BitMarkdownViewer Markdown="@cascadingMarkdown" />
+            <DemoTopic Title="Rendering & interaction" Route="rendering"
+                       Description="Inline rendering, templates for code blocks, images and links, interactive task lists, localized strings, accessibility, and a live playground.">
+                <DemoExample Title="Inline" RazorCode="@example13RazorCode" Id="example13">
+                    <div>
+                        <b>Inline</b> renders the root as a <code>span</code> without the paragraph wrappers, so a short piece of
+                        Markdown can sit inside a sentence, a table cell or a label. Other blocks still render; a document
+                        holding one keeps a <code>div</code> laid out inline.
+                    </div>
                     <br />
-                    <BitMarkdownViewer Markdown="@cascadingMarkdown" Pipeline="BitMarkdownPipelines.Basic" />
-                </BitParams>
-            </DemoExample>
+                    <div>
+                        Formatting a value in place:
+                        <BitMarkdownViewer Inline Markdown="@("the **fastest** path is `Span<T>` - [read why](https://learn.microsoft.com/dotnet/api/system.span-1)")" />
+                    </div>
+                </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
-                <div>
-                    <b>Style</b> and <b>Class</b> reach the root, and ordinary CSS reaches the elements inside. The public
-                    <b>--bit-MarkdownViewer-*</b> CSS variables restyle the document - on one viewer, an ancestor, or the
-                    whole app from <code>:root</code>.
-                </div>
-                <br />
-                <BitMarkdownViewer Style="border-inline-start:0.25rem solid var(--bit-clr-pri);padding-inline-start:1rem"
-                                   Markdown="@("A **styled** viewer, set apart with an inline `Style`.")" />
-                <br />
-                <BitMarkdownViewer Class="custom-mdv" Markdown="@("### A classy viewer\n\nEvery `code` span and heading inside it is restyled from the page's own stylesheet.")" />
-                <br /><br />
-                <div><b>CSS variables:</b></div><br />
-                <BitMarkdownViewer Style="@cssVariablesStyle" Markdown="@cssVariablesMarkdown" Pipeline="BitMarkdownPipelines.GitHub" />
-            </DemoExample>
+                <DemoExample Title="Templates" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" CodeFiles="@example14CodeFiles" Id="example14">
+                    <div>
+                        <b>CodeBlockTemplate</b>, <b>ImageTemplate</b> and <b>LinkTemplate</b> draw those nodes with your own
+                        markup - a highlighter, a copy button, a lightbox, a router-aware link. They run after URL sanitizing and
+                        the <b>ImageRendering</b> policy, and their output is outside the viewer's stylesheet, so a component
+                        keeps its own look.
+                    </div>
+                    <br />
+                    <BitMarkdownViewer Markdown="@templatesMarkdown" Pipeline="BitMarkdownPipelines.GitHub">
+                        <CodeBlockTemplate>
+                            <div class="mdv-code-card">
+                                <div class="mdv-code-card-head">
+                                    <span>@(context.Info ?? "text")</span>
+                                    <BitButton Size="BitSize.Small" Variant="BitVariant.Text"
+                                               IconName="@(copiedBlock == context ? BitIconName.CheckMark : BitIconName.Copy)"
+                                               AriaLabel="@(copiedBlock == context ? "Copied" : "Copy code")"
+                                               OnClick="@(() => CopyCodeAsync(context))" />
+                                </div>
+                                <pre tabindex="0"><code>@context.Content</code></pre>
+                            </div>
+                        </CodeBlockTemplate>
+                        <LinkTemplate>
+                            <BitLink Href="@context.Url" Target="_blank" Rel="BitLinkRels.NoReferrer">
+                                @BitMarkdownInlineHelpers.PlainText(context.Children)
+                                <BitIcon IconName="@BitIconName.NavigateExternalInline" AriaLabel="opens in a new tab" />
+                            </BitLink>
+                        </LinkTemplate>
+                    </BitMarkdownViewer>
+                </DemoExample>
 
-            <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
-                <div>
-                    <b>Dir="BitDir.Rtl"</b> renders a right-to-left document; the stylesheet uses logical properties, so
-                    quote bars, list indents and table alignment flip with it. <b>BitDir.Auto</b> gives each paragraph,
-                    heading and list the direction of its own text - for content mixing both, such as user comments.
-                </div>
-                <br />
-                <BitMarkdownViewer Dir="BitDir.Rtl" Markdown="@rtlMarkdown" Pipeline="BitMarkdownPipelines.Advanced" />
-                <br />
-                <BitMarkdownViewer Dir="BitDir.Auto" Markdown="@mixedDirectionMarkdown" />
-            </DemoExample>
+                <DemoExample Title="Interactive task lists" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+                    <div>
+                        Handling <b>OnTaskChanged</b> enables the checkboxes: a tick reports the index, the new state and the
+                        source rewritten to match, so storing it is one assignment. Each box is named after its item's text,
+                        and a disabled viewer keeps them read-only.
+                    </div>
+                    <br />
+                    <BitCheckbox Label="Disabled" @bind-Value="tasksDisabled" />
+                    <br />
+                    <BitMarkdownViewer Markdown="@taskListMarkdown"
+                                       Pipeline="BitMarkdownPipelines.GitHub"
+                                       Disabled="tasksDisabled"
+                                       OnTaskChanged="HandleTaskChanged" />
+                    <div class="mdv-hint">@taskListStatus</div>
+                </DemoExample>
+
+                <DemoExample Title="Localization" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+                    <div>
+                        The few words the renderers write themselves - alert titles, footnote back-links, the names of a table's
+                        scroll region, a permalink or a task box, the new-tab notice of a link - default to English. <b>UseStrings()</b> replaces them per
+                        pipeline; the numbered ones take their number through <code>{0}</code>.
+                    </div>
+                    <br />
+                    <BitMarkdownViewer Markdown="@localizedMarkdown" Pipeline="@localizedPipeline" />
+                </DemoExample>
+
+                <DemoExample Title="Accessibility" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+                    <div>
+                        <b>HeadingLevelOffset</b> nests the document's outline under the page's own: here <code>#</code> renders
+                        as an <code>h4</code> under the card's <code>h3</code>. <b>AriaLabel</b> names the document and makes it
+                        a region. <b>HeadingIdPrefix</b> keeps its heading ids, and the links to them, apart from every other
+                        comment's. Links are underlined and tell a screen reader when they open a new tab; code blocks and wide
+                        tables are keyboard-scrollable; in-page links keep working under <code>&lt;base href&gt;</code>.
+                    </div>
+                    <br />
+                    <div class="mdv-comment">
+                        <h3 class="mdv-comment-title">Comment by Sam</h3>
+                        <BitMarkdownViewer Markdown="@commentMarkdown"
+                                           Pipeline="BitMarkdownPipelines.Advanced"
+                                           HeadingLevelOffset="3"
+                                           HeadingIdPrefix="comment-42-"
+                                           AriaLabel="Comment by Sam" />
+                    </div>
+                </DemoExample>
+
+                <DemoExample Title="Playground" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+                    <div>
+                        Everything above, live: type on the left and switch the flavor to see the same source under the three
+                        ready-made pipelines.
+                    </div>
+                    <br />
+                    <div class="mdv-playground">
+                        <div class="mdv-toolbar">
+                            <span class="mdv-label">Flavor:</span>
+                            @foreach (var flavor in Enum.GetValues<MarkdownFlavor>())
+                            {
+                                <BitButton Size="BitSize.Small"
+                                           aria-pressed="@(playgroundFlavor == flavor ? "true" : "false")"
+                                           Variant="@(playgroundFlavor == flavor ? BitVariant.Fill : BitVariant.Outline)"
+                                           OnClick="@(() => SetPlaygroundFlavor(flavor))">@flavor</BitButton>
+                            }
+                            <span class="mdv-spacer"></span>
+                            <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="ResetPlaygroundSample">Reset sample</BitButton>
+                            <BitButton Size="BitSize.Small" Variant="BitVariant.Text" OnClick="@(() => playgroundMarkdown = string.Empty)">Clear</BitButton>
+                        </div>
+
+                        <div class="mdv-hint">@playgroundHint</div>
+
+                        <div class="mdv-split">
+                            <textarea class="mdv-editor" spellcheck="false" aria-label="Markdown source" @bind="playgroundMarkdown" @bind:event="oninput"></textarea>
+                            <div class="mdv-preview">
+                                <BitMarkdownViewer Markdown="@playgroundMarkdown"
+                                                   Pipeline="@playgroundPipeline"
+                                                   AriaLabel="Preview"
+                                                   StripBidiControlCharacters="true"
+                                                   MaxLength="100000" />
+                            </div>
+                        </div>
+                    </div>
+                </DemoExample>
+            </DemoTopic>
+
+            <DemoTopic Title="Customization" Route="customization"
+                       Description="Defaults for every viewer of a subtree through BitParams, styling the document with classes and CSS variables, and right-to-left layouts.">
+                <DemoExample Title="Cascading parameters" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+                    <div>
+                        <b>BitParams</b> with a <b>BitMarkdownViewerParams</b> sets defaults (pipeline, input limits, templates,
+                        styles) for every viewer under it - one place for a site's flavors and its highlighter. A viewer's own
+                        value wins: the second one keeps the Basic pipeline.
+                    </div>
+                    <br />
+                    <BitParams Parameters="markdownViewerParams">
+                        <BitMarkdownViewer Markdown="@cascadingMarkdown" />
+                        <br />
+                        <BitMarkdownViewer Markdown="@cascadingMarkdown" Pipeline="BitMarkdownPipelines.Basic" />
+                    </BitParams>
+                </DemoExample>
+
+                <DemoExample Title="Style & Class" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+                    <div>
+                        <b>Style</b> and <b>Class</b> reach the root, and ordinary CSS reaches the elements inside. The public
+                        <b>--bit-MarkdownViewer-*</b> CSS variables restyle the document - on one viewer, an ancestor, or the
+                        whole app from <code>:root</code>.
+                    </div>
+                    <br />
+                    <BitMarkdownViewer Style="border-inline-start:0.25rem solid var(--bit-clr-pri);padding-inline-start:1rem"
+                                       Markdown="@("A **styled** viewer, set apart with an inline `Style`.")" />
+                    <br />
+                    <BitMarkdownViewer Class="custom-mdv" Markdown="@("### A classy viewer\n\nEvery `code` span and heading inside it is restyled from the page's own stylesheet.")" />
+                    <br /><br />
+                    <div><b>CSS variables:</b></div><br />
+                    <BitMarkdownViewer Style="@cssVariablesStyle" Markdown="@cssVariablesMarkdown" Pipeline="BitMarkdownPipelines.GitHub" />
+                </DemoExample>
+
+                <DemoExample Title="RTL" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+                    <div>
+                        <b>Dir="BitDir.Rtl"</b> renders a right-to-left document; the stylesheet uses logical properties, so
+                        quote bars, list indents and table alignment flip with it. <b>BitDir.Auto</b> gives each paragraph,
+                        heading and list the direction of its own text - for content mixing both, such as user comments.
+                    </div>
+                    <br />
+                    <BitMarkdownViewer Dir="BitDir.Rtl" Markdown="@rtlMarkdown" Pipeline="BitMarkdownPipelines.Advanced" />
+                    <br />
+                    <BitMarkdownViewer Dir="BitDir.Auto" Markdown="@mixedDirectionMarkdown" />
+                </DemoExample>
+            </DemoTopic>
         </Examples>
     </DemoPage>
 </div>

@@ -4,6 +4,9 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.MarkdownEditor;
 
 public partial class BitMarkdownEditorDemo
 {
+    /// <summary>The topic the address names (/components/markdowneditor/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

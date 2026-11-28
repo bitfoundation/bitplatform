@@ -1,4 +1,5 @@
 ﻿@page "/components/richtexteditor"
+@page "/components/richtexteditor/{Topic}"
 @inherits AppComponentBase
 
 <PageOutlet Url="components/richtexteditor"
@@ -7,6 +8,8 @@
 
 <div>
     <DemoPage Name="RichTextEditor"
+              HasTopics
+              Topic="@Topic"
               SecondaryNames="@(["WysiwygEditor", "HtmlEditor"])"
               Description="A native WYSIWYG editor whose HTML you two-way bind with Value. Its toolbar is a flags enum of groups you can reorder and extend; every byte in and out passes an allowlist sanitizer; and markdown typing rules, a slash menu, mentions, keyboard chords, counting, localization and EditForm validation are built in. The toolbar, panels and menus follow the keyboard and ARIA patterns of their roles, and Alt+0 lists every shortcut."
               Parameters="componentParameters"
@@ -33,400 +36,418 @@
             </BitText>
         </NotesTemplate>
         <Examples>
-            <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-                <div>The default editor: the core toolbar, undo/redo and the built-in keyboard shortcuts.</div>
-                <br />
-                <BitRichTextEditor />
-            </DemoExample>
-
-            <DemoExample Title="Placeholder & size" RazorCode="@example2RazorCode" Id="example2">
-                <div>
-                    <b>Placeholder</b> shows (and is announced) while the editor is empty. <b>Height</b> is where the surface
-                    starts and <b>MaxHeight</b> where it starts scrolling (any CSS length); <b>Resizable</b> adds a drag
-                    handle and <b>SpellCheck</b> (on by default) toggles the browser's spell checking.
-                </div>
-                <br />
-                <BitRichTextEditor Placeholder="Write something..." Height="8rem" MaxHeight="14rem" SpellCheck="false" Resizable />
-            </DemoExample>
-
-            <DemoExample Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
-                <div>
-                    <b>@@bind-Value</b> keeps the HTML in sync both ways, always sanitized, and an emptied editor reports an
-                    empty string. Typing is debounced by <b>DebounceMs</b> (200 by default; leaving the editor flushes it),
-                    and <b>OnChange</b> reports every change.
-                </div>
-                <br />
-                <div class="btn-container">
-                    <BitButton OnClick='() => bindingHtml = "<h3>Set from code</h3><p>The editor just updated.</p>"'>Set content</BitButton>
-                    <BitButton OnClick="() => bindingHtml = string.Empty">Clear</BitButton>
-                    <BitButton OnClick='() => bindingHtml += "<p>Appended paragraph.</p>"'>Append</BitButton>
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="bindingHtml" DebounceMs="400" OnChange="_ => changeCount++"
-                                   Height="8rem" Placeholder="Edit me and watch the value update..." />
-                <br />
-                <div>Changes: <b>@changeCount</b></div>
-                <pre class="code-box">@bindingHtml</pre>
-            </DemoExample>
-
-            <DemoExample Title="Toolbar" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-                <div>
-                    <b>Toolbar</b> is a flags enum: combine groups with <code>|</code>, or use <b>All</b> (the default) or
-                    <b>AllExtended</b> for images, tables, colors, fonts, media, emoji, find, source view, full screen and
-                    more. <b>StickyToolbar</b> keeps it in view while the page scrolls past a tall editor. The toolbar is
-                    one tab stop: arrow keys move inside it, Alt+F10 jumps to it from the text and Escape goes back; the
-                    emoji picker is one tab stop too, walked with the arrow keys.
-                </div>
-                <br />
-                <BitRichTextEditor Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists | BitRichTextEditorToolbar.Link"
-                                   Height="6rem" Placeholder="Only the inline, lists and link groups." />
-                <br />
-                <BitRichTextEditor @bind-Value="toolbarHtml" Toolbar="BitRichTextEditorToolbar.AllExtended" StickyToolbar Height="28rem" />
-            </DemoExample>
-
-            <DemoExample Title="Custom toolbar" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
-                <div>
-                    <b>ToolbarConfig.CustomItems</b> adds your own buttons (an Id, a Label or Icon, and an
-                    <b>OnActivate</b> that receives the editor); <b>IsActive</b> gives one a pressed state read off the
-                    caret, and a throwing one is reported through <b>OnError</b>.
-                    <b>ToolbarConfig.Order</b> pulls the listed ids (<b>BitRichTextEditorToolbarConfig.GroupIds</b> or
-                    yours) to the front.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="customHtml" ToolbarConfig="customConfig" Height="8rem" />
-            </DemoExample>
-
-            <DemoExample Title="Read-only & disabled" RazorCode="@example6RazorCode" Id="example6">
-                <div>
-                    <b>ReadOnly</b> locks editing but keeps the text selectable and in the tab order; with
-                    <b>ShowToolbar</b> off and <b>Height</b> auto it displays stored content. <b>Disabled</b> dims the
-                    editor, takes it out of the tab order and refuses every edit path.
-                </div>
-                <br />
-                <BitRichTextEditor Value="@readOnlyHtml" ReadOnly ShowToolbar="false" Height="auto" />
-                <br />
-                <BitRichTextEditor Value="@disabledHtml" Disabled Height="auto"
-                                   Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists" />
-            </DemoExample>
-
-            <DemoExample Title="Links" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
-                <div>
-                    Ctrl/Cmd+K opens the link panel: text, URL and "open in a new tab" (with a safe <code>rel</code>); on an
-                    existing link it edits, opens or removes it. A bare host becomes https, and an invalid URL raises <b>OnError</b>
-                    (code <code>invalid-url</code>) without touching the content. A URL pasted over a selection links it.
-                </div>
-                <br />
-                <BitRichTextEditor Value="@linkHtml" ValueChanged="HandleLinkHtmlChanged" Height="8rem"
-                                   Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
-                                   OnError='e => linkError = $"{e.Code}: {e.Message}"'
-                                   Placeholder="Select text, then add a link..." />
-                @if (linkError is not null)
-                {
+            <DemoTopic Title="Overview"
+                       Description="The default editor, its placeholder and size, and two-way binding of its HTML with a debounced value.">
+                <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+                    <div>The default editor: the core toolbar, undo/redo and the built-in keyboard shortcuts.</div>
                     <br />
-                    <BitText Color="BitColor.Error">@linkError</BitText>
-                }
-            </DemoExample>
-
-            <DemoExample Title="Images" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
-                <div>
-                    Insert by URL with alternative text, or drop and paste files. <b>OnImageUpload</b> persists the bytes and
-                    returns the URL (null cancels), the editor showing and announcing the upload meanwhile; without it images
-                    are inlined as data URLs. Types and size
-                    (<b>MaxImageSize</b>, 10 MB by default; 2 MB here) are checked on both sides. A dropped image arrives with
-                    empty alt text (a file name describes nothing) and the editor says so; select it and the panel edits its
-                    source, alt text and width. It also floats left, center or right and resizes by its handle.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="imageHtml" Height="12rem"
-                                   Toolbar="BitRichTextEditorToolbar.Image | BitRichTextEditorToolbar.Inline"
-                                   OnImageUpload="HandleImageUpload"
-                                   MaxImageSize="2 * 1024 * 1024"
-                                   Placeholder="Drop or paste an image, or use the image button..." />
-                @if (lastUpload is not null)
-                {
-                    <br />
-                    <div>Last upload: <b>@lastUpload</b></div>
-                }
-            </DemoExample>
-
-            <DemoExample Title="Colors & fonts" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-                <div>
-                    The <b>Color</b> group sets and removes the text and highlight colors: <b>ColorPalette</b> offers your
-                    own swatches (arrow keys walk them, a custom field takes any other color); without it the browser's
-                    picker opens. The <b>Font</b> group sets the family and size from <b>FontFamilies</b> and
-                    <b>FontSizes</b> (or built-in defaults). Both reflect what is applied at the caret.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="colorHtml" Height="8rem"
-                                   Toolbar="BitRichTextEditorToolbar.Color | BitRichTextEditorToolbar.Font"
-                                   ColorPalette="palette"
-                                   FontFamilies="fonts" FontSizes="sizes" />
-            </DemoExample>
-
-            <DemoExample Title="Tables" RazorCode="@example10RazorCode" Id="example10">
-                <div>
-                    Insert a table of any size, optionally with a header row. Inside it you can add and delete rows and
-                    columns, toggle the header row, merge and split cells (merges survive), and drag a border to size a
-                    column. Tab and Shift+Tab walk the cells; Tab in the last one adds a row.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="tableHtml" Height="12rem"
-                                   Toolbar="BitRichTextEditorToolbar.Table | BitRichTextEditorToolbar.Inline" />
-            </DemoExample>
-
-            <DemoExample Title="Media & rules" RazorCode="@example11RazorCode" Id="example11">
-                <div>
-                    <b>Media</b> embeds a YouTube or Vimeo link as a privacy-friendly iframe and a direct audio/video URL
-                    natively. An iframe only survives on an approved https host (widen it with <b>AllowedIframeHosts</b>).
-                    <b>Rule</b> inserts a horizontal divider.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="mediaHtml" Height="12rem"
-                                   Toolbar="BitRichTextEditorToolbar.Media | BitRichTextEditorToolbar.Rule | BitRichTextEditorToolbar.BlockFormat" />
-            </DemoExample>
-
-            <DemoExample Title="Find & replace" RazorCode="@example12RazorCode" Id="example12">
-                <div>
-                    Highlights every match and marks the current one, announcing its position. Enter / Shift+Enter step
-                    through them, Enter in the replace box replaces (Ctrl/Cmd+Enter all of them), match case and whole word
-                    narrow the search, and Escape closes the panel back to the text.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="findHtml" Height="10rem"
-                                   Toolbar="BitRichTextEditorToolbar.Find | BitRichTextEditorToolbar.Inline" />
-            </DemoExample>
-
-            <DemoExample Title="Sanitization & paste" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-                <div>
-                    A <b>SanitizationPolicy</b> lists the tags, attributes and URI schemes that survive paste, drop,
-                    source view and code; tightening it at runtime re-cleans the loaded content. The <b>Source</b> group
-                    shows the raw HTML and validates it on the way back. Pasted Word and Google Docs markup is normalized
-                    first; <b>PasteAsPlainText</b> (or Ctrl/Cmd+Shift+V once) drops the formatting entirely.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="sanitizationHtml" Height="10rem"
-                                   Toolbar="BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Source"
-                                   SanitizationPolicy="sanitizationPolicy"
-                                   Placeholder="Paste rich content; only allowlisted tags survive..." />
-                <br />
-                <BitRichTextEditor @bind-Value="plainPasteHtml" PasteAsPlainText Height="6rem"
-                                   Placeholder="Pasted content arrives as plain text..." />
-            </DemoExample>
-
-            <DemoExample Title="Typing aids" RazorCode="@example14RazorCode" Id="example14">
-                <div>
-                    Markdown prefixes convert as you type (<code>#</code>-<code>######</code>, <code>&gt;</code>,
-                    <code>-</code>, <code>1.</code>, <code>[]</code>, <code>```</code>, <code>---</code>), as do inline
-                    <code>**bold**</code>, <code>*italic*</code>, <code>~~strike~~</code> and <code>`code`</code>. <b>/</b> on
-                    an empty line opens a command menu, a finished URL becomes a link (<b>AutoLink</b>), and
-                    <b>SmartTypography</b> curls quotes and turns <code>--</code>, <code>...</code>, <code>(c)</code>,
-                    <code>-&gt;</code> and friends into their symbols. Tab / Shift+Tab nest list items, Ctrl/Cmd+Enter ticks a
-                    task, and Enter on an empty last line leaves a quote or code block. Nothing fires inside code.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="typingHtml" SmartTypography Height="10rem"
-                                   Placeholder="Type / on a new line, start a line with # or [], or type -- and (c)..." />
-            </DemoExample>
-
-            <DemoExample Title="Keyboard shortcuts" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
-                <div>
-                    Built in: Ctrl/Cmd+B, I, U, E (code), K (link), Shift+X (strike), Shift+7/8/9 (lists), Z/Y (history)
-                    and \ (clear formatting). <b>KeyboardShortcuts</b> maps more chords (use "ctrl" for the primary key) to
-                    a command or a paragraph format; what a chord is bound to is what its button announces. Alt+0 (or the
-                    <b>Help</b> group) lists every key the editor answers to, custom chords included, and the surface tells a
-                    screen reader so.
-                </div>
-                <br />
-                <div>
-                    Commands: <code>bold</code>, <code>italic</code>, <code>underline</code>, <code>strikeThrough</code>,
-                    <code>inlineCode</code>, <code>undo</code>, <code>redo</code>, <code>insertOrderedList</code>,
-                    <code>insertUnorderedList</code>, <code>insertTaskList</code>, <code>justifyLeft</code>,
-                    <code>justifyCenter</code>, <code>justifyRight</code>, <code>justifyFull</code>, <code>indent</code>,
-                    <code>outdent</code>, <code>subscript</code>, <code>superscript</code>, <code>removeFormat</code>,
-                    <code>link</code>, <code>unlink</code>, <code>insertHorizontalRule</code>; formats (toggled):
-                    <code>p</code>, <code>h1</code>-<code>h6</code>, <code>blockquote</code>, <code>pre</code>.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="shortcutHtml" Height="8rem"
-                                   Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link | BitRichTextEditorToolbar.Help"
-                                   KeyboardShortcuts="shortcuts" />
-            </DemoExample>
-
-            <DemoExample Title="Selection toolbar" RazorCode="@example16RazorCode" Id="example16">
-                <div>
-                    <b>ShowQuickToolbar</b> floats a compact formatting bar over the selection; Alt+F10 moves the focus into
-                    it and Escape back. With <b>ShowToolbar</b> off it makes a chrome-free writing surface; Ctrl/Cmd+K
-                    still opens the link panel.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="quickHtml" ShowQuickToolbar ShowToolbar="false" Height="8rem" />
-            </DemoExample>
-
-            <DemoExample Title="Mentions" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
-                <div>
-                    With <b>OnMentionSearch</b>, <b>@@</b> at the start of a word opens a people picker fed by your lookup
-                    (only the newest result is applied). The inserted span carries your id in <code>data-mention-id</code>,
-                    and <b>OnMentionSelected</b> reports the pick.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="mentionHtml" Height="8rem"
-                                   Toolbar="BitRichTextEditorToolbar.Inline"
-                                   OnMentionSearch="SearchMentions"
-                                   OnMentionSelected="m => lastMention = m.Display"
-                                   Placeholder="Type @@ to mention someone..." />
-                @if (lastMention is not null)
-                {
-                    <br />
-                    <div>Last mention: <b>@lastMention</b></div>
-                }
-            </DemoExample>
-
-            <DemoExample Title="Forms & validation" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
-                <div>
-                    In an <b>EditForm</b>, <b>@@bind-Value</b> ties the editor to its field: a failing field gets the error
-                    border and <code>aria-invalid</code>. <b>Label</b> names the editor (click it to focus), <b>Required</b>
-                    marks it, <b>Description</b> adds helper text, and <b>ShowCount</b> with <b>MaxLength</b> adds a counter
-                    that caps typing, pasting and dropping alike; the surface is described by all of them. Outside a form,
-                    <b>ErrorMessage</b> (or <b>Invalid</b> alone) reports a rejection of your own, announced as it appears.
-                </div>
-                <br />
-                <div>
-                    <b>ShowValidationMessage</b> shows the messages of the form under the editor, where <b>ErrorMessage</b>
-                    goes, so the form below needs no <b>ValidationMessage</b> component. The surface is described by them
-                    through <code>aria-describedby</code>, ahead of the helper text and the counter, so they are read out
-                    when it takes the focus, and an <b>ErrorMessage</b> of the app's own wins the place while it is set.
-                    They are not announced as they appear: a submit validates every field at once, and a message from
-                    each of them read out in a row would bury the form under its own errors. A <b>BitParams</b> holding
-                    a <b>BitRichTextEditorParams</b> with <b>ShowValidationMessage</b> turns it on for every editor
-                    inside it.
-                </div>
-                <br />
-                <EditForm Model="formModel" OnValidSubmit="HandleValidSubmit" novalidate>
-                    <DataAnnotationsValidator />
-                    <BitRichTextEditor @bind-Value="formModel.Body"
-                                       Label="Description"
-                                       Required
-                                       Description="Plain words work best: what changed and why."
-                                       ShowCount
-                                       MaxLength="500"
-                                       Height="8rem"
-                                       Placeholder="Write at least 20 characters..."
-                                       ShowValidationMessage />
-                    <br />
-                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-                </EditForm>
-                @if (formSubmitted)
-                {
-                    <br />
-                    <BitText Color="BitColor.Success">Submitted successfully!</BitText>
-                }
-                <br /><br />
-                <BitRichTextEditor @bind-Value="commentHtml" @bind-Value:after="() => commentError = null"
-                                   Label="Comment"
-                                   Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
-                                   ErrorMessage="@commentError"
-                                   Height="6rem" />
-                <br />
-                <BitButton Variant="BitVariant.Outline" OnClick="SaveComment">Save comment</BitButton>
-            </DemoExample>
-
-            <DemoExample Title="Events" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
-                <div>
-                    <b>OnFocus</b> and <b>OnBlur</b> follow the text surface; <b>OnSelectionChange</b> reports the state the
-                    toolbar highlights from (styles, block, colors, link, table, image), to build your own chrome on.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="eventsHtml" Height="8rem"
-                                   OnFocus='() => focusState = "focused"'
-                                   OnBlur='() => focusState = "blurred"'
-                                   OnSelectionChange="HandleSelectionChange" />
-                <br />
-                <div>Editor is <b>@focusState</b>; the caret is in: <b>@selectionSummary</b></div>
-            </DemoExample>
-
-            <DemoExample Title="Localization" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
-                <div>
-                    An <b>IBitRichTextEditorLocalizer</b> translates every label, tooltip, panel, menu and message by a stable
-                    key; returning null keeps the English text, so a partial dictionary is enough.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="localizedHtml" Height="8rem"
-                                   Toolbar="BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Find"
-                                   Localizer="localizer" />
-            </DemoExample>
-
-            <DemoExample Title="Imperative API" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
-                <div>
-                    Through <b>@@ref</b>: focus, run commands, insert text or (sanitized) HTML, set or clear the content,
-                    undo/redo, select all, and read back the HTML, text or selection. <b>CharacterCount</b>,
-                    <b>WordCount</b> and <b>IsEmpty</b> are kept current without a browser round trip.
-                </div>
-                <br />
-                <div class="btn-container">
-                    <BitButton Variant="BitVariant.Outline" OnClick="FocusEditor">FocusAsync</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="@(() => apiEditor.ExecuteCommandAsync(BitRichTextEditorCommand.Bold))">ExecuteCommand(Bold)</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick='@(() => apiEditor.InsertTextAsync(" inserted"))'>InsertTextAsync</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick='@(() => apiEditor.InsertHtmlAsync("<b>bold</b>"))'>InsertHtmlAsync</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="@(async () => await apiEditor.SelectAllAsync())">SelectAllAsync</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="@(() => apiEditor.UndoAsync())">UndoAsync</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="GetEditorHtml">GetHtmlAsync</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="GetEditorText">GetTextAsync</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="GetEditorSelection">GetSelectedTextAsync</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="ShowEditorFacts">Counts</BitButton>
-                    <BitButton Variant="BitVariant.Outline" OnClick="@(() => apiEditor.ClearAsync())">ClearAsync</BitButton>
-                </div>
-                <br />
-                <BitRichTextEditor @ref="apiEditor" @bind-Value="apiHtml" Height="8rem" />
-                <br />
-                <div>Result:</div>
-                <pre class="code-box">@apiResult</pre>
-            </DemoExample>
-
-            <DemoExample Title="Cascading parameters" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
-                <div>
-                    <b>BitParams</b> with a <b>BitRichTextEditorParams</b> sets defaults - toolbar, localizer, policy,
-                    upload handler, color palette, sizes, styles - for every editor under it. An editor's own value wins (the second keeps
-                    its own placeholder).
-                </div>
-                <br />
-                <BitParams Parameters="richTextEditorParams">
                     <BitRichTextEditor />
+                </DemoExample>
+
+                <DemoExample Title="Placeholder & size" RazorCode="@example2RazorCode" Id="example2">
+                    <div>
+                        <b>Placeholder</b> shows (and is announced) while the editor is empty. <b>Height</b> is where the surface
+                        starts and <b>MaxHeight</b> where it starts scrolling (any CSS length); <b>Resizable</b> adds a drag
+                        handle and <b>SpellCheck</b> (on by default) toggles the browser's spell checking.
+                    </div>
                     <br />
-                    <BitRichTextEditor Placeholder="My own placeholder" />
-                </BitParams>
-            </DemoExample>
+                    <BitRichTextEditor Placeholder="Write something..." Height="8rem" MaxHeight="14rem" SpellCheck="false" Resizable />
+                </DemoExample>
 
-            <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
-                <div>
-                    <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part. The public
-                    <b>--bit-RichTextEditor-*</b> CSS variables restyle the editor here or app-wide from <code>:root</code>.
-                </div>
-                <br />
-                <div>Component's Style & Class:</div>
-                <br />
-                <BitRichTextEditor Style="border-color:brown" Class="custom-class" Height="6rem" />
-                <br /><br />
-                <div>Styles & Classes:</div>
-                <br />
-                <BitRichTextEditor Styles="@(new() { Toolbar = "border-bottom-color:tomato", Editor = "font-family:Georgia, serif" })"
-                                   Classes="@(new() { Toolbar = "custom-toolbar", Editor = "custom-editor" })"
-                                   Height="6rem" />
-                <br /><br />
-                <div>CSS variables:</div>
-                <br />
-                <BitRichTextEditor @bind-Value="cssVariablesHtml" Style="@cssVariablesStyle" Height="8rem" />
-            </DemoExample>
+                <DemoExample Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+                    <div>
+                        <b>@@bind-Value</b> keeps the HTML in sync both ways, always sanitized, and an emptied editor reports an
+                        empty string. Typing is debounced by <b>DebounceMs</b> (200 by default; leaving the editor flushes it),
+                        and <b>OnChange</b> reports every change.
+                    </div>
+                    <br />
+                    <div class="btn-container">
+                        <BitButton OnClick='() => bindingHtml = "<h3>Set from code</h3><p>The editor just updated.</p>"'>Set content</BitButton>
+                        <BitButton OnClick="() => bindingHtml = string.Empty">Clear</BitButton>
+                        <BitButton OnClick='() => bindingHtml += "<p>Appended paragraph.</p>"'>Append</BitButton>
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="bindingHtml" DebounceMs="400" OnChange="_ => changeCount++"
+                                       Height="8rem" Placeholder="Edit me and watch the value update..." />
+                    <br />
+                    <div>Changes: <b>@changeCount</b></div>
+                    <pre class="code-box">@bindingHtml</pre>
+                </DemoExample>
+            </DemoTopic>
 
-            <DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
-                <div>
-                    <b>Dir</b> lays the whole editor out right-to-left (the toolbar's arrow keys follow). The <b>Direction</b>
-                    group sets the direction of the block at the caret, so one document can mix both.
-                </div>
-                <br />
-                <BitRichTextEditor @bind-Value="rtlHtml" Dir="BitDir.Rtl" Height="8rem"
-                                   Toolbar="BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Direction"
-                                   Placeholder="متنی بنویسید..." />
-            </DemoExample>
+            <DemoTopic Title="Toolbar & states" Route="toolbar"
+                       Description="Picking the toolbar groups, adding and ordering your own buttons, and the read-only and disabled editors.">
+                <DemoExample Title="Toolbar" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+                    <div>
+                        <b>Toolbar</b> is a flags enum: combine groups with <code>|</code>, or use <b>All</b> (the default) or
+                        <b>AllExtended</b> for images, tables, colors, fonts, media, emoji, find, source view, full screen and
+                        more. <b>StickyToolbar</b> keeps it in view while the page scrolls past a tall editor. The toolbar is
+                        one tab stop: arrow keys move inside it, Alt+F10 jumps to it from the text and Escape goes back; the
+                        emoji picker is one tab stop too, walked with the arrow keys.
+                    </div>
+                    <br />
+                    <BitRichTextEditor Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists | BitRichTextEditorToolbar.Link"
+                                       Height="6rem" Placeholder="Only the inline, lists and link groups." />
+                    <br />
+                    <BitRichTextEditor @bind-Value="toolbarHtml" Toolbar="BitRichTextEditorToolbar.AllExtended" StickyToolbar Height="28rem" />
+                </DemoExample>
+
+                <DemoExample Title="Custom toolbar" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+                    <div>
+                        <b>ToolbarConfig.CustomItems</b> adds your own buttons (an Id, a Label or Icon, and an
+                        <b>OnActivate</b> that receives the editor); <b>IsActive</b> gives one a pressed state read off the
+                        caret, and a throwing one is reported through <b>OnError</b>.
+                        <b>ToolbarConfig.Order</b> pulls the listed ids (<b>BitRichTextEditorToolbarConfig.GroupIds</b> or
+                        yours) to the front.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="customHtml" ToolbarConfig="customConfig" Height="8rem" />
+                </DemoExample>
+
+                <DemoExample Title="Read-only & disabled" RazorCode="@example6RazorCode" Id="example6">
+                    <div>
+                        <b>ReadOnly</b> locks editing but keeps the text selectable and in the tab order; with
+                        <b>ShowToolbar</b> off and <b>Height</b> auto it displays stored content. <b>Disabled</b> dims the
+                        editor, takes it out of the tab order and refuses every edit path.
+                    </div>
+                    <br />
+                    <BitRichTextEditor Value="@readOnlyHtml" ReadOnly ShowToolbar="false" Height="auto" />
+                    <br />
+                    <BitRichTextEditor Value="@disabledHtml" Disabled Height="auto"
+                                       Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists" />
+                </DemoExample>
+            </DemoTopic>
+
+            <DemoTopic Title="Rich content" Route="content"
+                       Description="Links, images and their upload, text colors and fonts, tables, and embedded media and rules.">
+                <DemoExample Title="Links" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+                    <div>
+                        Ctrl/Cmd+K opens the link panel: text, URL and "open in a new tab" (with a safe <code>rel</code>); on an
+                        existing link it edits, opens or removes it. A bare host becomes https, and an invalid URL raises <b>OnError</b>
+                        (code <code>invalid-url</code>) without touching the content. A URL pasted over a selection links it.
+                    </div>
+                    <br />
+                    <BitRichTextEditor Value="@linkHtml" ValueChanged="HandleLinkHtmlChanged" Height="8rem"
+                                       Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
+                                       OnError='e => linkError = $"{e.Code}: {e.Message}"'
+                                       Placeholder="Select text, then add a link..." />
+                    @if (linkError is not null)
+                    {
+                        <br />
+                        <BitText Color="BitColor.Error">@linkError</BitText>
+                    }
+                </DemoExample>
+
+                <DemoExample Title="Images" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+                    <div>
+                        Insert by URL with alternative text, or drop and paste files. <b>OnImageUpload</b> persists the bytes and
+                        returns the URL (null cancels), the editor showing and announcing the upload meanwhile; without it images
+                        are inlined as data URLs. Types and size
+                        (<b>MaxImageSize</b>, 10 MB by default; 2 MB here) are checked on both sides. A dropped image arrives with
+                        empty alt text (a file name describes nothing) and the editor says so; select it and the panel edits its
+                        source, alt text and width. It also floats left, center or right and resizes by its handle.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="imageHtml" Height="12rem"
+                                       Toolbar="BitRichTextEditorToolbar.Image | BitRichTextEditorToolbar.Inline"
+                                       OnImageUpload="HandleImageUpload"
+                                       MaxImageSize="2 * 1024 * 1024"
+                                       Placeholder="Drop or paste an image, or use the image button..." />
+                    @if (lastUpload is not null)
+                    {
+                        <br />
+                        <div>Last upload: <b>@lastUpload</b></div>
+                    }
+                </DemoExample>
+
+                <DemoExample Title="Colors & fonts" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+                    <div>
+                        The <b>Color</b> group sets and removes the text and highlight colors: <b>ColorPalette</b> offers your
+                        own swatches (arrow keys walk them, a custom field takes any other color); without it the browser's
+                        picker opens. The <b>Font</b> group sets the family and size from <b>FontFamilies</b> and
+                        <b>FontSizes</b> (or built-in defaults). Both reflect what is applied at the caret.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="colorHtml" Height="8rem"
+                                       Toolbar="BitRichTextEditorToolbar.Color | BitRichTextEditorToolbar.Font"
+                                       ColorPalette="palette"
+                                       FontFamilies="fonts" FontSizes="sizes" />
+                </DemoExample>
+
+                <DemoExample Title="Tables" RazorCode="@example10RazorCode" Id="example10">
+                    <div>
+                        Insert a table of any size, optionally with a header row. Inside it you can add and delete rows and
+                        columns, toggle the header row, merge and split cells (merges survive), and drag a border to size a
+                        column. Tab and Shift+Tab walk the cells; Tab in the last one adds a row.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="tableHtml" Height="12rem"
+                                       Toolbar="BitRichTextEditorToolbar.Table | BitRichTextEditorToolbar.Inline" />
+                </DemoExample>
+
+                <DemoExample Title="Media & rules" RazorCode="@example11RazorCode" Id="example11">
+                    <div>
+                        <b>Media</b> embeds a YouTube or Vimeo link as a privacy-friendly iframe and a direct audio/video URL
+                        natively. An iframe only survives on an approved https host (widen it with <b>AllowedIframeHosts</b>).
+                        <b>Rule</b> inserts a horizontal divider.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="mediaHtml" Height="12rem"
+                                       Toolbar="BitRichTextEditorToolbar.Media | BitRichTextEditorToolbar.Rule | BitRichTextEditorToolbar.BlockFormat" />
+                </DemoExample>
+            </DemoTopic>
+
+            <DemoTopic Title="Editing aids" Route="editing"
+                       Description="Find and replace, sanitization and paste, markdown typing rules and the slash menu, keyboard shortcuts, the selection toolbar and mentions.">
+                <DemoExample Title="Find & replace" RazorCode="@example12RazorCode" Id="example12">
+                    <div>
+                        Highlights every match and marks the current one, announcing its position. Enter / Shift+Enter step
+                        through them, Enter in the replace box replaces (Ctrl/Cmd+Enter all of them), match case and whole word
+                        narrow the search, and Escape closes the panel back to the text.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="findHtml" Height="10rem"
+                                       Toolbar="BitRichTextEditorToolbar.Find | BitRichTextEditorToolbar.Inline" />
+                </DemoExample>
+
+                <DemoExample Title="Sanitization & paste" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+                    <div>
+                        A <b>SanitizationPolicy</b> lists the tags, attributes and URI schemes that survive paste, drop,
+                        source view and code; tightening it at runtime re-cleans the loaded content. The <b>Source</b> group
+                        shows the raw HTML and validates it on the way back. Pasted Word and Google Docs markup is normalized
+                        first; <b>PasteAsPlainText</b> (or Ctrl/Cmd+Shift+V once) drops the formatting entirely.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="sanitizationHtml" Height="10rem"
+                                       Toolbar="BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Source"
+                                       SanitizationPolicy="sanitizationPolicy"
+                                       Placeholder="Paste rich content; only allowlisted tags survive..." />
+                    <br />
+                    <BitRichTextEditor @bind-Value="plainPasteHtml" PasteAsPlainText Height="6rem"
+                                       Placeholder="Pasted content arrives as plain text..." />
+                </DemoExample>
+
+                <DemoExample Title="Typing aids" RazorCode="@example14RazorCode" Id="example14">
+                    <div>
+                        Markdown prefixes convert as you type (<code>#</code>-<code>######</code>, <code>&gt;</code>,
+                        <code>-</code>, <code>1.</code>, <code>[]</code>, <code>```</code>, <code>---</code>), as do inline
+                        <code>**bold**</code>, <code>*italic*</code>, <code>~~strike~~</code> and <code>`code`</code>. <b>/</b> on
+                        an empty line opens a command menu, a finished URL becomes a link (<b>AutoLink</b>), and
+                        <b>SmartTypography</b> curls quotes and turns <code>--</code>, <code>...</code>, <code>(c)</code>,
+                        <code>-&gt;</code> and friends into their symbols. Tab / Shift+Tab nest list items, Ctrl/Cmd+Enter ticks a
+                        task, and Enter on an empty last line leaves a quote or code block. Nothing fires inside code.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="typingHtml" SmartTypography Height="10rem"
+                                       Placeholder="Type / on a new line, start a line with # or [], or type -- and (c)..." />
+                </DemoExample>
+
+                <DemoExample Title="Keyboard shortcuts" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+                    <div>
+                        Built in: Ctrl/Cmd+B, I, U, E (code), K (link), Shift+X (strike), Shift+7/8/9 (lists), Z/Y (history)
+                        and \ (clear formatting). <b>KeyboardShortcuts</b> maps more chords (use "ctrl" for the primary key) to
+                        a command or a paragraph format; what a chord is bound to is what its button announces. Alt+0 (or the
+                        <b>Help</b> group) lists every key the editor answers to, custom chords included, and the surface tells a
+                        screen reader so.
+                    </div>
+                    <br />
+                    <div>
+                        Commands: <code>bold</code>, <code>italic</code>, <code>underline</code>, <code>strikeThrough</code>,
+                        <code>inlineCode</code>, <code>undo</code>, <code>redo</code>, <code>insertOrderedList</code>,
+                        <code>insertUnorderedList</code>, <code>insertTaskList</code>, <code>justifyLeft</code>,
+                        <code>justifyCenter</code>, <code>justifyRight</code>, <code>justifyFull</code>, <code>indent</code>,
+                        <code>outdent</code>, <code>subscript</code>, <code>superscript</code>, <code>removeFormat</code>,
+                        <code>link</code>, <code>unlink</code>, <code>insertHorizontalRule</code>; formats (toggled):
+                        <code>p</code>, <code>h1</code>-<code>h6</code>, <code>blockquote</code>, <code>pre</code>.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="shortcutHtml" Height="8rem"
+                                       Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link | BitRichTextEditorToolbar.Help"
+                                       KeyboardShortcuts="shortcuts" />
+                </DemoExample>
+
+                <DemoExample Title="Selection toolbar" RazorCode="@example16RazorCode" Id="example16">
+                    <div>
+                        <b>ShowQuickToolbar</b> floats a compact formatting bar over the selection; Alt+F10 moves the focus into
+                        it and Escape back. With <b>ShowToolbar</b> off it makes a chrome-free writing surface; Ctrl/Cmd+K
+                        still opens the link panel.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="quickHtml" ShowQuickToolbar ShowToolbar="false" Height="8rem" />
+                </DemoExample>
+
+                <DemoExample Title="Mentions" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+                    <div>
+                        With <b>OnMentionSearch</b>, <b>@@</b> at the start of a word opens a people picker fed by your lookup
+                        (only the newest result is applied). The inserted span carries your id in <code>data-mention-id</code>,
+                        and <b>OnMentionSelected</b> reports the pick.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="mentionHtml" Height="8rem"
+                                       Toolbar="BitRichTextEditorToolbar.Inline"
+                                       OnMentionSearch="SearchMentions"
+                                       OnMentionSelected="m => lastMention = m.Display"
+                                       Placeholder="Type @@ to mention someone..." />
+                    @if (lastMention is not null)
+                    {
+                        <br />
+                        <div>Last mention: <b>@lastMention</b></div>
+                    }
+                </DemoExample>
+            </DemoTopic>
+
+            <DemoTopic Title="Forms, events & API" Route="forms"
+                       Description="EditForm validation and counting, focus and selection events, localized strings, and driving the editor from code.">
+                <DemoExample Title="Forms & validation" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+                    <div>
+                        In an <b>EditForm</b>, <b>@@bind-Value</b> ties the editor to its field: a failing field gets the error
+                        border and <code>aria-invalid</code>. <b>Label</b> names the editor (click it to focus), <b>Required</b>
+                        marks it, <b>Description</b> adds helper text, and <b>ShowCount</b> with <b>MaxLength</b> adds a counter
+                        that caps typing, pasting and dropping alike; the surface is described by all of them. Outside a form,
+                        <b>ErrorMessage</b> (or <b>Invalid</b> alone) reports a rejection of your own, announced as it appears.
+                    </div>
+                    <br />
+                    <div>
+                        <b>ShowValidationMessage</b> shows the messages of the form under the editor, where <b>ErrorMessage</b>
+                        goes, so the form below needs no <b>ValidationMessage</b> component. The surface is described by them
+                        through <code>aria-describedby</code>, ahead of the helper text and the counter, so they are read out
+                        when it takes the focus, and an <b>ErrorMessage</b> of the app's own wins the place while it is set.
+                        They are not announced as they appear: a submit validates every field at once, and a message from
+                        each of them read out in a row would bury the form under its own errors. A <b>BitParams</b> holding
+                        a <b>BitRichTextEditorParams</b> with <b>ShowValidationMessage</b> turns it on for every editor
+                        inside it.
+                    </div>
+                    <br />
+                    <EditForm Model="formModel" OnValidSubmit="HandleValidSubmit" novalidate>
+                        <DataAnnotationsValidator />
+                        <BitRichTextEditor @bind-Value="formModel.Body"
+                                           Label="Description"
+                                           Required
+                                           Description="Plain words work best: what changed and why."
+                                           ShowCount
+                                           MaxLength="500"
+                                           Height="8rem"
+                                           Placeholder="Write at least 20 characters..."
+                                           ShowValidationMessage />
+                        <br />
+                        <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                    </EditForm>
+                    @if (formSubmitted)
+                    {
+                        <br />
+                        <BitText Color="BitColor.Success">Submitted successfully!</BitText>
+                    }
+                    <br /><br />
+                    <BitRichTextEditor @bind-Value="commentHtml" @bind-Value:after="() => commentError = null"
+                                       Label="Comment"
+                                       Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
+                                       ErrorMessage="@commentError"
+                                       Height="6rem" />
+                    <br />
+                    <BitButton Variant="BitVariant.Outline" OnClick="SaveComment">Save comment</BitButton>
+                </DemoExample>
+
+                <DemoExample Title="Events" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+                    <div>
+                        <b>OnFocus</b> and <b>OnBlur</b> follow the text surface; <b>OnSelectionChange</b> reports the state the
+                        toolbar highlights from (styles, block, colors, link, table, image), to build your own chrome on.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="eventsHtml" Height="8rem"
+                                       OnFocus='() => focusState = "focused"'
+                                       OnBlur='() => focusState = "blurred"'
+                                       OnSelectionChange="HandleSelectionChange" />
+                    <br />
+                    <div>Editor is <b>@focusState</b>; the caret is in: <b>@selectionSummary</b></div>
+                </DemoExample>
+
+                <DemoExample Title="Localization" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+                    <div>
+                        An <b>IBitRichTextEditorLocalizer</b> translates every label, tooltip, panel, menu and message by a stable
+                        key; returning null keeps the English text, so a partial dictionary is enough.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="localizedHtml" Height="8rem"
+                                       Toolbar="BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Find"
+                                       Localizer="localizer" />
+                </DemoExample>
+
+                <DemoExample Title="Imperative API" RazorCode="@example21RazorCode" CsharpCode="@example21CsharpCode" Id="example21">
+                    <div>
+                        Through <b>@@ref</b>: focus, run commands, insert text or (sanitized) HTML, set or clear the content,
+                        undo/redo, select all, and read back the HTML, text or selection. <b>CharacterCount</b>,
+                        <b>WordCount</b> and <b>IsEmpty</b> are kept current without a browser round trip.
+                    </div>
+                    <br />
+                    <div class="btn-container">
+                        <BitButton Variant="BitVariant.Outline" OnClick="FocusEditor">FocusAsync</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="@(() => apiEditor.ExecuteCommandAsync(BitRichTextEditorCommand.Bold))">ExecuteCommand(Bold)</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick='@(() => apiEditor.InsertTextAsync(" inserted"))'>InsertTextAsync</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick='@(() => apiEditor.InsertHtmlAsync("<b>bold</b>"))'>InsertHtmlAsync</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="@(async () => await apiEditor.SelectAllAsync())">SelectAllAsync</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="@(() => apiEditor.UndoAsync())">UndoAsync</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="GetEditorHtml">GetHtmlAsync</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="GetEditorText">GetTextAsync</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="GetEditorSelection">GetSelectedTextAsync</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="ShowEditorFacts">Counts</BitButton>
+                        <BitButton Variant="BitVariant.Outline" OnClick="@(() => apiEditor.ClearAsync())">ClearAsync</BitButton>
+                    </div>
+                    <br />
+                    <BitRichTextEditor @ref="apiEditor" @bind-Value="apiHtml" Height="8rem" />
+                    <br />
+                    <div>Result:</div>
+                    <pre class="code-box">@apiResult</pre>
+                </DemoExample>
+            </DemoTopic>
+
+            <DemoTopic Title="Customization" Route="customization"
+                       Description="Defaults for every editor of a subtree through BitParams, styling every part of the editor, and right-to-left layouts.">
+                <DemoExample Title="Cascading parameters" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" Id="example22">
+                    <div>
+                        <b>BitParams</b> with a <b>BitRichTextEditorParams</b> sets defaults - toolbar, localizer, policy,
+                        upload handler, color palette, sizes, styles - for every editor under it. An editor's own value wins (the second keeps
+                        its own placeholder).
+                    </div>
+                    <br />
+                    <BitParams Parameters="richTextEditorParams">
+                        <BitRichTextEditor />
+                        <br />
+                        <BitRichTextEditor Placeholder="My own placeholder" />
+                    </BitParams>
+                </DemoExample>
+
+                <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+                    <div>
+                        <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part. The public
+                        <b>--bit-RichTextEditor-*</b> CSS variables restyle the editor here or app-wide from <code>:root</code>.
+                    </div>
+                    <br />
+                    <div>Component's Style & Class:</div>
+                    <br />
+                    <BitRichTextEditor Style="border-color:brown" Class="custom-class" Height="6rem" />
+                    <br /><br />
+                    <div>Styles & Classes:</div>
+                    <br />
+                    <BitRichTextEditor Styles="@(new() { Toolbar = "border-bottom-color:tomato", Editor = "font-family:Georgia, serif" })"
+                                       Classes="@(new() { Toolbar = "custom-toolbar", Editor = "custom-editor" })"
+                                       Height="6rem" />
+                    <br /><br />
+                    <div>CSS variables:</div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="cssVariablesHtml" Style="@cssVariablesStyle" Height="8rem" />
+                </DemoExample>
+
+                <DemoExample Title="RTL" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+                    <div>
+                        <b>Dir</b> lays the whole editor out right-to-left (the toolbar's arrow keys follow). The <b>Direction</b>
+                        group sets the direction of the block at the caret, so one document can mix both.
+                    </div>
+                    <br />
+                    <BitRichTextEditor @bind-Value="rtlHtml" Dir="BitDir.Rtl" Height="8rem"
+                                       Toolbar="BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Direction"
+                                       Placeholder="متنی بنویسید..." />
+                </DemoExample>
+            </DemoTopic>
         </Examples>
     </DemoPage>
 </div>

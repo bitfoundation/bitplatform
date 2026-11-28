@@ -174,6 +174,13 @@ private void HandleOnHiddenListChange(BitFileInputInfo[] files)
 }";
 
     private readonly string example13RazorCode = @"
+<BitFileInput ShowDropZone Multiple ShowPreview ShowRemoveButton
+              Label=""Drag files here or click to browse""
+              Description=""Any file type, as many as you like."" />
+
+<BitFileInput ShowDropZone Directory DropZoneIconName=""FabricFolder""
+              Label=""Drag a folder here or click to browse"" />";
+    private readonly string example14RazorCode = @"
 <BitFileInput @ref=""eventsFileInput""
               Label=""Select or drag and drop files""
               Multiple
@@ -203,7 +210,8 @@ private void HandleOnHiddenListChange(BitFileInputInfo[] files)
         <div class=""event-log"">@log</div>
     }
 }";
-    private readonly string example13CsharpCode = @"
+
+    private readonly string example14CsharpCode = @"
 private BitFileInput eventsFileInput = default!;
 private BitFileInputInfo[] eventsFiles = [];
 private readonly List<string> eventsLog = [];
@@ -237,8 +245,7 @@ private void AddEventLog(string log)
         eventsLog.RemoveAt(eventsLog.Count - 1);
     }
 }";
-
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitFileInput @ref=""bitFileInput""
               Multiple
               Append
@@ -270,9 +277,10 @@ private void AddEventLog(string log)
         </div>
     </FileViewTemplate>
 </BitFileInput>";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private BitFileInput bitFileInput = default!;";
-    private const string example14ScssCode = @"
+
+    private const string example15ScssCode = @"
 /* Every color is a theme token, so the hand-built panel and rows follow the preset and the scheme. */
 .browse-file {
     gap: 0.5rem;
@@ -388,12 +396,11 @@ private BitFileInput bitFileInput = default!;";
     background-color: var(--bit-clr-bg-sec-hover);
 }";
 
-    private readonly DemoCodeFile[] example14CodeFiles =
+    private readonly DemoCodeFile[] example15CodeFiles =
     [
-        new("BitFileInputDemo.razor.scss", example14ScssCode),
+        new("BitFileInputDemo.razor.scss", example15ScssCode),
     ];
-
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <BitFileInput @ref=""publicApiFileInput"" HideLabel Multiple OnFilesChange=""@(_ => StateHasChanged())"" />
 
 <div class=""api-buttons"">
@@ -409,7 +416,8 @@ private BitFileInput bitFileInput = default!;";
 {
     <div>SHA-256: <code>@streamHash</code></div>
 }";
-    private readonly string example15CsharpCode = @"
+
+    private readonly string example16CsharpCode = @"
 private BitFileInput publicApiFileInput = default!;
 private string? streamHash;
 
@@ -427,60 +435,13 @@ private async Task HashTheFirstFile()
     streamHash = Convert.ToHexString(await SHA256.HashDataAsync(stream));
 }";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitFileInput Label=""Browse or drop files""
               AriaLabel=""Select documents to attach""
               Multiple ShowRemoveButton MaxSize=""1024 * 1024""
               Description=""Up to 1 MB each. Tab to the button, then press Enter or Space."" />";
 
-    private readonly string example17RazorCode = @"
-<BitFileInput Variant=""BitVariant.Fill"" Label=""Fill"" />
-<BitFileInput Variant=""BitVariant.Outline"" Label=""Outline"" />
-<BitFileInput Variant=""BitVariant.Text"" Label=""Text"" />
-
-<BitFileInput Variant=""BitVariant.Fill"" Label=""Fill"" Disabled />
-<BitFileInput Variant=""BitVariant.Outline"" Label=""Outline"" Disabled />
-<BitFileInput Variant=""BitVariant.Text"" Label=""Text"" Disabled />
-
-<BitFileInput Variant=""BitVariant.Fill"" Color=""BitColor.Success"" Label=""Fill"" />
-<BitFileInput Variant=""BitVariant.Outline"" Color=""BitColor.Success"" Label=""Outline"" />
-<BitFileInput Variant=""BitVariant.Text"" Color=""BitColor.Success"" Label=""Text"" />";
-
     private readonly string example18RazorCode = @"
-<BitFileInput ShowDropZone Multiple ShowPreview ShowRemoveButton
-              Label=""Drag files here or click to browse""
-              Description=""Any file type, as many as you like."" />
-
-<BitFileInput ShowDropZone Directory DropZoneIconName=""FabricFolder""
-              Label=""Drag a folder here or click to browse"" />";
-
-    private readonly string example19RazorCode = @"
-<BitParams Parameters=""@fileInputParams"">
-    <BitFileInput />
-
-    <BitFileInput Label=""Its own label, the cascaded rest""
-                  MaxSize=""1024 * 1024 * 10""
-                  MaxSizeErrorMessage=""This one alone accepts up to 10 MB."" />
-</BitParams>
-
-<BitFileInput Label=""Outside the cascade, and back to the defaults"" />";
-    private readonly string example19CsharpCode = @"
-private readonly BitFileInputParams[] fileInputParams =
-[
-    new()
-    {
-        Multiple = true,
-        ShowPreview = true,
-        ShowRemoveButton = true,
-        Label = ""Attach a file"",
-        MaxSize = 1024 * 1024 * 1,
-        MaxSizeErrorMessage = ""Attachments are limited to 1 MB."",
-        Description = ""Anything up to 1 MB. Drop it here or browse."",
-        FileSizeFormatter = size => $""{size:N0} bytes""
-    }
-];";
-
-    private readonly string example20RazorCode = @"
 <EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
     <DataAnnotationsValidator />
 
@@ -512,7 +473,8 @@ private readonly BitFileInputParams[] fileInputParams =
         <BitLink Href=""https://bitplatform.dev"" Target=""_blank"">Free up space</BitLink>
     </ErrorMessageTemplate>
 </BitFileInput>";
-    private readonly string example20CsharpCode = @"
+
+    private readonly string example18CsharpCode = @"
 public class BitFileInputDemoFormModel
 {
     [Required(ErrorMessage = ""Attach your resume"")]
@@ -534,6 +496,44 @@ private void HandleInvalidSubmit()
 
 // The names of the valid files, joined with commas.
 private string? contractNames;";
+    private readonly string example19RazorCode = @"
+<BitFileInput Variant=""BitVariant.Fill"" Label=""Fill"" />
+<BitFileInput Variant=""BitVariant.Outline"" Label=""Outline"" />
+<BitFileInput Variant=""BitVariant.Text"" Label=""Text"" />
+
+<BitFileInput Variant=""BitVariant.Fill"" Label=""Fill"" Disabled />
+<BitFileInput Variant=""BitVariant.Outline"" Label=""Outline"" Disabled />
+<BitFileInput Variant=""BitVariant.Text"" Label=""Text"" Disabled />
+
+<BitFileInput Variant=""BitVariant.Fill"" Color=""BitColor.Success"" Label=""Fill"" />
+<BitFileInput Variant=""BitVariant.Outline"" Color=""BitColor.Success"" Label=""Outline"" />
+<BitFileInput Variant=""BitVariant.Text"" Color=""BitColor.Success"" Label=""Text"" />";
+
+    private readonly string example20RazorCode = @"
+<BitParams Parameters=""@fileInputParams"">
+    <BitFileInput />
+
+    <BitFileInput Label=""Its own label, the cascaded rest""
+                  MaxSize=""1024 * 1024 * 10""
+                  MaxSizeErrorMessage=""This one alone accepts up to 10 MB."" />
+</BitParams>
+
+<BitFileInput Label=""Outside the cascade, and back to the defaults"" />";
+    private readonly string example20CsharpCode = @"
+private readonly BitFileInputParams[] fileInputParams =
+[
+    new()
+    {
+        Multiple = true,
+        ShowPreview = true,
+        ShowRemoveButton = true,
+        Label = ""Attach a file"",
+        MaxSize = 1024 * 1024 * 1,
+        MaxSizeErrorMessage = ""Attachments are limited to 1 MB."",
+        Description = ""Anything up to 1 MB. Drop it here or browse."",
+        FileSizeFormatter = size => $""{size:N0} bytes""
+    }
+];";
 
     private readonly string example21RazorCode = @"
 <BitFileInput Color=""BitColor.Primary"" Label=""Primary"" />

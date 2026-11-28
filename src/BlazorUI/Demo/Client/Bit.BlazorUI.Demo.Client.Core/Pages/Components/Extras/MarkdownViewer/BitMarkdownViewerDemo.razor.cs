@@ -2,6 +2,9 @@
 
 public partial class BitMarkdownViewerDemo
 {
+    /// <summary>The topic the address names (/components/markdownviewer/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

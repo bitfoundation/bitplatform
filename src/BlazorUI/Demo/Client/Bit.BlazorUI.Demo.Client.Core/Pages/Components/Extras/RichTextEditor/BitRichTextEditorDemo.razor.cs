@@ -4,6 +4,9 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.RichTextEditor;
 
 public partial class BitRichTextEditorDemo
 {
+    /// <summary>The topic the address names (/components/richtexteditor/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()

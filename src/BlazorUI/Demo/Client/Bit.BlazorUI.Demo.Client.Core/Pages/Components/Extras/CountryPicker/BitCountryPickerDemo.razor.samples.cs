@@ -224,6 +224,15 @@ private readonly List<BitCountry> germanCountries =
 ];";
 
     private readonly string example18RazorCode = @"
+<BitCountryPicker Label=""Country of birth""
+                  Required
+                  Description=""Arrow keys open the list, typing searches it, Enter picks.""
+                  Placeholder=""Select a country"" />
+
+<BitCountryPicker AriaLabel=""Country of citizenship""
+                  NoSearchBox
+                  Placeholder=""Named by AriaLabel, no search box"" />";
+    private readonly string example19RazorCode = @"
 <BitParams Parameters=""@countryPickerParams"">
     <BitCountryPicker Label=""Takes the market and the list order"" />
     <BitCountryPicker Label=""So does this one"" />
@@ -231,7 +240,8 @@ private readonly List<BitCountry> germanCountries =
 </BitParams>
 
 <BitCountryPicker Label=""Outside the cascade"" />";
-    private readonly string example18CsharpCode = @"
+
+    private readonly string example19CsharpCode = @"
 private readonly BitCountryPickerParams[] countryPickerParams =
 [
     new()
@@ -241,16 +251,6 @@ private readonly BitCountryPickerParams[] countryPickerParams =
         Placeholder = ""Select a country"",
     }
 ];";
-
-    private readonly string example19RazorCode = @"
-<BitCountryPicker Label=""Country of birth""
-                  Required
-                  Description=""Arrow keys open the list, typing searches it, Enter picks.""
-                  Placeholder=""Select a country"" />
-
-<BitCountryPicker AriaLabel=""Country of citizenship""
-                  NoSearchBox
-                  Placeholder=""Named by AriaLabel, no search box"" />";
 
     private readonly string example20RazorCode = @"
 <BitCountryPicker Color=""BitColor.Primary"" Placeholder=""Primary"" />
