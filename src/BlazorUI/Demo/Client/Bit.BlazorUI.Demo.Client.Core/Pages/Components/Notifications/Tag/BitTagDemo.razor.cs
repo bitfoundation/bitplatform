@@ -551,15 +551,39 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "--bit-Tag-hover-color",
+            DefaultValue = "Per Variant, the text at rest for Fill",
+            Description = "Text and glyphs of a hovered clickable content or dismiss button. The Color parameter wins over it (a Fill tag with a Color keeps the text it inherits at rest). Shared by the three variants: --bit-Tag-fill-hover-color, --bit-Tag-outline-hover-color and --bit-Tag-text-hover-color are read ahead of it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
             Name = "--bit-Tag-hover-background",
             DefaultValue = "Per Variant, a step deeper while selected",
-            Description = "Background of a hovered clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag hovers with is its alone. Shared by the three variants: --bit-Tag-fill-hover-background, --bit-Tag-outline-hover-background and --bit-Tag-text-hover-background are read ahead of it.",
+            Description = "Background of a hovered clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag hovers with is its alone. Shared by the three variants: --bit-Tag-fill-hover-background, --bit-Tag-outline-hover-background and --bit-Tag-text-hover-background are read ahead of it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-hover-border-color",
+            DefaultValue = "The rule at rest, or selected",
+            Description = "Rule of a tag while its clickable content or dismiss button is hovered. The Color parameter wins over it, except over the transparent rule of Text. Shared by the three variants: --bit-Tag-fill-hover-border-color, --bit-Tag-outline-hover-border-color and --bit-Tag-text-hover-border-color are read ahead of it. Moved by a :has() rule, so it needs a browser with :has() (Chromium 105, Safari 15.4, Firefox 121); an older one keeps the rule at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-active-color",
+            DefaultValue = "As the hover text color",
+            Description = "Text and glyphs of a pressed clickable content or dismiss button. The Color parameter wins over it (a Fill tag with a Color keeps the text it inherits at rest). Shared by the three variants: --bit-Tag-fill-active-color, --bit-Tag-outline-active-color and --bit-Tag-text-active-color are read ahead of it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
         },
         new()
         {
             Name = "--bit-Tag-active-background",
             DefaultValue = "Per Variant, a step deeper while selected",
-            Description = "Background of a pressed clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag is pressed with is its alone. Shared by the three variants: --bit-Tag-fill-active-background, --bit-Tag-outline-active-background and --bit-Tag-text-active-background are read ahead of it.",
+            Description = "Background of a pressed clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag is pressed with is its alone. Shared by the three variants: --bit-Tag-fill-active-background, --bit-Tag-outline-active-background and --bit-Tag-text-active-background are read ahead of it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-active-border-color",
+            DefaultValue = "As the hover rule",
+            Description = "Rule of a tag while its clickable content or dismiss button is pressed. The Color parameter wins over it, except over the transparent rule of Text. Shared by the three variants: --bit-Tag-fill-active-border-color, --bit-Tag-outline-active-border-color and --bit-Tag-text-active-border-color are read ahead of it. Moved by a :has() rule, so it needs a browser with :has() (Chromium 105, Safari 15.4, Firefox 121); an older one keeps the rule at rest.",
         },
         new()
         {
@@ -617,15 +641,39 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "--bit-Tag-fill-hover-color",
+            DefaultValue = "--bit-Tag-hover-color",
+            Description = "Text and glyphs of a hovered clickable content or dismiss button of a Fill tag alone, read ahead of --bit-Tag-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it (a Fill tag with a Color keeps the text it inherits at rest). Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
             Name = "--bit-Tag-fill-hover-background",
             DefaultValue = "--bit-Tag-hover-background",
-            Description = "Background of a hovered clickable content or dismiss button of a Fill tag alone, read ahead of --bit-Tag-hover-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+            Description = "Background of a hovered clickable content or dismiss button of a Fill tag alone, read ahead of --bit-Tag-hover-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-hover-border-color",
+            DefaultValue = "--bit-Tag-hover-border-color",
+            Description = "Rule while the clickable content or dismiss button is hovered of a Fill tag alone, read ahead of --bit-Tag-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it. Moved by a :has() rule, so it needs a browser with :has() (Chromium 105, Safari 15.4, Firefox 121); an older one keeps the rule at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-active-color",
+            DefaultValue = "--bit-Tag-active-color",
+            Description = "Text and glyphs of a pressed clickable content or dismiss button of a Fill tag alone, read ahead of --bit-Tag-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it (a Fill tag with a Color keeps the text it inherits at rest). Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
         },
         new()
         {
             Name = "--bit-Tag-fill-active-background",
             DefaultValue = "--bit-Tag-active-background",
-            Description = "Background of a pressed clickable content or dismiss button of a Fill tag alone, read ahead of --bit-Tag-active-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+            Description = "Background of a pressed clickable content or dismiss button of a Fill tag alone, read ahead of --bit-Tag-active-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-active-border-color",
+            DefaultValue = "--bit-Tag-active-border-color",
+            Description = "Rule while the clickable content or dismiss button is pressed of a Fill tag alone, read ahead of --bit-Tag-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it. Moved by a :has() rule, so it needs a browser with :has() (Chromium 105, Safari 15.4, Firefox 121); an older one keeps the rule at rest.",
         },
         new()
         {
@@ -677,15 +725,39 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "--bit-Tag-outline-hover-color",
+            DefaultValue = "--bit-Tag-hover-color",
+            Description = "Text and glyphs of a hovered clickable content or dismiss button of an Outline tag alone, read ahead of --bit-Tag-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
             Name = "--bit-Tag-outline-hover-background",
             DefaultValue = "--bit-Tag-hover-background",
-            Description = "Background of a hovered clickable content or dismiss button of an Outline tag alone, read ahead of --bit-Tag-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Background of a hovered clickable content or dismiss button of an Outline tag alone, read ahead of --bit-Tag-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-hover-border-color",
+            DefaultValue = "--bit-Tag-hover-border-color",
+            Description = "Rule while the clickable content or dismiss button is hovered of an Outline tag alone, read ahead of --bit-Tag-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it. Moved by a :has() rule, so it needs a browser with :has() (Chromium 105, Safari 15.4, Firefox 121); an older one keeps the rule at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-active-color",
+            DefaultValue = "--bit-Tag-active-color",
+            Description = "Text and glyphs of a pressed clickable content or dismiss button of an Outline tag alone, read ahead of --bit-Tag-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
         },
         new()
         {
             Name = "--bit-Tag-outline-active-background",
             DefaultValue = "--bit-Tag-active-background",
-            Description = "Background of a pressed clickable content or dismiss button of an Outline tag alone, read ahead of --bit-Tag-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Background of a pressed clickable content or dismiss button of an Outline tag alone, read ahead of --bit-Tag-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-active-border-color",
+            DefaultValue = "--bit-Tag-active-border-color",
+            Description = "Rule while the clickable content or dismiss button is pressed of an Outline tag alone, read ahead of --bit-Tag-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it. Moved by a :has() rule, so it needs a browser with :has() (Chromium 105, Safari 15.4, Firefox 121); an older one keeps the rule at rest.",
         },
         new()
         {
@@ -737,15 +809,39 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "--bit-Tag-text-hover-color",
+            DefaultValue = "--bit-Tag-hover-color",
+            Description = "Text and glyphs of a hovered clickable content or dismiss button of a Text tag alone, read ahead of --bit-Tag-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
             Name = "--bit-Tag-text-hover-background",
             DefaultValue = "--bit-Tag-hover-background",
-            Description = "Background of a hovered clickable content or dismiss button of a Text tag alone, read ahead of --bit-Tag-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Background of a hovered clickable content or dismiss button of a Text tag alone, read ahead of --bit-Tag-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-hover-border-color",
+            DefaultValue = "--bit-Tag-hover-border-color",
+            Description = "Rule while the clickable content or dismiss button is hovered of a Text tag alone, read ahead of --bit-Tag-hover-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone. Moved by a :has() rule, so it needs a browser with :has() (Chromium 105, Safari 15.4, Firefox 121); an older one keeps the rule at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-active-color",
+            DefaultValue = "--bit-Tag-active-color",
+            Description = "Text and glyphs of a pressed clickable content or dismiss button of a Text tag alone, read ahead of --bit-Tag-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
         },
         new()
         {
             Name = "--bit-Tag-text-active-background",
             DefaultValue = "--bit-Tag-active-background",
-            Description = "Background of a pressed clickable content or dismiss button of a Text tag alone, read ahead of --bit-Tag-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Background of a pressed clickable content or dismiss button of a Text tag alone, read ahead of --bit-Tag-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it. Also works set on Styles.Content or Styles.DismissButton, for that part alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-active-border-color",
+            DefaultValue = "--bit-Tag-active-border-color",
+            Description = "Rule while the clickable content or dismiss button is pressed of a Text tag alone, read ahead of --bit-Tag-active-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone. Moved by a :has() rule, so it needs a browser with :has() (Chromium 105, Safari 15.4, Firefox 121); an older one keeps the rule at rest.",
         },
         new()
         {
