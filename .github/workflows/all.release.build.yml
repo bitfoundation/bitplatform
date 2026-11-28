@@ -33,8 +33,6 @@ jobs:
           solution: src/Bswup/Bit.Bswup.slnx
         - name: Butil
           solution: src/Butil/Bit.Butil.slnx
-        - name: Balette
-          solution: src/Utilities/Balette/Bit.Balette.slnx
         - name: BbScanner
           solution: src/Utilities/BbScanner/Bit.BbScanner.slnx
         - name: Bcrdt

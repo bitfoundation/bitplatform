@@ -71,7 +71,9 @@ public partial class BitTextDemo
     </div>
 </div>
 
-<BitText Element=""code"" Typography=""BitTypography.Body2"" Monospace>var text = new BitText { Monospace = true };</BitText>";
+<BitText Element=""code"" Typography=""BitTypography.Body2"" Monospace>var text = new BitText { Monospace = true };</BitText>
+
+<BitText Typography=""BitTypography.Body1"">Run <BitText Code>dotnet build</BitText> in the folder of the project, then <BitText Code>dotnet run</BitText>.</BitText>";
 
     private readonly string example5RazorCode = @"
 <div style=""width:250px"">

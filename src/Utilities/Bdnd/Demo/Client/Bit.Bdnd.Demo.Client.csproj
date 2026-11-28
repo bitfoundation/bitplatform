@@ -15,7 +15,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0" />
-        <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-24" PrivateAssets="all" />
+        <PackageReference Include="Bit.Minifier" Version="11.0.0-pre-25" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- The code viewer's lexer (CodeBlock.razor colours every snippet with it), which the Bdnd, Blow, Balette and
+        <!-- The code viewer's lexer (CodeBlock.razor colours every snippet with it), which the Bdnd, Blow and
              Bheadless demos share. -->
         <Compile Include="..\..\..\Shared\Demo\*.cs" LinkBase="Shared" />
     </ItemGroup>

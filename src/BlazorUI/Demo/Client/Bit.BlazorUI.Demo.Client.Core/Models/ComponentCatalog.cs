@@ -330,6 +330,7 @@ public static class ComponentCatalog
 
         // Utilities
         ["CascadingValueProvider"] = BitIconName.Share,
+        ["CodeBlock"] = BitIconName.FileCode,
         ["Element"] = BitIconName.WebComponents,
         ["Embed"] = BitIconName.Embed,
         ["FocusOnInvalidSubmit"] = BitIconName.Focus,
@@ -352,6 +353,7 @@ public static class ComponentCatalog
         ["AppShell"] = BitIconName.Devices4,
         ["AvatarGroup"] = BitIconName.People,
         ["Chart"] = BitIconName.BarChartVertical,
+        ["CommandPalette"] = BitIconName.CommandPrompt,
         ["ContextMenu"] = BitIconName.ContextMenu,
         ["CopyButton"] = BitIconName.Copy,
         ["CountryPicker"] = BitIconName.Globe,
@@ -373,6 +375,7 @@ public static class ComponentCatalog
         ["ResourceTimeline"] = BitIconName.TimelineMatrixView,
         ["RichTextEditor"] = BitIconName.EditNote,
         ["Sortable"] = BitIconName.Sort,
+        ["TextRotator"] = BitIconName.Sync,
         ["TextShimmer"] = BitIconName.ChatBot,
         ["TimeZonePicker"] = BitIconName.WorldClock,
         ["Virtualize"] = BitIconName.RowsGroup,
@@ -526,6 +529,7 @@ public static class ComponentCatalog
 
         // Utilities
         ["CascadingValueProvider"] = "Cascades several values to child components without nesting providers.",
+        ["CodeBlock"] = "Shows a block of code with a button that copies it, an optional header naming it, and a terminal look for shell commands.",
         ["Element"] = "Renders any HTML tag with the library's own styling parameters.",
         ["Embed"] = "Frames a video, a map or another site in an iframe at an aspect ratio that scales with its container, with an optional click-to-load placeholder.",
         ["FocusOnInvalidSubmit"] = "Moves the focus to the first invalid field of an EditForm when its submit fails.",
@@ -548,6 +552,7 @@ public static class ComponentCatalog
         ["AppShell"] = "The cross-platform application container: safe areas, scroll state, chrome.",
         ["AvatarGroup"] = "The avatars of a group of people as overlapping coins, with a +N coin for the rest.",
         ["Chart"] = "A native Blazor charting component rendered entirely with SVG.",
+        ["CommandPalette"] = "The Ctrl+K box that fuzzy-searches every page, action and setting of an app and runs the one picked.",
         ["ContextMenu"] = "A menu opened where an area of the page is right-clicked, or with Shift+F10 or the Menu key.",
         ["CopyButton"] = "A button that copies a value to the clipboard and says so for a moment, to the eye and to screen readers.",
         ["CountryPicker"] = "A searchable country selector with flags, bound to a BitCountry.",
@@ -569,6 +574,7 @@ public static class ComponentCatalog
         ["ResourceTimeline"] = "A resource planner: allocation bars on resource rows along a zoomable, time-zone-aware time axis.",
         ["RichTextEditor"] = "A native WYSIWYG editor written in C#, with a configurable toolbar.",
         ["Sortable"] = "A drag-and-drop sortable list: reorder items, or drag them between lists of a group, by pointer, touch or keyboard.",
+        ["TextRotator"] = "Cycles through words or phrases in one place, without moving the text around it.",
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",
         ["TimeZonePicker"] = "A searchable time zone selector with UTC offsets, bound to a TimeZoneInfo or its IANA id.",
         ["Virtualize"] = "Renders only the rows currently in view, for very long lists.",

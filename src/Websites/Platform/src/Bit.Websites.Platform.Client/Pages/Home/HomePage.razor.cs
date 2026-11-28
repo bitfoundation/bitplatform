@@ -31,7 +31,7 @@ public partial class HomePage
         new("Live collaboration", "Shared editing with presence and cursors, on a C# CRDT engine that syncs again after long offline sessions.", ["Bcrdt"], Featured: true),
         new("Image editor", "Crop, resize, adjust, annotate and export images on the user's device, with a full editor component.", ["Bmage"], Featured: true),
         new("Ink", "Signatures, sketches, whiteboards and annotations, with pressure-aware strokes and undo.", ["Bink"]),
-        new("Command palette", "A keyboard-first Ctrl+K palette with fuzzy search, nested pages and shortcuts.", ["Balette"]),
+        new("Command palette", "A keyboard-first Ctrl+K palette with fuzzy search, nested pages and shortcuts.", ["BlazorUI"]),
         new("Barcode scanner", "QR codes and barcodes from the camera or from images, decoded in C# with no SDK.", ["BbScanner"]),
         new("Motion", "Springs, gestures, drag, layout and exit animations, declared in Razor.", ["Bmotion"]),
         new("Drag and drop", "Typed drag and drop between any sources and targets.", ["Bdnd"]),

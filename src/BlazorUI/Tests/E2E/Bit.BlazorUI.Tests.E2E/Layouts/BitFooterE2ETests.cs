@@ -197,7 +197,7 @@ public class BitFooterE2ETests : E2ETestBase
         await Expect(Page.Locator("#al-state")).ToContainTextAsync($"al={value};");
 
         if (cls.Length > 0) await Expect(Page.Locator("#al-footer")).ToHaveClassAsync(HasClass(cls));
-        await Expect(Page.Locator("#al-footer > .bit-ftr-gut")).ToHaveCSSAsync("justify-content", justify);
+        await Expect(Page.Locator("#al-footer > .bit-ftr-gut")).ToHaveCSSAsync("justify-content", Alignment(justify));
         var footer = await BoxAsync("#al-footer");
         AssertClose(firstX, (await BoxAsync("#al-1")).X - footer.X, $"{value}: first child x");
         if (value == "SpaceBetween") AssertClose(footer.Right, (await BoxAsync("#al-3")).Right, "the last at the end");
@@ -223,7 +223,7 @@ public class BitFooterE2ETests : E2ETestBase
         await Expect(Page.Locator("#al-state")).ToContainTextAsync($"va={value};");
 
         if (cls.Length > 0) await Expect(Page.Locator("#al-footer")).ToHaveClassAsync(HasClass(cls));
-        await Expect(Page.Locator("#al-footer > .bit-ftr-gut")).ToHaveCSSAsync("align-items", alignItems);
+        await Expect(Page.Locator("#al-footer > .bit-ftr-gut")).ToHaveCSSAsync("align-items", Alignment(alignItems));
         if (y >= 0) AssertClose(y, (await BoxAsync("#al-1")).Y - (await BoxAsync("#al-footer")).Y, $"{value}: y");
     }
 

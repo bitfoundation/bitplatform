@@ -23,7 +23,6 @@ public static class Urls
     public const string Bmage = "https://bmage.bitplatform.dev/";
     public const string Bsqlite = "https://bsqlite.bitplatform.dev/";
     public const string Bink = "https://bink.bitplatform.dev/";
-    public const string Balette = "https://balette.bitplatform.dev/";
     public const string BbScanner = "https://bbscanner.bitplatform.dev/";
     public const string Bdnd = "https://bdnd.bitplatform.dev/";
     public const string BlazeDb = "https://blazedb.bitplatform.dev/";
@@ -51,6 +50,7 @@ public static class Urls
     public const string BlazorUiBenchmarks = "https://github.com/bitfoundation/blazor-benchmarks";
 
     public const string BlazorUI = "https://blazorui.bitplatform.dev/";
+    public const string BlazorUICommandPalette = "https://blazorui.bitplatform.dev/components/commandpalette";
 
     // bit Fabric builds whole apps on these libraries; bit Boilerplate and bit CLI are part of it.
     public const string BitFabric = "https://bitfabric.co";

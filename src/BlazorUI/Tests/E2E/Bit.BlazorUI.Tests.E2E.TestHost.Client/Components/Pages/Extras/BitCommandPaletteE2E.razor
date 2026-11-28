@@ -1,0 +1,672 @@
+﻿@page "/e2e/command-palette"
+@page "/e2e/command-palette/{Section}"
+@implements IDisposable
+@inject IBitCommandPaletteService Palette
+@inject BitThemeManager ThemeManager
+@inject IJSRuntime JS
+
+<PageTitle>BitCommandPalette E2E</PageTitle>
+
+@* The page an app's layout would be: one modal palette with the app's commands registered through the service, the
+   page's own commands registered while it is on screen, modes with async sources, declarative options, a trigger and a
+   button per mode, and the state every command acts on written out as text. The second route is where the navigation
+   commands lead: the same page with another heading, so the palette lives on across them, as a layout's does. *@
+<h1 id="cpl-heading">@Heading</h1>
+
+<BitCommandPaletteCommands Commands="_globalCommands" />
+<BitCommandPaletteCommands Commands="_pageCommands" />
+
+<BitCommandPalette Id="cpl"
+                   ToggleShortcut="@ToggleKeys"
+                   VimBindings="true"
+                   DetailTemplate="@(_showDetail ? _detailPane : null)">
+    <BitCommandPaletteGroup Heading="Quick create" Priority="20">
+        <BitCommandPaletteOption Title="New issue"
+                                 Shortcut="C"
+                                 Keywords="create add"
+                                 Description="Declared in markup, with a single-key global shortcut."
+                                 OnExecute='_ => Record("New issue dialog opened")' />
+        <BitCommandPaletteOption Title="New…" Keywords="create add" ChildrenPlaceholder="What do you want to create?">
+            <BitCommandPaletteOption Title="Project" OnExecute='_ => Record("New project")' />
+            <BitCommandPaletteOption Title="Document" OnExecute='_ => Record("New document")' />
+            <BitCommandPaletteOption Title="Team" Badge="Beta" OnExecute='_ => Record("New team")' />
+        </BitCommandPaletteOption>
+    </BitCommandPaletteGroup>
+</BitCommandPalette>
+
+@* A main a click does not move the focus out of: WebKit focuses it, rather than the button clicked in it. *@
+<main id="cpl-main" tabindex="-1">
+    <E2ESection Id="bar" Title="Palette bar">
+        <BitCommandPaletteTrigger Id="cpl-trigger" />
+        <BitCommandPaletteTrigger Id="cpl-mode-commands" Label="Commands mode" Query=">" ShowShortcut="false" />
+        <BitCommandPaletteTrigger Id="cpl-mode-issues" Label="Issues mode" Query="#" ShowShortcut="false" />
+        <BitCommandPaletteTrigger Id="cpl-mode-people" Label="People mode" Query="@("@")" ShowShortcut="false" />
+        <button id="cpl-search-counter" type="button" @onclick='() => Palette.OpenAsync("counter")'>Search "counter"</button>
+    </E2ESection>
+
+    <E2ESection Id="state" Title="State">
+        <p id="cpl-project">Project: @_projectName</p>
+        <p id="cpl-labels">Labels: @string.Join(", ", _labels)</p>
+        <p id="cpl-log">Last action: @(_lastAction ?? "nothing yet")</p>
+        <p id="cpl-language">Language: @_language</p>
+        <p id="cpl-theme">Theme: @_theme</p>
+        <p id="cpl-counter">Counter: @_count</p>
+        <label>
+            <input id="cpl-wordwrap" type="checkbox" checked="@_wordWrap" @onchange="ToggleWordWrap" />
+            Word wrap
+        </label>
+        <label>
+            <input id="cpl-detail" type="checkbox" checked="@_showDetail" @onchange="ToggleDetail" />
+            Detail pane
+        </label>
+        <p id="cpl-people-calls">People calls: @_peopleCalls.Count</p>
+        <p id="cpl-people-last">@(_peopleCalls.Count == 0 ? "none" : _peopleCalls[^1])</p>
+        <p id="cpl-flaky-calls">Flaky calls: @_flakyCalls</p>
+    </E2ESection>
+
+    <E2ESection Id="typing" Title="Typing">
+        <input id="cpl-typing" type="text" aria-label="Typing area" />
+    </E2ESection>
+</main>
+
+<E2EStatus />
+
+@code {
+    private const string ThemeKey = "e2e-cpl-theme";
+
+    // The tag of the commands the ">" mode lists: everything that does something, nothing that only navigates.
+    private const string CommandTag = "command";
+
+    private static readonly Dictionary<string, string> Sections = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["quick-start"] = "Quick start",
+        ["registering-commands"] = "Registering commands",
+        ["settings"] = "Settings",
+        ["pages"] = "Nested pages and flows",
+        ["search"] = "Search and ranking",
+        ["modes"] = "Modes and sources",
+        ["keyboard"] = "Keyboard and shortcuts",
+        ["theming"] = "Theming and templates",
+        ["localization"] = "Localization and RTL",
+        ["large-registry"] = "Large registry",
+        ["options"] = "Options and security",
+    };
+
+    private static readonly Person[] People =
+    [
+        new("Ada Lovelace", "Engineering", "ada@example.com"),
+        new("Grace Hopper", "Engineering", "grace@example.com"),
+        new("Alan Turing", "Research", "alan@example.com"),
+        new("Katherine Johnson", "Data", "katherine@example.com"),
+        new("Margaret Hamilton", "Engineering", "margaret@example.com"),
+        new("Linus Torvalds", "Platform", "linus@example.com"),
+        new("Barbara Liskov", "Architecture", "barbara@example.com"),
+        new("Dennis Ritchie", "Platform", "dennis@example.com"),
+        new("Hedy Lamarr", "Research", "hedy@example.com"),
+        new("Tim Berners-Lee", "Web", "tim@example.com"),
+    ];
+
+    private static readonly Issue[] Issues =
+    [
+        new(101, "Palette flickers when opened during navigation", "open", ["bug", "ui"]),
+        new(102, "Add vim keybindings", "closed", ["enhancement"]),
+        new(103, "Support Ctrl+Shift+P as alternative toggle", "closed", ["enhancement"]),
+        new(104, "Recents should survive page reload", "open", ["bug"]),
+        new(105, "Nested pages lose query on back", "open", ["bug"]),
+        new(106, "Document theming variables", "open", ["docs"]),
+        new(107, "Virtualize long result lists", "open", ["performance"]),
+        new(108, "Fuzzy match should prefer word starts", "closed", ["search"]),
+        new(109, "Screen reader announces result count", "closed", ["a11y"]),
+        new(110, "Mobile layout: full screen dialog", "open", ["ui"]),
+    ];
+
+    private static readonly (string Title, string Path, string Excerpt)[] Docs =
+    [
+        ("Getting started", "/e2e/command-palette/quick-start", "Install the package, add the services, put the component in your layout."),
+        ("Registering commands", "/e2e/command-palette/registering-commands", "Fluent builder, declarative markup, page-scoped registration."),
+        ("Nested pages and prompts", "/e2e/command-palette/pages", "Multi-step flows, action panels, free-text prompts, multi-select."),
+        ("Modes and prefixes", "/e2e/command-palette/modes", "Scope the palette with > # @ ? prefixes like VS Code and GitHub."),
+        ("Keyboard shortcuts", "/e2e/command-palette/keyboard", "Global chords and sequences like G then I."),
+        ("Theming", "/theming", "CSS custom properties, dark mode, templates."),
+        ("Large registries", "/e2e/command-palette/large-registry", "Thousands of commands, measured per keystroke."),
+    ];
+
+    [Parameter] public string? Section { get; set; }
+
+    // The palette's toggle shortcut, for a test that opens it with another chord than Ctrl+K.
+    [SupplyParameterFromQuery(Name = "toggle")] public string? ToggleKeys { get; set; }
+
+    private string Heading => Section is not null && Sections.TryGetValue(Section, out var title) ? title : "BitCommandPalette";
+
+    private string _projectName = "Acme Dashboard";
+    private List<string> _labels = [];
+    private string? _lastAction;
+    private string _language = "English";
+    private string _theme = "auto";
+    private int _count;
+    private bool _wordWrap = true;
+    private bool _notifications;
+    private bool _showMinimap;
+    private bool _showDetail;
+    private readonly List<string> _peopleCalls = [];
+    private int _flakyCalls;
+
+    private List<BitCommandPaletteCommand> _globalCommands = [];
+    private List<BitCommandPaletteCommand> _pageCommands = [];
+    private RenderFragment<BitCommandPaletteCommand>? _detailPane;
+    private readonly List<IDisposable> _registrations = [];
+
+    protected override void OnInitialized()
+    {
+        _globalCommands = GlobalCommands();
+        _pageCommands = PageCommands();
+
+        // Modes are typed prefixes, as in VS Code and GitHub: one narrows the registry, the others search sources of
+        // their own - one quick, one slower, one that always fails.
+        _registrations.Add(Palette.RegisterMode(new BitCommandPaletteCommandMode
+        {
+            Prefix = ">",
+            Name = "Commands",
+            Description = "Run any command",
+            Placeholder = "Run a command…",
+            Tags = [CommandTag],
+        }));
+        _registrations.Add(Palette.RegisterMode(new BitCommandPaletteCommandMode
+        {
+            Prefix = "#",
+            Name = "Issues",
+            Description = "Search issues by number or title",
+            Placeholder = "Search issues…",
+            HideRegistryCommands = true,
+            Sources = [new BitCommandPaletteDelegateSource("Issues", SearchIssuesAsync, minQueryLength: 0)],
+        }));
+        _registrations.Add(Palette.RegisterMode(new BitCommandPaletteCommandMode
+        {
+            Prefix = "@",
+            Name = "People",
+            Description = "Find a teammate",
+            Placeholder = "Search people…",
+            HideRegistryCommands = true,
+            Sources = [new BitCommandPaletteDelegateSource("People", SearchPeopleAsync, minQueryLength: 1, applyMatcher: true)],
+        }));
+        _registrations.Add(Palette.RegisterMode(new BitCommandPaletteCommandMode
+        {
+            Prefix = "!",
+            Name = "Flaky",
+            Description = "A source that always fails",
+            Placeholder = "Search a broken API…",
+            HideRegistryCommands = true,
+            Sources = [new BitCommandPaletteDelegateSource("Flaky", SearchFlakyAsync, minQueryLength: 1)],
+        }));
+        _registrations.Add(Palette.RegisterMode(new BitCommandPaletteCommandMode
+        {
+            Prefix = "?",
+            Name = "Help",
+            Description = "Keyboard shortcuts and docs",
+            Groups = ["Help"],
+        }));
+
+        // In the default mode the documentation is searched too, next to the registry, and re-ranked with it.
+        _registrations.Add(Palette.RegisterSource(new BitCommandPaletteDelegateSource("Documentation", SearchDocsAsync, minQueryLength: 2, applyMatcher: true)));
+
+        // A Raycast-style preview of the active row, showing what the command carries.
+        _detailPane = command =>
+            @<div class="cpl-detail">
+                <div>@command.Kind</div>
+                <h3>@command.Title</h3>
+                @if (command.Subtitle is not null)
+                {
+                    <p>@command.Subtitle</p>
+                }
+                @if (command.Description is not null)
+                {
+                    <p>@command.Description</p>
+                }
+                @if (command.Data is Person person)
+                {
+                    <dl>
+                        <dt>Role</dt>
+                        <dd>@person.Role</dd>
+                        <dt>E-mail</dt>
+                        <dd>@person.Email</dd>
+                    </dl>
+                }
+                <code>@command.Id</code>
+            </div>;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        // The theme the reader chose, remembered across a reload.
+        var stored = await JS.InvokeAsync<string?>("localStorage.getItem", ThemeKey);
+        if (stored is "light" or "dark")
+        {
+            await SetThemeAsync(stored);
+        }
+    }
+
+    private List<BitCommandPaletteCommand> GlobalCommands() =>
+    [
+        // ---- Navigation: every section, also reachable with G-then-X sequences ----
+        BitCommandPaletteCmd.Navigate("Introduction", "/e2e/command-palette").Group("Navigation").Shortcut("G H").Keywords("home", "start", "landing").Priority(BitCommandPaletteCommandPriority.High),
+        // Not titled "Getting started": its two word starts would outrank Settings for "gs", the sequence's own letters.
+        BitCommandPaletteCmd.Navigate("Quick start", "/e2e/command-palette/quick-start").Group("Navigation").Shortcut("G I").Keywords("install", "setup", "begin"),
+        BitCommandPaletteCmd.Navigate("Registering commands", "/e2e/command-palette/registering-commands").Group("Navigation").Shortcut("G R").Keywords("register", "builder", "declarative", "counter"),
+        BitCommandPaletteCmd.Navigate("Settings", "/e2e/command-palette/settings").Group("Navigation").Shortcut("G S").Keywords("preferences", "options", "config"),
+        BitCommandPaletteCmd.Navigate("Nested pages and flows", "/e2e/command-palette/pages").Group("Navigation").Shortcut("G P").Keywords("prompt", "multi-select", "confirm", "toast", "actions"),
+        BitCommandPaletteCmd.Navigate("Search and ranking", "/e2e/command-palette/search").Group("Navigation").Shortcut("G F").Keywords("fuzzy", "find", "score", "frecency", "operators"),
+        BitCommandPaletteCmd.Navigate("Modes and sources", "/e2e/command-palette/modes").Group("Navigation").Shortcut("G M").Keywords("prefix", "async", "debounce"),
+        BitCommandPaletteCmd.Navigate("Keyboard and shortcuts", "/e2e/command-palette/keyboard").Group("Navigation").Shortcut("G K").Keywords("hotkeys", "sequence", "accessibility"),
+        BitCommandPaletteCmd.Navigate("Theming and templates", "/e2e/command-palette/theming").Group("Navigation").Shortcut("G T").Keywords("dark", "css", "variables", "detail"),
+        BitCommandPaletteCmd.Navigate("Localization and RTL", "/e2e/command-palette/localization").Group("Navigation").Keywords("strings", "translate", "i18n", "right to left"),
+        BitCommandPaletteCmd.Navigate("Large registry", "/e2e/command-palette/large-registry").Group("Navigation").Shortcut("G L").Keywords("performance", "benchmark", "bulk"),
+        BitCommandPaletteCmd.Navigate("Options and security", "/e2e/command-palette/options").Group("Navigation").Shortcut("G O").Keywords("configuration", "parameters", "csp", "reference"),
+        // Opens a new tab when run, which no test does: it is here for its row, its actions and its pin.
+        BitCommandPaletteCmd.New("NuGet package").Href("https://www.nuget.org/packages/Bit.BlazorUI.Extras", newTab: true).Group("Navigation").Keywords("install", "package", "download"),
+
+        // ---- Actions: one of each kind of flow ----
+        BitCommandPaletteCmd.New("Rename project…")
+            .Group("Actions")
+            .Shortcut("F2")
+            .Keywords("title", "name")
+            .Tags(CommandTag)
+            // A prompt pre-filled with the current name, validated, and refused by the "server" for one name.
+            .Handler(_ => Task.FromResult(BitCommandPaletteCommandResult.Prompt(
+                "New project name",
+                ctx =>
+                {
+                    var name = ctx.PromptValue!.Trim();
+                    if (string.Equals(name, "admin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Task.FromResult(BitCommandPaletteCommandResult.Error("“admin” is reserved. Pick another name."));
+                    }
+
+                    _projectName = name;
+                    Changed();
+                    return Task.FromResult(BitCommandPaletteCommandResult.Toast($"Renamed to “{name}”"));
+                },
+                validate: value => value.Trim() switch
+                {
+                    "" => "A project needs a name.",
+                    { Length: > 40 } => "At most 40 characters.",
+                    _ => null,
+                },
+                placeholder: "Project name…",
+                initialValue: _projectName))),
+
+        BitCommandPaletteCmd.New("Set labels…")
+            .Group("Actions")
+            .Keywords("tags", "categorize")
+            .Tags(CommandTag)
+            // A multi-select page: Enter or Space checks a row, Ctrl+Enter hands the checked ones to the handler.
+            .MultiSelect()
+            .ChildrenPlaceholder("Toggle labels, Ctrl+Enter to apply…")
+            .Children(
+                BitCommandPaletteCmd.New("bug").Id("label:bug"),
+                BitCommandPaletteCmd.New("enhancement").Id("label:enhancement"),
+                BitCommandPaletteCmd.New("documentation").Id("label:documentation"),
+                BitCommandPaletteCmd.New("performance").Id("label:performance"),
+                BitCommandPaletteCmd.New("accessibility").Id("label:accessibility"))
+            .Handler(ctx =>
+            {
+                _labels = [.. ctx.SelectedCommands.Select(c => c.Title)];
+                Changed();
+                return Task.FromResult(BitCommandPaletteCommandResult.Toast(ctx.SelectedCommands.Count == 1 ? "1 label applied" : $"{ctx.SelectedCommands.Count} labels applied"));
+            }),
+
+        BitCommandPaletteCmd.New("Assign to…")
+            .Group("Actions")
+            .Keywords("owner", "person", "user")
+            .Tags(CommandTag)
+            // A lazily loaded page: the provider runs when the page opens, and the palette shows its loading state meanwhile.
+            .Children(async (ctx, ct) =>
+            {
+                await Task.Delay(400, ct);
+                return People.Select(p => (BitCommandPaletteCommand)BitCommandPaletteCmd.New(p.Name)
+                                                                                    .Subtitle(p.Role)
+                                                                                    .Data(p)
+                                                                                    .Handler(_ =>
+                                                                                    {
+                                                                                        Record($"Assigned to {p.Name}");
+                                                                                        return Task.FromResult(BitCommandPaletteCommandResult.Toast($"Assigned to {p.Name}"));
+                                                                                    }))
+                             .ToList();
+            }, placeholder: "Pick an assignee…"),
+
+        BitCommandPaletteCmd.New("Find a person…")
+            .Group("Actions")
+            .Keywords("search", "directory", "people", "user")
+            .Tags(CommandTag)
+            .ChildrenPlaceholder("Search the directory…")
+            // A page that searches as the user types: its source is asked for every query, debounced.
+            .Source("Directory", async (query, ct) =>
+            {
+                await Task.Delay(250, ct);
+                return People.Where(p => query.Length == 0 || p.Name.Contains(query, StringComparison.OrdinalIgnoreCase) || p.Role.Contains(query, StringComparison.OrdinalIgnoreCase))
+                             .Select(p => (BitCommandPaletteCommand)BitCommandPaletteCmd.New(p.Name)
+                                                                                     .Id($"person:{p.Email}")
+                                                                                     .Subtitle(p.Role)
+                                                                                     .Data(p)
+                                                                                     .ExcludeFromHistory()
+                                                                                     .Handler(_ =>
+                                                                                     {
+                                                                                         Record($"Opened {p.Name}");
+                                                                                         return Task.FromResult(BitCommandPaletteCommandResult.Toast($"Opened {p.Name}"));
+                                                                                     }))
+                             .ToList();
+            }),
+
+        BitCommandPaletteCmd.New("Copy share link")
+            .Group("Actions")
+            .Shortcut("Mod+Shift+C")
+            .Keywords("url", "clipboard")
+            .Tags(CommandTag)
+            .Handler(_ =>
+            {
+                Record("Share link copied");
+                return Task.FromResult(BitCommandPaletteCommandResult.Toast("Link copied to clipboard"));
+            }),
+
+        BitCommandPaletteCmd.New("Export…")
+            .Group("Actions")
+            .Keywords("download", "save as")
+            .Tags(CommandTag)
+            // An ad-hoc page: the handler decides what to list when it runs.
+            .Handler(_ => Task.FromResult(BitCommandPaletteCommandResult.Page("Export format",
+            [
+                BitCommandPaletteCmd.Action("CSV", () => Record("Exported CSV")).Subtitle("Comma separated values").Build(),
+                BitCommandPaletteCmd.Action("JSON", () => Record("Exported JSON")).Subtitle("Pretty printed").Build(),
+                BitCommandPaletteCmd.Action("PDF", () => Record("Exported PDF")).Subtitle("Print friendly").Badge("Pro").Disabled(true, "Requires the Pro plan").Build(),
+            ]))),
+
+        // ---- Preferences: options of a nested page answer Back, toggles keep the palette open ----
+        BitCommandPaletteCmd.New("Theme")
+            .Group("Preferences")
+            .Keywords("appearance", "dark", "light", "color scheme")
+            .Tags(CommandTag)
+            .Value(Capitalize(_theme))
+            .Children(
+                ThemeOption("auto", "Follow the operating system"),
+                ThemeOption("light", "Always light"),
+                ThemeOption("dark", "Always dark")),
+
+        // Names as their speakers write them: "francais" finds Français from the root (nested search, diacritics folded),
+        // and a right-to-left one turns the page - the palette included - right to left.
+        BitCommandPaletteCmd.New("Language")
+            .Group("Preferences")
+            .Keywords("locale", "translation", "rtl", "direction")
+            .Tags(CommandTag)
+            .Value(_language)
+            .Children(
+                LanguageOption("English", rtl: false),
+                LanguageOption("Deutsch", rtl: false),
+                LanguageOption("Français", rtl: false),
+                LanguageOption("Español", rtl: false),
+                LanguageOption("Türkçe", rtl: false),
+                LanguageOption("فارسی", rtl: true, "Persian"),
+                LanguageOption("العربية", rtl: true, "Arabic")),
+
+        Toggle("Word wrap", "wordwrap", _wordWrap, () => _wordWrap = !_wordWrap, "Alt+Z", "soft wrap lines"),
+        Toggle("Desktop notifications", "notifications", _notifications, () => _notifications = !_notifications, null, "alerts push"),
+        Toggle("Show minimap", "minimap", _showMinimap, () => _showMinimap = !_showMinimap, null, "outline overview"),
+        // Changes the palette it is listed in: the detail pane comes or goes while the palette stays open.
+        Toggle("Show detail pane", "detail", _showDetail, () => _showDetail = !_showDetail, null, "preview sidebar raycast"),
+
+        // ---- Danger zone: a destructive command needs a second Enter ----
+        BitCommandPaletteCmd.New("Delete project")
+            .Group("Danger zone")
+            .Keywords("remove", "destroy")
+            .Tags(CommandTag)
+            .Destructive("This permanently deletes the project")
+            .Handler(_ =>
+            {
+                Record("Project deleted (not really)");
+                return Task.FromResult(BitCommandPaletteCommandResult.Toast("Project deleted"));
+            }),
+
+        // ---- Help: what the "?" mode lists ----
+        BitCommandPaletteCmd.New("Keyboard shortcuts")
+            .Group("Help")
+            .Shortcut("Mod+/")
+            .Keywords("hotkeys", "keys", "bindings")
+            .Href("/e2e/command-palette/keyboard#shortcuts")
+            // After Href, which makes the command a navigation, so the row keeps the help icon.
+            .Kind(BitCommandPaletteCommandKind.Help),
+
+        BitCommandPaletteCmd.New("What's new")
+            .Group("Help")
+            .Badge("New")
+            .Kind(BitCommandPaletteCommandKind.Help)
+            .Handler(_ => Task.FromResult(BitCommandPaletteCommandResult.Toast("You are on the latest version", keepOpen: true))),
+
+        // Always listed, last, whatever was typed.
+        BitCommandPaletteCmd.New("Feedback: couldn't find a command?")
+            .Group("Help")
+            .Kind(BitCommandPaletteCommandKind.Help)
+            .AlwaysShow()
+            .Priority(BitCommandPaletteCommandPriority.Lowest)
+            .Handler(ctx => Task.FromResult(BitCommandPaletteCommandResult.Toast(ctx.Query.Length > 0 ? $"Thanks! We logged “{ctx.Query}”." : "Thanks for the feedback!"))),
+    ];
+
+    // Registered by this page only, while it is on screen.
+    private List<BitCommandPaletteCommand> PageCommands() =>
+    [
+        BitCommandPaletteCmd.New("Increment counter").Group("This page").Shortcut("Ctrl+Up").Keywords("plus", "add").Badge($"{_count}")
+            .Handler(_ =>
+            {
+                _count++;
+                Changed();
+                return Task.FromResult(BitCommandPaletteCommandResult.KeepOpen);
+            }),
+        BitCommandPaletteCmd.New("Decrement counter").Group("This page").Shortcut("Ctrl+Down").Keywords("minus", "subtract").Badge($"{_count}")
+            .Handler(_ =>
+            {
+                _count--;
+                Changed();
+                return Task.FromResult(BitCommandPaletteCommandResult.KeepOpen);
+            }),
+    ];
+
+    private BitCommandPaletteCommand ThemeOption(string theme, string subtitle) =>
+        BitCommandPaletteCmd.New(Capitalize(theme))
+            .Id($"theme:{theme}")
+            .Subtitle(subtitle)
+            .Checked(_theme == theme)
+            .Handler(async _ =>
+            {
+                await SetThemeAsync(theme);
+                return BitCommandPaletteCommandResult.Back;
+            })
+            .Build();
+
+    private BitCommandPaletteCommand LanguageOption(string name, bool rtl, string? english = null)
+    {
+        var option = BitCommandPaletteCmd.New(name)
+            .Id($"language:{english ?? name}")
+            .Subtitle(rtl ? "Right to left" : null)
+            .Checked(_language == name)
+            .Handler(async _ =>
+            {
+                _language = name;
+                await JS.InvokeVoidAsync("document.documentElement.setAttribute", "dir", rtl ? "rtl" : "ltr");
+                Changed();
+                return BitCommandPaletteCommandResult.Back;
+            });
+
+        // The English name as a keyword, so people who do not read the script still find it.
+        if (english is not null)
+        {
+            option.Keywords(english);
+        }
+
+        return option.Build();
+    }
+
+    private BitCommandPaletteCommand Toggle(string title, string id, bool value, Action toggle, string? shortcut, string keywords)
+    {
+        var builder = BitCommandPaletteCmd.New(title)
+            .Id($"toggle:{id}")
+            .Group("Preferences")
+            .Keywords(keywords.Split(' '))
+            .Tags(CommandTag)
+            .Checked(value)
+            .Handler(_ =>
+            {
+                toggle();
+                Changed();
+                return Task.FromResult(BitCommandPaletteCommandResult.KeepOpen);
+            });
+
+        if (shortcut is not null)
+        {
+            builder.Shortcut(shortcut);
+        }
+
+        return builder.Build();
+    }
+
+    private async Task<IReadOnlyList<BitCommandPaletteCommand>> SearchPeopleAsync(string query, CancellationToken ct)
+    {
+        var call = _peopleCalls.Count;
+        await InvokeAsync(() =>
+        {
+            _peopleCalls.Add($"{query}: Pending");
+            StateHasChanged();
+        });
+
+        try
+        {
+            await Task.Delay(250, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            await InvokeAsync(() =>
+            {
+                _peopleCalls[call] = $"{query}: Cancelled";
+                StateHasChanged();
+            });
+            throw;
+        }
+
+        await InvokeAsync(() =>
+        {
+            _peopleCalls[call] = $"{query}: Completed";
+            StateHasChanged();
+        });
+
+        return People.Where(p => p.Name.Contains(query, StringComparison.OrdinalIgnoreCase) || p.Role.Contains(query, StringComparison.OrdinalIgnoreCase))
+                     .Select(p => (BitCommandPaletteCommand)BitCommandPaletteCmd.New(p.Name)
+                                                                             .Id($"person:{p.Email}")
+                                                                             .Subtitle(p.Role)
+                                                                             .Keywords(p.Email)
+                                                                             .Data(p)
+                                                                             .Handler(_ => Task.FromResult(BitCommandPaletteCommandResult.Toast($"Opening the profile of {p.Name}"))))
+                     .ToList();
+    }
+
+    // A server that already sorted by relevance: open issues first, newest first, its order kept.
+    private static async Task<IReadOnlyList<BitCommandPaletteCommand>> SearchIssuesAsync(string query, CancellationToken ct)
+    {
+        await Task.Delay(180, ct);
+        IEnumerable<Issue> hits = Issues;
+        if (query.Length > 0)
+        {
+            hits = int.TryParse(query.TrimStart('#'), out var number)
+                ? hits.Where(i => i.Number.ToString(System.Globalization.CultureInfo.InvariantCulture).StartsWith(number.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal))
+                : hits.Where(i => i.Title.Contains(query, StringComparison.OrdinalIgnoreCase) || i.Labels.Any(l => l.Contains(query, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        return hits.OrderByDescending(i => i.State == "open")
+                   .ThenByDescending(i => i.Number)
+                   .Select(i => (BitCommandPaletteCommand)BitCommandPaletteCmd.New($"#{i.Number} {i.Title}")
+                                                                           .Id($"issue:{i.Number}")
+                                                                           .Subtitle(string.Join(" · ", i.Labels))
+                                                                           .Badge(i.State)
+                                                                           .Kind(BitCommandPaletteCommandKind.Navigation)
+                                                                           .Handler(_ => Task.FromResult(BitCommandPaletteCommandResult.Toast($"Opened issue #{i.Number}"))))
+                   .ToList();
+    }
+
+    // Every document, for the matcher to decide; the low priority keeps a command ahead of an equally good hit.
+    private static async Task<IReadOnlyList<BitCommandPaletteCommand>> SearchDocsAsync(string query, CancellationToken ct)
+    {
+        await Task.Delay(300, ct);
+        return Docs.Select(d => (BitCommandPaletteCommand)BitCommandPaletteCmd.New(d.Title)
+                                                                           .Id($"doc:{d.Path}")
+                                                                           .Subtitle(d.Excerpt)
+                                                                           .Href(d.Path)
+                                                                           .Kind(BitCommandPaletteCommandKind.Help)
+                                                                           .Priority(BitCommandPaletteCommandPriority.Low))
+                   .ToList();
+    }
+
+    private async Task<IReadOnlyList<BitCommandPaletteCommand>> SearchFlakyAsync(string query, CancellationToken ct)
+    {
+        await InvokeAsync(() =>
+        {
+            _flakyCalls++;
+            StateHasChanged();
+        });
+        await Task.Delay(50, ct);
+        throw new InvalidOperationException("The flaky API is down.");
+    }
+
+    private async Task SetThemeAsync(string theme)
+    {
+        _theme = theme;
+        var applied = theme == "auto" ? (await ThemeManager.IsSystemInDarkModeAsync() ? "dark" : "light") : theme;
+        await ThemeManager.SetThemeAsync(applied);
+        if (theme == "auto")
+        {
+            await JS.InvokeVoidAsync("localStorage.removeItem", ThemeKey);
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", ThemeKey, theme);
+        }
+
+        Changed();
+    }
+
+    private void ToggleWordWrap()
+    {
+        _wordWrap = _wordWrap is false;
+        Changed();
+    }
+
+    private void ToggleDetail()
+    {
+        _showDetail = _showDetail is false;
+        Changed();
+    }
+
+    private void Record(string action)
+    {
+        _lastAction = action;
+        Changed();
+    }
+
+    // A new list for the palette whenever the state changes, so a toggle's switch and a setting's value are never stale.
+    private void Changed() => _ = InvokeAsync(() =>
+    {
+        _globalCommands = GlobalCommands();
+        _pageCommands = PageCommands();
+        StateHasChanged();
+    });
+
+    private static string Capitalize(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
+
+    public void Dispose()
+    {
+        foreach (var registration in _registrations)
+        {
+            registration.Dispose();
+        }
+    }
+
+    private sealed record Person(string Name, string Role, string Email);
+
+    private sealed record Issue(int Number, string Title, string State, string[] Labels);
+}

@@ -304,9 +304,6 @@ _book
 /src/Utilities/Bink/Bit.Bink/wwwroot/**/*.js
 /src/Utilities/Bink/Bit.Bink/wwwroot/**/*.css
 
-/src/Utilities/Balette/Bit.Balette/Scripts/**/*.js
-/src/Utilities/Balette/Bit.Balette/wwwroot/**/*.js
-/src/Utilities/Balette/Bit.Balette/wwwroot/**/*.css
 /src/Utilities/BbScanner/Bit.BbScanner/Scripts/**/*.js
 /src/Utilities/BbScanner/Bit.BbScanner/wwwroot/**/*.js
 /src/Utilities/BbScanner/Bit.BbScanner/wwwroot/**/*.css

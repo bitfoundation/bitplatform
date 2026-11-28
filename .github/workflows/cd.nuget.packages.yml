@@ -6,7 +6,6 @@ on:
     branches:
       - 'main'
     paths:
-      - 'src/Utilities/Balette/**'
       - 'src/Utilities/BbScanner/**'
       - 'src/Utilities/Bdnd/**'
       - 'src/Utilities/BevTools/**'
@@ -299,12 +298,6 @@ jobs:
 
     - name: dotnet pack Bink
       run: dotnet pack src/Utilities/Bink/Bit.Bink/Bit.Bink.csproj --output . --configuration Release
-
-    - name: dotnet build Balette
-      run: dotnet build src/Utilities/Balette/Bit.Balette/Bit.Balette.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-
-    - name: dotnet pack Balette
-      run: dotnet pack src/Utilities/Balette/Bit.Balette/Bit.Balette.csproj --output . --configuration Release
 
     - name: dotnet build BbScanner
       run: dotnet build src/Utilities/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

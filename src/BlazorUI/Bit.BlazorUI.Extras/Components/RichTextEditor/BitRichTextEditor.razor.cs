@@ -22,6 +22,9 @@ public partial class BitRichTextEditor : BitComponentBase
     private ElementReference _editorRef = default!;
     private BitRichTextEditorContentFacts _facts;
     private BitRichTextEditorSelectionState _state = new();
+    // What the editor's own undo history holds, as the bridge last reported it (see _OnHistoryChanged).
+    private bool _canUndo;
+    private bool _canRedo;
     private DotNetObjectReference<BitRichTextEditor>? _dotnetObj = null;
 
     /// <summary>Transient inline error message shown in the editor chrome.</summary>
@@ -293,9 +296,35 @@ public partial class BitRichTextEditor : BitComponentBase
     public BitRichTextEditorSelectionState SelectionState => _state;
 
     /// <summary>
-    /// Runs a raw editing command against the editor.
+    /// Whether there is an edit to undo: a command, a paste, a value set after the first edit, or text typed since the
+    /// last step. The editor keeps its own history rather than the browser's, so this is what <see cref="UndoAsync"/>,
+    /// Ctrl+Z and the toolbar's Undo button go by. <c>false</c> until the editor is set up in the browser.
     /// </summary>
-    public Task ExecuteCommandAsync(string command, string? value = null) => ExecAsync(command, value);
+    public bool CanUndo => _canUndo;
+
+    /// <summary>
+    /// Whether there is an undone edit to redo; any new edit clears it. <c>false</c> until the editor is set up in the
+    /// browser.
+    /// </summary>
+    public bool CanRedo => _canRedo;
+
+    /// <summary>
+    /// Runs one of the editor's commands, the ones its toolbar and shortcuts use, with the value the command takes (a
+    /// tag for <see cref="BitRichTextEditorCommand.FormatBlock"/>, a color, a font, a size or an address). Content goes in
+    /// through <see cref="InsertHtmlAsync"/> and <see cref="InsertTextAsync"/>, which sanitize it and hold it to
+    /// <see cref="MaxLength"/>.
+    /// </summary>
+    public Task ExecuteCommandAsync(BitRichTextEditorCommand command, string? value = null)
+        => Enum.IsDefined(command) ? RunCommandAsync(command, value) : RefuseCommandAsync(command.ToString());
+
+    /// <summary>
+    /// Runs one of the editor's commands by name: the name of a <see cref="BitRichTextEditorCommand"/> member with its
+    /// first letter in lower case (<c>bold</c>, <c>strikeThrough</c>, <c>formatBlock</c>, <c>insertOrderedList</c>,
+    /// <c>justifyCenter</c>, <c>foreColor</c>, <c>createLink</c>, <c>undo</c>, ...). A name the editor does not have
+    /// changes nothing and raises <see cref="OnError"/> with the <c>command-failed</c> code.
+    /// </summary>
+    public Task ExecuteCommandAsync(string command, string? value = null)
+        => CommandNames.TryGetValue(command ?? string.Empty, out var typed) ? RunCommandAsync(typed, value) : RefuseCommandAsync(command ?? string.Empty);
 
     /// <summary>
     /// Inserts plain text at the current caret position, honoring <see cref="MaxLength"/>.
@@ -341,10 +370,13 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>Clears the editor content.</summary>
     public Task ClearAsync() => SetHtmlAsync(null);
 
-    /// <summary>Undoes the last edit.</summary>
+    /// <summary>
+    /// Undoes the last edit - a command, a paste, a word typed, or a value set after the first edit - from the editor's
+    /// own history (see <see cref="CanUndo"/>).
+    /// </summary>
     public Task UndoAsync() => ExecAsync("undo");
 
-    /// <summary>Redoes the last undone edit.</summary>
+    /// <summary>Redoes the last undone edit (see <see cref="CanRedo"/>).</summary>
     public Task RedoAsync() => ExecAsync("redo");
 
     /// <summary>Selects the whole editor content.</summary>
@@ -366,6 +398,10 @@ public partial class BitRichTextEditor : BitComponentBase
     private bool ControlsDisabled => EffectiveReadOnly || _inSourceView;
 
     private bool UnlinkDisabled => ControlsDisabled || _state.InLink is false;
+
+    private bool UndoDisabled => ControlsDisabled || _canUndo is false;
+
+    private bool RedoDisabled => ControlsDisabled || _canRedo is false;
 
     // The source toggle is the one control still live in the source view, which is how a read-only editor leaves it.
     private bool SourceToggleDisabled => Disabled || (EffectiveReadOnly && _inSourceView is false);
@@ -513,6 +549,21 @@ public partial class BitRichTextEditor : BitComponentBase
         Announce(isChecked ? Loc("task-checked", "Task checked") : Loc("task-unchecked", "Task unchecked"));
     }
 
+    /// <summary>
+    /// Reported by the bridge when the undo history gains or loses something to undo or redo, which enables and disables
+    /// the toolbar's Undo and Redo buttons.
+    /// </summary>
+    [JSInvokable("OnHistoryChanged")]
+    public void _OnHistoryChanged(bool canUndo, bool canRedo)
+    {
+        if (IsDisposing) return;
+        if (_canUndo == canUndo && _canRedo == canRedo) return;
+
+        _canUndo = canUndo;
+        _canRedo = canRedo;
+        StateHasChanged();
+    }
+
     [JSInvokable("OnFocused")]
     public Task _OnFocused() => IsDisposing ? Task.CompletedTask : OnFocus.InvokeAsync();
 
@@ -537,6 +588,51 @@ public partial class BitRichTextEditor : BitComponentBase
 
 
     // ---- commands ----
+
+    // The name each command has in the script, which the string overload of ExecuteCommandAsync takes: the member's name
+    // with its first letter in lower case.
+    private static readonly Dictionary<string, BitRichTextEditorCommand> CommandNames =
+        Enum.GetValues<BitRichTextEditorCommand>().ToDictionary(ScriptName, StringComparer.Ordinal);
+
+    private static string ScriptName(BitRichTextEditorCommand command)
+    {
+        var name = command.ToString();
+        return char.ToLowerInvariant(name[0]) + name[1..];
+    }
+
+    // The commands that take a value go the way the toolbar's own controls do, through the checks that come with them:
+    // the policy's tags for a color or a font, and its schemes for a link.
+    private async Task RunCommandAsync(BitRichTextEditorCommand command, string? value)
+    {
+        if (ControlsDisabled) return;
+        switch (command)
+        {
+            case BitRichTextEditorCommand.FormatBlock:
+                await ExecBlockAsync(string.IsNullOrWhiteSpace(value) ? "p" : value);
+                break;
+            case BitRichTextEditorCommand.ForeColor:
+            case BitRichTextEditorCommand.BackColor:
+                if (string.IsNullOrWhiteSpace(value)) return;
+                await _js.BitRichTextEditorApplyColor(_editorRef, command == BitRichTextEditorCommand.BackColor ? "back" : "fore", value);
+                break;
+            case BitRichTextEditorCommand.FontName:
+            case BitRichTextEditorCommand.FontSize:
+                if (string.IsNullOrWhiteSpace(value)) return;
+                await _js.BitRichTextEditorApplyFont(_editorRef, command == BitRichTextEditorCommand.FontSize ? "size" : "family", value);
+                break;
+            case BitRichTextEditorCommand.CreateLink:
+                if (string.IsNullOrWhiteSpace(value)) return;
+                await _js.BitRichTextEditorCreateLink(_editorRef, value, false, null);
+                break;
+            default:
+                await ExecAsync(ScriptName(command), value);
+                break;
+        }
+    }
+
+    private Task RefuseCommandAsync(string command)
+        => RaiseErrorAsync(new BitRichTextEditorError("command-failed",
+            string.Format(Loc("command-failed", "Command '{0}' failed."), command)));
 
     private async Task ExecAsync(string command, string? value = null)
     {
@@ -853,9 +949,11 @@ public partial class BitRichTextEditor : BitComponentBase
         // focus in the editor.
         await FocusSlashIfPendingAsync();
         await FocusMentionIfPendingAsync();
-        await FocusPanelIfPendingAsync();
+        // A grid's arrow keys are wired before the focus goes into it: a key pressed as soon as the focus shows would
+        // otherwise reach the grid before its keys do anything.
         await EnableEmojiGridIfPendingAsync();
         await EnableColorGridIfPendingAsync();
+        await FocusPanelIfPendingAsync();
         await FocusEditorIfPendingAsync();
     }
 

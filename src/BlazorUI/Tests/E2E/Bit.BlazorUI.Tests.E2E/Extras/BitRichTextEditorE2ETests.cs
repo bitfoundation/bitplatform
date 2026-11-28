@@ -49,6 +49,55 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         return false;
     }", text);
 
+    // Selects from the start of the first text holding `from` to the end of the first text after it holding `to`, which
+    // may be in another node: a selection across marks and blocks.
+    private Task<bool> SelectAcrossAsync(string id, string from, string to) => Page.Locator($"#{id}").EvaluateAsync<bool>(@"(root, [from, to]) => {
+        const ed = root.querySelector('.bit-rte-edt');
+        ed.focus();
+        const walker = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT);
+        const r = document.createRange();
+        let started = false, n;
+        while ((n = walker.nextNode())) {
+            if (!started) {
+                const i = n.nodeValue.indexOf(from);
+                if (i < 0) continue;
+                r.setStart(n, i);
+                started = true;
+                const j = n.nodeValue.indexOf(to, i);
+                if (j >= 0) { r.setEnd(n, j + to.length); break; }
+                continue;
+            }
+            const j = n.nodeValue.indexOf(to);
+            if (j >= 0) { r.setEnd(n, j + to.length); break; }
+        }
+        if (!started || r.collapsed) return false;
+        const s = getSelection();
+        s.removeAllRanges();
+        s.addRange(r);
+        return true;
+    }", new[] { from, to });
+
+    // Puts markup into the surface the way a value set from .NET does, before anything is edited.
+    private Task SetHtmlAsync(string id, string html) => Surface(id).EvaluateAsync(
+        "(e, html) => BitBlazorUI.RichTextEditor.setHtml(e, html)", html);
+
+    // Waits for the surface to hold exactly this markup, less the marker comments Blazor rendered into it, and fails
+    // with what it holds instead. A style the editor wrote ends in the semicolon the browser serializes it with, which
+    // the stored value does not have, so that is left out too.
+    private async Task ExpectMarkupAsync(string id, string html)
+    {
+        const string read = "e => { const c = e.cloneNode(true); const w = document.createTreeWalker(c, NodeFilter.SHOW_COMMENT); const all = []; let n; while ((n = w.nextNode())) all.push(n); all.forEach(x => x.remove()); c.querySelectorAll('[style]').forEach(x => x.setAttribute('style', x.getAttribute('style').replace(/;\\s*$/, ''))); return c.innerHTML; }";
+        try
+        {
+            await Surface(id).EvaluateAsync($"async (e, html) => {{ const read = {read}; for (let i = 0; i < 100; i++) {{ if (read(e) === html) return; await new Promise(r => setTimeout(r, 50)); }} throw new Error('timeout'); }}", html);
+        }
+        catch (PlaywrightException)
+        {
+            Assert.AreEqual(html, await Surface(id).EvaluateAsync<string>(read));
+            throw;
+        }
+    }
+
     private Task SelectElementAsync(string id, string selector) => Page.Locator($"#{id}").EvaluateAsync(@"(root, selector) => {
         const ed = root.querySelector('.bit-rte-edt');
         ed.focus();
@@ -235,6 +284,94 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(button).ToHaveAttributeAsync("aria-pressed", "false");
     }
 
+    // The marks are the editor's own DOM edits rather than the engines' execCommand, so each one leaves exactly this
+    // markup in Chromium, Firefox and WebKit alike.
+    [TestMethod]
+    [DataRow("Bold", "<p>alpha beta gamma</p>", "beta", "beta", "<p>alpha <b>beta</b> gamma</p>")]
+    [DataRow("Bold", "<p>alpha <i>beta</i> gamma</p>", "pha", "be", "<p>al<b>pha </b><i><b>be</b>ta</i> gamma</p>")]
+    [DataRow("Bold", "<p><b>alpha beta gamma</b></p>", "beta", "beta", "<p><b>alpha </b>beta<b> gamma</b></p>")]
+    [DataRow("Bold", "<p><strong>alpha beta</strong> gamma</p>", "beta", "beta", "<p><strong>alpha </strong>beta gamma</p>")]
+    [DataRow("Bold", "<p><b>alpha</b> beta</p>", "alpha", "beta", "<p><b>alpha beta</b></p>")]
+    [DataRow("Italic", "<p>alpha</p><p>beta</p>", "pha", "be", "<p>al<i>pha</i></p><p><i>be</i>ta</p>")]
+    [DataRow("Underline", "<p>alpha beta gamma</p>", "beta", "beta", "<p>alpha <u>beta</u> gamma</p>")]
+    [DataRow("Strikethrough", "<p><s>alpha beta</s></p>", "alpha", "alpha", "<p>alpha<s> beta</s></p>")]
+    [DataRow("Subscript", "<p>x<sup>2</sup></p>", "2", "2", "<p>x<sub>2</sub></p>")]
+    [DataRow("Superscript", "<p>alpha beta gamma</p>", "beta", "beta", "<p>alpha <sup>beta</sup> gamma</p>")]
+    [DataRow("Inline code", "<p>alpha <code>beta</code> gamma</p>", "beta", "beta", "<p>alpha beta gamma</p>")]
+    [DataRow("Clear formatting", "<p><b>al<a href=\"https://example.com/\">pha</a></b> <span style=\"color: red\">beta</span> <u><i>gamma</i></u></p>", "al", "gamma", "<p>al<a href=\"https://example.com/\">pha</a> beta gamma</p>")]
+    public async Task Marks_EachCommand_WritesTheSameMarkupInEveryEngine(string label, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        await Btn("rte-ext", label).ClickAsync();
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+        // A mark is one step.
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", start);
+    }
+
+    [TestMethod]
+    public async Task Marks_AppliedAgainOverTheSelection_ComeOffTheSameText()
+    {
+        await OpenAsync(Route);
+
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", "pha", "be"));
+        await Btn("rte-ext", "Bold").ClickAsync();
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>al<b>pha be</b>ta gamma</p>");
+        // The selection stays on what was marked, so the same button takes it off again.
+        await Expect(Btn("rte-ext", "Bold")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Btn("rte-ext", "Bold").ClickAsync();
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha beta gamma</p>");
+        await Expect(Btn("rte-ext", "Bold")).ToHaveAttributeAsync("aria-pressed", "false");
+    }
+
+    [TestMethod]
+    public async Task Marks_SetAtACaret_ApplyToTheTextTypedThere()
+    {
+        await OpenAsync(Route);
+
+        var bold = Btn("rte-ext", "Bold");
+        await CaretAtEndAsync("rte-ext");
+        await bold.ClickAsync();
+        await Expect(bold).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Btn("rte-ext", "Undo")).ToBeDisabledAsync();
+
+        await Page.Keyboard.TypeAsync("XY");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha beta gamma<b>XY</b></p>");
+
+        // Turned off at the caret, the text typed next is out of the mark again.
+        await bold.ClickAsync();
+        await Expect(bold).ToHaveAttributeAsync("aria-pressed", "false");
+        await Page.Keyboard.TypeAsync("Z");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha beta gamma<b>XY</b>Z</p>");
+
+        // A mark set at a caret is gone once the caret moves.
+        await Btn("rte-ext", "Italic").ClickAsync();
+        await Expect(Btn("rte-ext", "Italic")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Page.Keyboard.PressAsync("ArrowLeft");
+        await Expect(Btn("rte-ext", "Italic")).ToHaveAttributeAsync("aria-pressed", "false");
+        await Page.Keyboard.TypeAsync("W");
+        await Expect(Surface("rte-ext").Locator("i")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Marks_TheBrowsersOwnFormatInput_RunsTheEditorsCommand()
+    {
+        await OpenAsync(Route);
+
+        Assert.IsTrue(await SelectTextAsync("rte-ext", "beta"));
+        await Surface("rte-ext").EvaluateAsync(
+            "e => e.dispatchEvent(new InputEvent('beforeinput', { inputType: 'formatItalic', bubbles: true, cancelable: true }))");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha <i>beta</i> gamma</p>");
+        await Expect(Btn("rte-ext", "Italic")).ToHaveAttributeAsync("aria-pressed", "true");
+    }
+
     [TestMethod]
     [DataRow("h1")]
     [DataRow("h2")]
@@ -293,6 +430,80 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(tasks).ToHaveAttributeAsync("data-checked", "true");
     }
 
+    // The lists and their indentation are the editor's own DOM edits rather than the engines' execCommand, so each one
+    // leaves exactly this markup in Chromium, Firefox and WebKit alike.
+    [TestMethod]
+    [DataRow("Bullet list", "<p>alpha</p><p>beta</p>", "alpha", "beta", "<ul><li>alpha</li><li>beta</li></ul>")]
+    [DataRow("Numbered list", "<p dir=\"rtl\">alpha</p>", "alpha", "alpha", "<ol><li dir=\"rtl\">alpha</li></ol>")]
+    [DataRow("Bullet list", "<ul><li>alpha</li><li>beta</li><li>gamma</li></ul>", "beta", "beta", "<ul><li>alpha</li></ul><p>beta</p><ul><li>gamma</li></ul>")]
+    [DataRow("Numbered list", "<ul><li>alpha</li><li>beta</li></ul>", "alpha", "alpha", "<ol><li>alpha</li><li>beta</li></ol>")]
+    [DataRow("Numbered list", "<ul class=\"bit-rte-tasks\"><li data-checked=\"true\">alpha</li></ul>", "alpha", "alpha", "<ol><li>alpha</li></ol>")]
+    [DataRow("Bullet list", "<ul><li>alpha</li></ul><p>beta</p>", "beta", "beta", "<ul><li>alpha</li><li>beta</li></ul>")]
+    [DataRow("Bullet list", "<h2>alpha</h2>", "alpha", "alpha", "<ul><li><h2>alpha</h2></li></ul>")]
+    [DataRow("Increase indent", "<ul><li>alpha</li><li>beta</li><li>gamma</li></ul>", "beta", "gamma", "<ul><li>alpha<ul><li>beta</li><li>gamma</li></ul></li></ul>")]
+    [DataRow("Increase indent", "<ul><li>alpha</li><li>beta</li></ul>", "alpha", "alpha", "<ul><li>alpha</li><li>beta</li></ul>")]
+    [DataRow("Decrease indent", "<ul><li>alpha<ul><li>beta</li><li>gamma</li></ul></li></ul>", "beta", "beta", "<ul><li>alpha</li><li>beta<ul><li>gamma</li></ul></li></ul>")]
+    [DataRow("Decrease indent", "<ul><li>alpha</li><li>beta</li></ul>", "alpha", "alpha", "<p>alpha</p><ul><li>beta</li></ul>")]
+    public async Task Lists_EachCommand_WritesTheSameMarkupInEveryEngine(string control, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        await Btn("rte-ext", control).ClickAsync();
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        if (expected != start)
+        {
+            await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+            // A list command is one step.
+            await Btn("rte-ext", "Undo").ClickAsync();
+            await ExpectMarkupAsync("rte-ext", start);
+        }
+    }
+
+    [TestMethod]
+    public async Task Lists_TheToolbarFollowsTheListAtTheCaret()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", "<ol><li>alpha</li></ol><ul><li>beta</li></ul><ul class=\"bit-rte-tasks\"><li data-checked=\"false\">gamma</li></ul>");
+        await SelectTextAsync("rte-ext", "alpha");
+        await Expect(Btn("rte-ext", "Numbered list")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Btn("rte-ext", "Bullet list")).ToHaveAttributeAsync("aria-pressed", "false");
+        await SelectTextAsync("rte-ext", "beta");
+        await Expect(Btn("rte-ext", "Bullet list")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Btn("rte-ext", "Numbered list")).ToHaveAttributeAsync("aria-pressed", "false");
+        await SelectTextAsync("rte-ext", "gamma");
+        await Expect(Btn("rte-ext", "Task list")).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Btn("rte-ext", "Bullet list")).ToHaveAttributeAsync("aria-pressed", "false");
+    }
+
+    [TestMethod]
+    public async Task Indent_OutsideAList_StepsTheMarginOnTheStartingSide()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", "<p>alpha</p><p dir=\"rtl\">beta</p>");
+        await SelectAcrossAsync("rte-ext", "alpha", "beta");
+        await Btn("rte-ext", "Increase indent").ClickAsync();
+        await Expect(Surface("rte-ext").Locator("p").First).ToHaveCSSAsync("margin-left", "40px");
+        await Expect(Surface("rte-ext").Locator("p").Last).ToHaveCSSAsync("margin-right", "40px");
+        await Expect(Page.Locator("#ext-value")).ToContainTextAsync("<p style=\"margin-left: 40px\">alpha</p>");
+
+        await SelectAcrossAsync("rte-ext", "alpha", "beta");
+        await Btn("rte-ext", "Increase indent").ClickAsync();
+        await Expect(Surface("rte-ext").Locator("p").First).ToHaveCSSAsync("margin-left", "80px");
+
+        await SelectAcrossAsync("rte-ext", "alpha", "beta");
+        await Btn("rte-ext", "Decrease indent").ClickAsync();
+        await SelectAcrossAsync("rte-ext", "alpha", "beta");
+        await Btn("rte-ext", "Decrease indent").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", "<p>alpha</p><p dir=\"rtl\">beta</p>");
+    }
+
     [TestMethod]
     public async Task Indent_NestsAListItem_AndOutdentBringsItBack()
     {
@@ -334,6 +545,53 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(Btn("rte-ext", "Code block")).ToHaveAttributeAsync("aria-pressed", "true");
     }
 
+    // The block formats are the editor's own DOM edits rather than the engines' formatBlock, so each one leaves exactly
+    // this markup in Chromium, Firefox and WebKit alike. A format is picked from the paragraph format list, or with the
+    // toolbar button `control` names.
+    [TestMethod]
+    [DataRow("h2", "", "<p>alpha beta gamma</p>", "beta", "beta", "<h2>alpha beta gamma</h2>")]
+    [DataRow("h1", "", "<p dir=\"rtl\">alpha</p><p style=\"text-align: center\">beta</p>", "pha", "be", "<h1 dir=\"rtl\">alpha</h1><h1 style=\"text-align: center\">beta</h1>")]
+    [DataRow("pre", "", "<p>alpha <b>beta</b></p>", "alpha", "alpha", "<pre>alpha <b>beta</b></pre>")]
+    [DataRow("p", "", "<pre>one\ntwo</pre>", "one", "one", "<p>one<br>two</p>")]
+    [DataRow("blockquote", "", "<p>alpha</p><p>beta</p><p>gamma</p>", "beta", "beta", "<p>alpha</p><blockquote><p>beta</p></blockquote><p>gamma</p>")]
+    [DataRow("blockquote", "", "<p>alpha</p><p>beta</p><p>gamma</p>", "alpha", "beta", "<blockquote><p>alpha</p><p>beta</p></blockquote><p>gamma</p>")]
+    [DataRow("", "Block quote", "<blockquote><p>alpha</p><p>beta</p><p>gamma</p></blockquote>", "beta", "beta", "<blockquote><p>alpha</p></blockquote><p>beta</p><blockquote><p>gamma</p></blockquote>")]
+    [DataRow("h3", "", "<blockquote><p>alpha</p></blockquote>", "alpha", "alpha", "<blockquote><h3>alpha</h3></blockquote>")]
+    public async Task Blocks_EachFormat_WritesTheSameMarkupInEveryEngine(string format, string control, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        if (control.Length > 0) await Btn("rte-ext", control).ClickAsync();
+        else await Page.Locator("#rte-ext select[aria-label='Paragraph format']").SelectOptionAsync(format);
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+        // A format is one step.
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", start);
+    }
+
+    [TestMethod]
+    public async Task Blocks_TheFormatListFollowsTheBlockAtTheCaret_AQuotedParagraphReadingAsAQuote()
+    {
+        await OpenAsync(Route);
+
+        var select = Page.Locator("#rte-ext select[aria-label='Paragraph format']");
+        await SetHtmlAsync("rte-ext", "<h4>alpha</h4><blockquote><p>beta</p></blockquote><pre>gamma</pre>");
+        await SelectTextAsync("rte-ext", "alpha");
+        await Expect(select).ToHaveValueAsync("h4");
+        await SelectTextAsync("rte-ext", "beta");
+        await Expect(select).ToHaveValueAsync("blockquote");
+        await Expect(Btn("rte-ext", "Block quote")).ToHaveAttributeAsync("aria-pressed", "true");
+        await SelectTextAsync("rte-ext", "gamma");
+        await Expect(select).ToHaveValueAsync("pre");
+        await Expect(Btn("rte-ext", "Code block")).ToHaveAttributeAsync("aria-pressed", "true");
+    }
+
     [TestMethod]
     [DataRow("Align left", "left")]
     [DataRow("Align center", "center")]
@@ -351,6 +609,227 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(Btn("rte-ext", label)).ToHaveAttributeAsync("aria-pressed", "true");
         if (align != "left") await Expect(Page.Locator("#ext-value")).ToContainTextAsync($"text-align: {align}");
     }
+
+    // The alignment is the editor's own text-align style rather than the engines' execCommand (Gecko wrote an align
+    // attribute), so each button leaves exactly this markup in Chromium, Firefox and WebKit alike. A block that is laid
+    // out that way already, by its direction, carries no style.
+    [TestMethod]
+    [DataRow("Align center", "<p>alpha</p><p>beta</p>", "alpha", "beta", "<p style=\"text-align: center\">alpha</p><p style=\"text-align: center\">beta</p>")]
+    [DataRow("Align left", "<p style=\"text-align: center\">alpha</p>", "alpha", "alpha", "<p>alpha</p>")]
+    [DataRow("Align left", "<p dir=\"rtl\">alpha</p>", "alpha", "alpha", "<p dir=\"rtl\" style=\"text-align: left\">alpha</p>")]
+    [DataRow("Align right", "<p dir=\"rtl\" style=\"text-align: center\">alpha</p>", "alpha", "alpha", "<p dir=\"rtl\">alpha</p>")]
+    [DataRow("Justify", "<p align=\"center\">alpha</p>", "alpha", "alpha", "<p style=\"text-align: justify\">alpha</p>")]
+    [DataRow("Align right", "<p style=\"margin-left: 40px\">alpha</p>", "alpha", "alpha", "<p style=\"margin-left: 40px; text-align: right\">alpha</p>")]
+    [DataRow("Align center", "<ul><li>alpha</li><li>beta</li></ul>", "beta", "beta", "<ul><li>alpha</li><li style=\"text-align: center\">beta</li></ul>")]
+    [DataRow("Align right", "<h2>alpha</h2>", "alpha", "alpha", "<h2 style=\"text-align: right\">alpha</h2>")]
+    public async Task Alignment_EachButton_WritesTheSameMarkupInEveryEngine(string control, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        await Btn("rte-ext", control).ClickAsync();
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        await Expect(Btn("rte-ext", control)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+        // An alignment is one step.
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", start);
+    }
+
+    // The colors and fonts are the editor's own spans rather than the engines' execCommand (which wrote <font> in some
+    // engines and split the spans differently in each), so each control leaves exactly this markup in Chromium, Firefox
+    // and WebKit alike. The colors are picked from the palette's swatches (Red, Green, Blue): Playwright's WebKit never
+    // reports a value filled into a native color input.
+    [TestMethod]
+    [DataRow("Text color", "Red", "<p>alpha beta</p>", "beta", "beta", "<p>alpha <span style=\"color: rgb(255, 0, 0)\">beta</span></p>")]
+    [DataRow("Text color", "Red", "<p><b>alpha</b> beta</p>", "alpha", "beta", "<p><span style=\"color: rgb(255, 0, 0)\"><b>alpha</b> beta</span></p>")]
+    [DataRow("Text color", "Blue", "<p><span style=\"color: rgb(255, 0, 0)\">alpha beta gamma</span></p>", "beta", "beta", "<p><span style=\"color: rgb(255, 0, 0)\">alpha </span><span style=\"color: rgb(0, 0, 255)\">beta</span><span style=\"color: rgb(255, 0, 0)\"> gamma</span></p>")]
+    [DataRow("Highlight color", "Green", "<p><span style=\"color: rgb(255, 0, 0)\">alpha</span></p>", "alpha", "alpha", "<p><span style=\"color: rgb(255, 0, 0); background-color: rgb(0, 170, 0)\">alpha</span></p>")]
+    [DataRow("Remove text color", "", "<p><span style=\"color: rgb(255, 0, 0)\">alpha beta gamma</span></p>", "beta", "beta", "<p><span style=\"color: rgb(255, 0, 0)\">alpha </span>beta<span style=\"color: rgb(255, 0, 0)\"> gamma</span></p>")]
+    [DataRow("Remove highlight", "", "<p style=\"background-color: rgb(0, 170, 0)\">alpha</p>", "alpha", "alpha", "<p>alpha</p>")]
+    [DataRow("Font family", "Georgia", "<p>alpha</p><p>beta</p>", "alpha", "beta", "<p><span style=\"font-family: Georgia\">alpha</span></p><p><span style=\"font-family: Georgia\">beta</span></p>")]
+    [DataRow("Font size", "20px", "<p><a href=\"https://bitplatform.dev\">alpha</a></p>", "alpha", "alpha", "<p><a href=\"https://bitplatform.dev\"><span style=\"font-size: 20px\">alpha</span></a></p>")]
+    public async Task Styles_EachControl_WritesTheSameMarkupInEveryEngine(string control, string value, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-colors", start);
+        await ExpectMarkupAsync("rte-colors", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-colors", from, to));
+        await StyleAsync(control, value);
+
+        await ExpectMarkupAsync("rte-colors", expected);
+        await Expect(Page.Locator("#color-value")).ToHaveTextAsync(expected);
+
+        // A color or a font is one step.
+        await Surface("rte-colors").FocusAsync();
+        await Page.Keyboard.PressAsync("Control+z");
+        await ExpectMarkupAsync("rte-colors", start);
+    }
+
+    // A color or a font picked at a caret is for the text typed there next, as it was with the engines' commands.
+    [TestMethod]
+    public async Task Styles_PickedAtACaret_StyleWhatIsTypedNext()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-colors", "<p>alpha</p>");
+        await SelectTextAsync("rte-colors", "alpha");
+        await Page.Keyboard.PressAsync("End");
+        // Nothing in the markup changes until something is typed, so each pick is waited for where the editor keeps it
+        // (the command has put the focus back in the text by then).
+        const string pending = "async (e, p) => { for (let i = 0; i < 100; i++) { const s = e._pendingMarks && e._pendingMarks.styles; if (s && p in s) return true; await new Promise(r => setTimeout(r, 50)); } return false; }";
+        await StyleAsync("Text color", "Red");
+        Assert.IsTrue(await Surface("rte-colors").EvaluateAsync<bool>(pending, "color"));
+        await StyleAsync("Font size", "20px");
+        Assert.IsTrue(await Surface("rte-colors").EvaluateAsync<bool>(pending, "font-size"));
+        await Page.Keyboard.TypeAsync("xy");
+        await ExpectMarkupAsync("rte-colors", "<p>alpha<span style=\"color: rgb(255, 0, 0); font-size: 20px\">xy</span></p>");
+    }
+
+    // Picks a color, a font or a removal on the palette editor's toolbar.
+    private async Task StyleAsync(string control, string value)
+    {
+        switch (control)
+        {
+            case "Text color":
+            case "Highlight color":
+                await Btn("rte-colors", control).ClickAsync();
+                await Page.Locator("#rte-colors .bit-rte-swatches button").Nth(Array.IndexOf(new[] { "Red", "Green", "Blue" }, value)).ClickAsync();
+                break;
+            case "Font family":
+            case "Font size":
+                await Page.Locator($"#rte-colors select[aria-label='{control}']").SelectOptionAsync(value);
+                break;
+            default:
+                await Btn("rte-colors", control).ClickAsync();
+                break;
+        }
+    }
+
+    // A link is the editor's own anchor rather than the engines' execCommand, which made several anchors across a
+    // selection of several elements; and removing a link takes every link the selection touches, whole.
+    [TestMethod]
+    [DataRow("Link", "<p>alpha beta</p>", "alpha", "beta", "<p><a href=\"https://bitplatform.dev\">alpha beta</a></p>")]
+    [DataRow("Link", "<p><b>alpha</b> beta</p>", "alpha", "beta", "<p><a href=\"https://bitplatform.dev\"><b>alpha</b> beta</a></p>")]
+    [DataRow("Link", "<p>alpha</p><p>beta</p>", "alpha", "beta", "<p><a href=\"https://bitplatform.dev\">alpha</a></p><p><a href=\"https://bitplatform.dev\">beta</a></p>")]
+    [DataRow("Link", "<p>one <a href=\"https://example.com\">two</a> three</p>", "one", "three", "<p><a href=\"https://bitplatform.dev\">one two three</a></p>")]
+    [DataRow("Unlink", "<p><a href=\"https://example.com\">alpha beta</a></p>", "beta", "beta", "<p>alpha beta</p>")]
+    [DataRow("Unlink", "<p><a href=\"https://example.com\">alpha</a> and <a href=\"https://example.com\">beta</a></p>", "alpha", "beta", "<p>alpha and beta</p>")]
+    public async Task Links_EachCommand_WritesTheSameMarkupInEveryEngine(string command, string start, string from, string to, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        if (command == "Link")
+        {
+            await Page.Keyboard.PressAsync("Control+k");
+            var url = Page.Locator("#rte-ext .bit-rte-bar[role='group'][aria-label='Insert or edit link'] input[type='url']");
+            await Expect(url).ToBeFocusedAsync();
+            await url.FillAsync("https://bitplatform.dev");
+            await url.PressAsync("Enter");
+        }
+        else
+        {
+            await Page.Keyboard.PressAsync("Control+Shift+KeyK");
+        }
+
+        await ExpectMarkupAsync("rte-ext", expected);
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected);
+
+        // A link is one step.
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", start);
+    }
+
+    // Inserting is the editor's own DOM edit rather than the engines' insertHTML (which Blink restyled after the page's
+    // stylesheets and put a list inside the paragraph it went into), so each insert leaves exactly this markup in
+    // Chromium, Firefox and WebKit alike. The | in the expected markup is where the caret is left: a ! typed next lands
+    // there. (Behind a mark, the engines differ on whether typing goes on inside it, so that row has no |.)
+    [TestMethod]
+    [DataRow("<p>alpha beta</p>", "beta", "beta", "<b>x</b>", "<p>alpha <b>x</b></p>")]
+    [DataRow("<p>alpha beta</p>", "beta", "beta", "<p>one</p><p>two</p>", "<p>alpha </p><p>one</p><p>two|</p>")]
+    [DataRow("<p>alpha beta gamma</p>", "beta", "beta", "<ul><li>x</li></ul>", "<p>alpha </p><ul><li>x|</li></ul><p> gamma</p>")]
+    [DataRow("<p>alpha beta</p>", "beta", "beta", "lead<p>mid</p>trail", "<p>alpha lead</p><p>mid</p><p>trail|</p>")]
+    [DataRow("<p>alpha</p><p>beta</p>", "pha", "be", "X", "<p>alX|ta</p>")]
+    [DataRow("<h2>alpha beta</h2>", "alpha", "alpha", "<p>x</p>", "<p>x|</p><h2> beta</h2>")]
+    public async Task Insert_Markup_WritesTheSameMarkupInEveryEngine(string start, string from, string to, string html, string expected)
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", start);
+        await ExpectMarkupAsync("rte-ext", start);
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", from, to));
+        await InsertHtmlAsync("rte-ext", html);
+
+        await ExpectMarkupAsync("rte-ext", expected.Replace("|", ""));
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync(expected.Replace("|", ""));
+        if (!expected.Contains('|')) return;
+        await Page.Keyboard.TypeAsync("!");
+        await ExpectMarkupAsync("rte-ext", expected.Replace("|", "!"));
+    }
+
+    [TestMethod]
+    public async Task Insert_ARuleAtTheEndOfALine_LeavesAParagraphToTypeIn()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", "<p>alpha</p>");
+        await SelectTextAsync("rte-ext", "alpha");
+        await Page.Keyboard.PressAsync("End");
+        await Btn("rte-ext", "Horizontal rule").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", "<p>alpha</p><hr><p><br></p>");
+
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await ExpectMarkupAsync("rte-ext", "<p>alpha</p>");
+    }
+
+    // A paste goes through the same insertion: pasted paragraphs split the one they go into.
+    [TestMethod]
+    public async Task Paste_Paragraphs_SplitTheParagraphTheyGoInto()
+    {
+        await OpenAsync(Route);
+
+        await SetHtmlAsync("rte-ext", "<p>alpha beta gamma</p>");
+        Assert.IsTrue(await SelectAcrossAsync("rte-ext", "beta", "beta"));
+        await Surface("rte-ext").EvaluateAsync(@"e => {
+            const data = new DataTransfer();
+            data.setData('text/html', '<p>one</p><p>two</p>');
+            data.setData('text/plain', 'one\ntwo');
+            // Firefox ignores the clipboardData a script hands a ClipboardEvent, so the data goes on as a property.
+            const paste = new Event('paste', { bubbles: true, cancelable: true });
+            Object.defineProperty(paste, 'clipboardData', { value: data });
+            e.dispatchEvent(paste);
+        }");
+
+        await ExpectMarkupAsync("rte-ext", "<p>alpha </p><p>one</p><p>two</p><p> gamma</p>");
+        await Expect(Page.Locator("#ext-value")).ToHaveTextAsync("<p>alpha </p><p>one</p><p>two</p><p> gamma</p>");
+    }
+
+    // Every command is the editor's own, so a name it does not know reaches the browser no more: it is refused, and
+    // the app hears of it through OnError.
+    [TestMethod]
+    public async Task Commands_AnUnknownName_IsRefusedThroughOnError()
+    {
+        await OpenAsync(Route);
+
+        await Surface("rte-api").ClickAsync();
+        await Page.Locator("#btn-api-unknown").ClickAsync();
+        await Expect(Page.Locator("#api-error")).ToHaveTextAsync("command-failed");
+        await ExpectMarkupAsync("rte-api", "<p>hello world</p>");
+    }
+
+    // Inserts markup at the selection through the bridge InsertHtmlAsync calls, with the selection as the editor's own.
+    private Task InsertHtmlAsync(string id, string html) => Surface(id).EvaluateAsync(@"(e, html) => {
+        e._range = getSelection().getRangeAt(0).cloneRange();
+        BitBlazorUI.RichTextEditor.insertHtml(e, html);
+    }", html);
 
     [TestMethod]
     public async Task Direction_SetsTheDirectionOfTheBlock()
@@ -1152,10 +1631,14 @@ public class BitRichTextEditorE2ETests : E2ETestBase
     {
         await OpenAsync(Route);
 
-        var buttons = Page.Locator("#rte-basic .bit-rte-tlb").Locator("button, select");
-        var stops = await buttons.EvaluateAllAsync<string[]>("els => els.map(e => String(e.getAttribute('tabindex')))");
+        var controls = Page.Locator("#rte-basic .bit-rte-tlb").Locator("button, select");
+        var stops = await controls.EvaluateAllAsync<string[]>("els => els.map(e => String(e.getAttribute('tabindex')))");
         Assert.AreEqual(1, stops.Count(t => t != "-1"), "the toolbar is not one tab stop");
-        Assert.AreNotEqual("-1", stops[0]);
+
+        // The arrows walk the enabled controls, and the stop is the first of them: Undo and Redo are disabled until
+        // there is something to undo or redo.
+        var buttons = Page.Locator("#rte-basic .bit-rte-tlb").Locator("button:not([disabled]), select:not([disabled])");
+        Assert.AreNotEqual("-1", await buttons.First.GetAttributeAsync("tabindex"));
 
         await buttons.First.FocusAsync();
         await Page.Keyboard.PressAsync("ArrowRight");
@@ -1490,8 +1973,8 @@ public class BitRichTextEditorE2ETests : E2ETestBase
         await Expect(Surface("rte-rtl").Locator("[dir='ltr']")).ToHaveCountAsync(1);
         await Expect(Page.Locator("#rtl-value")).ToContainTextAsync("dir=\"ltr\"");
 
-        // The toolbar's arrows follow what is on screen.
-        var buttons = Page.Locator("#rte-rtl .bit-rte-tlb").Locator("button, select");
+        // The toolbar's arrows follow what is on screen, over the enabled controls (Redo is disabled here).
+        var buttons = Page.Locator("#rte-rtl .bit-rte-tlb").Locator("button:not([disabled]), select:not([disabled])");
         await buttons.First.FocusAsync();
         await Page.Keyboard.PressAsync("ArrowLeft");
         await Expect(buttons.Nth(1)).ToBeFocusedAsync();
@@ -1576,5 +2059,96 @@ public class BitRichTextEditorE2ETests : E2ETestBase
 
         Assert.IsFalse(await IsCircuitDeadAsync());
         await AssertNoServerErrorsAsync();
+    }
+
+    [TestMethod]
+    public async Task History_TypingIsUndoneAWordAtATime_AndRedoneAgain()
+    {
+        await OpenAsync(Route);
+
+        var surface = Surface("rte-ext");
+        var undo = Btn("rte-ext", "Undo");
+        var redo = Btn("rte-ext", "Redo");
+        await Expect(undo).ToBeDisabledAsync();
+        await Expect(redo).ToBeDisabledAsync();
+
+        await CaretAtEndAsync("rte-ext");
+        await Page.Keyboard.TypeAsync(" one two");
+        await Expect(surface).ToContainTextAsync("two");
+        // Text typed and not yet closed by a space is already something to undo.
+        await Expect(undo).ToBeEnabledAsync();
+
+        await Page.Keyboard.PressAsync("Control+z");
+        await Expect(surface).Not.ToContainTextAsync("two");
+        await Expect(surface).ToContainTextAsync("one");
+        await Expect(Page.Locator("#ext-value")).Not.ToContainTextAsync("two");
+        await Expect(redo).ToBeEnabledAsync();
+
+        await Page.Keyboard.PressAsync("Control+z");
+        await Expect(surface).Not.ToContainTextAsync("one");
+
+        await redo.ClickAsync();
+        await Expect(surface).ToContainTextAsync("one");
+        await Page.Keyboard.PressAsync("Control+y");
+        await Expect(surface).ToContainTextAsync("two");
+        await Expect(redo).ToBeDisabledAsync();
+    }
+
+    [TestMethod]
+    public async Task History_ANewEditAfterAnUndo_ClearsTheRedoSteps()
+    {
+        await OpenAsync(Route);
+
+        await CaretAtEndAsync("rte-ext");
+        await Btn("rte-ext", "Horizontal rule").ClickAsync();
+        await Expect(Surface("rte-ext").Locator("hr")).ToHaveCountAsync(1);
+
+        await Btn("rte-ext", "Undo").ClickAsync();
+        await Expect(Surface("rte-ext").Locator("hr")).ToHaveCountAsync(0);
+        await Expect(Btn("rte-ext", "Redo")).ToBeEnabledAsync();
+
+        await CaretAtEndAsync("rte-ext");
+        await Page.Keyboard.TypeAsync("x");
+        await Expect(Btn("rte-ext", "Redo")).ToBeDisabledAsync();
+    }
+
+    [TestMethod]
+    public async Task History_AnInputRuleIsUndoneBackToTheTextAsTyped()
+    {
+        await OpenAsync(Route);
+
+        var surface = Surface("rte-typing");
+        await surface.ClickAsync();
+        await Page.Keyboard.TypeAsync("**bold**");
+        await Expect(surface.Locator("strong")).ToHaveTextAsync("bold");
+
+        await Page.Keyboard.PressAsync("Control+z");
+        await Expect(surface.Locator("strong")).ToHaveCountAsync(0);
+        await Expect(surface).ToContainTextAsync("**bold**");
+
+        await Page.Keyboard.PressAsync("Control+y");
+        await Expect(surface.Locator("strong")).ToHaveTextAsync("bold");
+    }
+
+    [TestMethod]
+    public async Task History_TheBrowsersOwnUndoAndRedoReachTheEditorsHistory()
+    {
+        await OpenAsync(Route);
+
+        var surface = Surface("rte-ext");
+        await CaretAtEndAsync("rte-ext");
+        await Btn("rte-ext", "Horizontal rule").ClickAsync();
+        await Expect(surface.Locator("hr")).ToHaveCountAsync(1);
+
+        // What the browser's Edit menu, a gesture or an assistive tool raises: the editor takes it, the native stack never
+        // runs.
+        const string Raise = "(e, type) => e.dispatchEvent(new InputEvent('beforeinput', { inputType: type, cancelable: true, bubbles: true }))";
+        await surface.EvaluateAsync(Raise, "historyUndo");
+        await Expect(surface.Locator("hr")).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#ext-value")).Not.ToContainTextAsync("<hr>");
+
+        await surface.EvaluateAsync(Raise, "historyRedo");
+        await Expect(surface.Locator("hr")).ToHaveCountAsync(1);
+        await Expect(Page.Locator("#ext-value")).ToContainTextAsync("<hr>");
     }
 }

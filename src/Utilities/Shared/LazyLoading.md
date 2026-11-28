@@ -60,7 +60,7 @@ lazy loading also has a lazy loading sample and a browser suite that drives its 
   published with AOT (`<PREFIX>_E2E_LAZY_AOT=1`), that nothing was downloaded on demand.
 - `LazyLoadingTests` in each library's end-to-end project: the start page, an in-app navigation to the lazy route and
   back, a deep link the server prerenders, and one real interaction there that goes through the library's trimmed JS
-  interop and its no-registration entry point (`GetBdndInterop()`, `GetBaletteService()`,
+  interop and its no-registration entry point (`GetBdndInterop()`,
   `GetBcrdtCollaborationService(...)`, ...), with no console error, unhandled exception or failed request. Its E2E
   workflow publishes the sample trimmed next to the rest of the suite, and AOT-compiled in a leg of its own.
 
@@ -71,7 +71,7 @@ lazy loading also has a lazy loading sample and a browser suite that drives its 
   `LazyLoadingAssert`. Blow's tests also check that its Getting Started page shows the README's code.
 - Bdnd and Bcrdt: the README's section, the Getting Started page, the setup guide and the debug prompt. Bcrdt's also
   covers configuring its service without registering it.
-- Balette and BbScanner: the README's section and the Getting Started page.
+- BbScanner: the README's section and the Getting Started page.
 - Bmage: `docs/getting-started.md` and the demo's Hosting page.
 - BlazeDb: the README's section, the demo's Hosting page, the setup guide, the debug prompt and its completions.
 - Bmotion and Bonboarding: the README's section, the Getting Started page, the setup guide and the debug prompt

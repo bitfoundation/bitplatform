@@ -152,6 +152,7 @@ public partial class MainLayout
             ChildItems =
             [
                 new() { Text = "CascadingValueProvider", Url = "/components/cascadingvalueprovider" },
+                new() { Text = "CodeBlock", Url = "/components/codeblock", AdditionalUrls = ["/components/code-block"], Description = "CodeSnippet, Snippet", Data = "Code, Pre, Copy to clipboard, Copy button, Terminal, Shell, Command, Console, Monospace" },
                 new() { Text = "Element", Url = "/components/element", Description = "DynamicElement, Slot", Data = "Tag, HtmlTag, Polymorphic, CustomElement, WebComponent, Wrapper" },
                 new() { Text = "Embed", Url = "/components/embed", Description = "Iframe, VideoEmbed, ResponsiveEmbed", Data = "YouTube, Vimeo, Video, Map, iframe, Aspect ratio, Responsive video, Click to load, Facade, Lazy" },
                 new() { Text = "FocusOnInvalidSubmit", Url = "/components/focusoninvalidsubmit", Description = "FocusFirstInvalid, ScrollToFirstError", Data = "EditForm, Validation, Submit, aria-invalid, Focus, Invalid field, Error" },
@@ -167,7 +168,7 @@ public partial class MainLayout
                 new() { Text = "Separator", Url = "/components/separator", Description = "Divider" },
                 new() { Text = "Sticky", Url = "/components/sticky", Description = "Affix", Data = "Pin, Pinned, Sticky header, Frozen header, Frozen column, position sticky, Stuck, Scroll padding" },
                 new() { Text = "SwipeTrap", Url = "/components/swipetrap", Description = "Gesture, Swipeable", Data = "Swipe, Drag, Pan, Flick, Touch, Pointer, SwipeArea, Hammer" },
-                new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase" },
+                new() { Text = "Text", Url = "/components/text", Description = "Typography", Data = "Heading, Title, Paragraph, Caption, Truncate, Ellipsis, LineClamp, Clamp, Weight, Bold, Italic, Underline, Uppercase, Inline code" },
             ],
         },
         new()
@@ -179,6 +180,7 @@ public partial class MainLayout
                 new() { Text = "AppShell", Url = "/components/appshell", Description = "SafeArea" },
                 new() { Text = "AvatarGroup", Url = "/components/avatargroup", Description = "Facepile, PersonaGroup, AvatarStack", Data = "Avatars, Team members, People, Collaborators, Participants, Overflow, +N, Presence", AdditionalUrls = ["/components/avatar-group"] },
                 new() { Text = "Chart", Url = "/components/chart", Description = "Graph, Plot", Data = "Line chart, Bar chart, Column chart, Area chart, Pie chart, Doughnut, Donut, Polar area, Radar, Spider, Scatter, Bubble, Mixed, Combo, Sparkline, Gauge, Waterfall, Error bars, Trendline, Annotations, Zoom, Chart.js" },
+                new() { Text = "CommandPalette", Url = "/components/commandpalette", Description = "CommandMenu, Cmdk, Spotlight", Data = "Command palette, Ctrl+K, Cmd+K, Quick open, Go to anything, Launcher, Fuzzy search, Keyboard shortcuts, Actions, Search everything", AdditionalUrls = ["/components/command-palette"] },
                 new() { Text = "ContextMenu", Url = "/components/contextmenu", Description = "RightClickMenu, PopupMenu, ShortcutMenu", Data = "Context menu, Right click, Right-click menu, Shift+F10, Menu key, Popup menu, Actions menu", AdditionalUrls = ["/components/context-menu"] },
                 new() { Text = "CopyButton", Url = "/components/copybutton", Description = "ClipboardButton, CopyToClipboardButton", Data = "Copy, Clipboard, Copy to clipboard, Copied, Code snippet, Share link, Install command", AdditionalUrls = ["/components/copy-button"] },
                 new() { Text = "CountryPicker", Url = "/components/countrypicker", Description = "CountrySelector, CountrySelect", Data = "Country, Nationality, Country of residence, Billing country, Flag, ISO code" },
@@ -200,6 +202,7 @@ public partial class MainLayout
                 new() { Text = "ResourceTimeline", Url = "/components/resourcetimeline", Description = "ResourceScheduler, Gantt, ResourcePlanner", Data = "Timeline, Scheduler, Planner, Gantt chart, Roster, Allocations, Bookings, Shifts, Dispatch, Fleet, Crew, Rotations, Time zone, Zoom, Drag and drop, Canvas, SVG, HTML" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor", Description = "WysiwygEditor, HtmlEditor", Data = "WYSIWYG, Rich text, HTML editor, Text editor, Content editor, Comment box, Formatting, Toolbar, Mentions" },
                 new() { Text = "Sortable", Url = "/components/sortable", Description = "SortableList, ReorderableList, DragAndDropList", Data = "Drag and drop, Reorder, Sort, Kanban, Board, Backlog, To-do list, Playlist, Queue, Priority, Ranking, Form builder, Palette, Clone, Tree, Nested lists, Swap, Multi-drag, Drag handle, Keyboard, SortableJS", AdditionalUrls = ["/components/sortable-list"] },
+                new() { Text = "TextRotator", Url = "/components/textrotator", Description = "RotatingText, WordRotator, TextLoop", Data = "Rotating words, Word cycle, Flip words, Hero headline, Changing text, Ticker", AdditionalUrls = ["/components/text-rotator"] },
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "ShinyText, Skeleton, Loading, AI" },
                 new() { Text = "TimeZonePicker", Url = "/components/timezonepicker", Description = "TimeZoneSelector, TimeZoneSelect, TzPicker", Data = "Time zone, Timezone, UTC offset, GMT offset, IANA, Olson, Windows time zone, TimeZoneInfo, Daylight saving time, DST, Detect time zone" },
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },

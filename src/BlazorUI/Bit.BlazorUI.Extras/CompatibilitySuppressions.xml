@@ -1388,6 +1388,13 @@
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.IBlazorUIExtrasServiceCollectionExtensions.AddBitBlazorUIExtrasServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Boolean,System.Action{Bit.BlazorUI.BitAccentColorConfig})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
     <DiagnosticId>CP0009</DiagnosticId>
     <Target>T:Bit.BlazorUI.BitFullCalendarState</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
