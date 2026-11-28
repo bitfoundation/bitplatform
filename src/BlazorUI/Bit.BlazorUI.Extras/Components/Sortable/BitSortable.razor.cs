@@ -37,6 +37,8 @@ public partial class BitSortable<TItem> : BitComponentBase, IBitSortableZone, IH
     private DotNetObjectReference<BitSortable<TItem>>? _dotnetObj;
     // The options the script last received; null until the list is registered with it.
     private BitSortableJsOptions? _appliedOptions;
+    // Set only once the script has taken the registration: the next render that changes an option sends it again.
+    private bool _registered;
     // The key of the item that is the list's tab stop (see ActiveKey).
     private string? _activeKey;
     // The multi-drag selection as last handed to SelectedItemsChanged: the same collection coming back as SelectedItems
@@ -47,7 +49,7 @@ public partial class BitSortable<TItem> : BitComponentBase, IBitSortableZone, IH
     // How many times the page gave the list its parameters: what an isolated item template shows may have changed.
     private int _parametersVersion;
     private bool _playFlipOnRender;
-    // The list is registered with the script: the next render that changes an option sends it again.
+    // A registration is out and has not returned yet.
     private bool _registering;
 
 
@@ -99,7 +101,8 @@ public partial class BitSortable<TItem> : BitComponentBase, IBitSortableZone, IH
     [Parameter] public Func<BitSortableEventArgs<TItem>, bool>? CanDrop { get; set; }
 
     /// <summary>
-    /// Extra content rendered after the items, inside the list.
+    /// Extra content rendered after the items, inside the list. It is rendered whether the list has items or not, after
+    /// what an empty list shows, so it is not the place for an empty state: that is EmptyTemplate or EmptyText.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
@@ -2244,45 +2247,47 @@ public partial class BitSortable<TItem> : BitComponentBase, IBitSortableZone, IH
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSortableJsOptions))]
     private async Task SyncBrowserLayerAsync()
     {
-        var options = JsOptions();
-        if (options == _appliedOptions) return;
+        // Renders that come while the registration is out neither wait for it nor register again: the one that
+        // started it sends the options as they are once the script has taken it.
+        if (_registering) return;
 
-        bool registered = _appliedOptions is not null;
-        _appliedOptions = options;
-        if (registered)
+        var options = JsOptions();
+        if (_registered)
         {
+            if (options == _appliedOptions) return;
+            _appliedOptions = options;
             await InvokeJsVoidAsync(() => _js.BitSortableConfigure(RootElement, options));
             return;
         }
 
-        // Renders that come while the registration is out neither wait for it nor register again: the one that
-        // started it sends the options as they are by then.
-        if (_registering) return;
         _registering = true;
         try
         {
             _dotnetObj ??= DotNetObjectReference.Create(this);
-            if (!await InvokeJsVoidAsync(() => _js.BitSortableRegister(RootElement, _dotnetObj, options)) && ReferenceEquals(_appliedOptions, options))
-                _appliedOptions = null;
-        }
-        catch
-        {
-            // A registration that failed - the script's import (a 404 during a deploy, a lost connection), or the call
-            // itself - is thrown to the nearest ErrorBoundary as ever, and tried again on the next render rather than
-            // leaving the list without its script for good.
-            if (ReferenceEquals(_appliedOptions, options)) _appliedOptions = null;
-            throw;
+            // A registration the browser never received is tried again on the next render. One that failed - the
+            // script's import (a 404 during a deploy, a lost connection), or the call itself - is thrown to the nearest
+            // ErrorBoundary as ever, and is tried again on the next render too, since nothing here marks the list
+            // registered before the script has taken it.
+            if (!await InvokeJsVoidAsync(() => _js.BitSortableRegister(RootElement, _dotnetObj, options))) return;
+            _appliedOptions = options;
+            _registered = true;
         }
         finally
         {
             _registering = false;
         }
+
+        // An option changed by a render that came while the registration was out is sent now.
+        await SyncBrowserLayerAsync();
     }
 
-    /// <summary>Calls the script, ignoring a browser that is gone; <c>false</c> when the call did not reach it.</summary>
+    /// <summary>
+    /// Calls the script, ignoring a browser that is gone or not there yet (prerender, static SSR, before the first
+    /// interactive render); <c>false</c> when the call did not reach it.
+    /// </summary>
     private async ValueTask<bool> InvokeJsVoidAsync(Func<ValueTask> call)
     {
-        if (IsDisposing) return false;
+        if (IsDisposing || IsRendered is false) return false;
         try
         {
             await call();
@@ -2507,7 +2512,8 @@ public partial class BitSortable<TItem> : BitComponentBase, IBitSortableZone, IH
         }
         finally
         {
-            var registered = _appliedOptions is not null;
+            // A registration still out when the list goes is let go of too: the script takes it before the unregister.
+            var registered = _registered || _registering;
             await _dotnetObj.DisposeAfterAsync(async () =>
             {
                 if (registered) await _js.BitSortableUnregister(RootElement);

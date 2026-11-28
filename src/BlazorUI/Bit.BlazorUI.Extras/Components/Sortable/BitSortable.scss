@@ -44,8 +44,9 @@
     }
 }
 
-// With a Handle, only the handle drags: the rest of the item behaves normally.
-.bit-srt-hnd > .bit-srt-itm {
+// With a Handle, only the handle drags: the rest of the item behaves normally. The list's class weighs nothing, so
+// the rule weighs as much as the item's own and the filtered cursor and an app's Classes.Item still win over it.
+:where(.bit-srt-hnd) > .bit-srt-itm {
     cursor: auto;
     user-select: auto;
     -webkit-user-select: auto;

@@ -260,8 +260,10 @@ namespace BitBlazorUI {
             if (list && s) {
                 if (s.target === list) s.target = null;
                 s.touched.delete(list);
-                // The drag's own list is gone: the page gets its Escape back (see takeEscape).
-                if (s.home === list) releaseEscape(s);
+                // The keyboard drag's own list is gone, and its item with it: no Escape is the drag's any more, so the page
+                // gets the key back (see takeEscape). A pointer drag keeps it - Escape still ends that drag and takes its
+                // preview away, reaching .NET through the lists that remain (finish, invokeAny).
+                if (s.home === list && s.mode === 'keyboard') releaseEscape(s);
             }
         }
 

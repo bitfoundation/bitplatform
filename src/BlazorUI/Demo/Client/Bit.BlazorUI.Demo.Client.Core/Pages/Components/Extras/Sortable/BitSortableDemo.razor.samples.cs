@@ -417,7 +417,7 @@ private IList<string> shelf = [""Lint"", ""Benchmark""];";
 <div class=""controls"">
     <BitToggle Label=""The server approves drops into Done"" @bind-Value=""approve"" />
 </div>
-<div class=""panels"">
+<div class=""panels"" style=""@boardOutlines"">
     <div class=""panel"">
         <div class=""title"">To do</div>
         <BitSortable @bind-Items=""boardTodo"" Group=""board"" Id=""board-todo"" RevertOnSpill>
@@ -456,6 +456,12 @@ private string serverStatus = ""idle"";
 private IList<string> boardTodo = [""Write the spec"", ""Draw the icons"", ""Plan the launch""];
 private IList<string> boardDoing = [""Build the API"", ""Review the PR""];
 private IList<string> boardDone = [""Set up CI""];
+
+// The script marks the lists that take a drag, the one under the pointer and one that refused the position; the
+// public variables, set on an ancestor of the board, draw them.
+private const string boardOutlines = ""--bit-Sortable-accepts-outline:2px dashed var(--bit-clr-pri);"" +
+                                     ""--bit-Sortable-over-outline:2px solid var(--bit-clr-pri);"" +
+                                     ""--bit-Sortable-refused-outline:2px solid var(--bit-clr-err);"";
 
 // Done takes the cards of In progress, and its own.
 private bool CanDropInDone(BitSortableEventArgs<string> e) => e.FromId is ""board-doing"" or ""board-done"";
@@ -530,11 +536,33 @@ private IList<string> sprint = [""Search"", ""Export to CSV""];";
     </BitSortable>
 </div>
 <div class=""order"">Order: @string.Join("", "", swapItems)</div>
-<div class=""order"">Last swap: @lastSwap</div>";
+<div class=""order"">Last swap: @lastSwap</div>
+<br />
+<div class=""panels"">
+    <div class=""panel"">
+        <div class=""title"">Left</div>
+        <BitSortable @bind-Items=""swapLeft"" Group=""swap"" Swap>
+            <ItemTemplate Context=""item"">
+                <div class=""item"">@item</div>
+            </ItemTemplate>
+        </BitSortable>
+    </div>
+    <div class=""panel"">
+        <div class=""title"">Right</div>
+        <BitSortable @bind-Items=""swapRight"" Group=""swap"" Swap>
+            <ItemTemplate Context=""item"">
+                <div class=""item"">@item</div>
+            </ItemTemplate>
+        </BitSortable>
+    </div>
+</div>";
     private readonly string example17CsharpCode = @"
 private string lastSwap = ""nothing yet"";
 
 private IList<string> swapItems = [""Item 1"", ""Item 2"", ""Item 3"", ""Item 4"", ""Item 5""];
+
+private IList<string> swapLeft = [""Item 1"", ""Item 2"", ""Item 3""];
+private IList<string> swapRight = [""Item A"", ""Item B"", ""Item C""];
 
 // SwappedWith names the item the dragged one traded places with: both moves, for a handler that saves them.
 private void HandleSwap(BitSortableEventArgs<string> e)
@@ -554,10 +582,32 @@ private void HandleSwap(BitSortableEventArgs<string> e)
         </ItemTemplate>
     </BitSortable>
 </div>
-<div class=""order"">Selected: @(selectedItems.Count == 0 ? ""nothing"" : string.Join("", "", selectedItems))</div>";
+<div class=""order"">Selected: @(selectedItems.Count == 0 ? ""nothing"" : string.Join("", "", selectedItems))</div>
+<br />
+<div class=""panels"">
+    <div class=""panel"">
+        <div class=""title"">Left</div>
+        <BitSortable @bind-Items=""multiLeft"" Group=""multi"" MultiDrag>
+            <ItemTemplate Context=""item"">
+                <div class=""item"">@item</div>
+            </ItemTemplate>
+        </BitSortable>
+    </div>
+    <div class=""panel"">
+        <div class=""title"">Right</div>
+        <BitSortable @bind-Items=""multiRight"" Group=""multi"" MultiDrag>
+            <ItemTemplate Context=""item"">
+                <div class=""item"">@item</div>
+            </ItemTemplate>
+        </BitSortable>
+    </div>
+</div>";
     private readonly string example18CsharpCode = @"
 private IList<string> multiItems = [""Item 1"", ""Item 2"", ""Item 3"", ""Item 4"", ""Item 5"", ""Item 6""];
-private IReadOnlyCollection<string> selectedItems = [];";
+private IReadOnlyCollection<string> selectedItems = [];
+
+private IList<string> multiLeft = [""Item 1"", ""Item 2"", ""Item 3"", ""Item 4""];
+private IList<string> multiRight = [""Item A"", ""Item B""];";
 
     private readonly string example19RazorCode = @"
 <div class=""controls"">
@@ -700,16 +750,30 @@ private readonly BitSortableStrings germanStrings = new()
     <BitSlider Label=""DelayTolerance (px)"" Min=""0"" Max=""40"" @bind-Value=""delayTolerance"" />
     <BitToggle Label=""ForceFallback"" @bind-Value=""forceFallback"" />
 </div>
-<div class=""panel"">
-    <BitSortable @bind-Items=""groceries""
-                 TouchDelay=""(int)touchDelay""
-                 Delay=""(int)delay""
-                 DelayTolerance=""(int)delayTolerance""
-                 ForceFallback=""forceFallback"">
-        <ItemTemplate Context=""item"">
-            <div class=""item"">@item</div>
-        </ItemTemplate>
-    </BitSortable>
+<div class=""panels"">
+    <div class=""panel"">
+        <div class=""title"">Long press</div>
+        <BitSortable @bind-Items=""groceries""
+                     TouchDelay=""(int)touchDelay""
+                     Delay=""(int)delay""
+                     DelayTolerance=""(int)delayTolerance""
+                     ForceFallback=""forceFallback"">
+            <ItemTemplate Context=""item"">
+                <div class=""item"">@item</div>
+            </ItemTemplate>
+        </BitSortable>
+    </div>
+    <div class=""panel"">
+        <div class=""title"">Handle, at once</div>
+        <BitSortable @bind-Items=""chores"" Handle="".handle"" TouchDelay=""0"">
+            <ItemTemplate Context=""item"">
+                <div class=""item row"">
+                    <BitIcon IconName=""@BitIconName.GripperDotsVertical"" Class=""handle"" />
+                    <span>@item</span>
+                </div>
+            </ItemTemplate>
+        </BitSortable>
+    </div>
 </div>";
     private readonly string example21CsharpCode = @"
 private double touchDelay = 200;
@@ -717,11 +781,25 @@ private double delay;
 private double delayTolerance = 5;
 private bool forceFallback;
 
-private IList<string> groceries = [""Kale"", ""Lemons"", ""Milk"", ""Nuts"", ""Oats""];";
+private IList<string> groceries = [""Kale"", ""Lemons"", ""Milk"", ""Nuts"", ""Oats""];
+
+private IList<string> chores = [""Dishes"", ""Laundry"", ""Plants"", ""Recycling""];";
+    private const string example21ScssCode = @"
+// The handle is rendered by the list's item template: reached through ::deep. The browser never scrolls from it, so
+// with TouchDelay=""0"" a finger on it drags at once.
+::deep .handle {
+    cursor: grab;
+    touch-action: none;
+}";
+    private readonly DemoCodeFile[] example21CodeFiles =
+    [
+        new("BitSortableDemo.razor.scss", example21ScssCode),
+    ];
 
     private readonly string example22RazorCode = @"
 <div class=""controls"">
     <BitToggle Label=""IsolateItems"" @bind-Value=""isolateItems"" />
+    <BitToggle Label=""ForceFallback"" @bind-Value=""largeForceFallback"" />
     <BitToggle Label=""Scroll"" @bind-Value=""scroll"" />
     <BitSlider Label=""ScrollSensitivity (px)"" Min=""10"" Max=""120"" Step=""5"" @bind-Value=""scrollSensitivity"" />
     <BitSlider Label=""ScrollSpeed (px)"" Min=""2"" Max=""60"" Step=""2"" @bind-Value=""scrollSpeed"" />
@@ -729,6 +807,7 @@ private IList<string> groceries = [""Kale"", ""Lemons"", ""Milk"", ""Nuts"", ""O
 <div class=""panel scroller"">
     <BitSortable @bind-Items=""rows""
                  IsolateItems=""isolateItems""
+                 ForceFallback=""largeForceFallback""
                  Scroll=""scroll""
                  ScrollSensitivity=""(int)scrollSensitivity""
                  ScrollSpeed=""(int)scrollSpeed"">
@@ -742,6 +821,7 @@ private IList<string> groceries = [""Kale"", ""Lemons"", ""Milk"", ""Nuts"", ""O
 </div>";
     private readonly string example22CsharpCode = @"
 private bool isolateItems;
+private bool largeForceFallback;
 private bool scroll = true;
 private double scrollSensitivity = 40;
 private double scrollSpeed = 16;

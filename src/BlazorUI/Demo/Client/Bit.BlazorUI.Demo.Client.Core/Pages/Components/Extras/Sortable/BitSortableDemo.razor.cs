@@ -27,7 +27,7 @@ public partial class BitSortableDemo
             Name = "ChildContent",
             Type = "RenderFragment?",
             DefaultValue = "null",
-            Description = "Extra content rendered after the items, inside the list.",
+            Description = "Extra content rendered after the items, inside the list. It is rendered whether the list has items or not, after what an empty list shows, so it is not the place for an empty state: that is EmptyTemplate or EmptyText.",
         },
         new()
         {
@@ -748,6 +748,12 @@ public partial class BitSortableDemo
     private IList<string> boardDoing = ["Build the API", "Review the PR"];
     private IList<string> boardDone = ["Set up CI"];
 
+    // The script marks the lists that take a drag, the one under the pointer and one that refused the position; the
+    // public variables, set on an ancestor of the board, draw them.
+    private const string boardOutlines = "--bit-Sortable-accepts-outline:2px dashed var(--bit-clr-pri);" +
+                                         "--bit-Sortable-over-outline:2px solid var(--bit-clr-pri);" +
+                                         "--bit-Sortable-refused-outline:2px solid var(--bit-clr-err);";
+
     // Done takes the cards of In progress, and its own.
     private bool CanDropInDone(BitSortableEventArgs<string> e) => e.FromId is "board-doing" or "board-done";
 
@@ -772,6 +778,9 @@ public partial class BitSortableDemo
 
     private IList<string> swapItems = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"];
 
+    private IList<string> swapLeft = ["Item 1", "Item 2", "Item 3"];
+    private IList<string> swapRight = ["Item A", "Item B", "Item C"];
+
     // SwappedWith names the item the dragged one traded places with: both moves, for a handler that saves them.
     private void HandleSwap(BitSortableEventArgs<string> e)
     {
@@ -780,6 +789,9 @@ public partial class BitSortableDemo
 
     private IList<string> multiItems = ["Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"];
     private IReadOnlyCollection<string> selectedItems = [];
+
+    private IList<string> multiLeft = ["Item 1", "Item 2", "Item 3", "Item 4"];
+    private IList<string> multiRight = ["Item A", "Item B"];
 
     private bool logChange;
     private readonly List<string> eventLog = [];
@@ -834,7 +846,10 @@ public partial class BitSortableDemo
 
     private IList<string> groceries = ["Kale", "Lemons", "Milk", "Nuts", "Oats"];
 
+    private IList<string> chores = ["Dishes", "Laundry", "Plants", "Recycling"];
+
     private bool isolateItems;
+    private bool largeForceFallback;
     private bool scroll = true;
     private double scrollSensitivity = 40;
     private double scrollSpeed = 16;
