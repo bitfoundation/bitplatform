@@ -48,11 +48,20 @@ public static class ComponentCatalog
 
         // Position rather than the item itself, because the pager needs the neighbours too. Last
         // one wins is fine: no two nav entries share a Url, and a hypothetical duplicate would only
-        // ever be the same page.
+        // ever be the same page. A page's other routes (/components/date-picker) point at it too, so
+        // its topic links and canonical address are built from its Url whichever route it was reached
+        // through; a primary Url is never overwritten by another item's alias.
         _indexByUrl = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         for (var i = 0; i < Items.Count; i++)
         {
             _indexByUrl[Items[i].Url] = i;
+        }
+        for (var i = 0; i < Items.Count; i++)
+        {
+            foreach (var url in Items[i].AdditionalUrls)
+            {
+                _indexByUrl.TryAdd(url, i);
+            }
         }
     }
 
@@ -113,7 +122,17 @@ public static class ComponentCatalog
     {
         if (string.IsNullOrWhiteSpace(url)) return null;
 
-        return _indexByUrl.TryGetValue(Normalize(url), out var index) ? index : null;
+        var path = Normalize(url);
+
+        if (_indexByUrl.TryGetValue(path, out var index)) return index;
+
+        // A topic of a page split into topics (/components/commandpalette/search) is that component's page too.
+        // One segment up and no further, and only below /components/: /components/ai/chat is a page of its own.
+        if (path.StartsWith("/components/", StringComparison.OrdinalIgnoreCase) is false) return null;
+
+        var lastSlash = path.LastIndexOf('/');
+
+        return lastSlash > "/components".Length && _indexByUrl.TryGetValue(path[..lastSlash], out index) ? index : null;
     }
 
 
@@ -151,6 +170,7 @@ public static class ComponentCatalog
             {
                 Name = itemName,
                 Url = navItem.Url!,
+                AdditionalUrls = navItem.AdditionalUrls?.ToArray() ?? [],
                 Category = name,
                 Aliases = navItem.Description,
                 Keywords = navItem.Data?.ToString(),

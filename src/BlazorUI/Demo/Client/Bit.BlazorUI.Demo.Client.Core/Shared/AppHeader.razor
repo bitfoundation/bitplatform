@@ -51,6 +51,17 @@
                 <ComponentSearchBox RegisterShortcut Class="app-header-search" />
             }
 
+            @* The way into the site's command palette (Ctrl+K) for whoever does not know the keys yet - and the only
+               search in the bar at the widths where the box above is hidden. It searches the examples inside the pages
+               as well, which the box does not. Not where the site's palette steps aside for a page's own. *@
+            @if (HasSitePalette)
+            {
+                <BitCommandPaletteTrigger ShowShortcut
+                                          Label="Search docs"
+                                          Class="app-header-palette"
+                                          Classes="@(new() { Label = "app-header-palette-text", Shortcut = "app-header-palette-text" })" />
+            }
+
             @* Not on the home page: the hero has the full-size switcher with the "Make it yours"
                label explaining what it does, and two of the same control on one screen would just
                raise the question of whether they are the same control. Narrow widths hand this off

@@ -129,6 +129,12 @@ public sealed record BlazorUIComponent
     public IReadOnlyList<string> FamilyMembers { get; init; } = [];
 
     public IReadOnlyList<DemoExampleSource> Examples { get; init; } = [];
+
+    /// <summary>
+    /// The topics the demo page is split into - each a page of its own under <see cref="Url"/> - in page order; empty for
+    /// a page that is one page. Each example names its topic in <see cref="DemoExampleSource.Tab"/>.
+    /// </summary>
+    public IReadOnlyList<DemoTopicSource> Topics { get; init; } = [];
 }
 
 /// <summary>
@@ -322,7 +328,8 @@ public static class BlazorUIComponentCatalog
                 OwnTypes = [.. own.Select(type => type.IsEnum ? type : type with { Members = WithSignatures(type.Members, FindType(Bare(type.Name))) })],
                 SharedTypes = shared,
                 FamilyMembers = FamilyMembersOf(componentType),
-                Examples = demo?.Examples ?? []
+                Examples = demo?.Examples ?? [],
+                Topics = demo?.Topics ?? []
             };
         })];
     }

@@ -136,17 +136,27 @@ private DateTimeOffset? selectedDateTime;";
                DateFormat=""dd/MM/yyyy""
                Placeholder=""Enter a date (dd/MM/yyyy)"" />
 
-<BitDatePicker Label=""With custom error messages""
-               AllowTextInput
-               DateFormat=""dd/MM/yyyy""
-               MinDate=""DateTimeOffset.Now.AddDays(-5)""
-               MaxDate=""DateTimeOffset.Now.AddDays(5)""
-               DisabledDaysOfWeek=""@weekendDays""
-               InvalidErrorMessage=""The date format must be dd/MM/yyyy.""
-               OutOfRangeErrorMessage=""Only the ±5 days around today are allowed.""
-               DisabledDateErrorMessage=""That day of the week is not available.""
-               Placeholder=""Enter a date (dd/MM/yyyy)"" />";
+<EditForm Model=""typedDateModel"">
+    <BitDatePicker Label=""With custom error messages""
+                   @bind-Value=""typedDateModel.Date""
+                   ShowValidationMessage
+                   AllowTextInput
+                   DateFormat=""dd/MM/yyyy""
+                   MinDate=""DateTimeOffset.Now.AddDays(-5)""
+                   MaxDate=""DateTimeOffset.Now.AddDays(5)""
+                   DisabledDaysOfWeek=""@weekendDays""
+                   InvalidErrorMessage=""The date format must be dd/MM/yyyy.""
+                   OutOfRangeErrorMessage=""Only the ±5 days around today are allowed.""
+                   DisabledDateErrorMessage=""That day of the week is not available.""
+                   Placeholder=""Enter a date (dd/MM/yyyy)"" />
+</EditForm>";
     private readonly string example8CsharpCode = @"
+public class TypedDateModel
+{
+    public DateTimeOffset? Date { get; set; }
+}
+
+private readonly TypedDateModel typedDateModel = new();
 private readonly DayOfWeek[] weekendDays = [DayOfWeek.Friday, DayOfWeek.Saturday];";
 
     private readonly string example9RazorCode = @"
@@ -458,7 +468,16 @@ private int closeCount;";
 <BitDatePicker Label=""Invalid""
                Invalid
                Description=""Marked invalid by the app.""
-               AriaDescription=""Dates are stored in UTC."" />";
+               AriaDescription=""Dates are stored in UTC."" />
+
+<BitDatePicker Label=""Templates"" ErrorMessageAriaLabel=""This date is already booked."">
+    <DescriptionTemplate>
+        Bookings open <b>three months</b> ahead.
+    </DescriptionTemplate>
+    <ErrorMessageTemplate>
+        <b>Booked:</b> this date is already booked.
+    </ErrorMessageTemplate>
+</BitDatePicker>";
     private readonly string example19CsharpCode = @"
 public class BitDatePickerValidationModel
 {

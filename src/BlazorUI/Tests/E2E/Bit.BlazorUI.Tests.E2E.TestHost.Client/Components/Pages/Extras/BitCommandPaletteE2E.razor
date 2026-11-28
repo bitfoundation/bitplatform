@@ -66,6 +66,10 @@
 
     <E2ESection Id="typing" Title="Typing">
         <input id="cpl-typing" type="text" aria-label="Typing area" />
+        @* An editor binding the palette's own toggle (a Markdown editor's Ctrl+K for a link) claims it by preventing its default.
+           It binds Ctrl+Up too, which the page registers as a command: that one is the palette's, and never reaches the editor. *@
+        <textarea id="cpl-editor" aria-label="Link editor"
+                  onkeydown="if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); this.value += '[link]'; } else if (event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); this.value += '[up]'; }"></textarea>
     </E2ESection>
 </main>
 

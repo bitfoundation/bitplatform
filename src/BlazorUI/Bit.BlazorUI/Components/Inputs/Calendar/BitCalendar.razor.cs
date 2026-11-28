@@ -727,7 +727,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     [Parameter] public string TimePickerMinuteTitle { get; set; } = "Minute";
 
     /// <summary>
-    /// TimeZone for the DatePicker.
+    /// The time zone the calendar reads its value, Today and the Min/Max dates in, and writes a picked date in.
+    /// Defaults to TimeZoneInfo.Local, which is the server's zone in a server-rendered app.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetParameters))]
@@ -939,7 +940,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     protected override string? FormatValueAsString(DateTimeOffset? value)
     {
         return value.HasValue
-            ? value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture)
+            ? TimeZoneInfo.ConvertTime(value.Value, _timeZone).ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture)
             : null;
     }
 

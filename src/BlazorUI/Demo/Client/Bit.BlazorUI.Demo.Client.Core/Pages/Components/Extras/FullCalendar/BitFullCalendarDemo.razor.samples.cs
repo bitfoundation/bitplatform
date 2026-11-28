@@ -893,9 +893,59 @@ private readonly List<BitFullCalendarEvent> events2 = CreateEvents();
 
     private readonly string example22RazorCode = @"
 <BitFullCalendar Events=""events""
+                 OnAddClick=""HandleQuickAdd""
+                 OnEventClick=""HandleEventClick""
+                 OnChange=""HandleChange""
+                 DefaultView=""BitFullCalendarView.Week"" />
+
+<BitText>Clicked event: <b>@(clickedEvent ?? ""-"")</b></BitText>";
+    private readonly string example22CsharpCode = @"
+private string? clickedEvent;
+private int quickAddCount;
+
+private void HandleQuickAdd(BitFullCalendarEvent? draft)
+{
+    if (draft is null) return;
+
+    // The draft carries the clicked slot (or the selected range); the calendar adds nothing itself, so the event
+    // only appears once it is in the list the calendar is given.
+    quickAddCount++;
+    draft.Id = $""quick-{quickAddCount}"";
+    draft.Title = $""Quick event {quickAddCount}"";
+    events.Add(draft);
+}
+
+private void HandleEventClick(BitFullCalendarEvent ev)
+    => clickedEvent = $""{ev.Title}, {ev.StartDate:g} - {ev.EndDate:t}"";
+
+// Dragging and resizing still go through the calendar: keep them in the list, or the next render (a quick add)
+// hands the calendar the list as it was before the drag.
+private void HandleChange(BitFullCalendarChangeEventArgs args)
+{
+    switch (args.Kind)
+    {
+        case BitFullCalendarChangeKind.Add:
+            events.Add(args.Event);
+            break;
+        case BitFullCalendarChangeKind.Edit:
+            var index = events.FindIndex(e => e.Id == args.Event.Id);
+            if (index >= 0)
+                events[index] = args.Event;
+            else
+                events.Add(args.Event);
+            break;
+        case BitFullCalendarChangeKind.Delete:
+            events.RemoveAll(e => e.Id == args.Event.Id);
+            break;
+    }
+}
+" + eventsCode;
+
+    private readonly string example23RazorCode = @"
+<BitFullCalendar Events=""events""
                  Style=""border: 2px dashed var(--bit-clr-pri)""
                  Styles=""calendarStyles"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private readonly BitFullCalendarClassStyles calendarStyles = new()
 {
     Header = ""background: var(--bit-clr-bg-sec)"",
@@ -904,7 +954,7 @@ private readonly BitFullCalendarClassStyles calendarStyles = new()
 };
 " + eventsCode;
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitFullCalendar Dir=""BitDir.Rtl"" Events=""events"" />";
-    private readonly string example23CsharpCode = eventsCode;
+    private readonly string example24CsharpCode = eventsCode;
 }

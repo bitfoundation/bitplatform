@@ -2,7 +2,8 @@
 
 public partial class BitChartDemo
 {
-    [CascadingParameter(Name = nameof(RenderForMcpClient))] public bool RenderForMcpClient { get; set; }
+    /// <summary>The topic the address names (/components/chart/{Topic}); null for the overview, the line chart.</summary>
+    [Parameter] public string? Topic { get; set; }
 
     private readonly List<ComponentParameter> componentParameters =
     [

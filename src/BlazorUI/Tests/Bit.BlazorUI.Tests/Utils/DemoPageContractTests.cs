@@ -32,11 +32,11 @@ public partial class DemoPageContractTests
     /// </summary>
     private static readonly HashSet<string> NumberingExemptions = new(StringComparer.Ordinal)
     {
-        // BitChart is no multi-API component whose tabs repeat one run of sections in another API: each of its tabs
-        // is a topic of its own (a chart type or a feature), with examples no other tab has. Its Ids are named after
-        // the tab and the example (bar-grouped, area-stacked) so every one of them is unique on the whole page - a
-        // deep link names the chart it shows, and stays put when a tab gains an example - and its samples are
-        // declared beside the tab's code under the same names (groupedRazorCode).
+        // BitChart is no multi-API component whose tabs repeat one run of sections in another API: each of its
+        // DemoTopics is a page of its own (a chart type or a feature), with examples no other topic has. Its Ids are
+        // named after the topic and the example (bar-grouped, area-stacked) so every one of them is unique on the whole
+        // page - a deep link names the chart it shows, and stays put when a topic gains an example - and its samples
+        // are declared beside the topic's code under the same names (groupedRazorCode).
         "Pages/Components/Extras/Chart",
     };
 
@@ -338,6 +338,90 @@ public partial class DemoPageContractTests
         Fail(offenders,
             "A parameter row whose Type is an enum with a shared table (DemoSharedEnums, or BitComponentBase's BitDir and BitVisibility), " +
             "nullable or not, links that table, and the page renders the table it links to.");
+    }
+
+    [TestMethod]
+    public void EveryPageSplitIntoTopicsShouldGiveEachTopicARouteOfItsOwn()
+    {
+        var offenders = new List<string>();
+        var split = 0;
+
+        foreach (var page in DemoPages())
+        {
+            var razor = StripRazorComments(SourceFiles.ReadFullPath(page.Path));
+            var topics = DemoTopicStart().Matches(razor).Select(m =>
+            {
+                Assert.IsTrue(TryReadTag(razor, m.Index, out _, out var end, null), $"{Relative(page.Path)}:{GetLine(razor, m.Index)} the <DemoTopic> tag could not be read.");
+
+                var attributes = TagAttribute().Matches(razor[m.Index..end]).ToDictionary(a => a.Groups["name"].Value, a => a.Groups["value"].Value, StringComparer.Ordinal);
+
+                return (Title: attributes.GetValueOrDefault("Title"), Route: attributes.GetValueOrDefault("Route"), Line: GetLine(razor, m.Index));
+            }).ToArray();
+
+            var hasTopics = HasTopicsAttribute().IsMatch(page.Tag);
+            var name = Relative(page.Path);
+
+            if (topics.Length == 0)
+            {
+                if (hasTopics) offenders.Add($"{name} sets HasTopics but writes no <DemoTopic>.");
+                continue;
+            }
+
+            split++;
+
+            if (hasTopics is false) offenders.Add($"{name} writes <DemoTopic>s but its <DemoPage> does not set HasTopics.");
+
+            if (TopicAttribute().IsMatch(page.Tag) is false) offenders.Add($"{name}: its <DemoPage> has to pass Topic=\"@Topic\", the route parameter naming the topic on screen.");
+
+            var routes = PageRoute().Matches(razor).Select(m => m.Groups["route"].Value).ToArray();
+
+            if (routes.Length == 0 || routes.Contains($"{routes[0]}/{{Topic}}", StringComparer.Ordinal) is false)
+            {
+                offenders.Add($"{name} has to declare @page \"{(routes.Length > 0 ? routes[0] : "/components/...")}/{{Topic}}\" beside its own route, the address of its topics.");
+            }
+
+            if (topics[0].Route is not null) offenders.Add($"{name}:{topics[0].Line} the first topic is the overview, at the component's own address, and takes no Route.");
+
+            foreach (var topic in topics)
+            {
+                if (string.IsNullOrWhiteSpace(topic.Title)) offenders.Add($"{name}:{topic.Line} a <DemoTopic> has no Title.");
+            }
+
+            foreach (var topic in topics.Skip(1))
+            {
+                if (topic.Route is null || TopicRouteShape().IsMatch(topic.Route) is false || topic.Route == "api")
+                {
+                    offenders.Add($"{name}:{topic.Line} topic \"{topic.Title}\" has Route=\"{topic.Route}\"; every topic but the first takes a lower-case route of letters, digits and dashes, and \"api\" is the API reference's.");
+                }
+            }
+
+            foreach (var duplicate in topics.GroupBy(t => t.Route ?? string.Empty).Where(g => g.Count() > 1))
+            {
+                offenders.Add($"{name}: {duplicate.Count()} topics share the route \"{duplicate.Key}\".");
+            }
+
+            foreach (var duplicate in topics.GroupBy(t => t.Title).Where(g => g.Count() > 1))
+            {
+                offenders.Add($"{name}: {duplicate.Count()} topics are called \"{duplicate.Key}\".");
+            }
+
+            // Every example belongs to a topic: one outside them all would be rendered on none of their pages.
+            var spans = DemoTopicSpan().Matches(razor).Select(m => (Start: m.Index, End: m.Index + m.Length)).ToArray();
+
+            foreach (Match example in DemoExampleStart().Matches(razor))
+            {
+                if (spans.Any(span => example.Index > span.Start && example.Index < span.End)) continue;
+
+                offenders.Add($"{name}:{GetLine(razor, example.Index)} a <DemoExample> sits outside every <DemoTopic>, so no topic renders it.");
+            }
+        }
+
+        Assert.IsGreaterThan(0, split, "No page split into topics was found; the reading of the pages is broken.");
+
+        Fail(offenders,
+            "A page split into topics (DemoPage HasTopics) renders one topic per address: it passes Topic=\"@Topic\" and declares " +
+            "@page \"<its route>/{Topic}\", its first <DemoTopic> is the overview with no Route, every other one has a unique " +
+            "lower-case Route other than \"api\" and a unique Title, and every <DemoExample> sits inside a topic.");
     }
 
     [TestMethod]
@@ -907,6 +991,21 @@ public partial class DemoPageContractTests
 
     [GeneratedRegex(@"<(?<tab>_\w+)(?=[\s/>])")]
     private static partial Regex TabTag();
+
+    [GeneratedRegex(@"<DemoTopic(?=[\s/>])")]
+    private static partial Regex DemoTopicStart();
+
+    [GeneratedRegex(@"<DemoTopic(?=[\s/>]).*?</DemoTopic>", RegexOptions.Singleline)]
+    private static partial Regex DemoTopicSpan();
+
+    [GeneratedRegex(@"(?<=\s)HasTopics(?=[\s/>=])")]
+    private static partial Regex HasTopicsAttribute();
+
+    [GeneratedRegex(@"(?<=\s)Topic\s*=\s*""@Topic""")]
+    private static partial Regex TopicAttribute();
+
+    [GeneratedRegex(@"^[a-z0-9]+(?:-[a-z0-9]+)*$")]
+    private static partial Regex TopicRouteShape();
 
     [GeneratedRegex(@"(?<=\s)(?<name>[\w@:.-]+)\s*=\s*""(?<value>[^""]*)""")]
     private static partial Regex TagAttribute();

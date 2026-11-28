@@ -1,10 +1,13 @@
 ﻿@page "/components/chart"
+@page "/components/chart/{Topic}"
 
 <PageOutlet Url="components/chart"
             Title="Chart"
             Description="Native SVG charts computed in C# - no canvas or JavaScript engine, so they work in prerendering and static SSR. A Chart.js-like API (BitChartType + BitChartData + BitChartOptions, or one BitChartConfig) draws line, bar, area, pie, doughnut, polar area, radar, scatter, bubble, mixed and sparkline charts, themed via the bit theme and --bit-Chart-* CSS variables, with keyboard and screen-reader support and SVG/PNG/CSV export." />
 
 <DemoPage Name="Chart"
+          HasTopics
+          Topic="@Topic"
           SecondaryNames="@(["Graph", "Plot"])"
           Description="BitChart renders native SVG computed in C# - no canvas or JavaScript engine - so it works in prerendering and static SSR. A Chart.js-like API (BitChartType + BitChartData + BitChartOptions, or one BitChartConfig) draws line, bar, area, pie, doughnut, polar area, radar, scatter, bubble, mixed and sparkline charts, styled by the bit theme and public --bit-Chart-* CSS variables, with keyboard and screen-reader support and SVG/PNG/CSV export."
           Parameters="componentParameters"
@@ -39,88 +42,138 @@
     </NotesTemplate>
     <Examples>
         @* A plain element the scoped stylesheet can attach to: everything below is components, and a
-           ::deep rule needs an anchor carrying this page's scope attribute. *@
+           ::deep rule needs an anchor carrying this page's scope attribute. Each chart type and feature is a
+           topic with an address of its own (/components/chart/bar); the overview is the line chart. *@
         <div class="chart-doc">
-            <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Scroll" Classes="@(new() { HeaderContainer = "pivot-sticky-header" })" MountAll="RenderForMcpClient">
-                <BitPivotItem HeaderText="Line" Key="line">
-                    <_BitChartLineDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Bar" Key="bar">
-                    <_BitChartBarDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Area" Key="area">
-                    <_BitChartAreaDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Pie & Doughnut" Key="pie">
-                    <_BitChartPieDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Polar area" Key="polar">
-                    <_BitChartPolarDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Radar" Key="radar">
-                    <_BitChartRadarDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Scatter & Bubble" Key="scatter">
-                    <_BitChartScatterDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Mixed" Key="mixed">
-                    <_BitChartMixedDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Multi-axis" Key="multiaxis">
-                    <_BitChartMultiAxisDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Scales" Key="scales">
-                    <_BitChartScalesDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Time" Key="time">
-                    <_BitChartTimeDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Titles" Key="titles">
-                    <_BitChartTitlesDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Legend" Key="legend">
-                    <_BitChartLegendDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Tooltips" Key="tooltips">
-                    <_BitChartTooltipsDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Interaction" Key="interaction">
-                    <_BitChartInteractionDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Data labels" Key="datalabels">
-                    <_BitChartDataLabelsDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Annotations" Key="annotations">
-                    <_BitChartAnnotationsDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Trendlines" Key="trendlines">
-                    <_BitChartTrendlinesDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Animations" Key="animations">
-                    <_BitChartAnimationsDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Scriptable" Key="scriptable">
-                    <_BitChartScriptableDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Zoom & Pan" Key="zoom">
-                    <_BitChartZoomDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Live data" Key="live">
-                    <_BitChartLiveDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Localization" Key="localization">
-                    <_BitChartLocalizationDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Export" Key="export">
-                    <_BitChartExportDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Accessibility" Key="accessibility">
-                    <_BitChartAccessibilityDemo />
-                </BitPivotItem>
-                <BitPivotItem HeaderText="Customization" Key="customization">
-                    <_BitChartCustomizationDemo />
-                </BitPivotItem>
-            </BitPivot>
+            <DemoTopic Title="Line"
+                       Description="Line charts: smooth or straight lines, area fills, steps, dashed borders, logarithmic axes, per-segment styling, monotone smoothing and sparklines.">
+                <_BitChartLineDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Bar" Route="bar"
+                       Description="Grouped, stacked, horizontal, floating and 100% stacked bars, rounded corners, pattern fills, stacked groups, error bars and waterfalls.">
+                <_BitChartBarDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Area" Route="area"
+                       Description="Gradient and radial fills, stacked areas, ranges filled between datasets and fill boundaries.">
+                <_BitChartAreaDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Pie & Doughnut" Route="pie"
+                       Description="Pie and doughnut charts, gauges, multiple rings, a KPI in the center, spacing, offsets and rounded arcs.">
+                <_BitChartPieDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Polar area" Route="polar"
+                       Description="Polar area charts and their point labels.">
+                <_BitChartPolarDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Radar" Route="radar"
+                       Description="Radar charts, filled or outlined, on a circular grid, with skipped points.">
+                <_BitChartRadarDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Scatter & Bubble" Route="scatter"
+                       Description="Scatter and bubble charts.">
+                <_BitChartScatterDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Mixed" Route="mixed"
+                       Description="Bars and lines in one chart, on one axis or two.">
+                <_BitChartMixedDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Multi-axis" Route="multiaxis"
+                       Description="Several y axes, and two x axes, in one chart.">
+                <_BitChartMultiAxisDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Scales" Route="scales"
+                       Description="Fixed and suggested ranges, step sizes, logarithmic and reversed axes, axes at the zero line, and grace.">
+                <_BitChartScalesDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Time" Route="time"
+                       Description="Time axes, with the unit picked automatically or forced with a format of its own.">
+                <_BitChartTimeDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Titles" Route="titles"
+                       Description="Chart titles and subtitles, where they go, and axis titles.">
+                <_BitChartTitlesDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Legend" Route="legend"
+                       Description="An interactive legend, its title, point-style markers and a cap on long legends.">
+                <_BitChartLegendDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Tooltips" Route="tooltips"
+                       Description="Tooltip callbacks for the title, the footer and the labels, currency formats, styling and point-style swatches.">
+                <_BitChartTooltipsDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Interaction" Route="interaction"
+                       Description="Hover and intersection modes, loading and empty states, and charts linked to each other.">
+                <_BitChartInteractionDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Data labels" Route="datalabels"
+                       Description="Values drawn on the data: on and inside bars, formatted on a line, percentages in a doughnut.">
+                <_BitChartDataLabelsDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Annotations" Route="annotations"
+                       Description="Threshold lines, boxes, vertical markers, ellipses, polygons and points drawn over the plot.">
+                <_BitChartAnnotationsDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Trendlines" Route="trendlines"
+                       Description="Linear regression lines, projections across the plot, moving averages and the mean.">
+                <_BitChartTrendlinesDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Animations" Route="animations"
+                       Description="How the bars grow and the lines draw on as a chart appears.">
+                <_BitChartAnimationsDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Scriptable" Route="scriptable"
+                       Description="Colors, radii and styles computed per data point: by sign, by threshold, by value or by parity.">
+                <_BitChartScriptableDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Zoom & Pan" Route="zoom"
+                       Description="Zooming and panning: decimated lines, both axes, a drag-to-zoom box, category axes, and an overview beside the detail.">
+                <_BitChartZoomDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Live data" Route="live"
+                       Description="Streaming data into a chart, and showing or hiding series from code.">
+                <_BitChartLiveDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Localization" Route="localization"
+                       Description="Culture-aware numbers, currency ticks, localized dates, non-Latin labels and right-to-left charts.">
+                <_BitChartLocalizationDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Export" Route="export"
+                       Description="Downloading a chart as SVG, PNG or CSV, or taking the picture or the CSV without downloading anything.">
+                <_BitChartExportDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Accessibility" Route="accessibility"
+                       Description="What keyboard and screen-reader users get from a chart.">
+                <_BitChartAccessibilityDemo />
+            </DemoTopic>
+
+            <DemoTopic Title="Customization" Route="customization"
+                       Description="The CSS variables, cascading parameters, and Style & Class.">
+                <_BitChartCustomizationDemo />
+            </DemoTopic>
         </div>
     </Examples>
 </DemoPage>
