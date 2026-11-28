@@ -506,8 +506,10 @@ public static partial class BitCss
         /// <summary>
         /// Shows an element in one color scheme only: the scheme of the nearest element carrying the
         /// <c>bit-theme</c> attribute - the document's or a scoped region's, the element itself included - where
-        /// a theme whose name ends in <c>dark</c> is the dark scheme. It is decided in CSS, so it is right in
-        /// prerendered markup and follows every theme change without a render.
+        /// a theme whose name ends in <c>dark</c> is the dark scheme (so a dark theme of an app's own is named that
+        /// way). It is decided in CSS, so it is right in prerendered markup and follows every theme change without a
+        /// render, and it is <c>!important</c>, so no display of a component, a rule or an inline style brings the
+        /// element back in the other scheme.
         /// </summary>
         public static class ColorScheme
         {

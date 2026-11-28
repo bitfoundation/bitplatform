@@ -71,7 +71,7 @@ public partial class BitImageDemo
             Name = "DarkSrc",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The src of the image shown in place of Src while the color scheme is dark: a second img the stylesheet picks by the nearest bit-theme (a name ending in dark is the dark scheme), so it is right in prerendered markup and follows every theme change. Every other parameter applies to both images, each falls back to the FallbackSrc on its own, and an eagerly loaded pair fetches both pictures where a lazy one fetches only the one on screen."
+            Description = "The src of the image shown in place of Src while the color scheme is dark: a second img the stylesheet picks by the nearest bit-theme (a name ending in dark is the dark scheme), so it is right in prerendered markup and follows every theme change. Every other parameter applies to both images; each loads, falls back to the FallbackSrc, fails and fades in on its own, while LoadingState is loaded once either has arrived and OnLoad is raised once for the pair. An eagerly loaded pair fetches both pictures where a lazy one fetches only the one on screen."
         },
         new()
         {
@@ -267,7 +267,7 @@ public partial class BitImageDemo
             Name = "Src",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies the src of the image. Changing it returns the component to the Loading state - with a DarkSrc, once the sources of both color schemes have changed."
+            Description = "Specifies the src of the image. Changing it returns the component to the Loading state - with a DarkSrc, its own image starts over and the state follows both images."
         },
         new()
         {

@@ -144,8 +144,98 @@ public class BitImageDarkSrcTests : BunitTestContext
 
         Assert.AreEqual(BitImageState.Loaded, component.Instance.LoadingState);
         Assert.AreEqual(1, loaded);
+
+        // Each image is shown by its own arrival: the other one is still on its way, and stays hidden until it is there.
+        Assert.AreEqual(dark is false, Light(component).ClassList.Contains("bit-img-vis"));
+        Assert.AreEqual(dark, Dark(component).ClassList.Contains("bit-img-vis"));
+
+        // The other image arriving is the same picture in the other scheme, so the load is reported once for the pair.
+        (dark ? Light(component) : Dark(component)).TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.AreEqual(1, loaded);
         Assert.IsTrue(Light(component).ClassList.Contains("bit-img-vis"));
         Assert.IsTrue(Dark(component).ClassList.Contains("bit-img-vis"));
+
+        // A new load of an image already there (a srcset swapping in another candidate) is reported as ever.
+        Light(component).TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.AreEqual(2, loaded);
+    }
+
+    [TestMethod]
+    public void BitImageShouldKeepThePlaceholderAndTheTemplateOfTheImageStillOnItsWay()
+    {
+        var component = RenderPair(parameters =>
+        {
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.PlaceholderSrc, "tiny.png");
+            parameters.Add(p => p.LoadingTemplate, (RenderFragment)(b => b.AddContent(0, "loading...")));
+        });
+
+        // The small dark picture arrives first, in a light page whose own picture is still downloading.
+        Dark(component).TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.AreEqual(BitImageState.Loaded, component.Instance.LoadingState);
+
+        // The light image is not shown half-painted: it keeps its placeholder and its loading template, in its scheme.
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-hid"));
+        Assert.IsTrue(component.Find(".bit-img-tpl").ClassList.Contains("bit-img-lsc"));
+        Assert.IsTrue(component.Find(".bit-img-plc:not(.bit-img-pfo)").ClassList.Contains("bit-img-lsc"));
+
+        // The dark one fades in, its own placeholder fading out over it.
+        Assert.IsTrue(Dark(component).ClassList.Contains("bit-img-fde"));
+        Assert.IsTrue(component.Find(".bit-img-plc.bit-img-pfo").ClassList.Contains("bit-img-dsc"));
+
+        // When the light image arrives it fades in as well, and its template goes.
+        Light(component).TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-fde"));
+        Assert.AreEqual(0, component.FindAll(".bit-img-tpl").Count);
+    }
+
+    [TestMethod]
+    public void BitImageShouldLetThePlaceholderOfOneSchemeGoOnItsOwnFade()
+    {
+        var component = RenderPair(parameters =>
+        {
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.PlaceholderSrc, "tiny.png");
+        });
+
+        Light(component).TriggerEvent("onload", new ProgressEventArgs());
+
+        component.Find(".bit-img-plc.bit-img-lsc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
+
+        // The light placeholder has gone; the dark one still stands in for the image on its way.
+        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+        Assert.IsTrue(component.Find(".bit-img-plc").ClassList.Contains("bit-img-dsc"));
+    }
+
+    [TestMethod]
+    public void BitImageShouldPlayTheFadeOnceRatherThanOnEveryChangeOfTheScheme()
+    {
+        var component = RenderPair(parameters => parameters.Add(p => p.FadeIn, true));
+
+        Light(component).TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-fde"));
+
+        // An animation of the page's own on the img does not cut the fade short.
+        Light(component).TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-pulse" });
+
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-fde"));
+
+        // Once the fade has ended it is taken off, so the img coming back into the box tree does not play it again.
+        Light(component).TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-in" });
+
+        Assert.IsFalse(Light(component).ClassList.Contains("bit-img-fde"));
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-vis"));
+
+        // The dark image has its own fade to play when it arrives.
+        Dark(component).TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.IsTrue(Dark(component).ClassList.Contains("bit-img-fde"));
+        Assert.IsFalse(Light(component).ClassList.Contains("bit-img-fde"));
     }
 
     [TestMethod]
@@ -230,14 +320,11 @@ public class BitImageDarkSrcTests : BunitTestContext
             parameters.Add(p => p.ErrorTemplate, (RenderFragment)(b => b.AddContent(0, "error!")));
         });
 
-        // Nothing has arrived yet, so the failure is the component's.
+        // Nothing has arrived yet, so the failure is the component's - and the failed image's alone to show.
         Dark(component).TriggerEvent("onerror", new ErrorEventArgs());
 
         Assert.AreEqual(BitImageState.Error, component.Instance.LoadingState);
-
-        var template = component.Find(".bit-img-tpl");
-        Assert.IsFalse(template.ClassList.Contains("bit-img-dsc"));
-        Assert.IsFalse(template.ClassList.Contains("bit-img-lsc"));
+        Assert.IsTrue(component.Find(".bit-img-tpl").ClassList.Contains("bit-img-dsc"));
 
         // The image of the other scheme arriving loads it, and leaves the failure to the scheme of the failed one.
         Light(component).TriggerEvent("onload", new ProgressEventArgs());
@@ -271,6 +358,7 @@ public class BitImageDarkSrcTests : BunitTestContext
         var component = RenderPair();
 
         Light(component).TriggerEvent("onload", new ProgressEventArgs());
+        Dark(component).TriggerEvent("onload", new ProgressEventArgs());
 
         component.Render(parameters =>
         {
@@ -288,6 +376,34 @@ public class BitImageDarkSrcTests : BunitTestContext
         Assert.AreEqual(BitImageState.Loaded, component.Instance.LoadingState);
         Assert.AreEqual(dark ? "dark-2.png" : "dark.png", Dark(component).GetAttribute("src"));
         Assert.AreEqual(dark ? "light.png" : "light-2.png", Light(component).GetAttribute("src"));
+
+        // The image whose source stayed keeps its place, and the new picture is hidden until it arrives.
+        Assert.AreEqual(dark is false, Light(component).ClassList.Contains("bit-img-hid"));
+        Assert.AreEqual(dark, Dark(component).ClassList.Contains("bit-img-hid"));
+    }
+
+    [TestMethod]
+    public void BitImageShouldHideANewPictureOfOneSchemeUntilItArrives()
+    {
+        var component = RenderPair(parameters =>
+        {
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.PlaceholderSrc, "tiny.png");
+        });
+
+        Light(component).TriggerEvent("onload", new ProgressEventArgs());
+        Dark(component).TriggerEvent("onload", new ProgressEventArgs());
+
+        component.Render(parameters => parameters.Add(p => p.Src, "light-2.png"));
+
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-hid"));
+        Assert.IsTrue(component.Find(".bit-img-plc:not(.bit-img-pfo)").ClassList.Contains("bit-img-lsc"));
+        Assert.IsTrue(Dark(component).ClassList.Contains("bit-img-vis"));
+
+        Light(component).TriggerEvent("onload", new ProgressEventArgs());
+
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-vis"));
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-fde"));
     }
 
     [TestMethod]
@@ -320,7 +436,7 @@ public class BitImageDarkSrcTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.DarkSrc, "dark-2.png"));
 
         Assert.AreEqual("dark-2.png", Dark(component).GetAttribute("src"));
-        Assert.IsTrue(Dark(component).ClassList.Contains("bit-img-vis"));
+        Assert.IsTrue(Dark(component).ClassList.Contains("bit-img-hid"));
 
         Dark(component).TriggerEvent("onerror", new ErrorEventArgs());
         Assert.AreEqual("fallback.png", Dark(component).GetAttribute("src"));
@@ -341,6 +457,67 @@ public class BitImageDarkSrcTests : BunitTestContext
         Assert.AreEqual(1, component.FindAll(".bit-img-img").Count);
         Assert.AreEqual(BitImageState.Error, component.Instance.LoadingState);
         Assert.IsTrue(component.Find(".bit-img-img").ClassList.Contains("bit-img-hid"));
+    }
+
+    [TestMethod]
+    public void BitImageShouldKeepTheFailureOfItsImageOnceADarkSourceIsAdded()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "light.png");
+            parameters.Add(p => p.ErrorTemplate, (RenderFragment)(b => b.AddContent(0, "error!")));
+        });
+
+        component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
+
+        Assert.AreEqual(BitImageState.Error, component.Instance.LoadingState);
+
+        component.Render(parameters => parameters.Add(p => p.DarkSrc, "dark.png"));
+        Dark(component).TriggerEvent("onload", new ProgressEventArgs());
+
+        // The light image failed before there was a second one, and still has: it is not shown as a broken img.
+        Assert.AreEqual(BitImageState.Loaded, component.Instance.LoadingState);
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-hid"));
+        Assert.IsTrue(Dark(component).ClassList.Contains("bit-img-vis"));
+        Assert.IsTrue(component.Find(".bit-img-tpl").ClassList.Contains("bit-img-lsc"));
+    }
+
+    [TestMethod]
+    public void BitImageShouldTakeOverEachImageFromTheBrowserOnItsOwn()
+    {
+        var state = Context.AddBunitPersistentComponentState();
+        state.Persist("BitPrerendered", true);
+
+        // The img of Src is asked first: nothing of the light picture is on screen yet, while the browser has already
+        // finished the dark one.
+        var asked = new List<string>();
+
+        int Order(JSRuntimeInvocation invocation)
+        {
+            var id = ((ElementReference)invocation.Arguments[0]!).Id;
+            if (asked.Contains(id) is false) asked.Add(id);
+            return asked.IndexOf(id);
+        }
+
+        Context.JSInterop.Setup<int>("BitBlazorUI.Utils.getImageProgress", i => Order(i) == 0).SetResult(0);
+        Context.JSInterop.Setup<int>("BitBlazorUI.Utils.getImageProgress", i => Order(i) == 1).SetResult(2);
+
+        var component = RenderPair(parameters =>
+        {
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.PlaceholderSrc, "tiny.png");
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(BitImageState.Loaded, component.Instance.LoadingState));
+
+        // The dark image was on screen all along: no fade.
+        Assert.IsTrue(Dark(component).ClassList.Contains("bit-img-vis"));
+        Assert.IsFalse(Dark(component).ClassList.Contains("bit-img-fde"));
+
+        // The light one is the component's to show: hidden behind its placeholder until it arrives.
+        Assert.IsTrue(Light(component).ClassList.Contains("bit-img-hid"));
+        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+        Assert.IsTrue(component.Find(".bit-img-plc").ClassList.Contains("bit-img-lsc"));
     }
 
     [TestMethod]

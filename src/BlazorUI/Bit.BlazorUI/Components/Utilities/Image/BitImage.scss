@@ -274,9 +274,10 @@
 // The images of a DarkSrc, and every part of the frame rendered for one of them only, are shown in their own
 // color scheme alone: the scheme of the nearest bit-theme, decided here rather than in C# so it is right in
 // prerendered markup and follows every change of the theme (functions.scss). The other scheme's are taken out of
-// the box tree, and so out of the accessibility tree, outweighing every display of the rules above and below -
-// the box a hidden lazy image keeps included, which is what keeps the browser from fetching the image of a scheme
-// that is not on screen while it is loaded lazily.
+// the box tree, and so out of the accessibility tree, outweighing every display of the rules above and below and
+// every inline one a page writes through Styles or ImageAttributes (the rule is !important) - the box a hidden lazy
+// image keeps included, which is what keeps the browser from fetching the image of a scheme that is not on screen
+// while it is loaded lazily.
 .bit-img-lsc {
     @include light-scheme-only;
 }

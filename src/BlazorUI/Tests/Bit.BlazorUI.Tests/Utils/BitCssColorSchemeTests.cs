@@ -44,7 +44,10 @@ public partial class BitCssColorSchemeTests
         DataRow("dark", "dark light dark", true),
         DataRow("light", "dark light", false),
         DataRow("light", "dark light dark", true),
-        DataRow(null, "dark light dark", true)
+        DataRow(null, "dark light dark", true),
+        // The document's own theme counts as a level of the nesting on a dark page.
+        DataRow("dark", "light dark light", false),
+        DataRow("dark", "light dark", true)
     ]
     public void TheColorSchemeClassesShouldFollowTheNearestTheme(string? document, string? regions, bool dark)
     {
@@ -152,6 +155,7 @@ public partial class BitCssColorSchemeTests
 
     private static string ReadBundle() => SourceFiles.Read("Bit.BlazorUI", "wwwroot", "styles", "bit.blazorui.css");
 
-    [GeneratedRegex(@"(?<selector>[^{}]+)\{\s*display:\s*none;?\s*\}")]
+    // !important, so an inline display (a Styles part, a style attribute) cannot bring the other scheme's copy back.
+    [GeneratedRegex(@"(?<selector>[^{}]+)\{\s*display:\s*none\s*!important;?\s*\}")]
     private static partial Regex HidingRule();
 }

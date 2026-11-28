@@ -410,28 +410,34 @@ $html-font-size: 16px;
  * prerendered and statically rendered markup too, before any Blazor runtime is up, and it follows every
  * change of the theme without a render.
  *   - A theme is dark when its name ends in "dark", the one rule every layer of the library classifies a
- *     theme by ([bit-theme$="dark"]: "dark", "fluent-dark", "material-dark", an app's "acme-dark").
- *     Following the operating system is no exception: the theme script resolves "system" into the theme of
- *     the scheme the system reports, so the attribute always names the scheme on screen. A page that names
- *     no theme at all is light, as the core stylesheet is.
+ *     theme by ([bit-theme$="dark"]: "dark", "fluent-dark", "material-dark", an app's "acme-dark") - the
+ *     accent overlays, the presets' IsDark, the server's first paint and the theme switcher included. So a
+ *     dark theme of an app's own is named that way: a pair declared as bit-theme-dark="midnight" is
+ *     toggled to by the theme script, but every stylesheet of the library, these rules among them, reads
+ *     it as light. Following the operating system is no exception: the theme script resolves "system" into
+ *     the theme of the scheme the system reports, so the attribute always names the scheme on screen. A
+ *     page that names no theme at all is light, as the core stylesheet is.
  *   - The scheme is the one of the NEAREST element carrying the attribute, the element itself included:
  *     the document's, or a scoped region's (<section bit-theme="dark">), whose palette and color-scheme
  *     re-theme just that subtree. Selectors cannot ask for the nearest ancestor, but they can count
  *     alternations the way theme-overlay-nearest does: below the outermost dark region, a chain dark /
  *     light / dark ... reaching the element ends in a dark region exactly when its longest such chain is of
- *     odd length. $scheme-nesting-depth alternations are told apart; deeper nestings than that read as
- *     the region that many levels up.
+ *     odd length. $scheme-nesting-depth alternations are told apart, counted from the outermost dark
+ *     element - which is the document itself on a dark page, so there the document's theme is one of them
+ *     (html dark > light > dark > light is four); deeper nestings than that read as the region that many
+ *     levels up.
  *   - The element is taken out of the box tree (display: none), which also takes it out of the
  *     accessibility tree, so the copy of the other scheme is never announced beside the one on screen.
- *     The condition weighs several attributes, which is what lets the rules outweigh the display a
- *     component's own stylesheet gives the same element, wherever the two are linked.
+ *     It is !important, as the bit-css-hide-* classes are: an element hidden in one scheme stays hidden
+ *     whatever display a component's stylesheet, an app's rule or an inline style (a Styles part of a
+ *     component, a style attribute) gives it - specificity alone loses to the inline one.
  *
  * Usage:
  *   .bit-xyz-drk {
  *       @include dark-scheme-only;
  *   }
  */
-$scheme-nesting-depth: 3;
+$scheme-nesting-depth: 4;
 
 @function dark-scheme() {
     $dark: '[bit-theme$="dark"]';
@@ -469,13 +475,13 @@ $scheme-nesting-depth: 3;
 
 @mixin dark-scheme-only {
     &:not(#{dark-scheme()}) {
-        display: none;
+        display: none !important;
     }
 }
 
 @mixin light-scheme-only {
     &#{dark-scheme()} {
-        display: none;
+        display: none !important;
     }
 }
 
