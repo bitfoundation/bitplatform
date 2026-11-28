@@ -132,6 +132,14 @@ internal static partial class BitRichTextEditorHtmlSanitizer
     /// No <paramref name="policy"/> is the secure default, whose rules are read once rather than on every call.
     /// </remarks>
     public static string Sanitize(string? html, BitRichTextEditorSanitizationPolicy? policy)
+        => Sanitize(html, policy, whole: false);
+
+    /// <summary>
+    /// Sanitizes <paramref name="html"/> as <see cref="Sanitize(string?, BitRichTextEditorSanitizationPolicy?)"/> does,
+    /// all of it when <paramref name="whole"/> is set: a document converted on purpose (the block model reading or
+    /// writing HTML) must never come back cut short, and the work is linear in the input either way.
+    /// </summary>
+    public static string Sanitize(string? html, BitRichTextEditorSanitizationPolicy? policy, bool whole)
     {
         if (string.IsNullOrEmpty(html)) return string.Empty;
 
@@ -140,7 +148,7 @@ internal static partial class BitRichTextEditorHtmlSanitizer
         // that starts within the limit, and the bridge fills in the whole of it the moment the page is
         // interactive. Rendering nothing instead would leave an empty surface, which the placeholder then claims
         // is a blank document - for good, on a static page. Below the limit the work is linear in the input.
-        if (html.Length > MaxInputLength)
+        if (whole is false && html.Length > MaxInputLength)
         {
             var cut = html.LastIndexOf('<', MaxInputLength - 1);
             if (cut <= 0)
