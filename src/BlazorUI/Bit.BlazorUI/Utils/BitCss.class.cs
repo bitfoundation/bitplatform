@@ -504,6 +504,27 @@ public static partial class BitCss
         }
 
         /// <summary>
+        /// Shows an element in one color scheme only: the scheme of the nearest element carrying the
+        /// <c>bit-theme</c> attribute - the document's or a scoped region's, the element itself included - where
+        /// a theme whose name ends in <c>dark</c> is the dark scheme (so a dark theme of an app's own is named that
+        /// way). It is decided in CSS, so it is right in prerendered markup and follows every theme change without a
+        /// render, and it is <c>!important</c>, so no display of a component, a rule or an inline style brings the
+        /// element back in the other scheme.
+        /// </summary>
+        public static class ColorScheme
+        {
+            /// <summary>
+            /// Takes the element out of the layout (display: none) unless the scheme is dark.
+            /// </summary>
+            public const string DarkOnly = "bit-css-dark-only";
+
+            /// <summary>
+            /// Takes the element out of the layout (display: none) while the scheme is dark.
+            /// </summary>
+            public const string LightOnly = "bit-css-light-only";
+        }
+
+        /// <summary>
         /// Hides an element per breakpoint from the stylesheet alone, so a prerendered page shows the right content
         /// from its first paint. <c>Xs</c> to <c>Xxl</c> hide from that breakpoint upwards, <c>LtSm</c> to <c>LtXxl</c>
         /// below it, so <see cref="Md"/> on the mobile content and <see cref="LtMd"/> on the desktop one swap the two at

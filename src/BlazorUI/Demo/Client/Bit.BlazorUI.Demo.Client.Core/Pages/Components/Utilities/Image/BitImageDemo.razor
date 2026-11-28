@@ -447,7 +447,37 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
+        <DemoExample Title="DarkSrc" RazorCode="@example16RazorCode" Id="example16">
+            <div class="example-desc">
+                <b>DarkSrc</b> (and <b>DarkSrcset</b>) is the picture of the dark color scheme, shown in place of
+                <b>Src</b> while the theme is dark. It is a second img that the stylesheet picks by the nearest
+                <b>bit-theme</b> - the page's, or a region's like the always-dark one below - so it is right before the
+                page is interactive and follows every switch of the theme. Eager images fetch both pictures; a lazy one
+                fetches only the picture on screen.
+            </div>
+            <div class="example-content">
+                <div class="image-row">
+                    <div>
+                        <div>Follows the page's theme</div>
+                        <BitImage Width="8rem"
+                                  Loading="BitImageLoading.Lazy"
+                                  Alt="The bit platform logo"
+                                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-light.svg"
+                                  DarkSrc="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-dark.svg" />
+                    </div>
+                    <div bit-theme="dark" class="dark-region">
+                        <div>An always-dark region</div>
+                        <BitImage Width="8rem"
+                                  Loading="BitImageLoading.Lazy"
+                                  Alt="The bit platform logo"
+                                  Src="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-light.svg"
+                                  DarkSrc="_content/Bit.BlazorUI.Demo.Client.Core/images/bit-logo-dark.svg" />
+                    </div>
+                </div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17">
             <div class="example-desc">
                 <b>Style</b> and <b>Class</b> reach the frame; <b>Styles</b> and <b>Classes</b> reach each part:
                 <b>Root</b>, <b>Image</b>, <b>Placeholder</b>, <b>LoadingTemplate</b>, <b>ErrorTemplate</b> and
@@ -483,7 +513,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+        <DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18">
             <div class="example-desc">
                 A picture has no reading direction; <b>Dir</b> changes the flow of what is laid over it and of the templates.
             </div>

@@ -9,14 +9,30 @@
 
     It is a fragment rather than markup written in place because it is rendered either on its own or as
     the last child of a picture, and the two have to be the same element - a second copy would be a
-    second img to keep in step with. *@
+    second img to keep in step with.
+
+    The img of the DarkSrc is the one second img there is: the picture of the other color scheme, written
+    from the same attributes but for its sources, and shown in place of the first one while the scheme is
+    dark - which the stylesheet decides, so it is right before the page is interactive (BitImage.scss).
+
+    Each img hears the end of its own fade, which takes the fade off it: played again, it would start over every
+    time the img came back into the box tree, as the img of a DarkSrc does on every change of the scheme. *@
 @{
     RenderFragment image =@<img @key="_reloadKey" @ref="_imageElement" @attributes="GetImageAttributes()"
                                 @onload="HandleOnLoad"
                                 @onerror="HandleOnError"
+                                @onanimationend="HandleOnImageAnimationEnd"
                                 @onclick="HandleOnClick"
                                 @onkeydown="HandleOnKeyDown"
                                 @onkeyup="HandleOnKeyUp" />;
+
+    RenderFragment darkImage =@<img @key="_darkReloadKey" @ref="_darkImageElement" @attributes="GetImageAttributes(dark: true)"
+                                    @onload="HandleOnDarkLoad"
+                                    @onerror="HandleOnDarkError"
+                                    @onanimationend="HandleOnDarkImageAnimationEnd"
+                                    @onclick="HandleOnClick"
+                                    @onkeydown="HandleOnKeyDown"
+                                    @onkeyup="HandleOnKeyUp" />;
 }
 
 @*  The frame. Everything else is positioned against it, so it is the element that carries the size,
@@ -35,19 +51,21 @@
         has ended - which only the browser knows, the duration being the theme's and the reduced-motion
         preference's as much as the component's, and the animation itself a restyle's to replace
         (Bit.BlazorUI.Events registers the directives). A canceled fade lets it go as well: it has nothing
-        left to show over the image. *@
-    @if (_placeholderSrc.HasValue())
+        left to show over the image. Like every part below that follows the state, it is rendered per color
+        scheme where the images of a DarkSrc are in different states (GetSchemeParts), and its animations are
+        the placeholder of the img of its scheme - or of both, rendered once for both. *@
+    @foreach (var (scheme, schemeImage) in GetSchemeParts(IsPlaceholderShown, IsPlaceholderLeaving))
     {
         <img alt=""
              aria-hidden="true"
-             src="@_placeholderSrc"
+             src="@PlaceholderSrc"
              referrerpolicy="@GetPlaceholderReferrerPolicy()"
              draggable="false"
              style="@GetPlaceholderStyles()"
-             class="@GetPlaceholderClasses()"
-             @onanimationstart="HandleOnPlaceholderAnimationStart"
-             @onanimationend="HandleOnPlaceholderAnimationEnd"
-             @onanimationcancel="HandleOnPlaceholderAnimationEnd" />
+             class="@GetPlaceholderClasses(schemeImage, scheme)"
+             @onanimationstart="(BitAnimationEventArgs e) => HandleOnPlaceholderAnimationStart(e, scheme)"
+             @onanimationend="(BitAnimationEventArgs e) => HandleOnPlaceholderAnimationEnd(e, scheme)"
+             @onanimationcancel="(BitAnimationEventArgs e) => HandleOnPlaceholderAnimationEnd(e, scheme)" />
     }
 
     @if (_hasSources)
@@ -75,24 +93,30 @@
         @image
     }
 
-    @*  The text alternative of an image that is not on screen, which leaves the accessibility tree
-        with the image it belongs to - see the .bit-img-alt rule. *@
-    @if (_hiddenImageName is not null)
+    @if (_hasDarkImage)
     {
-        <span role="img" aria-label="@_hiddenImageName" class="bit-img-alt"></span>
+        @darkImage
     }
 
-    @if (_isLoadingTemplateShown)
+    @*  The text alternative of an image that is not on screen, which leaves the accessibility tree
+        with the image it belongs to - see the .bit-img-alt rule. *@
+    @foreach (var (scheme, _) in GetSchemeParts(IsHiddenImageAnnounced))
+    {
+        <span role="img" aria-label="@GetHiddenImageName()" class="@JoinClasses("bit-img-alt", scheme)"></span>
+    }
+
+    @foreach (var (scheme, _) in GetSchemeParts(IsLoadingTemplateShown))
     {
         <div style="@Styles?.LoadingTemplate"
-             class="bit-img-tpl@(Classes?.LoadingTemplate.HasValue() is true ? $" {Classes!.LoadingTemplate}" : null)">
+             class="@GetTemplateClasses(scheme, Classes?.LoadingTemplate)">
             @LoadingTemplate
         </div>
     }
-    else if (_isErrorTemplateShown)
+
+    @foreach (var (scheme, _) in GetSchemeParts(IsErrorTemplateShown))
     {
         <div style="@Styles?.ErrorTemplate"
-             class="bit-img-tpl@(Classes?.ErrorTemplate.HasValue() is true ? $" {Classes!.ErrorTemplate}" : null)">
+             class="@GetTemplateClasses(scheme, Classes?.ErrorTemplate)">
             @ErrorTemplate
         </div>
     }

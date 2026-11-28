@@ -328,6 +328,15 @@ $bit-radius-scale: (
     @include focus-ring;
 }
 
+//color scheme - an element shown in one scheme only, the scheme of its nearest bit-theme (functions.scss).
+.bit-css-dark-only {
+    @include dark-scheme-only;
+}
+
+.bit-css-light-only {
+    @include light-scheme-only;
+}
+
 //visibility - hides an element per breakpoint from the stylesheet alone, so a prerendered page shows the right
 //content from its first paint rather than once BitMediaQuery's matchMedia has run. Built from the default breakpoints
 //the --bit-bp-* properties carry (a custom property cannot be read in a media query, so from their Sass values): a

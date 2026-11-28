@@ -1583,6 +1583,15 @@ await BitThemeManager.ApplyBitThemeAsync(fromDesign);</CodeBox>
                 </ul>
 
                 <BitText>
+                    <b>Showing something in one scheme only.</b> <code>bit-css-dark-only</code> (<code>BitCss.Class.ColorScheme.DarkOnly</code>) and <code>bit-css-light-only</code> (<code>BitCss.Class.ColorScheme.LightOnly</code>) take an element out of the layout - and so out of the accessibility tree - in the other scheme: a logo drawn for a dark page, a sun or a moon on a theme toggle. The scheme is that of the nearest element carrying <code>bit-theme</code>, the element itself included - the document's, or a <i>scoped preset</i>'s - and a theme whose name ends in <code>dark</code> is the dark one, the rule every layer of the library classifies themes by, so a dark theme of your own is named that way (<code>acme-dark</code>, not <code>midnight</code>) or reads as light; a page that names no theme is light, and following the OS is covered too, since the theme script writes the resolved theme into the attribute. It is all CSS, so prerendered markup is right before the page is interactive and every theme switch is followed without a render. The rules are <code>!important</code>, so they outweigh any <code>display</code> - a component's own, a rule of yours, an inline <code>style</code> - and the classes work on a component's <code>Class</code> as well. The scheme is that of the <i>nearest</i> theme up to four nestings deep, counting the document's own theme on a dark page (<code>html</code> dark &gt; light &gt; dark &gt; light is four). For an image, <code>BitImage</code>'s <code>DarkSrc</code> / <code>DarkSrcset</code> does the same with one component.
+                </BitText>
+
+                <CodeBox Language="razor">&lt;img class="@@BitCss.Class.ColorScheme.LightOnly" src="logo-light.svg" alt="bit platform" /&gt;
+&lt;img class="@@BitCss.Class.ColorScheme.DarkOnly"  src="logo-dark.svg"  alt="bit platform" /&gt;
+
+&lt;BitImage Src="logo-light.svg" DarkSrc="logo-dark.svg" Alt="bit platform" /&gt;</CodeBox>
+
+                <BitText>
                     <b>Hiding per breakpoint.</b> <code>bit-css-hide-{xs..xxl}</code> (<code>BitCss.Class.Hide.Xs</code> to <code>Xxl</code>) hide an element from that breakpoint upwards, and <code>bit-css-hide-lt-{sm..xxl}</code> (<code>BitCss.Class.Hide.LtSm</code> to <code>LtXxl</code>) below it, at the default widths of the <code>--bit-bp-*</code> breakpoints. They are pure CSS, so unlike <code>BitMediaQuery</code> a prerendered page shows the right content from its first paint, not once it is interactive. A media query cannot read a custom property, so they are built from the default breakpoints and ignore a theme's <code>Layout.Breakpoints</code>: a theme that moves the breakpoints moves <code>--bit-bp-*</code> and <code>BitMediaQuery</code>, never these, and the two then disagree between the old and the new width - keep the default breakpoints wherever you mix them. The two of one breakpoint are complements, and exactly so - at every width one of them matches and the other does not:
                 </BitText>
 
@@ -1980,7 +1989,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
             <BitText Element="h4" Typography="BitTypography.H5">Authoring helpers in C#</BitText>
 
             <ul>
-                <li><code>BitCss.Class</code> - <code>bit-css-*</code> utility class names (colors, shadows incl. per-surface, z-index, shape incl. the radius scale <code>bit-css-shp-radius-*</code>, focus ring, hiding per breakpoint <code>bit-css-hide-*</code>)</li>
+                <li><code>BitCss.Class</code> - <code>bit-css-*</code> utility class names (colors, shadows incl. per-surface, z-index, shape incl. the radius scale <code>bit-css-shp-radius-*</code>, focus ring, the color-scheme visibility classes <code>bit-css-dark-only</code> / <code>bit-css-light-only</code>, hiding per breakpoint <code>bit-css-hide-*</code>)</li>
                 <li><code>BitCss.Var</code> - <code>--bit-*</code> custom property names</li>
             </ul>
 
