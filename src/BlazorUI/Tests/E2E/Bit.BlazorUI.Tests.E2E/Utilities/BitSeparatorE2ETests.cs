@@ -290,18 +290,25 @@ public class BitSeparatorE2ETests : E2ETestBase
 
         await Expect(Page.Locator("#spr-fade")).ToHaveClassAsync(HasClass("bit-spr-fad"));
 
+        // Compared with the computed value of the same gradient, as a browser leaves the default "to bottom" out of it.
+        var toRight = await ResolveAsync("mask-image", "linear-gradient(to right, transparent, #000)");
+        var toLeft = await ResolveAsync("mask-image", "linear-gradient(to left, transparent, #000)");
+        var toBottom = await ResolveAsync("mask-image", "linear-gradient(to bottom, transparent, #000)");
+        var toTop = await ResolveAsync("mask-image", "linear-gradient(to top, transparent, #000)");
+
         // The two segments mirror each other around the content, transparent at their outer ends.
-        StringAssert.Contains(await PseudoAsync("#spr-fade", "::before", "mask-image"), "to right");
-        StringAssert.Contains(await PseudoAsync("#spr-fade", "::after", "mask-image"), "to left");
+        Assert.AreEqual(toRight, await PseudoAsync("#spr-fade", "::before", "mask-image"));
+        Assert.AreEqual(toLeft, await PseudoAsync("#spr-fade", "::after", "mask-image"));
 
         // Right to left, the leading segment is the right one.
-        StringAssert.Contains(await PseudoAsync("#spr-fade-rtl", "::before", "mask-image"), "to left");
-        StringAssert.Contains(await PseudoAsync("#spr-fade-rtl", "::after", "mask-image"), "to right");
+        Assert.AreEqual(toLeft, await PseudoAsync("#spr-fade-rtl", "::before", "mask-image"));
+        Assert.AreEqual(toRight, await PseudoAsync("#spr-fade-rtl", "::after", "mask-image"));
 
         // Without content, the one segment fades toward both ends; a vertical one fades up and down.
-        StringAssert.Contains(await PseudoAsync("#spr-fade-empty", "::before", "mask-image"), "to right");
-        StringAssert.Contains(await PseudoAsync("#spr-fade-vertical", "::before", "mask-image"), "to bottom");
-        StringAssert.Contains(await PseudoAsync("#spr-fade-vertical", "::after", "mask-image"), "to top");
+        Assert.AreEqual(await ResolveAsync("mask-image", "linear-gradient(to right, transparent, #000, transparent)"),
+                        await PseudoAsync("#spr-fade-empty", "::before", "mask-image"));
+        Assert.AreEqual(toBottom, await PseudoAsync("#spr-fade-vertical", "::before", "mask-image"));
+        Assert.AreEqual(toTop, await PseudoAsync("#spr-fade-vertical", "::after", "mask-image"));
 
         // A separator that is not faded has no mask.
         Assert.AreEqual("none", await PseudoAsync("#spr-line-background", "::before", "mask-image"));
@@ -324,6 +331,10 @@ public class BitSeparatorE2ETests : E2ETestBase
 
         // Nor does a separator outside the container that sets the variable have any line background.
         Assert.AreEqual("none", await PseudoAsync("#spr-basic", "::before", "border-image-source"));
+
+        // A vertical separator reads a line background of its own first, and the shared one without it.
+        StringAssert.Contains(await PseudoAsync("#spr-vertical-line-background", "::before", "border-image-source"), "rgb(7, 8, 9)");
+        StringAssert.Contains(await PseudoAsync("#spr-vertical-line-background-shared", "::before", "border-image-source"), "rgb(1, 2, 3)");
     }
 
     [TestMethod]

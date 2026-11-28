@@ -6,8 +6,10 @@
 //   --bit-Separator-color                 color of the line                              (default: $clr-brd-sec)
 //   --bit-Separator-thickness             weight of the line                             (default: $siz-divider)
 //   --bit-Separator-line-style            style of the line: solid, dashed, dotted, ...  (default: solid)
-//   --bit-Separator-line-background       image painted along each segment of the line
-//                                         in place of its color: a gradient or a url()  (default: none)
+//   --bit-Separator-line-background       gradient painted along each segment of the line
+//                                         in place of its color, running along the line (default: none)
+//   --bit-Separator-vertical-line-background  the same for a vertical separator, whose
+//                                         gradient runs top to bottom      (default: --bit-Separator-line-background)
 //   --bit-Separator-spacing               room on either side of the line, across it     (default: spacing(0.5))
 //   --bit-Separator-inset                 room held off both ends of the line, or off
 //                                         the start and the end given two lengths        (default: 0)
@@ -24,6 +26,15 @@
 // is the more specific ask; the variables re-skin what the theme would otherwise decide. The line background is drawn
 // in place of the color and the style of the line, so Color, Border and a dashed, dotted or double LineStyle win over
 // it too. A disabled separator keeps the disabled colors of the theme whatever the colors above say.
+//
+// A line background has to be a gradient that runs along the line: each segment shows the one-pixel edge of it that
+// lies along the line, so a gradient across the line is drawn in its first color, and an image of its own size, such as
+// a url(), shows its edge row stretched rather than the image. That is why a vertical separator reads a variable of its
+// own first: a left-to-right gradient set on :root for the horizontal ones would draw every vertical one in a single
+// color. A gradient does not follow the reading direction either, so a right-to-left page or container sets it
+// mirrored. And as a border image paints over the border, a Class or Style that restyles the line of one separator
+// itself - its border-color or border-style - also sets --bit-Separator-line-background: none on it (and the vertical
+// one on a vertical separator), which keeps a line background set on an ancestor off that separator.
 //
 // The rule is drawn by the two pseudo elements of the root, laid out as flex items beside the content: a separator
 // with content flanks it with two segments rather than running one line behind it and masking the middle with an
@@ -143,6 +154,7 @@ $spr-private-properties: brd, siz, stl, bg, ofs, ins, img, dis-brd, dis-fg;
     &::before,
     &::after {
         border-left-width: var(--bit-spr-siz, var(--bit-Separator-thickness, #{$siz-divider}));
+        border-image-source: var(--bit-spr-img, var(--bit-Separator-vertical-line-background, var(--bit-Separator-line-background, none)));
     }
 
     // Between runs of text, or sized to its content without any, the line would otherwise collapse to nothing, so it
@@ -164,42 +176,49 @@ $spr-private-properties: brd, siz, stl, bg, ofs, ins, img, dis-brd, dis-fg;
 // separator without content fades toward both of its ends. It is a mask rather than a gradient of the color, so it
 // fades whatever the line is painted with - a role, a line style, a line background - and whatever it is drawn on.
 // The outer ends follow the reading direction on a horizontal separator; a vertical one fades up and down.
+//
+// The fade toward both ends is the default of the leading segment and the one-sided fades are the ones that ask for
+// content, so an engine without :has() - which has no trailing segment either - still fades the line symmetrically.
 .bit-spr-fad {
     &.bit-spr-hrz {
         &::before {
-            --bit-spr-fdm: linear-gradient(to right, transparent, #000);
+            --bit-spr-fdm: linear-gradient(to right, transparent, #000, transparent);
         }
 
-        &::after {
-            --bit-spr-fdm: linear-gradient(to left, transparent, #000);
-        }
-
-        &:is(.bit-rtl, :dir(rtl)) {
+        &:has(> .bit-spr-cnt) {
             &::before {
-                --bit-spr-fdm: linear-gradient(to left, transparent, #000);
+                --bit-spr-fdm: linear-gradient(to right, transparent, #000);
             }
 
             &::after {
-                --bit-spr-fdm: linear-gradient(to right, transparent, #000);
+                --bit-spr-fdm: linear-gradient(to left, transparent, #000);
             }
-        }
 
-        &:not(:has(> .bit-spr-cnt))::before {
-            --bit-spr-fdm: linear-gradient(to right, transparent, #000, transparent);
+            &:is(.bit-rtl, :dir(rtl)) {
+                &::before {
+                    --bit-spr-fdm: linear-gradient(to left, transparent, #000);
+                }
+
+                &::after {
+                    --bit-spr-fdm: linear-gradient(to right, transparent, #000);
+                }
+            }
         }
     }
 
     &.bit-spr-vrt {
         &::before {
-            --bit-spr-fdm: linear-gradient(to bottom, transparent, #000);
-        }
-
-        &::after {
-            --bit-spr-fdm: linear-gradient(to top, transparent, #000);
-        }
-
-        &:not(:has(> .bit-spr-cnt))::before {
             --bit-spr-fdm: linear-gradient(to bottom, transparent, #000, transparent);
+        }
+
+        &:has(> .bit-spr-cnt) {
+            &::before {
+                --bit-spr-fdm: linear-gradient(to bottom, transparent, #000);
+            }
+
+            &::after {
+                --bit-spr-fdm: linear-gradient(to top, transparent, #000);
+            }
         }
     }
 }

@@ -689,7 +689,7 @@ public class BitSeparatorTests : BunitTestContext
 
         var cssClass = fade ? "bit-spr-fad " : null;
 
-        component.MarkupMatches(@$"<div role=""separator"" class=""{cssClass}bit-spr bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
+        component.MarkupMatches(@$"<div role=""separator"" class=""bit-spr {cssClass}bit-spr-hrz bit-spr-ctr"" id:ignore></div>");
     }
 
     [TestMethod]

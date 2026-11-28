@@ -165,7 +165,13 @@ public partial class BitSeparatorDemo
         {
             Name = "--bit-Separator-line-background",
             DefaultValue = "none",
-            Description = "An image painted along each segment of the line in place of its color and style: a gradient or a url(). A plain color is --bit-Separator-color's. The Color and Border parameters, and a dashed, dotted or double LineStyle, win over it; a disabled separator and a forced-colors mode draw the plain line instead.",
+            Description = "A gradient painted along each segment of the line in place of its color and style. It has to run along the line - a gradient across it is drawn in its first color, and an image such as a url() shows only its edge row - and it does not follow the reading direction, so a right-to-left page sets it mirrored. A plain color is --bit-Separator-color's. The Color and Border parameters, and a dashed, dotted or double LineStyle, win over it; a disabled separator and a forced-colors mode draw the plain line instead. A Class or Style restyling the border of one separator sets it (and the vertical one, on a vertical separator) to none on that separator, so a line background set on an ancestor does not paint over it.",
+        },
+        new()
+        {
+            Name = "--bit-Separator-vertical-line-background",
+            DefaultValue = "--bit-Separator-line-background",
+            Description = "The line background of a vertical separator, a gradient running top to bottom. A left-to-right gradient set as the line background on :root would draw every vertical separator in a single color, so this one is read first.",
         },
         new()
         {

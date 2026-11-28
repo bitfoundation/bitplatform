@@ -75,7 +75,8 @@ public partial class BitSeparatorStylesheetTests
         DataRow("var(--bit-spr-ins, var(--bit-Separator-inset, 0))"),
         DataRow("var(--bit-spr-ofs, var(--bit-Separator-content-offset, 0))"),
         DataRow("var(--bit-spr-bg, var(--bit-Separator-content-background, transparent))"),
-        DataRow("var(--bit-spr-img, var(--bit-Separator-line-background, none))")]
+        DataRow("var(--bit-spr-img, var(--bit-Separator-line-background, none))"),
+        DataRow("var(--bit-spr-img, var(--bit-Separator-vertical-line-background, var(--bit-Separator-line-background, none)))")]
     public void BitSeparatorShouldLetTheParameterWinOverItsVariable(string chain)
     {
         // The parameter classes and the inline lengths set the private variable, which is read ahead of the public one.
@@ -173,19 +174,20 @@ public partial class BitSeparatorStylesheetTests
                               .Where(r => r.Mask is not null)
                               .ToDictionary(r => r.Selector, r => r.Mask);
 
+        // Without content, the one segment fades toward both of its ends. It is the default of the leading segment, so an
+        // engine without :has() fades the line symmetrically rather than toward one end.
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to right, transparent, #000, transparent)", fade[".bit-spr-fad.bit-spr-hrz::before"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to bottom, transparent, #000, transparent)", fade[".bit-spr-fad.bit-spr-vrt::before"]);
+
         // The two segments around the content mirror each other, transparent at their outer ends.
-        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to right, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz::before"]);
-        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to left, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz::after"]);
-        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to bottom, transparent, #000)", fade[".bit-spr-fad.bit-spr-vrt::before"]);
-        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to top, transparent, #000)", fade[".bit-spr-fad.bit-spr-vrt::after"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to right, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:has(> .bit-spr-cnt)::before"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to left, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:has(> .bit-spr-cnt)::after"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to bottom, transparent, #000)", fade[".bit-spr-fad.bit-spr-vrt:has(> .bit-spr-cnt)::before"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to top, transparent, #000)", fade[".bit-spr-fad.bit-spr-vrt:has(> .bit-spr-cnt)::after"]);
 
         // The outer ends follow the reading direction, and a direction Dir does not name is read too.
-        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to left, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:is(.bit-rtl, :dir(rtl))::before"]);
-        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to right, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:is(.bit-rtl, :dir(rtl))::after"]);
-
-        // Without content, the one segment fades toward both of its ends.
-        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to right, transparent, #000, transparent)", fade[".bit-spr-fad.bit-spr-hrz:not(:has(> .bit-spr-cnt))::before"]);
-        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to bottom, transparent, #000, transparent)", fade[".bit-spr-fad.bit-spr-vrt:not(:has(> .bit-spr-cnt))::before"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to left, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:has(> .bit-spr-cnt):is(.bit-rtl, :dir(rtl))::before"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to right, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:has(> .bit-spr-cnt):is(.bit-rtl, :dir(rtl))::after"]);
     }
 
     [TestMethod]

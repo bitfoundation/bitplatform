@@ -85,6 +85,12 @@
         <BitSeparator Id="spr-line-background-color" Color="BitColor.Error">Color wins</BitSeparator>
         <BitSeparator Id="spr-line-background-dashed" LineStyle="BitLineStyle.Dashed">Dashed wins</BitSeparator>
         <BitSeparator Id="spr-line-background-disabled" Disabled>Disabled</BitSeparator>
+        <div style="display: flex; height: 60px;">
+            <BitSeparator Id="spr-vertical-line-background-shared" Vertical />
+            <div style="display: flex; --bit-Separator-vertical-line-background: linear-gradient(rgb(7, 8, 9), rgb(10, 11, 12));">
+                <BitSeparator Id="spr-vertical-line-background" Vertical />
+            </div>
+        </div>
     </div>
     <div style="display: flex; height: 60px;">
         <BitSeparator Id="spr-fade-vertical" Vertical Fade>OR</BitSeparator>
