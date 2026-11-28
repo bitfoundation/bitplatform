@@ -64,6 +64,7 @@ public class BitToggleParamsTests : BunitTestContext
             StopPropagation = true,
             Text = "Cascaded text",
             Title = "Cascaded title",
+            Variant = BitVariant.Outline,
             AriaLabel = "Cascaded aria label",
             TabIndex = "4",
         });
@@ -94,6 +95,9 @@ public class BitToggleParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-tgl-ldg"));
         Assert.IsTrue(root.ClassList.Contains("bit-tgl-tic"));
         Assert.IsTrue(root.ClassList.Contains("bit-inv"));
+        Assert.IsTrue(root.ClassList.Contains("bit-tgl-otl"));
+        Assert.AreEqual(BitVariant.Outline, instance.Variant);
+        Assert.AreEqual(1, component.FindAll(".bit-tgl-hit").Count);
 
         Assert.AreEqual("Cascaded label", component.Find(".bit-tgl-lbl").TextContent.Trim());
         Assert.AreEqual("Cascaded off", component.Find(".bit-tgl-stx").TextContent.Trim());

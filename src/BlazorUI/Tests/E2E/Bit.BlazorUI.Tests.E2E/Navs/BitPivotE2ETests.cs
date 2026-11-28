@@ -162,7 +162,7 @@ public class BitPivotE2ETests : E2ETestBase
 
         var id = $"pv-align-{alignment}";
         var tablist = Root(id).Locator("> .bit-pvt-hwr > [role='tablist']");
-        await Expect(tablist).ToHaveCSSAsync("justify-content", justify);
+        await Expect(tablist).ToHaveCSSAsync("justify-content", Alignment(justify));
         await Expect(tablist).ToHaveCSSAsync("align-items", align);
 
         var header = await BoxAsync(tablist);

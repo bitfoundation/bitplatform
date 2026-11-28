@@ -43,7 +43,7 @@
                     <span class="bb-browser-dots" aria-hidden="true"><i></i><i></i><i></i></span>
                     <span class="bb-browser-url">Sketch.razor</span>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> @@ref=<span class="s">"_canvas"</span> Document=<span class="s">"_sketch"</span> Height=<span class="s">"240px"</span>
+                <pre class="bb-code" tabindex="0">&lt;<span class="k">BinkCanvas</span> @@ref=<span class="s">"_canvas"</span> Document=<span class="s">"_sketch"</span> Height=<span class="s">"240px"</span>
             Brush=<span class="s">"_pen"</span> EnableTouchGestures=<span class="s">"true"</span> /&gt;
 
 <span class="c">// No background, so the page shows through.</span>
@@ -183,7 +183,7 @@
                     </p>
                     <a href="getting-started">Getting started →</a>
                 </div>
-                <pre class="bb-code"><span class="k">@@using</span> Bit.Bink
+                <pre class="bb-code" tabindex="0"><span class="k">@@using</span> Bit.Bink
 
 &lt;<span class="k">BinkCanvas</span> Height=<span class="s">"400px"</span> /&gt;</pre>
             </div>
@@ -197,7 +197,7 @@
                     </p>
                     <a href="whiteboard">Whiteboard →</a>
                 </div>
-                <pre class="bb-code">&lt;<span class="k">BinkCanvas</span> Tool=<span class="s">"_tool"</span> Brush=<span class="s">"_brush"</span> Height=<span class="s">"400px"</span> /&gt;
+                <pre class="bb-code" tabindex="0">&lt;<span class="k">BinkCanvas</span> Tool=<span class="s">"_tool"</span> Brush=<span class="s">"_brush"</span> Height=<span class="s">"400px"</span> /&gt;
 
 <span class="k">private</span> IBinkTool _tool = <span class="k">new</span> BinkDrawTool();
 <span class="k">private</span> BinkBrush _brush = <span class="k">new</span> BinkPenBrush { Color = BinkColor.Parse(<span class="s">"#1d4ed8"</span>), Width = 5f };
@@ -214,7 +214,7 @@
                     </p>
                     <a href="serialization">Serialization →</a>
                 </div>
-                <pre class="bb-code"><span class="k">string</span> json = BinkSerializer.Serialize(_canvas.CurrentDocument);
+                <pre class="bb-code" tabindex="0"><span class="k">string</span> json = BinkSerializer.Serialize(_canvas.CurrentDocument);
 _canvas.LoadDocument(BinkSerializer.Deserialize(json));
 
 <span class="k">string</span> svg = <span class="k">await</span> _canvas.ExportSvgAsync();

@@ -3,8 +3,10 @@
     // BitRichTextEditor - thin JS bridge.
     // Owns nothing but DOM events, formatting commands, and selection. All component
     // logic lives in C#. Every formatting/insertion operation flows through `dispatch`,
-    // which delegates to the execCommand engine (isolated in one place so it can later be
-    // replaced by a Selection/Range engine without touching the C# call sites).
+    // which runs the editor's own DOM edits (BitRichTextEditorMarks, BitRichTextEditorBlocks,
+    // BitRichTextEditorInsert), never a document.execCommand, and refuses a name it does not know.
+    // The one execCommand left is defaultParagraphSeparator at setup, which only makes the
+    // browser's own typing write a <p> on Enter.
     export class RichTextEditor {
 
         private static readonly IMAGE_MIME = ['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/svg+xml'];
@@ -117,7 +119,8 @@
             };
             editor._notify = notify;
 
-            editor._onInput = () => {
+            editor._onInput = (e: InputEvent) => {
+                RichTextEditor.historyAfterInput(editor, e);
                 RichTextEditor.updateEmpty(editor);
                 // Text typed before a selected image moves it out from under its resize handle.
                 if (editor._resizeReposition) editor._resizeReposition();
@@ -128,6 +131,9 @@
 
             editor._onBlur = () => {
                 if (timer) { clearTimeout(timer); timer = null; }
+                // Leaving the surface ends the typing run: what was typed is a step of its own before a panel or
+                // another control acts on the content.
+                RichTextEditor.historyCommit(editor);
                 notify();
                 RichTextEditor.tellDotNet(editor, 'OnBlurred');
             };
@@ -147,6 +153,13 @@
                 // toolbar action could mutate content beyond the editor.
                 if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
                     editor._range = range.cloneRange();
+                    // The marks set at a caret are for the text typed there: once the caret moves, they are gone, as
+                    // they have always been with the browser's own commands.
+                    const pending = editor._pendingMarks;
+                    if (pending && (!range.collapsed
+                        || BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) !== pending.at)) {
+                        editor._pendingMarks = null;
+                    }
                     RichTextEditor.reportState(editor);
                 }
             };
@@ -192,6 +205,13 @@
             editor._onInputMd = (e: InputEvent) => RichTextEditor.onInputMarkdown(editor, e);
             editor.addEventListener('input', editor._onInputMd);
 
+            // A composition (an IME, a dead key, dictation) is one step, closed where it ends. The marks set at the caret
+            // it starts at are put on what it wrote once it is done, since a composition's text cannot be placed by hand.
+            editor._onCompositionStart = () => RichTextEditor.startComposition(editor);
+            editor.addEventListener('compositionstart', editor._onCompositionStart);
+            editor._onCompositionEnd = () => RichTextEditor.endComposition(editor);
+            editor.addEventListener('compositionend', editor._onCompositionEnd);
+
             // A full-screen editor covers the page, so Tab cycles inside it instead of moving the focus onto
             // controls that are hidden underneath. Bubbling, so the surface's own Tab handling (indenting a list,
             // walking the cells of a table) has already claimed the keystroke when it applies.
@@ -209,6 +229,12 @@
             RichTextEditor.enableTableResize(editor);
             RichTextEditor.enableTaskToggle(editor);
             RichTextEditor.updateEmpty(editor);
+
+            // The editor's own undo history: the native one cannot follow the commands that change the DOM
+            // themselves. Whatever the surface starts with is where it begins; the first value set from .NET
+            // before any edit replaces that starting point rather than becoming a step (see setHtml).
+            editor._history = new BitRichTextEditorHistory(RichTextEditor.historyState(editor));
+            RichTextEditor.reportHistory(editor);
         }
 
         // Enter in a field of a panel (a link's or an image's address, the find box) is the panel's to answer - apply, step
@@ -262,6 +288,8 @@
             editor.removeEventListener('drop', editor._onDrop);
             editor.removeEventListener('keydown', editor._onKeyDown);
             editor.removeEventListener('beforeinput', editor._onBeforeInput);
+            editor.removeEventListener('compositionstart', editor._onCompositionStart);
+            editor.removeEventListener('compositionend', editor._onCompositionEnd);
             document.removeEventListener('selectionchange', editor._onSelection);
             document.removeEventListener('fullscreenchange', editor._onFullScreenChange);
             if (editor._fullScreenRoot) {
@@ -272,7 +300,11 @@
             RichTextEditor.removeResizeHandle(editor);
             editor._dotNetRef = null;
             editor._range = null;
+            editor._history = null;
+            editor._historyReported = null;
             editor._leaveMark = null;
+            editor._pendingMarks = null;
+            editor._composeMarks = null;
             editor._activeImage = null;
             // Transient view/input state, cleared so a re-initialized element never starts out
             // believing it is in the CSS full-screen fallback or owes someone a plain-text paste.
@@ -359,8 +391,8 @@
             return !editor.querySelector('img,table,hr,audio,video,iframe');
         }
 
-        // Undo-safe set: when the surface is focused and already has content, route the
-        // replacement through the engine (insertHTML) so the native undo stack survives.
+        // Undo-safe set: once the surface has been edited, the replacement is a step of the editor's own history, so a
+        // value set while the user works can be undone like an edit; before that, it is where the history starts.
         public static setHtml(editor: any, html: string) {
             if (!editor) return;
             // Always sanitize inbound HTML against the active policy (or the secure default
@@ -375,22 +407,19 @@
             if (unchanged && editor._factsReported) return;
 
             if (unchanged === false) {
-                const focused = document.activeElement === editor;
-                const hasContent = editor.innerHTML.trim().length > 0;
-                if (focused && hasContent) {
-                    const sel = document.getSelection();
-                    const range = document.createRange();
-                    range.selectNodeContents(editor);
-                    sel!.removeAllRanges();
-                    sel!.addRange(range);
-                    if (!RichTextEditor.execNative(editor, 'insertHTML', next)) {
-                        editor.innerHTML = next;
-                    }
-                } else {
-                    editor.innerHTML = next;
-                }
+                // What was typed before the value arrived stays a step of its own.
+                RichTextEditor.historyCommit(editor);
+                RichTextEditor.removeResizeHandle(editor);
+                editor._pendingMarks = null;
+                editor.innerHTML = next;
             }
             RichTextEditor.updateEmpty(editor);
+            if (unchanged === false && editor._history) {
+                const history = editor._history as BitRichTextEditorHistory;
+                const state = RichTextEditor.historyState(editor);
+                if (history.touched) history.record(state); else history.reset(state);
+                RichTextEditor.reportHistory(editor);
+            }
             // The content changed programmatically (e.g. a bound Value assignment), not via a user
             // edit: refresh the cached content facts so count-dependent state stays accurate, but
             // do not route this through the user-change callback (OnContentChanged) or emit an edit.
@@ -600,8 +629,8 @@
             a.setAttribute('rel', 'noopener noreferrer');
         }
 
-        // execCommand('createLink') can produce several anchors across a multi-node selection, so
-        // every anchor the selection touches gets the new-tab treatment.
+        // A selection over several blocks is linked with one anchor per block, so every anchor the
+        // selection touches gets the new-tab treatment.
         private static markSelectedLinksNewTab(editor: any) {
             const sel = document.getSelection();
             if (!sel || sel.rangeCount === 0) return;
@@ -672,7 +701,7 @@
 
         public static applyColor(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
-            // Color commands emit <span style="..."> (after normalizeFontTags rewrites <font>).
+            // The color commands write <span style="...">.
             // If the active policy would strip <span> or the style attribute, snapshot() drops the
             // formatting on the next sanitize roundtrip, so the live editor and persisted Value
             // would diverge. Gate on the allowlist and block with a client error instead.
@@ -681,7 +710,6 @@
                 return;
             }
             RichTextEditor.dispatch(editor, kind === 'back' ? 'backColor' : 'foreColor', { value });
-            RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
         }
 
@@ -696,95 +724,19 @@
             if (!editor || editor._readOnly) return;
             RichTextEditor.restoreSelection(editor);
 
-            const sel = document.getSelection();
-            if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+            const range = RichTextEditor.editorRange(editor);
+            if (!range || range.collapsed) {
                 RichTextEditor.reportClientError(editor, 'no-selection', 'clear-color-no-selection', 'Select the text to clear the color from.');
                 return;
             }
-            const range = sel.getRangeAt(0);
-            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return;
-
-            const property = kind === 'back' ? 'background-color' : 'color';
-            const painted = (n: Node) => n.nodeType === 1
-                && (!!(n as HTMLElement).style.getPropertyValue(property)
-                    || (kind === 'back' && !!(n as HTMLElement).style.getPropertyValue('background')));
-            // The outermost painted element around a node, stopping at the first block: splitting a
-            // span only divides its paint, where splitting a paragraph would break it in two.
-            const paintedAround = (node: Node): HTMLElement | null => {
-                let found: HTMLElement | null = null;
-                for (let n = node.parentNode; n && n !== editor; n = n.parentNode) {
-                    if (n.nodeType !== 1 || getComputedStyle(n as Element).display !== 'inline') break;
-                    if (painted(n)) found = n as HTMLElement;
-                }
-                return found;
-            };
-            // Moves everything in `top` from the marker on into a shallow copy placed right after it.
-            const splitAt = (top: HTMLElement, marker: Node): HTMLElement => {
-                const tail = document.createRange();
-                tail.setStartBefore(marker);
-                tail.setEnd(top, top.childNodes.length);
-                const copy = top.cloneNode(false) as HTMLElement;
-                copy.appendChild(tail.extractContents());
-                top.after(copy);
-                return copy;
-            };
-
-            // Comments mark the edges: they travel with the content through the splits and add no
-            // text. The end goes in first so inserting it cannot move the start.
-            const startMarker = document.createComment('');
-            const endMarker = document.createComment('');
-            const head = range.cloneRange();
-            head.collapse(true);
-            const tail = range.cloneRange();
-            tail.collapse(false);
-            tail.insertNode(endMarker);
-            head.insertNode(startMarker);
-
-            const endTop = paintedAround(endMarker);
-            const endCopy = endTop ? splitAt(endTop, endMarker) : null;
-            const startTop = paintedAround(startMarker);
-            const startCopy = startTop ? splitAt(startTop, startMarker) : null;
-
-            const region = document.createRange();
-            if (startCopy) region.setStartBefore(startCopy); else region.setStartAfter(startMarker);
-            if (endCopy) region.setEndBefore(endCopy); else region.setEndBefore(endMarker);
-
-            const whole = (el: Element) => {
-                const r = document.createRange();
-                r.selectNode(el);
-                return region.compareBoundaryPoints(Range.START_TO_START, r) <= 0
-                    && region.compareBoundaryPoints(Range.END_TO_END, r) >= 0;
-            };
-            const common = region.commonAncestorContainer;
-            const scope = (common.nodeType === 1 ? common : common.parentNode) as Element;
-            (Array.from(scope.querySelectorAll('[style]')) as HTMLElement[]).filter(whole).forEach(el => {
-                el.style.removeProperty(property);
-                // The shorthand carries the same paint, so a background-color removal has to take
-                // it with it or the color comes straight back.
-                if (kind === 'back') el.style.removeProperty('background');
-                if (el.getAttribute('style')) return;
-                el.removeAttribute('style');
-                // A span that carried nothing but the paint is no longer worth keeping.
-                if (el.tagName === 'SPAN' && el.attributes.length === 0) el.replaceWith(...Array.from(el.childNodes));
-            });
-
-            startMarker.remove();
-            endMarker.remove();
-            // The pieces left on either side of the selection when it reached a painted element's edge.
-            [startTop, endCopy].forEach(piece => {
-                if (piece && piece.isConnected && !(piece.textContent || '').length
-                    && !piece.querySelector('img,br,iframe,video,audio')) piece.remove();
-            });
-
-            sel.removeAllRanges();
-            sel.addRange(region);
-            editor._range = region.cloneRange();
+            const next = BitRichTextEditorMarks.applyStyle(editor, range, kind === 'back' ? 'background-color' : 'color', null);
+            if (next) RichTextEditor.selectRange(editor, next);
             RichTextEditor.afterChange(editor);
         }
 
         public static applyFont(editor: any, kind: string, value: string) {
             if (!editor || !value) return;
-            // Font commands emit <span style="..."> (after normalizeFontTags rewrites <font>).
+            // The font commands write <span style="...">.
             // Gate on the same allowlist as applyColor so formatting the sanitized snapshot would
             // strip is never applied only to be dropped from the persisted Value.
             if (!RichTextEditor.isTagAllowed(editor, 'span') || !RichTextEditor.isAttrAllowed(editor, 'span', 'style')) {
@@ -792,26 +744,7 @@
                 return;
             }
             RichTextEditor.dispatch(editor, kind === 'size' ? 'fontSize' : 'fontName', { value });
-            RichTextEditor.normalizeFontTags(editor);
             RichTextEditor.afterChange(editor);
-        }
-
-        // execCommand emits <font> elements (color/face) which the sanitizer allowlist drops
-        // because <font> is not a permitted tag - taking the formatting with them on the next
-        // sanitize roundtrip (paste, setHtml, source view). Rewrite them into allowed
-        // <span style="..."> wrappers so the font formatting survives.
-        private static normalizeFontTags(editor: any) {
-            if (!editor) return;
-            editor.querySelectorAll('font').forEach((f: HTMLElement) => {
-                const span = document.createElement('span');
-                if (f.style.cssText) span.style.cssText = f.style.cssText;
-                const color = f.getAttribute('color');
-                const face = f.getAttribute('face');
-                if (color) span.style.color = color;
-                if (face) span.style.fontFamily = face;
-                while (f.firstChild) span.appendChild(f.firstChild);
-                f.replaceWith(span);
-            });
         }
 
         public static insertMedia(editor: any, html: string): boolean {
@@ -1663,6 +1596,13 @@
             // Single choke point for every mutating operation: a read-only (or disabled) editor
             // never runs a command, whichever path asked for it.
             if (editor._readOnly) return false;
+            // Undo and redo are the editor's own history, never the browser's: its stack does not know the changes
+            // the commands make to the DOM themselves.
+            if (command === 'undo' || command === 'redo') return RichTextEditor.historyMove(editor, command === 'undo');
+            // What a command changes is one step, which afterChange records; an input event raised while it runs (an
+            // IME, an extension) is part of it, not typing to group.
+            const outer = editor._inCommand === true;
+            editor._inCommand = true;
             try {
                 return RichTextEditor.engineRun(editor, command, args || {});
             } catch (err: any) {
@@ -1670,139 +1610,97 @@
                     RichTextEditor.tellDotNet(editor, 'OnCommandError', String(command), String(err?.message ?? err));
                 }
                 return false;
+            } finally {
+                editor._inCommand = outer;
             }
         }
 
         private static engineRun(editor: any, command: string, args: any): boolean {
             editor.focus();
             RichTextEditor.restoreSelection(editor);
-            try { document.execCommand('styleWithCSS', false, 'false'); } catch { /* ignore */ }
 
             switch (command) {
-                case 'formatBlock': {
-                    let v = args?.value ?? 'p';
-                    if (v && v[0] !== '<') v = '<' + v + '>';
-                    return RichTextEditor.execNative(editor, 'formatBlock', v);
+                case 'formatBlock':
+                    return RichTextEditor.applyBlockFormat(editor, args?.value ?? 'p');
+                case 'insertOrderedList':
+                case 'insertUnorderedList': {
+                    const kind = command === 'insertOrderedList' ? 'ol' : 'ul';
+                    if (!RichTextEditor.isTagAllowed(editor, kind) || !RichTextEditor.isTagAllowed(editor, 'li')) return false;
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.toggleList(editor, range, kind));
                 }
+                case 'indent':
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.indent(editor, range));
+                case 'outdent':
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.outdent(editor, range));
                 case 'foreColor':
-                    return RichTextEditor.execNative(editor, 'foreColor', args?.value);
                 case 'backColor':
-                    return RichTextEditor.execNative(editor, 'hiliteColor', args?.value) ||
-                        RichTextEditor.execNative(editor, 'backColor', args?.value);
                 case 'fontName':
-                    return RichTextEditor.execNative(editor, 'fontName', args?.value);
                 case 'fontSize':
-                    return RichTextEditor.applyFontSize(editor, args?.value);
-                case 'insertImage':
-                    return RichTextEditor.insertNodeHtml(editor, args?.html);
+                    return RichTextEditor.applyStyle(editor, RichTextEditor.STYLE_COMMANDS[command], args?.value);
                 case 'insertHtml':
-                    return RichTextEditor.execNative(editor, 'insertHTML', args?.html);
+                case 'insertImage':
+                case 'insertTable':
+                case 'insertMedia':
+                    return RichTextEditor.insertHtmlAt(editor, args?.html);
+                case 'insertText':
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorInsert.insertText(editor, range, String(args?.value ?? '')));
                 case 'insertHorizontalRule':
                     return RichTextEditor.insertHorizontalRule(editor);
                 case 'insertTaskList':
                     return RichTextEditor.toggleTaskList(editor, false);
+                case 'bold':
+                case 'italic':
+                case 'underline':
+                case 'strikeThrough':
+                case 'subscript':
+                case 'superscript':
                 case 'inlineCode':
-                    return RichTextEditor.toggleInlineCode(editor);
+                    return RichTextEditor.toggleMark(editor, command);
+                case 'removeFormat':
+                    return RichTextEditor.clearMarks(editor);
                 case 'createLink':
                     return RichTextEditor.createLinkImpl(editor, args?.value);
-                case 'unlink': {
-                    // The engines only unlink what is selected, so a caret resting in a link (what
-                    // the link button reports as "in a link") selects that whole link first.
-                    const sel = document.getSelection();
-                    const link = sel && sel.isCollapsed ? RichTextEditor.linkAtSelection(editor) : null;
-                    if (sel && link) {
-                        const range = document.createRange();
-                        range.selectNodeContents(link);
-                        sel.removeAllRanges();
-                        sel.addRange(range);
-                    }
-                    return RichTextEditor.execNative(editor, 'unlink');
-                }
-                case 'insertTable':
-                    return RichTextEditor.insertNodeHtml(editor, args?.html);
-                case 'insertMedia':
-                    return RichTextEditor.insertNodeHtml(editor, args?.html);
+                case 'unlink':
+                    // Every link the selection touches goes whole, and the one a caret rests in (what the link button
+                    // reports as "in a link").
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorMarks.unlink(editor, range));
                 case 'justifyLeft':
                 case 'justifyCenter':
                 case 'justifyRight':
                 case 'justifyFull': {
-                    // Blink and WebKit align a block with a text-align style whatever styleWithCSS says, while
-                    // Gecko with it off writes the presentational align attribute instead (<p align="center">),
-                    // so the same button would store other markup in Firefox. Styled with CSS for the alignment
-                    // alone, every engine writes the style, and every other command still writes its tags.
-                    try { document.execCommand('styleWithCSS', false, 'true'); } catch { /* ignore */ }
-                    try {
-                        return RichTextEditor.execNative(editor, command);
-                    } finally {
-                        try { document.execCommand('styleWithCSS', false, 'false'); } catch { /* ignore */ }
-                    }
+                    const value = RichTextEditor.JUSTIFY[command];
+                    return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.align(editor, range, value));
                 }
                 default:
-                    return RichTextEditor.execNative(editor, command, args?.value ?? null);
+                    // Every command is the editor's own: a name it does not know is refused (and reported through
+                    // OnCommandError by dispatch) rather than handed to the browser.
+                    throw new Error(`'${command}' is not a command of the rich text editor.`);
             }
         }
 
-        private static execNative(editor: any, command: string, value?: any): boolean {
-            if (command === 'insertHTML') return RichTextEditor.insertHtmlExact(editor, value);
-            try { return document.execCommand(command, false, value ?? undefined); }
-            catch { return false; }
+        // The style each color and font command writes.
+        private static readonly STYLE_COMMANDS: Record<string, string> = {
+            foreColor: 'color', backColor: 'background-color', fontName: 'font-family', fontSize: 'font-size',
+        };
+
+        // The text-align value each justify command writes.
+        private static readonly JUSTIFY: Record<string, string> = {
+            justifyLeft: 'left', justifyCenter: 'center', justifyRight: 'right', justifyFull: 'justify',
+        };
+
+        // Replaces the selection with sanitized markup and leaves the caret after it.
+        private static insertHtmlAt(editor: any, html: string): boolean {
+            return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorInsert.insertHtml(editor, range, html));
         }
 
-        private static readonly INSERT_MARK = 'data-bit-rte-ins';
         private static readonly BLOCK_TAGS = /^(ADDRESS|ARTICLE|ASIDE|AUDIO|BLOCKQUOTE|DD|DETAILS|DIV|DL|DT|FIGCAPTION|FIGURE|FOOTER|H[1-6]|HEADER|HR|IFRAME|LI|MAIN|NAV|OL|P|PRE|SECTION|TABLE|TBODY|TD|TFOOT|TH|THEAD|TR|UL|VIDEO)$/;
 
-        // insertHTML as the page sees it is not what the engine writes. Blink restyles the inserted
-        // elements to match what the page's stylesheets made them look like in a scratch copy: it
-        // bakes computed values (the page's font family, "display: inline !important", a class'
-        // colors) into style attributes that the sanitizer then keeps as presentational, and it
-        // rebuilds an attributed <span> from those computed values alone - a mention loses its
-        // class and data-mention-id. So an inline fragment carrying a span is placed with a DOM
-        // range, and every other fragment still goes through the engine (keeping it on the native
-        // undo stack) with each element's own attributes put back afterwards.
-        private static insertHtmlExact(editor: any, html: string): boolean {
-            if (!html) return false;
-            const tpl = document.createElement('template');
-            tpl.innerHTML = html;
-            const elements = Array.from(tpl.content.querySelectorAll('*'));
-            const inline = elements.every(e => !RichTextEditor.BLOCK_TAGS.test(e.tagName));
-            // Blink also drops an inserted <code> for a span that only mimics its look.
-            const rebuilt = (e: Element) => e.tagName === 'CODE'
-                || (e.tagName === 'SPAN' && Array.from(e.attributes).some(a => a.name !== 'style'));
-            if (inline && elements.some(rebuilt)) {
-                if (RichTextEditor.insertInlineFragment(editor, tpl.content)) return true;
-            }
-
-            const original = elements.map(e => Array.from(e.attributes).map(a => [a.name, a.value]));
-            elements.forEach((e, i) => e.setAttribute(RichTextEditor.INSERT_MARK, String(i)));
-            let ok = false;
-            try { ok = document.execCommand('insertHTML', false, tpl.innerHTML); }
-            catch { ok = false; }
-            editor.querySelectorAll(`[${RichTextEditor.INSERT_MARK}]`).forEach((e: Element) => {
-                const attrs = original[Number(e.getAttribute(RichTextEditor.INSERT_MARK))];
-                Array.from(e.attributes).forEach(a => e.removeAttribute(a.name));
-                attrs?.forEach(([name, value]) => e.setAttribute(name, value));
-            });
-            return ok;
-        }
-
-        // Keeps the block structure the engines' list commands break. Blink and WebKit build a list
-        // inside the <p> it was made from, and <p><ul> is not HTML: parsed again after a save it
-        // comes back as the list between two stray empty paragraphs. Gecko instead leaves the text
-        // of a list it toggles off (and of an emptied surface) directly in the surface. So a
-        // paragraph holding blocks is unwrapped, and each run of inline content left in the root
-        // is given the paragraph it reads as.
-        // It runs on the outbound copy of the content, and on the live surface only where an
-        // input rule has already edited the DOM by hand: rewriting the surface after a native
-        // command would take that command off the engine's undo stack. On the live surface the
-        // selection is carried over, since moving a node resets any selection inside it.
+        // Gives the text Gecko leaves directly in the surface (once a list is toggled off by typing, or the surface
+        // was emptied) the paragraph it reads as: each run of inline content left in the root becomes one.
+        // It runs on the outbound copy of the content, and on the live surface after an input rule has edited it.
+        // On the live surface the selection is carried over, since moving a node resets any selection inside it.
         private static needsBlockNormalizing(root: any): boolean {
-            return RichTextEditor.invalidParagraphs(root).length > 0
-                || (Array.from(root.childNodes) as any[]).some(n => RichTextEditor.isLooseInline(n));
-        }
-
-        private static invalidParagraphs(root: any): HTMLElement[] {
-            return (Array.from(root.querySelectorAll('p')) as HTMLElement[])
-                .filter(p => Array.from(p.children).some(c => RichTextEditor.BLOCK_TAGS.test(c.tagName)));
+            return (Array.from(root.childNodes) as any[]).some(n => RichTextEditor.isLooseInline(n));
         }
 
         private static isLooseInline(n: any): boolean {
@@ -1817,12 +1715,6 @@
             const saved = sel && sel.rangeCount > 0 && sel.anchorNode !== root && sel.focusNode !== root
                 ? [sel.anchorNode!, sel.anchorOffset, sel.focusNode!, sel.focusOffset] as const
                 : null;
-
-            // The browser's placeholder <br> goes with the paragraph that held it.
-            RichTextEditor.invalidParagraphs(root).forEach(p => {
-                if (p.lastChild && p.lastChild.nodeName === 'BR') p.lastChild.remove();
-                p.replaceWith(...Array.from(p.childNodes));
-            });
 
             const isInline = (n: any) => n.nodeType === 3 || (n.nodeType === 1 && !RichTextEditor.BLOCK_TAGS.test(n.tagName));
             let run: any[] = [];
@@ -1846,8 +1738,8 @@
         }
 
         // Blink and WebKit copy what the page's stylesheets resolve to into the style attribute of
-        // the elements their commands create or move - the page's font stack, "display: inline
-        // !important", a heading's font-size variable - and the sanitizer keeps those as
+        // the elements their typing creates or moves (a Backspace joining two blocks) - the page's
+        // font stack, "display: inline !important", a heading's font-size variable - and the sanitizer keeps those as
         // presentational. None of it was applied by the user: a font family equal to the
         // surface's own, an inline display and any value built on a custom property (no toolbar
         // control writes one) are dropped, and a span left with nothing to say is unwrapped
@@ -1874,44 +1766,6 @@
             });
         }
 
-        // Replaces the selection with an inline fragment and leaves the caret right after it.
-        private static insertInlineFragment(editor: any, fragment: DocumentFragment): boolean {
-            const sel = document.getSelection();
-            if (!sel || sel.rangeCount === 0) return false;
-            const range = sel.getRangeAt(0);
-            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return false;
-            const last = fragment.lastChild;
-            if (!last) return false;
-            range.deleteContents();
-            // An emptied line still holds the browser's placeholder <br>, which would otherwise
-            // stay behind the inserted content as a stray line break.
-            const container = range.startContainer as any;
-            if (container.nodeType === 1 && container.childNodes.length === 1 && container.firstChild.nodeName === 'BR') {
-                container.firstChild.remove();
-            }
-            range.insertNode(fragment);
-            const after = document.createRange();
-            if (last.nodeType === 3) after.setStart(last, (last.nodeValue || '').length);
-            else after.setStartAfter(last);
-            after.collapse(true);
-            sel.removeAllRanges();
-            sel.addRange(after);
-            editor._range = after.cloneRange();
-            return true;
-        }
-
-        // Normalize execCommand fontSize (1-7) onto a real size by rewriting the produced
-        // <font size> into an inline style when a css length is supplied.
-        private static applyFontSize(editor: any, value: string): boolean {
-            if (!value) return false;
-            RichTextEditor.execNative(editor, 'fontSize', '7');
-            editor.querySelectorAll('font[size="7"]').forEach((f: HTMLElement) => {
-                f.removeAttribute('size');
-                f.style.fontSize = value;
-            });
-            return true;
-        }
-
         // ====================================================================
         // Markdown shortcuts + slash trigger
         // ====================================================================
@@ -1922,8 +1776,10 @@
             // given the paragraph any other engine would have typed it into.
             if (!RichTextEditor.currentBlock(editor)) {
                 const anchor = document.getSelection()?.anchorNode;
-                if (anchor && anchor.nodeType === 3 && anchor.parentNode === editor) {
-                    RichTextEditor.execNative(editor, 'formatBlock', '<p>');
+                const range = RichTextEditor.editorRange(editor);
+                if (range && anchor && anchor.nodeType === 3 && anchor.parentNode === editor) {
+                    const next = BitRichTextEditorBlocks.formatBlock(editor, range, 'p');
+                    if (next) RichTextEditor.selectRange(editor, next);
                 }
             }
             const block = RichTextEditor.currentBlock(editor);
@@ -2053,10 +1909,8 @@
                 // all, matching how the toolbar commands gate on the allowlist.
                 if (!RichTextEditor.isTagAllowed(editor, rule.tag)) continue;
 
-                // Select the delimited run and let the engine replace it, so the rewrite joins the
-                // browser's undo stack: one Ctrl+Z brings the literal asterisks back, the way an
-                // auto-format is expected to be undoable. A direct DOM edit here would be invisible
-                // to undo and would corrupt the entries around it.
+                // Replace the delimited run as a history step of its own: one Ctrl+Z brings the
+                // literal asterisks back, the way an auto-format is expected to be undoable.
                 const html = `<${rule.tag}>${RichTextEditor.escapeHtml(match[1])}</${rule.tag}>`;
                 if (!RichTextEditor.replaceRange(editor, node, match.index, offset, 'insertHTML', html)) continue;
                 RichTextEditor.leaveInlineMark(editor, rule.tag);
@@ -2135,10 +1989,11 @@
             return null;
         }
 
-        // Selects a run of the given text node and replaces it through the editing engine (rather
-        // than by mutating the DOM), which is what keeps an input rule undoable. Returns whether
-        // the command ran; on failure the selection is restored to where the caret was.
-        private static replaceRange(editor: any, node: Node, start: number, end: number, command: string, value: string): boolean {
+        // Selects a run of the given text node and replaces it with text (insertText) or markup
+        // (insertHTML). What was typed before is committed as a history step of its own first, so
+        // one undo takes the rule back. Returns whether it ran; on failure the selection is
+        // restored to where the caret was.
+        private static replaceRange(editor: any, node: Node, start: number, end: number, kind: 'insertText' | 'insertHTML', value: string): boolean {
             const sel = document.getSelection();
             if (!sel) return false;
             const caret = sel.rangeCount > 0 ? sel.getRangeAt(0).cloneRange() : null;
@@ -2154,7 +2009,19 @@
             sel.addRange(range);
             editor._range = range.cloneRange();
 
-            if (RichTextEditor.execNative(editor, command, value)) return true;
+            // What was typed up to the rule is a step of its own, so one undo takes the rewrite back and leaves the
+            // literal text ("**bold**", a straight quote) the way it was typed.
+            RichTextEditor.historyCommit(editor);
+            const outer = editor._inCommand === true;
+            editor._inCommand = true;
+            let replaced = false;
+            try {
+                replaced = RichTextEditor.applyBlocks(editor, (r: Range) => kind === 'insertText'
+                    ? BitRichTextEditorInsert.insertText(editor, r, value)
+                    : BitRichTextEditorInsert.insertHtml(editor, r, value));
+            }
+            finally { editor._inCommand = outer; }
+            if (replaced) return true;
 
             if (caret) {
                 sel.removeAllRanges();
@@ -2191,7 +2058,7 @@
                 const replacement = typed === '"'
                     ? (opening ? '\u201c' : '\u201d')
                     : (opening ? '\u2018' : '\u2019');
-                // Through the engine, so one Ctrl+Z puts the straight quote back.
+                // A step of its own, so one Ctrl+Z puts the straight quote back.
                 if (!RichTextEditor.replaceRange(editor, node, offset - 1, offset, 'insertText', replacement)) return false;
                 RichTextEditor.afterChange(editor);
                 return true;
@@ -2221,10 +2088,10 @@
                 const match = rule.rx.exec(head);
                 if (!match) continue;
                 // Replace only the matched token (the space that triggered the rule is left alone)
-                // and do it through the engine, so the substitution is one Ctrl+Z away.
+                // as a step of its own, so the substitution is one Ctrl+Z away.
                 const rewritten = match[0].replace(rule.rx, rule.to);
                 if (!RichTextEditor.replaceRange(editor, node, match.index, offset - 1, 'insertText', rewritten)) return false;
-                // The engine leaves the caret at the end of the replacement, in front of the space
+                // The caret is left at the end of the replacement, in front of the space
                 // that triggered it; typing continues after that space.
                 const caret = sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
                 const at = caret?.startContainer;
@@ -2779,6 +2646,8 @@
             let accepted = 0;
             let inserted = 0;
             const maxBytes = editor._maxImageBytes > 0 ? editor._maxImageBytes : RichTextEditor.MAX_IMAGE_BYTES;
+            // What was typed before the drop stays a step of its own, whatever is typed while the images are read.
+            RichTextEditor.historyCommit(editor);
             for (const file of files) {
                 if (accepted >= 20) {
                     RichTextEditor.reportClientError(editor, 'too-many-files', 'too-many-images', 'Only {0} images can be inserted per drop.', '20');
@@ -2817,6 +2686,8 @@
                 }
             }
             if (editor._notify) editor._notify();
+            // The images of one paste or drop are one step.
+            if (inserted > 0) RichTextEditor.historyRecord(editor);
             if (inserted > 0) RichTextEditor.tellDotNet(editor, 'OnImagesInserted', inserted);
         }
 
@@ -2891,6 +2762,7 @@
                     if (!RichTextEditor.linkAtSelection(editor)) {
                         RichTextEditor.dispatch(editor, 'createLink', { value: href });
                         if (editor._notify) editor._notify();
+                        RichTextEditor.historyRecord(editor);
                         return;
                     }
                 } else {
@@ -2916,7 +2788,10 @@
                 }
             }
             RichTextEditor.dispatch(editor, 'insertHtml', { html: toInsert });
+            // The paste or drop is a step of its own: the input events its command raised were part of the command
+            // (dispatch's _inCommand keeps them out of the typing run), so nothing else records it.
             if (editor._notify) editor._notify();
+            RichTextEditor.historyRecord(editor);
         }
 
         private static onDrop(editor: any, e: DragEvent) {
@@ -3085,6 +2960,22 @@
             // A read-only surface is not contenteditable, but an assistive tool or an extension can
             // still raise beforeinput against it; refuse the edit rather than relying on that.
             if (editor._readOnly) { e.preventDefault(); return; }
+            // The browser's own undo (its Edit menu, a gesture, an assistive tool) reaches the editor's history; the
+            // native stack is never used, since it does not know the changes the commands make to the DOM themselves.
+            if (e.inputType === 'historyUndo' || e.inputType === 'historyRedo') {
+                e.preventDefault();
+                if (RichTextEditor.historyMove(editor, e.inputType === 'historyUndo')) RichTextEditor.afterChange(editor);
+                return;
+            }
+            // A mark asked for by the browser itself (its own shortcut where the editor does not own it, a context menu,
+            // an assistive tool) is the editor's command, so it writes the same markup the toolbar does.
+            const format = RichTextEditor.FORMAT_INPUTS[e.inputType];
+            if (format) {
+                e.preventDefault();
+                RichTextEditor.dispatch(editor, format, {});
+                RichTextEditor.afterChange(editor);
+                return;
+            }
             const max = editor._maxLength;
             const isInsert = e.inputType && e.inputType.startsWith('insert');
             if (max != null && isInsert && e.inputType !== 'insertFromPaste') {
@@ -3100,7 +2991,209 @@
                     return;
                 }
             }
+            RichTextEditor.historyBeforeInput(editor, e);
+            if (RichTextEditor.typePendingMarks(editor, e)) return;
             RichTextEditor.typeOutsideMark(editor, e);
+        }
+
+        private static readonly FORMAT_INPUTS: { [inputType: string]: string } = {
+            formatBold: 'bold', formatItalic: 'italic', formatUnderline: 'underline', formatStrikeThrough: 'strikeThrough',
+            formatSubscript: 'subscript', formatSuperscript: 'superscript', formatRemove: 'removeFormat',
+        };
+
+        // ====================================================================
+        // Undo history (BitRichTextEditorHistory holds the steps; this half reads and writes the DOM)
+        // ====================================================================
+
+        // The state a step holds: the markup the editor would report (cleanHtml's tidying: find highlights left out,
+        // loose inline content in paragraphs, adjacent text merged the way the markup parses back) and the selection as
+        // paths of child indexes into THAT markup, so they still resolve once it is put back. The selection is carried
+        // through the same tidying on a clone rather than read off the live surface, whose nodes the tidying moves,
+        // merges and drops - paths read there would land the caret elsewhere after an undo.
+        private static historyState(editor: any): BitRichTextEditorHistoryState {
+            const clone = editor.cloneNode(true) as HTMLElement;
+            const sel = document.getSelection();
+            const live = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+            // A boundary is held by a node the tidying moves but never rebuilds: a text node with its offset, or the
+            // child an element boundary sits before (after, at the end of the element).
+            const hold = (container: Node, offset: number): any => {
+                const steps = RichTextEditor.pathOf(editor, container);
+                if (!steps) return null;
+                const node = RichTextEditor.nodeAtPath(clone, steps);
+                if (!node) return null;
+                if (node.nodeType === 3) return { node, offset };
+                const child = node.childNodes[offset];
+                if (child) return { node: child, before: true };
+                return node.lastChild ? { node: node.lastChild, before: false } : { node, offset: 0 };
+            };
+            const inside = !!live && editor.contains(live.startContainer) && editor.contains(live.endContainer);
+            const start = inside ? hold(live!.startContainer, live!.startOffset) : null;
+            const end = inside ? hold(live!.endContainer, live!.endOffset) : null;
+
+            clone.querySelectorAll('mark.bit-rte-find').forEach((m: Element) => {
+                m.replaceWith(...Array.from(m.childNodes));
+            });
+            RichTextEditor.normalizeBlocks(clone, false);
+
+            const place = (held: any): [Node, number] | null => {
+                if (!held || !clone.contains(held.node)) return null;
+                if (held.before === undefined) return [held.node, held.offset];
+                const parent = held.node.parentNode;
+                if (!parent) return null;
+                return [parent, Array.prototype.indexOf.call(parent.childNodes, held.node) + (held.before ? 0 : 1)];
+            };
+            const from = place(start);
+            const to = place(end);
+            let range: Range | null = null;
+            if (from && to) {
+                try {
+                    range = document.createRange();
+                    range.setStart(from[0], from[1]);
+                    range.setEnd(to[0], to[1]);
+                } catch {
+                    range = null;
+                }
+            }
+            // A live range follows normalize() as it merges and drops text nodes.
+            clone.normalize();
+            return { html: clone.innerHTML, selection: range ? RichTextEditor.selectionPaths(clone, range) : null };
+        }
+
+        // Records the state the surface now shows as a step of its own: a command, a paste, a drop, an image insert.
+        // What was typed before it stays a step of its own (record commits it first).
+        private static historyRecord(editor: any) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history) return;
+            history.record(RichTextEditor.historyState(editor));
+            RichTextEditor.reportHistory(editor);
+        }
+
+        private static historyBeforeInput(editor: any, e: InputEvent) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history || editor._inCommand) return;
+            if (history.beforeInput(BitRichTextEditorHistory.kindOf(e.inputType), Date.now())) {
+                history.commit();
+                RichTextEditor.reportHistory(editor);
+            }
+        }
+
+        private static historyAfterInput(editor: any, e: InputEvent) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history || editor._inCommand) return;
+            history.capture(RichTextEditor.historyState(editor));
+            if (history.afterInput(BitRichTextEditorHistory.kindOf(e?.inputType), e?.data ?? null)) history.commit();
+            RichTextEditor.reportHistory(editor);
+        }
+
+        // Ends the typing run in progress, making it a step of its own.
+        private static historyCommit(editor: any) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history) return;
+            if (history.commit()) RichTextEditor.reportHistory(editor);
+        }
+
+        // Undoes or redoes one step: puts its markup and selection back and reports the content like an edit.
+        private static historyMove(editor: any, back: boolean): boolean {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history || editor._readOnly) return false;
+            // A pending typing run is the newest step, so what was just typed is the first thing undone.
+            history.capture(RichTextEditor.historyState(editor));
+            const state = back ? history.undo() : history.redo();
+            if (!state) {
+                RichTextEditor.reportHistory(editor);
+                return false;
+            }
+
+            RichTextEditor.removeResizeHandle(editor);
+            editor._leaveMark = null;
+            editor._pendingMarks = null;
+            // A step holds the markup as it was when recorded; the policy in force may have changed since, so what goes
+            // back into the live surface is sanitized against it like every other inbound markup, and replaceCurrent
+            // below moves the history to the sanitized result.
+            editor.innerHTML = RichTextEditor.sanitize(editor, state.html);
+            RichTextEditor.applySelectionPaths(editor, state.selection);
+            // The surface is tidied the way afterChange tidies it, and the history moved to what that leaves, so the
+            // afterChange that reports the content records nothing and the redo steps stay.
+            RichTextEditor.stripEngineStyles(editor);
+            RichTextEditor.updateEmpty(editor);
+            history.replaceCurrent(RichTextEditor.historyState(editor));
+            RichTextEditor.reportHistory(editor);
+            return true;
+        }
+
+        private static reportHistory(editor: any) {
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (!history || !editor._dotNetRef) return;
+            const canUndo = history.canUndo;
+            const canRedo = history.canRedo;
+            const last = editor._historyReported;
+            if (last && last.canUndo === canUndo && last.canRedo === canRedo) return;
+            editor._historyReported = { canUndo, canRedo };
+            RichTextEditor.tellDotNet(editor, 'OnHistoryChanged', canUndo, canRedo);
+        }
+
+        // A range inside root, as the paths of child indexes from root that applySelectionPaths puts back.
+        private static selectionPaths(root: Node, range: Range): any {
+            const start = RichTextEditor.pathOf(root, range.startContainer);
+            const end = RichTextEditor.pathOf(root, range.endContainer);
+            if (!start || !end) return null;
+            return { start, startOffset: range.startOffset, end, endOffset: range.endOffset };
+        }
+
+        private static pathOf(root: Node, node: Node): number[] | null {
+            const steps: number[] = [];
+            for (let n: Node | null = node; n !== root; n = n.parentNode) {
+                if (!n || !n.parentNode) return null;
+                steps.unshift(Array.prototype.indexOf.call(n.parentNode.childNodes, n));
+            }
+            return steps;
+        }
+
+        private static nodeAtPath(root: Node, steps: number[]): Node | null {
+            let node: Node = root;
+            for (const index of steps) {
+                const child = node.childNodes[index];
+                if (!child) return null;
+                node = child;
+            }
+            return node;
+        }
+
+        // Puts a selection taken by selectionPaths back, as far as the markup it was taken on still has the nodes it
+        // names: a path that runs out stops at the deepest node it reaches, and an offset is held inside that node.
+        private static applySelectionPaths(editor: any, paths: any) {
+            const resolve = (steps: number[], offset: number): [Node, number] => {
+                let node: Node = editor;
+                for (const index of steps) {
+                    const child = node.childNodes[Math.min(index, node.childNodes.length - 1)];
+                    if (!child) break;
+                    node = child;
+                }
+                const max = node.nodeType === 3 ? (node.nodeValue || '').length : node.childNodes.length;
+                return [node, Math.max(0, Math.min(offset, max))];
+            };
+            const sel = document.getSelection();
+            if (!sel) return;
+            const range = document.createRange();
+            try {
+                if (paths) {
+                    const [startNode, startOffset] = resolve(paths.start, paths.startOffset);
+                    const [endNode, endOffset] = resolve(paths.end, paths.endOffset);
+                    range.setStart(startNode, startOffset);
+                    range.setEnd(endNode, endOffset);
+                } else {
+                    range.selectNodeContents(editor);
+                    range.collapse(false);
+                }
+            } catch {
+                range.selectNodeContents(editor);
+                range.collapse(false);
+            }
+            if (document.activeElement === editor) {
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+            editor._range = range.cloneRange();
         }
 
         // ====================================================================
@@ -3109,6 +3202,9 @@
         private static afterChange(editor: any) {
             RichTextEditor.stripEngineStyles(editor);
             RichTextEditor.updateEmpty(editor);
+            // A command, a paste or an input rule is one step: what was typed before it is committed first, then the
+            // result. After an undo or a redo the state is the one just shown, so nothing is recorded.
+            RichTextEditor.historyRecord(editor);
             if (!editor._dotNetRef) return;
             RichTextEditor.tellDotNet(editor, 'OnContentChanged', RichTextEditor.snapshot(editor), RichTextEditor.computeFacts(editor));
             RichTextEditor.reportState(editor);
@@ -3137,45 +3233,45 @@
         }
 
         private static currentState(editor: any): any {
-            const q = (c: string) => { try { return document.queryCommandState(c); } catch { return false; } };
-            const v = (c: string) => { try { return (document.queryCommandValue(c) || '').toString(); } catch { return ''; } };
-            let block = '';
-            try { block = (document.queryCommandValue('formatBlock') || '').toString().toLowerCase(); } catch { /* ignore */ }
+            const selected = RichTextEditor.editorRange(editor);
+            const block = selected ? BitRichTextEditorBlocks.blockState(editor, selected) : '';
+            const list = selected ? BitRichTextEditorBlocks.listState(editor, selected) : '';
+            const align = selected ? BitRichTextEditorBlocks.alignState(editor, selected) : '';
 
             const link = RichTextEditor.linkAtSelection(editor);
             const rect = editor._quickToolbar ? RichTextEditor.selectionRect(editor) : null;
             const image = RichTextEditor.selectedImage(editor);
-            const codeEl = RichTextEditor.ancestorTag(editor, 'CODE');
-            const inlineCode = codeEl && !(codeEl.parentElement && codeEl.parentElement.tagName === 'PRE');
             const listItem = RichTextEditor.listItemAtSelection(editor);
             return {
-                bold: q('bold'),
-                italic: q('italic'),
-                underline: q('underline'),
-                strikeThrough: q('strikeThrough'),
-                orderedList: q('insertOrderedList'),
-                unorderedList: q('insertUnorderedList'),
-                justifyLeft: q('justifyLeft'),
-                justifyCenter: q('justifyCenter'),
-                justifyRight: q('justifyRight'),
-                justifyFull: q('justifyFull'),
+                // The marks are the editor's own, read off the markup (in every spelling) and the marks set at the caret.
+                bold: RichTextEditor.markState(editor, 'bold'),
+                italic: RichTextEditor.markState(editor, 'italic'),
+                underline: RichTextEditor.markState(editor, 'underline'),
+                strikeThrough: RichTextEditor.markState(editor, 'strikeThrough'),
+                // A checklist is a list of its own kind on the toolbar, not a bulleted one.
+                orderedList: list === 'ol',
+                unorderedList: list === 'ul',
+                // The alignment as the line is laid out, so a left-to-right line with no style of its own is left aligned.
+                justifyLeft: align === 'left',
+                justifyCenter: align === 'center',
+                justifyRight: align === 'right',
+                justifyFull: align === 'justify',
                 block: block,
-                subscript: q('subscript'),
-                superscript: q('superscript'),
-                foreColor: RichTextEditor.toHexColor(v('foreColor')),
-                backColor: RichTextEditor.toHexColor(v('backColor')),
-                fontName: (v('fontName') || '').replace(/^['"]|['"]$/g, '') || null,
-                // queryCommandValue('fontSize') reports the legacy 1-7 scale, which never matches
-                // the CSS lengths the font-size selector offers. Read the resolved size instead so
-                // the selector reflects what is actually applied.
-                fontSize: RichTextEditor.computedFontSize(editor),
+                subscript: RichTextEditor.markState(editor, 'subscript'),
+                superscript: RichTextEditor.markState(editor, 'superscript'),
+                // The colors and fonts as they are laid out where the selection starts, or as set at a caret for what
+                // is typed there next.
+                foreColor: RichTextEditor.toHexColor(RichTextEditor.styleState(editor, selected, 'color')),
+                backColor: RichTextEditor.toHexColor(RichTextEditor.styleState(editor, selected, 'background-color')),
+                fontName: RichTextEditor.styleState(editor, selected, 'font-family').replace(/^['"]|['"]$/g, '') || null,
+                fontSize: RichTextEditor.styleState(editor, selected, 'font-size') || null,
                 direction: RichTextEditor.directionAtSelection(editor),
                 inLink: !!link,
                 linkHref: link ? link.getAttribute('href') : null,
                 // Reported so the link panel can open showing what the link already does; without
                 // it, editing a new-tab link and pressing Apply would quietly drop its target.
                 linkNewTab: !!link && (link.getAttribute('target') || '').toLowerCase() === '_blank',
-                inlineCode: !!inlineCode,
+                inlineCode: RichTextEditor.markState(editor, 'inlineCode'),
                 taskList: !!(listItem && listItem.parentElement && listItem.parentElement.classList.contains('bit-rte-tasks')),
                 inTable: !!RichTextEditor.cellAtSelection(editor),
                 hasSelection: !!rect,
@@ -3274,7 +3370,7 @@
             RichTextEditor.afterChange(editor);
         }
 
-        // Normalizes a queryCommandValue color ("rgb(1, 2, 3)", "#abc", a color keyword) into the
+        // Normalizes a computed color ("rgb(1, 2, 3)", "#abc", a color keyword) into the
         // "#rrggbb" form an <input type="color"> can display. Returns null when the value is
         // missing or cannot be resolved, which the toolbar reads as "no single active color".
         private static toHexColor(value: string): string | null {
@@ -3296,16 +3392,15 @@
             return null;
         }
 
-        // The resolved font-size at the selection, as a CSS length, or null when the selection is
-        // outside this editor.
-        private static computedFontSize(editor: any): string | null {
-            const sel = document.getSelection();
-            if (!sel || sel.rangeCount === 0) return null;
-            let node: any = sel.anchorNode;
-            if (node && node.nodeType === 3) node = node.parentNode;
-            if (!node || !editor.contains(node)) return null;
-            const size = getComputedStyle(node as Element).fontSize;
-            return size || null;
+        // A color or font where the selection is: set at a caret for the text typed there next, else as laid out.
+        private static styleState(editor: any, range: Range | null, property: string): string {
+            if (!range) return '';
+            const pending = editor._pendingMarks;
+            if (range.collapsed && pending && pending.styles && property in pending.styles
+                && BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) === pending.at) {
+                return pending.styles[property];
+            }
+            return BitRichTextEditorMarks.styleAt(editor, range, property);
         }
 
         private static computeFacts(editor: any): any {
@@ -3380,45 +3475,193 @@
             return null;
         }
 
-        private static insertNodeHtml(editor: any, html: string): boolean {
-            if (!html) return false;
-            return RichTextEditor.execNative(editor, 'insertHTML', html);
+        // ====================================================================
+        // Inline marks (BitRichTextEditorMarks edits the markup; this half owns the selection and the marks pending at
+        // a caret)
+        // ====================================================================
+
+        // The selection inside this editor, or null.
+        private static editorRange(editor: any): Range | null {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return null;
+            const range = sel.getRangeAt(0);
+            return editor.contains(range.startContainer) && editor.contains(range.endContainer) ? range : null;
         }
 
-        // Toggles <code> around the selection. execCommand has no inline-code command, so the
-        // wrap/unwrap is done over the range directly; the surrounding markup is preserved because
-        // the existing nodes are moved into (or out of) the <code> element rather than reserialized.
-        private static toggleInlineCode(editor: any): boolean {
-            if (!RichTextEditor.isTagAllowed(editor, 'code')) return false;
+        private static selectRange(editor: any, range: Range) {
             const sel = document.getSelection();
-            if (!sel || sel.rangeCount === 0) return false;
+            if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
+            editor._range = range.cloneRange();
+        }
 
-            const existing = RichTextEditor.ancestorTag(editor, 'CODE');
-            if (existing) {
-                // Only unwrap an inline <code>; a <code> inside a <pre> is the code block itself.
-                if (existing.parentElement && existing.parentElement.tagName === 'PRE') return false;
-                const parent = existing.parentNode;
-                existing.replaceWith(...Array.from(existing.childNodes));
-                parent && (parent as Element).normalize?.();
+        // Gives the lines the selection touches a block format (p, h1-h6, pre), or quotes them (blockquote, which takes
+        // the quote off again where they are all quoted already). A format the policy would strip is never applied.
+        private static applyBlockFormat(editor: any, value: string): boolean {
+            const tag = String(value || 'p').replace(/[<>\s]/g, '').toLowerCase();
+            if (!BitRichTextEditorBlocks.FORMATS.includes(tag) || !RichTextEditor.isTagAllowed(editor, tag)) return false;
+            return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorBlocks.formatBlock(editor, range, tag));
+        }
+
+        // Runs an edit of BitRichTextEditorBlocks on the selection and selects what it returns.
+        private static applyBlocks(editor: any, change: (range: Range) => Range | null): boolean {
+            const range = RichTextEditor.editorRange(editor);
+            if (!range) return false;
+            const next = change(range);
+            if (!next) return false;
+            RichTextEditor.selectRange(editor, next);
+            return true;
+        }
+
+        // Whether a mark is on where the selection is: off the markup, or at a caret, as set there for what is typed next.
+        private static markActive(editor: any, range: Range, mark: BitRichTextEditorMark): boolean {
+            const pending = editor._pendingMarks;
+            if (range.collapsed && pending && mark in pending.marks
+                && BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) === pending.at) {
+                return pending.marks[mark];
+            }
+            return BitRichTextEditorMarks.isActive(editor, range, mark);
+        }
+
+        private static markState(editor: any, mark: BitRichTextEditorMark): boolean {
+            const range = RichTextEditor.editorRange(editor);
+            return !!range && RichTextEditor.markActive(editor, range, mark);
+        }
+
+        // Turns a mark on over the selection, or off where all of it has it. At a caret it is set for the text typed
+        // there next, which is what the browser's commands did. A mark the policy would strip is never added.
+        private static toggleMark(editor: any, command: string): boolean {
+            if (!BitRichTextEditorMarks.isMark(command)) return false;
+            const range = RichTextEditor.editorRange(editor);
+            if (!range) return false;
+            if (command === 'inlineCode' && BitRichTextEditorMarks.inCodeBlock(editor, range.startContainer)) return false;
+            const on = !RichTextEditor.markActive(editor, range, command);
+            if (on && !RichTextEditor.isTagAllowed(editor, BitRichTextEditorMarks.WRITES[command])) return false;
+
+            if (range.collapsed) {
+                RichTextEditor.setPendingMark(editor, range, command, on);
                 return true;
             }
+            const next = BitRichTextEditorMarks.apply(editor, range, command, on);
+            if (!next) return false;
+            RichTextEditor.selectRange(editor, next);
+            return true;
+        }
 
-            const range = sel.getRangeAt(0);
-            if (range.collapsed) return false;
-            if (!editor.contains(range.startContainer) || !editor.contains(range.endContainer)) return false;
-            const code = document.createElement('code');
-            try {
-                code.appendChild(range.extractContents());
-                range.insertNode(code);
-            } catch {
+        // Clears the formatting of the selection; at a caret, turns off every mark for the text typed there next.
+        private static clearMarks(editor: any): boolean {
+            const range = RichTextEditor.editorRange(editor);
+            if (!range) return false;
+            if (range.collapsed) {
+                for (const mark of Object.keys(BitRichTextEditorMarks.WRITES) as BitRichTextEditorMark[]) {
+                    if (RichTextEditor.markActive(editor, range, mark)) RichTextEditor.setPendingMark(editor, range, mark, false);
+                }
+                return true;
+            }
+            const next = BitRichTextEditorMarks.removeFormat(editor, range);
+            if (!next) return false;
+            RichTextEditor.selectRange(editor, next);
+            return true;
+        }
+
+        // Sets a mark for the text typed next at the caret. A mark set back to what the markup there already says is
+        // no longer pending; turning one of sub- and superscript on turns the other off.
+        private static setPendingMark(editor: any, range: Range, mark: BitRichTextEditorMark, on: boolean) {
+            const at = BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset);
+            let pending = editor._pendingMarks;
+            if (!pending || pending.at !== at) pending = editor._pendingMarks = { at, marks: {}, styles: {} };
+            const set = (name: BitRichTextEditorMark, value: boolean) => {
+                if (BitRichTextEditorMarks.isActive(editor, range, name) === value) delete pending.marks[name];
+                else pending.marks[name] = value;
+            };
+            const other = BitRichTextEditorMarks.EXCLUDES[mark] as BitRichTextEditorMark | undefined;
+            if (on && other && RichTextEditor.markActive(editor, range, other)) set(other, false);
+            set(mark, on);
+            if (Object.keys(pending.marks).length === 0 && Object.keys(pending.styles).length === 0) editor._pendingMarks = null;
+        }
+
+        // Paints the selection with a color or font, or at a caret sets it for the text typed there next, which is what
+        // the browser's commands did. A value that is no value of the style is refused.
+        private static applyStyle(editor: any, property: string, value: string): boolean {
+            const written = BitRichTextEditorMarks.styleValue(property, String(value ?? ''));
+            if (!written) return false;
+            const range = RichTextEditor.editorRange(editor);
+            if (!range) return false;
+            if (range.collapsed) {
+                const at = BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset);
+                let pending = editor._pendingMarks;
+                if (!pending || pending.at !== at) pending = editor._pendingMarks = { at, marks: {}, styles: {} };
+                pending.styles[property] = written;
+                return true;
+            }
+            const next = BitRichTextEditorMarks.applyStyle(editor, range, property, written);
+            if (!next) return false;
+            RichTextEditor.selectRange(editor, next);
+            return true;
+        }
+
+        // A character typed where marks are pending is written by the editor, inside the marks turned on and outside
+        // the ones turned off; what is typed after it goes on in the same text, which the engine takes over.
+        private static typePendingMarks(editor: any, e: InputEvent): boolean {
+            const pending = editor._pendingMarks;
+            if (!pending) return false;
+            if ((e.inputType !== 'insertText' && e.inputType !== 'insertReplacementText') || !e.data) return false;
+            editor._pendingMarks = null;
+            const range = RichTextEditor.editorRange(editor);
+            if (!range || !range.collapsed
+                || BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) !== pending.at) {
                 return false;
             }
-            const after = document.createRange();
-            after.selectNodeContents(code);
-            sel.removeAllRanges();
-            sel.addRange(after);
-            editor._range = after.cloneRange();
+
+            e.preventDefault();
+            editor._leaveMark = null;
+            // A lone trailing space collapses away unless it is non-breaking, which is also what the engines write.
+            const caret = BitRichTextEditorMarks.insertText(editor, range, e.data === ' ' ? ' ' : e.data, pending.marks, pending.styles);
+            if (!caret) return true;
+            RichTextEditor.selectRange(editor, caret);
+            editor.dispatchEvent(new InputEvent('input', { inputType: 'insertText', data: e.data, bubbles: true }));
             return true;
+        }
+
+        private static startComposition(editor: any) {
+            const pending = editor._pendingMarks;
+            const range = RichTextEditor.editorRange(editor);
+            editor._composeMarks = pending && range && range.collapsed
+                && BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset) === pending.at
+                ? pending
+                : null;
+        }
+
+        private static endComposition(editor: any) {
+            const compose = editor._composeMarks;
+            editor._composeMarks = null;
+            editor._pendingMarks = null;
+            const range = compose ? RichTextEditor.editorRange(editor) : null;
+            let written = range && range.collapsed
+                ? BitRichTextEditorMarks.rangeAt(editor, compose.at, BitRichTextEditorMarks.textOffset(editor, range.startContainer, range.startOffset))
+                : null;
+            if (!written) {
+                RichTextEditor.historyCommit(editor);
+                return;
+            }
+
+            for (const mark of Object.keys(compose.marks)) {
+                if (!written || !BitRichTextEditorMarks.isMark(mark)) continue;
+                written = BitRichTextEditorMarks.apply(editor, written, mark, compose.marks[mark]) || written;
+            }
+            for (const property of Object.keys(compose.styles || {})) {
+                written = BitRichTextEditorMarks.applyStyle(editor, written!, property, compose.styles[property]) || written;
+            }
+            const caret = written!.cloneRange();
+            caret.collapse(false);
+            RichTextEditor.selectRange(editor, caret);
+            // The composition and its marks are one step, and the content is reported like any other edit.
+            const history = editor._history as BitRichTextEditorHistory | null;
+            if (history) history.capture(RichTextEditor.historyState(editor));
+            RichTextEditor.historyCommit(editor);
+            RichTextEditor.afterChange(editor);
         }
 
         // Whether the selection sits in code - a code block or an inline code span - where every
@@ -3441,21 +3684,19 @@
             return null;
         }
 
+        // A rule splits the line it goes into; at the end of one, an empty paragraph follows it to go on typing in.
         private static insertHorizontalRule(editor: any): boolean {
-            if (!RichTextEditor.execNative(editor, 'insertHorizontalRule')) {
-                return RichTextEditor.execNative(editor, 'insertHTML', '<hr>');
-            }
-            return true;
+            return RichTextEditor.insertHtmlAt(editor, '<hr>');
         }
 
         private static createLinkImpl(editor: any, url: string): boolean {
             if (!url) return false;
             const sel = document.getSelection();
             if (sel && sel.isCollapsed) {
-                return RichTextEditor.execNative(editor, 'insertHTML',
+                return RichTextEditor.insertHtmlAt(editor,
                     `<a href="${RichTextEditor.escapeAttr(url)}">${RichTextEditor.escapeHtml(url)}</a>`);
             }
-            return RichTextEditor.execNative(editor, 'createLink', url);
+            return RichTextEditor.applyBlocks(editor, (range: Range) => BitRichTextEditorMarks.link(editor, range, url));
         }
 
         // Saves the caret just past a menu's trigger character as the range the menu's command restores

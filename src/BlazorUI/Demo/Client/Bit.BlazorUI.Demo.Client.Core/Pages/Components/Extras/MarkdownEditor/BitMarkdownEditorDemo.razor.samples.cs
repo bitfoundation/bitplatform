@@ -341,15 +341,15 @@ private string statusDefaultValue =
 @""The status bar counts words and characters 👋 and estimates the reading time."";";
 
     private readonly string example14RazorCode = @"
-<BitMarkdownEditor Texts=""frenchTexts"" DefaultValue=""@localizationDefaultValue"" ShowReadingTime />";
+<BitMarkdownEditor Strings=""frenchStrings"" DefaultValue=""@localizationDefaultValue"" ShowReadingTime />";
     private readonly string example14CsharpCode = @"
 private string localizationDefaultValue =
 @""# Un éditeur **localisé**
 
-Chaque libellé de l'éditeur vient du paramètre `Texts` :
+Chaque libellé de l'éditeur vient du paramètre `Strings` :
 survolez la barre d'outils, ouvrez la recherche ou lisez la barre d'état."";
 
-private BitMarkdownEditorTexts frenchTexts = new()
+private BitMarkdownEditorStrings frenchStrings = new()
 {
     ToolbarAriaLabel = ""Mise en forme Markdown"",
     EditorAriaLabel = ""Éditeur Markdown"",

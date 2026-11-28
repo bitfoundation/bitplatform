@@ -94,7 +94,6 @@
 
         if (env.IsDevelopment() is false)
         {
-            // https://bitplatform.dev/templates/cache-mechanism
             headers.CacheControl = new()
             {
                 MaxAge = TimeSpan.FromDays(7),

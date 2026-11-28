@@ -454,4 +454,33 @@
         Assert.IsEmpty(JSInterop.Invocations.Where(i => i.Identifier == "dom.attachVirtualList"));
         Assert.AreEqual("Item 1", Text(ActiveOf(cut.Find("[role=combobox]"))));
     }
+
+    [TestMethod]
+    public void The_pointer_highlights_an_option_through_the_runtime_hover()
+    {
+        // The runtime sends an option its hover once, as the pointer reaches it - not with every move, nor when the
+        // keyboard scrolls it under a resting pointer - so the options listen to no pointer event of their own.
+        var cut = Render(
+            @<BitBhListbox TValue="int">
+                <BitBhListboxButton TValue="int" aria-label="Count">Count</BitBhListboxButton>
+                <BitBhListboxOptions TValue="int">
+                    <BitBhListboxOption TValue="int" Value="1">One</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="2" Disabled>Two</BitBhListboxOption>
+                    <BitBhListboxOption TValue="int" Value="3">Three</BitBhListboxOption>
+                </BitBhListboxOptions>
+            </BitBhListbox>);
+        AngleSharp.Dom.IElement Option(string text) => cut.FindAll("[role=option]").First(o => o.TextContent == text);
+
+        cut.Find("[role=combobox]").Press("ArrowDown");
+        Assert.AreEqual("One", Text(ActiveOf(cut.Find("[role=combobox]"))));
+        Assert.HasCount(3, cut.FindAll("[role=option][data-bit-bh-hover]"));
+        Assert.IsFalse(cut.FindAll("[role=option]").Any(o => o.HasAttribute("blazor:onpointermove") || o.HasAttribute("blazor:onpointerenter")));
+
+        Option("Three").PointerHover();
+        Assert.AreEqual("Three", Text(ActiveOf(cut.Find("[role=combobox]"))));
+
+        // A disabled option does not take it.
+        Option("Two").PointerHover();
+        Assert.AreEqual("Three", Text(ActiveOf(cut.Find("[role=combobox]"))));
+    }
 }

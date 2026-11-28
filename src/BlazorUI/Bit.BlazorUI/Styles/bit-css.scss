@@ -1,4 +1,5 @@
 ﻿@import "functions.scss";
+@import "media-queries.scss";
 
 //accent roles (pri, sec, ter, inf, suc, wrn, swr, err) - 10 classes per role.
 @each $role, $tokens in $bit-semantic-color-roles {
@@ -325,4 +326,41 @@ $bit-radius-scale: (
 //focus ring utility - drop-in class to apply the global, theme-aware focus indicator.
 .bit-css-shd-focus-ring:focus-visible {
     @include focus-ring;
+}
+
+//visibility - hides an element per breakpoint from the stylesheet alone, so a prerendered page shows the right
+//content from its first paint rather than once BitMediaQuery's matchMedia has run. Built from the default breakpoints
+//the --bit-bp-* properties carry (a custom property cannot be read in a media query, so from their Sass values): a
+//theme that moves Layout.Breakpoints moves --bit-bp-* and BitMediaQuery, never these.
+//bit-css-hide-{bp} hides from that breakpoint upwards, bit-css-hide-lt-{bp} below it, so the two of one breakpoint
+//are complements: bit-css-hide-md on the mobile content and bit-css-hide-lt-md on the desktop one. The lt rule is
+//the exact negation of the other one's query (`not all and`, which every engine reads, rather than a max-width a
+//fraction of a pixel below it), so at no width - a zoomed or scaled one included - both or neither of the two match.
+//They are !important since a hidden element must stay hidden whatever display a component or an app gives it.
+$-bit-css-hide-breakpoints: (
+    sm: $mq-sm-min,
+    md: $mq-md-min,
+    lg: $mq-lg-min,
+    xl: $mq-xl-min,
+    xxl: $mq-xxl-min,
+);
+
+.bit-css-hide-xs {
+    display: none !important;
+}
+
+@each $name, $min in $-bit-css-hide-breakpoints {
+    @media (min-width: #{$min}) {
+        .bit-css-hide-#{$name} {
+            display: none !important;
+        }
+    }
+}
+
+@each $name, $min in $-bit-css-hide-breakpoints {
+    @media not all and (min-width: #{$min}) {
+        .bit-css-hide-lt-#{$name} {
+            display: none !important;
+        }
+    }
 }

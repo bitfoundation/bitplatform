@@ -89,7 +89,7 @@ public class BitImageViewerParamsTests : BunitTestContext
             NoToolbar = false,
             WheelZoom = true,
             ZoomFactor = 2,
-            Texts = new() { ZoomIn = "Closer" },
+            Strings = new() { ZoomIn = "Closer" },
             Classes = new() { Viewport = "cascaded-vpt" },
             Styles = new() { Toolbar = "margin:1px" },
         });

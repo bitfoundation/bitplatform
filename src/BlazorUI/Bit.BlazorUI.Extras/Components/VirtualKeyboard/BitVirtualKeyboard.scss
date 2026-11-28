@@ -1,0 +1,321 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every virtual
+// keyboard and one set on the Style of an instance that one:
+//   --bit-VirtualKeyboard-background          fill of the panel the keys sit on                (default: $clr-bg-sec)
+//   --bit-VirtualKeyboard-padding             room around the keys                             (default: spacing(1))
+//   --bit-VirtualKeyboard-gap                 room between the keys                            (default: spacing(0.75))
+//   --bit-VirtualKeyboard-key-height          height of a row of keys; the Size parameter wins (default: max(44px, spacing(5.5)))
+//   --bit-VirtualKeyboard-radius              corner radius of a key                           (default: $shp-radius-button)
+//   --bit-VirtualKeyboard-font-size           size of a key's label                            (default: $tg-fs-lg)
+//   --bit-VirtualKeyboard-key-background      fill of a character key                          (default: $clr-bg-pri)
+//   --bit-VirtualKeyboard-key-color           label of a key                                   (default: $clr-fg-pri)
+//   --bit-VirtualKeyboard-key-hover-background fill of a key under the pointer                 (default: $clr-bg-pri-hover)
+//   --bit-VirtualKeyboard-key-pressed-background fill of a key while it is pressed             (default: $clr-bg-pri-active)
+//   --bit-VirtualKeyboard-function-key-background fill of a function or modifier key           (default: $clr-bg-ter)
+//   --bit-VirtualKeyboard-active-key-background fill of a latched or locked modifier           (default: $clr-pri-light)
+//   --bit-VirtualKeyboard-primary-key-background fill of the Enter key                         (default: $clr-pri)
+//   --bit-VirtualKeyboard-primary-key-color   label of the Enter key                           (default: $clr-pri-text)
+//   --bit-VirtualKeyboard-shadow              shadow of a docked panel                         (default: $box-shadow-sheet)
+//   --bit-VirtualKeyboard-focus-color         focus ring of a key                              (default: $clr-pri-focus)
+// The literal floors of the key heights (24px and 44px) are WCAG 2.2 constants (2.5.8 and 2.5.5), kept whatever the
+// layout density makes of spacing().
+
+$vkb-private-properties: kh;
+
+.bit-vkb {
+    @each $name in $vkb-private-properties {
+        --bit-vkb-#{$name}: initial;
+    }
+
+    // The height of a row, resolved once: the Size parameter's, else the public variable, else the medium size.
+    --bit-vkb-kh-r: var(--bit-vkb-kh, var(--bit-VirtualKeyboard-key-height, max(44px, #{spacing(5.5)})));
+
+    display: block;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.bit-vkb-sm {
+    --bit-vkb-kh: max(24px, #{spacing(3)});
+}
+
+.bit-vkb-md {
+    --bit-vkb-kh: max(44px, #{spacing(5.5)});
+}
+
+.bit-vkb-lg {
+    --bit-vkb-kh: #{spacing(8)};
+}
+
+.bit-vkb-pnl {
+    position: relative;
+    box-sizing: border-box;
+    border-radius: $shp-radius-surface;
+    padding: var(--bit-VirtualKeyboard-padding, #{spacing(1)});
+    background: var(--bit-VirtualKeyboard-background, #{$clr-bg-sec});
+}
+
+// Docked, the panel is fixed to the bottom of the viewport and slides in as the script opens it; the spacer in the page
+// takes its height while it is open (set by the script), so the page can be scrolled above it.
+.bit-vkb-dck > .bit-vkb-pnl {
+    inset-inline: 0;
+    bottom: 0;
+    position: fixed;
+    border-radius: 0;
+    transform: translateY(100%);
+    z-index: $zindex-snackbar;
+    visibility: hidden;
+    box-shadow: var(--bit-VirtualKeyboard-shadow, #{$box-shadow-sheet});
+    padding-bottom: calc(var(--bit-VirtualKeyboard-padding, #{spacing(1)}) + env(safe-area-inset-bottom, 0px));
+    transition: transform $mot-duration $mot-easing-decelerate, visibility 0s linear $mot-duration;
+
+    &[data-bit-vkb-open] {
+        transform: none;
+        visibility: visible;
+        transition: transform $mot-duration $mot-easing-decelerate, visibility 0s;
+    }
+}
+
+// Before the script runs (a prerendered page), a docked keyboard open from its parameters shows already.
+.bit-vkb-dck.bit-vkb-opn:not([data-bit-vkb-ready]) > .bit-vkb-pnl {
+    transform: none;
+    visibility: visible;
+}
+
+.bit-vkb-rsv {
+    height: 0;
+}
+
+// The grid of the keys is never mirrored: a right-to-left layout keeps the places of the keys and changes their
+// characters, as the hardware layouts do.
+.bit-vkb-lyr {
+    display: none;
+    direction: ltr;
+    gap: var(--bit-VirtualKeyboard-gap, #{spacing(0.75)});
+
+    &[data-bit-vkb-on] {
+        display: grid;
+    }
+}
+
+// Before the script runs (prerendering, static rendering), the first layer shows.
+.bit-vkb:not([data-bit-vkb-ready]) > .bit-vkb-pnl > .bit-vkb-lys > .bit-vkb-lyb {
+    display: grid;
+}
+
+.bit-vkb-key {
+    --bit-vkb-sbg: initial;
+    margin: 0;
+    padding: 0 spacing(0.5);
+    min-width: 0;
+    min-height: 24px;
+    display: flex;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    align-items: center;
+    box-sizing: border-box;
+    justify-content: center;
+    touch-action: manipulation;
+    font-family: inherit;
+    font-weight: $tg-fw-regular;
+    border: $shp-border-width solid transparent;
+    color: var(--bit-VirtualKeyboard-key-color, #{$clr-fg-pri});
+    font-size: var(--bit-VirtualKeyboard-font-size, #{$tg-fs-lg});
+    border-radius: var(--bit-VirtualKeyboard-radius, #{$shp-radius-button});
+    background-color: var(--bit-vkb-sbg, var(--bit-VirtualKeyboard-key-background, #{$clr-bg-pri}));
+    transition: background-color $mot-duration-short $mot-easing;
+    -webkit-tap-highlight-color: transparent;
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-VirtualKeyboard-focus-color));
+    }
+
+    // The pressed paint is the script's (data-bit-vkb-down): a key keeping the focus in an input cancels the pointer
+    // down, which some engines then never paint as :active.
+    &[data-bit-vkb-down] {
+        --bit-vkb-sbg: var(--bit-VirtualKeyboard-key-pressed-background, #{$clr-bg-pri-active});
+    }
+
+    &[data-bit-vkb-act] {
+        --bit-vkb-sbg: var(--bit-VirtualKeyboard-active-key-background, #{$clr-pri-light});
+    }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+        cursor: default;
+        opacity: $opa-dis;
+    }
+
+    @media (forced-colors: active) {
+        color: ButtonText;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+
+        &[data-bit-vkb-down],
+        &[data-bit-vkb-act] {
+            color: HighlightText;
+            background-color: Highlight;
+        }
+
+        &:disabled {
+            color: GrayText;
+            border-color: GrayText;
+        }
+    }
+}
+
+@media (hover: hover) {
+    .bit-vkb-key:hover:not(:disabled):not([data-bit-vkb-down]) {
+        --bit-vkb-sbg: var(--bit-VirtualKeyboard-key-hover-background, #{$clr-bg-pri-hover});
+    }
+}
+
+.bit-vkb-fnc,
+.bit-vkb-mod {
+    font-size: $tg-fs-sm;
+    background-color: var(--bit-vkb-sbg, var(--bit-VirtualKeyboard-function-key-background, #{$clr-bg-ter}));
+}
+
+.bit-vkb-pri {
+    font-size: $tg-fs-sm;
+    color: var(--bit-VirtualKeyboard-primary-key-color, #{$clr-pri-text});
+    background-color: var(--bit-vkb-sbg, var(--bit-VirtualKeyboard-primary-key-background, #{$clr-pri}));
+}
+
+@media (hover: hover) {
+    .bit-vkb-pri:hover:not(:disabled):not([data-bit-vkb-down]) {
+        --bit-vkb-sbg: #{$clr-pri-hover};
+    }
+}
+
+.bit-vkb-pri[data-bit-vkb-down] {
+    --bit-vkb-sbg: #{$clr-pri-active};
+}
+
+// A key that shows nothing it does (a blank key of an ATM pad or an AltGr layer) is drawn but never acts.
+.bit-vkb-blk {
+    cursor: default;
+    opacity: $opa-dis;
+}
+
+// Secure, a key shows nothing of being pressed or pointed at: both selectors outweigh the hover rules, so a Secure keyboard
+// shows none before its script has set data-bit-vkb-sec either.
+.bit-vkb.bit-vkb-sec .bit-vkb-key,
+.bit-vkb[data-bit-vkb-sec] .bit-vkb-key {
+    transition: none;
+
+    &:hover,
+    &[data-bit-vkb-down] {
+        --bit-vkb-sbg: initial;
+    }
+}
+
+.bit-vkb-lbl {
+    overflow: hidden;
+    white-space: nowrap;
+    pointer-events: none;
+    text-overflow: ellipsis;
+}
+
+// A longer label (a word, a domain) is set smaller so it fits a key.
+.bit-vkb-lbs {
+    font-size: $tg-fs-sm;
+}
+
+.bit-vkb-hnt {
+    top: spacing(0.25);
+    pointer-events: none;
+    position: absolute;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-2xs;
+    inset-inline-end: spacing(0.5);
+}
+
+.bit-vkb-ico {
+    width: 1.4em;
+    height: 1.4em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    pointer-events: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+// A right-to-left layout turns the keys whose icons point along the line (Backspace, Enter, Tab), never the left and
+// right arrows, which point where they move the caret.
+.bit-vkb-mir > .bit-vkb-lyr > :is(.bit-vkb-fnc, .bit-vkb-pri):not(.bit-vkb-arw) > .bit-vkb-ico {
+    transform: scaleX(-1);
+}
+
+// The tactile mark of the 5 of a phone pad (ITU-T E.161).
+.bit-vkb-nub::after {
+    content: "";
+    bottom: spacing(0.5);
+    width: spacing(1.5);
+    height: 2px;
+    position: absolute;
+    border-radius: 1px;
+    background: currentColor;
+    inset-inline-start: calc(50% - #{spacing(0.75)});
+}
+
+// The popup of long-press alternates and the enlarged-key bubble, filled and shown by the script.
+.bit-vkb-pop,
+.bit-vkb-prv {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    box-shadow: $box-shadow-popup;
+    border-radius: $shp-radius-popup;
+    background: var(--bit-VirtualKeyboard-key-background, #{$clr-bg-pri});
+    color: var(--bit-VirtualKeyboard-key-color, #{$clr-fg-pri});
+
+    &[data-bit-vkb-show] {
+        display: flex;
+    }
+}
+
+.bit-vkb-pop {
+    gap: spacing(0.5);
+    padding: spacing(0.5);
+}
+
+.bit-vkb-ppk {
+    --bit-vkb-pbg: initial;
+    border: none;
+    margin: 0;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+    padding: 0 spacing(1);
+    min-width: var(--bit-vkb-kh-r);
+    height: var(--bit-vkb-kh-r);
+    font-size: var(--bit-VirtualKeyboard-font-size, #{$tg-fs-lg});
+    border-radius: var(--bit-VirtualKeyboard-radius, #{$shp-radius-button});
+    background-color: var(--bit-vkb-pbg, transparent);
+
+    &[data-bit-vkb-sel] {
+        --bit-vkb-pbg: var(--bit-VirtualKeyboard-active-key-background, #{$clr-pri-light});
+    }
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-VirtualKeyboard-focus-color));
+    }
+}
+
+.bit-vkb-prv {
+    pointer-events: none;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--bit-vkb-kh-r);
+    height: calc(var(--bit-vkb-kh-r) * 1.4);
+    font-size: calc(var(--bit-VirtualKeyboard-font-size, #{$tg-fs-lg}) * 1.6);
+}
+
+.bit-vkb-liv {
+    @include visually-hidden;
+}

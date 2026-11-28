@@ -1,7 +1,0 @@
-@import '../../../Styles/tokens';
-
-::deep .restaurant-nav-cta {
-    @include lt-sm {
-        display: none;
-    }
-}

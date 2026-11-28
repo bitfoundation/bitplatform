@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcWeekView
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [CascadingParameter] internal BitFullCalendarChangeNotifier Notifier { get; set; } = default!;
     [CascadingParameter(Name = "OnAddClick")] public EventCallback<BitFullCalendarEvent?> OnAddClick { get; set; }
     [CascadingParameter(Name = "OnEventClick")] public EventCallback<BitFullCalendarEvent> OnEventClick { get; set; }
@@ -360,7 +360,7 @@ public partial class _BitFcWeekView
             return null;
 
         var start = day.Date.AddHours(hour).AddMinutes(minute);
-        return $"{Texts.AddEventHoverHint}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}"
+        return $"{Strings.AddEventHoverHint}, {day.ToString("ddd", State.Culture)} {BitFullCalendarHelpers.FormatTime(start, State.Use24HourFormat, State.Culture)}"
                + State.DescribeBackground(start, start.AddMinutes(State.SlotDurationMinutes));
     }
 

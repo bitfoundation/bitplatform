@@ -123,6 +123,35 @@ private readonly List<BitStepperItem> basicItems =
 ];";
 
     private readonly string example8RazorCode = @"
+<BitStepper Compact Items=""basicItems"" @bind-CurrentIndex=""compactIndex"" />
+
+<BitButton Variant=""BitVariant.Outline"" Disabled=""compactIndex == 0"" OnClick=""() => compactIndex--"">Back</BitButton>
+<BitButton Disabled=""compactIndex >= basicItems.Count"" OnClick=""() => compactIndex++"">Next</BitButton>
+
+<BitStepper Compact Responsive Items=""basicItems"" CurrentIndex=""1"" />
+
+<div style=""max-width: 20rem;"">
+    <BitStepper Compact Responsive Items=""basicItems"" CurrentIndex=""1"" />
+</div>
+
+<BitStepper Compact Items=""basicItems"" CurrentIndex=""2"">
+    <CompactTemplate>
+        <b>@(context.Index + 1) / @context.Count</b>
+        <span>@context.Item?.Text</span>
+    </CompactTemplate>
+</BitStepper>";
+    private readonly string example8CsharpCode = @"
+private int compactIndex;
+
+private readonly List<BitStepperItem> basicItems =
+[
+    new() { Text = ""Account"" },
+    new() { Text = ""Address"" },
+    new() { Text = ""Payment"" },
+    new() { Text = ""Review"" }
+];";
+
+    private readonly string example9RazorCode = @"
 <!-- FontAwesome -->
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
@@ -137,7 +166,7 @@ private readonly List<BitStepperItem> basicItems =
 <BitStepper Items=""externalIconItems2""
             CurrentIndex=""1""
             CompletedIcon=""@BitIconInfo.Bi(""check-lg"")"" />";
-    private readonly string example8CsharpCode = @"
+    private readonly string example9CsharpCode = @"
 private readonly List<BitStepperItem> externalIconItems1 =
 [
     new() { Text = ""Account"", Icon = ""fa-solid fa-user"" },
@@ -154,7 +183,7 @@ private readonly List<BitStepperItem> externalIconItems2 =
     new() { Text = ""Review"", Icon = BitIconInfo.Bi(""card-checklist"") }
 ];";
 
-    private readonly string example9RazorCode = @"
+    private readonly string example10RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -188,7 +217,7 @@ private readonly List<BitStepperItem> externalIconItems2 =
 <BitStepper Items=""basicItems""
             CurrentIndex=""2""
             Classes=""@(new() { CurrentStep = ""custom-current"", Connector = ""custom-connector"" })"" />";
-    private readonly string example9CsharpCode = @"
+    private readonly string example10CsharpCode = @"
 private readonly List<BitStepperItem> basicItems =
 [
     new() { Text = ""Account"" },
@@ -205,13 +234,13 @@ private readonly List<BitStepperItem> styleClassItems =
     new() { Text = ""Review"" }
 ];";
 
-    private readonly string example10RazorCode = @"
+    private readonly string example11RazorCode = @"
 <div dir=""rtl"">
     <BitStepper Dir=""BitDir.Rtl"" Items=""rtlItems"" CurrentIndex=""1"" />
 
     <BitStepper Dir=""BitDir.Rtl"" Vertical Items=""rtlItems"" CurrentIndex=""1"" />
 </div>";
-    private readonly string example10CsharpCode = @"
+    private readonly string example11CsharpCode = @"
 private readonly List<BitStepperItem> rtlItems =
 [
     new() { Text = ""حساب کاربری"" },

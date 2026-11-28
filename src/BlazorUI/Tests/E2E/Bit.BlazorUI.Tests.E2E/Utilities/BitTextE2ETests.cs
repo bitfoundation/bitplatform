@@ -5,7 +5,8 @@ namespace Bit.BlazorUI.Tests.E2E.Utilities;
 
 /// <summary>
 /// Drives BitText (/e2e/text) in a real browser: every Typography variant (its tag, its class and the theme's type ramp
-/// it reads), Element (another tag, the invalid and the void fallbacks), every Weight, Italic, Underline,
+/// it reads), TypographyXs to TypographyXxl (the look per breakpoint under the tag of Typography), Element (another
+/// tag, the invalid and the void fallbacks), every Weight, Italic, Underline,
 /// Strikethrough, every Transform, Numeric, Monospace, NoWrap, Block and LineClamp truncation, BreakWord, ForceBreak,
 /// every Wrap, Hyphenate, PreserveWhitespace, every Align, Gutter, every Trim, Foreground, Gradient, every Color,
 /// AriaLevel, VisuallyHidden (and its focusable content coming back), Lang, NoSelect, Visibility, Disabled, the
@@ -126,6 +127,54 @@ public class BitTextE2ETests : E2ETestBase
         Assert.AreEqual("STRONG", await TagAsync(Page.Locator("#txt-el-strong")));
         Assert.AreEqual("BLOCKQUOTE", await TagAsync(Page.Locator("#txt-el-blockquote")));
         Assert.AreEqual("SECTION", await TagAsync(Page.Locator("#txt-el-padded")));
+    }
+
+    // Typography="H6" TypographyMd="H3" TypographyXl="H1": the h6 look below md, h3 from md and still at lg, h1 from xl,
+    // and an h6 tag at every width. The overline gives its uppercase and its block back from md, where Body1 takes over.
+    [TestMethod]
+    public async Task Breakpoints_TheLookFollowsTheWidthFromEachBreakpointUp_AndTheTagNeverMoves()
+    {
+        await OpenAsync(Path);
+
+        var grow = Page.Locator("#txt-bp-grow");
+        var overline = Page.Locator("#txt-bp-overline");
+
+        foreach (var (width, variant) in new[] { (500, "h6"), (700, "h6"), (1000, "h3"), (1400, "h3"), (2000, "h1"), (2600, "h1") })
+        {
+            await Page.SetViewportSizeAsync(width, 900);
+            await NextFramesAsync();
+
+            Assert.AreEqual("H6", await TagAsync(grow));
+            await Expect(grow).ToHaveCSSAsync("font-size", await ResolveAsync("font-size", $"var(--bit-tpg-{variant}-font-size)"));
+            await Expect(grow).ToHaveCSSAsync("font-weight", await ResolveAsync("font-weight", $"var(--bit-tpg-{variant}-font-weight)"));
+
+            Assert.AreEqual("SPAN", await TagAsync(overline));
+            if (width < 960)
+            {
+                await Expect(overline).ToHaveCSSAsync("text-transform", await ResolveAsync("text-transform", "var(--bit-tpg-overline-text-transform)"));
+                await Expect(overline).ToHaveCSSAsync("display", await ResolveAsync("display", "var(--bit-tpg-overline-display)"));
+            }
+            else
+            {
+                await Expect(overline).ToHaveCSSAsync("font-size", await ResolveAsync("font-size", "var(--bit-tpg-body1-font-size)"));
+                await Expect(overline).ToHaveCSSAsync("text-transform", "none");
+                await Expect(overline).ToHaveCSSAsync("display", "inline");
+            }
+        }
+
+        await Expect(Page.GetByRole(AriaRole.Heading, new() { Level = 6, Name = "Grows with the window" })).ToHaveIdAsync("txt-bp-grow");
+    }
+
+    [TestMethod]
+    public async Task Breakpoints_TypographyXs_IsTheLookAtEveryWidth_UnderTheTagOfTypography()
+    {
+        await OpenAsync(Path);
+
+        var text = Page.Locator("#txt-bp-xs");
+
+        Assert.AreEqual("H2", await TagAsync(text));
+        await Expect(text).ToHaveClassAsync(HasClass("bit-txt-body2"));
+        await Expect(text).ToHaveCSSAsync("font-size", await ResolveAsync("font-size", "var(--bit-tpg-body2-font-size)"));
     }
 
     [TestMethod]

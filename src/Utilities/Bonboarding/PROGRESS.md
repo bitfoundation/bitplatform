@@ -222,7 +222,7 @@ P3 specialised. "E2E" means the Playwright suite (Chromium, Firefox, WebKit).
 ### Round 13 review notes
 
 - Not built, on purpose, with the reason:
-  - Separate integration packages (Brouter, Blex, Borm, Bmotion, BlazeDb, Bcrdt, Balette, BevTools). Every one of
+  - Separate integration packages (Brouter, Blex, Borm, Bmotion, BlazeDb, Bcrdt, BitCommandPalette of Bit.BlazorUI.Extras, BevTools). Every one of
     them meets Bonboarding at an application event or a store, and both already have a decoupled seam:
     `SignalAsync` / `AdvanceOnSignal` / `CompleteOnSignal` for "the form was submitted", "the item was dropped",
     "the state changed", and `IBonboardingStore` (+ `IBonboardingStoreEvents`) for persistence and sync. A package per

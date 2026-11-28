@@ -8,14 +8,14 @@ public partial class _BitNavOptionDemo
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
-                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
-                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://todo.bitfabric.co"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://adminpanel.bitfabric.co"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
             <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsDisabled />
             <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsDisabled />
         </BitNavOption>
-        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitfabric.co/pricing"" Target=""_blank"" />
         <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
         <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
     </BitNavOption>
@@ -33,14 +33,14 @@ public partial class _BitNavOptionDemo
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
-                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
-                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://todo.bitfabric.co"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://adminpanel.bitfabric.co"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
             <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsDisabled />
             <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsDisabled />
         </BitNavOption>
-        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitfabric.co/pricing"" Target=""_blank"" />
         <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
         <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
     </BitNavOption>
@@ -92,7 +92,7 @@ public partial class _BitNavOptionDemo
 
 <BitNav TItem=""BitNavOption"" FitWidth>
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
-    <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+    <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitfabric.co/pricing"" Target=""_blank"" />
     <BitNavOption IsSeparator=""true"" />
     <BitNavOption Text=""LinkedIn"" IconName=""@BitIconName.LinkedInLogo"" Url=""https://www.linkedin.com/company/bitplatformhq"" Target=""_blank"" />
     <BitNavOption Text=""GitHub repo"" IconName=""@BitIconName.GitGraph"" Url=""https://github.com/bitfoundation/bitplatform"" Target=""_blank"" />
@@ -204,14 +204,14 @@ private bool iconOnly;";
         <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""Project Templates"">
-                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
-                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                <BitNavOption Text=""Todo sample"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://todo.bitfabric.co"" Target=""_blank"" />
+                <BitNavOption Text=""AdminPanel sample"" IconName=""@BitIconName.LocalAdmin"" Url=""https://adminpanel.bitfabric.co"" Target=""_blank"" />
             </BitNavOption>
             <BitNavOption Text=""BlazorUI"" IconName=""@BitIconName.F12DevTools"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
             <BitNavOption Text=""Cloud hosting solutions"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsDisabled />
             <BitNavOption Text=""Bit academy"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsDisabled />
         </BitNavOption>
-        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""Pricing"" IconName=""@BitIconName.Money"" Url=""https://bitfabric.co/pricing"" Target=""_blank"" />
         <BitNavOption Text=""About"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
         <BitNavOption Text=""Contact us"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
     </BitNavOption>
@@ -539,7 +539,7 @@ private readonly BitNavParams[] navParams =
         <BitNavOption Text=""Home"" Icon=""fontAwesomeHomeIcon"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""Products & Services"">
             <BitNavOption Text=""BlazorUI"" Icon=""fontAwesomeCodeIcon"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-            <BitNavOption Text=""Pricing"" Icon=""fontAwesomeTagIcon"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+            <BitNavOption Text=""Pricing"" Icon=""fontAwesomeTagIcon"" Url=""https://bitfabric.co/pricing"" Target=""_blank"" />
         </BitNavOption>
         <BitNavOption Text=""About"" Icon=""fontAwesomeInfoIcon"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
         <BitNavOption Text=""Contact us"" Icon=""fontAwesomeEnvelopeIcon"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
@@ -553,7 +553,7 @@ private readonly BitNavParams[] navParams =
     <BitNavOption Text=""bit platform"" Description=""Nav with external icons (Bootstrap Icons)"">
         <BitNavOption Text=""Home"" Icon=""bootstrapHomeIcon"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
         <BitNavOption Text=""BlazorUI"" Icon=""bootstrapCodeIcon"" Url=""https://bitplatform.dev/components"" Target=""_blank"" />
-        <BitNavOption Text=""Pricing"" Icon=""bootstrapTagIcon"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+        <BitNavOption Text=""Pricing"" Icon=""bootstrapTagIcon"" Url=""https://bitfabric.co/pricing"" Target=""_blank"" />
     </BitNavOption>
     <BitNavOption Text=""Iconography"" Icon=""bootstrapSmileIcon"" Url=""/iconography"" />
 </BitNav>";
@@ -666,14 +666,14 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
             <BitNavOption Text=""خانه"" IconName=""@BitIconName.Home"" Url=""https://bitplatform.dev/"" Target=""_blank"" />
             <BitNavOption Text=""محصولات و خدمات"">
                 <BitNavOption Text=""قالب های پروژه"">
-                    <BitNavOption Text=""نمونه ی Todo"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
-                    <BitNavOption Text=""نمونه ی AdminPanel"" IconName=""@BitIconName.LocalAdmin"" Url=""https://bitplatform.dev/templates/overview"" Target=""_blank"" />
+                    <BitNavOption Text=""نمونه ی Todo"" IconName=""@BitIconName.ToDoLogoOutline"" Url=""https://todo.bitfabric.co"" Target=""_blank"" />
+                    <BitNavOption Text=""نمونه ی AdminPanel"" IconName=""@BitIconName.LocalAdmin"" Url=""https://adminpanel.bitfabric.co"" Target=""_blank"" />
                 </BitNavOption>
                 <BitNavOption Text=""رابط کاربری Blazor"" IconName=""@BitIconName.F12DevTools"" Url=""https://blazorui.bitplatform.dev/"" Target=""_blank"" />
                 <BitNavOption Text=""راه های هاست ابری"" IconName=""@BitIconName.Cloud"" Url=""https://bitplatform.dev/#"" IsDisabled />
                 <BitNavOption Text=""آکادمی بیت"" IconName=""@BitIconName.LearningTools"" Url=""https://bitplatform.dev/#"" IsDisabled />
             </BitNavOption>
-            <BitNavOption Text=""قیمت"" IconName=""@BitIconName.Money"" Url=""https://bitplatform.dev/pricing"" Target=""_blank"" />
+            <BitNavOption Text=""قیمت"" IconName=""@BitIconName.Money"" Url=""https://bitfabric.co/pricing"" Target=""_blank"" />
             <BitNavOption Text=""درباره ما"" IconName=""@BitIconName.Info"" Url=""https://bitplatform.dev/about-us"" Target=""_blank"" />
             <BitNavOption Text=""ارتباط با ما"" IconName=""@BitIconName.Contact"" Url=""https://bitplatform.dev/contact-us"" Target=""_blank"" />
         </BitNavOption>

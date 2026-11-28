@@ -326,6 +326,35 @@ private readonly BitActionButtonParams[] actionButtonParams =
 ];";
 
     private readonly string example11RazorCode = @"
+<BitActionButton>
+    <IconTemplate>
+        <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""none"">
+            <rect x=""8"" y=""8"" width=""12"" height=""12"" rx=""2"" stroke=""currentColor"" stroke-width=""2"" />
+            <path d=""M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"" stroke=""currentColor"" stroke-width=""2"" />
+        </svg>
+    </IconTemplate>
+    <ChildContent>Copy</ChildContent>
+</BitActionButton>
+
+<BitActionButton IconPlacement=""BitPlacement.End"">
+    <IconTemplate>
+        <svg width=""1em"" height=""1em"" viewBox=""0 0 24 24"" fill=""none"">
+            <path d=""M5 12h14M13 6l6 6-6 6"" stroke=""currentColor"" stroke-width=""2"" stroke-linecap=""round"" stroke-linejoin=""round"" />
+        </svg>
+    </IconTemplate>
+    <ChildContent>Next</ChildContent>
+</BitActionButton>
+
+<BitActionButton IconOnly AriaLabel=""Copy"">
+    <IconTemplate>
+        <svg viewBox=""0 0 24 24"" fill=""none"">
+            <rect x=""8"" y=""8"" width=""12"" height=""12"" rx=""2"" stroke=""currentColor"" stroke-width=""2"" />
+            <path d=""M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"" stroke=""currentColor"" stroke-width=""2"" />
+        </svg>
+    </IconTemplate>
+</BitActionButton>";
+
+    private readonly string example12RazorCode = @"
 <BitActionButton Color=""BitColor.Primary"" IconName=""@BitIconName.ColorSolid"">
     Primary
 </BitActionButton>
@@ -471,7 +500,7 @@ private readonly BitActionButtonParams[] actionButtonParams =
 <BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitActionButton>
 <BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitActionButton>";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitActionButton Icon=""@(""fa-solid fa-house"")"">
@@ -518,7 +547,7 @@ private readonly BitActionButtonParams[] actionButtonParams =
     Large, click to load
 </BitActionButton>";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <BitActionButton Size=""BitSize.Small"" IconName=""@BitIconName.FontSize"">
     Small
 </BitActionButton>
@@ -531,7 +560,7 @@ private readonly BitActionButtonParams[] actionButtonParams =
     Large
 </BitActionButton>";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <style>
     .custom-icon {
         color: hotpink;
@@ -598,7 +627,7 @@ private readonly BitActionButtonParams[] actionButtonParams =
     <BitActionButton IconName=""@BitIconName.Delete"" Color=""BitColor.Error"">Delete</BitActionButton>
 </div>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <div dir=""rtl"">
     <BitActionButton Dir=""BitDir.Rtl"" IconName=""@BitIconName.AddFriend"">
         ساخت حساب

@@ -562,7 +562,7 @@ public class BitPaginationE2ETests : E2ETestBase
 
         await Expect(root).ToHaveClassAsync(HasClass("bit-pgn-aln"));
         await Expect(root).ToHaveCSSAsync("display", "flex");
-        await Expect(root).ToHaveCSSAsync("justify-content", justify);
+        await Expect(root).ToHaveCSSAsync("justify-content", Alignment(justify));
 
         var left = first.X - container.X;
         var right = container.X + container.Width - (last.X + last.Width);

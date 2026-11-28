@@ -221,7 +221,7 @@ internal static class ScriptPublishing
             ["BitButilScriptScan=TypeRefs"],
             Error: "not a value of <BitButilScriptScan>"),
 
-        // A Blazor Web App, the way the Boilerplate ships one. The client writes service-worker-assets.js during
+        // A Blazor Web App, the way bit Boilerplate (bitfoundation/bitfabric) ships one. The client writes service-worker-assets.js during
         // its own publish, from its own trimmed bundle; the server trims again, to one more module, and serves
         // that. Left alone the manifest lists bit-butil.js under the client's hash (#13926) - and an installed
         // PWA keeps a cached file for as long as its listed hash stays the same, so it never sees a new bundle.

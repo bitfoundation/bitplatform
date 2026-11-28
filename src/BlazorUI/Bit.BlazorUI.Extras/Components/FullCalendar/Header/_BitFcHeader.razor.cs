@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 public partial class _BitFcHeader
 {
     [CascadingParameter] public BitFullCalendarState State { get; set; } = default!;
-    [CascadingParameter] public BitFullCalendarTexts Texts { get; set; } = default!;
+    [CascadingParameter] public BitFullCalendarStrings Strings { get; set; } = default!;
     [CascadingParameter] public BitFullCalendarSettings Settings { get; set; } = default!;
     [CascadingParameter] internal BitFcParts Parts { get; set; } = default!;
     [CascadingParameter(Name = "HideFilters")] public bool HideFilters { get; set; }

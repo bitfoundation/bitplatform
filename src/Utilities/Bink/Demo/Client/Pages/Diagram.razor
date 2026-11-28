@@ -108,7 +108,7 @@
         them into the same undo step - so connector endpoints and label positions are recomputed, never stored as
         offsets.
     </p>
-    <pre class="bb-code"><span class="c">// Inside the Changed handler: a consequence of the change being handled, not a new edit.</span>
+    <pre class="bb-code" tabindex="0"><span class="c">// Inside the Changed handler: a consequence of the change being handled, not a new edit.</span>
 <span class="k">using</span> (_document.BeginBatch(<span class="s">"Update diagram"</span>))
 {
     <span class="k">if</span> (updates.Count &gt; 0) _document.ReplaceElements(updates, <span class="s">"Route connectors"</span>);
@@ -126,7 +126,7 @@
         ordinary element when the gesture ends. Undo, selection, hit testing, serialization and export follow because
         the result is a normal document element.
     </p>
-    <pre class="bb-code"><span class="k">public sealed class</span> NodeTool : BinkToolBase
+    <pre class="bb-code" tabindex="0"><span class="k">public sealed class</span> NodeTool : BinkToolBase
 {
     <span class="k">public override string</span> Id =&gt; <span class="s">"diagram-node"</span>;
     <span class="k">public override string</span> DisplayName =&gt; <span class="s">"Node"</span>;
@@ -149,7 +149,7 @@
         options when the drag starts, which collects every edge and centre to snap to once, so each frame is a lookup.
         It lines a corner up with other nodes before the grid, and draws a guide while it does.
     </p>
-    <pre class="bb-code">&lt;BinkCanvas Grid=<span class="s">"new BinkGrid { Style = BinkGridStyle.Lines, Spacing = 20f, MajorEvery = 5 }"</span>
+    <pre class="bb-code" tabindex="0">&lt;BinkCanvas Grid=<span class="s">"new BinkGrid { Style = BinkGridStyle.Lines, Spacing = 20f, MajorEvery = 5 }"</span>
             Snapping=<span class="s">"new BinkSnapOptions { GridSize = 20f }"</span> /&gt;
 
 <span class="c">// In the tool, when the drag starts:</span>

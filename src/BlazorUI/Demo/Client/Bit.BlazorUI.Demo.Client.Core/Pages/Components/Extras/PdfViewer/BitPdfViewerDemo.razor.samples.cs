@@ -369,12 +369,12 @@ private async Task ShowSelectedText()
 <BitButton Disabled=""localizedSource is not null""
            OnClick='() => localizedSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
-<BitPdfViewer Source=""localizedSource"" Height=""400px"" Texts=""germanTexts"" />";
+<BitPdfViewer Source=""localizedSource"" Height=""400px"" Strings=""germanStrings"" />";
     private readonly string example15CsharpCode = @"
 private BitPdfSource? localizedSource;
 
 // Only the properties you assign are replaced; the rest keep their English defaults.
-private readonly BitPdfViewerTexts germanTexts = new()
+private readonly BitPdfViewerStrings germanStrings = new()
 {
     ToolbarAriaLabel = ""PDF-Werkzeugleiste"",
     DocumentAriaLabel = ""Dokument"",
@@ -452,7 +452,7 @@ private readonly BitPdfViewerParams[] pdfViewerParams =
         Height = ""300px"",
         InitialZoomMode = BitPdfZoomMode.FitPage,
         ToolbarItems = BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom | BitPdfToolbarItems.Search,
-        Texts = new() { NoDocument = ""Both viewers share their defaults - load a document."" },
+        Strings = new() { NoDocument = ""Both viewers share their defaults - load a document."" },
     }
 ];";
 

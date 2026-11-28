@@ -1,0 +1,134 @@
+﻿@page "/components/codeblock"
+@page "/components/code-block"
+
+<PageOutlet Url="components/codeblock"
+            Title="CodeBlock"
+            Description="BitCodeBlock shows a block of code with a button that copies it, an optional header naming it, and a terminal look for the commands of a shell." />
+
+<DemoPage Name="CodeBlock"
+          SecondaryNames="@(["CodeSnippet", "Snippet"])"
+          Description="BitCodeBlock shows a block of code - a command to run, a snippet to paste - in the theme's monospaced family, with a button that puts it on the clipboard, an optional header with a title and a language, a height past which it scrolls, and a terminal look for the commands of a shell."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          CssVariables="componentCssVariables"
+          GitHubUrl="Utilities/CodeBlock/BitCodeBlock.razor"
+          GitHubDemoUrl="Utilities/CodeBlock/BitCodeBlockDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            The code is written as it is: there is no syntax highlighting, and the Language is a label only. A copy confirms
+            itself - the glyph of the button turns into a check mark, its name says "Copied", and a polite live region
+            announces it to screen readers. The words are the Copy and Copied of BitStrings unless CopyText and CopiedText
+            say otherwise. For a fragment of code inside a sentence, use the <b>Code</b> parameter of
+            <BitLink Href="/components/text">BitText</BitLink>.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                <b>Code</b> is the code to show, and exactly what the copy button puts on the clipboard. The code can also be
+                written right inside the tag, as its child content.
+            </div>
+            <br />
+            <div>
+                <BitCodeBlock Code="@basicCode" />
+                <br />
+                <BitCodeBlock>dotnet tool install --global Bit.Cli</BitCodeBlock>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Header" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>Title</b> (a file name, most of the time) and <b>Language</b> are shown in a header above the code, and the
+                copy button moves into it. The title also names the code to a screen reader.
+            </div>
+            <br />
+            <div>
+                <BitCodeBlock Code="@headerCode" Title="Program.cs" Language="C#" />
+                <br />
+                <BitCodeBlock Code="@jsonCode" Language="json" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Terminal" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>Terminal</b> draws the block as a terminal window: dark in both color schemes, with the three dots of a title
+                bar and a prompt before every command line. The prompt is drawn by the stylesheet, so it is neither selected nor
+                copied with the commands; <b>--bit-CodeBlock-prompt</b> changes it.
+            </div>
+            <br />
+            <div>
+                <BitCodeBlock Terminal Code="@terminalCode" />
+                <br />
+                <BitCodeBlock Terminal Title="PowerShell" Code="@powershellCode" Style="--bit-CodeBlock-prompt: 'PS> '" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="MaxHeight" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>MaxHeight</b> (any CSS length) is the height past which the code scrolls. The scrolling box takes the focus,
+                so a keyboard can scroll it too.
+            </div>
+            <br />
+            <div>
+                <BitCodeBlock Code="@longCode" Title="appsettings.json" MaxHeight="10rem" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Copy" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>OnCopy</b> is raised once the code is on the clipboard. <b>CopyOnClick</b> copies the code when it is clicked
+                as well - a click that ends a selection of a part of it copies nothing - and <b>ShowCopyButton</b> hides the
+                button. <b>CopyText</b> and <b>CopiedText</b> are the name of the button before and after a copy.
+            </div>
+            <br />
+            <div>
+                <BitCodeBlock Code="@basicCode" CopyOnClick OnCopy="() => copyCount++" CopyText="Copy the command" CopiedText="Copied to the clipboard" />
+                <div>Copied @copyCount time(s).</div>
+                <br />
+                <BitCodeBlock Code="@basicCode" ShowCopyButton="false" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Custom content" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                The child content takes the place of the code that is shown, while <b>Code</b> stays what is copied: an app
+                that highlights its code with a library of its own hands the highlighted markup in as the content and the
+                plain source as the Code.
+            </div>
+            <br />
+            <div>
+                <BitCodeBlock Code="@highlightedCode" Language="C#"><span style="color: var(--bit-clr-pri-fg)">var</span> greeting = <span style="color: var(--bit-clr-suc-fg)">"Hello, world!"</span>;</BitCodeBlock>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                Classes and Styles reach the root, the header and its parts, the copy button, the scrolling body, the pre and
+                the code elements, and the --bit-CodeBlock-* variables restyle the defaults.
+            </div>
+            <br />
+            <div>
+                <BitCodeBlock Code="@basicCode"
+                              Style="--bit-CodeBlock-background: var(--bit-clr-pri-light); --bit-CodeBlock-border-color: var(--bit-clr-pri); --bit-CodeBlock-radius: 1rem;" />
+                <br />
+                <BitCodeBlock Code="@basicCode"
+                              Title="Install"
+                              Classes="@(new() { Root = "custom-root", Header = "custom-header", CopyButton = "custom-copy" })" />
+                <br />
+                <BitCodeBlock Code="@basicCode"
+                              Styles="@(new() { Pre = "font-size: 1rem; padding: 1.5rem;", CopyButton = "color: var(--bit-clr-pri);" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                Use BitCodeBlock in right-to-left (RTL). The header follows the page, while the code itself is always laid out
+                left to right.
+            </div>
+            <br />
+            <div dir="rtl">
+                <BitCodeBlock Dir="BitDir.Rtl" Title="نصب" Code="@basicCode" CopyText="کپی" CopiedText="کپی شد" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

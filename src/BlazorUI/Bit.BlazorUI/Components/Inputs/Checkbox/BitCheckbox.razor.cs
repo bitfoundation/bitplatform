@@ -431,6 +431,16 @@ public partial class BitCheckbox : BitInputBase<bool>
     [Parameter, ResetClassBuilder]
     public string? UncheckedIconName { get; set; }
 
+    /// <summary>
+    /// The visual style of the checkbox. The default is <see cref="BitVariant.Text"/>, which draws no surface at
+    /// all and renders the bare box and label the checkbox has always been. <see cref="BitVariant.Outline"/> and
+    /// <see cref="BitVariant.Fill"/> turn the whole checkbox into a selectable card - a bordered one and a filled
+    /// one - that carries the box, the label, the error message and the description, is clickable across its full
+    /// area, outlines itself with the focus ring and is tinted and bordered in the accent color while checked.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
+
 
 
     protected override async Task OnInitializedAsync()
@@ -553,6 +563,15 @@ public partial class BitCheckbox : BitInputBase<bool>
         // The focus ring is drawn around the box, which a custom face replaces - so the checkbox says that
         // it has no box and the stylesheet puts the ring around the whole face instead of nowhere.
         ClassBuilder.Register(() => ChildContent is not null ? "bit-chb-cct" : string.Empty);
+
+        // Outline and Fill draw the checkbox as a card. Text - the default - is the bare box and label, so it adds no
+        // class and leaves the markup of every checkbox that does not ask for a card exactly as it was.
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-chb-fil",
+            BitVariant.Outline => "bit-chb-otl",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -582,6 +601,11 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// Whether the checkbox carries a visible description, which is what the extra line under it is rendered for.
     /// </summary>
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    /// <summary>
+    /// Whether the checkbox is drawn as a card, which is what the hit area laid over the whole card is rendered for.
+    /// </summary>
+    private bool IsCard => Variant is BitVariant.Outline or BitVariant.Fill;
 
     /// <summary>
     /// Whether the checkbox carries a visible error message, which is what the error line is rendered for.

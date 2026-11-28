@@ -1,0 +1,46 @@
+﻿@namespace Bit.BlazorUI
+
+@if (Shortcut is not null)
+{
+    var chords = Shortcut.DisplayTokens(MacKeys);
+    var then = Then;
+    @* Key caps read left to right in every language, as on the keys themselves; screen readers get the words instead
+       of the caps (an aria-label on a span is ignored by most of them). *@
+    <span class="bit-cpl-shortcut @Class" style="@Style" data-bit-cpl="shortcut" dir="ltr">
+        <span class="bit-cpl-vhd">@Shortcut.ToDisplayString(MacKeys, then)</span>
+        <span class="bit-cpl-shortcut-keys" aria-hidden="true">
+            @for (var c = 0; c < chords.Count; c++)
+            {
+                if (c > 0)
+                {
+                    <span class="bit-cpl-shortcut-then">@then</span>
+                }
+                foreach (var token in chords[c])
+                {
+                    <kbd class="bit-cpl-kbd">@token</kbd>
+                }
+            }
+        </span>
+    </span>
+}
+
+@code {
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    /// <summary>Extra CSS class on the hint.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Renders the macOS key symbols (⌘ ⇧ ⌥) instead of the names of the keys.</summary>
+    [Parameter] public bool MacKeys { get; set; }
+
+    /// <summary>Shortcut to render. Accepts a <see cref="BitCommandPaletteKeyboardShortcut"/> (strings convert implicitly).</summary>
+    [Parameter, EditorRequired] public BitCommandPaletteKeyboardShortcut? Shortcut { get; set; }
+
+    /// <summary>The strings to use; by default <see cref="BitCommandPaletteOptions.Strings"/>.</summary>
+    [Parameter] public BitCommandPaletteStrings? Strings { get; set; }
+
+    /// <summary>Extra CSS style on the hint.</summary>
+    [Parameter] public string? Style { get; set; }
+
+    private string Then => (Strings ?? (Services.GetService(typeof(BitCommandPaletteOptions)) as BitCommandPaletteOptions)?.Strings)?.ShortcutThen ?? "then";
+}

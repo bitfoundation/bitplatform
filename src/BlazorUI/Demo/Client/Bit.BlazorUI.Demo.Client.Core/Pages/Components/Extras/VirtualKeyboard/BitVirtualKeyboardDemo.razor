@@ -1,0 +1,258 @@
+﻿@page "/components/virtualkeyboard"
+@page "/components/virtual-keyboard"
+
+<PageOutlet Url="components/virtualkeyboard"
+            Title="VirtualKeyboard"
+            Description="BitVirtualKeyboard is an on-screen keyboard: language layouts in a Full and a Compact form, and purpose pads for phone numbers, PINs, decimals and points of sale, typing into a bound value or into the focused input." />
+
+<DemoPage Name="VirtualKeyboard"
+          SecondaryNames="@(["OnScreenKeyboard", "TouchKeyboard", "SoftKeyboard"])"
+          Description="BitVirtualKeyboard is an on-screen keyboard for touch screens, kiosks and points of sale. Its layouts are data: the built-in language layouts (English, Persian, Arabic, Hebrew, German, French, Spanish, Russian, Turkish) in a Full and a Compact form, the purpose pads (phone, PIN, decimal, calculator, POS, ...), or a layout of your own written in a one-line-per-row shorthand, as objects or as JSON. It types into a bound Value, into one input, or into whichever opted-in input has the focus, and its keys act in the browser, so typing never waits for a round trip."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          PublicMembers="componentPublicMembers"
+          CssVariables="componentCssVariables"
+          GitHubExtrasUrl="VirtualKeyboard/BitVirtualKeyboard.razor"
+          GitHubDemoUrl="Extras/VirtualKeyboard/BitVirtualKeyboardDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            Typing into an input, the keyboard keeps the focus in it, sets its inputmode to none so the device's own keyboard
+            stays away (and puts it back after), types at the caret and fires the input and change events @@bind listens to.
+            A type="text" input with an inputmode is a better target than type="number" or type="email", whose selection the
+            browser does not expose.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
+            <div>
+                With no input to type into, the keyboard types into its own <b>Value</b>; bind it. Its keys are then a grid the
+                keyboard focus moves through with the arrow keys.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitVirtualKeyboard @bind-Value="basicValue" />
+                <div>Value: @basicValue</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Target" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
+            <div>
+                <b>Target</b> is the input or textarea the keyboard types into. An @@ref taken in the same render reaches the
+                keyboard on the next one, so the page renders once more after its first render.
+            </div>
+            <br />
+            <div class="example-content">
+                <input @ref="targetInput" @bind="targetValue" @bind:event="oninput" placeholder="Type with the keys below" />
+                <div>Value: @targetValue</div>
+                <BitVirtualKeyboard Target="targetInput" Form="BitVirtualKeyboardForm.Full" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="FollowFocus" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                With <b>FollowFocus</b> the keyboard types into whichever input carrying a data-bit-vkb attribute has the focus;
+                a <b>Docked</b> one opens as an input gets the focus and closes as it leaves (or on Escape, or its Hide key). The
+                layout follows the input: its type, its inputmode, or the purpose named in data-bit-vkb.
+            </div>
+            <br />
+            <div class="example-content">
+                <input data-bit-vkb placeholder="Text" />
+                <input data-bit-vkb type="tel" placeholder="Phone" />
+                <input data-bit-vkb type="email" placeholder="Email" />
+                <input data-bit-vkb="pin" placeholder="PIN" />
+                <div>Open: @followOpen</div>
+                <BitVirtualKeyboard Mode="BitVirtualKeyboardMode.Docked" FollowFocus @bind-Open="followOpen" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Purpose" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>Purpose</b> picks a pad: Tel, Pin, Numeric, Decimal, SignedDecimal, Calculator, Pos, Hex, Date, Time, Iban,
+                Alphabetic and Atm, or the language layout with the keys of an Email, a Url or a Search.
+            </div>
+            <br />
+            <div class="example-content">
+                <div class="purpose-buttons">
+                    @foreach (var purpose in purposes)
+                    {
+                        <BitButton Size="BitSize.Small" Variant="@(purpose == currentPurpose ? BitVariant.Fill : BitVariant.Outline)" OnClick="() => currentPurpose = purpose">@purpose</BitButton>
+                    }
+                </div>
+                <div class="narrow">
+                    <BitVirtualKeyboard Purpose="currentPurpose" @bind-Value="purposeValue" />
+                </div>
+                <div>Value: @purposeValue</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Languages" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>Language</b> picks a language layout; <b>Languages</b> adds a key that cycles through several. Persian, Arabic
+                and Hebrew keep the grid of the keys as on the hardware and type right to left; Persian has a ZWNJ key.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitVirtualKeyboard Languages="@(["en", "fa", "ar", "he", "de", "ru"])" Form="BitVirtualKeyboardForm.Compact" @bind-Value="languagesValue" />
+                <div dir="auto">Value: @languagesValue</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Form" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                <b>Form</b>: Full is the hardware layout (the number row, every symbol, AltGr and dead keys); Compact is the phone
+                layout (the letters, the symbols on layers of their own); Auto, the default, is Compact under
+                <b>CompactBreakpoint</b> (640px) of the keyboard's own width.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitVirtualKeyboard Language="de" Form="BitVirtualKeyboardForm.Full" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Shorthand layout" RazorCode="@example7RazorCode" CsharpCode="@example7CsharpCode" Id="example7">
+            <div>
+                A layout of your own, one string per row: a key per space-separated token; named keys in braces with an optional
+                width ({bksp*1.5}, {layer:symbols}); any other token types itself.
+            </div>
+            <br />
+            <div class="example-content narrow">
+                <BitVirtualKeyboard Layout="shorthandLayout" @bind-Value="shorthandValue" />
+                <div>Value: @shorthandValue</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Object layout" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                The key bag of a layout gives keys long-press alternates, multitap, dead keys, custom commands (OnCommand) and a
+                tall Enter.
+            </div>
+            <br />
+            <div class="example-content narrow">
+                <BitVirtualKeyboard Layout="objectLayout" @bind-Value="objectValue" OnCommand="args => objectCommand = args.Command" />
+                <div>Value: @objectValue</div>
+                <div>Command: @objectCommand</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Customizing a built-in" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                A built-in layout is customized with a <b>with</b> expression; a collection it changes is copied first, since a
+                <b>with</b> copy shares the collections of the original.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitVirtualKeyboard Layout="customizedLayout" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="JSON layout" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                <b>BitVirtualKeyboardLayout.FromJson</b> reads a layout from JSON, its rows as shorthand strings or objects.
+            </div>
+            <br />
+            <div class="example-content narrow">
+                <BitVirtualKeyboard Layout="jsonLayout" @bind-Value="jsonValue" />
+                <div>Value: @jsonValue</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>OnKeyPress</b> is raised before a key acts and can cancel it or replace what it types (here every letter is
+                typed in upper case and Backspace does nothing); <b>OnLayerChange</b> tells the layer shown.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitVirtualKeyboard Form="BitVirtualKeyboardForm.Compact"
+                                    @bind-Value="eventsValue"
+                                    OnKeyPress="HandleKeyPress"
+                                    OnLayerChange="layer => eventsLayer = layer" />
+                <div>Value: @eventsValue</div>
+                <div>Layer: @eventsLayer</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Secure & Scramble" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <b>Secure</b> shows nothing of a press and gives OnKeyPress and OnInput no typed text; a bound <b>Value</b> still
+                takes what is typed, through ValueChanged. <b>Scramble</b> shuffles the digit keys. Both are weak against screen capture: a way to keep a PIN from the eyes of someone nearby.
+            </div>
+            <br />
+            <div class="example-content narrow">
+                <BitVirtualKeyboard Purpose="BitVirtualKeyboardPurpose.Pin" Secure Scramble @bind-Value="pinValue" />
+                <div>Length: @(pinValue?.Length ?? 0)</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="KeyTemplate" RazorCode="@example13RazorCode" Id="example13">
+            <div>
+                <b>KeyTemplate</b> renders the content of every key.
+            </div>
+            <br />
+            <div class="example-content narrow">
+                <BitVirtualKeyboard Purpose="BitVirtualKeyboardPurpose.Numeric">
+                    <KeyTemplate>
+                        <b>@context.Label</b>
+                    </KeyTemplate>
+                </BitVirtualKeyboard>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled" RazorCode="@example14RazorCode" Id="example14">
+            <div>
+                A disabled keyboard disables every key.
+            </div>
+            <br />
+            <div class="example-content narrow">
+                <BitVirtualKeyboard Purpose="BitVirtualKeyboardPurpose.Numeric" Disabled />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example15RazorCode" Id="example15">
+            <div>
+                <b>Size</b>: Small keys are 24px high (the smallest WCAG target), Medium 44px, Large 64px for kiosks and gloves.
+            </div>
+            <br />
+            <div class="example-content narrow">
+                <BitVirtualKeyboard Purpose="BitVirtualKeyboardPurpose.Numeric" Size="BitSize.Small" />
+                <BitVirtualKeyboard Purpose="BitVirtualKeyboardPurpose.Numeric" Size="BitSize.Large" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
+            <div>
+                Every part takes classes and styles (<b>Classes</b>, <b>Styles</b>), and the look follows the
+                --bit-VirtualKeyboard-* variables.
+            </div>
+            <br />
+            <div class="example-content narrow">
+                <BitVirtualKeyboard Purpose="BitVirtualKeyboardPurpose.Numeric"
+                                    Style="--bit-VirtualKeyboard-radius: 999px; --bit-VirtualKeyboard-background: transparent"
+                                    Styles="@(new() { PrimaryKey = "background: seagreen" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
+            <div>
+                Use BitVirtualKeyboard in right-to-left (RTL) pages.
+            </div>
+            <br />
+            <div class="example-content" dir="rtl">
+                <BitVirtualKeyboard Dir="BitDir.Rtl" Language="fa" Form="BitVirtualKeyboardForm.Compact" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

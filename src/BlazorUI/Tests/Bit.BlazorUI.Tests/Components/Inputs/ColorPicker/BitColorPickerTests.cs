@@ -2169,11 +2169,11 @@ public class BitColorPickerTests : BunitTestContext
     }
 
     // Almost everything the picker tells a screen reader is text it writes rather than text a consumer hands
-    // it, so Texts is what translates the component.
+    // it, so Strings is what translates the component.
     [TestMethod]
-    public void BitColorPickerShouldRespectTexts()
+    public void BitColorPickerShouldRespectStrings()
     {
-        var texts = new BitColorPickerTexts
+        var strings = new BitColorPickerStrings
         {
             SaturationAreaLabel = "Sättigung und Helligkeit",
             SaturationAreaRoleDescription = "2D-Regler",
@@ -2193,7 +2193,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Texts, texts);
+            parameters.Add(p => p.Strings, strings);
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowAlphaSlider, true);
             parameters.Add(p => p.Presets, ["#FF0000"]);
@@ -2224,13 +2224,13 @@ public class BitColorPickerTests : BunitTestContext
 
     // A translation belongs to the application rather than to one picker in it.
     [TestMethod]
-    public void BitColorPickerShouldTakeItsTextsFromTheCascade()
+    public void BitColorPickerShouldTakeItsStringsFromTheCascade()
     {
         var paramsList = new List<IBitComponentParams>
         {
             new BitColorPickerParams
             {
-                Texts = new BitColorPickerTexts { SaturationAreaLabel = "Saturation et luminosité" }
+                Strings = new BitColorPickerStrings { SaturationAreaLabel = "Saturation et luminosité" }
             }
         };
 

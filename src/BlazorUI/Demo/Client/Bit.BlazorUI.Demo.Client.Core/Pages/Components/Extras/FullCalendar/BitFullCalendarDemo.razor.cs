@@ -299,21 +299,21 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
+            Name = "Strings",
+            Type = "BitFullCalendarStrings",
+            DefaultValue = "new()",
+            Description = "Custom UI strings for labels, placeholders, action buttons, aria labels, and validation messages.",
+            LinkType = LinkType.Link,
+            Href = "#strings-class",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitFullCalendarClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for the different parts of the calendar.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
-        },
-        new()
-        {
-            Name = "Texts",
-            Type = "BitFullCalendarTexts",
-            DefaultValue = "new()",
-            Description = "Custom UI strings for labels, placeholders, action buttons, aria labels, and validation messages.",
-            LinkType = LinkType.Link,
-            Href = "#texts-class",
         },
         new()
         {
@@ -687,8 +687,8 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
-            Id = "texts-class",
-            Title = "BitFullCalendarTexts",
+            Id = "strings-class",
+            Title = "BitFullCalendarStrings",
             Description = "Custom UI strings for labels, placeholders, action buttons, aria labels, and validation messages. Used for localization and customization of all built-in text.",
             Parameters =
             [
@@ -1299,7 +1299,7 @@ public partial class BitFullCalendarDemo
 
 
 
-    private readonly BitFullCalendarTexts persianTexts = new()
+    private readonly BitFullCalendarStrings persianStrings = new()
     {
         // View & mode tabs
         ViewDay = "روز",

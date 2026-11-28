@@ -31,10 +31,6 @@ jobs:
     name: bink
     uses: ./.github/workflows/ci.bink.yml
 
-  balette:
-    name: balette
-    uses: ./.github/workflows/ci.balette.yml
-
   bbscanner:
     name: bbscanner
     uses: ./.github/workflows/ci.bbscanner.yml

@@ -129,9 +129,6 @@ jobs:
     - name: dotnet pack Brouter.Generators
       run: dotnet pack src/Brouter/Bit.Brouter.Generators/Bit.Brouter.Generators.csproj --output . --configuration Release
 
-    - name: dotnet pack Boilerplate
-      run: dotnet pack src/Templates/Boilerplate/Bit.Boilerplate.ProjectTemplate.csproj --output . --configuration Release
-
     - name: dotnet pack BlazorEmpty
       run: dotnet pack src/Templates/BlazorEmpty/Bit.BlazorEmpty.ProjectTemplate.csproj --output . --configuration Release
 
@@ -272,12 +269,6 @@ jobs:
 
     - name: dotnet pack Bink
       run: dotnet pack src/Utilities/Bink/Bit.Bink/Bit.Bink.csproj --output . --configuration Release
-
-    - name: dotnet build Balette
-      run: dotnet build src/Utilities/Balette/Bit.Balette/Bit.Balette.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-
-    - name: dotnet pack Balette
-      run: dotnet pack src/Utilities/Balette/Bit.Balette/Bit.Balette.csproj --output . --configuration Release
 
     - name: dotnet build BbScanner
       run: dotnet build src/Utilities/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -561,18 +552,6 @@ jobs:
     - name: dotnet pack Minifier
       run: dotnet pack src/Toolings/Minifier/Bit.Minifier/Bit.Minifier.csproj --output . --configuration Release
 
-    - name: dotnet build bit CLI
-      env:
-        BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        BitCliTelemetryConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-      run: dotnet build src/Toolings/Cli/Bit.Cli/Bit.Cli.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-
-    - name: dotnet pack bit CLI
-      env:
-        BitCliBuildRunUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        BitCliTelemetryConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-      run: dotnet pack src/Toolings/Cli/Bit.Cli/Bit.Cli.csproj --output . --configuration Release
-
     - name: build SourceGenerators nupkg file
       run: dotnet build src/Toolings/SourceGenerators/Bit.SourceGenerators/Bit.SourceGenerators.csproj --configuration Release -p:PackageOutputPath=${{ github.workspace }}/
 
@@ -654,11 +633,11 @@ jobs:
         endpoint="${{ vars.CODE_SIGNING_ENDPOINT }}"
         endpoint="${endpoint#https://}"
         cd "$RUNNER_TEMP/assemblies"
-        java -jar "$RUNNER_TEMP/jsign.jar" --storetype TRUSTEDSIGNING --keystore "${endpoint%/}" --storepass env:CODE_SIGNING_TOKEN --alias "${{ vars.CODE_SIGNING_ACCOUNT }}/${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}" --tsaurl http://timestamp.acs.microsoft.com --tsmode RFC3161 '**/Bit.*.dll' '**/bit.dll'
+        java -jar "$RUNNER_TEMP/jsign.jar" --storetype TRUSTEDSIGNING --keystore "${endpoint%/}" --storepass env:CODE_SIGNING_TOKEN --alias "${{ vars.CODE_SIGNING_ACCOUNT }}/${{ vars.CODE_SIGNING_CERTIFICATE_PROFILE }}" --tsaurl http://timestamp.acs.microsoft.com --tsmode RFC3161 '**/Bit.*.dll'
         for package in "$RUNNER_TEMP"/packages/*.nupkg; do
           folder="$RUNNER_TEMP/assemblies/$(basename "$package" .nupkg)"
           [ -d "$folder" ] || continue
-          files=$(cd "$folder" && find . \( -name 'Bit.*.dll' -o -name 'bit.dll' \) -printf '%P\n')
+          files=$(cd "$folder" && find . -name 'Bit.*.dll' -printf '%P\n')
           [ -z "$files" ] || (cd "$folder" && zip -q "$package" $files)
         done
 
@@ -668,7 +647,6 @@ jobs:
         subject-path: |
           ${{ runner.temp }}/packages/*.nupkg
           ${{ runner.temp }}/assemblies/**/Bit.*.dll
-          ${{ runner.temp }}/assemblies/**/bit.dll
 
     # An SPDX list of everything inside the packages, attested below. The tool targets .NET 8, hence --allow-roll-forward.
     - name: Generate the packages' SBOM
@@ -680,7 +658,6 @@ jobs:
         subject-path: |
           ${{ runner.temp }}/packages/*.nupkg
           ${{ runner.temp }}/assemblies/**/Bit.*.dll
-          ${{ runner.temp }}/assemblies/**/bit.dll
         sbom-path: ${{ runner.temp }}/packages/_manifest/spdx_2.2/manifest.spdx.json
 
     - name: Upload artifact

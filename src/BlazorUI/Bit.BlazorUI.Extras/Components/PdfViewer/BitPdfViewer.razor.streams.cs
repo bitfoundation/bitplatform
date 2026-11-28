@@ -130,7 +130,7 @@ public partial class BitPdfViewer
             PreparePages(); // geometry and page tree were resolved by the worker above
             await RenderCurrentPageEagerlyAsync();
             if (IsDisposed || version != _loadVersion) return;
-            _status = string.Format(ActiveTexts.PageCountFormat, _document.PageCount);
+            _status = string.Format(ActiveStrings.PageCountFormat, _document.PageCount);
             _spyPending = true;
             if (_document.Warnings.Count > 0 && OnWarnings.HasDelegate)
             {
@@ -151,7 +151,7 @@ public partial class BitPdfViewer
                 if (owned is not null) await owned.DisposeAsync();
                 if (ReferenceEquals(_streamSource, owned)) _streamSource = null;
             }
-            _status = string.Format(ActiveTexts.ErrorFormat, ex.Message);
+            _status = string.Format(ActiveStrings.ErrorFormat, ex.Message);
             _errorMessage = ex.Message;
             await OnError.InvokeAsync(ex.Message);
         }

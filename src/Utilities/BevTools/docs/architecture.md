@@ -216,7 +216,13 @@ panel is shown, usually after the burst a developer opened it to look at.
 as the `IBevToolsCommandContext` to panels, hosts the refresh loop and the browser bridge, and persists preferences in
 `localStorage`. Panels are plain Blazor components reading the session directly; lists use `Virtualize`; the tree and
 command palette are keyboard-navigable; theme follows `prefers-color-scheme` unless overridden. Extension panels are
-rendered with `DynamicComponent` and can be restricted to a platform (`RequiredPlatform = "Server"`).
+rendered with `DynamicComponent` and can be restricted to a platform (`RequiredPlatform = "Server"`); an application adds
+one without an extension class through `BevToolsOptions.AddPanel<T>`, which wraps it in an internal one-panel extension.
+A panel whose id is a built-in panel's is refused, since the host would show the built-in panel for it: `AddPanel` throws,
+and an extension's such panel is left out with an extension error in About while the rest of its contributions stay. Two
+extensions contributing one id are reported there too; the later one wins. A registered panel's component is BevTools'
+only provisionally at activation: the hierarchy settles it, so an instance the application renders on its own pages is
+the application's (its held-back "created" event is recorded then), and the one under the panel host stays BevTools'.
 
 ### Attaching to a running app (`Bit.BevTools.Loader`, `BevToolsRuntimeAttacher`)
 
@@ -239,6 +245,42 @@ assemblies, else through `LazyAssemblyLoader`), and `BevToolsRuntimeAttacher` cr
 reads the existing components from the renderer's state map, and marks those that already rendered so their next render
 is not reported as their first. The loader's scoped service disposes the session with the scope. Every scope the loader
 opens shares one `BevToolsRegistry`, and with it one service graph, as the sessions of a BevTools registered at startup do.
+
+**One configuration for both paths.** `BevToolsLoaderOptions.ConfigureBevTools` keeps `Action<object>` callbacks: typed
+`object` because nothing the app runs at startup may name `BevToolsOptions`, and safe because a lambda's body is a
+method of its own, compiled (by the WebAssembly interpreter) or resolved only when it first runs - after the load. The
+entry point runs them on the options it registers at startup (`TryAddServices`, after `Forward`; a later
+`AddBitBevToolsLoaderServices` call adds its own callbacks to that registration, counted by
+`BevToolsLoaderContext.StartupConfigurationsApplied`) and `BevToolsRuntimeAttacher.CreateRegistry` on the options of an
+attached session, both restoring `BevToolsOptions.Enabled` afterwards: the loader's policy decides whether BevTools runs,
+and a configuration shared by both paths must not turn one of them on. `BevToolsOptions.ServiceRegistrations` lets an
+integration's options method (`AddBelemetry`) register services next to its extension; `AddBitBevToolsServices`
+applies them, so they reach a startup registration and, necessarily, never an attached session.
+`BevToolsLoaderOptions.AdditionalAssemblies` names assemblies the callbacks need: `TryLoadFromApp` registers at startup
+only when every one is among the app's assemblies, and `LoadAsync` lazy loads the missing ones together with
+`Bit.BevTools`, in one `LazyAssemblyLoader` call.
+
+**Where an app's own BevTools types may live.** The router lists the exported types of the assemblies it routes as the
+app starts; a public type whose base type or interface is in a `Bit.BevTools` that is not loaded yet fails to load
+there and the app does not start (checked in the published sample: a public `.razor` panel inheriting `BevToolsTab`
+keeps it from ever becoming interactive). Internal types, and public types that only name `Bit.BevTools` types in their
+members, are fine. The lazy loading sample holds one of each kind, and its end-to-end suite runs it trimmed and
+AOT-compiled.
+
+**Opening, prefetching, failing.** `OpenAsync(panelId, query)` passes both to `IBevToolsAttachment.Open`, which checks
+the panel against the built-in ids and the registry's panels and calls `BevToolsUiState.Open(panelId, query)`; a panel
+rendered later takes that panel over its saved preference (`PanelRequested`, like `OpenRequested`). `PrefetchAsync`
+runs `LoadAsync` and then `IBevToolsEntryPoint.PrefetchAssetsAsync`, which imports the panel's module by the specifier
+the panel uses (the page's module map answers the panel's own import) and puts its stylesheet into the page as a
+constructed stylesheet in `document.adoptedStyleSheets`, after which the panel renders no link of its own
+(`BevToolsPanel.StylesheetInPage`) - a second request for a `no-cache` asset would fail offline. Not a `<link>` in the
+head: enhanced navigation replaces the head with the server's, removing what a script added there, and the panel would
+lose its styles. Where the browser cannot adopt a stylesheet, the prefetch leaves the flag unset and the panel links the
+stylesheet itself. The WebAssembly runtime keeps a lazy download that failed for the page's life and answers every
+later request for the asset with the same failure, so `LoadAsync` asks `navigator.onLine` first and attempts nothing
+offline; a failure the runtime did see is reported as one a reload retries. `LoadFailedToDownload` tells those apart
+from a project that marks nothing lazy, which the runtime names, and `BevToolsLoader.DownloadFailed` hands it to the
+app.
 
 `BitBevTools.Attach` does the same without the loader and falls back to reflection where the loader has hooks: it
 replaces the renderer's activator (`ComponentFactory._componentActivator`) and wraps the handler of the `HttpClient`
@@ -315,6 +357,52 @@ from the factory's external scope provider. The session is the ambient one (`Bev
 UI event or navigation the current `Activity` descends from - the reason an entry written after a library's
 `ConfigureAwait(false)` on a circuit is still attributed. Blazor's own warnings and errors keep their Errors path, and
 an entry that became an error points at it instead of adding a second timeline row.
+
+### Parts that start before the attach (`BevToolsLoaderOptions.AutoStart`, `Bit.BevTools.Loader/Internal/BevToolsAutoStart*`)
+
+An app that attaches BevTools on demand still wants some things from its first line, logging above all, without the
+rest of BevTools running meanwhile. So a part that can start alone does, inside the loader: trimmable, reflection free,
+in every startup download, and with nothing of `Bit.BevTools` loaded. `BevToolsAutoStart` is a flags enum, so a later
+part is one more flag and one more handover; each part keeps what it collects until the attach, and the session takes
+it over then. Logs are the first:
+
+* **Capture.** `BevToolsAutoStartLogProvider` is a provider of the container (alias `BevTools`, like the session's), so
+  the factory takes it when it is built and the host's filters apply. It takes an entry apart as
+  `BevToolsLoggerProvider` does, within the same bounds, but redacts nothing and reads at no value access: neither
+  exists before a session. This is the one exception to redacting at capture: the redactor's patterns are part of
+  `Bit.BevTools`, and carrying them in the loader would put a regular-expression engine in every startup download. The
+  entries never leave the process's memory unredacted - the importer redacts each one before it reaches the log store,
+  so no panel, export or protocol answer sees it otherwise. Values are kept as themselves only when they are immutable scalars (strings, numbers, dates,
+  enums, `Guid`, `Uri`); anything else as its type, its `ToString` when short and its count (`BevToolsAutoStartLogValue`),
+  so nothing the app logged is kept alive and nothing is shown as it was at the attach rather than when it was logged.
+  BevTools' own work (the `Authorize` callback, the load) and category are skipped; the own-work mark lives in the
+  loader (`BevToolsHooks.BeginOwnWork`), which `BevToolsSessionResolver.BeginBevToolsWork` now uses too.
+* **Owner.** A process that serves one user keeps one bounded buffer, which the first session attached takes. A process
+  that serves many users keeps one per circuit: the loader's activator hook notes the renderer's synchronization context
+  when it creates its first component, and only what is logged on that context is the circuit's - the resolver's first
+  rule, without the ones that need a session. Scopes whose renderers share a context share its buffer, which ends with
+  the last of them. All circuits draw on one budget (ten times `MaxLogs`), which a circuit gives back when its scope
+  ends (DI disposes the hook); once it is spent, the circuit holding the most gives up its oldest entry to one holding
+  fewer, so circuits kept after a disconnect cannot leave a new circuit with nothing. None is kept where the loader
+  allows no attach (`BevToolsAttachPolicy`): a session the app attaches there itself (`BevToolsOptions.Enabled`)
+  vouches for itself only from its attach on. Outside Development, where a session attached on a server reads no
+  values, the capture reads none either: no formatter, `ToString`, count or exception message runs - an entity whose
+  `ToString` lazy loads costs nothing - only the names of the state's and scopes' pairs are read, and the entry is
+  `ValuesRead = false`, shown as under None whatever the session reads. A provider the app removed from its factory
+  (`ClearProviders` after the loader's registration) is never created, which the handover reports instead of an empty
+  buffer. Deciding, noting a circuit and taking
+  over never throw into the app: a failure turns the part off, costs the scope its kept entries, and is reported.
+* **Handover.** `BevToolsAutoStartLogImporter` turns each entry into the record the session's provider would have made,
+  through its inspector now (`BevToolsObjectInspector.DescribeDetached` for kept types and texts, following `Describe`'s
+  rules and showing the type wherever a rule needs the value), and adds them to the log store ahead of anything it
+  records, with the counts of what did not fit. It happens when the session's own provider starts attributing the
+  scope's entries to it - at the attach in a single-user process, once a panel attaches it to its renderer on a
+  circuit. Taking the buffer stops the loader keeping more, so none is kept twice; the session's provider is added
+  right after, and the slow part, reading the entries, comes after that, under ids reserved when they were taken, so
+  they still sort first. An entry another thread logs in the instant between taking and adding is kept by neither
+  (WebAssembly has no other thread, and on a circuit nothing else runs on its dispatcher). Such an entry is
+  `BeforeAttach`: no sender, UI event, timeline row or Errors entry, since each needs the session at the moment of
+  logging; one timeline row says how many came over.
 
 ### Allocations per render (`BevToolsRenderTracker`, `BevToolsRenderSample`)
 

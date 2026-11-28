@@ -163,8 +163,8 @@ test('stacking offsets follow barHeight/barMargin changes', () => {
 
 test('stacked bars leave room between them for the labels they carry', () => {
     const engine = makeIndexedEngine([
-        alloc('a', 'r0', 0, 100, { textAbove: 'A', textBelow: '1h' }),
-        alloc('b', 'r0', 50, 150, { textAbove: 'B', textBelow: '1h' })
+        alloc('a', 'r0', 0, 100, { texts: { topCenter: { text: 'A' }, bottomCenter: { text: '1h' } } }),
+        alloc('b', 'r0', 50, 150, { texts: { topCenter: { text: 'B' }, bottomCenter: { text: '1h' } } })
     ]);
     const c = engine.config;
     // Lower bound on what one label needs beside a bar: its gap plus the font's
@@ -191,7 +191,7 @@ test('stacked bars leave room between them for the labels they carry', () => {
 test('clearance is reserved only on the side carrying the decoration', () => {
     const engine = makeIndexedEngine([
         alloc('a', 'r0', 0, 100),
-        alloc('b', 'r0', 50, 150, { textBelow: 'below' })
+        alloc('b', 'r0', 50, 150, { texts: { bottomCenter: { text: 'below' } } })
     ]);
     const c = engine.config;
     const [first, second] = engine.allocations.map(a => engine._stackOffset(a));
@@ -217,8 +217,8 @@ test('an icon above a stacked bar reserves its box, loaded or not', () => {
 
 test('turning stackLabelClearance off collapses the stack again', () => {
     const engine = makeIndexedEngine([
-        alloc('a', 'r0', 0, 100, { textAbove: 'A' }),
-        alloc('b', 'r0', 50, 150, { textAbove: 'B' })
+        alloc('a', 'r0', 0, 100, { texts: { topCenter: { text: 'A' } } }),
+        alloc('b', 'r0', 50, 150, { texts: { topCenter: { text: 'B' } } })
     ]);
     engine.render = () => {};
     engine._syncAxisSplitterChrome = () => {};
@@ -237,8 +237,8 @@ test('turning stackLabelClearance off collapses the stack again', () => {
 // them. At one pixel per minute the gap is 8px and each label is 35px wide.
 const MINUTE = 60000;
 const NEIGHBOURS = [
-    alloc('a', 'r0', 0, 60 * MINUTE, { textStart: '13:03', textEnd: '14:00' }),
-    alloc('b', 'r0', 68 * MINUTE, 128 * MINUTE, { textStart: '15:12', textEnd: '16:12' })
+    alloc('a', 'r0', 0, 60 * MINUTE, { texts: { start: { text: '13:03' }, end: { text: '14:00' } } }),
+    alloc('b', 'r0', 68 * MINUTE, 128 * MINUTE, { texts: { start: { text: '15:12' }, end: { text: '16:12' } } })
 ];
 
 function lanesOf(engine) {

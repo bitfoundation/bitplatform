@@ -324,6 +324,24 @@ describe('companion', () => {
         expect(detail).toContain('Checkout.PayAsync');
         expect(detail).toContain('OrderId=42');
         expect(detail).toContain('4bf92f3577b34da6a3ce929d0e0e4736');
+        expect(detail, 'an entry the session recorded itself').not.toContain('before BevTools was attached');
+        companion.stop();
+    });
+
+    it('says an entry was captured before the attach, and that its sender is not known rather than absent', async () => {
+        const { Companion, FileSource } = await loadCompanion();
+        const doc = session(9, 'WebAssembly', [counter]);
+        doc.logCounts = { Information: 1 };
+        doc.logs = [{ id: 1, at: new Date().toISOString(), level: 'Information', category: 'Shop.Startup', eventId: 0, message: 'Seeded 3 orders', messageTemplate: 'Seeded {Count} orders', properties: { Count: '3' }, beforeAttach: true }];
+        const companion = new Companion(new FileSource(doc, 'export.json'), document.body);
+        await companion.start();
+        await flush();
+
+        [...document.querySelectorAll('.bc-tab')].find(t => t.textContent.startsWith('Logs')).click();
+        [...document.querySelectorAll('tr')].find(r => r.textContent.includes('Seeded 3 orders')).click();
+        const detail = document.querySelector('.bc-right').textContent;
+        expect(detail).toContain('before BevTools was attached, by Bit.BevTools.Loader');
+        expect(detail).toContain('not known: written before BevTools was attached');
         companion.stop();
     });
 });

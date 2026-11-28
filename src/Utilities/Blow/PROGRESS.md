@@ -272,7 +272,7 @@ Verified with the existing tests that cover them.
 | INT-01 | Graph diff that is also a patch | P2 | Verified (R14) | `BlowGraphDiff.Compare/Invert/ApplyTo` (DiffAndInterchangeTests; demo `/examples/diagram-formats`) | - | Done |
 | INT-02 | Mermaid, DOT and GraphML interchange, safe on hostile input | P2 | Verified (R14) | `BlowMermaidFormat` (in/out), `BlowDotFormat` (out), `BlowGraphMLFormat` (in/out) (DiffAndInterchangeTests; RoundFourteenReviewTests: linear-time reading, depth limits, no recursion, XML-safe output, DTDs refused) | DOT import left out (see round 14) | Done |
 | INT-03 | Selection commands: upstream, downstream, connected, members, invert | P2 | Verified (R14) | `BlowSelection` (SelectionHelperTests) | - | Done |
-| INT-04 | Ecosystem adapters (Bcrdt, Blex, BlazeDb, Bdnd, Borm, BevTools, Balette, Bink, Bmotion, Butil, Brouter, Bheadless) | P2 | Open | The core hooks exist (remote edits and `Rebase`, `OnGraphChanged`, `BlowGraphDiff` as a patch, registry `Metadata`, run events) | One optional package per integration, Bcrdt first, after reviewing its API | - |
+| INT-04 | Ecosystem adapters (Bcrdt, Blex, BlazeDb, Bdnd, Borm, BevTools, Bink, Bmotion, Butil, Brouter, Bheadless; and BlazorUI's BitCommandPalette) | P2 | Open | The core hooks exist (remote edits and `Rebase`, `OnGraphChanged`, `BlowGraphDiff` as a patch, registry `Metadata`, run events) | One optional package per integration, Bcrdt first, after reviewing its API | - |
 | INT-05 | PNG export | P3 | Open | SVG export exists (SER-06) | Rasterize the SVG export in the browser | - |
 
 ## Round log
@@ -888,8 +888,8 @@ the round did about it:
 | Phase 5.2, interaction-mode registry | Not adopted | The canvas's flags (`PanOnDrag`, `SelectionOnDrag`, `NodesConnectable`, `ConnectOnClick`, read-only) already make the modes; a registry would be a second way to say the same thing. |
 | Phase 3.2, rotatable nodes; Phase 4.1, edge bundling | Not adopted | No use in node editors that justifies breaking handle and routing geometry. |
 | Phase 8.4, PDF and PNG export | Deferred | PDF needs a dependency; PNG needs the browser to rasterize the SVG export - small, but browser-only and untestable headless; next round. |
-| Phase 9 / 13, ecosystem integrations (Bcrdt, Blex, BlazeDb, Bdnd, Borm, BevTools, Balette, Bink, Bmotion, Butil, Brouter, Bheadless) | Deferred, with the core hooks in place | Each is a package of its own with its own dependency and CI. The core now has what they would stand on: `EditAsync(..., origin: Remote, recordHistory: false)` and `Rebase` (round 5) for remote edits, `BlowGraphDiff` as a patch, `OnGraphChanged` for a store, registry `Metadata` for a Borm schema, run events for BevTools. Bcrdt first, after a review of its API. |
-| Phase 12.3, command system | Deferred | The keys are already parameters; a command registry is worth doing with the Balette integration, not before. |
+| Phase 9 / 13, ecosystem integrations (Bcrdt, Blex, BlazeDb, Bdnd, Borm, BevTools, Bink, Bmotion, Butil, Brouter, Bheadless; and BlazorUI's BitCommandPalette) | Deferred, with the core hooks in place | Each is a package of its own with its own dependency and CI. The core now has what they would stand on: `EditAsync(..., origin: Remote, recordHistory: false)` and `Rebase` (round 5) for remote edits, `BlowGraphDiff` as a patch, `OnGraphChanged` for a store, registry `Metadata` for a Borm schema, run events for BevTools. Bcrdt first, after a review of its API. |
+| Phase 12.3, command system | Deferred | The keys are already parameters; a command registry is worth doing with the BitCommandPalette (Bit.BlazorUI.Extras) integration, not before. |
 | Phase 10.4, 50,000-node targets | Not changed | PERF-08 (a drag frame at 900 nodes on WebAssembly) is still the limiting item; culling and level of detail exist. |
 
 Implemented:

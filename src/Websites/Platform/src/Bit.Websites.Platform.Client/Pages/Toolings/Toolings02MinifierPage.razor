@@ -93,8 +93,8 @@
         <div class="section-card-txt">
             <BitText Typography="BitTypography.H5" Gutter>Reading a stack trace</BitText>
             Every publish writes a map of the names it changed to <code>obj/&lt;configuration>/&lt;tfm>/bit-minifier.map</code>.
-            The <BitLink Href="@Urls.Cli">bit CLI</BitLink> reads a stack trace your app logged back into the names its source has, without installing anything:
-            <CodeBox>dnx Bit.Cli --version 11.0.0-pre-23 -- decode bit-minifier.map trace.txt</CodeBox>
+            <BitLink Href="@Urls.BitFabricCli" Target="_blank">bit CLI</BitLink>, bit Fabric's command line, reads a stack trace your app logged back into the names its source has, without installing anything:
+            <CodeBox>dnx Bit.Cli --prerelease -- decode bit-minifier.map trace.txt</CodeBox>
             turns
             <CodeBox HideCopyButton>   at _aN+_a.MoveNext()
    at Microsoft.Extensions.DependencyInjection._aD.ah[a,b](IServiceCollection services)</CodeBox>
@@ -109,4 +109,4 @@
     </section>
 </div>
 
-<NavigationButtons Prev="bit CLI" PrevUrl="@Urls.Cli" Next="BlazorES2019" NextUrl="@Urls.BlazorES2019" />
+<NavigationButtons Next="BlazorES2019" NextUrl="@Urls.BlazorES2019" />

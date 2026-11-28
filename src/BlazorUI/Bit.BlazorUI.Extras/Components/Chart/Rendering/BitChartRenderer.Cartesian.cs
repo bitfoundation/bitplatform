@@ -375,12 +375,19 @@ public sealed partial class BitChartRenderer
         if (Math.Abs(tk.Rotation) > 1e-3) return tk.Rotation;     // explicit rotation wins
         if (tk.MaxRotation <= 0 || scale.Ticks.Count == 0) return 0;
 
+        // Only the ticks that draw a label share the width: a tick whose label a callback blanked out takes none, and
+        // counting it would narrow the band and slant labels that do not collide.
         double maxLabel = 0;
+        int labelled = 0;
         foreach (var t in scale.Ticks)
+        {
+            if (t.Minor || string.IsNullOrEmpty(t.Label)) continue;
+            labelled++;
             maxLabel = Math.Max(maxLabel, BitChartTextMeasure.Width(t.Label, tk.Font.Size, tk.Font.Weight));
+        }
         if (maxLabel <= 0) return 0;
 
-        double band = availWidth / Math.Max(1, scale.Ticks.Count);
+        double band = availWidth / Math.Max(1, labelled);
         // Labels that fit still honour MinRotation, which is how a caller asks for slanted labels
         // unconditionally rather than only once they collide.
         if (maxLabel <= band * 0.95) return Math.Clamp(tk.MinRotation, 0, tk.MaxRotation);

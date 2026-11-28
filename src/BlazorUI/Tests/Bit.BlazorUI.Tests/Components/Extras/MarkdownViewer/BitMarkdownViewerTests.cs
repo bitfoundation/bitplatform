@@ -2765,12 +2765,12 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldWriteItsOwnWordsFromTheConfiguredTexts()
+    public void BitMarkdownViewerShouldWriteItsOwnWordsFromTheConfiguredStrings()
     {
         var pipeline = new BitMarkdownPipelineBuilder()
             .UseGitHubFlavored()
             .UseAutoIdentifiers(anchorLinks: true)
-            .UseTexts(new BitMarkdownTexts
+            .UseStrings(new BitMarkdownStrings
             {
                 AlertWarning = "Achtung",
                 Footnotes = "Fußnoten",
@@ -2797,11 +2797,11 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldNameAnInteractiveTaskFromTheConfiguredTexts()
+    public void BitMarkdownViewerShouldNameAnInteractiveTaskFromTheConfiguredStrings()
     {
         var pipeline = new BitMarkdownPipelineBuilder()
             .UseTaskLists()
-            .UseTexts(new BitMarkdownTexts { Task = "Aufgabe {0}" })
+            .UseStrings(new BitMarkdownStrings { Task = "Aufgabe {0}" })
             .Build();
 
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
@@ -2816,7 +2816,7 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldWriteEnglishWhenNoTextsAreConfigured()
+    public void BitMarkdownViewerShouldWriteEnglishWhenNoStringsAreConfigured()
     {
         var component = RenderComponent<BitMarkdownViewer>(parameters =>
         {
@@ -2942,11 +2942,11 @@ public class BitMarkdownViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMarkdownViewerShouldKeepTheConfiguredTextsWhenATemplateIsSupplied()
+    public void BitMarkdownViewerShouldKeepTheConfiguredStringsWhenATemplateIsSupplied()
     {
         var pipeline = new BitMarkdownPipelineBuilder()
             .UseAlerts()
-            .UseTexts(new BitMarkdownTexts { AlertNote = "Hinweis" })
+            .UseStrings(new BitMarkdownStrings { AlertNote = "Hinweis" })
             .Build();
 
         // Supplying a template gives the viewer a renderer of its own, which used to be built

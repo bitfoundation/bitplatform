@@ -270,7 +270,7 @@
     {
         var filter = BevToolsQueryFilter.Parse(Query);
         _visibleRoutes = _snapshot.Routes
-            .Where(r => filter.Terms.Count == 0 || filter.MatchesText(string.Join(" ", r.Templates), r.PageType, string.Join(" ", r.Authorization), r.RenderMode ?? "", r.Layout ?? ""))
+            .Where(r => !filter.HasText || filter.MatchesText(string.Join(" ", r.Templates), r.PageType, string.Join(" ", r.Authorization), r.RenderMode ?? "", r.Layout ?? ""))
             .ToList();
     }
 
