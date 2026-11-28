@@ -56,6 +56,9 @@ public partial class BitCarousel : BitComponentBase
     private string _prevButtonStyle = string.Empty;
     private readonly List<BitCarouselItem> _allItems = [];
 
+    // The navigation state OnNavigationStateChange last reported, which starts out as that of a carousel with no pages.
+    private (bool CanGoPrev, bool CanGoNext, int CurrentPage, int PagesCount) _reportedNavigationState;
+
     // What the items read off Classes and Styles for their own class and style strings, when they last built them.
     private (string?, string?, string?, string?) _lastItemClassStyles;
     private ElementReference _carouselContainer = default!;
@@ -178,6 +181,27 @@ public partial class BitCarousel : BitComponentBase
     [Parameter] public bool AutoPlayReverse { get; set; }
 
     /// <summary>
+    /// Moves the next/prev buttons out of the slides to one of their sides: Bottom, Top, Start or End. Left unset, they
+    /// sit over the edges of the slides.
+    /// </summary>
+    /// <remarks>
+    /// On the side the dots are on (<see cref="DotsPlacement"/>, Bottom by default) the buttons join the row of the dots
+    /// and flank them, the previous button before the dots and the next one after them, and they hold that row on their
+    /// own while the dots are hidden (<see cref="HideDots"/>). On any other side they get a row of their own, or a column
+    /// at Start and End, which follow the reading direction like the dots do. A row of their own on a side that comes
+    /// before the dots (Top, then Start, then End, then Bottom) also takes the play/pause button (<see cref="ShowPlayPause"/>),
+    /// so the keyboard reaches the controls in the order they are laid out in, the play/pause button first. Every other
+    /// value (Left, Right, Center and the two combined values) keeps them over the edges of the slides.
+    /// <br />
+    /// Outside the slides, a button at the end it cannot move any further towards keeps its room and only turns
+    /// invisible, so the dots beside it do not shift, and both buttons are left out while there is a single page. The
+    /// space between the slides and the buttons is the <c>--bit-Carousel-dots-margin</c> CSS variable, and
+    /// <c>--bit-Carousel-button-width</c>, the hit area of a button stretched along an edge of the slides, does not apply.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitPlacement? ButtonsPlacement { get; set; }
+
+    /// <summary>
     /// Items of the carousel.
     /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
@@ -232,6 +256,9 @@ public partial class BitCarousel : BitComponentBase
     /// so they follow the direction of the carousel; that suits a <see cref="Vertical"/> carousel. Every other
     /// value (Left, Right, Center and the two combined values) renders the default. The space between the
     /// slides and the dots is the <c>--bit-Carousel-dots-margin</c> CSS variable.
+    /// <br />
+    /// The next/prev buttons join the dots on their side when <see cref="ButtonsPlacement"/> names the same one, and
+    /// take the play/pause button into their own row when they are placed on a side that comes before the dots.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitPlacement? DotsPlacement { get; set; }
@@ -294,7 +321,8 @@ public partial class BitCarousel : BitComponentBase
     /// <see cref="InfiniteScrolling"/> is enabled. A button that hides itself this way hands its keyboard
     /// focus over to the other one (or to the carousel), so the focus is never dropped on the page.
     /// </remarks>
-    [Parameter] public bool HideNextPrev { get; set; }
+    [Parameter, ResetClassBuilder]
+    public bool HideNextPrev { get; set; }
 
     /// <summary>
     /// If enabled the carousel items will navigate in an infinite loop (first item comes after last item and last item comes before first item).
@@ -378,6 +406,19 @@ public partial class BitCarousel : BitComponentBase
     /// The provided value is the zero based index of the page the carousel moved to.
     /// </remarks>
     [Parameter] public EventCallback<int> OnChange { get; set; }
+
+    /// <summary>
+    /// The event that will be called when the navigation state of the carousel changes: <see cref="CanGoNext"/>,
+    /// <see cref="CanGoPrev"/>, <see cref="CurrentPage"/> or <see cref="PagesCount"/>.
+    /// </summary>
+    /// <remarks>
+    /// It is what keeps the controls a page draws for the carousel itself (a pair of buttons disabled at the ends, a
+    /// pager) in step with it. Unlike <see cref="OnChange"/>, which reports the moves alone, it is also called once the
+    /// carousel is first laid out, which is when that state is first known, and when a re-layout changes it without a
+    /// move (a resize across a breakpoint, a slide added or removed). It is called after the carousel has rendered the
+    /// new state, and a handler of the page, even one that does nothing (<c>StateHasChanged</c>), renders the page again.
+    /// </remarks>
+    [Parameter] public EventCallback OnNavigationStateChange { get; set; }
 
     /// <summary>
     /// The accessible label of the play/pause button while the auto scrolling is running.
@@ -505,9 +546,10 @@ public partial class BitCarousel : BitComponentBase
     /// Renders a play/pause button next to the dots, so the auto scrolling can be stopped and started again.
     /// </summary>
     /// <remarks>
-    /// Only rendered while <see cref="AutoPlay"/> is enabled. Offering this control is what the "pause,
-    /// stop, hide" success criterion of WCAG asks of any content that moves on its own for more than five
-    /// seconds, so turn it on for a carousel that carries meaningful content.
+    /// Only rendered while <see cref="AutoPlay"/> is enabled. It moves to the row of the next/prev buttons when
+    /// <see cref="ButtonsPlacement"/> puts that row on a side that comes before the dots. Offering this control
+    /// is what the "pause, stop, hide" success criterion of WCAG asks of any content that moves on its own for
+    /// more than five seconds, so turn it on for a carousel that carries meaningful content.
     /// </remarks>
     [Parameter] public bool ShowPlayPause { get; set; }
 
@@ -615,6 +657,28 @@ public partial class BitCarousel : BitComponentBase
     [Parameter] public bool Wheel { get; set; }
 
 
+
+    /// <summary>
+    /// Whether the carousel can move to a page after the one it is showing, which is when its next button is shown.
+    /// </summary>
+    /// <remarks>
+    /// It is always true while <see cref="InfiniteScrolling"/> is enabled and the carousel has more than one page, since
+    /// its last page is followed by the first one, and false while it has a single page or none (before it is laid out).
+    /// It does not account for <see cref="BitComponentBase.Disabled"/>, under which no move is made at all.
+    /// <see cref="OnNavigationStateChange"/> reports every change of it.
+    /// </remarks>
+    public bool CanGoNext => _pagesCount > 1 && (InfiniteScrolling || (_currentIndices.Length > 0 && _currentIndices[^1] < _allItems.Count - 1));
+
+    /// <summary>
+    /// Whether the carousel can move to a page before the one it is showing, which is when its previous button is shown.
+    /// </summary>
+    /// <remarks>
+    /// It is always true while <see cref="InfiniteScrolling"/> is enabled and the carousel has more than one page, since
+    /// its first page is preceded by the last one, and false while it has a single page or none (before it is laid out).
+    /// It does not account for <see cref="BitComponentBase.Disabled"/>, under which no move is made at all.
+    /// <see cref="OnNavigationStateChange"/> reports every change of it.
+    /// </remarks>
+    public bool CanGoPrev => _pagesCount > 1 && (InfiniteScrolling || (_currentIndices.Length > 0 && _currentIndices[0] > 0));
 
     /// <summary>
     /// The zero based index of the page the carousel is currently showing.
@@ -812,6 +876,8 @@ public partial class BitCarousel : BitComponentBase
             _ => string.Empty
         });
 
+        ClassBuilder.Register(GetButtonsPlacementClass);
+
         // Size, Accent and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
         // from a choice: the public --bit-Carousel-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-csl"));
@@ -927,6 +993,9 @@ public partial class BitCarousel : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The navigation state this render put on screen, which is the one OnNavigationStateChange may report below.
+        var renderedNavigationState = NavigationState;
+
         if (firstRender)
         {
             _dotnetObj = DotNetObjectReference.Create(this);
@@ -1006,6 +1075,8 @@ public partial class BitCarousel : BitComponentBase
 
             await focusTarget.FocusSafelyAsync();
         }
+
+        await ReportNavigationState(renderedNavigationState);
 
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -1239,7 +1310,15 @@ public partial class BitCarousel : BitComponentBase
 
         _laidOutItemsCount = itemsCount;
 
+        var hadPages = _pagesCount > 1;
+
         _pagesCount = CalculatePagesCount(itemsCount, visible, scroll);
+
+        // The root only lays a row of buttons of their own out (GetButtonsPlacementClass) while there is a page to go to.
+        if (hadPages != _pagesCount > 1)
+        {
+            ClassBuilder.Reset();
+        }
 
         // The dots are only rendered while there is more than one page, one per page, so the references
         // of the dots the new count no longer renders are let go of rather than kept pointing at nothing.
@@ -1410,34 +1489,90 @@ public partial class BitCarousel : BitComponentBase
         return (icon is { IsEmpty: false } || iconName.HasValue()) ? "bit-csl-mir" : null;
     }
 
+    // A button is shown exactly while the carousel can move its way, which is also what CanGoNext and CanGoPrev tell a
+    // page: a carousel with a single page has nowhere to go, so neither button is of any use on it.
     private void SetNavigationButtonsVisibility()
     {
-        var itemsCount = _allItems.Count;
-
-        var atStart = InfiniteScrolling is false && (_currentIndices.Length == 0 || _currentIndices[0] <= 0);
-        var atEnd = InfiniteScrolling is false && (_currentIndices.Length == 0 || _currentIndices[^1] >= itemsCount - 1);
-
-        // A carousel with a single page has nowhere to go, so neither button is of any use on it.
-        var single = _pagesCount < 2;
-
-        _nextButtonStyle = (single || atEnd) ? "display:none" : string.Empty;
-        _prevButtonStyle = (single || atStart) ? "display:none" : string.Empty;
+        _nextButtonStyle = CanGoNext ? string.Empty : "display:none";
+        _prevButtonStyle = CanGoPrev ? string.Empty : "display:none";
     }
 
-    private bool CanGoNext()
+    // Over the slides a button at an end it cannot move any further towards is taken out of the layout; in a row of
+    // controls (ButtonsPlacement) it keeps its room, so the dots beside it do not shift, and is only made invisible -
+    // which takes it out of the tab sequence and the accessibility tree all the same.
+    private static string GetButtonStyle(string hideStyle, bool outsideSlides)
     {
-        if (_allItems.Count == 0) return false;
-        if (InfiniteScrolling) return true;
-
-        return _currentIndices.Length > 0 && _currentIndices[^1] < _allItems.Count - 1;
+        return outsideSlides && hideStyle.HasValue() ? "visibility:hidden" : hideStyle;
     }
 
-    private bool CanGoPrev()
-    {
-        if (_allItems.Count == 0) return false;
-        if (InfiniteScrolling) return true;
+    // The side ButtonsPlacement moves the next/prev buttons to, or null for the edges of the slides they sit over.
+    private BitPlacement? ButtonsSide => ButtonsPlacement is BitPlacement.Top or BitPlacement.Bottom or BitPlacement.Start or BitPlacement.End
+                                         ? ButtonsPlacement
+                                         : null;
 
-        return _currentIndices.Length > 0 && _currentIndices[0] > 0;
+    // The side the dots (and the play/pause button) are on, Bottom for every value DotsPlacement does not honour.
+    private BitPlacement DotsSide => DotsPlacement is BitPlacement.Top or BitPlacement.Start or BitPlacement.End
+                                     ? DotsPlacement.Value
+                                     : BitPlacement.Bottom;
+
+    // Whether a row on the first side is laid out before one on the second in the reading order of the grid of the root:
+    // the Top row, then the Start and End columns beside the slides, then the Bottom row.
+    private static bool IsBeforeInReadingOrder(BitPlacement side, BitPlacement other)
+    {
+        return GetReadingRank(side) < GetReadingRank(other);
+
+        static int GetReadingRank(BitPlacement placement) => placement switch
+        {
+            BitPlacement.Top => 0,
+            BitPlacement.Start => 1,
+            BitPlacement.End => 2,
+            _ => 3
+        };
+    }
+
+    // On the side of the dots the buttons join their row, which asks nothing of the root. On another side they get a row
+    // of their own (bit-csl-bcn), and the root lays the slides and the two rows out on a grid (bit-csl-bsep), so the two
+    // rows can sit on sides of different axes.
+    // It follows the condition the markup renders that row on, so a carousel whose buttons are hidden (HideNextPrev) or
+    // left out (a single page) keeps the layout of its root.
+    private string GetButtonsPlacementClass()
+    {
+        var side = ButtonsSide;
+
+        if (HideNextPrev || _pagesCount <= 1 || side is null || side == DotsSide) return string.Empty;
+
+        return side switch
+        {
+            BitPlacement.Top => "bit-csl-bsep bit-csl-btop",
+            BitPlacement.Start => "bit-csl-bsep bit-csl-bstr",
+            BitPlacement.End => "bit-csl-bsep bit-csl-bend",
+            _ => "bit-csl-bsep bit-csl-bbot"
+        };
+    }
+
+    private (bool CanGoPrev, bool CanGoNext, int CurrentPage, int PagesCount) NavigationState => (CanGoPrev, CanGoNext, _currentPage, _pagesCount);
+
+    // The state is reported once the carousel has rendered it, whatever changed it - a move, the first layout, or a
+    // re-layout - and only when it did change, so the render of the page the report causes does not report it again. A
+    // state that changed after the render (the first layout, a re-layout or a SelectedPage move done in
+    // OnAfterRenderAsync) is not on screen yet, so it is left to the render it asks for, which reports it.
+    private async Task ReportNavigationState((bool CanGoPrev, bool CanGoNext, int CurrentPage, int PagesCount) renderedState)
+    {
+        if (IsDisposing) return;
+
+        var state = NavigationState;
+
+        if (state != renderedState)
+        {
+            StateHasChanged();
+            return;
+        }
+
+        if (_reportedNavigationState == state) return;
+
+        _reportedNavigationState = state;
+
+        await OnNavigationStateChange.InvokeAsync();
     }
 
     // The moves the physical gestures ask for (an arrow key, a drag, a sideways scroll), named after the way the view
@@ -2160,7 +2295,7 @@ public partial class BitCarousel : BitComponentBase
 
                 var forward = AutoPlayReverse is false;
 
-                if (forward ? CanGoNext() : CanGoPrev())
+                if (forward ? CanGoNext : CanGoPrev)
                 {
                     await (forward ? Next() : Prev());
                 }

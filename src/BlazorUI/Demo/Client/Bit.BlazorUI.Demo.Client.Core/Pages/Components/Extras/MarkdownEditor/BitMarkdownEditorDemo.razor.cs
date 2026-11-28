@@ -302,6 +302,15 @@ public partial class BitMarkdownEditorDemo
         },
         new()
         {
+            Name = "Strings",
+            Type = "BitMarkdownEditorStrings?",
+            DefaultValue = "null",
+            Description = "The localized strings of the editor UI (toolbar titles, status bar, find panel, help panel, aria labels). Defaults to English.",
+            LinkType = LinkType.Link,
+            Href = "#strings",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitMarkdownEditorClassStyles?",
             DefaultValue = "null",
@@ -336,15 +345,6 @@ public partial class BitMarkdownEditorDemo
             Type = "int",
             DefaultValue = "1",
             Description = "How many body rows the toolbar's table command inserts, beside its header row.",
-        },
-        new()
-        {
-            Name = "Texts",
-            Type = "BitMarkdownEditorTexts?",
-            DefaultValue = "null",
-            Description = "The localized strings of the editor UI (toolbar titles, status bar, find panel, help panel, aria labels). Defaults to English.",
-            LinkType = LinkType.Link,
-            Href = "#texts",
         },
         new()
         {
@@ -533,7 +533,7 @@ public partial class BitMarkdownEditorDemo
                     Name = "Name",
                     Type = "string",
                     DefaultValue = "string.Empty",
-                    Description = "Stable identifier, handy for tests and custom styling. The names of the default toolbar are also the keys the Texts parameter localizes by.",
+                    Description = "Stable identifier, handy for tests and custom styling. The names of the default toolbar are also the keys the Strings parameter localizes by.",
                 },
                 new()
                 {
@@ -814,9 +814,9 @@ public partial class BitMarkdownEditorDemo
         },
         new()
         {
-            Id = "texts",
-            Title = "BitMarkdownEditorTexts",
-            Description = "The texts of the editor UI. All strings default to English; override individual properties to localize the editor. The counting strings are format templates so the translation controls the word order.",
+            Id = "strings",
+            Title = "BitMarkdownEditorStrings",
+            Description = "The strings of the editor UI. All strings default to English; override individual properties to localize the editor. The counting strings are format templates so the translation controls the word order.",
             Parameters =
             [
                 new()
@@ -1082,10 +1082,10 @@ Paste an image, drop one anywhere on this editor, or pick one with the upload bu
     private string localizationDefaultValue =
 @"# Un éditeur **localisé**
 
-Chaque libellé de l'éditeur vient du paramètre `Texts` :
+Chaque libellé de l'éditeur vient du paramètre `Strings` :
 survolez la barre d'outils, ouvrez la recherche ou lisez la barre d'état.";
 
-    private BitMarkdownEditorTexts frenchTexts = new()
+    private BitMarkdownEditorStrings frenchStrings = new()
     {
         ToolbarAriaLabel = "Mise en forme Markdown",
         EditorAriaLabel = "Éditeur Markdown",

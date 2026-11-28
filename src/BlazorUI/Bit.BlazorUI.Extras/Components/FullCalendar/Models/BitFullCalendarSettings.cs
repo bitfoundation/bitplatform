@@ -87,8 +87,8 @@ public class BitFullCalendarSettings
     public IReadOnlyList<DayOfWeek>? BusinessDays { get; set; }
 
     /// <summary>
-    /// First hour of the business day (0-23). Defaults to <c>9</c>. A value at or above
-    /// <see cref="BusinessEndHour"/> is corrected to one hour below it.
+    /// First hour of the business day (0-23). Defaults to <c>9</c>. When it is at or above
+    /// <see cref="BusinessEndHour"/>, the end is corrected to one hour past it, so the business day is never empty.
     /// </summary>
     public int BusinessStartHour
     {
@@ -98,7 +98,8 @@ public class BitFullCalendarSettings
     private int _businessStartHour = 9;
 
     /// <summary>
-    /// Exclusive last hour of the business day (1-24). Defaults to <c>17</c>.
+    /// Exclusive last hour of the business day (1-24). Defaults to <c>17</c>. A value at or below
+    /// <see cref="BusinessStartHour"/> is corrected to one hour past it.
     /// </summary>
     public int BusinessEndHour
     {
@@ -175,7 +176,7 @@ public class BitFullCalendarSettings
     /// <summary>
     /// Allows two events on the same resource to occupy the same time range. When <c>false</c>, a
     /// drag, resize, or dialog save that would create an overlap is refused and the calendar shows
-    /// the <see cref="BitFullCalendarTexts.EventOverlapMessage"/> notice instead.
+    /// the <see cref="BitFullCalendarStrings.EventOverlapMessage"/> notice instead.
     /// </summary>
     public bool AllowEventOverlap { get; set; } = true;
 

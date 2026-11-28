@@ -409,7 +409,7 @@ public class BitNavBarE2ETests : E2ETestBase
             await Expect(bar).ToHaveAttributeAsync("class", "bit-nbr");
         }
 
-        await Expect(bar.Locator("> ul")).ToHaveCSSAsync("justify-content", justify);
+        await Expect(bar.Locator("> ul")).ToHaveCSSAsync("justify-content", Alignment(justify));
 
         var list = await BoxAsync(bar.Locator("> ul"));
         var first = await BoxAsync(bar.Locator(".bit-nbr-lit").First);

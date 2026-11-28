@@ -1,0 +1,75 @@
+﻿@page "/e2e/command-palette-guards"
+@implements IDisposable
+@inject IBitCommandPaletteService Palette
+
+<PageTitle>BitCommandPalette guards E2E</PageTitle>
+
+@* Guarded commands, whose guards read the role picked on the page: a command refused for a viewer however it is
+   started - from its row, its global shortcut or code - and a guarded page whose guard covers every command under it.
+   Every refusal the service reports is written out with what started it, and so is how often a guarded command ran. *@
+<h1 id="cpl-heading">BitCommandPalette guards</h1>
+
+<BitCommandPaletteCommands Commands="_guardedCommands" />
+
+<BitCommandPalette Id="cpl" />
+
+<E2ESection Id="guards" Title="Guards">
+    <div role="group" aria-label="Signed in as">
+        @foreach (var role in Roles)
+        {
+            <button id="@($"cpl-role-{role}")" type="button" aria-pressed="@(role == _role ? "true" : "false")" @onclick="() => _role = role">@role</button>
+        }
+    </div>
+    <button id="cpl-execute" type="button" @onclick='() => Palette.ExecuteAsync("demo-purge-cache")'>ExecuteAsync("demo-purge-cache")</button>
+    <p id="cpl-refusals" role="status">Refused: @(_refusals.Count == 0 ? "nothing yet" : string.Join(" · ", _refusals)) · ran: @_guardedRuns</p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly string[] Roles = ["viewer", "admin"];
+
+    private string _role = "viewer";
+    private readonly List<string> _refusals = [];
+    private int _guardedRuns;
+    private List<BitCommandPaletteCommand> _guardedCommands = [];
+
+    protected override void OnInitialized()
+    {
+        _guardedCommands =
+        [
+            BitCommandPaletteCmd.New("Purge the cache").Id("demo-purge-cache").Group("This page").Shortcut("Alt+Shift+P")
+                .Keywords("guard", "permission", "security")
+                .Subtitle("Guarded: admins only")
+                .Guard(_ => _role == "admin", "Only admins can purge the cache.")
+                .Handler(_ => Ran("Cache purged.")),
+            BitCommandPaletteCmd.New("Admin tools").Id("demo-admin-tools").Group("This page").Keywords("guard", "permission", "security")
+                .Subtitle("A guarded page: its guard covers every command under it")
+                .Guard(_ => _role == "admin", "Admin tools are for admins.")
+                .Children(
+                    BitCommandPaletteCmd.New("Rotate API keys").Handler(_ => Ran("Keys rotated.")),
+                    BitCommandPaletteCmd.New("Export audit log").Handler(_ => Ran("Audit log exported."))),
+        ];
+
+        Palette.CommandRefused += OnRefused;
+    }
+
+    private Task<BitCommandPaletteCommandResult> Ran(string message)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _guardedRuns++;
+            StateHasChanged();
+        });
+
+        return Task.FromResult(BitCommandPaletteCommandResult.Toast(message));
+    }
+
+    private void OnRefused(object? sender, BitCommandPaletteCommandRefusedEventArgs e) => _ = InvokeAsync(() =>
+    {
+        _refusals.Insert(0, $"{e.Command.Title} ({e.Trigger.ToString().ToLowerInvariant()})");
+        StateHasChanged();
+    });
+
+    public void Dispose() => Palette.CommandRefused -= OnRefused;
+}

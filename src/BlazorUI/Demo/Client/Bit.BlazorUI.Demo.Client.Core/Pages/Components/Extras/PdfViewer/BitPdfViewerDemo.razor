@@ -354,13 +354,13 @@
 
             <DemoExample Title="Localization" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
                 <div>
-                    Every string the viewer shows or announces comes from <b>Texts</b> (a <b>BitPdfViewerTexts</b>); set
+                    Every string the viewer shows or announces comes from <b>Strings</b> (a <b>BitPdfViewerStrings</b>); set
                     only the ones you replace.
                 </div>
                 <br />
                 <BitButton Disabled="localizedSource is not null" OnClick="() => localizedSource = CreateSampleSource()">Load document</BitButton>
                 <br /><br />
-                <BitPdfViewer Source="localizedSource" Height="400px" Texts="germanTexts" />
+                <BitPdfViewer Source="localizedSource" Height="400px" Strings="germanStrings" />
             </DemoExample>
 
             <DemoExample Title="Keyboard & accessibility" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
@@ -393,7 +393,7 @@
 
             <DemoExample Title="Cascading parameters" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
                 <div>
-                    <b>BitParams</b> with a <b>BitPdfViewerParams</b> sets defaults - texts, toolbar, size, zoom, styles -
+                    <b>BitParams</b> with a <b>BitPdfViewerParams</b> sets defaults - strings, toolbar, size, zoom, styles -
                     for every viewer under it. A viewer's own value wins (the second keeps its own toolbar).
                 </div>
                 <br />

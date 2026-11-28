@@ -189,6 +189,33 @@ public sealed class GesturesTests : BmotionPageTest
     }
 
     [TestMethod]
+    [DataRow(false, DisplayName = "ending outside")]
+    [DataRow(true, DisplayName = "ending inside")]
+    public async Task FlickingThePointerInAndOut_NeverLeavesTheHoverStuckPartWay(bool endInside)
+    {
+        await ExpectEventAsync("flick:complete");
+        var (x, y) = await CentreAsync("#flick");
+        await Page.Mouse.MoveAsync(1, 1);
+
+        // In and out again and again, at every pace from within one frame to a few frames - each pointerenter and
+        // pointerleave interrupting the spring the other started, in mid flight.
+        int[] pauses = [0, 5, 16, 30, 8, 45, 2, 60, 12, 24, 0, 35, 70, 3, 18, 50, 10, 28, 1, 40];
+        for (var round = 0; round < 3; round++)
+            foreach (var pause in pauses)
+            {
+                await Page.Mouse.MoveAsync((float)x, (float)y);
+                if (pause > 0) await Page.WaitForTimeoutAsync(pause);
+                await Page.Mouse.MoveAsync((float)x + 200, (float)y);
+                if (pause > 0) await Page.WaitForTimeoutAsync(pause);
+            }
+        if (endInside) await Page.Mouse.MoveAsync((float)x, (float)y);
+
+        var rest = await WaitForRestAsync("#flick", quietMs: 400);
+        var expected = endInside ? 1.1 : 1;
+        Assert.IsTrue(Math.Abs(rest.ScaleX - expected) < 0.005, $"The hover came to rest at scale {rest.ScaleX}, not {expected}, on {RunHost}.");
+    }
+
+    [TestMethod]
     public async Task AGestureEnabledAfterTheFirstRender_TakesEffect()
     {
         await ExpectEventAsync("armed:late");

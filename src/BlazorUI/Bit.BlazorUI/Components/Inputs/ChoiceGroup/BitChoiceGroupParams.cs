@@ -67,6 +67,12 @@ public partial class BitChoiceGroupParams : BitComponentBaseParams, IBitComponen
     public BitColor? Color { get; set; }
 
     /// <summary>
+    /// Lays the items of the ChoiceGroup out in a grid of this many equal columns, filled row by row in the order of
+    /// the items. <see cref="MinItemWidth"/> wins over it when both are set.
+    /// </summary>
+    public int? Columns { get; set; }
+
+    /// <summary>
     /// The description (helper text) of the ChoiceGroup, rendered under its label. The group references it
     /// through its aria-describedby, so screen readers announce it along with the name of the group.
     /// </summary>
@@ -146,6 +152,12 @@ public partial class BitChoiceGroupParams : BitComponentBaseParams, IBitComponen
     public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
+    /// Lays the items of the ChoiceGroup out in a grid of equal columns no narrower than this width, fitting as many
+    /// columns on a row as the width of the group allows. Wins over <see cref="Columns"/> when both are set.
+    /// </summary>
+    public string? MinItemWidth { get; set; }
+
+    /// <summary>
     /// Removes the circle from the start of each item.
     /// </summary>
     public bool? NoCircle { get; set; }
@@ -223,6 +235,11 @@ public partial class BitChoiceGroupParams : BitComponentBaseParams, IBitComponen
             bitChoiceGroup.TakeFromCascade(nameof(Color), Color.Value, static c => c.Color, static (c, v) => c.Color = v);
         }
 
+        if (Columns.HasValue)
+        {
+            bitChoiceGroup.TakeFromCascade(nameof(Columns), Columns.Value, static c => c.Columns, static (c, v) => c.Columns = v);
+        }
+
         if (Description.HasValue())
         {
             bitChoiceGroup.TakeFromCascade(nameof(Description), Description, static c => c.Description, static (c, v) => c.Description = v);
@@ -286,6 +303,11 @@ public partial class BitChoiceGroupParams : BitComponentBaseParams, IBitComponen
         if (LabelTemplate is not null)
         {
             bitChoiceGroup.TakeFromCascade(nameof(LabelTemplate), LabelTemplate, static c => c.LabelTemplate, static (c, v) => c.LabelTemplate = v);
+        }
+
+        if (MinItemWidth.HasValue())
+        {
+            bitChoiceGroup.TakeFromCascade(nameof(MinItemWidth), MinItemWidth, static c => c.MinItemWidth, static (c, v) => c.MinItemWidth = v);
         }
 
         if (NoCircle.HasValue)

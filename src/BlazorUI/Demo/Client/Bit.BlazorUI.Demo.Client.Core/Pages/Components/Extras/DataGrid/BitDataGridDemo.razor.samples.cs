@@ -1415,6 +1415,60 @@ private readonly BitDataGridParams[] dataGridParams =
 ];" + ProductModelCode + SampleDataCode;
 
     private readonly string example29RazorCode = @"
+<BitDataGrid Items=""@valueTextProducts"" Height=""430px""
+             ShowSearchBox=""true"" Filterable=""true"" Groupable=""true"" Pageable=""true"" PageSize=""8"">
+    <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitTextAlign.End"" Filterable=""false"" Groupable=""false"" />
+    <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" Groupable=""false"" />
+    <BitDataGridColumn Property=""p => p.Category"" Width=""190px"" ValueText=""CategoryText"" />
+    <BitDataGridColumn Property=""p => p.Discontinued"" Title=""Status"" Width=""150px"" ValueText=""StatusText"" />
+    <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitTextAlign.End"" Groupable=""false"" />
+</BitDataGrid>";
+    private readonly string example29CsharpCode = @"
+private readonly List<Product> valueTextProducts = SampleData.Generate(60);
+
+// Handed a non-null value of the column; null keeps the default text (the member's own name here).
+private static string? CategoryText(object value) => value switch
+{
+    Category.Electronics => ""Electronics & gadgets"",
+    Category.Home => ""Home & garden"",
+    Category.Sports => ""Sports & outdoors"",
+    Category.Grocery => ""Food & grocery"",
+    _ => null
+};
+
+private static string? StatusText(object value) => value is true ? ""Discontinued"" : ""In catalog"";" + ProductModelCode + SampleDataCode;
+
+    private readonly string example30RazorCode = @"
+<BitDataGrid Items=""@pagerProducts"" Height=""360px"" ShowHeader=""pagerShowHeader""
+             Pageable=""true"" PageSize=""15"" PageSizeOptions=""pagerSizeOptions"" PagerPlacement=""pagerPlacement"">
+    <ToolbarTemplate>
+        <BitStack Horizontal Wrap VerticalAlign=""BitAlignment.Center"">
+            <BitButton Size=""BitSize.Small"" Variant=""@(pagerPlacement == BitPlacement.Top ? BitVariant.Fill : BitVariant.Outline)""
+                       OnClick=""() => pagerPlacement = BitPlacement.Top"">Pager on top</BitButton>
+            <BitButton Size=""BitSize.Small"" Variant=""@(pagerPlacement == BitPlacement.Bottom ? BitVariant.Fill : BitVariant.Outline)""
+                       OnClick=""() => pagerPlacement = BitPlacement.Bottom"">At the bottom</BitButton>
+            <BitButton Size=""BitSize.Small"" Variant=""@(pagerPlacement == BitPlacement.TopAndBottom ? BitVariant.Fill : BitVariant.Outline)""
+                       OnClick=""() => pagerPlacement = BitPlacement.TopAndBottom"">Both</BitButton>
+            <BitButton Size=""BitSize.Small"" Variant=""BitVariant.Text""
+                       OnClick=""() => pagerShowHeader = !pagerShowHeader"">Header: @(pagerShowHeader ? ""on"" : ""off"")</BitButton>
+        </BitStack>
+    </ToolbarTemplate>
+    <Columns>
+        <BitDataGridColumn Property=""p => p.Id"" Title=""ID"" Width=""70px"" Align=""BitTextAlign.End"" />
+        <BitDataGridColumn Property=""p => p.Name"" Width=""220px"" />
+        <BitDataGridColumn Property=""p => p.Category"" />
+        <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitTextAlign.End"" />
+    </Columns>
+</BitDataGrid>";
+    private readonly string example30CsharpCode = @"
+private readonly List<Product> pagerProducts = SampleData.Generate(120);
+
+// The PageSize in effect (15) is added to the options when it is not one of them.
+private readonly int[] pagerSizeOptions = [10, 25, 50];
+private BitPlacement pagerPlacement = BitPlacement.TopAndBottom;
+private bool pagerShowHeader = true;" + ProductModelCode + SampleDataCode;
+
+    private readonly string example31RazorCode = @"
 <div class=""styled-grid"">
     <BitDataGrid Items=""@styleProducts"" Height=""300px"" Style=""box-shadow: var(--bit-shd-sm);""
                  Classes=""@(new() { HeaderCell = ""custom-header-cell"", SelectedRow = ""custom-selected-row"" })""
@@ -1441,14 +1495,14 @@ private readonly BitDataGridParams[] dataGridParams =
     <BitDataGridColumn Property=""p => p.Category"" />
     <BitDataGridColumn Property=""p => p.Price"" Format=""C2"" Align=""BitTextAlign.End"" />
 </BitDataGrid>";
-    private readonly string example29CsharpCode = @"
+    private readonly string example31CsharpCode = @"
 private readonly List<Product> styleProducts = SampleData.Generate(20);
 private IReadOnlyList<Product> styleSelection = [];" + ProductModelCode + SampleDataCode;
-    private readonly DemoCodeFile[] example29CodeFiles =
+    private readonly DemoCodeFile[] example31CodeFiles =
     [
-        new("Page.razor.css", example29CssCode),
+        new("Page.razor.css", example31CssCode),
     ];
-    private const string example29CssCode = @"
+    private const string example31CssCode = @"
 /* Classes puts these on parts the grid renders, so they are reached through ::deep off a wrapper the
    page owns. */
 .styled-grid ::deep .custom-header-cell {
@@ -1461,7 +1515,7 @@ private IReadOnlyList<Product> styleSelection = [];" + ProductModelCode + Sample
     font-style: italic;
 }";
 
-    private readonly string example30RazorCode = @"
+    private readonly string example32RazorCode = @"
 <BitDataGrid Items=""@rtlProducts"" Height=""420px"" Dir=""BitDir.Rtl"" Strings=""@persianStrings""
              Resizable=""true"" Pageable=""true"" PageSize=""8"">
     <BitDataGridColumn Property=""p => p.Id"" Title=""شناسه"" Width=""90px"" Align=""BitTextAlign.End"" Frozen=""true"" />
@@ -1472,7 +1526,7 @@ private IReadOnlyList<Product> styleSelection = [];" + ProductModelCode + Sample
     <BitDataGridColumn Property=""p => p.Price"" Title=""قیمت"" Format=""C2"" Align=""BitTextAlign.End"" />
     <BitDataGridColumn Property=""p => p.Stock"" Title=""موجودی"" Align=""BitTextAlign.End"" />
 </BitDataGrid>";
-    private readonly string example30CsharpCode = @"
+    private readonly string example32CsharpCode = @"
 private readonly List<Product> rtlProducts = SampleData.GeneratePersian(60);
 
 private readonly BitDataGridStrings persianStrings = new()

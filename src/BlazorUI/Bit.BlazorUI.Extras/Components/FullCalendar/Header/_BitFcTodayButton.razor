@@ -2,4 +2,4 @@
 
 @{ var outOfRange = State.IsDateInAllowedRange(State.Today) is false; }
 
-<button type="button" class="bit-bfc-btn bit-bfc-btn-sm" @onclick="State.GoToToday" disabled="@outOfRange" aria-disabled="@(outOfRange ? "true" : null)">@Texts.TodayButton</button>
+<button type="button" class="bit-bfc-btn bit-bfc-btn-sm" @onclick="State.GoToToday" disabled="@outOfRange" aria-disabled="@(outOfRange ? "true" : null)">@Strings.TodayButton</button>

@@ -18,7 +18,7 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitImageViewer : BitComponentBase
 {
-    private static readonly BitImageViewerTexts _defaultTexts = new();
+    private static readonly BitImageViewerStrings _defaultStrings = new();
 
 
 
@@ -122,14 +122,14 @@ public partial class BitImageViewer : BitComponentBase
     [Parameter] public string? Src { get; set; }
 
     /// <summary>
+    /// The words of the viewer: the names of its buttons and the instructions of its keyboard.
+    /// </summary>
+    [Parameter] public BitImageViewerStrings? Strings { get; set; }
+
+    /// <summary>
     /// Custom CSS styles for the different parts of the image viewer.
     /// </summary>
     [Parameter, ResetStyleBuilder] public BitImageViewerClassStyles? Styles { get; set; }
-
-    /// <summary>
-    /// The words of the viewer: the names of its buttons and the instructions of its keyboard.
-    /// </summary>
-    [Parameter] public BitImageViewerTexts? Texts { get; set; }
 
     /// <summary>
     /// Zooms with the plain wheel too, not only with Ctrl (or Cmd) held. Off by default, since the wheel is what scrolls
@@ -328,7 +328,7 @@ public partial class BitImageViewer : BitComponentBase
 
 
 
-    private BitImageViewerTexts ActiveTexts => Texts ?? _defaultTexts;
+    private BitImageViewerStrings ActiveStrings => Strings ?? _defaultStrings;
 
     private double EffectiveMaxZoom => Math.Max(MinZoom, MaxZoom);
 

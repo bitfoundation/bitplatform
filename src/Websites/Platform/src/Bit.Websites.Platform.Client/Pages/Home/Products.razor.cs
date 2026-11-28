@@ -57,7 +57,7 @@ public partial class Products
 public enum ProductGroup
 {
     /// <summary>
-    /// The core products: Boilerplate, BlazorUI, Butil, Bswup and Brouter.
+    /// The core products: BlazorUI, Butil, Bswup and Brouter.
     /// </summary>
     Core,
 

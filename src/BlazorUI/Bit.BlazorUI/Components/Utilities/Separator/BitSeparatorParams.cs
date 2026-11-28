@@ -100,6 +100,13 @@ public partial class BitSeparatorParams : BitComponentBaseParams, IBitComponentP
     public string? Element { get; set; }
 
     /// <summary>
+    /// Fades the line out toward its ends.
+    /// <br />
+    /// <see cref="BitSeparator.Fade"/>.
+    /// </summary>
+    public bool? Fade { get; set; }
+
+    /// <summary>
     /// Holds the separator off the ends of its container: one CSS length for both ends, or two for the start
     /// and the end.
     /// <br />
@@ -204,6 +211,11 @@ public partial class BitSeparatorParams : BitComponentBaseParams, IBitComponentP
         if (Element.HasValue())
         {
             bitSeparator.TakeFromCascade(nameof(Element), Element, static s => s.Element, static (s, v) => s.Element = v);
+        }
+
+        if (Fade.HasValue)
+        {
+            bitSeparator.TakeFromCascade(nameof(Fade), Fade.Value, static s => s.Fade, static (s, v) => s.Fade = v);
         }
 
         if (Inset.HasValue())

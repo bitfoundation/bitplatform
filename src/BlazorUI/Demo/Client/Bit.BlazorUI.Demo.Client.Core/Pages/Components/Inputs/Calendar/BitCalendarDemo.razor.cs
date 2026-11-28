@@ -2,6 +2,9 @@
 
 public partial class BitCalendarDemo
 {
+    /// <summary>The topic the address names (/components/calendar/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -48,28 +51,28 @@ public partial class BitCalendarDemo
             Name = "Culture",
             Type = "CultureInfo",
             DefaultValue = "System.Globalization.CultureInfo.CurrentUICulture",
-            Description = "CultureInfo for the Calendar."
+            Description = "The culture the calendar reads its month and day names, first day of the week, date format, AM/PM designators, calendar system and right-to-left direction from. Defaults to CultureInfo.CurrentUICulture. It does not translate the *Title texts."
         },
         new()
         {
             Name = "DateFormat",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The format of the date in the Calendar."
+            Description = "The format the selected date is written in as text: the value's text form in a form (and the format such a text is parsed with), the screen-reader announcement of a selection and the heading of the event details dialog. Defaults to the short date pattern of the Culture."
         },
         new()
         {
             Name = "DayCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the day cell is rendered."
+            Description = "Used to customize how content inside the day cell is rendered. The context is the day at midnight in the TimeZone; the cell stays the calendar's button, with its states, its event dots and its accessible name (the full date)."
         },
         new()
         {
             Name = "DisabledDates",
             Type = "IEnumerable<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "The list of dates that are disabled (not selectable) in the calendar, in addition to MinDate and MaxDate."
+            Description = "The list of dates that are disabled (not selectable) in the calendar, in addition to MinDate and MaxDate. Compared by day in the TimeZone; the time of day is ignored."
         },
         new()
         {
@@ -157,49 +160,49 @@ public partial class BitCalendarDemo
             Name = "GetDayClass",
             Type = "Func<DateTimeOffset, string?>?",
             DefaultValue = "null",
-            Description = "Custom function to provide additional CSS classes for each day button of the calendar."
+            Description = "Custom function to provide additional CSS classes for each day button of the calendar. Called with the day at midnight in the TimeZone, for every day drawn on every render."
         },
         new()
         {
             Name = "GoToNextMonthTitle",
             Type = "string",
             DefaultValue = "Go to next month",
-            Description = "The title of the Go to next month button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the Go to next month button."
         },
         new()
         {
             Name = "GoToNextYearRangeTitle",
             Type = "string",
             DefaultValue = "Next year range {0} - {1}",
-            Description = "The title of the Go to next year range button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the Go to next year range button, where {0} and {1} are the first and last years of the next range."
         },
         new()
         {
             Name = "GoToNextYearTitle",
             Type = "string",
             DefaultValue = "Go to next year {0}",
-            Description = "The title of the Go to next year button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the Go to next year button of the month picker, where {0} is the next year."
         },
         new()
         {
             Name = "GoToPrevMonthTitle",
             Type = "string",
             DefaultValue = "Go to previous month",
-            Description = "The title of the Go to previous month button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the Go to previous month button."
         },
         new()
         {
             Name = "GoToPrevYearRangeTitle",
             Type = "string",
             DefaultValue = "Previous year range {0} - {1}",
-            Description = "The title of the Go to previous year range button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the Go to previous year range button, where {0} and {1} are the first and last years of the previous range."
         },
         new()
         {
             Name = "GoToPrevYearTitle",
             Type = "string",
             DefaultValue = "Go to previous year {0}",
-            Description = "The title of the Go to previous year button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the Go to previous year button of the month picker, where {0} is the previous year."
         },
         new()
         {
@@ -224,7 +227,7 @@ public partial class BitCalendarDemo
             Name = "GoToTodayTitle",
             Type = "string",
             DefaultValue = "Go to today",
-            Description = "The title of the GoToToday button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the GoToToday button."
         },
         new()
         {
@@ -256,28 +259,28 @@ public partial class BitCalendarDemo
             Name = "HideTimePickerTitle",
             Type = "string",
             DefaultValue = "Hide time picker",
-            Description = "The title of the HideTimePicker button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the button that closes the overlay time picker."
         },
         new()
         {
             Name = "HighlightCurrentMonth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the month picker should highlight the current month."
+            Description = "Whether the month picker should highlight the month of today (or of Today) while its year is on screen, painted with the Color."
         },
         new()
         {
             Name = "HighlightedDates",
             Type = "IEnumerable<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "The list of dates that are highlighted (marked) in the day picker."
+            Description = "The list of dates that are highlighted (marked) in the day picker, without disabling them. Compared by day in the TimeZone; the time of day is ignored."
         },
         new()
         {
             Name = "HighlightSelectedMonth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the month picker should highlight the selected month."
+            Description = "Whether the month picker should highlight the month on screen (the displayed month, not the month of the value)."
         },
         new()
         {
@@ -298,14 +301,14 @@ public partial class BitCalendarDemo
             Name = "InvalidErrorMessage",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The custom validation error message for the invalid value."
+            Description = "The custom validation error message for a value given as text that cannot be parsed with the DateFormat, in place of \"The {field} field is not valid.\"."
         },
         new()
         {
             Name = "IsDateDisabled",
             Type = "Func<DateTimeOffset, bool>?",
             DefaultValue = "null",
-            Description = "Custom function to determine if a specific date is disabled (not selectable) in the calendar."
+            Description = "Custom function to determine if a specific date is disabled (not selectable) in the calendar. Called with the day at midnight in the TimeZone, for every day drawn on every render."
         },
         new()
         {
@@ -333,7 +336,7 @@ public partial class BitCalendarDemo
             Name = "MonthCellTemplate",
             Type = "RenderFragment<DateTimeOffset>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the month cell is rendered."
+            Description = "Used to customize how content inside the month cell is rendered. The context is the first day of the month in the year on screen; the cell is named by the text the template shows, with the full month name as its title."
         },
         new()
         {
@@ -347,7 +350,7 @@ public partial class BitCalendarDemo
             Name = "MonthPickerToggleTitle",
             Type = "string",
             DefaultValue = "{0}, change month",
-            Description = "The title of the month picker's toggle (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the month title button that opens the month picker when it is an overlay, where {0} is the month title."
         },
         new()
         {
@@ -426,7 +429,7 @@ public partial class BitCalendarDemo
             Name = "NowButtonTitle",
             Type = "string",
             DefaultValue = "Go to now",
-            Description = "The title of the now button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the now button."
         },
         new()
         {
@@ -438,7 +441,7 @@ public partial class BitCalendarDemo
         {
             Name = "OnSelectDate",
             Type = "EventCallback<DateTimeOffset?>",
-            Description = "Callback for when the user selects a date."
+            Description = "Callback for when the user selects a date, with the new value - null when AllowDeselect clears it. It is not raised for a value set from code."
         },
         new()
         {
@@ -520,28 +523,28 @@ public partial class BitCalendarDemo
             Name = "ShowGoToToday",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the GoToToday button should be shown or not."
+            Description = "Whether the GoToToday button should be shown or not. The button only brings the view back to the month of today; it never selects a day."
         },
         new()
         {
             Name = "ShowMonthPicker",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the month picker is shown or hidden."
+            Description = "Whether the month picker is shown or hidden. Hidden, the arrows are the only way to change the month."
         },
         new()
         {
             Name = "ShowMonthPickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show month picker on top of date picker when visible."
+            Description = "Whether the month picker is laid over the day grid, opened from the month title, instead of being shown beside it."
         },
         new()
         {
             Name = "ShowNowButton",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Whether the now button should be shown or not."
+            Description = "Whether the now button of the time picker should be shown or not. The button sets the hour and minute to now, kept inside the bounds, without changing the day."
         },
         new()
         {
@@ -555,14 +558,14 @@ public partial class BitCalendarDemo
             Name = "ShowTimePicker",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether the time picker should be shown or not."
+            Description = "Whether the time picker should be shown or not. Beside the day grid it takes the place of the month picker, which then opens from the month title. With no value it only holds the time the next picked day takes."
         },
         new()
         {
             Name = "ShowTimePickerAsOverlay",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Show time picker on top of date picker when visible."
+            Description = "Whether the time picker is laid over the day grid, opened from a clock button, instead of being shown beside it."
         },
         new()
         {
@@ -587,7 +590,7 @@ public partial class BitCalendarDemo
             Name = "ShowTimePickerTitle",
             Type = "string",
             DefaultValue = "Show time picker",
-            Description = "The title of the ShowTimePicker button (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the clock button that opens the overlay time picker."
         },
         new()
         {
@@ -610,7 +613,7 @@ public partial class BitCalendarDemo
             Name = "StartingValue",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "Specifies the date and time of the calendar when it is showing without any selected value.",
+            Description = "Specifies the date and time of the calendar when it is showing without any selected value: the month it opens on and the time the time picker starts from. It never sets the value.",
         },
         new()
         {
@@ -626,7 +629,7 @@ public partial class BitCalendarDemo
             Name = "TimeFormat",
             Type = "BitTimeFormat",
             DefaultValue = "BitTimeFormat.TwentyFourHours",
-            Description = "The time format of the time-picker, 24H or 12H.",
+            Description = "The time format of the time-picker, 24H or 12H. TwelveHours adds an AM/PM pair written with the designators of the Culture; the value is the same either way.",
             LinkType = LinkType.Link,
             Href = "#time-format-enum"
         },
@@ -749,7 +752,7 @@ public partial class BitCalendarDemo
             Name = "TimeZone",
             Type = "TimeZoneInfo?",
             DefaultValue = "null",
-            Description = "TimeZone for the BitCalendar."
+            Description = "The time zone the days, today, the bounds and the time picker are read in, and a picked value is written in (with the zone's offset on that day). Defaults to TimeZoneInfo.Local, which is the server's zone in an app rendered on the server."
         },
         new()
         {
@@ -763,7 +766,7 @@ public partial class BitCalendarDemo
             Name = "WeekNumberRule",
             Type = "CalendarWeekRule?",
             DefaultValue = "null",
-            Description = "The rule used to calculate the week numbers. Defaults to the FirstFullWeek rule."
+            Description = "The rule used to calculate the week numbers shown by ShowWeekNumbers, with the culture's calendar and the first day of the week. Defaults to the FirstFullWeek rule."
         },
         new()
         {
@@ -777,28 +780,28 @@ public partial class BitCalendarDemo
             Name = "WeekNumberTitle",
             Type = "string",
             DefaultValue = "Week number {0}",
-            Description = "The title of the week number (tooltip)."
+            Description = "The title (tooltip) and the accessible name of each week number, where {0} is the number."
         },
         new()
         {
             Name = "YearCellTemplate",
             Type = "RenderFragment<int>?",
             DefaultValue = "null",
-            Description = "Used to customize how content inside the year cell is rendered."
+            Description = "Used to customize how content inside the year cell is rendered. The context is the year number in the culture's calendar."
         },
         new()
         {
             Name = "YearPickerToggleTitle",
             Type = "string",
             DefaultValue = "{0}, change year",
-            Description = "The title of the year picker's toggle (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the year title button of the month picker that opens the year grid, where {0} is the year."
         },
         new()
         {
             Name = "YearRangePickerToggleTitle",
             Type = "string",
             DefaultValue = "{0} - {1}, change month",
-            Description = "The title of the year range picker's toggle (tooltip)."
+            Description = "The title (tooltip) and the accessible name of the range title button of the year grid, which goes back to the month grid, where {0} and {1} are the first and last years of the range."
         }
     ];
 

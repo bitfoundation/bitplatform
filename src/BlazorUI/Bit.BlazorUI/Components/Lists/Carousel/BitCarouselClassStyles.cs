@@ -60,6 +60,12 @@ public class BitCarouselClassStyles
     public string? PrevButtonIcon { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the row of its own the next/prev buttons get when ButtonsPlacement puts them on a
+    /// side of the slides the dots are not on.
+    /// </summary>
+    public string? ButtonsContainer { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the dots container of the BitCarousel.
     /// </summary>
     public string? DotsContainer { get; set; }

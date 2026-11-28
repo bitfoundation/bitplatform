@@ -1,0 +1,31 @@
+﻿@namespace Bit.BlazorUI
+@implements IDisposable
+@inject IServiceProvider Services
+
+@code {
+    // Resolved rather than injected, so the commands also register when the app never called AddBitBlazorUIExtrasServices.
+    private IBitCommandPaletteService Palette => field ??= Services.GetBitCommandPaletteService();
+
+    private IDisposable? _registration;
+    private IEnumerable<BitCommandPaletteCommand>? _last;
+
+    /// <summary>
+    /// Commands registered while this component is rendered (page-scoped commands, like kbar's <c>useRegisterActions</c>).
+    /// </summary>
+    [Parameter, EditorRequired] public IEnumerable<BitCommandPaletteCommand>? Commands { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_last, Commands))
+        {
+            return;
+        }
+
+        _registration?.Dispose();
+        _last = Commands;
+        _registration = Commands is null ? null : Palette.Register(Commands);
+    }
+
+    /// <summary>Removes the registered commands.</summary>
+    public void Dispose() => _registration?.Dispose();
+}

@@ -2,6 +2,9 @@
 
 public partial class BitFullCalendarDemo
 {
+    /// <summary>The topic the address names (/components/fullcalendar/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     private readonly List<ComponentParameter> componentParameters =
     [
         new()
@@ -27,21 +30,21 @@ public partial class BitFullCalendarDemo
             Name = "Culture",
             Type = "CultureInfo?",
             DefaultValue = "CultureInfo.CurrentUICulture",
-            Description = "Sets calendar/date rendering and formatting. Do not use with @rendermode=\"InteractiveServer\" - use CultureName instead.",
+            Description = "The culture the calendar formats dates and names with, and whose calendar system, first day of the week and writing direction it follows. Falls back to CultureInfo.CurrentUICulture; CultureName wins when both are set. Do not use with @rendermode=\"InteractiveServer\" (a CultureInfo cannot be serialized) - use CultureName instead.",
         },
         new()
         {
             Name = "CultureName",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Culture name shortcut (e.g. \"fa-IR\", \"ar-SA\", \"fr-FR\"). Takes precedence over Culture when both are supplied.",
+            Description = "Culture name shortcut (e.g. \"fa-IR\", \"ar-SA\", \"fr-FR\"). Takes precedence over Culture when both are supplied; a name .NET rejects is ignored. Blazor WebAssembly apps need BlazorWebAssemblyLoadAllGlobalizationData set to true for cultures outside the default globalization data.",
         },
         new()
         {
             Name = "Date",
             Type = "DateTime",
             DefaultValue = "DateTime.Today",
-            Description = "The currently selected (anchor) date of the calendar that determines the visible date range. (two-way bound)",
+            Description = "The currently selected (anchor) date of the calendar that determines the visible date range. Updated by the toolbar, the year view and the links; a date outside the MinDate/MaxDate window is pulled into it and the corrected value is written back through the binding. (two-way bound)",
         },
         new()
         {
@@ -57,14 +60,14 @@ public partial class BitFullCalendarDemo
             Name = "DefaultDate",
             Type = "DateTime?",
             DefaultValue = "null",
-            Description = "The default selected date used initially when the Date parameter is not set. Determines the date range shown on first render.",
+            Description = "The default selected date used initially when the Date parameter is not set. Determines the date range shown on first render, clamped into the MinDate/MaxDate window; applied once.",
         },
         new()
         {
             Name = "DefaultMode",
             Type = "BitFullCalendarMode?",
             DefaultValue = "null",
-            Description = "The default layout mode used initially when the Mode parameter is not set. Event shows the day/week/month/year/agenda views. Timeline shows a resources × time grid (requires Resources to be non-empty) and supports only the day, week, and month layouts - Year and Agenda fall back to the week layout in Timeline mode.",
+            Description = "The default layout mode used initially when the Mode parameter is not set. Event shows the day/week/month/year/agenda views. Timeline shows a resources × time grid (requires Resources to be non-empty) and supports only the day, week, and month layouts - Year and Agenda fall back to the week layout in Timeline mode. A Timeline default waits until there is a resource to show, then is applied once.",
             LinkType = LinkType.Link,
             Href = "#mode-enum",
         },
@@ -109,7 +112,7 @@ public partial class BitFullCalendarDemo
             Name = "Events",
             Type = "List<BitFullCalendarEvent>?",
             DefaultValue = "null",
-            Description = "List of calendar events to display.",
+            Description = "The events to display. The calendar keeps a copy: a list whose items differ (by reference) from that copy replaces it on the next render, so apply what OnChange reports to this list or the change is undone. Events need unique, stable Ids - a blank or repeated Id is replaced with a generated one on the event itself. null shows no events.",
             LinkType = LinkType.Link,
             Href = "#event-class",
         },
@@ -187,7 +190,7 @@ public partial class BitFullCalendarDemo
             Name = "OnAddClick",
             Type = "EventCallback<BitFullCalendarEvent?>",
             DefaultValue = "",
-            Description = "When assigned, the built-in add dialog is suppressed. Receives a draft event with the start/end dates pre-filled from the calendar's selected date and configured start hour (or the clicked slot when adding from a time grid).",
+            Description = "When assigned, the built-in add dialog is suppressed: the Add Event button, a click on a day or slot and a range selection call it instead. Receives a draft event with an empty Id and the start/end dates of the clicked slot or selected range (one slot from Settings.StartOfDayHour for a month day or the Add Event button). The calendar adds nothing itself - add the event to Events - and raises no OnChange for it. Not called while adding is not allowed (ReadOnly, Disabled, Settings.AllowAdd off).",
             LinkType = LinkType.Link,
             Href = "#event-class",
         },
@@ -205,7 +208,7 @@ public partial class BitFullCalendarDemo
             Name = "OnChanging",
             Type = "EventCallback<BitFullCalendarChangingEventArgs>",
             DefaultValue = "",
-            Description = "Raised before a user-driven add, edit or delete is committed (after the built-in rules pass). Set Cancel to refuse it: the event goes back, no OnChange is raised, and the add/edit dialog stays open.",
+            Description = "Raised, and awaited, before a user-driven add, edit or delete is committed (after the built-in rules pass). It receives copies, so it can refuse a change but not alter it. Set Cancel to refuse it: the event goes back, no OnChange or OnRefused is raised, and the add/edit dialog stays open.",
             LinkType = LinkType.Link,
             Href = "#changing-args-class",
         },
@@ -214,7 +217,7 @@ public partial class BitFullCalendarDemo
             Name = "OnDateChange",
             Type = "EventCallback<BitFullCalendarDateChangeEventArgs>",
             DefaultValue = "",
-            Description = "Raised on the first render - as the calendar initializes, and awaited, when it is prerendered, so the events fetched for it are in the prerendered page - and whenever the visible range moves (navigation, a view switch). Carries the inclusive Start/End and the active View - fetch that range here.",
+            Description = "Raised on the first render - as the calendar initializes, and awaited, when it is prerendered, so the events fetched for it are in the prerendered page - and whenever the visible range moves (navigation, a view switch). Carries the inclusive Start/End of every day the view shows (the day, the week as shown, the month grid with the days it borrows from its neighbours - the month alone when ShowNonCurrentDates is off - the month in the culture's calendar for the agenda, or the year) and the active View - fetch that range here.",
             LinkType = LinkType.Link,
             Href = "#date-change-args-class",
         },
@@ -223,7 +226,7 @@ public partial class BitFullCalendarDemo
             Name = "OnEventClick",
             Type = "EventCallback<BitFullCalendarEvent>",
             DefaultValue = "",
-            Description = "When assigned, the built-in event details dialog is suppressed when an event is clicked. Receives the clicked event.",
+            Description = "When assigned, the built-in event details dialog is suppressed when an event is clicked - in every view, the all-day rows, the agenda and the \"+N more\" lists included. Receives the clicked event (an occurrence of a series carries SeriesId and OccurrenceDate). Dragging and resizing keep working.",
             LinkType = LinkType.Link,
             Href = "#event-class",
         },
@@ -268,7 +271,7 @@ public partial class BitFullCalendarDemo
             Name = "ReadOnly",
             Type = "bool",
             DefaultValue = "false",
-            Description = "When true, the calendar becomes presentation-only: the add button and per-cell add affordances are hidden, drag-and-drop and resizing are disabled, and the edit/delete actions are removed from the event details dialog. Navigation, view/mode switching, filtering, and reading event details keep working.",
+            Description = "When true, the calendar becomes presentation-only: the add button and per-cell add affordances are hidden, drag-and-drop and resizing are disabled, and the edit/delete actions are removed from the event details dialog. Navigation, view/mode switching, filtering, the settings panel, and reading event details keep working. Disabled has the same effect, and either overrides the Allow* permissions of Settings.",
         },
         new()
         {
@@ -299,21 +302,21 @@ public partial class BitFullCalendarDemo
         },
         new()
         {
+            Name = "Strings",
+            Type = "BitFullCalendarStrings",
+            DefaultValue = "new()",
+            Description = "Custom UI strings for labels, placeholders, action buttons, aria labels, and validation messages.",
+            LinkType = LinkType.Link,
+            Href = "#strings-class",
+        },
+        new()
+        {
             Name = "Styles",
             Type = "BitFullCalendarClassStyles?",
             DefaultValue = "null",
             Description = "Custom CSS styles for the different parts of the calendar.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
-        },
-        new()
-        {
-            Name = "Texts",
-            Type = "BitFullCalendarTexts",
-            DefaultValue = "new()",
-            Description = "Custom UI strings for labels, placeholders, action buttons, aria labels, and validation messages.",
-            LinkType = LinkType.Link,
-            Href = "#texts-class",
         },
         new()
         {
@@ -513,14 +516,14 @@ public partial class BitFullCalendarDemo
             Description = "Represents a single calendar event rendered across the day, week, month, year, agenda, and timeline views.",
             Parameters =
             [
-                new() { Name = "Id", Type = "string", DefaultValue = "string.Empty", Description = "Unique identifier of the event." },
-                new() { Name = "Title", Type = "string", DefaultValue = "string.Empty", Description = "Event title shown on the event card, badge, and dialogs." },
+                new() { Name = "Id", Type = "string", DefaultValue = "string.Empty", Description = "Unique identifier of the event. The calendar matches events by it, so keep it stable across re-renders; a blank or repeated Id is replaced with a generated one." },
+                new() { Name = "Title", Type = "string", DefaultValue = "string.Empty", Description = "Event title shown on the event card, badge, and dialogs; it is also the event's accessible name." },
                 new() { Name = "Description", Type = "string", DefaultValue = "string.Empty", Description = "Event description shown in the details and add/edit dialogs." },
                 new() { Name = "StartDate", Type = "DateTime", DefaultValue = "", Description = "Start date and time of the event." },
-                new() { Name = "EndDate", Type = "DateTime", DefaultValue = "", Description = "End date and time of the event." },
-                new() { Name = "Color", Type = "string", DefaultValue = "\"blue\"", Description = "Id of a BitFullCalendarColorOption from the configured palette, or - when no option matches - a CSS color of its own (a hex or a color function such as rgb(), hsl(), oklch(), var()). Anything else is drawn in --bit-FullCalendar-event-color.", LinkType = LinkType.Link, Href = "#color-option-class" },
-                new() { Name = "Attendees", Type = "List<BitFullCalendarAttendee>", DefaultValue = "[]", Description = "People attending the event.", LinkType = LinkType.Link, Href = "#attendee-class" },
-                new() { Name = "Resource", Type = "string?", DefaultValue = "null", Description = "Optional resource identifier linking this event to a BitFullCalendarResource. Used by the timeline view to place the event on the matching resource row. null or empty means the event is unassigned.", LinkType = LinkType.Link, Href = "#resource-class" },
+                new() { Name = "EndDate", Type = "DateTime", DefaultValue = "", Description = "End date and time of the event (exclusive): an event ending at 10:00 does not overlap one starting at 10:00, and an all-day event ending at midnight does not cover the day that midnight starts." },
+                new() { Name = "Color", Type = "string", DefaultValue = "\"blue\"", Description = "Id of a BitFullCalendarColorOption from the configured palette (case ignored), or - when no option matches - a CSS color of its own (a hex or a single color function such as rgb(), hsl(), oklch(), color-mix(), var(); a named color is not one). Anything else is drawn in --bit-FullCalendar-event-color. A blank Color, or \"blue\" with a palette that has no \"blue\" option, takes the palette's first option.", LinkType = LinkType.Link, Href = "#color-option-class" },
+                new() { Name = "Attendees", Type = "List<BitFullCalendarAttendee>", DefaultValue = "[]", Description = "People attending the event, listed in the dialogs and offered by the attendee filter. Never null: assigning null stores an empty list.", LinkType = LinkType.Link, Href = "#attendee-class" },
+                new() { Name = "Resource", Type = "string?", DefaultValue = "null", Description = "Optional resource identifier linking this event to a BitFullCalendarResource, compared with the resource Ids exactly (case-sensitive). Used by the timeline view to place the event on the matching resource row; an event that matches none goes to the \"Unassigned\" row. null, empty or whitespace (stored as null) means the event is unassigned.", LinkType = LinkType.Link, Href = "#resource-class" },
                 new() { Name = "IsAllDay", Type = "bool", DefaultValue = "false", Description = "Marks the event as lasting the whole day (or span of days) rather than a time range. It renders in the all-day row above the day and week time grids and its badge shows no clock time." },
                 new() { Name = "IsReadOnly", Type = "bool", DefaultValue = "false", Description = "Locks this single event: it cannot be dragged, resized, edited, or deleted even while the calendar itself is editable. Reading its details keeps working." },
                 new() { Name = "IsBackground", Type = "bool", DefaultValue = "false", Description = "Draws the event as a shaded band behind the grid (a lunch break, a holiday) instead of a card: never clicked, focused, dragged or listed, and not an overlap. The time grids and the timeline draw its range (on its Resource's row, or every row); the month grid tints the days it covers whole. Its title is spoken with the slots it covers." },
@@ -600,7 +603,7 @@ public partial class BitFullCalendarDemo
             Description = "A schedulable resource shown as a row in the resource timeline view (for example a meeting room, a person, or a piece of equipment). Events are linked to a resource through BitFullCalendarEvent.Resource matching Id.",
             Parameters =
             [
-                new() { Name = "Id", Type = "string", DefaultValue = "", Description = "Required. Stable, non-blank identifier matched against BitFullCalendarEvent.Resource. Cannot be null, empty, or whitespace - a blank id is rejected at assignment time." },
+                new() { Name = "Id", Type = "string", DefaultValue = "", Description = "Required. Stable, non-blank identifier matched against BitFullCalendarEvent.Resource. Cannot be null, empty, or whitespace - a blank id throws an ArgumentException at assignment time - and must be unique in the list: two resources with the same Id throw when the Resources are applied." },
                 new() { Name = "Title", Type = "string", DefaultValue = "string.Empty", Description = "Display name for the resource (for example \"Bay Wing\", \"Alice Johnson\", \"Meeting Room 3B\")." },
                 new() { Name = "Subtitle", Type = "string?", DefaultValue = "null", Description = "Optional subtitle shown below the resource title (for example building or department)." },
                 new() { Name = "Data", Type = "object?", DefaultValue = "null", Description = "Optional consumer-defined payload available to templates and click handlers." },
@@ -615,13 +618,13 @@ public partial class BitFullCalendarDemo
             [
                 new() { Name = "Use24HourFormat", Type = "bool", DefaultValue = "true", Description = "Uses 24-hour time format instead of 12-hour (AM/PM)." },
                 new() { Name = "BadgeVariant", Type = "BitFullCalendarBadgeVariant", DefaultValue = "BitFullCalendarBadgeVariant.Colored", Description = "How an event's color is drawn on the month badges and the day, week and timeline blocks.", LinkType = LinkType.Link, Href = "#badge-variant-enum" },
-                new() { Name = "StartOfDayHour", Type = "int", DefaultValue = "8", Description = "Hour the day/week time grid scrolls to on first render. Clamped into the VisibleStartHour/VisibleEndHour window." },
+                new() { Name = "StartOfDayHour", Type = "int", DefaultValue = "8", Description = "Hour the day/week time grid scrolls to on first render (0–23; other values are clamped on assignment). Clamped into the VisibleStartHour/VisibleEndHour window. Also offered as \"Day starts at\" in the settings panel." },
                 new() { Name = "VisibleStartHour", Type = "int", DefaultValue = "0", Description = "First hour rendered by the day, week, and timeline day/week time grids (0–23). Equivalent to slotMinTime in other calendar libraries." },
                 new() { Name = "VisibleEndHour", Type = "int", DefaultValue = "24", Description = "Exclusive last hour rendered by the day, week, and timeline day/week time grids (1–24). Equivalent to slotMaxTime. A value at or below VisibleStartHour is corrected to one hour past it." },
                 new() { Name = "SlotDurationMinutes", Type = "int", DefaultValue = "30", Description = "Length in minutes of one slot inside an hour, and the granularity drag-and-drop and resizing snap to. Only divisors of 60 are accepted (5, 6, 10, 12, 15, 20, 30, 60); other values round to the nearest accepted one." },
                 new() { Name = "HiddenDays", Type = "IReadOnlyList<DayOfWeek>?", DefaultValue = "null", Description = "Days of the week removed from every date grid (week, month, year, and the timeline week layout). Use it to render a work week. A list that would hide every day is ignored." },
                 new() { Name = "BusinessDays", Type = "IReadOnlyList<DayOfWeek>?", DefaultValue = "null", Description = "The weekdays business hours run on. null means Monday to Friday; an empty list means no day is a business day." },
-                new() { Name = "BusinessStartHour", Type = "int", DefaultValue = "9", Description = "First hour of the business day (0–23)." },
+                new() { Name = "BusinessStartHour", Type = "int", DefaultValue = "9", Description = "First hour of the business day (0–23). When it is at or past BusinessEndHour, the end is moved to one hour after it." },
                 new() { Name = "BusinessEndHour", Type = "int", DefaultValue = "17", Description = "Exclusive last hour of the business day (1–24). A value at or below BusinessStartHour is corrected to one hour past it." },
                 new() { Name = "HighlightBusinessHours", Type = "bool", DefaultValue = "false", Description = "Shades everything outside the business hours - the off-hours slots of the day, week, and timeline grids and the non-business month cells. Also toggleable from the built-in settings panel." },
                 new() { Name = "RestrictToBusinessHours", Type = "bool", DefaultValue = "false", Description = "Refuses any drag, resize, or dialog save whose resulting range is not fully contained in the business hours, reported as BitFullCalendarChangeRefusal.OutsideBusinessHours.", LinkType = LinkType.Link, Href = "#change-refusal-enum" },
@@ -670,25 +673,25 @@ public partial class BitFullCalendarDemo
                 new() { Name = "Kind", Type = "BitFullCalendarChangeKind", DefaultValue = "", Description = "The kind of change (Add, Edit, Delete).", LinkType = LinkType.Link, Href = "#change-kind-enum" },
                 new() { Name = "OldEvent", Type = "BitFullCalendarEvent?", DefaultValue = "null", Description = "The event before the change for Edit/Delete. Null for Add.", LinkType = LinkType.Link, Href = "#event-class" },
                 new() { Name = "Source", Type = "BitFullCalendarChangeSource", DefaultValue = "", Description = "The UI source (Dialog, Drag, Resize).", LinkType = LinkType.Link, Href = "#change-source-enum" },
-                new() { Name = "Cancel", Type = "bool", DefaultValue = "false", Description = "Set to true to refuse the change." },
+                new() { Name = "Cancel", Type = "bool", DefaultValue = "false", Description = "Set to true to refuse the change: the event goes back, the add/edit dialog stays open, and neither OnChange nor OnRefused is raised." },
             ]
         },
         new()
         {
             Id = "date-change-args-class",
             Title = "BitFullCalendarDateChangeEventArgs",
-            Description = "Provides details about a date range change, fired when the user navigates (prev/next/today) or switches views. Passed to the OnDateChange callback.",
+            Description = "Provides details about a date range change, raised on the first render and whenever the range moves - navigation (prev/next/today, the bound Date, the methods), a view switch or a change of the grid's shape. Passed to the OnDateChange callback.",
             Parameters =
             [
-                new() { Name = "Start", Type = "DateTime", DefaultValue = "", Description = "Start of the visible date range (inclusive)." },
-                new() { Name = "End", Type = "DateTime", DefaultValue = "", Description = "End of the visible date range (inclusive)." },
+                new() { Name = "Start", Type = "DateTime", DefaultValue = "", Description = "First date the view shows (inclusive): the day, the first day of the week as shown, the first day of the month grid - a day of the previous month when the grid borrows one, the first of the month when ShowNonCurrentDates is off - the first day of the month in the culture's calendar for the agenda, or of the year." },
+                new() { Name = "End", Type = "DateTime", DefaultValue = "", Description = "Last date the view shows (inclusive) - for the month grid, a day of the next month when it borrows one - at midnight - an event later that day still falls in the range." },
                 new() { Name = "View", Type = "BitFullCalendarView", DefaultValue = "", Description = "The active calendar view when the change occurred.", LinkType = LinkType.Link, Href = "#view-enum" },
             ]
         },
         new()
         {
-            Id = "texts-class",
-            Title = "BitFullCalendarTexts",
+            Id = "strings-class",
+            Title = "BitFullCalendarStrings",
             Description = "Custom UI strings for labels, placeholders, action buttons, aria labels, and validation messages. Used for localization and customization of all built-in text.",
             Parameters =
             [
@@ -1273,6 +1276,49 @@ public partial class BitFullCalendarDemo
     ];
 
 
+    // Custom dialogs
+    private readonly List<BitFullCalendarEvent> customDialogEvents = CreateEvents();
+    private string? clickedEvent;
+    private int quickAddCount;
+
+    private void HandleQuickAdd(BitFullCalendarEvent? draft)
+    {
+        if (draft is null) return;
+
+        // The draft carries the clicked slot (or the selected range); the calendar adds nothing itself, so the event
+        // only appears once it is in the list the calendar is given.
+        quickAddCount++;
+        draft.Id = $"quick-{quickAddCount}";
+        draft.Title = $"Quick event {quickAddCount}";
+        customDialogEvents.Add(draft);
+    }
+
+    private void HandleEventClick(BitFullCalendarEvent ev)
+        => clickedEvent = $"{ev.Title}, {ev.StartDate:g} - {ev.EndDate:t}";
+
+    // Dragging and resizing still go through the calendar: keep them in the list, or the next render (a quick add)
+    // hands the calendar the list as it was before the drag.
+    private void HandleCustomDialogChange(BitFullCalendarChangeEventArgs args)
+    {
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                customDialogEvents.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Edit:
+                var index = customDialogEvents.FindIndex(e => e.Id == args.Event.Id);
+                if (index >= 0)
+                    customDialogEvents[index] = args.Event;
+                else
+                    customDialogEvents.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                customDialogEvents.RemoveAll(e => e.Id == args.Event.Id);
+                break;
+        }
+    }
+
+
     // Style & Class
     private readonly BitFullCalendarClassStyles calendarStyles = new()
     {
@@ -1299,7 +1345,7 @@ public partial class BitFullCalendarDemo
 
 
 
-    private readonly BitFullCalendarTexts persianTexts = new()
+    private readonly BitFullCalendarStrings persianStrings = new()
     {
         // View & mode tabs
         ViewDay = "روز",

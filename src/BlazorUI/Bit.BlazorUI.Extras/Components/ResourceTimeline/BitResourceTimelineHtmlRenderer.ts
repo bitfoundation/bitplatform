@@ -405,7 +405,7 @@
                 if (bar.labels) {
                     for (const label of bar.labels) {
                         this._text(p.barLabels, label.text, label.x, label.y,
-                            c.barLabelFont, label.color || c.colors.barLabel, label.align, label.baseline);
+                            label.font || c.barLabelFont, label.color || c.colors.barLabel, label.align, label.baseline);
                     }
                 }
             }

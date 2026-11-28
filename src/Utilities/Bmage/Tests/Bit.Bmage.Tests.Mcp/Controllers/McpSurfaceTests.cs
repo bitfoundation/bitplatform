@@ -35,7 +35,7 @@ public class McpSurfaceTests
 
         foreach (var name in ToolNames)
         {
-            StringAssert.Contains(name, "Bmage", $"'{name}' does not carry the product word, so it collides with the other bit products on bitplatform.dev/mcp.");
+            StringAssert.Contains(name, "Bmage", $"'{name}' does not carry the product word, so it collides with the other bit products' tools in a client that lists them together, as bitplatform.dev's chatbot does.");
         }
     }
 

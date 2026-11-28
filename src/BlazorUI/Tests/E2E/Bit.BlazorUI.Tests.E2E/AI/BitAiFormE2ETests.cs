@@ -408,7 +408,7 @@ public class BitAiFormE2ETests : E2ETestBase
         await Expect(form).ToHaveCSSAsync("flex-direction", "column");
         await Expect(form.Locator(".bit-aifrm-ttl")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-pri)"));
         await Expect(Page.Locator("#frm-main .bit-aifrm-des")).ToHaveCSSAsync("color", await Page.ResolveColorAsync("var(--bit-clr-fg-sec)"));
-        await Expect(Page.Locator("#frm-main .bit-aifrm-act")).ToHaveCSSAsync("justify-content", "flex-end");
+        await Expect(Page.Locator("#frm-main .bit-aifrm-act")).ToHaveCSSAsync("justify-content", Alignment("flex-end"));
 
         // The actions are a neutral outlined Cancel and a primary Submit, Cancel first.
         await Expect(Cancel("frm-main")).ToHaveClassAsync(HasClass("bit-btn-otl"));
@@ -432,7 +432,7 @@ public class BitAiFormE2ETests : E2ETestBase
         await Expect(form).ToHaveCSSAsync("row-gap", "17px");
         await Expect(form.Locator(".bit-aifrm-ttl")).ToHaveCSSAsync("color", "rgb(7, 8, 9)");
         await Expect(form.Locator(".bit-aifrm-ttl")).ToHaveCSSAsync("font-size", "23px");
-        await Expect(form.Locator(".bit-aifrm-act")).ToHaveCSSAsync("justify-content", "flex-start");
+        await Expect(form.Locator(".bit-aifrm-act")).ToHaveCSSAsync("justify-content", Alignment("flex-start"));
 
         await Expect(Root("frm-style-ancestor")).ToHaveCSSAsync("background-color", "rgb(10, 11, 12)");
 

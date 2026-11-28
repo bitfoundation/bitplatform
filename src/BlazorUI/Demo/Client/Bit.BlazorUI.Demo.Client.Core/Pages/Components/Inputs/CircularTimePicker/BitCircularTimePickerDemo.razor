@@ -1,794 +1,1030 @@
 ﻿@page "/components/circulartimepicker"
 @page "/components/circular-time-picker"
+@page "/components/circulartimepicker/{Topic}"
 @using Bit.BlazorUI.Demo.Client.Core.Helpers
 
 <PageOutlet Url="components/circulartimepicker" Title="CircularTimePicker"
             Description="A BitCircularTimePicker picks a time from an analog clock dial, with a 12/24-hour face, optional seconds, steps, selectable-time limits and full keyboard support." />
 
 <DemoPage Name="CircularTimePicker"
+          HasTopics
+          Topic="@Topic"
           Description="A BitCircularTimePicker picks a single time from an analog clock dial: an hour ring the pointer snaps to, then a minute ring and an optional second ring, with an AM/PM pair in 12-hour mode. It can be driven with a pointer or entirely from the keyboard, restricted to a range or a step, edited as text, laid out portrait or landscape, and rendered either inline or in a callout that becomes a sheet on small screens."
           Parameters="componentParameters" PublicMembers="componentPublicMembers"
           CssVariables="componentCssVariables"
           SubEnums="componentSubEnums" SubClasses="componentSubClasses"
           GitHubUrl="Inputs/CircularTimePicker/BitCircularTimePicker.razor"
           GitHubDemoUrl="Inputs/CircularTimePicker/BitCircularTimePickerDemo.razor">
-    <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
-        <div>
-            The picker is a read-only text field that opens a clock callout when it is clicked. <b>Label</b> names it,
-            <b>Placeholder</b> fills the empty field, <b>Required</b> marks it with an asterisk and reports the
-            field as required to assistive technology, <b>Disabled</b> turns it off, and <b>IconName</b> replaces
-            the clock glyph that trails the field. Enforcing the requirement is the job of the validator the
-            picker is bound through - see the Validation sample.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Basic CircularTimePicker" />
-            <br /><br />
-            <BitCircularTimePicker Label="Disabled" Disabled />
-            <br /><br />
-            <BitCircularTimePicker Label="Required" Required />
-            <br /><br />
-            <BitCircularTimePicker Label="PlaceHolder" Placeholder="Select a time" />
-            <br /><br />
-            <BitCircularTimePicker Label="Custom icon" IconName="@BitIconName.Airplane" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Standalone" RazorCode="@example2RazorCode" Id="example2">
-        <div>
-            <b>Standalone</b> drops the field and the callout and renders the clock inline, as a permanent part of the
-            page. The value still travels through a hidden input, so a standalone picker takes part in a form exactly
-            like a callout one does - but that input is kept out of the tab order and out of the accessibility tree,
-            so the dial is the one thing the keyboard lands on, and the one <b>FocusAsync</b> puts the focus on. The
-            dial takes the name of the field with it - <b>AriaLabel</b>, or the <b>Label</b> where there is none -
-            ahead of the part of the time it is on, and clicking the label moves the focus to it.
-        </div>
-        <br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="Basic CircularTimePicker" Standalone />
-            <br /><br />
-            <BitCircularTimePicker Label="Disabled" Disabled Standalone />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Time format" RazorCode="@example3RazorCode" Id="example3">
-        <div>
-            <b>TimeFormat</b> chooses the face. <b>TwentyFourHours</b> (the default) draws a double ring - 13 to 00 on
-            the outside, 01 to 12 on the inside - and the pointer picks the ring it is closest to. <b>TwelveHours</b>
-            draws a single 1 to 12 ring and adds the AM/PM pair to the toolbar, whose labels come from the culture of
-            the picker. <b>AmPmInClock</b> moves that pair under the clock as a segmented control instead, which is
-            what keeps the toolbar legible when the seconds are shown too. On an empty 12-hour picker the dial opens
-            on the half that has something to offer, so a range that starts in the afternoon does not greet you with
-            twelve dimmed numbers.
-        </div>
-        <br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="24-hour (default)" Standalone DefaultValue="@(new TimeSpan(21, 45, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="12-hour" Standalone TimeFormat="BitTimeFormat.TwelveHours"
-                                   DefaultValue="@(new TimeSpan(21, 45, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="12-hour, AM/PM under the clock" Standalone AmPmInClock
-                                   TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="@(new TimeSpan(21, 45, 0))" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Seconds" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
-        <div>
-            <b>ShowSeconds</b> adds a third part: a second ring the dial moves on to after the minute, a third
-            read-out in the toolbar, and the seconds kept in the value instead of zeroed. <b>SecondStep</b> and
-            <b>AllowedSeconds</b> narrow it exactly as their minute counterparts do, and the default
-            <b>ValueFormat</b> grows a seconds part with it. A picker left without the seconds still carries the ones
-            a bound value came with - it simply never offers a way to change them.
-        </div>
-        <br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="Hours, minutes & seconds" Standalone ShowSeconds
-                                   DefaultValue="@(new TimeSpan(9, 30, 15))" />
-            <br /><br />
-            <BitCircularTimePicker Label="SecondStep = 10" Standalone ShowSeconds SecondStep="10"
-                                   DefaultValue="@(new TimeSpan(9, 30, 20))" />
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="With the field" ShowSeconds Placeholder="Select a time"
-                                   @bind-Value="@secondsTime" />
-        </div>
-        <br />
-        <div>Selected time: @secondsTime.ToString()</div>
-    </DemoExample>
-
-    <DemoExample Title="Edit mode & views" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode"
-                 Id="example5">
-        <div>
-            <b>EditMode</b> decides which parts of the time the dial offers. <b>Normal</b> edits all of them and
-            settles onto the next one as soon as the current one is picked, while <b>OnlyHours</b>,
-            <b>OnlyMinutes</b> and <b>OnlySeconds</b> pin the dial to a single part and leave the rest as it is -
-            including the AM/PM pair, which is shown so the read-out can be placed in the day but is not offered
-            where the hour is not a part being edited.
-            <b>StartView</b> chooses which part an opening picker lands on in Normal mode, <b>View</b> reports the one
-            it is on, <b>SwitchView</b> moves it from code, and <b>OnViewChange</b> reports every switch - including
-            the automatic one after a pick.
-        </div>
-        <br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="OnlyHours" Standalone EditMode="BitCircularTimePickerEditMode.OnlyHours"
-                                   DefaultValue="@(new TimeSpan(9, 30, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="OnlyMinutes" Standalone EditMode="BitCircularTimePickerEditMode.OnlyMinutes"
-                                   DefaultValue="@(new TimeSpan(9, 30, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="OnlySeconds" Standalone EditMode="BitCircularTimePickerEditMode.OnlySeconds"
-                                   DefaultValue="@(new TimeSpan(9, 30, 15))" />
-            <br /><br />
-            <BitCircularTimePicker Label="StartView: Minute" Standalone StartView="BitCircularTimePickerView.Minute"
-                                   OnViewChange="v => changedView = v" DefaultValue="@(new TimeSpan(9, 30, 0))" />
-        </div>
-        <br />
-        <div>Last view change: @(changedView?.ToString() ?? "-")</div>
-    </DemoExample>
-
-    <DemoExample Title="Steps" RazorCode="@example6RazorCode" Id="example6">
-        <div>
-            <b>MinuteStep</b> and <b>HourStep</b> set the granularity the dial and the arrow keys move in. A step lays
-            a grid over its range that the pick snaps to, which is what turns the face into a five-minute or
-            quarter-hour picker, and dims the numbers in between so a value the picker does not accept is never
-            offered. A press on a dimmed number changes nothing and leaves the dial where it is. The grid starts at
-            the matching part of <b>MinTime</b>, and at the top of the range where there is none, so a picker whose
-            range begins at 09:07 can still be set to 09:07.
-        </div>
-        <br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="MinuteStep = 5" Standalone MinuteStep="5"
-                                   DefaultValue="@(new TimeSpan(10, 15, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="MinuteStep = 15" Standalone MinuteStep="15"
-                                   DefaultValue="@(new TimeSpan(10, 15, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="HourStep = 3" Standalone HourStep="3"
-                                   DefaultValue="@(new TimeSpan(9, 0, 0))" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Selectable range" RazorCode="@example7RazorCode" Id="example7">
-        <div>
-            <b>MinTime</b> and <b>MaxTime</b> bound what can be picked: the hours outside the range are dimmed, and
-            inside the boundary hours only the minutes still within it stay selectable. <b>AllowedHours</b>,
-            <b>AllowedMinutes</b> and <b>AllowedSeconds</b> add an arbitrary rule on top of that. The pointer refuses
-            a dimmed number, the arrow keys step over it, and a time typed outside the range fails validation with
-            its own <b>OutOfRangeErrorMessage</b> rather than the message an unreadable one gets.
-            <b>DisablePast</b> and <b>DisableFuture</b> bound the range by the current time exactly as a
-            <b>MinTime</b> or a <b>MaxTime</b> of now would; where both apply, the narrower of the two wins.
-            The pair is a range inside one day and does not wrap past midnight - a window that does, such as a
-            night shift, is a job for <b>AllowedHours</b>.
-        </div>
-        <br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="Between 08:30 and 17:15" Standalone MinTime="@(new TimeSpan(8, 30, 0))"
-                                   MaxTime="@(new TimeSpan(17, 15, 0))" DefaultValue="@(new TimeSpan(8, 30, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="Working hours only, on the half hour" Standalone
-                                   AllowedHours="@(h => h is >= 9 and <= 17)" AllowedMinutes="@(m => m is 0 or 30)"
-                                   DefaultValue="@(new TimeSpan(9, 0, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="Night shift - 22:00 to 06:00, across midnight" Standalone
-                                   AllowedHours="@(h => h is >= 22 or <= 6)"
-                                   DefaultValue="@(new TimeSpan(23, 0, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="Later today only" Standalone DisablePast />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Picker actions" RazorCode="@example8RazorCode" Id="example8">
-        <div>
-            <b>ShowNowButton</b> jumps to the current time - snapped to the steps and clamped into the range, so it
-            can never land on a time the dial itself refuses - and <b>ShowClearButton</b> empties the picker.
-            <b>ShowCloseButton</b> adds a dismiss button in the corner of the callout, and <b>AutoClose</b> closes it
-            as soon as the selection is complete, without waiting for either - <b>AutoCloseDelay</b> holds the clock
-            open for a moment first, so the pick that completed it can be seen being made. Their captions are set
-            with <b>NowButtonText</b>, <b>ClearButtonText</b> and <b>CloseButtonTitle</b>.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Now & Clear" ShowNowButton ShowClearButton Placeholder="Select a time" />
-            <br /><br />
-            <BitCircularTimePicker Label="Close button" ShowCloseButton Placeholder="Select a time" />
-            <br /><br />
-            <BitCircularTimePicker Label="AutoClose" AutoClose Placeholder="Select a time" />
-            <br /><br />
-            <BitCircularTimePicker Label="AutoClose after 400ms" AutoClose AutoCloseDelay="400"
-                                   Placeholder="Select a time" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Open state" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
-        <div>
-            <b>@("@bind-IsOpen")</b> puts the callout under the control of the page, so it can be opened and closed
-            from anywhere - the <b>OpenCallout</b> and <b>DismissCallout</b> methods do the same from code.
-            <b>DropDirection</b> chooses the sides the callout may open towards: <b>TopAndBottom</b> (the default)
-            keeps it above or below the field, while <b>All</b> lets it take whichever side has the room. <b>OnOpen</b>
-            and <b>OnClose</b> report every change either way, and closing the picker hands the focus back to the
-            field so the keyboard carries on where it left off. Tabbing out of the callout closes it too, and leaves
-            the focus where it was going: the callout is moved to the end of the document while it is open, so a
-            picker left behind would be one nothing on the page could reach any more.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Controlled callout" Placeholder="Select a time" @bind-IsOpen="isCalloutOpen" />
-        </div>
-        <br />
-        <BitButton OnClick="() => isCalloutOpen = !isCalloutOpen">
-            @(isCalloutOpen ? "Close" : "Open") from outside
-        </BitButton>
-        <br /><br /><br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Any direction" Placeholder="Select a time"
-                                   DropDirection="BitDropDirection.All" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Text input & value format" RazorCode="@example10RazorCode" Id="example10">
-        <div>
-            <b>ValueFormat</b> is the .NET format string the field is written with. Left unset, the picker writes
-            the time the way its culture does: the pattern of the culture, rewritten into the clock format the dial
-            is in (<b>TimeFormat</b>), extended with the seconds where <b>ShowSeconds</b> is set and padded with
-            leading zeros.
-        </div>
-        <br />
-        <div>
-            <b>AllowTextInput</b> makes the field editable, so a time can be typed instead of dialled. It is read
-            back with the same format - which is why the format is worth putting in the placeholder - except that
-            the default one also accepts a time written without its leading zeros.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Formatted time" ValueFormat="hh-mm tt" Placeholder="Select a time"
-                                   TimeFormat="BitTimeFormat.TwelveHours" />
-            <br /><br />
-            <BitCircularTimePicker Label="Text input allowed" AllowTextInput ValueFormat="HH:mm"
-                                   Placeholder="Enter a time (HH:mm)" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
-        <div>
-            <b>@("@bind-Value")</b> keeps a <b>TimeSpan?</b> in step with the dial in both directions. Where the value
-            does not need to be held anywhere, <b>DefaultValue</b> seeds the picker once and <b>OnChange</b> reports
-            every change from then on, so the picker keeps its own state (uncontrolled mode).
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Two-way bound" @bind-Value="@selectedTime" />
-        </div>
-        <br />
-        <div>Selected time: @selectedTime.ToString()</div>
-        <br /><br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Uncontrolled" DefaultValue="@(new TimeSpan(7, 30, 0))"
-                                   OnChange="v => changedTime = v" />
-        </div>
-        <br />
-        <div>Changed time: @changedTime.ToString()</div>
-        <br /><br /><br />
-        <div>
-            <b>StartingValue</b> is not a value: the picker below stays empty and submits nothing until it is
-            touched. It is only where the first change lands, so moving the hour keeps the 30 minutes instead of
-            resetting them to midnight - which is what a picker that mostly gets times around the working day wants.
-            Open both and dial an hour to see the difference.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="No starting value" Placeholder="Select a time" ShowClearButton />
-            <br /><br />
-            <BitCircularTimePicker Label="Starting from 09:30" Placeholder="Select a time" ShowClearButton
-                                   StartingValue="@(new TimeSpan(9, 30, 0))" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Culture" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
-        <div>
-            <b>Culture</b> is what the value is formatted and parsed with, and what the AM/PM designators of the
-            12-hour toolbar are taken from; left unset it follows <b>CultureInfo.CurrentUICulture</b>. Our
-            <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs"
-                     Target="_blank">
-                CultureInfoHelper
-            </BitLink> class shows how to build a custom one. The face itself is a deliberate choice rather than a
-            consequence of the culture - <b>TimeFormat</b> stays where it is put - but the short time pattern of a
-            culture says which of the two its readers expect, so a picker that should follow them can be wired to it
-            in a line.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="fa-IR culture" TimeFormat="BitTimeFormat.TwelveHours"
-                                   Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()" />
-            <br /><br />
-            <BitCircularTimePicker Label="Face taken from the current culture"
-                                   TimeFormat="@GetTimeFormatOf(CultureInfo.CurrentUICulture)" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="ReadOnly" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
-        <div>
-            <b>ReadOnly</b> shows the value and lets the callout open, but nothing on the dial can be moved: the
-            pointer, the arrow keys, the AM/PM pair and the action buttons all stop short of a change. Unlike a
-            disabled picker it stays in the tab order and keeps being announced, so the value can still be read out.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Basic" ReadOnly @bind-Value="@readOnlyTime" />
-            <br /><br />
-            <BitCircularTimePicker Label="Text input allowed" ReadOnly AllowTextInput @bind-Value="@readOnlyTime" />
-        </div>
-        <br /><br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="Standalone" Standalone ReadOnly @bind-Value="@readOnlyTime" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Appearance" RazorCode="@example14RazorCode" Id="example14">
-        <div>
-            <b>Underlined</b> trades the box of the field for a single rule under it, <b>HasBorder</b> is on by
-            default and set to false takes the box away altogether - for a picker that sits inside a container of
-            its own - and <b>IconPlacement</b> moves the clock glyph to the leading edge.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Underlined" Underlined Placeholder="Select a time" />
-            <br /><br />
-            <BitCircularTimePicker Label="No border" HasBorder="false" Placeholder="Select a time" />
-            <br /><br />
-            <BitCircularTimePicker Label="Icon on the left" IconPlacement="BitPlacement.Start"
-                                   Placeholder="Select a time" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Templates" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
-        <div>
-            <b>LabelTemplate</b> and <b>IconTemplate</b> replace the label and the trailing glyph with arbitrary
-            markup. The first picker below drives its callout from a button inside its own label, through the public
-            <b>OpenCallout</b> and <b>DismissCallout</b> methods of the component.
-            <b>CalloutHeaderTemplate</b> and <b>CalloutFooterTemplate</b> add arbitrary markup above and below the
-            dial inside the callout itself.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker @ref="circularTimePicker">
-                <LabelTemplate>
-                    Custom label <BitButton Variant="BitVariant.Text" IconName="@BitIconName.AlarmClock"
-                                            OnClick="OpenCallout"></BitButton>
-                </LabelTemplate>
-            </BitCircularTimePicker>
-            <br /><br /><br />
-            <BitCircularTimePicker Label="Custom left-handed icon" IconPlacement="BitPlacement.Start"
-                                   Placeholder="Select a time">
-                <IconTemplate>
-                    <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />
-                </IconTemplate>
-            </BitCircularTimePicker>
-            <br /><br /><br />
-            <BitCircularTimePicker Label="Custom callout header & footer" Placeholder="Select a time">
-                <CalloutHeaderTemplate>
-                    <div style="padding:0.5rem">Pick a time</div>
-                </CalloutHeaderTemplate>
-                <CalloutFooterTemplate>
-                    <div style="padding:0.5rem">Times are local</div>
-                </CalloutFooterTemplate>
-            </BitCircularTimePicker>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Layout" RazorCode="@example16RazorCode" Id="example16">
-        <div>
-            Two parameters answer the space the picker has, and the small breakpoint is where one hands over to the
-            other. <b>Landscape</b> puts the toolbar down the leading edge instead of above the clock, stacking the
-            parts of the time in a column - roughly half the height for a picker with width to spare - and takes
-            effect from that breakpoint up. <b>Responsive</b> takes over below it, turning the callout into a sheet
-            anchored to the top of the screen that can be swiped away upwards. The <b>Body</b> slot of <b>Styles</b>
-            and <b>Classes</b> reaches the column the toolbar is set beside: the clock, the AM/PM pair when
-            <b>AmPmInClock</b> puts it there, and the row of actions.
-        </div>
-        <br />
-        <div class="example-content-standalone">
-            <BitCircularTimePicker Label="Landscape" Standalone Landscape
-                                   DefaultValue="@(new TimeSpan(9, 30, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Label="Landscape, 12-hour with the seconds" Standalone Landscape ShowSeconds
-                                   AmPmInClock ShowNowButton TimeFormat="BitTimeFormat.TwelveHours"
-                                   DefaultValue="@(new TimeSpan(21, 45, 30))" />
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Landscape in the callout" Landscape Placeholder="Select a time" />
-            <br /><br />
-            <BitCircularTimePicker Label="Responsive - resize below the small breakpoint" Responsive
-                                   Placeholder="Select a time" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Keyboard & accessibility" RazorCode="@example17RazorCode" Id="example17">
-        <div>
-            The dial is a listbox whose options are the numbers of the current view, so a screen reader reads out what
-            the pointer rests on, and the whole time can be set without ever touching the clock:
-        </div>
-        <br />
-        <ul>
-            <li><b>Enter</b>, <b>Space</b> or <b>&darr;</b> on the field opens the picker; <b>Esc</b> closes it from
-                anywhere inside it and puts the focus back on the field, while <b>Tab</b> closes it and carries on
-                to the next control.</li>
-            <li><b>Tab</b> inside the callout moves between the toolbar, the dial and the buttons, and leaving the
-                last of them closes the picker rather than stranding it behind the overlay.</li>
-            <li><b>&uarr;</b> / <b>&rarr;</b> and <b>&darr;</b> / <b>&larr;</b> move the pointer by one step,
-                <b>PageUp</b> / <b>PageDown</b> by five.</li>
-            <li><b>Home</b> and <b>End</b> jump to the first and the last selectable value.</li>
-            <li>Digits type the value: <b>4</b> <b>5</b> within a second lands on 45. On a 12-hour dial <b>A</b>
-                and <b>P</b> switch the half of the day.</li>
-            <li><b>Enter</b> or <b>Space</b> settles the current view - moving on to the next part, and closing an
-                <b>AutoClose</b> picker once the time is complete.</li>
-            <li><b>Shift</b> + the mouse wheel over the focused dial moves it by one step as well. Both conditions
-                keep an ordinary scroll of the page from changing the time; <b>NoMouseWheel</b> turns it off
-                altogether and <b>InvertMouseWheel</b> reverses it.</li>
-        </ul>
-        <br />
-        <div>
-            <b>CalloutAriaLabel</b> names the dialog, <b>HourButtonTitle</b>, <b>MinuteButtonTitle</b> and
-            <b>SecondButtonTitle</b> name the toolbar buttons and the dial in each view, <b>AutoFocus</b> puts the
-            focus on the field as the page renders, and <b>TabIndex</b> reaches the dial as well as the field. Values
-            the constraints rule out are marked <b>aria-disabled</b> rather than merely dimmed, and a live region
-            announces every move of the dial - the part it switches to, and the value it lands on where no number of
-            the face stands for it, so a step of a single minute is never made in silence. In the toolbar the part
-            the dial is on carries a rule under it rather than the other two being dimmed, so which one is being
-            edited never rests on a difference of contrast.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Try it with the keyboard" Placeholder="Select a time"
-                                   CalloutAriaLabel="Pick a meeting time" HourButtonTitle="Meeting hour"
-                                   MinuteButtonTitle="Meeting minute" TimeFormat="BitTimeFormat.TwelveHours" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Validation" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
-        <div>
-            Inside an <b>EditForm</b> the picker is an ordinary form input: it registers with the <b>EditContext</b>,
-            turns red and gets <b>aria-invalid</b> when its field has messages. Text is the only way a time the dial
-            itself refuses can reach it, and the three ways it can be wrong get three messages of their own -
-            <b>InvalidErrorMessage</b> for one that cannot be read, <b>OutOfRangeErrorMessage</b> for one outside
-            <b>MinTime</b> / <b>MaxTime</b>, and <b>DisallowedTimeErrorMessage</b> for one the <b>Allowed*</b>
-            predicates rule out. The steps are the one constraint typed text is not held to. A <b>Standalone</b>
-            picker has no field to redden, so the rule is drawn around the dial instead, and the dial is what
-            carries <b>aria-required</b> and <b>aria-invalid</b>.
-        </div>
-        <br />
-        <div class="example-content">
-            <EditForm Model="formValidationCircularTimePickerModel" OnValidSubmit="HandleValidSubmit"
-                      OnInvalidSubmit="HandleInvalidSubmit">
-                <DataAnnotationsValidator />
-
-                <div class="validation-summary">
-                    <ValidationSummary />
-                </div>
-                <div>
-                    <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time" AllowTextInput
-                                           Placeholder="Select a time" Label="Time required" />
-                    <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
-                </div>
-                <br />
-                <BitButton ButtonType="BitButtonType.Submit">
-                    Submit
-                </BitButton>
-            </EditForm>
-
-            @if (string.IsNullOrEmpty(successMessage) is false)
-            {
-                <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
-            }
-        </div>
-        <br /><br />
-        <div class="example-desc">
-            Type <b>ab:cd</b>, <b>07:00</b> and <b>09:10</b> into the field below to see each of the three messages.
-        </div>
-        <div class="example-content">
-            <EditForm Model="formValidationCircularTimePickerModel">
-                <DataAnnotationsValidator />
-                <div>
-                    <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time" AllowTextInput
-                                           MinTime="@(new TimeSpan(8, 0, 0))" MaxTime="@(new TimeSpan(18, 0, 0))"
-                                           AllowedMinutes="@(m => m is 0 or 15 or 30 or 45)"
-                                           Label="Custom error messages"
-                                           InvalidErrorMessage="That is not a time - write it as HH:mm."
-                                           OutOfRangeErrorMessage="Please enter a time between 08:00 and 18:00."
-                                           DisallowedTimeErrorMessage="Appointments start on the quarter hour." />
-                    <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
-                </div>
-                <br />
-                <div class="validation-summary">
-                    <ValidationSummary />
-                </div>
-            </EditForm>
-        </div>
-        <br /><br />
-        <div class="example-desc">
-            A standalone picker in the same form. Submit it empty to see the rule around the dial.
-        </div>
-        <div class="example-content-standalone">
-            <EditForm Model="standaloneValidationModel" OnValidSubmit="HandleValidSubmit">
-                <DataAnnotationsValidator />
-                <BitCircularTimePicker @bind-Value="standaloneValidationModel.Time" Standalone Required
-                                       Label="Standalone & required" ShowClearButton />
-                <ValidationMessage For="@(() => standaloneValidationModel.Time)" />
-                <br />
-                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
-            </EditForm>
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Events" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
-        <div>
-            <b>OnSelectTime</b> fires for every change the dial makes, <b>OnChange</b> for every change of the value
-            itself, <b>OnClear</b> for the clear button emptying it, <b>OnOpen</b> and <b>OnClose</b> follow the
-            callout, <b>OnViewChange</b> follows the dial between the parts of the time, and <b>OnClick</b>,
-            <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the field.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Watch the log" Placeholder="Select a time" ShowClearButton OnOpen="LogOpen"
-                                   OnClose="LogClose" OnClick="LogClick" OnFocusIn="LogFocusIn" OnFocusOut="LogFocusOut"
-                                   OnViewChange="LogViewChange" OnSelectTime="LogSelectTime" OnChange="LogChange"
-                                   OnClear="LogClear" />
-        </div>
-        <br />
-        <div class="event-log">
-            @foreach (var log in eventLogs)
-            {
-                <div>@log</div>
-            }
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Cascading parameters" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
-        <div>
-            A form full of time pickers usually repeats the same handful of parameters on every one of them.
-            <b>BitParams</b> takes them out of the markup: it cascades a <b>BitCircularTimePickerParams</b> down to
-            every BitCircularTimePicker underneath it, however deeply nested. Every property of that class is
-            nullable, so only the ones actually set travel; the rest are left alone.
-        </div><br />
-        <div>
-            Here the clock format, the minute step, the actions and the accent are set once for the whole group. A
-            value written on a picker itself always wins - the cascade only fills in what the markup left alone -
-            which is why the last one below keeps its own step and color:
-        </div><br />
-        <BitParams Parameters="bookingPickerParams">
-            <div class="example-content">
-                <BitCircularTimePicker Label="Check-in" Placeholder="Select a time" />
-                <br />
-                <BitCircularTimePicker Label="Check-out" Placeholder="Select a time" />
-                <br />
-                <BitCircularTimePicker Label="Wake-up call" Placeholder="Select a time"
-                                       MinuteStep="1" Color="BitColor.Secondary" />
+    <DemoTopic Title="Overview"
+               Description="The field that opens a clock callout, and the standalone clock drawn inline on the page.">
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                The picker is a read-only text field that opens a clock callout when it is clicked, or when it is
+                focused and <b>Enter</b>, <b>Space</b>, <b>&darr;</b> or <b>&uarr;</b> is pressed. Its value is a
+                <b>TimeSpan?</b>: empty until a time is picked, and written into the field in the format of the
+                culture. <b>Label</b> names it, <b>Placeholder</b> fills the empty field, <b>Required</b> marks it
+                with an asterisk and reports the field as required to assistive technology, <b>Disabled</b> turns it
+                off - it can be neither focused nor opened - and <b>IconName</b> replaces the clock glyph
+                (<b>Clock</b> by default) that trails the field.
             </div>
-        </BitParams>
-        <br /><br />
-        <div>
-            The value and the open state are deliberately left out of <b>BitCircularTimePickerParams</b>: both are
-            per-field state the picker assigns to itself, so a cascaded value would be written straight back over
-            what the person just picked. <b>StartingValue</b> is the cascadable way to say where an empty picker
-            begins.
-        </div><br />
-        <div>
-            <b>Parameters</b> is a list, so a single <b>BitParams</b> can carry the parameters of several component
-            types at once - a <b>BitCircularTimePickerParams</b> next to a <b>BitButtonParams</b>, each one reaching
-            only the components it belongs to.
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21">
-        <div>
-            <b>Color</b> picks the theme color of the accent the dial is painted with - the toolbar, the hand, the pin
-            and the selected number - with <b>Primary</b> as the default. The semantic colors tie the picker to what
-            the time it sets means, while the <b>Background</b>, <b>Foreground</b> and <b>Border</b> families keep it
-            legible on non-default surfaces.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Color="BitColor.Primary" Label="Primary" DefaultValue="@(new TimeSpan(10, 10, 0))" />
             <br />
-            <BitCircularTimePicker Color="BitColor.Secondary" Label="Secondary"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.Tertiary" Label="Tertiary"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Color="BitColor.Info" Label="Info" DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.Success" Label="Success" DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.Warning" Label="Warning" DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.SevereWarning" Label="SevereWarning"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.Error" Label="Error" DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Color="BitColor.PrimaryBackground" Label="PrimaryBackground"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.SecondaryBackground" Label="SecondaryBackground"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.TertiaryBackground" Label="TertiaryBackground"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Color="BitColor.PrimaryForeground" Label="PrimaryForeground"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.SecondaryForeground" Label="SecondaryForeground"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.TertiaryForeground" Label="TertiaryForeground"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br /><br />
-            <BitCircularTimePicker Color="BitColor.PrimaryBorder" Label="PrimaryBorder"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.SecondaryBorder" Label="SecondaryBorder"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Color="BitColor.TertiaryBorder" Label="TertiaryBorder"
-                                   DefaultValue="@(new TimeSpan(10, 10, 0))" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
-        <div>
-            The glyphs are not limited to the built-in icon font: <b>Icon</b> and <b>CloseButtonIcon</b> take a
-            <b>BitIconInfo</b> - or a raw CSS class string - that can point at any icon library whose stylesheet is
-            loaded. Use <b>BitIconInfo.Fa()</b>, <b>BitIconInfo.Bi()</b> or <b>BitIconInfo.Css()</b> to build one.
-        </div>
-        <br />
-        <br />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-        <div>FontAwesome:</div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="FontAwesome" Icon="@("fa-solid fa-clock")" />
-            <br /><br />
-            <BitCircularTimePicker Label="FontAwesome (Css)" Icon="@BitIconInfo.Css("fa-solid fa-heart")" />
-            <br /><br />
-            <BitCircularTimePicker Label="FontAwesome (Fa)" Icon="@BitIconInfo.Fa("solid clock")" ShowCloseButton
-                                   CloseButtonIcon="@BitIconInfo.Fa("solid xmark")" />
-        </div>
-        <br /><br />
-        <link rel="stylesheet"
-              href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-        <div>Bootstrap:</div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Bootstrap" Icon="@("bi bi-clock-fill")" />
-            <br /><br />
-            <BitCircularTimePicker Label="Bootstrap (Css)" Icon="@BitIconInfo.Css("bi bi-heart-fill")" />
-            <br /><br />
-            <BitCircularTimePicker Label="Bootstrap (Bi)" Icon="@BitIconInfo.Bi("clock-fill")" ShowCloseButton
-                                   CloseButtonIcon="@BitIconInfo.Bi("x-lg")" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23">
-        <div>
-            <b>Size</b> scales the field, the label, the dial, its numbers and the toolbar together, so the picker
-            lines up with the other controls of a form at whichever size they are: <b>Small</b> where the clock has
-            to share a dense layout, <b>Medium</b> (the default) for forms, and <b>Large</b> where the picker is the
-            point of the screen or aimed at touch. The two rings and the hand keep their proportions at every size.
-        </div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Size="BitSize.Small" Label="Small" DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Size="BitSize.Medium" Label="Medium" DefaultValue="@(new TimeSpan(10, 10, 0))" />
-            <br />
-            <BitCircularTimePicker Size="BitSize.Large" Label="Large" DefaultValue="@(new TimeSpan(10, 10, 0))" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
-        <div>
-            <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every
-            named part of the picker on their own - the toolbar, the face, the numbers, the hand and its thumb - so
-            the callout can be restyled without a single descendant selector.
-        </div>
-        <br /><br />
-        <div>Component's Style & Class:</div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
-            <br />
-            <BitCircularTimePicker Class="custom-class" />
-        </div>
-        <br /><br /><br />
-        <div><b>Styles</b> & <b>Classes</b>:</div>
-        <br />
-        <div class="example-content">
-            <BitCircularTimePicker Styles="@(new()
-                                   {
-                                       Root = "margin-inline: 1rem;",
-                                       Focused = "--focused-background: #b2b2b25a;",
-                                       Input = "padding: 0.5rem;",
-                                       InputContainer = "background: var(--focused-background);",
-                                       HourButton = "color: gray;",
-                                       MinuteButton = "color: gray;",
-                                       HourMinuteSeparator = "color: gray;",
-                                       Toolbar = "background-color: transparent;",
-                                       ClockFace = "box-shadow: dodgerblue 0 0 1rem;",
-                                       ClockPointerThumb = "background-color: blue;"
-                                   })" />
-            <br />
-            <BitCircularTimePicker @bind-Value="@classesValue" Label="Select a time" ShowClearButton MinuteStep="5"
-                                   Classes="@(new()
-                                   {
-                                       Root = "custom-root",
-                                       Focused = "custom-focus",
-                                       Input = "custom-input",
-                                       InputContainer = "custom-input-container",
-                                       Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}",
-                                       Toolbar = "custom-toolbar",
-                                       ClockPin = "custom-clock-pin",
-                                       ClockFace = "custom-clock-face",
-                                       ClockNumber = "custom-clock-number",
-                                       ClockPointer = "custom-clock-pointer",
-                                       ClockPointerThumb = "custom-clock-pointer-thumb",
-                                       ClockSelectedNumber = "custom-clock-selected-number",
-                                       ClockDisabledNumber = "custom-clock-disabled-number",
-                                       ClockPointerThumbMinute = "custom-clock-pointer-thumb-minute",
-                                       ClearButton = "custom-clear-button"
-                                   })" />
-        </div>
-        <br /><br /><br />
-        <div>
-            <b>CSS variables</b> (listed in the table at the bottom of this page) restyle the picker without a
-            selector. On <b>:root</b> they re-skin every picker of the app. They restyle the default, not a choice:
-            an explicit <b>Color</b> or <b>Size</b> wins over the variables for what it sets. The callout moves to the
-            end of the <b>body</b> while it is open, yet it keeps inheriting from the picker's ancestors, so a wrapper
-            around the picker reaches the field, the label, the icon and the dial alike:
-        </div><br />
-        <div class="custom-vars">
-            <div class="example-content">
-                <BitCircularTimePicker Label="Reservation" Placeholder="Select a time" ShowNowButton ShowClearButton
-                                       MinuteStep="5" TimeFormat="BitTimeFormat.TwelveHours" AmPmInClock />
+            <div>
+                <b>Required</b> only marks the field: enforcing the requirement is the job of the validator the picker
+                is bound through - see the
+                <BitLink Href="/components/circulartimepicker/behavior#example18">Validation</BitLink> sample.
+                The picker needs no service of its own; like every input of the library it works inside or outside an
+                <b>EditForm</b>.
             </div>
-        </div>
-        <br />
-        <div>
-            Per instance, a variable on <b>Style</b> or <b>Styles.Root</b> reaches the field and the dial alike, and one
-            on <b>Styles.Callout</b> the dial alone:
-        </div><br />
-        <div class="example-content">
-            <BitCircularTimePicker Label="Reservation" Placeholder="Select a time" ShowSeconds
-                                   Styles="@(new()
-                                   {
-                                       Root = "--bit-CircularTimePicker-border-radius: 1rem;",
-                                       Callout = "--bit-CircularTimePicker-color: seagreen;" +
-                                                 "--bit-CircularTimePicker-clock-size: 14rem;" +
-                                                 "--bit-CircularTimePicker-clock-background: #f0f7f2;" +
-                                                 "--bit-CircularTimePicker-number-color: #1f3d2b;" +
-                                                 "--bit-CircularTimePicker-toolbar-padding: 1rem 0.5rem;" +
-                                                 "--bit-CircularTimePicker-pointer-width: 3px;" +
-                                                 "--bit-CircularTimePicker-pin-size: 10px;"
-                                   })" />
-        </div>
-    </DemoExample>
-
-    <DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25">
-        <div>
-            <b>Dir</b> flips the field, the label and the toolbar into a right-to-left layout, and reaches the callout
-            as well even though it is rendered outside the root element. The dial itself keeps running clockwise, and
-            the parts of the time in the toolbar stay in reading order, because a clock reads the same way in every
-            script.
-        </div>
-        <br />
-        <div dir="rtl">
+            <br />
             <div class="example-content">
-                <BitCircularTimePicker Dir="BitDir.Rtl" Label="ساعت" Placeholder="یک ساعت انتخاب کنید"
+                <BitCircularTimePicker Label="Basic CircularTimePicker" />
+                <br /><br />
+                <BitCircularTimePicker Label="Disabled" Disabled />
+                <br /><br />
+                <BitCircularTimePicker Label="Required" Required />
+                <br /><br />
+                <BitCircularTimePicker Label="PlaceHolder" Placeholder="Select a time" />
+                <br /><br />
+                <BitCircularTimePicker Label="Custom icon" IconName="@BitIconName.Airplane" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Standalone" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                <b>Standalone</b> drops the field and the callout and renders the clock inline, as a permanent part of the
+                page. The value still travels through a hidden input, so a standalone picker takes part in a form exactly
+                like a callout one does - but that input is kept out of the tab order and out of the accessibility tree,
+                so the dial is the one thing the keyboard lands on, and the one <b>FocusAsync</b> puts the focus on. The
+                dial takes the name of the field with it - <b>AriaLabel</b>, or the <b>Label</b> where there is none -
+                ahead of the part of the time it is on, and clicking the label moves the focus to it.
+            </div>
+            <br />
+            <div>
+                Everything that belongs to the callout itself has nothing to act on here: <b>IsOpen</b>,
+                <b>OpenCallout</b> / <b>DismissCallout</b>, <b>AutoClose</b>, <b>ShowCloseButton</b>,
+                <b>DropDirection</b> and <b>Responsive</b> are ignored, and the dial is a <b>group</b> that is part of
+                the page rather than a modal dialog. The rest - the time format, the seconds, the steps and the range,
+                the now and clear buttons, the header and footer templates, <b>Landscape</b> and the validation state -
+                works the same on both. A disabled standalone dial is taken out of the tab order.
+            </div>
+            <br />
+            <div class="example-content-standalone">
+                <BitCircularTimePicker Label="Basic CircularTimePicker" Standalone />
+                <br /><br />
+                <BitCircularTimePicker Label="Disabled" Disabled Standalone />
+            </div>
+        </DemoExample>
+    </DemoTopic>
+
+    <DemoTopic Title="Time & selection" Route="time"
+               Description="Which parts of the time the dial offers and how: the 12- and 24-hour faces, the seconds, the edit modes and views, the steps and the selectable range.">
+        <DemoExample Title="Time format" RazorCode="@example3RazorCode" Id="example3">
+            <div>
+                <b>TimeFormat</b> chooses the face. <b>TwentyFourHours</b> (the default) draws a double ring - 13 to 00 on
+                the outside, 01 to 12 on the inside - and the pointer picks the ring it is closest to. <b>TwelveHours</b>
+                draws a single 1 to 12 ring and adds the AM/PM pair to the toolbar, whose labels come from the culture of
+                the picker. <b>AmPmInClock</b> moves that pair under the clock as a segmented control instead, which is
+                what keeps the toolbar legible when the seconds are shown too; it means nothing on a 24-hour face. On an
+                empty 12-hour picker the dial opens on the half that has something to offer, so a range that starts in
+                the afternoon does not greet you with twelve dimmed numbers.
+            </div>
+            <br />
+            <div>
+                The face only changes how the hour is shown and picked: the value is the same <b>TimeSpan</b> of the
+                day either way (21:45 is 09:45 PM), and the hour predicates and bounds are always given in 0-23. The
+                12-hour ring shows the half of the day the value is in; pressing AM or PM moves the hour by twelve, and
+                where the constraints rule that hour out it lands on the first hour of the other half that is allowed.
+                The default <b>ValueFormat</b> follows the face, so the field writes the time with a designator on a
+                12-hour picker and without one on a 24-hour picker.
+            </div>
+            <br />
+            <div class="example-content-standalone">
+                <BitCircularTimePicker Label="24-hour (default)" Standalone DefaultValue="@(new TimeSpan(21, 45, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="12-hour" Standalone TimeFormat="BitTimeFormat.TwelveHours"
+                                       DefaultValue="@(new TimeSpan(21, 45, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="12-hour, AM/PM under the clock" Standalone AmPmInClock
+                                       TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="@(new TimeSpan(21, 45, 0))" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Seconds" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                <b>ShowSeconds</b> adds a third part: a second ring the dial moves on to after the minute, a third
+                read-out in the toolbar, and the seconds kept in the value instead of zeroed. <b>SecondStep</b> and
+                <b>AllowedSeconds</b> narrow it exactly as their minute counterparts do (see
+                <BitLink Href="#example6">Steps</BitLink> and <BitLink Href="#example7">Selectable range</BitLink>), and
+                the default <b>ValueFormat</b> grows a seconds part with it - a <b>ValueFormat</b> of your own is used as
+                given, so it needs an <code>ss</code> to show them. A picker left without the seconds still carries the
+                ones a bound value came with - it simply never offers a way to change them - and the
+                <b>OnlySeconds</b> edit mode brings the second ring along without <b>ShowSeconds</b>.
+            </div>
+            <br />
+            <div class="example-content-standalone">
+                <BitCircularTimePicker Label="Hours, minutes & seconds" Standalone ShowSeconds
+                                       DefaultValue="@(new TimeSpan(9, 30, 15))" />
+                <br /><br />
+                <BitCircularTimePicker Label="SecondStep = 10" Standalone ShowSeconds SecondStep="10"
+                                       DefaultValue="@(new TimeSpan(9, 30, 20))" />
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="With the field" ShowSeconds Placeholder="Select a time"
+                                       @bind-Value="@secondsTime" />
+            </div>
+            <br />
+            <div>Selected time: @secondsTime.ToString()</div>
+        </DemoExample>
+
+        <DemoExample Title="Edit mode & views" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode"
+                     Id="example5">
+            <div>
+                <b>EditMode</b> decides which parts of the time the dial offers. <b>Normal</b> edits all of them and
+                settles onto the next one as soon as the current one is picked, while <b>OnlyHours</b>,
+                <b>OnlyMinutes</b> and <b>OnlySeconds</b> pin the dial to a single part and leave the rest as it is -
+                including the AM/PM pair, which is shown so the read-out can be placed in the day but is not offered
+                where the hour is not a part being edited.
+                <b>StartView</b> chooses which part an opening picker lands on in Normal mode, <b>View</b> reports the one
+                it is on, <b>SwitchView</b> moves it from code, and <b>OnViewChange</b> reports every switch - including
+                the automatic one after a pick.
+            </div>
+            <br />
+            <div>
+                In a single-part mode the toolbar shows the whole time as text instead of a button per part (styled
+                through the <b>HourMinuteText</b> slot), and <b>OnlySeconds</b> brings the second ring along whether or
+                not <b>ShowSeconds</b> is set. The edit mode always wins over the view: <b>StartView</b> is only read in
+                Normal mode, a <b>Second</b> start view on a picker without the seconds falls back to <b>Hour</b>, and
+                <b>SwitchView</b> - like a press on a toolbar part - does nothing for a part the picker does not edit.
+                Every opening of the callout starts the dial over on its start view, and changing <b>EditMode</b> moves
+                it there at once. The automatic move only follows a pick that was accepted: a press on a dimmed number,
+                or <b>Enter</b> on a part with no value yet, leaves the dial where it is.
+            </div>
+            <br />
+            <div class="example-content-standalone">
+                <BitCircularTimePicker Label="OnlyHours" Standalone EditMode="BitCircularTimePickerEditMode.OnlyHours"
+                                       DefaultValue="@(new TimeSpan(9, 30, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="OnlyMinutes" Standalone EditMode="BitCircularTimePickerEditMode.OnlyMinutes"
+                                       DefaultValue="@(new TimeSpan(9, 30, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="OnlySeconds" Standalone EditMode="BitCircularTimePickerEditMode.OnlySeconds"
+                                       DefaultValue="@(new TimeSpan(9, 30, 15))" />
+                <br /><br />
+                <BitCircularTimePicker Label="StartView: Minute" Standalone StartView="BitCircularTimePickerView.Minute"
+                                       OnViewChange="v => changedView = v" DefaultValue="@(new TimeSpan(9, 30, 0))" />
+            </div>
+            <br />
+            <div>Last view change: @(changedView?.ToString() ?? "-")</div>
+        </DemoExample>
+
+        <DemoExample Title="Steps" RazorCode="@example6RazorCode" Id="example6">
+            <div>
+                <b>MinuteStep</b> and <b>HourStep</b> set the granularity the dial and the arrow keys move in. A step lays
+                a grid over its range that the pick snaps to, which is what turns the face into a five-minute or
+                quarter-hour picker, and dims the numbers in between so a value the picker does not accept is never
+                offered. A press on a dimmed number changes nothing and leaves the dial where it is. The grid starts at
+                the matching part of <b>MinTime</b>, and at midnight or the top of the hour where there is none, so a
+                picker whose range begins at 09:07 can still be set to 09:07.
+            </div>
+            <br />
+            <div>
+                All three steps default to 1, and a value below 1 is treated as 1. A step is the granularity of the
+                dial, not a rule about which times exist: a bound value that is off the grid is shown as it is, with the
+                hand resting between two marks, and a time typed into the field is not held to it either. Use
+                <b>AllowedMinutes</b> and its siblings (see <BitLink Href="#example7">Selectable range</BitLink>) where
+                an off-grid time must also fail validation.
+            </div>
+            <br />
+            <div class="example-content-standalone">
+                <BitCircularTimePicker Label="MinuteStep = 5" Standalone MinuteStep="5"
+                                       DefaultValue="@(new TimeSpan(10, 15, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="MinuteStep = 15" Standalone MinuteStep="15"
+                                       DefaultValue="@(new TimeSpan(10, 15, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="HourStep = 3" Standalone HourStep="3"
+                                       DefaultValue="@(new TimeSpan(9, 0, 0))" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Selectable range" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                <b>MinTime</b> and <b>MaxTime</b> bound what can be picked: the hours outside the range are dimmed, and
+                inside the boundary hours only the minutes still within it stay selectable. <b>AllowedHours</b>,
+                <b>AllowedMinutes</b> and <b>AllowedSeconds</b> add an arbitrary rule on top of that. The pointer refuses
+                a dimmed number, the arrow keys step over it, and a time typed outside the range fails validation with
+                its own <b>OutOfRangeErrorMessage</b> rather than the message an unreadable one gets.
+                <b>DisablePast</b> and <b>DisableFuture</b> bound the range by the current time exactly as a
+                <b>MinTime</b> or a <b>MaxTime</b> of now would; where both apply, the narrower of the two wins.
+                The pair is a range inside one day and does not wrap past midnight - a window that does, such as a
+                night shift, is a job for <b>AllowedHours</b>.
+            </div>
+            <br />
+            <div>
+                The edges, in detail:
+            </div>
+            <ul>
+                <li>The predicates receive the hour of the day in 0-23 whatever the face, and the minute or the second
+                    in 0-59. Returning false for every value leaves nothing to pick.</li>
+                <li>A <b>MinTime</b> later than the <b>MaxTime</b> leaves nothing selectable, and a bound outside of a
+                    day is clamped into it first - a negative one to 00:00, one of a day or more to the end of the
+                    day.</li>
+                <li>Moving the hour pulls a minute (and a second) that the new hour puts out of range to the nearest
+                    one still inside it: with a range starting at 08:30, going from 09:15 to the 8 lands on 08:30.</li>
+                <li><b>DisablePast</b> and <b>DisableFuture</b> read the clock of the device the picker runs on, to
+                    the precision the dial shows, so the minute that is running can still be picked; the bound is read
+                    again on every render rather than fixed when the picker appears.</li>
+                <li>The bounds and predicates restrict what can be picked and typed, not what is bound: a value set
+                    from code outside of them is still shown.</li>
+            </ul>
+            <br />
+            <div class="example-content-standalone">
+                <BitCircularTimePicker Label="Between 08:30 and 17:15" Standalone MinTime="@(new TimeSpan(8, 30, 0))"
+                                       MaxTime="@(new TimeSpan(17, 15, 0))" DefaultValue="@(new TimeSpan(8, 30, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="Working hours only, on the half hour" Standalone
+                                       AllowedHours="@(h => h is >= 9 and <= 17)" AllowedMinutes="@(m => m is 0 or 30)"
+                                       DefaultValue="@(new TimeSpan(9, 0, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="Night shift - 22:00 until 07:00, across midnight" Standalone
+                                       AllowedHours="@(h => h is >= 22 or <= 6)"
+                                       DefaultValue="@(new TimeSpan(23, 0, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="Later today only" Standalone DisablePast />
+            </div>
+        </DemoExample>
+    </DemoTopic>
+
+    <DemoTopic Title="Picker, input & binding" Route="input"
+               Description="Working the callout and the field: the now, clear and close buttons, the open state, typing a time and formatting it, binding the value, and cultures.">
+        <DemoExample Title="Picker actions" RazorCode="@example8RazorCode" Id="example8">
+            <div>
+                <b>ShowNowButton</b> jumps to the current time - snapped to the steps and clamped into the range, so it
+                can never land on a time the dial itself refuses - and <b>ShowClearButton</b> empties the picker.
+                <b>ShowCloseButton</b> adds a dismiss button in the corner of the callout, and <b>AutoClose</b> closes it
+                as soon as the selection is complete, without waiting for either - <b>AutoCloseDelay</b> holds the clock
+                open for a moment first, so the pick that completed it can be seen being made. Their captions are set
+                with <b>NowButtonText</b>, <b>ClearButtonText</b> and <b>CloseButtonTitle</b>.
+            </div>
+            <br />
+            <ul>
+                <li>The now and clear buttons sit in a row under the clock and work on a standalone picker too; the close
+                    button and <b>AutoClose</b> are ignored there, as there is no callout.</li>
+                <li><b>Now</b> sets every part at once, so it completes the selection by itself. A picker without the
+                    seconds gets zero seconds (or the first second the range allows), and where the constraints leave
+                    no time to land on, the button changes nothing.</li>
+                <li><b>Clear</b> is disabled while the picker is empty. It sets the value to null, moves the dial back
+                    to its start view, raises <b>OnClear</b> and puts the focus on the dial.</li>
+                <li>The selection is complete once the last part the dial offers is picked - the minute, or the second
+                    with <b>ShowSeconds</b> - or the single part of an <b>OnlyHours</b> / <b>OnlyMinutes</b> /
+                    <b>OnlySeconds</b> picker. <b>AutoCloseDelay</b> is in milliseconds (0 by default); a further pick
+                    inside the wait starts it over, and switching to another part cancels it.</li>
+                <li>The now and clear buttons are disabled on a disabled or read-only picker.</li>
+            </ul>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Now & Clear" ShowNowButton ShowClearButton Placeholder="Select a time" />
+                <br /><br />
+                <BitCircularTimePicker Label="Close button" ShowCloseButton Placeholder="Select a time" />
+                <br /><br />
+                <BitCircularTimePicker Label="AutoClose" AutoClose Placeholder="Select a time" />
+                <br /><br />
+                <BitCircularTimePicker Label="AutoClose after 400ms" AutoClose AutoCloseDelay="400"
+                                       Placeholder="Select a time" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Open state" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>@("@bind-IsOpen")</b> puts the callout under the control of the page, so it can be opened and closed
+                from anywhere - the <b>OpenCallout</b> and <b>DismissCallout</b> methods do the same from code.
+                <b>DropDirection</b> chooses the sides the callout may open towards: <b>TopAndBottom</b> (the default)
+                keeps it above or below the field, while <b>All</b> lets it take whichever side has the room. <b>OnOpen</b>
+                and <b>OnClose</b> report every change either way, a change pushed in through <b>IsOpen</b> included.
+            </div>
+            <br />
+            <div>
+                The open callout is a modal dialog over a transparent overlay: opening it puts the focus on the dial
+                (unless <b>AllowTextInput</b> keeps it in the field for typing), <b>Tab</b> and <b>Shift + Tab</b> cycle
+                through the parts inside it, and a click on the overlay closes it. A close the person makes - Escape, the
+                close button, the overlay, <b>AutoClose</b> - hands the focus back to the field so the keyboard carries
+                on where it left off; a close from code (<b>DismissCallout</b>, or <b>IsOpen</b> set to false) leaves the
+                focus where that code put it. When the focus leaves both the field and the callout some other way - a
+                Tab out of an editable field, which keeps the focus while the callout is open - the callout closes and
+                leaves the focus where it went: the callout is moved to the end of the document while it is open, so a picker left open behind
+                would be one nothing on the page could reach any more. Opening another callout closes this one too.
+                <b>OpenCallout</b> does nothing on a picker that is already open, disabled or standalone, and does not
+                raise <b>OnClick</b>.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Controlled callout" Placeholder="Select a time" @bind-IsOpen="isCalloutOpen" />
+            </div>
+            <br />
+            <BitButton OnClick="() => isCalloutOpen = !isCalloutOpen">
+                @(isCalloutOpen ? "Close" : "Open") from outside
+            </BitButton>
+            <br /><br /><br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Any direction" Placeholder="Select a time"
+                                       DropDirection="BitDropDirection.All" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Text input & value format" RazorCode="@example10RazorCode" Id="example10">
+            <div>
+                <b>ValueFormat</b> is the .NET format string the field is written with. Left unset, the picker writes
+                the time the way its culture does: the pattern of the culture, rewritten into the clock format the dial
+                is in (<b>TimeFormat</b>), extended with the seconds where <b>ShowSeconds</b> is set and padded with
+                leading zeros.
+            </div>
+            <br />
+            <div>
+                <b>AllowTextInput</b> makes the field editable, so a time can be typed instead of dialled. It is read
+                back with the same format - which is why the format is worth putting in the placeholder - except that
+                the default one also accepts a time written without its leading zeros.
+            </div>
+            <br />
+            <ul>
+                <li>A <b>ValueFormat</b> you set is used exactly as given, to write and to read: <b>ShowSeconds</b> adds
+                    nothing to it, and a format that disagrees with <b>TimeFormat</b> (<code>HH:mm</code> on a 12-hour
+                    dial) writes the field the way the format says while the dial keeps its own face. The designators of
+                    <code>tt</code> and the separators come from the <b>Culture</b> (see the
+                    <BitLink Href="#example12">Culture</BitLink> sample).</li>
+                <li>The typed text is read as it is typed. Text that cannot be read, a time outside <b>MinTime</b> /
+                    <b>MaxTime</b> and a time the <b>Allowed*</b> predicates rule out each fail validation with a message
+                    of their own (see
+                    <BitLink Href="/components/circulartimepicker/behavior#example18">Validation</BitLink>); the steps
+                    are not applied to typed text. A time that reads correctly updates the dial at once, and an emptied
+                    field sets the value to null.</li>
+                <li>An editable field keeps the focus when the callout opens, so the typing can go on; <b>Enter</b> and
+                    <b>Space</b> belong to the text there, and the callout is opened with a click, <b>&darr;</b> or
+                    <b>&uarr;</b>. <b>ReadOnly</b> makes the field read-only again.</li>
+            </ul>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Formatted time" ValueFormat="hh-mm tt" Placeholder="Select a time"
                                        TimeFormat="BitTimeFormat.TwelveHours" />
+                <br /><br />
+                <BitCircularTimePicker Label="Text input allowed" AllowTextInput ValueFormat="HH:mm"
+                                       Placeholder="Enter a time (HH:mm)" />
             </div>
-        </div>
-    </DemoExample>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+            <div>
+                <b>@("@bind-Value")</b> keeps a <b>TimeSpan?</b> in step with the dial in both directions. Where the value
+                does not need to be held anywhere, <b>DefaultValue</b> seeds the picker once and <b>OnChange</b> reports
+                every change from then on, so the picker keeps its own state (uncontrolled mode).
+            </div>
+            <br />
+            <div>
+                The value is a time of day. A <b>TimeSpan</b> that runs past a day or before its start - the result of
+                a subtraction, say - is shown as the time of day it lands on (26:30 as 02:30), and every pick writes a
+                time inside one day back. A dial pick always produces a whole time: the parts not picked yet count as
+                zero, so the first hour picked on an empty picker is already a value. The seconds of a bound value are
+                kept on a picker that does not show them. <b>OnChange</b> follows the value; <b>OnSelectTime</b>,
+                described with the other callbacks under
+                <BitLink Href="/components/circulartimepicker/behavior#example19">Events</BitLink>, follows the dial.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Two-way bound" @bind-Value="@selectedTime" />
+            </div>
+            <br />
+            <div>Selected time: @selectedTime.ToString()</div>
+            <br /><br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Uncontrolled" DefaultValue="@(new TimeSpan(7, 30, 0))"
+                                       OnChange="v => changedTime = v" />
+            </div>
+            <br />
+            <div>Changed time: @changedTime.ToString()</div>
+            <br /><br /><br />
+            <div>
+                <b>StartingValue</b> is not a value: the picker below stays empty and submits nothing until it is
+                touched. It is only where the first change lands, so moving the hour keeps the 30 minutes instead of
+                resetting them to midnight - which is what a picker that mostly gets times around the working day wants.
+                Open both and dial an hour to see the difference.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="No starting value" Placeholder="Select a time" ShowClearButton />
+                <br /><br />
+                <BitCircularTimePicker Label="Starting from 09:30" Placeholder="Select a time" ShowClearButton
+                                       StartingValue="@(new TimeSpan(9, 30, 0))" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Culture" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+            <div>
+                <b>Culture</b> is what the value is formatted and parsed with, and what the AM/PM designators of the
+                12-hour toolbar are taken from; left unset it follows <b>CultureInfo.CurrentUICulture</b>. Our
+                <BitLink Href="https://github.com/bitfoundation/bitplatform/blob/develop/src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Helpers/CultureInfoHelper.cs"
+                         Target="_blank">
+                    CultureInfoHelper
+                </BitLink> class shows how to build a custom one. The face itself is a deliberate choice rather than a
+                consequence of the culture - <b>TimeFormat</b> stays where it is put - but the short time pattern of a
+                culture says which of the two its readers expect, so a picker that should follow them can be wired to it
+                in a line.
+            </div>
+            <br />
+            <div>
+                Without a <b>ValueFormat</b>, the culture's own time pattern is what the field is written and read with -
+                its order, its separators and its designators, rewritten into the face of the picker. The numbers of the
+                dial and the read-out of the toolbar are always written with the digits 0-9 and padded to two digits,
+                whatever the culture. On a 12-hour dial the keyboard switches the half of the day with <b>A</b> and
+                <b>P</b>, and also with the first letters of the culture's two designators where those differ. The
+                culture sets no direction: a right-to-left layout is <b>Dir</b>'s job (see
+                <BitLink Href="/components/circulartimepicker/styling#example25">RTL</BitLink>).
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="fa-IR culture" TimeFormat="BitTimeFormat.TwelveHours"
+                                       Culture="CultureInfoHelper.GetFaIrCultureWithFarsiNames()" />
+                <br /><br />
+                <BitCircularTimePicker Label="Face taken from the current culture"
+                                       TimeFormat="@GetTimeFormatOf(CultureInfo.CurrentUICulture)" />
+            </div>
+        </DemoExample>
+    </DemoTopic>
+
+    <DemoTopic Title="Appearance & templates" Route="appearance"
+               Description="How the picker looks: read-only pickers, the field's border and icon, the label, icon and callout templates, and the landscape and responsive layouts.">
+        <DemoExample Title="ReadOnly" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+            <div>
+                <b>ReadOnly</b> shows the value and lets the callout open, but nothing on the dial can be moved: the
+                pointer, the arrow keys, the AM/PM pair and the action buttons all stop short of a change. Unlike a
+                disabled picker it stays in the tab order and keeps being announced, so the value can still be read out.
+            </div>
+            <br />
+            <div>
+                What does not change the value still works: the toolbar parts switch the dial between the hours, the
+                minutes and the seconds, and the close button, Escape and a click outside close the callout. The field
+                stays read-only even with <b>AllowTextInput</b>, the dial and the field are marked
+                <b>aria-readonly</b>, and the time is still posted with the form and validated like any other.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Basic" ReadOnly @bind-Value="@readOnlyTime" />
+                <br /><br />
+                <BitCircularTimePicker Label="Text input allowed" ReadOnly AllowTextInput @bind-Value="@readOnlyTime" />
+            </div>
+            <br /><br />
+            <div class="example-content-standalone">
+                <BitCircularTimePicker Label="Standalone" Standalone ReadOnly @bind-Value="@readOnlyTime" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Appearance" RazorCode="@example14RazorCode" Id="example14">
+            <div>
+                <b>Underlined</b> trades the box of the field for a single rule under it, <b>HasBorder</b> is on by
+                default and set to false takes the box away altogether - for a picker that sits inside a container of
+                its own - and <b>IconPlacement</b> moves the clock glyph to the leading edge.
+            </div>
+            <br />
+            <div>
+                <b>IconPlacement</b> honours <b>Start</b> and <b>End</b> (the default) only; any other placement leaves
+                the icon at the end. Both follow the reading direction, so <b>Start</b> is the right-hand side of a
+                right-to-left picker. These parameters style the field alone: a standalone picker has no field, and the
+                callout looks the same whichever of them is set. The border and the icon take the error color while the
+                field has a validation message.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Underlined" Underlined Placeholder="Select a time" />
+                <br /><br />
+                <BitCircularTimePicker Label="No border" HasBorder="false" Placeholder="Select a time" />
+                <br /><br />
+                <BitCircularTimePicker Label="Icon on the left" IconPlacement="BitPlacement.Start"
+                                       Placeholder="Select a time" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                <b>LabelTemplate</b> and <b>IconTemplate</b> replace the label and the trailing glyph with arbitrary
+                markup. The first picker below drives its callout from a button inside its own label, through the public
+                <b>OpenCallout</b> and <b>DismissCallout</b> methods of the component.
+                <b>CalloutHeaderTemplate</b> and <b>CalloutFooterTemplate</b> add arbitrary markup above and below the
+                dial inside the callout itself.
+            </div>
+            <br />
+            <div>
+                For the glyph, <b>IconTemplate</b> wins over <b>Icon</b>, which wins over <b>IconName</b>. A label
+                template is still the label of the field, so clicking it focuses the field (or, standalone, the dial,
+                which is then named by the template's text); give the picker an <b>AriaLabel</b> where the template has
+                no readable text. The header and footer sit inside the dialog and its focus cycle, so whatever they hold
+                can be reached with Tab, and with a header the close button sits in its corner instead of over the
+                toolbar. They are
+                rendered on a standalone picker as well, and styled through the <b>CalloutHeader</b> and
+                <b>CalloutFooter</b> slots of <b>Styles</b> and <b>Classes</b>.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker @ref="circularTimePicker">
+                    <LabelTemplate>
+                        Custom label <BitButton Variant="BitVariant.Text" IconName="@BitIconName.AlarmClock"
+                                                OnClick="OpenCallout"></BitButton>
+                    </LabelTemplate>
+                </BitCircularTimePicker>
+                <br /><br /><br />
+                <BitCircularTimePicker Label="Custom left-handed icon" IconPlacement="BitPlacement.Start"
+                                       Placeholder="Select a time">
+                    <IconTemplate>
+                        <img src="https://img.icons8.com/fluency/2x/clock.png" width="24" height="24" />
+                    </IconTemplate>
+                </BitCircularTimePicker>
+                <br /><br /><br />
+                <BitCircularTimePicker Label="Custom callout header & footer" Placeholder="Select a time">
+                    <CalloutHeaderTemplate>
+                        <div style="padding:0.5rem">Pick a time</div>
+                    </CalloutHeaderTemplate>
+                    <CalloutFooterTemplate>
+                        <div style="padding:0.5rem">Times are local</div>
+                    </CalloutFooterTemplate>
+                </BitCircularTimePicker>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Layout" RazorCode="@example16RazorCode" Id="example16">
+            <div>
+                Two parameters answer the space the picker has, and the small breakpoint is where one hands over to the
+                other. <b>Landscape</b> puts the toolbar down the leading edge instead of above the clock, stacking the
+                parts of the time in a column - roughly half the height for a picker with width to spare - and takes
+                effect from that breakpoint up. <b>Responsive</b> takes over below it, turning the callout into a sheet
+                anchored to the top of the screen that can be swiped away upwards. The <b>Body</b> slot of <b>Styles</b>
+                and <b>Classes</b> reaches the column the toolbar is set beside: the clock, the AM/PM pair when
+                <b>AmPmInClock</b> puts it there, and the row of actions.
+            </div>
+            <br />
+            <div>
+                <b>Landscape</b> works on a standalone picker as well as in the callout, and below the small breakpoint
+                it falls back to the portrait layout. <b>Responsive</b> only concerns the callout, so a standalone
+                picker ignores it, and on a screen wider than the breakpoint it changes nothing. Both are off by
+                default. The size of the clock itself is the job of <b>Size</b> and the
+                <code>--bit-CircularTimePicker-clock-size</code> variable (see
+                <BitLink Href="/components/circulartimepicker/styling#example23">Size</BitLink>).
+            </div>
+            <br />
+            <div class="example-content-standalone">
+                <BitCircularTimePicker Label="Landscape" Standalone Landscape
+                                       DefaultValue="@(new TimeSpan(9, 30, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Label="Landscape, 12-hour with the seconds" Standalone Landscape ShowSeconds
+                                       AmPmInClock ShowNowButton TimeFormat="BitTimeFormat.TwelveHours"
+                                       DefaultValue="@(new TimeSpan(21, 45, 30))" />
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Landscape in the callout" Landscape Placeholder="Select a time" />
+                <br /><br />
+                <BitCircularTimePicker Label="Responsive - resize below the small breakpoint" Responsive
+                                       Placeholder="Select a time" />
+            </div>
+        </DemoExample>
+    </DemoTopic>
+
+    <DemoTopic Title="Accessibility, validation & events" Route="behavior"
+               Description="The keyboard and screen-reader support, validation and its messages, and the events.">
+        <DemoExample Title="Keyboard & accessibility" RazorCode="@example17RazorCode" Id="example17">
+            <div>
+                The dial is a listbox whose options are the numbers of the current view, so a screen reader reads out what
+                the pointer rests on, and the whole time can be set without ever touching the clock:
+            </div>
+            <br />
+            <ul>
+                <li><b>Enter</b>, <b>Space</b>, <b>&darr;</b> or <b>&uarr;</b> on the field opens the picker and puts the
+                    focus on the dial - only the arrows on a field made editable by <b>AllowTextInput</b>, which keeps the
+                    focus for typing. <b>Esc</b> closes it from anywhere inside it and puts the focus back on the
+                    field.</li>
+                <li><b>Tab</b> and <b>Shift + Tab</b> inside the callout cycle through the toolbar, the dial, the buttons
+                    and anything the templates put there, without leaving it. The focus moving off both the field and
+                    the callout - a Tab out of an editable field - closes the picker rather than stranding it behind
+                    the overlay, and a click on the overlay closes it too.</li>
+                <li><b>&uarr;</b> / <b>&rarr;</b> and <b>&darr;</b> / <b>&larr;</b> move the pointer by one step,
+                    <b>PageUp</b> / <b>PageDown</b> by five steps, stepping over the values the constraints rule out
+                    and wrapping around the face. On an empty picker the first press lands on 00, or on the nearest
+                    allowed value from there in the direction pressed; with a <b>StartingValue</b> it steps from that
+                    time instead.</li>
+                <li><b>Home</b> and <b>End</b> jump to the first and the last selectable value.</li>
+                <li>Digits type the value: <b>4</b> <b>5</b> within a second lands on 45; a digit that would take the
+                    number past what the ring holds starts a new one. On a 12-hour dial a typed hour stays in the half
+                    of the day shown, and <b>A</b> and <b>P</b> switch the half.</li>
+                <li><b>Enter</b> or <b>Space</b> settles the current view - moving on to the next part, and closing an
+                    <b>AutoClose</b> picker once the time is complete.</li>
+                <li><b>Shift</b> + the mouse wheel over the focused dial moves it by one step as well. Both conditions
+                    keep an ordinary scroll of the page from changing the time; <b>NoMouseWheel</b> turns it off
+                    altogether and <b>InvertMouseWheel</b> reverses it.</li>
+            </ul>
+            <br />
+            <div>
+                <b>CalloutAriaLabel</b> names the dialog, <b>HourButtonTitle</b>, <b>MinuteButtonTitle</b> and
+                <b>SecondButtonTitle</b> name the toolbar buttons and the dial in each view (their defaults are the
+                English "Clock", "Select hour", "Select minute" and "Select second", so set them on a page in another
+                language), <b>AutoFocus</b> puts the focus on the field as the page renders - on the dial of a
+                standalone picker - and <b>TabIndex</b> reaches the dial as well as the field. Values
+                the constraints rule out are marked <b>aria-disabled</b> rather than merely dimmed, and a live region
+                announces every move of the dial - the part it switches to, and the value it lands on where no number of
+                the face stands for it, so a step of a single minute is never made in silence. In the toolbar the part
+                the dial is on carries a rule under it rather than the other two being dimmed, so which one is being
+                edited never rests on a difference of contrast.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Try it with the keyboard" Placeholder="Select a time"
+                                       CalloutAriaLabel="Pick a meeting time" HourButtonTitle="Meeting hour"
+                                       MinuteButtonTitle="Meeting minute" TimeFormat="BitTimeFormat.TwelveHours" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Validation" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <div>
+                Inside an <b>EditForm</b> the picker is an ordinary form input: it registers with the <b>EditContext</b>,
+                turns red and gets <b>aria-invalid</b> when its field has messages. Text is the only way a time the dial
+                itself refuses can reach it, and the three ways it can be wrong get three messages of their own -
+                <b>InvalidErrorMessage</b> for one that cannot be read, <b>OutOfRangeErrorMessage</b> for one outside
+                <b>MinTime</b> / <b>MaxTime</b>, and <b>DisallowedTimeErrorMessage</b> for one the <b>Allowed*</b>
+                predicates rule out. The steps are the one constraint typed text is not held to. A <b>Standalone</b>
+                picker has no field to redden, so the rule is drawn around the dial instead, and the dial is what
+                carries <b>aria-required</b> and <b>aria-invalid</b>.
+            </div>
+            <br />
+            <div>
+                Left unset, the three messages read "The <i>field</i> field is not valid.", "... is out of the allowed
+                range." and "... is not an allowed time.", where <i>field</i> is the <b>DisplayName</b> of the picker or
+                else the name of the bound property. These messages come from the picker; whether a value is required
+                at all comes from the model, here a <b>[Required]</b> attribute on its <b>TimeSpan?</b> property. The
+                text is checked as it is typed, so a time half written shows the unreadable-time message until it is
+                complete. <b>NoValidate</b> keeps the picker out of the <b>EditContext</b> validation altogether.
+            </div>
+            <br />
+            <div class="example-content">
+                <EditForm Model="formValidationCircularTimePickerModel" OnValidSubmit="HandleValidSubmit"
+                          OnInvalidSubmit="HandleInvalidSubmit">
+                    <DataAnnotationsValidator />
+
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
+                    <div>
+                        <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time" AllowTextInput
+                                               Placeholder="Select a time" Label="Time required" />
+                        <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
+                    </div>
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">
+                        Submit
+                    </BitButton>
+                </EditForm>
+
+                @if (string.IsNullOrEmpty(successMessage) is false)
+                {
+                    <BitMessage Color="BitColor.Success">@successMessage</BitMessage>
+                }
+            </div>
+            <br /><br />
+            <div class="example-desc">
+                Type <b>ab:cd</b>, <b>07:00</b> and <b>09:10</b> into the field below to see each of the three messages.
+            </div>
+            <div class="example-content">
+                <EditForm Model="formValidationCircularTimePickerModel">
+                    <DataAnnotationsValidator />
+                    <div>
+                        <BitCircularTimePicker @bind-Value="formValidationCircularTimePickerModel.Time" AllowTextInput
+                                               MinTime="@(new TimeSpan(8, 0, 0))" MaxTime="@(new TimeSpan(18, 0, 0))"
+                                               AllowedMinutes="@(m => m is 0 or 15 or 30 or 45)"
+                                               Label="Custom error messages"
+                                               InvalidErrorMessage="That is not a time - write it as HH:mm."
+                                               OutOfRangeErrorMessage="Please enter a time between 08:00 and 18:00."
+                                               DisallowedTimeErrorMessage="Appointments start on the quarter hour." />
+                        <ValidationMessage For="@(() => formValidationCircularTimePickerModel.Time)" />
+                    </div>
+                    <br />
+                    <div class="validation-summary">
+                        <ValidationSummary />
+                    </div>
+                </EditForm>
+            </div>
+            <br /><br />
+            <div class="example-desc">
+                A standalone picker in the same form. Submit it empty to see the rule around the dial.
+            </div>
+            <div class="example-content-standalone">
+                <EditForm Model="standaloneValidationModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <BitCircularTimePicker @bind-Value="standaloneValidationModel.Time" Standalone Required
+                                           Label="Standalone & required" ShowClearButton />
+                    <ValidationMessage For="@(() => standaloneValidationModel.Time)" />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </EditForm>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example19RazorCode" CsharpCode="@example19CsharpCode" Id="example19">
+            <div>
+                <b>OnSelectTime</b> fires for every change the dial makes, <b>OnChange</b> for every change of the value
+                itself, <b>OnClear</b> for the clear button emptying it, <b>OnOpen</b> and <b>OnClose</b> follow the
+                callout, <b>OnViewChange</b> follows the dial between the parts of the time, and <b>OnClick</b>,
+                <b>OnFocusIn</b> and <b>OnFocusOut</b> follow the field.
+            </div>
+            <br />
+            <ul>
+                <li><b>OnSelectTime</b> receives the new <b>TimeSpan?</b> for every change the picker itself makes: a
+                    pick or drag on the dial, a key, the AM/PM pair, the now and clear buttons (clear passes null) and
+                    each keystroke of typed text. <b>OnChange</b> fires whenever the value changes, whatever changed it.</li>
+                <li><b>OnClick</b> is a click on the field, raised after the callout has opened; opening it through
+                    <b>OpenCallout</b> or <b>IsOpen</b> raises <b>OnOpen</b> alone.</li>
+                <li><b>OnViewChange</b> passes the <b>BitCircularTimePickerView</b> the dial moved to, and fires for the
+                    automatic move after a pick, a press on a toolbar part and <b>SwitchView</b> alike.</li>
+                <li><b>OnFocus</b> (not shown) fires when the input itself takes the focus, while <b>OnFocusIn</b>
+                    bubbles from it. A standalone picker has no field, so these and <b>OnClick</b> do not fire on it.</li>
+                <li>None of these callbacks can be set through <b>BitParams</b>; they are written on each picker.</li>
+            </ul>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Watch the log" Placeholder="Select a time" ShowClearButton OnOpen="LogOpen"
+                                       OnClose="LogClose" OnClick="LogClick" OnFocusIn="LogFocusIn" OnFocusOut="LogFocusOut"
+                                       OnViewChange="LogViewChange" OnSelectTime="LogSelectTime" OnChange="LogChange"
+                                       OnClear="LogClear" />
+            </div>
+            <br />
+            <div class="event-log">
+                @foreach (var log in eventLogs)
+                {
+                    <div>@log</div>
+                }
+            </div>
+        </DemoExample>
+    </DemoTopic>
+
+    <DemoTopic Title="Styling" Route="styling"
+               Description="Cascading parameters, colors, icons, sizes, Style & Class and right-to-left pickers.">
+        <DemoExample Title="Cascading parameters" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" Id="example20">
+            <div>
+                A form full of time pickers usually repeats the same handful of parameters on every one of them.
+                <b>BitParams</b> takes them out of the markup: it cascades a <b>BitCircularTimePickerParams</b> down to
+                every BitCircularTimePicker underneath it, however deeply nested. Every property of that class is
+                nullable, so only the ones actually set travel; the rest are left alone.
+            </div><br />
+            <div>
+                Here the clock format, the minute step, the actions and the accent are set once for the whole group. A
+                value written on a picker itself always wins - the cascade only fills in what the markup left alone -
+                which is why the last one below keeps its own step and color:
+            </div><br />
+            <BitParams Parameters="bookingPickerParams">
+                <div class="example-content">
+                    <BitCircularTimePicker Label="Check-in" Placeholder="Select a time" />
+                    <br />
+                    <BitCircularTimePicker Label="Check-out" Placeholder="Select a time" />
+                    <br />
+                    <BitCircularTimePicker Label="Wake-up call" Placeholder="Select a time"
+                                           MinuteStep="1" Color="BitColor.Secondary" />
+                </div>
+            </BitParams>
+            <br /><br />
+            <div>
+                The value and the open state are deliberately left out of <b>BitCircularTimePickerParams</b>: both are
+                per-field state the picker assigns to itself, so a cascaded value would be written straight back over
+                what the person just picked. <b>StartingValue</b> is the cascadable way to say where an empty picker
+                begins. The event callbacks are not part of it either. A <b>CalloutHtmlAttributes</b> cascaded this way
+                is merged with the picker's own, whose entries win where both name the same attribute.
+            </div><br />
+            <div>
+                <b>Parameters</b> is a list, so a single <b>BitParams</b> can carry the parameters of several component
+                types at once - a <b>BitCircularTimePickerParams</b> next to a <b>BitButtonParams</b>, each one reaching
+                only the components it belongs to.
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21">
+            <div>
+                <b>Color</b> picks the theme color of the accent the dial is painted with - the toolbar, the hand, the pin
+                and the selected number - with <b>Primary</b> as the default. The semantic colors tie the picker to what
+                the time it sets means, while the <b>Background</b>, <b>Foreground</b> and <b>Border</b> families keep it
+                legible on non-default surfaces.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Color="BitColor.Primary" Label="Primary" DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.Secondary" Label="Secondary"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.Tertiary" Label="Tertiary"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Color="BitColor.Info" Label="Info" DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.Success" Label="Success" DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.Warning" Label="Warning" DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.SevereWarning" Label="SevereWarning"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.Error" Label="Error" DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Color="BitColor.PrimaryBackground" Label="PrimaryBackground"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.SecondaryBackground" Label="SecondaryBackground"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.TertiaryBackground" Label="TertiaryBackground"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Color="BitColor.PrimaryForeground" Label="PrimaryForeground"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.SecondaryForeground" Label="SecondaryForeground"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.TertiaryForeground" Label="TertiaryForeground"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br /><br />
+                <BitCircularTimePicker Color="BitColor.PrimaryBorder" Label="PrimaryBorder"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.SecondaryBorder" Label="SecondaryBorder"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Color="BitColor.TertiaryBorder" Label="TertiaryBorder"
+                                       DefaultValue="@(new TimeSpan(10, 10, 0))" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
+            <div>
+                The glyphs are not limited to the built-in icon font: <b>Icon</b> and <b>CloseButtonIcon</b> take a
+                <b>BitIconInfo</b> - or a raw CSS class string - that can point at any icon library whose stylesheet is
+                loaded. Use <b>BitIconInfo.Fa()</b>, <b>BitIconInfo.Bi()</b> or <b>BitIconInfo.Css()</b> to build one.
+            </div>
+            <br />
+            <div>
+                They take precedence over their built-in counterparts, <b>IconName</b> (<b>Clock</b> by default) and
+                <b>CloseButtonIconName</b> (<b>Cancel</b>), when both are set, and an <b>IconTemplate</b> wins over
+                both for the field's glyph. The stylesheet of the icon library is the page's to load; the picker only
+                writes the classes. The close button only exists with <b>ShowCloseButton</b>, in the callout.
+            </div>
+            <br />
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <div>FontAwesome:</div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="FontAwesome" Icon="@("fa-solid fa-clock")" />
+                <br /><br />
+                <BitCircularTimePicker Label="FontAwesome (Css)" Icon="@BitIconInfo.Css("fa-solid fa-heart")" />
+                <br /><br />
+                <BitCircularTimePicker Label="FontAwesome (Fa)" Icon="@BitIconInfo.Fa("solid clock")" ShowCloseButton
+                                       CloseButtonIcon="@BitIconInfo.Fa("solid xmark")" />
+            </div>
+            <br /><br />
+            <link rel="stylesheet"
+                  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+            <div>Bootstrap:</div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Bootstrap" Icon="@("bi bi-clock-fill")" />
+                <br /><br />
+                <BitCircularTimePicker Label="Bootstrap (Css)" Icon="@BitIconInfo.Css("bi bi-heart-fill")" />
+                <br /><br />
+                <BitCircularTimePicker Label="Bootstrap (Bi)" Icon="@BitIconInfo.Bi("clock-fill")" ShowCloseButton
+                                       CloseButtonIcon="@BitIconInfo.Bi("x-lg")" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23">
+            <div>
+                <b>Size</b> scales the field, the label, the dial, its numbers and the toolbar together, so the picker
+                lines up with the other controls of a form at whichever size they are: <b>Small</b> where the clock has
+                to share a dense layout, <b>Medium</b> (the default) for forms, and <b>Large</b> where the picker is the
+                point of the screen or aimed at touch. The two rings and the hand keep their proportions at every size.
+            </div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Size="BitSize.Small" Label="Small" DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Size="BitSize.Medium" Label="Medium" DefaultValue="@(new TimeSpan(10, 10, 0))" />
+                <br />
+                <BitCircularTimePicker Size="BitSize.Large" Label="Large" DefaultValue="@(new TimeSpan(10, 10, 0))" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" Id="example24">
+            <div>
+                <b>Style</b> and <b>Class</b> land on the root element, while <b>Styles</b> and <b>Classes</b> reach every
+                named part of the picker on their own - the toolbar, the face, the numbers, the hand and its thumb - so
+                the callout can be restyled without a single descendant selector. The parts are listed under
+                <BitLink Href="/components/circulartimepicker/api#timepicker-class-styles">BitCircularTimePickerClassStyles</BitLink>.
+            </div>
+            <br />
+            <div>
+                The callout is rendered beside the root rather than inside it, so <b>Class</b> does not reach it - style
+                the dial through <b>Classes.Callout</b> and the other slots instead. <b>Focused</b> is applied to the root
+                while the field or its open callout holds the focus. <b>ClockSelectedNumber</b> and
+                <b>ClockDisabledNumber</b> are added to <b>ClockNumber</b> on the numbers in those states, and
+                <b>SelectedButtons</b> to the toolbar part the dial is on and to the selected half of the AM/PM pair.
+            </div>
+            <br /><br />
+            <div>Component's Style & Class:</div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Style="margin: 1rem; box-shadow: dodgerblue 0 0 1rem;" />
+                <br />
+                <BitCircularTimePicker Class="custom-class" />
+            </div>
+            <br /><br /><br />
+            <div><b>Styles</b> & <b>Classes</b>:</div>
+            <br />
+            <div class="example-content">
+                <BitCircularTimePicker Styles="@(new()
+                                       {
+                                           Root = "margin-inline: 1rem;",
+                                           Focused = "--focused-background: #b2b2b25a;",
+                                           Input = "padding: 0.5rem;",
+                                           InputContainer = "background: var(--focused-background);",
+                                           HourButton = "color: gray;",
+                                           MinuteButton = "color: gray;",
+                                           HourMinuteSeparator = "color: gray;",
+                                           Toolbar = "background-color: transparent;",
+                                           ClockFace = "box-shadow: dodgerblue 0 0 1rem;",
+                                           ClockPointerThumb = "background-color: blue;"
+                                       })" />
+                <br />
+                <BitCircularTimePicker @bind-Value="@classesValue" Label="Select a time" ShowClearButton MinuteStep="5"
+                                       Classes="@(new()
+                                       {
+                                           Root = "custom-root",
+                                           Focused = "custom-focus",
+                                           Input = "custom-input",
+                                           InputContainer = "custom-input-container",
+                                           Label = $"custom-label{(classesValue is null ? string.Empty : " custom-label-top")}",
+                                           Toolbar = "custom-toolbar",
+                                           ClockPin = "custom-clock-pin",
+                                           ClockFace = "custom-clock-face",
+                                           ClockNumber = "custom-clock-number",
+                                           ClockPointer = "custom-clock-pointer",
+                                           ClockPointerThumb = "custom-clock-pointer-thumb",
+                                           ClockSelectedNumber = "custom-clock-selected-number",
+                                           ClockDisabledNumber = "custom-clock-disabled-number",
+                                           ClockPointerThumbMinute = "custom-clock-pointer-thumb-minute",
+                                           ClearButton = "custom-clear-button"
+                                       })" />
+            </div>
+            <br /><br /><br />
+            <div>
+                <b>CSS variables</b> (listed under
+                <BitLink Href="/components/circulartimepicker/api#css-variables-section">CSS variables</BitLink> on the
+                API page) restyle the picker without a selector. On <b>:root</b> they re-skin every picker of the app. They restyle the default, not a choice:
+                an explicit <b>Color</b> or <b>Size</b> wins over the variables for what it sets. The callout moves to the
+                end of the <b>body</b> while it is open, yet it keeps inheriting from the picker's ancestors, so a wrapper
+                around the picker reaches the field, the label, the icon and the dial alike:
+            </div><br />
+            <div class="custom-vars">
+                <div class="example-content">
+                    <BitCircularTimePicker Label="Reservation" Placeholder="Select a time" ShowNowButton ShowClearButton
+                                           MinuteStep="5" TimeFormat="BitTimeFormat.TwelveHours" AmPmInClock />
+                </div>
+            </div>
+            <br />
+            <div>
+                Per instance, a variable on <b>Style</b> or <b>Styles.Root</b> reaches the field and the dial alike, and one
+                on <b>Styles.Callout</b> the dial alone:
+            </div><br />
+            <div class="example-content">
+                <BitCircularTimePicker Label="Reservation" Placeholder="Select a time" ShowSeconds
+                                       Styles="@(new()
+                                       {
+                                           Root = "--bit-CircularTimePicker-border-radius: 1rem;",
+                                           Callout = "--bit-CircularTimePicker-color: seagreen;" +
+                                                     "--bit-CircularTimePicker-clock-size: 14rem;" +
+                                                     "--bit-CircularTimePicker-clock-background: #f0f7f2;" +
+                                                     "--bit-CircularTimePicker-number-color: #1f3d2b;" +
+                                                     "--bit-CircularTimePicker-toolbar-padding: 1rem 0.5rem;" +
+                                                     "--bit-CircularTimePicker-pointer-width: 3px;" +
+                                                     "--bit-CircularTimePicker-pin-size: 10px;"
+                                       })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25">
+            <div>
+                <b>Dir</b> flips the field, the label and the toolbar into a right-to-left layout, and reaches the callout
+                as well even though it is rendered outside the root element. The dial itself keeps running clockwise, and
+                the parts of the time in the toolbar stay in reading order, because a clock reads the same way in every
+                script.
+            </div>
+            <br />
+            <div dir="rtl">
+                <div class="example-content">
+                    <BitCircularTimePicker Dir="BitDir.Rtl" Label="ساعت" Placeholder="یک ساعت انتخاب کنید"
+                                           TimeFormat="BitTimeFormat.TwelveHours" />
+                </div>
+            </div>
+        </DemoExample>
+    </DemoTopic>
 </DemoPage>

@@ -12,7 +12,7 @@
                NavPanelAriaLabel="Documentation"
                SkipLinkText="Skip to content">
         <Header>
-            <AppHeader IsHomePage="_isHomePage" OnToggleNavPanel="() => _isNavPanelOpen = true" />
+            <AppHeader HasSitePalette="@(_isCommandPalettePage is false)" IsHomePage="_isHomePage" OnToggleNavPanel="() => _isNavPanelOpen = true" />
         </Header>
         <NavPanel>
             <BitNavPanel @bind-IsOpen="_isNavPanelOpen"
@@ -50,6 +50,13 @@
        would sit beyond the cascade and its Modals would fall back to holding a body that never scrolls. *@
     <BitModalContainer />
     <BitPanelContainer />
+
+    @* The site's Ctrl+K. Left out on the CommandPalette pages, whose own modal palette is the one being shown: an app
+       has one modal palette, since every one of them answers the same toggle shortcut. *@
+    @if (_isCommandPalettePage is false)
+    {
+        <SiteCommandPalette />
+    }
 </BitAppShell>
 
 <AppAiChatPanel />

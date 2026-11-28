@@ -1,0 +1,107 @@
+﻿@page "/e2e/command-palette-inline"
+@inject IBitCommandPaletteService Palette
+
+<PageTitle>BitCommandPalette inline E2E</PageTitle>
+
+@* An inline palette searching a page's settings, next to the modal palette an app's layout has: the inline one lists
+   only its own commands, the modal one the app's - among them Alt+Z, which toggles the same word wrap. *@
+<h1 id="cpl-heading">BitCommandPalette inline</h1>
+
+<BitCommandPaletteCommands Commands="_globalCommands" />
+
+<BitCommandPalette Id="cpl" VimBindings="true" />
+
+<E2ESection Id="settings" Title="Settings">
+    <label>
+        <input id="cpl-wordwrap" type="checkbox" checked="@_wordWrap" @onchange="ToggleWordWrap" />
+        Word wrap
+    </label>
+    <p id="cpl-theme">Theme: @_theme</p>
+
+    <BitCommandPalette Id="cpl-inline"
+                       Inline="true"
+                       IncludeRegisteredCommands="false"
+                       ShowFooter="false"
+                       EnableHistory="false"
+                       Placeholder="Search these settings…"
+                       Style="--bit-CommandPalette-max-height: 260px"
+                       Commands="_settingsCommands" />
+
+    <button id="cpl-after" type="button">After the palette</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _wordWrap = true;
+    private bool _notifications;
+    private bool _showMinimap;
+    private string _theme = "auto";
+
+    private List<BitCommandPaletteCommand> _globalCommands = [];
+    private List<BitCommandPaletteCommand> _settingsCommands = [];
+
+    protected override void OnInitialized() => Changed();
+
+    private void ToggleWordWrap()
+    {
+        _wordWrap = _wordWrap is false;
+        Changed();
+    }
+
+    // New lists whenever the state changes, so the switches of both palettes show it.
+    private void Changed()
+    {
+        _globalCommands =
+        [
+            BitCommandPaletteCmd.New("Word wrap").Id("toggle:wordwrap").Group("Preferences").Shortcut("Alt+Z").Checked(_wordWrap)
+                .Handler(_ =>
+                {
+                    _wordWrap = _wordWrap is false;
+                    Refresh();
+                    return Task.FromResult(BitCommandPaletteCommandResult.KeepOpen);
+                }),
+        ];
+
+        _settingsCommands =
+        [
+            BitCommandPaletteCmd.New("Word wrap").Id("setting:wordwrap").Keywords("soft wrap lines").Checked(_wordWrap)
+                .Handler(_ =>
+                {
+                    _wordWrap = _wordWrap is false;
+                    Refresh();
+                    return Task.FromResult(BitCommandPaletteCommandResult.KeepOpen);
+                }),
+            BitCommandPaletteCmd.New("Desktop notifications").Id("setting:notifications").Keywords("alerts push").Checked(_notifications)
+                .Handler(_ =>
+                {
+                    _notifications = _notifications is false;
+                    Refresh();
+                    return Task.FromResult(BitCommandPaletteCommandResult.KeepOpen);
+                }),
+            BitCommandPaletteCmd.New("Show minimap").Id("setting:minimap").Keywords("outline overview").Checked(_showMinimap)
+                .Handler(_ =>
+                {
+                    _showMinimap = _showMinimap is false;
+                    Refresh();
+                    return Task.FromResult(BitCommandPaletteCommandResult.KeepOpen);
+                }),
+            .. new[] { "auto", "light", "dark" }.Select(theme => (BitCommandPaletteCommand)BitCommandPaletteCmd.New($"Theme: {char.ToUpperInvariant(theme[0])}{theme[1..]}")
+                .Id($"setting:theme-{theme}")
+                .Keywords("appearance", "color scheme")
+                .Checked(_theme == theme)
+                .Handler(_ =>
+                {
+                    _theme = theme;
+                    Refresh();
+                    return Task.FromResult(BitCommandPaletteCommandResult.KeepOpen);
+                })),
+        ];
+    }
+
+    private void Refresh() => _ = InvokeAsync(() =>
+    {
+        Changed();
+        StateHasChanged();
+    });
+}

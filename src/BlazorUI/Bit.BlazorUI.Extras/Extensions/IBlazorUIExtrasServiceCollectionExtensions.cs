@@ -26,9 +26,20 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
     /// and every container - the one that renders the host page's head and the one the switchers
     /// run in - resolves the same values.
     /// </param>
+    /// <param name="commandPalette">
+    /// Configures the app-wide <see cref="BitCommandPaletteOptions"/> of <see cref="BitCommandPalette"/>: shortcuts, modes,
+    /// sources, ranking weights, strings. The palette's own parameters, and a <see cref="BitCommandPaletteParams"/> cascaded
+    /// through a <see cref="BitParams"/>, override what they share with it. When null, the defaults are used. In a Blazor Web
+    /// App, call this from a service-registration method both the server and the client compile, so both run on the same options.
+    /// </param>
     /// <returns></returns>
-    public static IServiceCollection AddBitBlazorUIExtrasServices(this IServiceCollection services, bool trySingleton = false, Action<BitAccentColorConfig>? accentColor = null)
+    public static IServiceCollection AddBitBlazorUIExtrasServices(this IServiceCollection services,
+                                                                  bool trySingleton = false,
+                                                                  Action<BitAccentColorConfig>? accentColor = null,
+                                                                  Action<BitCommandPaletteOptions>? commandPalette = null)
     {
+        ArgumentNullException.ThrowIfNull(services);
+
         services.AddBitBlazorUIServices(trySingleton);
 
         // Nothing to do here for the packaged theme presets: this method lives in the Extras assembly,
@@ -62,6 +73,26 @@ public static class IBlazorUIExtrasServiceCollectionExtensions
 
         services.TryAddScoped<BitExtraServices>();
 
+        TryAddCommandPaletteServices(services, commandPalette);
+
         return services;
+    }
+
+    // The command palette's registry, open state and history are scoped regardless of trySingleton: the history store
+    // takes the scoped IJSRuntime, and the open state belongs to one circuit on Blazor Server. Scoped is one per
+    // application on WebAssembly and Hybrid anyway. An app that lazy loads Bit.BlazorUI.Extras on WebAssembly cannot
+    // call AddBitBlazorUIExtrasServices; BitCommandPaletteRuntime then creates these services itself.
+    private static void TryAddCommandPaletteServices(IServiceCollection services, Action<BitCommandPaletteOptions>? configure)
+    {
+        var options = new BitCommandPaletteOptions();
+        configure?.Invoke(options);
+
+        services.TryAddSingleton(options);
+        services.TryAddSingleton(sp => new BitCommandPaletteRanker(sp.GetRequiredService<BitCommandPaletteOptions>()));
+        services.TryAddScoped<BitCommandPaletteService>();
+        services.TryAddScoped<IBitCommandPaletteService>(sp => sp.GetRequiredService<BitCommandPaletteService>());
+        services.TryAddScoped<IBitCommandPaletteHistoryStore, BitCommandPaletteBrowserStorageHistoryStore>();
+        services.TryAddScoped<BitCommandPaletteHistory>();
+        services.TryAddSingleton(TimeProvider.System);
     }
 }

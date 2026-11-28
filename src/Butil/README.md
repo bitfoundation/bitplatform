@@ -562,7 +562,7 @@ build, but it is still not where the answer comes from. Put the
 properties on the head, one per app you publish:
 
 ```xml
-<!-- Boilerplate.Server.Web.csproj - the project that publishes the Blazor Web App -->
+<!-- MyApp.Server.Web.csproj - the project that publishes the Blazor Web App -->
 <PropertyGroup>
   <BitButilTrimScripts>true</BitButilTrimScripts>
 </PropertyGroup>

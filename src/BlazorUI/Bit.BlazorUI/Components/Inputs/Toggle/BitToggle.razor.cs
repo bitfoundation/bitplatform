@@ -438,6 +438,16 @@ public partial class BitToggle : BitInputBase<bool>
     /// </remarks>
     [Parameter] public string? Title { get; set; }
 
+    /// <summary>
+    /// The visual style of the toggle. The default is <see cref="BitVariant.Text"/>, which draws no surface at all
+    /// and renders the bare switch and label the toggle has always been. <see cref="BitVariant.Outline"/> and
+    /// <see cref="BitVariant.Fill"/> turn the whole toggle into a selectable card - a bordered one and a filled one -
+    /// that carries the label, the switch, the state text, the error message and the description, is clickable across
+    /// its full area, outlines itself with the focus ring and is tinted and bordered in the accent color while on.
+    /// </summary>
+    [Parameter, ResetClassBuilder]
+    public BitVariant? Variant { get; set; }
+
 
 
     protected override string RootElementClass => "bit-tgl";
@@ -487,6 +497,15 @@ public partial class BitToggle : BitInputBase<bool>
         // The knob grows to hold a glyph as soon as any of them is configured, rather than only in the
         // state that has one, so that toggling never resizes the toggle underneath the pointer.
         ClassBuilder.Register(() => HasThumbContent ? "bit-tgl-tic" : string.Empty);
+
+        // Outline and Fill draw the toggle as a card. Text - the default - is the bare switch and label, so it adds no
+        // class and leaves the markup of every toggle that does not ask for a card exactly as it was.
+        ClassBuilder.Register(() => Variant switch
+        {
+            BitVariant.Fill => "bit-tgl-fil",
+            BitVariant.Outline => "bit-tgl-otl",
+            _ => string.Empty
+        });
     }
 
     protected override void RegisterCssStyles()
@@ -595,6 +614,11 @@ public partial class BitToggle : BitInputBase<bool>
     /// Whether the track carries content in either state, which is what the stacked content cell is rendered for.
     /// </summary>
     private bool HasContent => OnContent is not null || OffContent is not null;
+
+    /// <summary>
+    /// Whether the toggle is drawn as a card, which is what the hit area stretched over the whole card is rendered for.
+    /// </summary>
+    private bool IsCard => Variant is BitVariant.Outline or BitVariant.Fill;
 
     /// <summary>
     /// Whether the toggle carries a visible description, which is what the extra line under it is rendered for.

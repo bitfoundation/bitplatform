@@ -18,6 +18,302 @@ only in this file.
 
 ## 11.0.0
 
+### `BitFullCalendar`'s month view reports the whole grid to `OnDateChange` ([#15511](https://github.com/bitfoundation/bitplatform/issues/15511))
+
+The month grid leads and trails with days of the neighbouring months, and those days show their events like any other.
+`OnDateChange` (and `GetVisibleRange()`) reported the month alone, so an app loading the events of the reported range
+left the borrowed days empty. The month view now reports every day its grid shows - from the first day of its first row
+to the last day of its last, a sixth row included when `FixedWeekCount` is on - and the range is reported again when
+`FixedWeekCount` or `ShowNonCurrentDates` changes. With `ShowNonCurrentDates` off the borrowed days are blank, and the
+range is the month alone as before. The day, week, year and agenda views, and the timeline's month view (a column
+per day of the month, nothing borrowed), report what they did.
+
+**An app that reads `Start` / `End` as the month** (to title a page, or to key a cache by month) takes the month from
+the calendar's `Date` instead, or from the day half-way through the range.
+
+### `BitDateRangePicker` writes its field in its `TimeZone` ([#15511](https://github.com/bitfoundation/bitplatform/issues/15511))
+
+The calendar reads the dates of a value in the picker's `TimeZone`, but the text field wrote each date in the offset the
+value carried, so a value handed in with another offset could show one day in the field and another in the calendar,
+and open the calendar on the month next to the one holding its start. The field and the month the calendar opens on now
+read the value in the `TimeZone` too, as `BitDatePicker` always did. A value in the picker's own zone - every value the
+picker produces, and every value of an app that leaves `TimeZone` at its default and hands in local dates - shows exactly
+as before.
+
+### `BitRichTextEditor`'s commands are typed: `BitRichTextEditorCommand` ([#15506](https://github.com/bitfoundation/bitplatform/issues/15506))
+
+`ExecuteCommandAsync` has an overload taking a `BitRichTextEditorCommand`, the commands the toolbar and the shortcuts
+use (`ExecuteCommandAsync(BitRichTextEditorCommand.FormatBlock, "h2")`). The string overload stays, and takes a
+member's name with its first letter in lower case (`"bold"`, `"formatBlock"`). Nothing is renamed or removed. What an
+app can notice in the string overload:
+
+- **It takes the names of the enum, and no other.** The script's insertion names (`"insertHtml"`, `"insertText"`,
+  `"insertImage"`, `"insertTable"`, `"insertMedia"`) are refused through `OnError` with `command-failed`, like any
+  other name the editor does not have: content goes in through `InsertHtmlAsync` and `InsertTextAsync`, which sanitize
+  it and hold it to `MaxLength`.
+- **A command with a value goes through the toolbar control's checks.** `"createLink"` refuses an address the policy
+  does not allow, and `"foreColor"`, `"backColor"`, `"fontName"` and `"fontSize"` refuse to style what the policy would
+  strip (a `span` or its `style`), each through `OnError` as the toolbar does. `"formatBlock"` with no value makes a
+  paragraph.
+
+### `BitRichTextEditor` inserts content itself, and refuses a command name it does not know ([#15504](https://github.com/bitfoundation/bitplatform/issues/15504))
+
+Paste, drop, `InsertHtmlAsync`, `InsertTextAsync`, images, tables, media, the horizontal rule, a link inserted at a
+caret, the emoji picker and the input rules no longer run the browser's `document.execCommand`. The editor edits the
+markup itself, so each insert leaves the same markup in every browser, and no command of the editor goes to the browser
+any more. What an app can notice:
+
+- **`ExecuteCommandAsync` refuses a name the editor does not have.** Such a name used to reach `execCommand`, so one the
+  editor never offered (`"selectAll"`, `"copy"`, `"insertParagraph"`, `"delete"`) did whatever the browser made of it.
+  Now it changes nothing and raises `OnError` with the `command-failed` code. The names the toolbar and the shortcuts
+  use, `"undo"` and `"redo"`, and `"formatBlock"` with a tag as the value all work as before; for selecting
+  everything, call `SelectAllAsync`.
+- **Inserted blocks split the paragraph or heading they go into**: two pasted paragraphs in the middle of a line leave
+  the text before them, the paragraphs, and the text after them as blocks side by side. Chromium and WebKit used to put a
+  pasted list inside the paragraph (`<p><ul>`), which the editor repaired on the way out; that repair is gone.
+- **Inserted markup keeps its own attributes.** Chromium used to bake what the page's stylesheets made the inserted
+  elements look like into their `style` attributes (the page's font, `display: inline`), which the editor then took back
+  out.
+- **A selection across paragraphs is replaced by one paragraph**, the two halves joined around what was inserted.
+- **A horizontal rule at the end of a line is followed by an empty paragraph** with the caret in it, in every browser.
+
+### `BitRichTextEditor` writes its links, colors and fonts itself ([#15501](https://github.com/bitfoundation/bitplatform/issues/15501))
+
+Insert link, Remove link, the text and highlight colors, the font family and the font size no longer run the browser's
+`document.execCommand`. The editor edits the markup itself, so each one leaves the same markup in every browser. Nothing
+is renamed. What an app can notice:
+
+- **A link is one anchor per block** around what is selected, with the formatting inside it
+  (`<a href="..."><b>alpha</b> beta</a>`), where the browsers could write one anchor per formatted piece. A link the
+  selection reaches into is replaced there by the new one, and keeps its address on the text outside the selection.
+- **Remove link removes every link the selection touches, whole**, not only the selected part of it.
+- **A color or a font is a `<span style="...">`** around the outermost elements the selection holds all of
+  (`<span style="color: rgb(255, 0, 0)"><b>alpha</b> beta</span>`), and inside a link rather than around it. A new
+  value replaces the old one on the selected text, and the span is split around it. No browser writes `<font>` any more,
+  and the font size is written as the CSS length the toolbar offers, never through the 1-7 scale. A value that is not
+  a valid color or size for CSS changes nothing.
+- **A color or a font picked at a caret** styles the text typed there next, the same way in every browser.
+- **The toolbar reads the colors and fonts as they are laid out** where the selection starts. The highlight is the
+  nearest background painted inside the editor.
+
+### `BitRichTextEditor` writes its alignment itself ([#15500](https://github.com/bitfoundation/bitplatform/issues/15500))
+
+Align left, Align center, Align right and Justify no longer run the browser's `document.execCommand`. The editor sets
+the alignment on the touched blocks itself, so each button leaves the same markup in every browser. Nothing is
+renamed. What an app can notice:
+
+- **The alignment is always a `text-align` style** on the block (`<p style="text-align: center">`), a list item or a
+  table cell holding the text. Markup with the presentational `align` attribute (`<p align="center">`) still shows
+  aligned, and gets the style in place of the attribute once it is aligned again.
+- **A block aligned the way its direction lays it out already carries no style**: Align left takes the style off a
+  left-to-right block, and Align right off a right-to-left one. The other side is written out (`text-align: left` in a
+  right-to-left block).
+- **The toolbar reads the alignment as the block is laid out**, so a block with no style of its own shows Align left in
+  a left-to-right editor and Align right in a right-to-left one.
+
+### `BitRichTextEditor` writes its lists and indentation itself ([#15498](https://github.com/bitfoundation/bitplatform/issues/15498))
+
+Bulleted and numbered lists, Increase indent and Decrease indent no longer run the browser's `document.execCommand`.
+The editor edits the markup itself, so each command leaves the same markup in every browser. Nothing is renamed. What
+an app can notice:
+
+- **A list is never put inside a paragraph.** Chromium and WebKit used to write `<p><ul>...</ul></p>`, which the editor
+  repaired on the way out. A list item holds its text directly (`<li>text</li>`), keeps the `style`, `dir` and `lang`
+  of the paragraph it was made from, and a list made next to a list of the same kind joins it.
+- **Turning a list item back into text splits the list around it**, so only the touched items leave the list. A
+  nested item comes out of every level. The other kind of list switches the whole list it is applied in, and a
+  checklist given another kind is no longer a checklist.
+- **A nested list goes inside the item before it** (`<li>one<ul><li>two</li></ul></li>`). Decrease indent brings an
+  item out one level, and out of the list at the top level.
+- **Indentation outside a list is a margin**: each step adds 40px of `margin-left` to the block (`margin-right` in a
+  right-to-left block), where the browsers used to wrap the block in a `<blockquote>` styled as an indent.
+- **The toolbar reads the list from the markup**: in a checklist only the checklist button is pressed, not the bullet
+  list button (`UnorderedList` is `false` in `BitRichTextEditorSelectionState` there).
+
+### `BitRichTextEditor` writes its block formats itself ([#15496](https://github.com/bitfoundation/bitplatform/issues/15496))
+
+Paragraph, headings, code block and quote no longer run the browser's `document.execCommand('formatBlock')`. The editor
+edits the markup itself, so each format leaves the same markup in every browser. Nothing is renamed. What an app can
+notice:
+
+- **A quote wraps the paragraphs it quotes**: `<blockquote><p>text</p></blockquote>`. Chromium and WebKit used to turn
+  the paragraph itself into a `<blockquote>` holding the text. A quote saved that way still reads and toggles as a
+  quote.
+- **Normal text takes lines out of a quote**, splitting the quote around them, and so does the toolbar's quote button
+  pressed in one. A heading or a code block chosen in a quote stays in it.
+- **A block keeps its `style`, `dir` and `lang`** when it is given another format, so an aligned or right-to-left
+  paragraph stays that way as a heading.
+- **A code block given another format keeps its lines** as line breaks (`<p>one<br>two</p>`), rather than running them
+  together.
+- **The format list reads the markup**: a paragraph in a quote shows as Quote (`Block` is `blockquote` in
+  `BitRichTextEditorSelectionState`).
+
+### `BitRichTextEditor` writes its inline marks itself ([#15494](https://github.com/bitfoundation/bitplatform/issues/15494))
+
+Bold, italic, underline, strikethrough, subscript, superscript, inline code and clear formatting no longer run the
+browser's `document.execCommand`. The editor edits the markup itself, so each command leaves the same markup in every
+browser. The tags it writes are the ones it wrote before (`<b>`, `<i>`, `<u>`, `<strike>`, `<sub>`, `<sup>`, `<code>`),
+and nothing is renamed. What an app can notice:
+
+- **A mark is read from the markup, in every spelling.** `<strong>` counts as bold, `<em>` as italic, and `<s>` and
+  `<del>` as strikethrough, for the toolbar's state and for toggling. Text that is only styled bold or italic (a
+  heading, a `font-weight` style) no longer reports `Bold` or `Italic` in `BitRichTextEditorSelectionState`, and the
+  toolbar's button is not shown pressed there.
+- **Subscript and superscript exclude each other.** Applying one to text that has the other replaces it.
+- **Clear formatting keeps links and mentions.** It unwraps the inline formatting elements (marks, `<font>`, a `<span>`
+  with nothing but a style) and leaves `<a>`, a `<span>` with other attributes, and code blocks.
+- **A mark turned on or off at a caret applies to the text typed there next**, as before, and is dropped once the caret
+  moves. Inline code now toggles like the other marks. Before, its button removed the whole inline code element the
+  selection started in, and did nothing at a caret outside one.
+
+### `BitRichTextEditor` keeps its own undo history ([#15490](https://github.com/bitfoundation/bitplatform/issues/15490))
+
+Undo and redo no longer go to the browser's native stack, which cannot follow the changes the editor makes to its
+content itself. The editor keeps its own history, and `UndoAsync`, `RedoAsync`, Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z, the
+toolbar's buttons and the browser's own undo (its Edit menu, a gesture) all go to it. Nothing is renamed. What an app
+can notice:
+
+- **Typing is undone a word at a time.** A step ends at a space or punctuation, after a pause of over 600 ms, and where
+  typing turns to deleting. Each command, paste, input rule or IME composition is a step of its own. An input rule
+  (`**bold**`, `# `) is undone back to the text as it was typed.
+- **The toolbar's Undo and Redo are disabled while there is nothing to undo or redo** (`disabled` and
+  `aria-disabled="true"`, like every disabled control). A test that clicks Undo on an editor nobody has edited finds
+  it disabled. `CanUndo` and `CanRedo` say the same in C#.
+- **A value set from .NET before the first edit is where the history starts**, so it cannot be undone into an empty
+  editor. A value set after an edit is a step that can be undone, whether or not the editor has the focus. Before,
+  only a value set while the editor had the focus could be undone.
+- **The history keeps 200 steps**, and drops the oldest past 25 million characters of content in all.
+
+### `BitChart`'s tick `Callback` labels a category axis too ([#15489](https://github.com/bitfoundation/bitplatform/issues/15489))
+
+`BitChartTickOptions.Callback` was ignored on a category axis, which always drew the chart's labels. It is now called
+there as on every other axis, as Chart.js calls it: the value it is handed is the category's index into the chart's
+labels, and the string it returns is the label drawn (an empty one draws none). A callback written for a value axis and
+set on a category scale as well - often through options shared by both - now formats the indexes instead of drawing the
+names:
+
+| Before | After |
+|---|---|
+| `Callback = (v, _) => v.ToString("C")` on a category axis drew `Jan`, `Feb`, ... | it draws `$0.00`, `$1.00`, ...: leave `Callback` unset there, or return `labels[(int)v]` |
+
+The index the callback is handed (its second argument) also no longer counts the unlabelled minor ticks of a
+logarithmic axis: the decades are `0, 1, 2, ...` rather than `0, 9, 18, ...`.
+
+A category axis that skips labels to fit keeps every n-th label from the first one and the last one, dropping the
+stride label before the last when the two would crowd; with `MaxTicksLimit = 1` it draws the first label alone, where
+it drew the first and the last.
+
+### `AddBitBlazorUIExtrasServices` takes a `commandPalette` argument ([#15465](https://github.com/bitfoundation/bitplatform/issues/15465))
+
+`AddBitBlazorUIExtrasServices` registers the services of `BitCommandPalette` (its registry, open state and history) along
+with the rest of the Extras package, and takes the palette's app-wide `BitCommandPaletteOptions` through a new optional
+last parameter:
+
+```csharp
+builder.Services.AddBitBlazorUIExtrasServices(commandPalette: options => options.GroupOrder.AddRange(["Navigation", "Actions"]));
+```
+
+The source of an existing call compiles as it is, but the method's signature changed: a library compiled against the
+previous `Bit.BlazorUI.Extras` that calls it fails with a `MissingMethodException` until it is recompiled.
+
+### `BitResourceTimeline`'s bar texts are one `Texts` with eight positions, and its `Texts` is `Strings` ([#15441](https://github.com/bitfoundation/bitplatform/issues/15441))
+
+`BitResourceTimelineAllocation` labelled a bar through four strings, one per side. They are now the properties of one
+`Texts` (a `BitResourceTimelineBarTexts`), which adds a text at the start and the end edge above and below the bar
+(`TopStart`, `TopEnd`, `BottomStart`, `BottomEnd`). Each position is a `BitResourceTimelineBarText` with its own
+`Text`, `Color`, `Font`, `OffsetX` and `OffsetY`, and a string converts to one implicitly:
+
+| Before | After |
+|---|---|
+| `TextAbove = "LH441"` | `Texts = new() { TopCenter = "LH441" }` |
+| `TextBelow = "Gate 5"` | `Texts = new() { BottomCenter = "Gate 5" }` |
+| `TextStart = "08:00"` | `Texts = new() { Start = "08:00" }` |
+| `TextEnd = "16:00"` | `Texts = new() { End = "16:00" }` |
+| `bar.TextAbove` (read) | `bar.Texts?.TopCenter?.Text` |
+
+The four texts are drawn where they were. The label a bar's default tooltip and accessible name read is the first text
+of `TopCenter`, `TopStart`, `TopEnd`, `Start`, `End`, `BottomCenter`, `BottomStart` and `BottomEnd`, which is the
+order the old four were read in.
+
+So the bar texts and the words of the timeline itself are not both called texts, the component's `Texts` parameter
+(and its counterpart on `BitResourceTimelineParams`) is `Strings`, and its type `BitResourceTimelineTexts` is
+`BitResourceTimelineStrings`, with the same members:
+
+| Before | After |
+|---|---|
+| `<BitResourceTimeline Texts="texts" />` | `<BitResourceTimeline Strings="strings" />` |
+| `new BitResourceTimelineTexts { Loading = "..." }` | `new BitResourceTimelineStrings { Loading = "..." }` |
+
+The analyzer reports a `Texts` left on the component and the four removed allocation properties (`BITBC001`), and the
+old type (`BITBC002`). With it turned off, a `Texts` left in markup builds and is rendered as an HTML attribute, so the
+timeline speaks English again.
+
+### The words a component writes for itself are `Strings` everywhere ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
+
+The object holding every word a component writes for itself - the one that localizes it - is called `Strings`, as it is
+on `BitDataGrid` and `BitResourceTimeline`. The components that called it `Texts` are renamed to match: the parameter
+(and its counterpart on the component's `Bit*Params`) is `Strings`, and its type is `Bit*Strings`, with the same
+members. The Markdown pipeline follows: `BitMarkdownPipelineBuilder.Texts`, `BitMarkdownPipeline.Texts` and
+`BitMarkdownRenderer.Texts` are `Strings`, `UseTexts()` is `UseStrings()`, and `BitMarkdownTexts` is
+`BitMarkdownStrings`.
+
+| Before | After |
+|---|---|
+| `<BitChart Texts="texts" />`, `new BitChartTexts { ... }` | `<BitChart Strings="strings" />`, `new BitChartStrings { ... }` |
+| `<BitColorPicker Texts="texts" />`, `new BitColorPickerTexts { ... }` | `<BitColorPicker Strings="strings" />`, `new BitColorPickerStrings { ... }` |
+| `<BitFullCalendar Texts="texts" />`, `new BitFullCalendarTexts { ... }` | `<BitFullCalendar Strings="strings" />`, `new BitFullCalendarStrings { ... }` |
+| `<BitImageViewer Texts="texts" />`, `new BitImageViewerTexts { ... }` | `<BitImageViewer Strings="strings" />`, `new BitImageViewerStrings { ... }` |
+| `<BitMarkdownEditor Texts="texts" />`, `new BitMarkdownEditorTexts { ... }` | `<BitMarkdownEditor Strings="strings" />`, `new BitMarkdownEditorStrings { ... }` |
+| `<BitPdfViewer Texts="texts" />`, `new BitPdfViewerTexts { ... }` | `<BitPdfViewer Strings="strings" />`, `new BitPdfViewerStrings { ... }` |
+| `new BitChartParams { Texts = ... }` (and the other `Bit*Params`) | `new BitChartParams { Strings = ... }` |
+| `builder.UseTexts(new BitMarkdownTexts { ... })` | `builder.UseStrings(new BitMarkdownStrings { ... })` |
+| `builder.Texts.AlertNote = "..."`, `pipeline.Texts`, `renderer.Texts` | `builder.Strings.AlertNote = "..."`, `pipeline.Strings`, `renderer.Strings` |
+| `new BitMarkdownRenderer(renderers, texts)` | `new BitMarkdownRenderer(renderers, strings)` (only the parameter's name changed) |
+
+The analyzer reports a `Texts` left on any of these components, their `Bit*Params` and the Markdown pipeline types, and a
+`UseTexts()` call (`BITBC001`), and the old types (`BITBC002`). With it turned off, a `Texts` left in markup builds and
+is rendered as an HTML attribute, so the component speaks English again.
+
+### `BitCard` draws on its root's `::after` ([#15380](https://github.com/bitfoundation/bitplatform/issues/15380))
+
+The accent bar of the new `Accent` parameter and `--bit-Card-accent-color` variable is the border of a layer over the
+card, the root's `::after` pseudo-element. Since the variable can draw a bar on any card, that layer is there on every
+card, with or without an accent: `content: ""`, `position: absolute`, `inset: 0`, a negative `margin` the width of the
+card's rule, `box-sizing: border-box`, `border-radius: inherit` and `pointer-events: none`.
+
+**An app that decorates the `::after` of a card's root** (through `Class`, `Classes.Root` or a `.bit-crd::after` rule
+of its own) now has those declarations merged into its pseudo-element, so a badge placed with `top` / `right` is
+stretched over the whole card. Draw the decoration on an element of its own inside the card instead, or set each of
+those properties back in the app's rule:
+
+```css
+.my-card::after {
+    content: "NEW";
+    position: absolute;
+    inset: 4px 4px auto auto;
+    margin: 0;
+}
+```
+
+### `BitMenuButton` reads a `Description` and a `Match` off custom items ([#15375](https://github.com/bitfoundation/bitplatform/issues/15375))
+
+`BitMenuButtonNameSelectors` has two new members, `Description` and `Match`. Like the other name selectors, they read
+the property of the same name off a custom item class when no selector is given:
+
+- **A `Description` property** is rendered as a second line under the item's text and announced as its description
+  (`aria-describedby`). The item's accessible name then becomes its text and secondary text alone
+  (`aria-label`), unless it has an `AriaLabel`.
+- **A `Match` property** of type `BitNavMatch?` marks the item whose `Href` matches the current URL with
+  `aria-current="page"` and the `Current` class-style part. A property named `Match` of any other type is
+  ignored.
+
+**An app whose custom item class has a `Description` property used for something else** turns the new reading off
+with a selector that returns null:
+
+```csharp
+NameSelectors = new() { Description = { Selector = _ => null } };
+```
+
 ### `BitFullCalendarState` is read-only, but for its filters ([#ISSUE](https://github.com/bitfoundation/bitplatform/issues/ISSUE))
 
 `BitFullCalendar.State` is what the calendar is showing, for an app to read. The 56 members that changed it are no
@@ -918,7 +1214,7 @@ file components only when the value moves rather than on every status change. Re
 
 #### Known consumers in this repo that break
 
-The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI edit boundary and was
+The Boilerplate template (`src/Templates/Boilerplate` then, now `src/Boilerplate` in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric)) is outside the BlazorUI edit boundary and was
 **not** updated:
 
 | File | Line | Use |
@@ -926,7 +1222,7 @@ The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI e
 | `Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor` | 69 | `@bind-Color="category.Color"` -> `@bind-Value="category.Color"` (the `ValidationMessage` beside it then updates as the user picks) |
 | `Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.razor` | 235 | `OnChange="HandleOnAttachmentChange"` -> `OnFilesChange="HandleOnAttachmentChange"` |
 
-(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`.)
+(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`, now `src/Boilerplate/Bit.Boilerplate/src/Client/` in bitfoundation/bitfabric.)
 
 ### A modal container of an app's own reads its modals through `ModalReferences` ([#13558](https://github.com/bitfoundation/bitplatform/issues/13558))
 
@@ -1494,7 +1790,7 @@ counterpart (as nullable), unless noted.
 
 #### Known consumers in this repo that break
 
-The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI edit boundary and was
+The Boilerplate template (`src/Templates/Boilerplate` then, now `src/Boilerplate` in [bitfoundation/bitfabric](https://github.com/bitfoundation/bitfabric)) is outside the BlazorUI edit boundary and was
 **not** updated. These lines will fail to compile against this branch:
 
 | File | Line | Use |
@@ -1508,4 +1804,4 @@ The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI e
 | `Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor` | 67 | `BitDataGridColumnAlign.Center` -> `BitTextAlign.Center` |
 | `Boilerplate.Client.Core/Components/Pages/Tenants/ManageAllTenantsPage.razor` | 49 | `BitDataGridColumnAlign.Center` -> `BitTextAlign.Center` |
 
-(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`.)
+(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`, now `src/Boilerplate/Bit.Boilerplate/src/Client/` in bitfoundation/bitfabric.)

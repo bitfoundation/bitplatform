@@ -23,8 +23,8 @@
     <!-- No Bit.Minifier, unlike the other demos: this client runs EF Core, and the minifier strips the parameter
          names of EF Core's internal methods, which EntityFrameworkQueryableExtensions' static constructor finds
          its methods by - so the first AsNoTracking or Include throws a TypeInitializationException, in the
-         published site only. The Boilerplate leaves the minifier out with its client-side EF Core (offlineDb)
-         for the same reason. -->
+         published site only. bit Boilerplate (in bitfoundation/bitfabric) leaves the minifier out with its
+         client-side EF Core (offlineDb) for the same reason. -->
   </ItemGroup>
 
   <ItemGroup>

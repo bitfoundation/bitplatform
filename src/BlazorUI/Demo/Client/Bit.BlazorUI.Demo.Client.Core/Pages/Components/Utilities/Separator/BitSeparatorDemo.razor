@@ -169,7 +169,35 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example9RazorCode" Id="example9">
+    <DemoExample Title="Fade & line background" RazorCode="@example9RazorCode" Id="example9">
+        <div>
+            <b>Fade</b> runs the line out toward its ends: each segment is drawn in full beside the content and fades away
+            toward its outer end, and a separator without content fades toward both of its ends. The
+            <b>--bit-Separator-line-background</b> variable paints each segment with a CSS image, such as a gradient, in
+            place of its color; set on a container, it reaches every separator inside it.
+        </div>
+        <br />
+        <div class="example-content">
+            <BitSeparator Fade />
+            <BitSeparator Fade>Fade</BitSeparator>
+            <BitSeparator Fade AlignContent="BitPlacement.Start" ContentOffset="20%">Start, 20%</BitSeparator>
+            <BitSeparator Fade LineStyle="BitLineStyle.Dashed" Thickness="2px">Dashed</BitSeparator>
+            <div class="example-content gradient-line">
+                <BitSeparator Thickness="3px" />
+                <BitSeparator Thickness="2px">Gradient</BitSeparator>
+                <BitSeparator Fade Thickness="2px">Gradient & fade</BitSeparator>
+            </div>
+            <div class="row tall">
+                <span>Item 1</span>
+                <BitSeparator Vertical Fade />
+                <span>Item 2</span>
+                <BitSeparator Vertical Fade Thickness="2px">OR</BitSeparator>
+                <span>Item 3</span>
+            </div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example10RazorCode" Id="example10">
         <div>
             <b>Color</b> paints the line in a role of the theme. <b>Border</b> picks a neutral border tier instead, and
             <b>Color</b> wins where both are set. <b>Background</b> paints behind the content, which is transparent by default.
@@ -197,7 +225,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example10RazorCode" Id="example10">
+    <DemoExample Title="Size" RazorCode="@example11RazorCode" Id="example11">
         <div>
             <b>Size</b> steps the weight of the line up from the theme's divider hairline. <b>Thickness</b> wins over it.
         </div>
@@ -218,7 +246,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example11RazorCode" Id="example11">
+    <DemoExample Title="Style & Class" RazorCode="@example12RazorCode" Id="example12">
         <div>
             <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach its parts: <b>Root</b> and
             <b>Content</b>. The line is the <b>::before</b> and <b>::after</b> of the root, which the class below turns into
@@ -235,15 +263,17 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example12RazorCode" Id="example12">
+    <DemoExample Title="RTL" RazorCode="@example13RazorCode" Id="example13">
         <div>
-            <b>Dir</b> set to <b>BitDir.Rtl</b> lays the separator out right to left, so start-aligned content sits on the right.
+            <b>Dir</b> set to <b>BitDir.Rtl</b> lays the separator out right to left, so start-aligned content sits on the
+            right, and a faded segment before it fades out toward the right edge.
         </div>
         <br />
         <div class="example-content">
             <BitSeparator Dir="BitDir.Rtl">جداکننده</BitSeparator>
             <BitSeparator Dir="BitDir.Rtl" AlignContent="BitPlacement.Start">ابتدا</BitSeparator>
             <BitSeparator Dir="BitDir.Rtl" AlignContent="BitPlacement.End">انتها</BitSeparator>
+            <BitSeparator Dir="BitDir.Rtl" Fade AlignContent="BitPlacement.Start" ContentOffset="20%">محو</BitSeparator>
         </div>
     </DemoExample>
 </DemoPage>

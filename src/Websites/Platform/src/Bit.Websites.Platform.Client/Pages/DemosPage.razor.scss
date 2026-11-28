@@ -195,36 +195,11 @@
     color: inherit;
 }
 
-.video-container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-
-    .video-wrapper {
-        width: 100%;
-        max-width: 800px;
-        position: relative;
-    }
-
-    video {
-        width: 100%;
-        border-radius: var(--app-radius-md);
-    }
-}
-
 .section-title-line {
     height: 2px;
     flex-grow: 1;
     margin-top: 6px;
     background-image: linear-gradient(351deg, transparent 20%, #8c85ff 100%);
-
-    &.boilerplate {
-        width: 350px;
-
-        @include lt-md {
-            width: 250px;
-        }
-    }
 
     &.platform {
         width: 500px;

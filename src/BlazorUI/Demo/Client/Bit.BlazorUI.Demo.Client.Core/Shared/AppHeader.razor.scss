@@ -224,4 +224,16 @@
         }
     }
 
+    // Never squeezed: it is a button with a label and a key hint, and the bar gives up the search box first.
+    .app-header-palette {
+        flex-shrink: 0;
+    }
+
+    // A phone has the room for the magnifier alone, and no keyboard to press the keys on; the button keeps its
+    // accessible name, which its aria-label carries.
+    .app-header-palette-text {
+        @include lt-md {
+            display: none;
+        }
+    }
 }

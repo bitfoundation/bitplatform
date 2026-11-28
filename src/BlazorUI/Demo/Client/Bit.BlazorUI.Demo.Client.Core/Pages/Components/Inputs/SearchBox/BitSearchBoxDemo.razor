@@ -569,11 +569,10 @@
                 character from something being typed elsewhere. Render it in a <b>SuffixTemplate</b> to make it
                 discoverable with the eyes too.
                 <br /><br />
-                The search box in the header of this page is one: it asks for
-                <code>FocusShortcut="Control+K Meta+K /"</code>, so ctrl/cmd + K jumps into it from anywhere and a bare
-                <code>/</code> does the same while you are not typing. It already owns those three, so the two below take
-                <code>Alt</code> combinations instead - a shortcut is a page-wide claim, and two controls claiming the
-                same keys both answer.
+                The search box in the header of this page is one: it asks for <code>FocusShortcut="/"</code>, so a bare
+                <code>/</code> jumps into it while you are not typing (ctrl/cmd + K belongs to the site's command palette).
+                The two below take <code>Alt</code> combinations instead - a shortcut is a page-wide claim, and two
+                controls claiming the same keys both answer.
                 <br /><br />
                 A screen reader never sees the list appear, so the component owns a visually hidden live region that reports
                 the outcome of every search: how many suggestions were found, that there were none, or that the term is still

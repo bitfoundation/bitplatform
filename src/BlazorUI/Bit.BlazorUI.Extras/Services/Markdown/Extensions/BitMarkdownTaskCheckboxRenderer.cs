@@ -34,7 +34,7 @@ public sealed class BitMarkdownTaskCheckboxRenderer : BitMarkdownNodeRenderer
             // text right beside it, so the name a reader hears is the one they see. Only an item
             // with no text falls back to its number.
             b.AddAttribute(6, "aria-label", string.IsNullOrWhiteSpace(task.Label)
-                ? string.Format(CultureInfo.CurrentCulture, r.Texts.Task, task.Index + 1)
+                ? string.Format(CultureInfo.CurrentCulture, r.Strings.Task, task.Index + 1)
                 : task.Label);
             b.AddAttribute(7, "onchange", task.OnChange!.Value);
         }

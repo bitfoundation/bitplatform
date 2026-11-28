@@ -241,7 +241,6 @@ profile.arm.json
 _book
 *yarn.lock
 *.edmx
-/BitTools/BitCLIV1Task/buildtask/ps_modules/VstsTaskSdk/
 *Resource.designer.cs
 *.tsbuildinfo
 
@@ -305,9 +304,6 @@ _book
 /src/Utilities/Bink/Bit.Bink/wwwroot/**/*.js
 /src/Utilities/Bink/Bit.Bink/wwwroot/**/*.css
 
-/src/Utilities/Balette/Bit.Balette/Scripts/**/*.js
-/src/Utilities/Balette/Bit.Balette/wwwroot/**/*.js
-/src/Utilities/Balette/Bit.Balette/wwwroot/**/*.css
 /src/Utilities/BbScanner/Bit.BbScanner/Scripts/**/*.js
 /src/Utilities/BbScanner/Bit.BbScanner/wwwroot/**/*.js
 /src/Utilities/BbScanner/Bit.BbScanner/wwwroot/**/*.css
@@ -354,6 +350,3 @@ _book
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js
 
 custom.aprof
-
-# Written at the root of every release worktree by the Platform website's CodebaseMemoryCli.
-/.cbmignore

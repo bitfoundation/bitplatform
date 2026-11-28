@@ -28,10 +28,6 @@ jobs:
     name: bink e2e
     uses: ./.github/workflows/ci.bink.e2e.yml
 
-  balette_e2e:
-    name: balette e2e
-    uses: ./.github/workflows/ci.balette.e2e.yml
-
   bbscanner_e2e:
     name: bbscanner e2e
     uses: ./.github/workflows/ci.bbscanner.e2e.yml

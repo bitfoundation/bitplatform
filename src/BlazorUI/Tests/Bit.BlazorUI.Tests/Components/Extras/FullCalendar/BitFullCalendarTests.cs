@@ -1268,7 +1268,8 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(1, ranges.Count, "consumers need the first range to fetch the events for it");
         Assert.AreEqual(BitFullCalendarView.Month, ranges[0].View);
-        Assert.AreEqual(1, ranges[0].Start.Day);
+        // The month grid's range starts on the first day of its first row, which can be a day of the previous month.
+        Assert.IsTrue(ranges[0].Start <= new DateTime(Today.Year, Today.Month, 1) && ranges[0].Start > new DateTime(Today.Year, Today.Month, 1).AddDays(-7));
     }
 
     [TestMethod]
@@ -1324,7 +1325,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-event-badge").Click();
         Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
 
-        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        component.Find(".bit-bfc-dialog").KeyDown(Key.Escape);
 
         Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog").Count);
     }
@@ -1336,7 +1337,7 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-month-cell").Click();
         Assert.IsTrue(component.FindAll(".bit-bfc-field").Count > 0);
 
-        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        component.Find(".bit-bfc-dialog").KeyDown(Key.Escape);
 
         Assert.AreEqual(0, component.FindAll(".bit-bfc-field").Count);
     }
@@ -1368,7 +1369,7 @@ public class BitFullCalendarTests : BunitTestContext
         // A save in flight keeps the dialog open on Escape, and the press stays claimed from the surface around it.
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").HasAttribute("disabled")));
         Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
-        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        component.Find(".bit-bfc-dialog").KeyDown(Key.Escape);
         Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
 
         gate.SetResult();
@@ -1402,7 +1403,7 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual("claim", component.Find(".bit-bfc-scope-dialog").GetAttribute("data-bit-esc"));
         Assert.IsNull(component.Find(".bit-bfc-dialog:not(.bit-bfc-scope-dialog)").GetAttribute("data-bit-esc"));
 
-        component.Find(".bit-bfc-scope-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        component.Find(".bit-bfc-scope-dialog").KeyDown(Key.Escape);
 
         Assert.AreEqual(0, component.FindAll(".bit-bfc-scope-dialog").Count);
         Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
@@ -1428,7 +1429,7 @@ public class BitFullCalendarTests : BunitTestContext
         // A delete in flight keeps the dialog open on Escape, and the press stays claimed from the surface around it.
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").HasAttribute("disabled")));
         Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
-        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        component.Find(".bit-bfc-dialog").KeyDown(Key.Escape);
         Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
 
         gate.SetResult();
@@ -1467,7 +1468,7 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual("claim", component.Find(".bit-bfc-dtp-panel").GetAttribute("data-bit-esc"));
         Assert.IsNull(pickers[1].GetAttribute("data-bit-esc"), "a closed picker leaves the key to the dialog");
 
-        component.FindAll(".bit-bfc-dtp")[0].KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        component.FindAll(".bit-bfc-dtp")[0].KeyDown(Key.Escape);
 
         Assert.AreEqual(0, component.FindAll(".bit-bfc-dtp-panel").Count);
         Assert.IsNull(component.FindAll(".bit-bfc-dtp")[0].GetAttribute("data-bit-esc"));
@@ -1554,7 +1555,7 @@ public class BitFullCalendarTests : BunitTestContext
         var first = component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half")[0];
         Assert.AreEqual("0", first.GetAttribute("tabindex"));
 
-        first.KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        first.KeyDown(Key.Down);
 
         var slots = component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half");
         Assert.AreEqual("-1", slots[0].GetAttribute("tabindex"));
@@ -1568,11 +1569,11 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { VisibleStartHour = 8, VisibleEndHour = 12 },
             BitFullCalendarView.Day);
 
-        component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half")[0].KeyDown(new KeyboardEventArgs { Key = "End" });
+        component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half")[0].KeyDown(Key.End);
         var slots = component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half");
         Assert.AreEqual("0", slots[^1].GetAttribute("tabindex"));
 
-        slots[^1].KeyDown(new KeyboardEventArgs { Key = "Home" });
+        slots[^1].KeyDown(Key.Home);
         slots = component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half");
         Assert.AreEqual("0", slots[0].GetAttribute("tabindex"));
     }
@@ -1584,7 +1585,7 @@ public class BitFullCalendarTests : BunitTestContext
             new BitFullCalendarSettings { VisibleStartHour = 8, VisibleEndHour = 12 },
             BitFullCalendarView.Day);
 
-        component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half")[0].KeyDown(Key.Up);
 
         var slots = component.FindAll(".bit-bfc-hour-slot, .bit-bfc-hour-row-half");
         Assert.AreEqual("0", slots[0].GetAttribute("tabindex"), "the first slot stays the tab stop");
@@ -1610,7 +1611,7 @@ public class BitFullCalendarTests : BunitTestContext
             BitFullCalendarView.Week);
 
         var firstColumn = component.FindAll(".bit-bfc-week-day-col")[0];
-        firstColumn.QuerySelector(".bit-bfc-hour-slot")!.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        firstColumn.QuerySelector(".bit-bfc-hour-slot")!.KeyDown(Key.Right);
 
         // Only the slots carry the roving tab stop; an event block in a column is a tab stop of its own
         // (the shared event sits on today, so whichever column today is also holds one).
@@ -1637,7 +1638,7 @@ public class BitFullCalendarTests : BunitTestContext
         var hints = component.FindAll(".bit-bfc-cell-add-hint-month");
         var startIndex = hints.ToList().FindIndex(h => h.GetAttribute("tabindex") == "0");
 
-        hints[startIndex].KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        hints[startIndex].KeyDown(Key.Right);
 
         hints = component.FindAll(".bit-bfc-cell-add-hint-month");
         Assert.AreEqual("-1", hints[startIndex].GetAttribute("tabindex"));
@@ -1651,7 +1652,7 @@ public class BitFullCalendarTests : BunitTestContext
         var hints = component.FindAll(".bit-bfc-cell-add-hint-month");
         var startIndex = hints.ToList().FindIndex(h => h.GetAttribute("tabindex") == "0");
 
-        hints[startIndex].KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        hints[startIndex].KeyDown(Key.Down);
 
         hints = component.FindAll(".bit-bfc-cell-add-hint-month");
         Assert.AreEqual("0", hints[startIndex + 7].GetAttribute("tabindex"));
@@ -1686,7 +1687,7 @@ public class BitFullCalendarTests : BunitTestContext
         var changes = new List<BitFullCalendarChangeEventArgs>();
         var component = RenderOneEventCalendar(changes, this);
 
-        component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
+        component.Find(".bit-bfc-event-block").KeyDown(Key.Down + Key.Alt);
 
         Assert.AreEqual(1, changes.Count);
         Assert.AreEqual(BitFullCalendarChangeSource.Drag, changes[0].Source);
@@ -1700,7 +1701,7 @@ public class BitFullCalendarTests : BunitTestContext
         var changes = new List<BitFullCalendarChangeEventArgs>();
         var component = RenderOneEventCalendar(changes, this);
 
-        component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", ShiftKey = true });
+        component.Find(".bit-bfc-event-block").KeyDown(Key.Down + Key.Shift);
 
         Assert.AreEqual(1, changes.Count);
         Assert.AreEqual(BitFullCalendarChangeSource.Resize, changes[0].Source);
@@ -1723,7 +1724,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
         });
 
-        component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowUp", ShiftKey = true });
+        component.Find(".bit-bfc-event-block").KeyDown(Key.Up + Key.Shift);
 
         Assert.AreEqual(0, changes.Count, "one slot is already the minimum length");
     }
@@ -1749,7 +1750,7 @@ public class BitFullCalendarTests : BunitTestContext
 
         // Sliding the 09:00-10:00 event down a slot would run it into the 10:00 one; the two merely
         // touching today is exactly what makes the move the first real conflict.
-        component.FindAll(".bit-bfc-event-block")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
+        component.FindAll(".bit-bfc-event-block")[0].KeyDown(Key.Down + Key.Alt);
 
         Assert.AreEqual(0, changes.Count);
         CollectionAssert.AreEqual(new[] { BitFullCalendarChangeRefusal.Overlap }, refusals.ToArray());
@@ -1854,7 +1855,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
         });
 
-        component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowDown", AltKey = true });
+        component.Find(".bit-bfc-event-block").KeyDown(Key.Down + Key.Alt);
 
         Assert.AreEqual(0, changes.Count);
     }
@@ -1865,7 +1866,7 @@ public class BitFullCalendarTests : BunitTestContext
         var changes = new List<BitFullCalendarChangeEventArgs>();
         var component = RenderOneEventCalendar(changes, this, BitFullCalendarView.Month);
 
-        component.Find(".bit-bfc-event-badge").KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
+        component.Find(".bit-bfc-event-badge").KeyDown(Key.Right + Key.Alt);
 
         Assert.AreEqual(1, changes.Count);
         Assert.AreEqual(Today.AddDays(1).AddHours(9), changes[0].Event.StartDate);
@@ -1877,7 +1878,7 @@ public class BitFullCalendarTests : BunitTestContext
         var changes = new List<BitFullCalendarChangeEventArgs>();
         var component = RenderOneEventCalendar(changes, this);
 
-        component.Find(".bit-bfc-event-block").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        component.Find(".bit-bfc-event-block").KeyDown(Key.Down);
 
         Assert.AreEqual(0, changes.Count, "the modifier is what turns an arrow into an edit");
     }
@@ -2169,7 +2170,7 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderSeries(changes);
 
         // Alt+Right moves the second occurrence (June 11) a day later, on its own.
-        component.FindAll(".bit-bfc-event-badge")[1].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
+        component.FindAll(".bit-bfc-event-badge")[1].KeyDown(Key.Right + Key.Alt);
 
         var state = component.Instance.State;
         var master = state.AllEvents.Single(e => e.Id == "series");
@@ -2223,7 +2224,7 @@ public class BitFullCalendarTests : BunitTestContext
             parameters.Add(p => p.OnChanging, (BitFullCalendarChangingEventArgs args) => args.Cancel = args.Kind == BitFullCalendarChangeKind.Add);
         });
 
-        component.FindAll(".bit-bfc-event-badge")[1].KeyDown(new KeyboardEventArgs { Key = "ArrowRight", AltKey = true });
+        component.FindAll(".bit-bfc-event-badge")[1].KeyDown(Key.Right + Key.Alt);
 
         var state = component.Instance.State;
         Assert.AreEqual(1, state.AllEvents.Count);
@@ -2572,11 +2573,11 @@ public class BitFullCalendarTests : BunitTestContext
         var component = RenderCalendar(defaultView: BitFullCalendarView.Day);
 
         // Day is first in the strip, so the right arrow lands on Week.
-        component.FindAll(".bit-bfc-view-tab")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        component.FindAll(".bit-bfc-view-tab")[0].KeyDown(Key.Right);
 
         Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
 
-        component.FindAll(".bit-bfc-view-tab")[1].KeyDown(new KeyboardEventArgs { Key = "End" });
+        component.FindAll(".bit-bfc-view-tab")[1].KeyDown(Key.End);
 
         Assert.AreEqual(BitFullCalendarView.Agenda, component.Instance.State.View);
     }
@@ -2586,7 +2587,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         var component = RenderCalendar(defaultView: BitFullCalendarView.Day);
 
-        component.FindAll(".bit-bfc-view-tab")[0].KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+        component.FindAll(".bit-bfc-view-tab")[0].KeyDown(Key.Left);
 
         Assert.AreEqual(BitFullCalendarView.Day, component.Instance.State.View);
     }

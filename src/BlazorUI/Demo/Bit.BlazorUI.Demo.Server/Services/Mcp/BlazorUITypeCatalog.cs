@@ -31,7 +31,8 @@ public sealed record BlazorUIType(Type Clr, string Name, string Kind, BlazorUIPa
 public static class BlazorUITypeCatalog
 {
     /// <summary>
-    /// The types <c>AddBitBlazorUIServices</c>, <c>AddBitBlazorUIExtrasServices</c> and <c>AddBitBlazorUIAIServices</c> put in DI.
+    /// The types <c>AddBitBlazorUIServices</c>, <c>AddBitBlazorUIExtrasServices</c> and
+    /// <c>AddBitBlazorUIAIServices</c> put in DI.
     /// Named here rather than inferred, because "injectable" is a fact about the registration
     /// extensions and not about the shape of the class.
     /// </summary>
@@ -39,6 +40,8 @@ public static class BlazorUITypeCatalog
     {
         "BitModalService", "BitSnackBarService", "BitMessageBoxService", "BitAccentColorService",
         "BitThemeManager", "BitThemeNotifications", "BitExternalThemeLoader", "BitPageVisibility", "BitExtraServices",
+        "IBitCommandPaletteService", "BitCommandPaletteService", "BitCommandPaletteOptions", "BitCommandPaletteHistory",
+        "IBitCommandPaletteHistoryStore", "BitCommandPaletteRanker",
         "BitAiChatSessionFactory", "IBitAiToolRegistry", "IBitAiToolApprovalPolicy", "BitAiChatSessionOptions", "BitAiUiOptions",
         "BitAiRendererRegistry", "BitAiGenerativeUiRegistry", "IBitAiGenerativeUiRegistry"
     };

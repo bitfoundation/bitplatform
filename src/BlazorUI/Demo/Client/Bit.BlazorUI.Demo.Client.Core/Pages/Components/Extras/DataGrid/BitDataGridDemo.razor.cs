@@ -5,6 +5,9 @@ namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
 public partial class BitDataGridDemo : AppComponentBase
 {
+    /// <summary>The topic the address names (/components/datagrid/{Topic}); null for the overview.</summary>
+    [Parameter] public string? Topic { get; set; }
+
     // example 1 - basic & sorting
     private readonly List<Product> basicProducts = SampleData.Generate(50);
 
@@ -662,12 +665,37 @@ public partial class BitDataGridDemo : AppComponentBase
     ];
 
 
-    // example 29 - style & class
+    // example 29 - value text
+    private readonly List<Product> valueTextProducts = SampleData.Generate(60);
+
+    // Handed a non-null value of the column; null keeps the default text (the member's own name here).
+    private static string? CategoryText(object value) => value switch
+    {
+        Category.Electronics => "Electronics & gadgets",
+        Category.Home => "Home & garden",
+        Category.Sports => "Sports & outdoors",
+        Category.Grocery => "Food & grocery",
+        _ => null
+    };
+
+    private static string? StatusText(object value) => value is true ? "Discontinued" : "In catalog";
+
+
+    // example 30 - pager & toolbar
+    private readonly List<Product> pagerProducts = SampleData.Generate(120);
+
+    // The PageSize in effect (15) is added to the options when it is not one of them.
+    private readonly int[] pagerSizeOptions = [10, 25, 50];
+    private BitPlacement pagerPlacement = BitPlacement.TopAndBottom;
+    private bool pagerShowHeader = true;
+
+
+    // example 31 - style & class
     private readonly List<Product> styleProducts = SampleData.Generate(20);
     private IReadOnlyList<Product> styleSelection = [];
 
 
-    // example 30 - RTL
+    // example 32 - RTL
     private readonly List<Product> rtlProducts = SampleData.GeneratePersian(60);
 
     private readonly BitDataGridStrings persianStrings = new()

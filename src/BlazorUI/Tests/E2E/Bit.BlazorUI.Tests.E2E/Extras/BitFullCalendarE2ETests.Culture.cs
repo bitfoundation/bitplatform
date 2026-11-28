@@ -4,7 +4,7 @@ namespace Bit.BlazorUI.Tests.E2E.Extras;
 
 /// <summary>
 /// Cultures and directions of BitFullCalendar (/e2e/full-calendar/culture): Persian (fa-IR, the Persian calendar, right to
-/// left, translated through Texts), Arabic (ar-SA, the Hijri calendar), an explicit Dir="BitDir.Rtl", the culture deciding
+/// left, translated through Strings), Arabic (ar-SA, the Hijri calendar), an explicit Dir="BitDir.Rtl", the culture deciding
 /// the direction when Dir is unset whatever the page's, and Dir="BitDir.Auto" - with the layout, the chevrons and the
 /// arrow keys following the reading direction.
 /// </summary>
@@ -43,12 +43,13 @@ public partial class BitFullCalendarE2ETests
         await Expect(cal.Locator(".bit-bfc-header-left > .bit-bfc-btn").First).ToHaveTextAsync("امروز");
         await Expect(cal.Locator(".bit-bfc-month-header-cell").First).ToHaveTextAsync("ش");
         await Expect(cal.Locator(".bit-bfc-month-cell-day.today")).ToHaveTextAsync("25");
-        // the month is Tir: June 22 to July 22
-        await Expect(Page.Locator("#fa-range")).ToHaveTextAsync("2025-06-22|2025-07-22");
+        // the month is Tir, June 22 to July 22, and its grid runs from Saturday, June 21 to Friday, July 25
+        await Expect(Page.Locator("#fa-range")).ToHaveTextAsync("2025-06-21|2025-07-25");
 
         await cal.Locator(".bit-bfc-btn-nav").Last.ClickAsync();
         await Expect(Title(cal)).ToHaveTextAsync(ServerOrWasm("1404 مرداد", "1404 Mordad AP"));
-        await Expect(Page.Locator("#fa-range")).ToHaveTextAsync("2025-07-23|2025-08-22");
+        // Mordad, July 23 to August 22: its grid runs from Saturday, July 19 to Friday, August 22
+        await Expect(Page.Locator("#fa-range")).ToHaveTextAsync("2025-07-19|2025-08-22");
     }
 
     [TestMethod]

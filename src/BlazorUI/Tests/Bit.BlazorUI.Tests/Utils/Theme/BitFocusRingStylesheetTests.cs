@@ -197,7 +197,7 @@ public sealed class BitFocusRingStylesheetTests
     }
 
     [TestMethod]
-    [DataRow("Lists/Carousel/BitCarousel.scss", "\n.bit-csl-nbt,\n.bit-csl-pbt {\n    top: 0;", "var(--bit-csl-focus, #{$clr-pri-focus})")]
+    [DataRow("Lists/Carousel/BitCarousel.scss", "\n:where(.bit-csl-cnt) > .bit-csl-nbt,\n:where(.bit-csl-cnt) > .bit-csl-pbt {\n    top: 0;", "var(--bit-csl-focus, #{$clr-pri-focus})")]
     [DataRow("Lists/Swiper/BitSwiper.scss", "\n.bit-swp-rbt,\n.bit-swp-lbt {\n    top: 0;", "var(--bit-swp-focus, #{$clr-pri-focus})")]
     public void TheSlideArrowsShouldDrawABandedRingInsideTheContainerThatClipsThem(string path, string rule, string color)
     {

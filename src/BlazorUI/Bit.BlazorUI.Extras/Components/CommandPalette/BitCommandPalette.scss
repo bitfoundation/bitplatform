@@ -1,0 +1,893 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+// bit-trim: owners BitCommandPalette BitCommandPaletteShortcutHint BitCommandPaletteHighlightedText
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every palette and
+// one set on the Style of an instance that one (a palette holds no other palette):
+//   --bit-CommandPalette-width              width of the dialog                                  (default: 640px)
+//   --bit-CommandPalette-max-height         tallest the list and its header and footer grow      (default: min(70vh, 560px))
+//   --bit-CommandPalette-top                distance of the dialog from the top of the viewport  (default: 12vh)
+//   --bit-CommandPalette-radius             corner radius of the dialog                          (default: $shp-radius-dialog)
+//   --bit-CommandPalette-background         fill of the dialog and of an inline palette          (default: $clr-bg-pri)
+//   --bit-CommandPalette-color              text of the dialog                                   (default: $clr-fg-pri)
+//   --bit-CommandPalette-border-color       lines between the header, the list and the footer    (default: $clr-brd-sec)
+//   --bit-CommandPalette-shadow             elevation of the dialog                              (default: $box-shadow-dialog)
+//   --bit-CommandPalette-backdrop           fill of the page behind the dialog                   (default: $clr-bg-overlay)
+//   --bit-CommandPalette-row-height         least height of a row (Virtualize pins it inline)    (default: $siz-item-lg)
+//   --bit-CommandPalette-item-radius        corner radius of a row                               (default: $shp-radius-md)
+//   --bit-CommandPalette-active-background  fill of the active row                               (default: $clr-bg-pri-hover)
+//   --bit-CommandPalette-accent             mode chip, badges, checked rows and switches         (default: $clr-pri)
+//   --bit-CommandPalette-mark-background    fill of the matched characters                       (default: $clr-pri-tint)
+//   --bit-CommandPalette-detail-width       width of the detail pane                             (default: 40%)
+//   --bit-CommandPalette-focus-color        focus ring of the palette's buttons                  (default: the global ring)
+
+$cpl-private-properties: row-height;
+
+// The root: the modal <dialog>, or the <section> of an inline palette. The dialog is shown in the top layer by
+// showModal; the fixed position and the layer are for an engine that only sets its open attribute.
+.bit-cpl {
+    @each $name in $cpl-private-properties {
+        --bit-cpl-#{$name}: initial;
+    }
+
+    inset: 0;
+    padding: 0;
+    border: none;
+    margin: 0 auto;
+    position: fixed;
+    overflow: hidden;
+    height: fit-content;
+    z-index: $zindex-modal;
+    line-height: 1.4;
+    font-size: $tg-fs-sm;
+    font-family: $tg-font-family;
+    max-width: calc(100vw - #{spacing(4)});
+    top: var(--bit-CommandPalette-top, 12vh);
+    color: var(--bit-CommandPalette-color, #{$clr-fg-pri});
+    box-shadow: var(--bit-CommandPalette-shadow, #{$box-shadow-dialog});
+    border-radius: var(--bit-CommandPalette-radius, #{$shp-radius-dialog});
+    background: var(--bit-CommandPalette-background, #{$clr-bg-pri});
+    width: min(var(--bit-CommandPalette-width, 640px), calc(100vw - #{spacing(4)}));
+    max-height: calc(100vh - 2 * var(--bit-CommandPalette-top, 12vh));
+
+    &[open] {
+        animation: bit-cpl-pop $mot-duration $mot-easing-decelerate;
+    }
+
+    &::backdrop {
+        background: var(--bit-CommandPalette-backdrop, #{$clr-bg-overlay});
+    }
+
+    &[open]::backdrop {
+        animation: bit-cpl-fade $mot-duration $mot-easing-decelerate;
+    }
+
+    @media (forced-colors: active) {
+        border: 1px solid CanvasText;
+    }
+
+    @include lt-sm {
+        &:not(.bit-cpl-inl) {
+            top: 0;
+            width: 100vw;
+            max-width: 100vw;
+            height: 100dvh;
+            max-height: 100dvh;
+            border-radius: 0;
+
+            .bit-cpl-main {
+                height: 100dvh;
+                max-height: 100dvh;
+            }
+        }
+    }
+}
+
+// The palette with a detail pane is wider, for the pane to have room beside the list - but not on a phone, where the
+// dialog fills the screen and the pane is hidden (the rule above, which this one would outweigh), nor inline, where
+// the palette is as wide as its container.
+.bit-cpl[data-has-detail="true"]:not(.bit-cpl-inl) {
+    @include gt-xs {
+        width: min(var(--bit-CommandPalette-width, 920px), calc(100vw - #{spacing(4)}));
+    }
+}
+
+// Inline: in the page's flow, as wide as its container, with an edge of its own instead of an elevation.
+.bit-cpl-inl {
+    inset: auto;
+    top: auto;
+    margin: 0;
+    width: 100%;
+    z-index: auto;
+    max-width: 100%;
+    max-height: none;
+    box-shadow: none;
+    position: relative;
+    border: $shp-border-width $shp-border-style var(--bit-CommandPalette-border-color, #{$clr-brd-sec});
+}
+
+@keyframes bit-cpl-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes bit-cpl-fade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.bit-cpl-body {
+    display: flex;
+    min-height: 0;
+
+    @include lt-sm {
+        flex-direction: column;
+    }
+}
+
+.bit-cpl-main {
+    min-width: 0;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    max-height: var(--bit-CommandPalette-max-height, min(70vh, 560px));
+}
+
+// ---------- Header ----------
+
+.bit-cpl-header {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    border-bottom: $shp-border-width $shp-border-style var(--bit-CommandPalette-border-color, #{$clr-brd-sec});
+
+    @media (forced-colors: active) {
+        border-color: CanvasText;
+    }
+}
+
+.bit-cpl-breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing(0.75);
+    align-items: center;
+    padding: spacing(1.25) spacing(1.75) 0;
+}
+
+.bit-cpl-crumb {
+    border: none;
+    gap: spacing(0.5);
+    align-items: center;
+    font-family: inherit;
+    display: inline-flex;
+    height: spacing(2.75);
+    font-size: $tg-fs-xs;
+    padding: 0 spacing(1);
+    font-weight: $tg-fw-medium;
+    background: $clr-bg-sec;
+    border-radius: $shp-radius-sm;
+    --bit-cpl-crm-sfg: initial;
+    color: var(--bit-cpl-crm-sfg, #{$clr-fg-sec});
+
+    @media (forced-colors: active) {
+        border: 1px solid CanvasText;
+    }
+}
+
+.bit-cpl-crumb-link,
+.bit-cpl-crumb-home {
+    cursor: pointer;
+    min-height: spacing(3);
+
+    &:hover {
+        --bit-cpl-crm-sfg: #{$clr-fg-pri};
+    }
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-CommandPalette-focus-color));
+    }
+}
+
+.bit-cpl-crumb-home {
+    min-width: spacing(3);
+    height: spacing(3);
+    justify-content: center;
+    padding: 0 spacing(0.75);
+}
+
+.bit-cpl-mode-chip {
+    color: var(--bit-CommandPalette-accent, #{$clr-pri});
+    background: $clr-pri-tint;
+}
+
+.bit-cpl-input-row {
+    display: flex;
+    gap: spacing(1.25);
+    align-items: center;
+    padding: 0 spacing(1.75);
+    height: $siz-ctrl-lg;
+    min-height: spacing(7);
+}
+
+.bit-cpl-input-icon {
+    flex: none;
+    display: inline-flex;
+    width: $siz-icon-md;
+    color: $clr-fg-sec;
+    justify-content: center;
+}
+
+.bit-cpl-input {
+    min-width: 0;
+    border: none;
+    outline: none;
+    height: 100%;
+    flex: 1 1 auto;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    font-size: $tg-fs-md;
+
+    @include input-placeholder($clr-fg-sec);
+
+    &:disabled {
+        cursor: default;
+        color: $clr-fg-dis;
+
+        @include input-placeholder($clr-fg-dis);
+    }
+}
+
+.bit-cpl-selected-count {
+    white-space: nowrap;
+    font-size: $tg-fs-xs;
+    font-weight: $tg-fw-semibold;
+    color: var(--bit-CommandPalette-accent, #{$clr-pri});
+}
+
+.bit-cpl-close {
+    padding: 0;
+    border: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    align-items: center;
+    display: inline-flex;
+    min-width: spacing(3);
+    min-height: spacing(3);
+    justify-content: center;
+    background: transparent;
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-CommandPalette-focus-color));
+    }
+}
+
+.bit-cpl-notice {
+    flex: none;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    padding: spacing(1) spacing(2.25) 0;
+}
+
+// ---------- List ----------
+
+.bit-cpl-list {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: spacing(1);
+    scrollbar-width: thin;
+    overscroll-behavior: contain;
+    scroll-padding-block: spacing(5) spacing(1);
+    scrollbar-color: $clr-brd-pri transparent;
+}
+
+.bit-cpl-group-heading {
+    z-index: 1;
+    position: sticky;
+    top: calc(-1 * #{spacing(1)});
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: $tg-fs-2xs;
+    font-weight: $tg-fw-semibold;
+    padding: spacing(1.25) spacing(1.25) spacing(0.75);
+    color: $clr-fg-sec;
+    background: var(--bit-CommandPalette-background, #{$clr-bg-pri});
+}
+
+.bit-cpl-item {
+    display: flex;
+    cursor: pointer;
+    user-select: none;
+    align-items: center;
+    -webkit-user-select: none;
+    gap: spacing(1.5);
+    color: inherit;
+    padding: spacing(0.75) spacing(1.25);
+    scroll-margin-block: spacing(4.5) spacing(0.5);
+    border-radius: var(--bit-CommandPalette-item-radius, #{$shp-radius-md});
+    min-height: var(--bit-cpl-row-height, var(--bit-CommandPalette-row-height, #{$siz-item-lg}));
+
+    &[data-active="true"] {
+        background: var(--bit-CommandPalette-active-background, #{$clr-bg-pri-hover});
+
+        .bit-cpl-item-icon {
+            color: inherit;
+        }
+    }
+
+    &[data-disabled="true"] {
+        opacity: $opa-dis;
+        cursor: not-allowed;
+    }
+
+    &[data-destructive="true"] {
+        color: $clr-err;
+
+        .bit-cpl-item-icon {
+            color: $clr-err;
+        }
+
+        &[data-active="true"] {
+            background: $clr-err-tint;
+        }
+    }
+
+    &[data-confirming="true"] {
+        outline-offset: -2px;
+        outline: $shp-border-width-thick solid $clr-err;
+    }
+
+    &[data-error="true"] {
+        .bit-cpl-item-icon,
+        .bit-cpl-item-title {
+            color: $clr-err;
+        }
+    }
+
+    &[data-running="true"] {
+        opacity: 0.7;
+    }
+
+    &[data-checked="true"] .bit-cpl-check {
+        background: $clr-pri-tint;
+        color: var(--bit-CommandPalette-accent, #{$clr-pri});
+        border-color: var(--bit-CommandPalette-accent, #{$clr-pri});
+    }
+
+    @media (forced-colors: active) {
+        &[data-active="true"] {
+            outline-offset: -2px;
+            outline: 2px solid Highlight;
+        }
+
+        &[data-disabled="true"] {
+            opacity: 1;
+            color: GrayText;
+        }
+
+        &[data-checked="true"] .bit-cpl-check {
+            background: Highlight;
+            color: HighlightText;
+            border-color: Highlight;
+            forced-color-adjust: none;
+        }
+    }
+}
+
+.bit-cpl-check {
+    flex: none;
+    align-items: center;
+    display: inline-flex;
+    width: $siz-icon-sm;
+    height: $siz-icon-sm;
+    justify-content: center;
+    border-radius: $shp-radius-selection;
+    border: $shp-border-width-thick $shp-border-style $clr-fg-ter;
+
+    @media (forced-colors: active) {
+        border-color: CanvasText;
+    }
+}
+
+.bit-cpl-item-icon {
+    flex: none;
+    align-items: center;
+    display: inline-flex;
+    color: $clr-fg-sec;
+    width: $siz-icon-md;
+    height: $siz-icon-md;
+    justify-content: center;
+
+    i {
+        font-size: $tg-fs-md;
+    }
+}
+
+.bit-cpl-item-body {
+    min-width: 0;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+}
+
+.bit-cpl-item-title {
+    min-width: 0;
+    display: flex;
+    gap: spacing(1);
+    overflow: hidden;
+    white-space: nowrap;
+    align-items: center;
+    font-weight: $tg-fw-medium;
+}
+
+.bit-cpl-item-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// A nested command found from the root: its ancestors before its title, "Theme › Dark". The separator has empty
+// alternative text, so screen readers hear the titles only.
+.bit-cpl-item-path {
+    flex: none;
+    min-width: 0;
+    max-width: 50%;
+    overflow: hidden;
+    align-items: center;
+    display: inline-flex;
+    color: $clr-fg-sec;
+    font-weight: $tg-fw-regular;
+}
+
+.bit-cpl-path-segment {
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &::after {
+        opacity: 0.7;
+        content: "\203A";
+        content: "\203A" / "";
+        margin-inline: spacing(0.75);
+    }
+}
+
+.bit-cpl-path-segment:dir(rtl)::after {
+    content: "\2039";
+    content: "\2039" / "";
+}
+
+@supports not selector(:dir(rtl)) {
+    .bit-cpl.bit-rtl .bit-cpl-path-segment::after {
+        content: "\2039";
+        content: "\2039" / "";
+    }
+}
+
+.bit-cpl-item-subtitle {
+    overflow: hidden;
+    white-space: nowrap;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    text-overflow: ellipsis;
+}
+
+.bit-cpl-keyword-hit::before {
+    opacity: 0.6;
+    content: "↳ ";
+}
+
+.bit-cpl-keyword-hit:dir(rtl)::before {
+    content: "↲ ";
+}
+
+@supports not selector(:dir(rtl)) {
+    .bit-cpl.bit-rtl .bit-cpl-keyword-hit::before {
+        content: "↲ ";
+    }
+}
+
+.bit-cpl-confirm-label {
+    color: $clr-err;
+    font-weight: $tg-fw-semibold;
+}
+
+// The full text color, not the muted one a subtitle has: muted text on the highlight would fall below 4.5:1.
+.bit-cpl-mark {
+    color: inherit;
+    padding: 0 1px;
+    margin: 0 -1px;
+    border-radius: $shp-radius-xs;
+    background: var(--bit-CommandPalette-mark-background, #{$clr-pri-tint});
+
+    @media (prefers-contrast: more) {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    @media (forced-colors: active) {
+        color: MarkText;
+        background: Mark;
+        forced-color-adjust: none;
+    }
+}
+
+.bit-cpl-badge {
+    flex: none;
+    align-items: center;
+    display: inline-flex;
+    height: spacing(2.25);
+    font-size: $tg-fs-2xs;
+    padding: 0 spacing(0.75);
+    font-weight: $tg-fw-semibold;
+    background: $clr-pri-tint;
+    border-radius: $shp-radius-full;
+    color: var(--bit-CommandPalette-accent, #{$clr-pri});
+
+    @media (forced-colors: active) {
+        border: 1px solid CanvasText;
+    }
+}
+
+.bit-cpl-pin {
+    flex: none;
+    display: inline-flex;
+    color: $clr-fg-ter;
+
+    .bit-cpl-svg {
+        width: spacing(1.5);
+        height: spacing(1.5);
+    }
+}
+
+.bit-cpl-item-trailing {
+    flex: none;
+    gap: spacing(1);
+    align-items: center;
+    display: inline-flex;
+    color: $clr-fg-sec;
+
+    @include lt-sm {
+        .bit-cpl-shortcut {
+            display: none;
+        }
+    }
+}
+
+.bit-cpl-value {
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+}
+
+.bit-cpl-chevron {
+    display: inline-flex;
+    color: $clr-fg-ter;
+}
+
+// The switch of a toggle command: its state is in data-on, and in words for screen readers beside it.
+.bit-cpl-toggle {
+    position: relative;
+    width: $siz-switch-w-sm;
+    height: $siz-switch-h-sm;
+    background: $clr-brd-pri;
+    border-radius: $shp-radius-full;
+    transition: background-color $mot-duration-short $mot-easing;
+
+    &::after {
+        content: "";
+        position: absolute;
+        background: $clr-bg-pri;
+        width: $siz-switch-thumb-sm;
+        height: $siz-switch-thumb-sm;
+        border-radius: $shp-radius-full;
+        top: calc((#{$siz-switch-h-sm} - #{$siz-switch-thumb-sm}) / 2);
+        inset-inline-start: calc((#{$siz-switch-h-sm} - #{$siz-switch-thumb-sm}) / 2);
+        transition: inset-inline-start $mot-duration-short $mot-easing;
+    }
+
+    &[data-on="true"] {
+        background: var(--bit-CommandPalette-accent, #{$clr-pri});
+
+        &::after {
+            inset-inline-start: calc(#{$siz-switch-w-sm} - #{$siz-switch-thumb-sm} - (#{$siz-switch-h-sm} - #{$siz-switch-thumb-sm}) / 2);
+        }
+    }
+
+    @media (forced-colors: active) {
+        background: Canvas;
+        forced-color-adjust: none;
+        border: 1px solid CanvasText;
+
+        &::after {
+            background: CanvasText;
+        }
+
+        &[data-on="true"] {
+            background: Highlight;
+            border-color: Highlight;
+
+            &::after {
+                background: HighlightText;
+            }
+        }
+    }
+}
+
+// ---------- Shortcut / key caps ----------
+
+.bit-cpl-shortcut {
+    align-items: center;
+    display: inline-flex;
+}
+
+.bit-cpl-shortcut-keys {
+    gap: 3px;
+    align-items: center;
+    display: inline-flex;
+}
+
+.bit-cpl-shortcut-then {
+    margin: 0 2px;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-2xs;
+}
+
+.bit-cpl-kbd {
+    line-height: 1;
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    font-family: inherit;
+    font-size: $tg-fs-2xs;
+    font-weight: $tg-fw-medium;
+    height: spacing(2.5);
+    min-width: spacing(2.5);
+    padding: 0 spacing(0.625);
+    color: $clr-fg-sec;
+    background: $clr-bg-sec;
+    border-radius: $shp-radius-sm;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    border-bottom-width: 2px;
+
+    @media (forced-colors: active) {
+        border-color: CanvasText;
+    }
+}
+
+// ---------- Empty, no results, loading, error, prompt ----------
+
+.bit-cpl-emp,
+.bit-cpl-nor,
+.bit-cpl-state {
+    display: flex;
+    gap: spacing(0.75);
+    text-align: center;
+    align-items: center;
+    color: $clr-fg-sec;
+    flex-direction: column;
+    justify-content: center;
+    padding: spacing(5) spacing(2);
+
+    .bit-cpl-svg {
+        opacity: 0.5;
+        width: spacing(3.5);
+        height: spacing(3.5);
+        margin-bottom: spacing(0.5);
+    }
+
+    p {
+        margin: 0;
+    }
+}
+
+.bit-cpl-empty-title {
+    color: inherit;
+    font-weight: $tg-fw-medium;
+}
+
+.bit-cpl-empty-hint {
+    font-size: $tg-fs-xs;
+}
+
+.bit-cpl-error .bit-cpl-svg {
+    opacity: 1;
+    color: $clr-err;
+}
+
+.bit-cpl-retry {
+    font: inherit;
+    cursor: pointer;
+    color: inherit;
+    font-size: $tg-fs-xs;
+    margin-top: spacing(0.75);
+    min-height: spacing(3.5);
+    padding: 0 spacing(1.5);
+    border-radius: $shp-radius-button;
+    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    --bit-cpl-rty-sbg: initial;
+    background: var(--bit-cpl-rty-sbg, #{$clr-bg-sec});
+
+    &:hover {
+        --bit-cpl-rty-sbg: #{$clr-bg-sec-hover};
+    }
+
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-CommandPalette-focus-color));
+    }
+}
+
+.bit-cpl-prompt {
+    text-align: center;
+    color: $clr-fg-sec;
+    padding: spacing(3.5) spacing(2);
+}
+
+.bit-cpl-prompt-title {
+    margin: 0 0 spacing(1);
+    color: $clr-fg-pri;
+    font-weight: $tg-fw-medium;
+}
+
+.bit-cpl-prompt-error {
+    color: $clr-err;
+    font-size: $tg-fs-xs;
+    margin: 0 0 spacing(1);
+}
+
+.bit-cpl-prompt-hint {
+    margin: 0;
+    display: flex;
+    gap: spacing(0.75);
+    align-items: center;
+    font-size: $tg-fs-xs;
+    justify-content: center;
+}
+
+.bit-cpl-sep {
+    opacity: 0.5;
+}
+
+.bit-cpl-spinner {
+    display: inline-block;
+
+    @include spinner-ring($siz-icon-sm, var(--bit-CommandPalette-accent, #{$clr-pri}), $clr-brd-sec);
+}
+
+// ---------- Footer ----------
+
+.bit-cpl-footer {
+    flex: none;
+    display: flex;
+    gap: spacing(1.75);
+    overflow: hidden;
+    align-items: center;
+    white-space: nowrap;
+    color: $clr-fg-sec;
+    font-size: $tg-fs-xs;
+    min-height: spacing(5);
+    padding: 0 spacing(1.75);
+    background: $clr-bg-sec;
+    border-top: $shp-border-width $shp-border-style var(--bit-CommandPalette-border-color, #{$clr-brd-sec});
+
+    @media (forced-colors: active) {
+        border-color: CanvasText;
+    }
+}
+
+.bit-cpl-hint {
+    min-width: 0;
+    overflow: hidden;
+    gap: spacing(0.625);
+    align-items: center;
+    display: inline-flex;
+
+    @include lt-sm {
+        &:not(.bit-cpl-hint-right) {
+            display: none;
+        }
+    }
+}
+
+.bit-cpl-hint-right {
+    flex: none;
+    margin-inline-start: auto;
+    padding-inline-start: spacing(1);
+}
+
+.bit-cpl-toast {
+    overflow: hidden;
+    color: $clr-fg-pri;
+    text-overflow: ellipsis;
+    font-weight: $tg-fw-medium;
+}
+
+.bit-cpl-toast-confirm,
+.bit-cpl-toast-error {
+    color: $clr-err;
+}
+
+// ---------- Detail pane ----------
+
+.bit-cpl-detail {
+    overflow: auto;
+    color: $clr-fg-sec;
+    padding: spacing(2);
+    font-size: $tg-fs-sm;
+    background: $clr-bg-sec;
+    flex: 0 0 var(--bit-CommandPalette-detail-width, 40%);
+    max-height: var(--bit-CommandPalette-max-height, min(70vh, 560px));
+    border-inline-start: $shp-border-width $shp-border-style var(--bit-CommandPalette-border-color, #{$clr-brd-sec});
+
+    @include lt-sm {
+        display: none;
+    }
+}
+
+// ---------- A pending shortcut sequence ----------
+
+// Beside the root, like the declared commands: shown while the palette is closed and a sequence waits for its next key.
+// Centered with the physical left edge, which centers it the same way whichever way the page reads.
+.bit-cpl-sequence[data-pending="true"] {
+    left: 50%;
+    position: fixed;
+    gap: spacing(1);
+    align-items: center;
+    display: inline-flex;
+    z-index: $zindex-modal;
+    font-size: $tg-fs-xs;
+    bottom: spacing(3);
+    transform: translateX(-50%);
+    color: $clr-fg-sec;
+    background: $clr-bg-pri;
+    box-shadow: $box-shadow-popup;
+    font-family: $tg-font-family;
+    border-radius: $shp-radius-full;
+    padding: spacing(0.75) spacing(1.5);
+    border: $shp-border-width $shp-border-style $clr-brd-sec;
+
+    @media (forced-colors: active) {
+        border-color: CanvasText;
+    }
+}
+
+// ---------- Parts ----------
+
+.bit-cpl-vhd {
+    @include visually-hidden;
+}
+
+.bit-cpl-svg {
+    flex: none;
+}
+
+// Arrows and chevrons point the way the text reads.
+.bit-cpl-svg[data-mirror]:dir(rtl) {
+    transform: scaleX(-1);
+}
+
+@supports not selector(:dir(rtl)) {
+    .bit-cpl.bit-rtl .bit-cpl-svg[data-mirror] {
+        transform: scaleX(-1);
+    }
+}
+
+@media (prefers-contrast: more) {
+    .bit-cpl-item[data-active="true"] {
+        outline-offset: -2px;
+        outline: 2px solid currentColor;
+    }
+}

@@ -231,6 +231,12 @@ public partial class BitCheckboxParams : BitComponentBaseParams, IBitComponentPa
     /// </summary>
     public string? UncheckedIconName { get; set; }
 
+    /// <summary>
+    /// The visual style of the checkbox. The default is <see cref="BitVariant.Text"/>, the bare box and label;
+    /// <see cref="BitVariant.Outline"/> and <see cref="BitVariant.Fill"/> render it as a selectable card.
+    /// </summary>
+    public BitVariant? Variant { get; set; }
+
 
 
     /// <summary>
@@ -431,6 +437,11 @@ public partial class BitCheckboxParams : BitComponentBaseParams, IBitComponentPa
         if (UncheckedIconName.HasValue())
         {
             bitCheckbox.TakeFromCascade(nameof(UncheckedIconName), UncheckedIconName, static c => c.UncheckedIconName, static (c, v) => c.UncheckedIconName = v);
+        }
+
+        if (Variant.HasValue)
+        {
+            bitCheckbox.TakeFromCascade(nameof(Variant), Variant.Value, static c => c.Variant, static (c, v) => c.Variant = v);
         }
     }
 }

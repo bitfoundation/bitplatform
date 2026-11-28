@@ -36,22 +36,19 @@ public class BitResourceTimelineAllocation
     /// </summary>
     public int? Height { get; set; }
 
-    /// <summary>Optional label rendered centered above the bar.</summary>
-    public string? TextAbove { get; set; }
-
-    /// <summary>Optional label rendered centered below the bar.</summary>
-    public string? TextBelow { get; set; }
-
-    /// <summary>Optional label rendered just before the bar's start edge.</summary>
-    public string? TextStart { get; set; }
-
-    /// <summary>Optional label rendered just after the bar's end edge.</summary>
-    public string? TextEnd { get; set; }
+    /// <summary>
+    /// Optional texts drawn around the bar: above it (at its start, center or
+    /// end), below it (likewise), and before its start or after its end. Each
+    /// one carries its own color, font and offset. See
+    /// <see cref="BitResourceTimelineBarTexts"/>.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BitResourceTimelineBarTexts? Texts { get; set; }
 
     /// <summary>
     /// Optional tooltip text shown when hovering the bar (requires
     /// <see cref="BitResourceTimelineOptions.ShowTooltips"/>). When null, a
-    /// default tooltip is built from the bar's labels, resource name and time
+    /// default tooltip is built from the bar's texts, resource name and time
     /// range. Use <c>"\n"</c> to separate lines.
     /// </summary>
     public string? Tooltip { get; set; }

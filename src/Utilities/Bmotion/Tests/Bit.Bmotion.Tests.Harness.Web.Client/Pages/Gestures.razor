@@ -112,6 +112,17 @@
              OnAnimationStart='_ => Log("armed:late")'>
         <div id="late" class="box"></div>
     </Bmotion>
+
+    @* The getting-started sample: a spring hover over an entrance - flicking the pointer in and out of it must never
+       leave it stuck part-way. *@
+    <Bmotion Initial="Bm.To(opacity: 0, y: 20)"
+             Animate="Bm.To(opacity: 1, y: 0)"
+             WhileHover="Bm.To(scale: 1.1)"
+             WhileTap="Bm.To(scale: 0.95)"
+             Transition="Bm.Spring(bounce: 0.4, duration: 0.6)"
+             OnAnimationComplete='_ => Log("flick:complete")'>
+        <div id="flick" class="box"></div>
+    </Bmotion>
 </section>
 
 @code {

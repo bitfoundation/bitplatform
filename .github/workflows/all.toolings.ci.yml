@@ -19,10 +19,6 @@ jobs:
     name: blazores2019
     uses: ./.github/workflows/ci.blazores2019.yml
 
-  cli:
-    name: cli
-    uses: ./.github/workflows/ci.cli.yml
-
   codeanalyzers:
     name: codeanalyzers
     uses: ./.github/workflows/ci.codeanalyzers.yml

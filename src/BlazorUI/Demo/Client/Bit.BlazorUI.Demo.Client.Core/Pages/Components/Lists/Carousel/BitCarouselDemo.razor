@@ -367,11 +367,18 @@
             only picks the page an unbound carousel starts on. Through a <b>@@ref</b>, <b>GoNext</b>, <b>GoPrev</b> and
             <b>GoTo</b> navigate, <b>Pause</b>, <b>Resume</b> and <b>TogglePlay</b> drive the autoplay, and <b>Refresh</b>
             re-measures it; <b>CurrentPage</b> (zero based), <b>PagesCount</b>, <b>ItemsCount</b>, <b>IsPlaying</b> and
-            <b>IsPaused</b> report its state. <b>OnChange</b> reports each move with the zero based page index.
+            <b>IsPaused</b> report its state, and <b>CanGoPrev</b> and <b>CanGoNext</b> whether it can move either way (which
+            takes <b>InfiniteScrolling</b> into account), here to disable the buttons of the page at the ends. <b>OnChange</b>
+            reports each move with the zero based page index, and <b>OnNavigationStateChange</b> every change of that state,
+            including the first layout, which no move reports.
         </div>
         <br />
         <div>
-            <BitCarousel HideNextPrev @ref="carousel" @bind-SelectedPage="selectedPage" OnChange="v => changedIndex = v">
+            <BitCarousel HideNextPrev
+                         @ref="carousel"
+                         @bind-SelectedPage="selectedPage"
+                         OnChange="v => changedIndex = v"
+                         OnNavigationStateChange="StateHasChanged">
                 <BitCarouselItem>
                     <div class="number">1 / 4</div>
                     <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
@@ -392,8 +399,8 @@
             <br />
             <div class="buttons-container">
                 <div>
-                    <BitButton OnClick="GoPrev">&lt; Prev</BitButton>
-                    <BitButton OnClick="GoNext">Next &gt;</BitButton>
+                    <BitButton OnClick="GoPrev" Disabled="@(carousel?.CanGoPrev is not true)">&lt; Prev</BitButton>
+                    <BitButton OnClick="GoNext" Disabled="@(carousel?.CanGoNext is not true)">Next &gt;</BitButton>
                 </div>
                 <BitPagination Count="4" @bind-SelectedPage="selectedPage" />
             </div>
@@ -580,7 +587,66 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="ButtonsPlacement" RazorCode="@example15RazorCode" Id="example15">
+        <div>
+            <b>ButtonsPlacement</b> moves the next/prev buttons out of the slides. On the side of the dots they flank the dots,
+            and hold that row on their own with <b>HideDots</b>; on another side they get a row, or at the Start or End a
+            column, of their own. Out there a button at an end keeps its room and only turns invisible, so the dots do not
+            shift.
+        </div>
+        <br />
+        <div>
+            <BitCarousel ButtonsPlacement="BitPlacement.Bottom">
+                <BitCarouselItem>
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                </BitCarouselItem>
+            </BitCarousel>
+            <br /><br />
+            <BitCarousel Style="height: 100px" HideDots ButtonsPlacement="BitPlacement.Bottom">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            </BitCarousel>
+            <br /><br />
+            <BitCarousel Style="height: 100px" InfiniteScrolling ButtonsPlacement="BitPlacement.End">
+                <BitCarouselItem Class="item"><div>1</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>2</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>3</div></BitCarouselItem>
+                <BitCarouselItem Class="item"><div>4</div></BitCarouselItem>
+            </BitCarousel>
+            <br /><br />
+            <BitCarousel Vertical Style="height: 200px" DotsPlacement="BitPlacement.End" ButtonsPlacement="BitPlacement.End">
+                <BitCarouselItem>
+                    <div class="number">1 / 4</div>
+                    <img class="image" alt="Aurora" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img1.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">2 / 4</div>
+                    <img class="image" alt="Beautiful mountain" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img2.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">3 / 4</div>
+                    <img class="image" alt="Forest in the valley" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img3.jpg" />
+                </BitCarouselItem>
+                <BitCarouselItem>
+                    <div class="number">4 / 4</div>
+                    <img class="image" alt="Road among the mountains" src="_content/Bit.BlazorUI.Demo.Client.Core/images/carousel/img4.jpg" />
+                </BitCarouselItem>
+            </BitCarousel>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Color</b> paints the current dot, the buttons and the focus ring with a theme color. <b>Accent</b> is the lighter
             option that only colors the current dot (primary, secondary, tertiary or transparent).
@@ -640,7 +706,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="External Icons" RazorCode="@example17RazorCode" Id="example17">
         <div>
             Use icons from external libraries like FontAwesome and Bootstrap Icons with <b>NextIcon</b> and <b>PrevIcon</b>
             (and <b>PlayIcon</b> / <b>PauseIcon</b> for the play/pause button). The next/prev icons are given for a
@@ -686,7 +752,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17">
+    <DemoExample Title="Size" RazorCode="@example18RazorCode" Id="example18">
         <div>Sizes the dots and the navigation buttons.</div>
         <br />
         <div>
@@ -719,7 +785,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18">
+    <DemoExample Title="Style & Class" RazorCode="@example19RazorCode" Id="example19">
         <div>
             <b>Styles</b> and <b>Classes</b> reach every part: the container, the items and the ones on screen (<b>Item</b>,
             <b>CurrentItem</b>), the buttons and their icons, the dots and the current dot, and the play/pause button.
@@ -739,7 +805,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
+    <DemoExample Title="RTL" RazorCode="@example20RazorCode" Id="example20">
         <div>Right-to-left: the slides run from the right, and the buttons and arrow keys flip with them.</div>
         <br />
         <div>

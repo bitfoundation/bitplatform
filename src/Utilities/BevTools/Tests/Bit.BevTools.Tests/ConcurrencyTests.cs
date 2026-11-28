@@ -33,6 +33,38 @@ public class ConcurrencyTests
     }
 
     [TestMethod]
+    public void Ring_buffer_replace_is_never_seen_half_done_and_keeps_the_newest()
+    {
+        var buffer = new BevToolsRingBuffer<int>(100);
+        for (var i = 0; i < 50; i++)
+        {
+            buffer.Add(i);
+        }
+
+        // Readers take no lock of the caller's (the log store imports under its own): every snapshot they take holds
+        // either the old 50 items or the merged 100.
+        using var stop = new CancellationTokenSource();
+        var torn = 0;
+        var reader = Task.Run(() =>
+        {
+            while (!stop.IsCancellationRequested)
+            {
+                if (buffer.ToArray().Length is not (50 or 100))
+                {
+                    Interlocked.Increment(ref torn);
+                }
+            }
+        });
+
+        buffer.Replace(current => current.Concat(Enumerable.Range(-60, 60)).OrderBy(x => x));
+        stop.Cancel();
+        reader.Wait();
+
+        Assert.AreEqual(0, torn);
+        CollectionAssert.AreEqual(Enumerable.Range(-50, 100).ToArray(), buffer.ToArray(), "only the newest 100 of the 110 are kept");
+    }
+
+    [TestMethod]
     public void Timeline_and_error_center_accept_parallel_recording()
     {
         var (session, scope) = TestHelpers.CreateSession(o => o.MaxEvents = 2000);

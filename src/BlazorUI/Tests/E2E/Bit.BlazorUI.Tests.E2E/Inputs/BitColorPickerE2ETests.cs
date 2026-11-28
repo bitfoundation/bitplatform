@@ -10,7 +10,7 @@ namespace Bit.BlazorUI.Tests.E2E.Inputs;
 /// channel and alpha fields typed into in every inputs mode and the mode switch, the presets (click, the toolbar's
 /// arrow keys, a grid, alpha presets), the eyedropper's presence and its result, the contrast readout, two-way binding
 /// of Value, Alpha and InputsMode, a one-way Value, the events and the public readings, FocusAsync and AutoFocus,
-/// validation in an EditForm, Texts, the BitParams cascade, Size/Style/Class/Styles/Classes, the CSS variables, RTL
+/// validation in an EditForm, Strings, the BitParams cascade, Size/Style/Class/Styles/Classes, the CSS variables, RTL
 /// (explicit and inherited), Visibility, the disabled and read-only contracts and the lifecycle.
 /// </summary>
 [TestClass]
@@ -1047,34 +1047,34 @@ public class BitColorPickerE2ETests : E2ETestBase
         await Expect(Page.Locator("#readonly .bit-clp-flb")).ToHaveCountAsync(2);
     }
 
-    // ------------------------------------------------------------------ texts
+    // ------------------------------------------------------------------ strings
 
     [TestMethod]
-    public async Task Texts_TranslateEveryStringThePickerWrites()
+    public async Task Strings_TranslateEveryStringThePickerWrites()
     {
         await Page.AddInitScriptAsync(EyeDropperStub);
         await OpenAsync(Url);
 
-        var root = Root("texts");
+        var root = Root("strings");
         await Expect(root).ToHaveAttributeAsync("aria-label", "Waehler 255-0-0-100");
-        await Expect(Area("texts")).ToHaveAttributeAsync("aria-label", "Sattigung");
-        await Expect(Area("texts")).ToHaveAttributeAsync("aria-roledescription", "Flaeche");
-        await Expect(Area("texts")).ToHaveAttributeAsync("aria-valuetext", "#FF0000 (100/100)");
-        await Expect(Hue("texts")).ToHaveAttributeAsync("aria-label", "Farbton");
-        await Expect(Hue("texts")).ToHaveAttributeAsync("aria-valuetext", "Farbton 0");
-        await Expect(AlphaSlider("texts")).ToHaveAttributeAsync("aria-label", "Deckkraft");
-        await Expect(AlphaSlider("texts")).ToHaveAttributeAsync("aria-valuetext", "Deckkraft 100");
-        await Expect(Page.Locator("#texts .bit-clp-flb")).ToHaveTextAsync(["Hexa", "Ro", "Gr", "Bl", "D%"]);
-        await Expect(await FieldAsync("texts", "r")).ToHaveAttributeAsync("title", "Rot");
-        await Expect(Page.Locator("#texts .bit-clp-eyd")).ToHaveAttributeAsync("aria-label", "Pipette");
-        await Expect(Page.Locator("#texts .bit-clp-swb")).ToHaveAttributeAsync("aria-label", "Felder HEXRGB wechseln");
-        await Expect(Page.Locator("#texts .bit-clp-swb")).ToHaveAttributeAsync("title", "Felder: HEXRGB");
-        await Expect(Page.Locator("#texts .bit-clp-prs")).ToHaveAttributeAsync("aria-label", "Vorlagen");
-        await Expect(Swatch("texts", "#107C10")).ToHaveAttributeAsync("aria-label", "Vorlage #107C10");
-        await Expect(Page.Locator("#texts .bit-clp-cnv")).ToHaveAttributeAsync("aria-label", "Kontrast 4");
-        await Expect(Page.Locator("#texts .bit-clp-cnb")).ToHaveTextAsync(["AA!", "AA gross"]);
-        await Expect(Page.Locator("#texts .bit-clp-cnb").Nth(0)).ToHaveAttributeAsync("aria-label", "AA normal nein");
-        await Expect(Page.Locator("#texts .bit-clp-cnb").Nth(1)).ToHaveAttributeAsync("aria-label", "AA gross ja");
+        await Expect(Area("strings")).ToHaveAttributeAsync("aria-label", "Sattigung");
+        await Expect(Area("strings")).ToHaveAttributeAsync("aria-roledescription", "Flaeche");
+        await Expect(Area("strings")).ToHaveAttributeAsync("aria-valuetext", "#FF0000 (100/100)");
+        await Expect(Hue("strings")).ToHaveAttributeAsync("aria-label", "Farbton");
+        await Expect(Hue("strings")).ToHaveAttributeAsync("aria-valuetext", "Farbton 0");
+        await Expect(AlphaSlider("strings")).ToHaveAttributeAsync("aria-label", "Deckkraft");
+        await Expect(AlphaSlider("strings")).ToHaveAttributeAsync("aria-valuetext", "Deckkraft 100");
+        await Expect(Page.Locator("#strings .bit-clp-flb")).ToHaveTextAsync(["Hexa", "Ro", "Gr", "Bl", "D%"]);
+        await Expect(await FieldAsync("strings", "r")).ToHaveAttributeAsync("title", "Rot");
+        await Expect(Page.Locator("#strings .bit-clp-eyd")).ToHaveAttributeAsync("aria-label", "Pipette");
+        await Expect(Page.Locator("#strings .bit-clp-swb")).ToHaveAttributeAsync("aria-label", "Felder HEXRGB wechseln");
+        await Expect(Page.Locator("#strings .bit-clp-swb")).ToHaveAttributeAsync("title", "Felder: HEXRGB");
+        await Expect(Page.Locator("#strings .bit-clp-prs")).ToHaveAttributeAsync("aria-label", "Vorlagen");
+        await Expect(Swatch("strings", "#107C10")).ToHaveAttributeAsync("aria-label", "Vorlage #107C10");
+        await Expect(Page.Locator("#strings .bit-clp-cnv")).ToHaveAttributeAsync("aria-label", "Kontrast 4");
+        await Expect(Page.Locator("#strings .bit-clp-cnb")).ToHaveTextAsync(["AA!", "AA gross"]);
+        await Expect(Page.Locator("#strings .bit-clp-cnb").Nth(0)).ToHaveAttributeAsync("aria-label", "AA normal nein");
+        await Expect(Page.Locator("#strings .bit-clp-cnb").Nth(1)).ToHaveAttributeAsync("aria-label", "AA gross ja");
     }
 
     // ------------------------------------------------------------------ cascade

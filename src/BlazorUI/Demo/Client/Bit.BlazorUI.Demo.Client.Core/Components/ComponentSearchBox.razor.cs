@@ -36,8 +36,8 @@ public partial class ComponentSearchBox
     [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>
-    /// Whether Ctrl/Cmd+K (and a bare "/") should put the caret in this box, which it asks the search
-    /// box itself for through its <c>FocusShortcut</c>. The header's copy asks for it on every page
+    /// Whether a bare "/" should put the caret in this box, which it asks the search box itself for
+    /// through its <c>FocusShortcut</c>. Ctrl/Cmd+K is the site's command palette (SiteCommandPalette). The header's copy asks for it on every page
     /// that has one, and the home page's hero asks for it there, where the header renders none - so
     /// only ever one of the two is in the DOM to claim it.
     /// </summary>
