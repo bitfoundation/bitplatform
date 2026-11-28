@@ -30,8 +30,9 @@
                 <br /><br />
                 The value is a <b>BitDateRangePickerValue</b> whose <b>StartDate</b> and <b>EndDate</b> are
                 <code>DateTimeOffset?</code>, and they always carry a time of day: without a time picker a picked start is
-                at 00:00 and a picked end at 23:59 (or at the times of <b>StartingValue</b>), so the range covers both days in
-                full. While only the start is picked, <b>EndDate</b> is <code>null</code>.
+                at 00:00 and a picked end at 23:59 (or at the times of <b>StartingValue</b>). That end is the minute 23:59:00,
+                not the end of the day: a query that must take in the whole last day compares against the midnight that
+                follows it rather than against <b>EndDate</b> itself. While only the start is picked, <b>EndDate</b> is <code>null</code>.
                 <br /><br />
                 The common field and calendar options:
                 <ul>
@@ -515,7 +516,7 @@
                                     OnCancel="@(() => applyOutcome = "Cancelled")" />
             </div>
             <br />
-            <div>Committed value: <b>@Fmt(applyValue)</b></div>
+            <div>Current value: <b>@Fmt(applyValue)</b></div>
             <div>Last outcome: <b>@(applyOutcome ?? "-")</b></div>
         </DemoExample>
 

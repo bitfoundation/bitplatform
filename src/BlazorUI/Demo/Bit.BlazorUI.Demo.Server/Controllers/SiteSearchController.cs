@@ -34,6 +34,17 @@ public partial class SiteSearchController : AppControllerBase
                 sections.Add(new() { Title = topic.Title, Component = component.ShortName, Url = $"{url}/{topic.Route}" });
             }
 
+            // A page split into topics renders its API tables as a topic of their own, which its markup does not declare.
+            if (topics.Count > 0)
+            {
+                sections.Add(new()
+                {
+                    Title = Client.Core.Components.DemoPage.API_TOPIC_TITLE,
+                    Component = component.ShortName,
+                    Url = $"{url}/{Client.Core.Components.DemoPage.API_TOPIC_ROUTE}"
+                });
+            }
+
             // Only the sections an address can land on. A page split into topics renders each topic at an address of
             // its own; a page of pivot tabs renders the first tab alone until another is picked, so an anchor of any
             // other tab lands nowhere - and a multi-API page's other tabs are the same sections again anyway.

@@ -68,6 +68,7 @@ public partial class DemoPage
     public bool HasRendered { get; private set; }
 
     [AutoInject] private DemoContentDeferral _contentDeferral = default!;
+    [AutoInject] private HttpClient _httpClient = default!;
 
     /// <summary>
     /// This page's entry in the catalog, which is what supplies the category shown above the title.
@@ -196,6 +197,39 @@ public partial class DemoPage
         TopicsChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Sends an "#exampleN" address of the overview to the topic that renders that section. A page split into topics
+    /// keeps its section numbers, so a link written while it was one page (/components/fullcalendar#example8) still
+    /// names the section - only the overview no longer renders it. Which topic does is read off the server's search
+    /// list, built from the same markup; the overview's own sections, and a failed lookup, leave the address alone.
+    /// </summary>
+    private async Task RedirectToSectionTopicAsync()
+    {
+        try
+        {
+            if (HasTopics is false || IsOverviewTopic is false) return;
+
+            var fragment = new Uri(NavigationManager.Uri).Fragment.TrimStart('#');
+
+            if (fragment.StartsWith("example", StringComparison.OrdinalIgnoreCase) is false) return;
+
+            var baseUrl = TopicUrl(null).TrimEnd('/');
+            var sections = await _httpClient.GetFromJsonAsync("api/SiteSearch/GetSections", AppJsonContext.Default.ListSiteSearchSectionDto);
+
+            var section = sections?.FirstOrDefault(s => s.Url.StartsWith($"{baseUrl}/", StringComparison.OrdinalIgnoreCase)
+                                                     && s.Url.EndsWith($"#{fragment}", StringComparison.OrdinalIgnoreCase));
+
+            // The reader may have moved on while the list was on its way.
+            if (section is null || new Uri(NavigationManager.Uri).Fragment.TrimStart('#') != fragment || IsOverviewTopic is false) return;
+
+            NavigationManager.NavigateTo(section.Url, replace: true);
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp);
+        }
+    }
+
 
     /// <summary>
     /// Whether the API tables may wait - and, when they may, how much room they have to keep meanwhile.
@@ -235,6 +269,8 @@ public partial class DemoPage
         await base.OnAfterFirstRenderAsync();
 
         if (RenderForMcpClient) return;
+
+        _ = RedirectToSectionTopicAsync();
 
         if (_isApiMounted is false)
         {

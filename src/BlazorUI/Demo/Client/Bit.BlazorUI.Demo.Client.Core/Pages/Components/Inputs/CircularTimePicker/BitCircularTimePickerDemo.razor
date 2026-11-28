@@ -247,7 +247,7 @@
                                        AllowedHours="@(h => h is >= 9 and <= 17)" AllowedMinutes="@(m => m is 0 or 30)"
                                        DefaultValue="@(new TimeSpan(9, 0, 0))" />
                 <br /><br />
-                <BitCircularTimePicker Label="Night shift - 22:00 to 06:00, across midnight" Standalone
+                <BitCircularTimePicker Label="Night shift - 22:00 until 07:00, across midnight" Standalone
                                        AllowedHours="@(h => h is >= 22 or <= 6)"
                                        DefaultValue="@(new TimeSpan(23, 0, 0))" />
                 <br /><br />

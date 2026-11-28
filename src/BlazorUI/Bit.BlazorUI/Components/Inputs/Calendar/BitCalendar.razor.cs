@@ -940,7 +940,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     protected override string? FormatValueAsString(DateTimeOffset? value)
     {
         return value.HasValue
-            ? value.Value.ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture)
+            ? TimeZoneInfo.ConvertTime(value.Value, _timeZone).ToString(DateFormat ?? _culture.DateTimeFormat.ShortDatePattern, _culture)
             : null;
     }
 

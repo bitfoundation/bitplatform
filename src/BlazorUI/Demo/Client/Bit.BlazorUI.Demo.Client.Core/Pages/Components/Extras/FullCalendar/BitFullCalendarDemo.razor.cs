@@ -1296,6 +1296,28 @@ public partial class BitFullCalendarDemo
     private void HandleEventClick(BitFullCalendarEvent ev)
         => clickedEvent = $"{ev.Title}, {ev.StartDate:g} - {ev.EndDate:t}";
 
+    // Dragging and resizing still go through the calendar: keep them in the list, or the next render (a quick add)
+    // hands the calendar the list as it was before the drag.
+    private void HandleCustomDialogChange(BitFullCalendarChangeEventArgs args)
+    {
+        switch (args.Kind)
+        {
+            case BitFullCalendarChangeKind.Add:
+                customDialogEvents.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Edit:
+                var index = customDialogEvents.FindIndex(e => e.Id == args.Event.Id);
+                if (index >= 0)
+                    customDialogEvents[index] = args.Event;
+                else
+                    customDialogEvents.Add(args.Event);
+                break;
+            case BitFullCalendarChangeKind.Delete:
+                customDialogEvents.RemoveAll(e => e.Id == args.Event.Id);
+                break;
+        }
+    }
+
 
     // Style & Class
     private readonly BitFullCalendarClassStyles calendarStyles = new()

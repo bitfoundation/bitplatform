@@ -1567,6 +1567,8 @@ public class BitDateRangePickerTests : BunitTestContext
             parameters.Add(p => p.SelectedDateAriaAtomic, "Picked {0}");
             parameters.Add(p => p.ValueFormat, "{0}~{1}");
             parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            // Announced in the picker's TimeZone: UTC, so the UTC midnights are the same days on every machine.
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
             parameters.Add(p => p.Value, new BitDateRangePickerValue
             {
                 StartDate = new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero),

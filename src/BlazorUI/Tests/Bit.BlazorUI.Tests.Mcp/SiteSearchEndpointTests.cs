@@ -52,6 +52,12 @@ public class SiteSearchEndpointTests : McpTestBase
         Assert.IsTrue(palette.Any(s => s.Title == "Search & sources" && s.Url == "/components/commandpalette/search"));
         Assert.IsFalse(palette.Any(s => s.Title == "Overview"));
 
+        // The API tables are a topic of their own, though the markup declares no DemoTopic for them.
+        Assert.IsTrue(palette.Any(s => s.Title == "API reference" && s.Url == "/components/commandpalette/api"));
+
+        // A page with no topics has no API topic to land on.
+        Assert.IsFalse((await SectionsAsync()).Any(s => s.Component == "Button" && s.Url.EndsWith("/api", StringComparison.Ordinal)));
+
         var fuzzy = palette.Single(s => s.Title == "Fuzzy matching");
         Assert.AreEqual("Search & sources", fuzzy.Topic);
         StringAssert.StartsWith(fuzzy.Url, "/components/commandpalette/search#example");

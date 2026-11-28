@@ -895,6 +895,7 @@ private readonly List<BitFullCalendarEvent> events2 = CreateEvents();
 <BitFullCalendar Events=""events""
                  OnAddClick=""HandleQuickAdd""
                  OnEventClick=""HandleEventClick""
+                 OnChange=""HandleChange""
                  DefaultView=""BitFullCalendarView.Week"" />
 
 <BitText>Clicked event: <b>@(clickedEvent ?? ""-"")</b></BitText>";
@@ -916,6 +917,28 @@ private void HandleQuickAdd(BitFullCalendarEvent? draft)
 
 private void HandleEventClick(BitFullCalendarEvent ev)
     => clickedEvent = $""{ev.Title}, {ev.StartDate:g} - {ev.EndDate:t}"";
+
+// Dragging and resizing still go through the calendar: keep them in the list, or the next render (a quick add)
+// hands the calendar the list as it was before the drag.
+private void HandleChange(BitFullCalendarChangeEventArgs args)
+{
+    switch (args.Kind)
+    {
+        case BitFullCalendarChangeKind.Add:
+            events.Add(args.Event);
+            break;
+        case BitFullCalendarChangeKind.Edit:
+            var index = events.FindIndex(e => e.Id == args.Event.Id);
+            if (index >= 0)
+                events[index] = args.Event;
+            else
+                events.Add(args.Event);
+            break;
+        case BitFullCalendarChangeKind.Delete:
+            events.RemoveAll(e => e.Id == args.Event.Id);
+            break;
+    }
+}
 " + eventsCode;
 
     private readonly string example23RazorCode = @"

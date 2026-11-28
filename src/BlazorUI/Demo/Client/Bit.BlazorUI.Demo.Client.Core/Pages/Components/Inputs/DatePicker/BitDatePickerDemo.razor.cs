@@ -2263,6 +2263,8 @@ public partial class BitDatePickerDemo
     private CultureInfo culture = CultureInfo.CurrentUICulture;
 
     private BitDatePickerValidationModel validationModel = new();
+    // The typed-text messages go to an EditContext; this one has no validator, so [Required] plays no part in it.
+    private readonly BitDatePickerValidationModel typedDateModel = new();
     private string SuccessMessage = string.Empty;
 
 

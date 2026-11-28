@@ -1260,12 +1260,13 @@ public class BitFullCalendarState
         _resources = next;
 
         // If resources were emptied while Timeline mode is active, fall back to Event mode so the
-        // calendar never stays in the unsupported timeline-without-resources state. Event mode
-        // offers every allowed view and the timeline views are a subset of them, so the active view
-        // is already valid here and no clamp is needed.
+        // calendar never stays in the unsupported timeline-without-resources state. Through SetMode,
+        // like any other change of mode: the projections are rebuilt for Event mode, and the visible
+        // range it moves to (a month view shows the neighbouring months' days again) is reported.
         if (Mode == BitFullCalendarMode.Timeline && !IsTimelineModeAvailable)
         {
-            Mode = BitFullCalendarMode.Event;
+            SetMode(BitFullCalendarMode.Event);
+            return;
         }
 
         NotifyStateChanged();
