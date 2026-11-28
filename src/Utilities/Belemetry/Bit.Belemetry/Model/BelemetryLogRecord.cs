@@ -86,7 +86,8 @@ public sealed class BelemetryLogRecord
     /// records itself lowers it: with <see cref="BelemetrySampler"/> on the record's trace id to the smaller of it and its
     /// own ratio (the decisions nest), with an independent (random) decision by multiplying it by its ratio. The Azure
     /// Monitor exporter sends it as the envelope's <c>sampleRate</c> (a percentage of <c>100 / N</c>), so Application
-    /// Insights counts each item <c>1 / SamplingRatio</c> times, rounded. Defaults to 1.
+    /// Insights counts each item <c>1 / SamplingRatio</c> times, rounded. The OTLP exporter sends it as the
+    /// <c>belemetry.sampling.ratio</c> attribute (a log record has no tracestate). Defaults to 1.
     /// </summary>
     public double SamplingRatio { get; set; } = 1;
 

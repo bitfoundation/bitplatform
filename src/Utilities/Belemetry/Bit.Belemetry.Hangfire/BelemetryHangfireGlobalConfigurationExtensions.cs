@@ -7,7 +7,8 @@ public static class BelemetryHangfireGlobalConfigurationExtensions
 {
     /// <summary>
     /// Records a span for every job execution, parented to the trace that enqueued it, on the
-    /// <c>Bit.Belemetry.Hangfire</c> source, which Belemetry collects by default.
+    /// <c>Bit.Belemetry.Hangfire</c> source, and measures the executions and the job storage on the
+    /// <c>Bit.Belemetry.Hangfire</c> meter; Belemetry collects both by default.
     /// </summary>
     /// <example>
     /// <code>
@@ -22,6 +23,7 @@ public static class BelemetryHangfireGlobalConfigurationExtensions
 
         var options = new BelemetryHangfireOptions();
         configure?.Invoke(options);
+        if (options.StorageMetrics) BelemetryHangfireMetrics.EnableStorageGauges();
         return configuration.UseFilter(new BelemetryHangfireFilter(options));
     }
 }

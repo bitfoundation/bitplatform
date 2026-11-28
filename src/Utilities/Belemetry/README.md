@@ -93,7 +93,7 @@ Add `@using Bit.Belemetry` to `_Imports.razor` in every project whose components
 `<BelemetryScript />` compiles as an unknown HTML element (only a warning), and telemetry silently never starts.
 
 What the core cannot see on its own ships as separate packages, so an app only takes the dependencies it uses:
-`Bit.Belemetry.EntityFrameworkCore` (a span per database command) and `Bit.Belemetry.Hangfire` (a span per job
+`Bit.Belemetry.EntityFrameworkCore` (a span per database command) and `Bit.Belemetry.Hangfire` (a span and metrics per job
 execution, parented to the enqueue). See [Entity Framework Core and Hangfire](#entity-framework-core-and-hangfire).
 
 ---
@@ -690,7 +690,25 @@ A span records how it was sampled in `BelemetrySpan.SamplingRatio`, so Azure Mon
 true (see [Azure Monitor mapping](#azure-monitor-mapping)). A trace the ratio keeps carries it in its W3C `tracestate`
 (`belemetry=sr:0.25`), so it reaches every span of the trace: local children, a span started from another's context (an
 in-process queue's consumer), a [Hangfire](#entity-framework-core-and-hangfire) job, and the downstream services and the server a WebAssembly
-`HttpClient` calls. OTLP sends it with the span's trace state.
+`HttpClient` calls.
+
+OTLP tells the backend the same ratio (the OTLP exporters, .NET and browser, add nothing at a ratio of 1):
+
+- **A span** carries it the way OpenTelemetry's
+  [probability sampling](https://opentelemetry.io/docs/specs/otel/trace/tracestate-probability-sampling/) writes it: an
+  `ot` entry first in the exported trace state, holding the threshold of its ratio (`th`) and the randomness the decision
+  compared against it (`rv`). The other entries, and other `ot` values, are kept: `ot=rv:e3f1a29b07c46d;th:c,belemetry=sr:0.25`
+  is a span kept at 0.25, standing for 4. Backends that read the threshold count it as its adjusted count. `rv` is part of
+  it because `BelemetrySampler` decides on the first 8 bytes of the trace id (as OpenTelemetry .NET's `TraceIdRatioBased`
+  sampler does), while the randomness a consumer assumes otherwise is the last 7: a bare `th` would contradict them for
+  most kept spans, and a consumer erases a threshold that contradicts the randomness. The `rv` is derived from the bytes
+  the decision read, the same for every span of the trace, so every span `BelemetrySampler` keeps - by the head ratio or a
+  tail processor - satisfies its threshold. Only the exported copy changes: the propagated `tracestate` stays
+  `belemetry=sr:<ratio>`.
+- **A log record** has no trace state, so it carries the ratio as the double attribute `belemetry.sampling.ratio`. So
+  does a span kept by its browser session (the browser's own, and relayed ones: the session id decided, not the trace id)
+  and a span whose trace state already has another `rv` (its trace's randomness came from elsewhere, and this decision did
+  not use it). A record that already has the attribute (a processor set it) keeps its value.
 
 - A span of a trace this process started takes `Traces.SamplingRatio`.
 - A span that came with a sampled remote parent takes the ratio the caller's tracestate carries. It is never below this
@@ -726,11 +744,14 @@ public sealed class TailSampler : IBelemetryProcessor
 ```
 
 A processor that samples at random instead (independently of the trace id) multiplies `SamplingRatio` by its ratio.
+Over OTLP its spans still count right on average (each one stands for `1 / SamplingRatio`), but their threshold no longer
+follows from their randomness, and a consistent sampler further down the line may erase it: prefer `BelemetrySampler`.
 
 ### Metrics
 
 Instruments of the meters in `Metrics.Meters` (default `System.Net.Http`, `Microsoft.AspNetCore.Components*`,
-`System.Runtime`) are aggregated - counters and up-down counters as sums, histograms with explicit buckets (instrument
+`System.Runtime`, and `Bit.Belemetry.*` - the instrumentation packages' meters, such as Hangfire's; not `Bit.Belemetry`,
+Belemetry's own health) are aggregated - counters and up-down counters as sums, histograms with explicit buckets (instrument
 advice is honored), gauges as last values - and exported every `Metrics.ExportInterval` (60 s), with
 `Metrics.Temporality` (cumulative by default; Azure Monitor always gets deltas) and a `Metrics.CardinalityLimit` per
 instrument (2000; overflow goes to an `otel.metric.overflow` point).
@@ -767,8 +788,9 @@ remove `BelemetryFeatures.Metrics` from `options.Features`, which silences the w
 
 Neither EF Core nor Hangfire starts activities of its own, and the OpenTelemetry instrumentations for them only run
 inside the OpenTelemetry SDK. Belemetry ships the two bridges as packages of their own, so an app without a database
-or a job server takes neither dependency; their spans land on `Bit.Belemetry.*` sources, which the core collects by
-default, and any other `ActivityListener` can record them too.
+or a job server takes neither dependency; their spans land on `Bit.Belemetry.*` sources and Hangfire's metrics on the
+`Bit.Belemetry.Hangfire` meter, which the core collects by default, and any other `ActivityListener` or `MeterListener`
+can record them too.
 
 ```bash
 dotnet add package Bit.Belemetry.EntityFrameworkCore
@@ -791,7 +813,8 @@ services.AddHangfire(configuration => configuration
     .UseBitBelemetry(o =>
     {
         o.PropagateTraceContext = true;                        // the enqueue's trace is the execution's parent
-        o.Filter = job => job.Type != typeof(HeartbeatJob);    // skip the noisy ones
+        o.Filter = job => job.Type != typeof(HeartbeatJob);    // skip the noisy ones (no span, not counted)
+        o.StorageMetrics = true;                               // the hangfire.jobs.* gauges, one query per collection
     }));
 ```
 
@@ -804,6 +827,14 @@ services.AddHangfire(configuration => configuration
   job's parameters, so the enqueue and the execution may run in different processes), and marked as an error with
   `error.type` when the job throws. Application Insights shows them as requests. Reading the context back costs one
   storage round trip per execution, like any job parameter.
+- **Hangfire metrics**, on the `Bit.Belemetry.Hangfire` meter, which `Metrics.Meters` collects by default (Hangfire has
+  no meter of its own). Every execution the filter keeps, sampled trace or not: the counter `hangfire.job.executions`
+  and the histogram `hangfire.job.duration` (seconds; buckets up to an hour), by `job.type`, `job.method`,
+  `job.outcome` (`succeeded`, `failed`, `canceled`) and, unless it succeeded, `error.type`. And the storage's state as
+  gauges - `hangfire.jobs.enqueued`, `.processing`, `.scheduled`, `.failed` and `.retries` - read from
+  `GetMonitoringApi().GetStatistics()` of `JobStorage.Current` once per collection (cached for a second); a failed
+  query reports nothing. They are storage-wide, so every instance reports the same values: take their maximum on a
+  dashboard, not their sum. `o.StorageMetrics = false` leaves the gauges, and their query, out.
 
 ---
 
@@ -828,7 +859,7 @@ services.AddHangfire(configuration => configuration
 | `IgnoreErrorMessages` | `ResizeObserver loop`, `^Script error\.?$` | regexes of errors never recorded (the second is a cross-origin script's error without CORS: no message, no stack, nothing to act on) |
 | `CaptureConsole` / `ConsoleLevels` | `false` / `error`, `warn` | console capture |
 | `SessionInactivityTimeout` / `SessionMaxDuration` | 30 min / 24 h | session rotation |
-| `SessionSampleRatio` | `1.0` | fraction of sessions recorded, whole; Azure Monitor sends it as every browser item's `sampleRate` (`1 / N` keeps the counts exact) |
+| `SessionSampleRatio` | `1.0` | fraction of sessions recorded, whole; Azure Monitor sends it as every browser item's `sampleRate` (`1 / N` keeps the counts exact), OTLP as its `belemetry.sampling.ratio` attribute |
 | `FlushInterval`, `MaxBatchSize`, `MaxQueueSize` | 5 s, 100, 1024 | batching |
 | `MaxRelayedPerMinute` | 3000 | records one circuit may relay per minute on Blazor Server (see [Transport](#transport-direct-and-relay)) |
 | `MaxRelayMessageBytes` | 16384 | bytes of JSON one relay call may carry on Blazor Server: a larger batch goes in parts (see [Transport](#transport-direct-and-relay)) |
@@ -1446,7 +1477,8 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 | JS error / exception | log record, severity ERROR, event `exception`: `exception.type`, `exception.message`, `exception.stacktrace` |
 | `ILogger` | log record with the category as scope, `log.event.id`, `log.event.name`, the structured values |
 | EF Core command | client span named after the database: `db.system.name`, `db.namespace`, `server.address`, `server.port`, `efcore.command.source`, `db.query.text` (opt-in), `error.type` |
-| Hangfire execution | consumer span `JOB {Type}.{Method}`: `job.id`, `job.type`, `job.method`, `job.queue`, `job.created_at`, `error.type` |
+| Hangfire execution | consumer span `JOB {Type}.{Method}`: `job.id`, `job.type`, `job.method`, `job.queue`, `job.created_at`, `error.type`; metrics `hangfire.job.executions` and `hangfire.job.duration` (s): `job.type`, `job.method`, `job.outcome`, `error.type` |
+| Hangfire storage | gauges `hangfire.jobs.enqueued`, `hangfire.jobs.processing`, `hangfire.jobs.scheduled`, `hangfire.jobs.failed`, `hangfire.jobs.retries` |
 | Every record | `session.id`; `enduser.pseudo.id` and `user.id` with `UserTracking` |
 
 ---
@@ -1620,6 +1652,9 @@ The reasons are recorded in [`Belemetry-Improvement-Plan.md`](Belemetry-Improvem
   `BelemetryLogRecord.SamplingRatio` for the same. A kept trace carries its ratio in `tracestate` (`belemetry=sr:...`),
   so with `HttpActivityPropagationSupport` on in WebAssembly a cross-origin API must allow `tracestate` in CORS too. On
   a server, a relayed record of a session the ratio does not keep is dropped (`sampled_out`).
+- **OTLP items carry their sampling ratio too**, below a ratio of 1: a span as an `ot=rv:...;th:...` entry first in its
+  exported trace state (OpenTelemetry's probability sampling, which backends read as its adjusted count), a log record -
+  and a span kept by its browser session - as the `belemetry.sampling.ratio` attribute. See [Traces](#traces).
 - **An exception recorded on a span needs `Errors`**: without it the exception (even a stack trace alone) comes off the
   span (for every exporter, OTLP included) and the span is sent without it. The error limits apply to it too - in the
   browser as well, to an exception an app processor adds to a span.

@@ -5,10 +5,12 @@ public sealed class BelemetryMetricsOptions
 {
     /// <summary>
     /// The <see cref="System.Diagnostics.Metrics.Meter"/> names collected; a trailing <c>*</c> matches a prefix.
-    /// Defaults to <c>System.Net.Http</c>, <c>Microsoft.AspNetCore.Components*</c> and <c>System.Runtime</c>
-    /// (plus the ASP.NET Core hosting and Kestrel meters for the server pipeline). Add your own meters here.
+    /// Defaults to <c>System.Net.Http</c>, <c>Microsoft.AspNetCore.Components*</c>, <c>System.Runtime</c> and
+    /// <c>Bit.Belemetry.*</c> (Belemetry's instrumentation packages, such as <c>Bit.Belemetry.Hangfire</c>; not its own
+    /// health meter, <c>Bit.Belemetry</c>), plus the ASP.NET Core hosting and Kestrel meters for the server pipeline.
+    /// Add your own meters here.
     /// </summary>
-    public List<string> Meters { get; } = ["System.Net.Http", "Microsoft.AspNetCore.Components*", "System.Runtime"];
+    public List<string> Meters { get; } = ["System.Net.Http", "Microsoft.AspNetCore.Components*", "System.Runtime", "Bit.Belemetry.*"];
 
     /// <summary>How often metrics are collected and exported. Defaults to 60 seconds (the OpenTelemetry default).</summary>
     public TimeSpan ExportInterval { get; set; } = TimeSpan.FromSeconds(60);

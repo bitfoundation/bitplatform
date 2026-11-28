@@ -2,7 +2,7 @@
 // collector service requests).
 
 import type { AttributeValue, Attributes, LogRecord, SpanRecord } from '../model';
-import { groupByScope, isInt } from './otlp-common';
+import { groupByScope, isInt, SAMPLING_RATIO_ATTRIBUTE, samplingRatioOf } from './otlp-common';
 import { hexToBytes, msToNanos, ProtobufWriter } from './protobuf';
 
 function writeAnyValue(w: ProtobufWriter, value: AttributeValue): void {
@@ -19,16 +19,22 @@ function writeAnyValue(w: ProtobufWriter, value: AttributeValue): void {
     }
 }
 
-function writeAttributes(w: ProtobufWriter, field: number, attributes: Attributes): void {
+function writeAttributes(w: ProtobufWriter, field: number, attributes: Attributes, samplingRatio?: number): void {
     for (const key of Object.keys(attributes)) {
         const value = attributes[key];
         if (value == null) continue;
-        // KeyValue: key = 1, value = 2
-        w.messageField(field, kv => {
-            kv.stringField(1, key);
-            kv.messageField(2, v => writeAnyValue(v, value));
-        });
+        writeAttribute(w, field, key, value);
     }
+    const ratio = samplingRatioOf(attributes, samplingRatio);
+    if (ratio !== undefined) writeAttribute(w, field, SAMPLING_RATIO_ATTRIBUTE, ratio);
+}
+
+function writeAttribute(w: ProtobufWriter, field: number, key: string, value: AttributeValue): void {
+    // KeyValue: key = 1, value = 2
+    w.messageField(field, kv => {
+        kv.stringField(1, key);
+        kv.messageField(2, v => writeAnyValue(v, value));
+    });
 }
 
 function writeScope(w: ProtobufWriter, name: string, version: string | undefined): void {
@@ -44,7 +50,7 @@ function writeTime(w: ProtobufWriter, field: number, ms: number): void {
     w.fixed64Field(field, lo, hi);
 }
 
-function writeSpan(w: ProtobufWriter, span: SpanRecord): void {
+function writeSpan(w: ProtobufWriter, span: SpanRecord, samplingRatio?: number): void {
     w.bytesField(1, hexToBytes(span.traceId));
     w.bytesField(2, hexToBytes(span.spanId));
     if (span.parentSpanId) w.bytesField(4, hexToBytes(span.parentSpanId));
@@ -52,7 +58,7 @@ function writeSpan(w: ProtobufWriter, span: SpanRecord): void {
     w.uint32Field(6, span.kind);
     writeTime(w, 7, span.startTime);
     writeTime(w, 8, span.endTime);
-    writeAttributes(w, 9, span.attributes);
+    writeAttributes(w, 9, span.attributes, samplingRatio);
     for (const event of span.events || []) {
         // Span.Event: time_unix_nano = 1, name = 2, attributes = 3
         w.messageField(11, e => {
@@ -73,12 +79,12 @@ function writeSpan(w: ProtobufWriter, span: SpanRecord): void {
     w.fixed32Field(16, 1);
 }
 
-function writeLog(w: ProtobufWriter, log: LogRecord): void {
+function writeLog(w: ProtobufWriter, log: LogRecord, samplingRatio?: number): void {
     writeTime(w, 1, log.time);
     if (log.severityNumber) w.uint32Field(2, log.severityNumber);
     if (log.severityText) w.stringField(3, log.severityText);
     if (log.body != null) w.messageField(5, v => writeAnyValue(v, log.body));
-    writeAttributes(w, 6, log.attributes);
+    writeAttributes(w, 6, log.attributes, samplingRatio);
     if (log.traceId) w.fixed32Field(8, 1);
     if (log.traceId) w.bytesField(9, hexToBytes(log.traceId));
     if (log.spanId) w.bytesField(10, hexToBytes(log.spanId));
@@ -86,8 +92,8 @@ function writeLog(w: ProtobufWriter, log: LogRecord): void {
     if (log.eventName) w.stringField(12, log.eventName);
 }
 
-/** Encodes an ExportTraceServiceRequest. */
-export function encodeTraces(resource: Attributes, spans: SpanRecord[], scopeVersion?: string): Uint8Array {
+/** Encodes an ExportTraceServiceRequest; `samplingRatio` is the ratio the page keeps its sessions at. */
+export function encodeTraces(resource: Attributes, spans: SpanRecord[], scopeVersion?: string, samplingRatio?: number): Uint8Array {
     const w = new ProtobufWriter();
     // ExportTraceServiceRequest.resource_spans = 1
     w.messageField(1, rs => {
@@ -97,15 +103,15 @@ export function encodeTraces(resource: Attributes, spans: SpanRecord[], scopeVer
             // ScopeSpans: scope = 1, spans = 2
             rs.messageField(2, ss => {
                 writeScope(ss, scope, scopeVersion);
-                for (const span of records) ss.messageField(2, s => writeSpan(s, span));
+                for (const span of records) ss.messageField(2, s => writeSpan(s, span, samplingRatio));
             });
         }
     });
     return w.finish();
 }
 
-/** Encodes an ExportLogsServiceRequest. */
-export function encodeLogs(resource: Attributes, logs: LogRecord[], scopeVersion?: string): Uint8Array {
+/** Encodes an ExportLogsServiceRequest; `samplingRatio` is the ratio the page keeps its sessions at. */
+export function encodeLogs(resource: Attributes, logs: LogRecord[], scopeVersion?: string, samplingRatio?: number): Uint8Array {
     const w = new ProtobufWriter();
     // ExportLogsServiceRequest.resource_logs = 1
     w.messageField(1, rl => {
@@ -115,7 +121,7 @@ export function encodeLogs(resource: Attributes, logs: LogRecord[], scopeVersion
             // ScopeLogs: scope = 1, log_records = 2
             rl.messageField(2, sl => {
                 writeScope(sl, scope, scopeVersion);
-                for (const log of records) sl.messageField(2, l => writeLog(l, log));
+                for (const log of records) sl.messageField(2, l => writeLog(l, log, samplingRatio));
             });
         }
     });

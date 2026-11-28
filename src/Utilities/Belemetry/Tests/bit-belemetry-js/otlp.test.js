@@ -149,4 +149,34 @@ describe('OTLP exporter', () => {
         await createOtlpExporter({ type: 'otlp', endpoint: 'http://c:4318', signals: 2 }, logs.transport, '1.0.0').export(batch, false);
         expect(logs.requests.map(r => r.url)).toEqual(['http://c:4318/v1/logs']);
     });
+
+    it('tells the backend the ratio the page keeps its sessions at, as the .NET exporter does', async () => {
+        const proto = sent();
+        await createOtlpExporter({ type: 'otlp', endpoint: 'http://c:4318' }, proto.transport, '1.0.0', 0.25).export(batch, false);
+        const [traces, logs] = proto.requests.map(r => decode(one(decode(one(decode(r.body), 1).value), 2).value));
+        const s = decode(one(traces, 2).value);
+        expect(attributesOf(s, 9)['belemetry.sampling.ratio']).toBe(0.25);
+        // The session decided, not the trace id: no tracestate threshold, which would contradict the trace's randomness.
+        expect(one(s, 3)).toBeUndefined();
+        expect(attributesOf(decode(one(logs, 2).value), 6)['belemetry.sampling.ratio']).toBe(0.25);
+        expect(batch.spans[0].attributes['belemetry.sampling.ratio']).toBeUndefined();
+
+        const json = sent();
+        await createOtlpExporter({ type: 'otlp', endpoint: 'http://c:4318', protocol: 'http/json' }, json.transport, '1.0.0', 0.5).export(batch, false);
+        const body = JSON.parse(new TextDecoder().decode(json.requests[1].body));
+        expect(body.resourceLogs[0].scopeLogs[0].logRecords[0].attributes).toContainEqual({ key: 'belemetry.sampling.ratio', value: { doubleValue: 0.5 } });
+    });
+
+    it('adds no ratio for sessions all kept, or one a processor set', async () => {
+        for (const ratio of [1, undefined, 0, NaN]) {
+            const { requests, transport } = sent();
+            await createOtlpExporter({ type: 'otlp', endpoint: 'http://c:4318' }, transport, '1.0.0', ratio).export(batch, false);
+            const traces = decode(one(decode(one(decode(requests[0].body), 1).value), 2).value);
+            expect(attributesOf(decode(one(traces, 2).value), 9)['belemetry.sampling.ratio']).toBeUndefined();
+        }
+
+        const own = { resource, spans: [], logs: [log({ attributes: { 'belemetry.sampling.ratio': 0.1 } })] };
+        const json = logsToJson(resource, own.logs, undefined, 0.5);
+        expect(json.resourceLogs[0].scopeLogs[0].logRecords[0].attributes).toEqual([{ key: 'belemetry.sampling.ratio', value: { doubleValue: 0.1 } }]);
+    });
 });

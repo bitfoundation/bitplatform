@@ -12,12 +12,13 @@ internal static class BelemetryOtlpProtobufSerializer
         var w = new BelemetryProtobufWriter();
         var resourceSpans = w.BeginMessage(1);
         WriteResource(w, 1, batch.Resource);
+        var sessionSampled = BelemetryOtlpSampling.IsSessionSampled(batch.Resource);
 
         foreach (var group in batch.Spans.GroupBy(s => s.Scope))
         {
             var scopeSpans = w.BeginMessage(2);
             WriteScope(w, 1, group.Key);
-            foreach (var span in group) WriteSpan(w, span);
+            foreach (var span in group) WriteSpan(w, span, sessionSampled);
             w.EndMessage(scopeSpans);
         }
 
@@ -77,18 +78,21 @@ internal static class BelemetryOtlpProtobufSerializer
         w.EndMessage(token);
     }
 
-    private static void WriteSpan(BelemetryProtobufWriter w, BelemetrySpan span)
+    private static void WriteSpan(BelemetryProtobufWriter w, BelemetrySpan span, bool sessionSampled)
     {
+        var traceState = BelemetryOtlpSampling.TraceState(span, sessionSampled, out var ratio);
+
         var token = w.BeginMessage(2);
         w.WriteHexId(1, span.TraceId, 16);
         w.WriteHexId(2, span.SpanId, 8);
-        w.WriteStringIfNotEmpty(3, span.TraceState);
+        w.WriteStringIfNotEmpty(3, traceState);
         if (span.ParentSpanId is not null) w.WriteHexId(4, span.ParentSpanId, 8);
         w.WriteString(5, span.Name);
         w.WriteInt64(6, (int)span.Kind);
         w.WriteFixed64(7, (ulong)span.StartTimeUnixNano);
         w.WriteFixed64(8, (ulong)span.EndTimeUnixNano);
         WriteAttributes(w, 9, span.Attributes);
+        if (ratio is { } spanRatio) WriteAttribute(w, 9, BelemetryOtlpSampling.RatioAttribute, spanRatio);
         if (span.Attributes.DroppedCount > 0) w.WriteVarintField(10, (ulong)span.Attributes.DroppedCount);
 
         foreach (var e in span.Events)
@@ -137,6 +141,7 @@ internal static class BelemetryOtlpProtobufSerializer
         }
 
         WriteAttributes(w, 6, log.Attributes);
+        if (BelemetryOtlpSampling.RatioAttributeOf(log) is { } ratio) WriteAttribute(w, 6, BelemetryOtlpSampling.RatioAttribute, ratio);
         if (log.Attributes.DroppedCount > 0) w.WriteVarintField(7, (ulong)log.Attributes.DroppedCount);
         if (log.Flags != 0) w.WriteFixed32(8, (uint)(log.Flags & 0xFF));
         w.WriteHexId(9, log.TraceId, 16);
@@ -227,15 +232,17 @@ internal static class BelemetryOtlpProtobufSerializer
 
     private static void WriteAttributes(BelemetryProtobufWriter w, int field, BelemetryAttributes attributes)
     {
-        foreach (var (key, value) in attributes)
-        {
-            var kv = w.BeginMessage(field);
-            w.WriteString(1, key);
-            var any = w.BeginMessage(2);
-            WriteAnyValue(w, value);
-            w.EndMessage(any);
-            w.EndMessage(kv);
-        }
+        foreach (var (key, value) in attributes) WriteAttribute(w, field, key, value);
+    }
+
+    private static void WriteAttribute(BelemetryProtobufWriter w, int field, string key, object value)
+    {
+        var kv = w.BeginMessage(field);
+        w.WriteString(1, key);
+        var any = w.BeginMessage(2);
+        WriteAnyValue(w, value);
+        w.EndMessage(any);
+        w.EndMessage(kv);
     }
 
     private static void WriteAnyValue(BelemetryProtobufWriter w, object value)

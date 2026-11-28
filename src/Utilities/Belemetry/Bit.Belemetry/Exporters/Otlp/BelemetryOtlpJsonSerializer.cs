@@ -19,13 +19,14 @@ internal static class BelemetryOtlpJsonSerializer
             w.WriteStartArray("resourceSpans");
             w.WriteStartObject();
             WriteResource(w, batch.Resource);
+            var sessionSampled = BelemetryOtlpSampling.IsSessionSampled(batch.Resource);
             w.WriteStartArray("scopeSpans");
             foreach (var group in batch.Spans.GroupBy(s => s.Scope))
             {
                 w.WriteStartObject();
                 WriteScope(w, group.Key);
                 w.WriteStartArray("spans");
-                foreach (var span in group) WriteSpan(w, span);
+                foreach (var span in group) WriteSpan(w, span, sessionSampled);
                 w.WriteEndArray();
                 w.WriteEndObject();
             }
@@ -112,19 +113,21 @@ internal static class BelemetryOtlpJsonSerializer
         w.WriteEndObject();
     }
 
-    private static void WriteSpan(Utf8JsonWriter w, BelemetrySpan span)
+    private static void WriteSpan(Utf8JsonWriter w, BelemetrySpan span, bool sessionSampled)
     {
+        var traceState = BelemetryOtlpSampling.TraceState(span, sessionSampled, out var ratio);
+
         w.WriteStartObject();
         w.WriteString("traceId", span.TraceId);
         w.WriteString("spanId", span.SpanId);
-        if (string.IsNullOrEmpty(span.TraceState) is false) w.WriteString("traceState", span.TraceState);
+        if (string.IsNullOrEmpty(traceState) is false) w.WriteString("traceState", traceState);
         if (span.ParentSpanId is not null) w.WriteString("parentSpanId", span.ParentSpanId);
         w.WriteNumber("flags", span.Flags & 0xFF);
         w.WriteString("name", span.Name);
         w.WriteNumber("kind", (int)span.Kind);
         WriteNano(w, "startTimeUnixNano", span.StartTimeUnixNano);
         WriteNano(w, "endTimeUnixNano", span.EndTimeUnixNano);
-        WriteAttributes(w, span.Attributes);
+        WriteAttributes(w, span.Attributes, ratio);
         if (span.Attributes.DroppedCount > 0) w.WriteNumber("droppedAttributesCount", span.Attributes.DroppedCount);
 
         if (span.Events.Count > 0)
@@ -180,7 +183,7 @@ internal static class BelemetryOtlpJsonSerializer
             w.WriteString("stringValue", log.Body);
             w.WriteEndObject();
         }
-        WriteAttributes(w, log.Attributes);
+        WriteAttributes(w, log.Attributes, BelemetryOtlpSampling.RatioAttributeOf(log));
         if (log.Attributes.DroppedCount > 0) w.WriteNumber("droppedAttributesCount", log.Attributes.DroppedCount);
         if (log.Flags != 0) w.WriteNumber("flags", log.Flags & 0xFF);
         if (log.TraceId is not null) w.WriteString("traceId", log.TraceId);
@@ -273,18 +276,21 @@ internal static class BelemetryOtlpJsonSerializer
         w.WriteEndObject();
     }
 
-    private static void WriteAttributes(Utf8JsonWriter w, BelemetryAttributes attributes)
+    private static void WriteAttributes(Utf8JsonWriter w, BelemetryAttributes attributes, double? samplingRatio = null)
     {
         w.WriteStartArray("attributes");
-        foreach (var (key, value) in attributes)
-        {
-            w.WriteStartObject();
-            w.WriteString("key", key);
-            w.WritePropertyName("value");
-            WriteAnyValue(w, value);
-            w.WriteEndObject();
-        }
+        foreach (var (key, value) in attributes) WriteAttribute(w, key, value);
+        if (samplingRatio is { } ratio) WriteAttribute(w, BelemetryOtlpSampling.RatioAttribute, ratio);
         w.WriteEndArray();
+    }
+
+    private static void WriteAttribute(Utf8JsonWriter w, string key, object value)
+    {
+        w.WriteStartObject();
+        w.WriteString("key", key);
+        w.WritePropertyName("value");
+        WriteAnyValue(w, value);
+        w.WriteEndObject();
     }
 
     private static void WriteAnyValue(Utf8JsonWriter w, object value)

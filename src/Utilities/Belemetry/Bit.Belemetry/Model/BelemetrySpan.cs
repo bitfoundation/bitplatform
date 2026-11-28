@@ -69,7 +69,9 @@ public sealed class BelemetrySpan
     /// <see cref="BelemetrySampler"/> to the smaller of it and its own ratio (the decisions nest: a trace one ratio keeps,
     /// every larger one keeps too), with an independent (random) decision by multiplying it by its ratio. The Azure Monitor
     /// exporter sends it as the envelope's <c>sampleRate</c> (a percentage of <c>100 / N</c>), so Application Insights
-    /// counts each item <c>1 / SamplingRatio</c> times, rounded. Defaults to 1.
+    /// counts each item <c>1 / SamplingRatio</c> times, rounded. The OTLP exporter sends it as OpenTelemetry's
+    /// probability-sampling threshold in the span's exported tracestate (<c>ot=rv:...;th:...</c>), or as the
+    /// <c>belemetry.sampling.ratio</c> attribute for a span its browser session kept. Defaults to 1.
     /// </summary>
     public double SamplingRatio { get; set; } = 1;
 }

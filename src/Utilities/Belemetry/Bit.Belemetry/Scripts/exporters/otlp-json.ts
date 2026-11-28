@@ -2,7 +2,7 @@
 // enums as integers, 64-bit integers as decimal strings.
 
 import type { AttributeValue, Attributes, LogRecord, SpanRecord } from '../model';
-import { groupByScope, isInt, msToNanosString } from './otlp-common';
+import { groupByScope, isInt, msToNanosString, SAMPLING_RATIO_ATTRIBUTE, samplingRatioOf } from './otlp-common';
 
 type Json = Record<string, unknown>;
 
@@ -18,12 +18,14 @@ export function toAnyValue(value: AttributeValue): Json {
     return {};
 }
 
-export function toKeyValues(attributes: Attributes): Json[] {
+export function toKeyValues(attributes: Attributes, samplingRatio?: number): Json[] {
     const list: Json[] = [];
     for (const key of Object.keys(attributes || {})) {
         const value = attributes[key];
         if (value != null) list.push({ key, value: toAnyValue(value) });
     }
+    const ratio = samplingRatioOf(attributes, samplingRatio);
+    if (ratio !== undefined) list.push({ key: SAMPLING_RATIO_ATTRIBUTE, value: { doubleValue: ratio } });
     return list;
 }
 
@@ -31,7 +33,7 @@ function scopeJson(name: string, version?: string): Json {
     return version ? { name, version } : { name };
 }
 
-function spanJson(span: SpanRecord): Json {
+function spanJson(span: SpanRecord, samplingRatio?: number): Json {
     const json: Json = {
         traceId: span.traceId,
         spanId: span.spanId,
@@ -42,7 +44,7 @@ function spanJson(span: SpanRecord): Json {
     json.kind = span.kind;
     json.startTimeUnixNano = msToNanosString(span.startTime);
     json.endTimeUnixNano = msToNanosString(span.endTime);
-    json.attributes = toKeyValues(span.attributes);
+    json.attributes = toKeyValues(span.attributes, samplingRatio);
     if (span.events && span.events.length) {
         json.events = span.events.map(e => ({ timeUnixNano: msToNanosString(e.time), name: e.name, attributes: toKeyValues(e.attributes) }));
     }
@@ -53,14 +55,14 @@ function spanJson(span: SpanRecord): Json {
     return json;
 }
 
-function logJson(log: LogRecord): Json {
+function logJson(log: LogRecord, samplingRatio?: number): Json {
     const json: Json = {
         timeUnixNano: msToNanosString(log.time),
         observedTimeUnixNano: msToNanosString(log.time),
         severityNumber: log.severityNumber,
         severityText: log.severityText,
         body: toAnyValue(log.body),
-        attributes: toKeyValues(log.attributes),
+        attributes: toKeyValues(log.attributes, samplingRatio),
     };
     if (log.traceId) {
         json.flags = 1;
@@ -71,22 +73,22 @@ function logJson(log: LogRecord): Json {
     return json;
 }
 
-/** Builds an ExportTraceServiceRequest JSON object. */
-export function tracesToJson(resource: Attributes, spans: SpanRecord[], scopeVersion?: string): Json {
+/** Builds an ExportTraceServiceRequest JSON object; `samplingRatio` is the ratio the page keeps its sessions at. */
+export function tracesToJson(resource: Attributes, spans: SpanRecord[], scopeVersion?: string, samplingRatio?: number): Json {
     return {
         resourceSpans: [{
             resource: { attributes: toKeyValues(resource) },
-            scopeSpans: groupByScope(spans).map(([scope, records]) => ({ scope: scopeJson(scope, scopeVersion), spans: records.map(spanJson) })),
+            scopeSpans: groupByScope(spans).map(([scope, records]) => ({ scope: scopeJson(scope, scopeVersion), spans: records.map(span => spanJson(span, samplingRatio)) })),
         }],
     };
 }
 
-/** Builds an ExportLogsServiceRequest JSON object. */
-export function logsToJson(resource: Attributes, logs: LogRecord[], scopeVersion?: string): Json {
+/** Builds an ExportLogsServiceRequest JSON object; `samplingRatio` is the ratio the page keeps its sessions at. */
+export function logsToJson(resource: Attributes, logs: LogRecord[], scopeVersion?: string, samplingRatio?: number): Json {
     return {
         resourceLogs: [{
             resource: { attributes: toKeyValues(resource) },
-            scopeLogs: groupByScope(logs).map(([scope, records]) => ({ scope: scopeJson(scope, scopeVersion), logRecords: records.map(logJson) })),
+            scopeLogs: groupByScope(logs).map(([scope, records]) => ({ scope: scopeJson(scope, scopeVersion), logRecords: records.map(log => logJson(log, samplingRatio)) })),
         }],
     };
 }

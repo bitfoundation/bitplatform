@@ -15,7 +15,11 @@ export function otlpUrls(config: OtlpExporterConfig): { base: string; traces: st
     return { base, traces: config.tracesEndpoint || base + '/v1/traces', logs: config.logsEndpoint || base + '/v1/logs' };
 }
 
-export function createOtlpExporter(config: OtlpExporterConfig, transport: Transport, sdkVersion: string): Exporter {
+/**
+ * `sessionRatio` (`sampling.sessionRatio`) is the ratio the page keeps its sessions at; below 1, every record carries it
+ * as `belemetry.sampling.ratio`, so a backend can count each one for the sessions dropped.
+ */
+export function createOtlpExporter(config: OtlpExporterConfig, transport: Transport, sdkVersion: string, sessionRatio?: number): Exporter {
     const urls = otlpUrls(config);
     const json = config.protocol === 'http/json';
     const contentType = json ? 'application/json' : 'application/x-protobuf';
@@ -43,11 +47,11 @@ export function createOtlpExporter(config: OtlpExporterConfig, transport: Transp
             // Both sends start synchronously (no await in between), which matters during unload.
             const sends: Promise<void>[] = [];
             if (batch.spans.length && (signals & Signals.Traces)) {
-                const body = json ? encodeUtf8(JSON.stringify(tracesToJson(batch.resource, batch.spans, sdkVersion))) : encodeTraces(batch.resource, batch.spans, sdkVersion);
+                const body = json ? encodeUtf8(JSON.stringify(tracesToJson(batch.resource, batch.spans, sdkVersion, sessionRatio))) : encodeTraces(batch.resource, batch.spans, sdkVersion, sessionRatio);
                 sends.push(send(urls.traces, body, unload, mark));
             }
             if (batch.logs.length && (signals & Signals.Logs)) {
-                const body = json ? encodeUtf8(JSON.stringify(logsToJson(batch.resource, batch.logs, sdkVersion))) : encodeLogs(batch.resource, batch.logs, sdkVersion);
+                const body = json ? encodeUtf8(JSON.stringify(logsToJson(batch.resource, batch.logs, sdkVersion, sessionRatio))) : encodeLogs(batch.resource, batch.logs, sdkVersion, sessionRatio);
                 sends.push(send(urls.logs, body, unload, mark));
             }
             return Promise.all(sends).then(() => undefined);
