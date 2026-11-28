@@ -147,6 +147,28 @@
     Forces prerendering of the default document for every navigation request to ensure the server always
     has the latest version of the app. Useful for server-rendered apps.
 </p>
+<p>
+    Navigations go to the server first. When the server cannot answer - the connection fails, or a proxy in
+    front of it answers <code>502</code>, <code>503</code>, <code>504</code> (or Cloudflare's
+    <code>520</code>-<code>527</code> and <code>530</code>) - the cached default document is served instead,
+    so an installed app still opens. Any other answer from the server, errors included, reaches the page as
+    it was sent. This needs <a href="service-worker#defaulturl"><code>defaultUrl</code></a> to match an asset
+    (e.g. <code>self.externalAssets = [{ url: '/' }]</code>); when that asset is not cached yet (a passive
+    install caches nothing), it is cached in the background after a navigation the server answers. Since the
+    service worker forwards these navigations itself, the server receives them with
+    <code>Sec-Fetch-Mode: navigate</code> but <code>Sec-Fetch-Dest: empty</code> instead of <code>document</code>.
+</p>
+<p>
+    Some limits of this fallback: a <code>503</code> the app sends itself (ASP.NET Core's rate limiter rejects
+    with <code>503</code> by default, and so does <code>app_offline.htm</code>) cannot be told apart from a
+    gateway's, so it is answered with the cached default document too - have the rate limiter reject with
+    <code>429</code> instead. There is no timeout, so a connection that hangs rather than fails (a stalled mobile
+    network, a captive portal) keeps waiting just as it would without a service worker. And the
+    <code>AlwaysPrerender</code> preset sets no <a href="service-worker#noprerenderquery"><code>noPrerenderQuery</code></a>,
+    so the cached copy is the prerendered home page: offline, every deep link shows home content (with its stale
+    per-request state, such as antiforgery tokens) until Blazor re-renders it. Set <code>noPrerenderQuery</code>
+    and have the host honor it to cache a clean shell instead.
+</p>
 
 <h2>Install behavior &amp; resiliency</h2>
 
@@ -271,7 +293,7 @@
         <tbody>
             <tr><td><code>NoPrerender</code></td><td>Disables prerendering of the default document for every navigation request.</td></tr>
             <tr><td><code>InitialPrerender</code></td><td>Enables prerendering of the default document only for the initial navigation request.</td></tr>
-            <tr><td><code>AlwaysPrerender</code></td><td>Enables prerendering of the default document for every navigation request.</td></tr>
+            <tr><td><code>AlwaysPrerender</code></td><td>Enables prerendering of the default document for every navigation request, falling back to the cached default document when the server cannot answer.</td></tr>
             <tr><td><code>FullOffline</code></td><td>Full offline mode: all assets are cached and served from cache from the first time the app loads.</td></tr>
         </tbody>
     </table>

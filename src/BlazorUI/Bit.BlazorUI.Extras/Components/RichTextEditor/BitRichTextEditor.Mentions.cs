@@ -2,17 +2,16 @@
 
 namespace Bit.BlazorUI;
 
-// Mention menu. The bridge detects the trigger character and reports it; the menu, the lookup and
-// the inserted markup all live here, mirroring how the slash menu is put together.
+// Mention menu. The bridge detects the trigger character and reports it; the lookup and the
+// inserted markup live here, and the menu is the shared _BitEditorMenu, as the slash menu's is.
 public partial class BitRichTextEditor
 {
     private bool _showMention;
     private string _mentionFilter = "";
-    private int _mentionIndex;
     private bool _focusMentionPending;
     private int _mentionQueryToken;
     private IReadOnlyList<BitRichTextEditorMention> _mentionItems = [];
-    private ElementReference _mentionInputRef = default!;
+    private _BitEditorMenu<BitRichTextEditorMention>? _mentionMenu;
 
     /// <summary>
     /// Supplies the suggestions shown after the user types <c>@</c>. Receives the text typed into
@@ -35,7 +34,6 @@ public partial class BitRichTextEditor
         // The two menus answer different triggers and share the same spot, so only one is ever up.
         CloseSlash();
         _mentionFilter = "";
-        _mentionIndex = 0;
         _showMention = true;
         // Move focus into the filter box on the next render so typing filters the list instead of
         // continuing into the document.
@@ -71,46 +69,22 @@ public partial class BitRichTextEditor
 
         if (token != _mentionQueryToken) return;
 
-        _mentionItems = results;
-        _mentionIndex = 0;
+        // A list of its own for every answer, which moves the menu's highlight back to the top even when
+        // the lookup hands back the same instance again.
+        _mentionItems = results.ToList();
         StateHasChanged();
     }
 
-    private async Task OnMentionFilterInput(ChangeEventArgs e)
+    private async Task OnMentionFilterInput(string filter)
     {
-        _mentionFilter = e.Value?.ToString() ?? "";
+        _mentionFilter = filter;
         await QueryMentionsAsync(_mentionFilter);
     }
 
-    // Arrows move the highlight, Enter picks the highlighted suggestion, Escape dismisses the menu.
-    private async Task OnMentionKeyDownAsync(KeyboardEventArgs e)
+    private void OnMentionClose()
     {
-        if (_showMention is false) return;
-
-        switch (e.Key)
-        {
-            case "ArrowDown":
-                if (_mentionItems.Count > 0) _mentionIndex = (_mentionIndex + 1) % _mentionItems.Count;
-                break;
-
-            case "ArrowUp":
-                if (_mentionItems.Count > 0) _mentionIndex = (_mentionIndex - 1 + _mentionItems.Count) % _mentionItems.Count;
-                break;
-
-            case "Enter":
-                if (_mentionIndex >= 0 && _mentionIndex < _mentionItems.Count)
-                {
-                    await ApplyMentionAsync(_mentionItems[_mentionIndex]);
-                }
-                break;
-
-            // Only the plain key, the one the box claims (data-bit-esc): an Escape with a modifier is the
-            // surrounding surface's.
-            case "Escape" when e.IsPlainEscape():
-                CloseMention();
-                RequestEditorFocus();
-                break;
-        }
+        CloseMention();
+        RequestEditorFocus();
     }
 
     private void CloseMention()
@@ -119,7 +93,6 @@ public partial class BitRichTextEditor
         _mentionQueryToken++;
         _showMention = false;
         _mentionFilter = "";
-        _mentionIndex = 0;
         _mentionItems = [];
     }
 
@@ -150,14 +123,6 @@ public partial class BitRichTextEditor
     {
         if (_focusMentionPending is false) return;
         _focusMentionPending = false;
-        try
-        {
-            await _mentionInputRef.FocusSafelyAsync();
-            // Suppress the browser's own handling of the menu's navigation keys on this input while
-            // leaving normal typing intact.
-            await _js.BitRichTextEditorBindSlashKeys(_mentionInputRef);
-        }
-        catch (JSDisconnectedException) { } // circuit gone; nothing to focus
-        catch (JSException) { } // interop unavailable; ignore like the slash menu does
+        if (_mentionMenu is not null) await _mentionMenu.FocusAsync();
     }
 }

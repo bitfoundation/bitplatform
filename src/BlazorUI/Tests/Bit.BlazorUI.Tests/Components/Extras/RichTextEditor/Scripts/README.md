@@ -1,0 +1,10 @@
+﻿# BitRichTextEditor script tests
+
+`node --test` suites of the BitRichTextEditor undo history (`BitRichTextEditorHistory.ts`), run by
+`BitRichTextEditorScriptTests` against the module the Extras build compiles it into
+(`Bit.BlazorUI.Extras/wwwroot/scripts/modules/BitRichTextEditorHistory.js`), so build `Bit.BlazorUI.Extras` first.
+
+- `helpers/history-fixture.mjs` puts the browser globals the module reads in place, imports it and exports the class.
+- Run them by hand from this folder with `node --test` (Node 22.7+ or 20.19+, no package.json needed); set
+  `BIT_RTE_MODULES` to another modules folder to run them against it.
+- What needs a DOM (the surface, the selection, the browser's undo events) is tested in the E2E suite instead.

@@ -268,7 +268,7 @@ public class BitGridE2ETests : E2ETestBase
 
         await SelectAsync("#sel-ha", value, $"ha={value};");
 
-        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("justify-content", justify);
+        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("justify-content", Alignment(justify));
         var grid = await BoxAsync("#al-grid");
         AssertClose(firstX, (await BoxAsync("#al-1")).X - grid.X, $"{value}: first item x");
         if (value == "SpaceBetween") AssertClose(grid.Right, (await BoxAsync("#al-3")).Right, "the last at the end");
@@ -295,7 +295,7 @@ public class BitGridE2ETests : E2ETestBase
 
         await SelectAsync("#sel-va", value, $"va={value};");
 
-        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("align-items", alignItems);
+        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("align-items", Alignment(alignItems));
         var grid = await BoxAsync("#al-grid");
         var shortItem = await BoxAsync("#al-2");
         if (shortY >= 0) AssertClose(shortY, shortItem.Y - grid.Y, $"{value}: the short item's y");
@@ -315,15 +315,15 @@ public class BitGridE2ETests : E2ETestBase
         AssertClose(35, (await BoxAsync("#al-2")).Y - grid.Y, "centered down");
 
         await SelectAsync("#sel-ha", "End", "ha=End;");
-        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("justify-content", "flex-end");
+        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("justify-content", Alignment("flex-end"));
         await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("align-items", "center");
 
         await SelectAsync("#sel-va", "End", "va=End;");
-        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("align-items", "flex-end");
+        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("align-items", Alignment("flex-end"));
 
         // VerticalAlign wins over a Stretch handed to the cross axis by HorizontalAlign.
         await SelectAsync("#sel-ha", "Stretch", "ha=Stretch;");
-        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("align-items", "flex-end");
+        await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("align-items", Alignment("flex-end"));
         await Expect(Page.Locator("#al-grid")).ToHaveCSSAsync("justify-content", "center");
     }
 
@@ -342,7 +342,7 @@ public class BitGridE2ETests : E2ETestBase
 
         await SelectAsync("#sel-ac", value, $"ac={value};");
 
-        await Expect(Page.Locator("#ac-grid")).ToHaveCSSAsync("align-content", alignContent);
+        await Expect(Page.Locator("#ac-grid")).ToHaveCSSAsync("align-content", Alignment(alignContent));
         var grid = await BoxAsync("#ac-grid");
         AssertClose(firstRowY, (await BoxAsync("#ac-1")).Y - grid.Y, $"{value}: first row");
         if (secondRowY >= 0) AssertClose(secondRowY, (await BoxAsync("#ac-4")).Y - grid.Y, $"{value}: second row");
@@ -361,7 +361,7 @@ public class BitGridE2ETests : E2ETestBase
 
         await SelectAsync("#sel-as", value, $"as={value};");
 
-        await Expect(Page.Locator("#al-2")).ToHaveCSSAsync("align-self", alignSelf);
+        await Expect(Page.Locator("#al-2")).ToHaveCSSAsync("align-self", Alignment(alignSelf));
         var grid = await BoxAsync("#al-grid");
         var item = await BoxAsync("#al-2");
         if (y >= 0) AssertClose(y, item.Y - grid.Y, $"{value}: y");

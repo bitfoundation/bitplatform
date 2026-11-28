@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -58,6 +59,7 @@ public partial class BitSeparatorStylesheetTests
         DataRow("--bit-spr-bg"),
         DataRow("--bit-spr-ofs"),
         DataRow("--bit-spr-ins"),
+        DataRow("--bit-spr-img"),
         DataRow("--bit-spr-dis-brd"),
         DataRow("--bit-spr-dis-fg")]
     public void BitSeparatorShouldStartEveryPrivateVariableUnset(string name)
@@ -72,7 +74,9 @@ public partial class BitSeparatorStylesheetTests
         DataRow("var(--bit-spr-siz, var(--bit-Separator-thickness, #{$siz-divider}))"),
         DataRow("var(--bit-spr-ins, var(--bit-Separator-inset, 0))"),
         DataRow("var(--bit-spr-ofs, var(--bit-Separator-content-offset, 0))"),
-        DataRow("var(--bit-spr-bg, var(--bit-Separator-content-background, transparent))")]
+        DataRow("var(--bit-spr-bg, var(--bit-Separator-content-background, transparent))"),
+        DataRow("var(--bit-spr-img, var(--bit-Separator-line-background, none))"),
+        DataRow("var(--bit-spr-img, var(--bit-Separator-vertical-line-background, var(--bit-Separator-line-background, none)))")]
     public void BitSeparatorShouldLetTheParameterWinOverItsVariable(string chain)
     {
         // The parameter classes and the inline lengths set the private variable, which is read ahead of the public one.
@@ -92,6 +96,7 @@ public partial class BitSeparatorStylesheetTests
         var stylesheet = ReadStylesheet();
 
         var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {");
+        StringAssert.Contains(block, "--bit-spr-img: none;");
         StringAssert.Contains(block, "--bit-spr-dis-brd: #{$clr-brd-dis};");
         StringAssert.Contains(block, "--bit-spr-dis-fg: #{$clr-fg-dis};");
 
@@ -107,6 +112,99 @@ public partial class BitSeparatorStylesheetTests
 
         StringAssert.Contains(block, "border-color: GrayText;");
         StringAssert.Contains(block, "color: GrayText;");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldDrawTheLineBackgroundAsTheBorderImageOfEachSegment()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A border image replaces the paint of the border alone, so without one every line style is drawn as before. It
+        // comes after the border shorthand, which would reset it.
+        var segments = SourceFiles.GetScssDeclarations(stylesheet, "\n    &::before,\n    &::after {");
+        var border = segments.IndexOf("border: 0 var(--bit-spr-stl, ", StringComparison.Ordinal);
+        var image = segments.IndexOf("border-image-source: var(--bit-spr-img, var(--bit-Separator-line-background, none));", StringComparison.Ordinal);
+
+        Assert.IsTrue(border >= 0, "The segments are not drawn as a border.");
+        Assert.IsTrue(image > border, "The line background is not the border image of the segments, set after the border.");
+        StringAssert.Contains(segments, "border-image-slice: 1;");
+    }
+
+    [TestMethod,
+        DataRow(".bit-spr-dsh"), DataRow(".bit-spr-dot"), DataRow(".bit-spr-dbl"),
+        DataRow(".bit-spr-bpr"), DataRow(".bit-spr-bsr"), DataRow(".bit-spr-btr"), DataRow(".bit-spr-brr"),
+        DataRow(".bit-spr-pri"), DataRow(".bit-spr-sec"), DataRow(".bit-spr-ter"), DataRow(".bit-spr-inf"),
+        DataRow(".bit-spr-suc"), DataRow(".bit-spr-wrn"), DataRow(".bit-spr-swr"), DataRow(".bit-spr-err"),
+        DataRow(".bit-spr-pbg"), DataRow(".bit-spr-sbg"), DataRow(".bit-spr-tbg"),
+        DataRow(".bit-spr-pfg"), DataRow(".bit-spr-sfg"), DataRow(".bit-spr-tfg"),
+        DataRow(".bit-spr-pbr"), DataRow(".bit-spr-sbr"), DataRow(".bit-spr-tbr")]
+    public void BitSeparatorShouldLetTheLineParametersWinOverTheLineBackground(string parameterClass)
+    {
+        // The line background is drawn in place of the color and the style of the line, so a parameter picking either
+        // takes it away, as every parameter wins over the variable standing for the same thing.
+        var rules = SourceFiles.GetScssRules(ReadStylesheet());
+
+        Assert.IsTrue(rules.Any(r => r.Ancestors.Count == 0 &&
+                                     SourceFiles.SplitScssSelectorList(r.Header).Select(s => s.Trim()).Contains(parameterClass) &&
+                                     r.Declarations.Contains("--bit-spr-img: none")),
+                      $"{parameterClass} leaves the line background in place of the line it asks for.");
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldKeepASolidLineStyleOverTheLineBackground()
+    {
+        // A solid line is what a line background is drawn as anyway, so an explicit Solid leaves it.
+        Assert.IsFalse(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-spr-sld {").Contains("--bit-spr-img"));
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldFadeEachSegmentTowardItsOuterEnd()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // Every segment reads the mask a fade gives it, and none without one.
+        var segments = SourceFiles.GetScssDeclarations(stylesheet, "\n    &::before,\n    &::after {");
+        StringAssert.Contains(segments, "-webkit-mask-image: var(--bit-spr-fdm, none);");
+        StringAssert.Contains(segments, "mask-image: var(--bit-spr-fdm, none);");
+
+        var fade = SourceFiles.GetScssRules(stylesheet)
+                              .Where(r => r.Ancestors.FirstOrDefault() == ".bit-spr-fad" || r.Header == ".bit-spr-fad")
+                              .SelectMany(r => SourceFiles.ResolveScssSelectors([.. r.Ancestors, r.Header])
+                                                          .Select(selector => (Selector: selector, Mask: r.Declarations.FirstOrDefault(d => d.StartsWith("--bit-spr-fdm:", StringComparison.Ordinal)))))
+                              .Where(r => r.Mask is not null)
+                              .ToDictionary(r => r.Selector, r => r.Mask);
+
+        // Without content, the one segment fades toward both of its ends. It is the default of the leading segment, so an
+        // engine without :has() fades the line symmetrically rather than toward one end.
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to right, transparent, #000, transparent)", fade[".bit-spr-fad.bit-spr-hrz::before"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to bottom, transparent, #000, transparent)", fade[".bit-spr-fad.bit-spr-vrt::before"]);
+
+        // The two segments around the content mirror each other, transparent at their outer ends.
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to right, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:has(> .bit-spr-cnt)::before"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to left, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:has(> .bit-spr-cnt)::after"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to bottom, transparent, #000)", fade[".bit-spr-fad.bit-spr-vrt:has(> .bit-spr-cnt)::before"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to top, transparent, #000)", fade[".bit-spr-fad.bit-spr-vrt:has(> .bit-spr-cnt)::after"]);
+
+        // The outer ends follow the reading direction, and a direction Dir does not name is read too.
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to left, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:has(> .bit-spr-cnt):is(.bit-rtl, :dir(rtl))::before"]);
+        Assert.AreEqual("--bit-spr-fdm: linear-gradient(to right, transparent, #000)", fade[".bit-spr-fad.bit-spr-hrz:has(> .bit-spr-cnt):is(.bit-rtl, :dir(rtl))::after"]);
+    }
+
+    [TestMethod]
+    public void BitSeparatorShouldDrawTheLineInFullAndInTheSystemColorInForcedColors()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A forced-colors mode leaves a border image alone, so the line background is taken away for the border to be
+        // drawn in the system color.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {"), "border-image-source: none;");
+
+        // A faded end is the line at a fraction of its contrast, which neither a forced-colors mode nor a reader asking
+        // for more contrast wants. The rule comes after the one reading the mask, at the same specificity.
+        var contrast = SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active), (prefers-contrast: more) {");
+        StringAssert.Contains(contrast, "-webkit-mask-image: none;");
+        StringAssert.Contains(contrast, "mask-image: none;");
+        Assert.IsTrue(stylesheet.IndexOf(contrast, StringComparison.Ordinal) > stylesheet.IndexOf("mask-image: var(--bit-spr-fdm, none);", StringComparison.Ordinal));
     }
 
     [TestMethod]

@@ -201,11 +201,6 @@ internal static class BitRichTextEditorJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.setBlockDirection", editor, dir);
     }
 
-    public static ValueTask BitRichTextEditorBindSlashKeys(this IJSRuntime jsRuntime, ElementReference input)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.bindSlashKeys", input);
-    }
-
     public static ValueTask BitRichTextEditorApplyMention(this IJSRuntime jsRuntime, ElementReference editor, string html)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.RichTextEditor.applyMention", editor, html);

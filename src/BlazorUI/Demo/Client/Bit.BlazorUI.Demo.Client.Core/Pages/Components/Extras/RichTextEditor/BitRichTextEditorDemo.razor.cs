@@ -330,6 +330,18 @@ public partial class BitRichTextEditorDemo
     [
         new()
         {
+            Name = "CanRedo",
+            Type = "bool",
+            Description = "Whether there is an undone edit to redo; any new edit clears it."
+        },
+        new()
+        {
+            Name = "CanUndo",
+            Type = "bool",
+            Description = "Whether there is an edit to undo, text typed since the last step included. The editor keeps its own history, which UndoAsync, Ctrl+Z and the toolbar's Undo button go by."
+        },
+        new()
+        {
             Name = "CharacterCount",
             Type = "int",
             Description = "The plain-text character count of the current content, as the count footer and MaxLength count it."
@@ -343,8 +355,16 @@ public partial class BitRichTextEditorDemo
         new()
         {
             Name = "ExecuteCommandAsync",
-            Type = "Task",
-            Description = "Runs a raw editing command against the editor."
+            Type = "Func<BitRichTextEditorCommand, string?, Task>",
+            Description = "Runs one of the editor's commands, the ones its toolbar and shortcuts use, with the value the command takes (a tag for FormatBlock, a color, a font, a size or an address). Content goes in through InsertHtmlAsync and InsertTextAsync.",
+            LinkType = LinkType.Link,
+            Href = "#command-enum",
+        },
+        new()
+        {
+            Name = "ExecuteCommandAsync",
+            Type = "Func<string, string?, Task>",
+            Description = "Runs one of the editor's commands by name: the BitRichTextEditorCommand member's name with its first letter in lower case (bold, formatBlock, insertOrderedList, justifyCenter, foreColor, createLink, undo, ...). A name the editor does not have changes nothing and raises OnError with the command-failed code.",
         },
         new()
         {
@@ -418,7 +438,7 @@ public partial class BitRichTextEditorDemo
         {
             Name = "UndoAsync",
             Type = "Task",
-            Description = "Undoes the last edit."
+            Description = "Undoes the last edit: a command, a paste, a word typed or a value set after the first edit."
         },
         new()
         {
@@ -635,6 +655,42 @@ public partial class BitRichTextEditorDemo
     [
         new()
         {
+            Id = "command-enum",
+            Name = "BitRichTextEditorCommand",
+            Description = "The commands ExecuteCommandAsync runs: the ones the toolbar and the shortcuts use.",
+            Items =
+            [
+                new() { Name = "Bold", Value = "0", Description = "Toggles bold on the selection, or for the text typed next at a caret." },
+                new() { Name = "Italic", Value = "1", Description = "Toggles italic." },
+                new() { Name = "Underline", Value = "2", Description = "Toggles underline." },
+                new() { Name = "StrikeThrough", Value = "3", Description = "Toggles strikethrough." },
+                new() { Name = "Subscript", Value = "4", Description = "Toggles subscript (and superscript off)." },
+                new() { Name = "Superscript", Value = "5", Description = "Toggles superscript (and subscript off)." },
+                new() { Name = "InlineCode", Value = "6", Description = "Toggles inline code." },
+                new() { Name = "RemoveFormat", Value = "7", Description = "Clears the inline formatting of the selection: marks, colors and fonts. Links stay." },
+                new() { Name = "FormatBlock", Value = "8", Description = "Gives the touched lines the block format given as the value: p, h1-h6, pre, or blockquote." },
+                new() { Name = "InsertOrderedList", Value = "9", Description = "Turns the touched lines into a numbered list, or back into paragraphs." },
+                new() { Name = "InsertUnorderedList", Value = "10", Description = "Turns the touched lines into a bulleted list, or back into paragraphs." },
+                new() { Name = "InsertTaskList", Value = "11", Description = "Turns the touched lines into a checklist, or back into paragraphs." },
+                new() { Name = "Indent", Value = "12", Description = "Nests the touched list items; indents any other line a step." },
+                new() { Name = "Outdent", Value = "13", Description = "Brings the touched list items out a level; takes a step of indentation off any other line." },
+                new() { Name = "JustifyLeft", Value = "14", Description = "Aligns the touched lines to the left." },
+                new() { Name = "JustifyCenter", Value = "15", Description = "Centers the touched lines." },
+                new() { Name = "JustifyRight", Value = "16", Description = "Aligns the touched lines to the right." },
+                new() { Name = "JustifyFull", Value = "17", Description = "Justifies the touched lines." },
+                new() { Name = "ForeColor", Value = "18", Description = "Paints the selection with the text color given as the value." },
+                new() { Name = "BackColor", Value = "19", Description = "Highlights the selection with the color given as the value." },
+                new() { Name = "FontName", Value = "20", Description = "Sets the font family given as the value." },
+                new() { Name = "FontSize", Value = "21", Description = "Sets the font size given as the value (a CSS length)." },
+                new() { Name = "CreateLink", Value = "22", Description = "Links the selection to the address given as the value, or inserts it as a link at a caret." },
+                new() { Name = "Unlink", Value = "23", Description = "Removes every link the selection touches." },
+                new() { Name = "InsertHorizontalRule", Value = "24", Description = "Inserts a horizontal rule at the caret." },
+                new() { Name = "Undo", Value = "25", Description = "Undoes the last step of the editor's own history." },
+                new() { Name = "Redo", Value = "26", Description = "Redoes the last undone step." },
+            ]
+        },
+        new()
+        {
             Id = "toolbar-enum",
             Name = "BitRichTextEditorToolbar",
             Description = "Toolbar button groups. Combine with bitwise OR, or use All / AllExtended.",
@@ -698,7 +754,7 @@ public partial class BitRichTextEditorDemo
                 Id = "callout",
                 Label = "Callout",
                 IsActive = state => state.Block == "blockquote",
-                OnActivate = editor => editor.ExecuteCommandAsync("formatBlock", editor.SelectionState.Block == "blockquote" ? "p" : "blockquote")
+                OnActivate = editor => editor.ExecuteCommandAsync(BitRichTextEditorCommand.FormatBlock, editor.SelectionState.Block == "blockquote" ? "p" : "blockquote")
             }
         ]
     };

@@ -52,7 +52,7 @@ private readonly BitRichTextEditorToolbarConfig customConfig = new()
             Id = ""callout"",
             Label = ""Callout"",
             IsActive = state => state.Block == ""blockquote"",
-            OnActivate = editor => editor.ExecuteCommandAsync(""formatBlock"", editor.SelectionState.Block == ""blockquote"" ? ""p"" : ""blockquote"")
+            OnActivate = editor => editor.ExecuteCommandAsync(BitRichTextEditorCommand.FormatBlock, editor.SelectionState.Block == ""blockquote"" ? ""p"" : ""blockquote"")
         }
     ]
 };";
@@ -356,7 +356,7 @@ public class SpanishEditorLocalizer : IBitRichTextEditorLocalizer
 
     private readonly string example21RazorCode = @"
 <BitButton Variant=""BitVariant.Outline"" OnClick=""FocusEditor"">FocusAsync</BitButton>
-<BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => apiEditor.ExecuteCommandAsync(""bold""))"">ExecuteCommand(""bold"")</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""@(() => apiEditor.ExecuteCommandAsync(BitRichTextEditorCommand.Bold))"">ExecuteCommand(Bold)</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick='@(() => apiEditor.InsertTextAsync("" inserted""))'>InsertTextAsync</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick='@(() => apiEditor.InsertHtmlAsync(""<b>bold</b>""))'>InsertHtmlAsync</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""@(async () => await apiEditor.SelectAllAsync())"">SelectAllAsync</BitButton>
